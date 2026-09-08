@@ -1,0 +1,37 @@
+{
+  "runtime": "native",
+  "state": "cold",
+  "performanceMeasurement": false,
+  "buildCommand": [
+    "go",
+    "build",
+    "-o",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-cold-64-filtered-count-attempt21-generic-string-cold-controls-v1-baseline/graphite-benchmark-replay",
+    "./cmd/graphite-benchmark-replay"
+  ],
+  "binarySHA256": "41839d1ecf202b7d25d7f4cd3dc201bb24db405d2cf15e2bc1bab33d059b0a28",
+  "goEnvironment": [
+    "go1.22.0",
+    "/opt/homebrew/Cellar/go/1.22.0/libexec",
+    "darwin",
+    "arm64"
+  ],
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-cold-64-filtered-count-attempt21-generic-string-cold-controls-v1-baseline/graphite-benchmark-replay",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-cold-64-filtered-count-attempt21-generic-string-cold-controls-v1-baseline/fixture/graphs-relocated.tsv",
+    "--state",
+    "cold",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-go-baseline-513e2b96-v1/module/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-cold-controls-513e2b96-v1/baseline/native-cold/responses.jsonl"
+  ],
+  "status": "exited",
+  "pid": 3024,
+  "startedAt": "2026-09-08T07:42:34.190703+00:00",
+  "exitCode": 1,
+  "finishedAt": "2026-09-08T07:43:48.191876+00:00",
+  "inputsUnchanged": true,
+  "binaryUnchanged": true
+}

@@ -1,0 +1,1 @@
+The initial archive command exited 1 before writing any destination: the parent real64/ did not exist. archive-correctness.py now creates missing parent directories while still refusing an existing output. No runtime was restarted or evidence overwritten.

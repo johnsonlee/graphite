@@ -1,0 +1,140 @@
+[
+  {
+    "index": 883,
+    "case": {
+      "id": "global-six-or-zero",
+      "family": "global",
+      "shape": "global-six-or",
+      "selectivity": "zero",
+      "operator": "contains",
+      "boundary": "single-query",
+      "projection": "distinct-six-properties",
+      "limit": 200,
+      "query": "MATCH (n)\nWHERE (exists(n.class) AND n.class CONTAINS 'GraphitePressureAbsent42zeroX')\n   OR (exists(n.name) AND n.name CONTAINS 'GraphitePressureAbsent42zeroX')\n   OR (exists(n.caller_class) AND n.caller_class CONTAINS 'GraphitePressureAbsent42zeroX')\n   OR (exists(n.caller_name) AND n.caller_name CONTAINS 'GraphitePressureAbsent42zeroX')\n   OR (exists(n.callee_class) AND n.callee_class CONTAINS 'GraphitePressureAbsent42zeroX')\n   OR (exists(n.callee_name) AND n.callee_name CONTAINS 'GraphitePressureAbsent42zeroX')\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {},
+      "expectZeroRows": true,
+      "targetGraphId": null,
+      "targetGraphIds": [],
+      "workloadIdentity": null,
+      "requestGraphIds": null,
+      "expectedRowCountRange": null,
+      "configuredTimeoutMillis": null,
+      "fixtureDistributionId": null
+    }
+  },
+  {
+    "index": 884,
+    "case": {
+      "id": "global-six-or-targeted",
+      "family": "global",
+      "shape": "global-six-or",
+      "selectivity": "targeted",
+      "operator": "contains",
+      "boundary": "single-query",
+      "projection": "distinct-six-properties",
+      "limit": 200,
+      "query": "MATCH (n)\nWHERE (exists(n.class) AND n.class CONTAINS 'org.apache.hadoop.hive.')\n   OR (exists(n.name) AND n.name CONTAINS 'org.apache.hadoop.hive.')\n   OR (exists(n.caller_class) AND n.caller_class CONTAINS 'org.apache.hadoop.hive.')\n   OR (exists(n.caller_name) AND n.caller_name CONTAINS 'org.apache.hadoop.hive.')\n   OR (exists(n.callee_class) AND n.callee_class CONTAINS 'org.apache.hadoop.hive.')\n   OR (exists(n.callee_name) AND n.callee_name CONTAINS 'org.apache.hadoop.hive.')\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {},
+      "expectZeroRows": false,
+      "targetGraphId": null,
+      "targetGraphIds": [],
+      "workloadIdentity": null,
+      "requestGraphIds": null,
+      "expectedRowCountRange": null,
+      "configuredTimeoutMillis": null,
+      "fixtureDistributionId": null
+    }
+  },
+  {
+    "index": 885,
+    "case": {
+      "id": "global-six-or-dense",
+      "family": "global",
+      "shape": "global-six-or",
+      "selectivity": "dense",
+      "operator": "contains",
+      "boundary": "single-query",
+      "projection": "distinct-six-properties",
+      "limit": 200,
+      "query": "MATCH (n)\nWHERE (exists(n.class) AND n.class CONTAINS 'get')\n   OR (exists(n.name) AND n.name CONTAINS 'get')\n   OR (exists(n.caller_class) AND n.caller_class CONTAINS 'get')\n   OR (exists(n.caller_name) AND n.caller_name CONTAINS 'get')\n   OR (exists(n.callee_class) AND n.callee_class CONTAINS 'get')\n   OR (exists(n.callee_name) AND n.callee_name CONTAINS 'get')\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {},
+      "expectZeroRows": false,
+      "targetGraphId": null,
+      "targetGraphIds": [],
+      "workloadIdentity": null,
+      "requestGraphIds": null,
+      "expectedRowCountRange": null,
+      "configuredTimeoutMillis": null,
+      "fixtureDistributionId": null
+    }
+  },
+  {
+    "index": 886,
+    "case": {
+      "id": "global-six-or-wrapped-zero",
+      "family": "global",
+      "shape": "global-six-or-wrapped",
+      "selectivity": "zero",
+      "operator": "contains",
+      "boundary": "single-query",
+      "projection": "distinct-six-properties",
+      "limit": 200,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'graphitepressureabsent43zerox'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {},
+      "expectZeroRows": true,
+      "targetGraphId": null,
+      "targetGraphIds": [],
+      "workloadIdentity": null,
+      "requestGraphIds": null,
+      "expectedRowCountRange": null,
+      "configuredTimeoutMillis": null,
+      "fixtureDistributionId": null
+    }
+  },
+  {
+    "index": 887,
+    "case": {
+      "id": "global-six-or-wrapped-targeted",
+      "family": "global",
+      "shape": "global-six-or-wrapped",
+      "selectivity": "targeted",
+      "operator": "contains",
+      "boundary": "single-query",
+      "projection": "distinct-six-properties",
+      "limit": 200,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'kotlin'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {},
+      "expectZeroRows": false,
+      "targetGraphId": null,
+      "targetGraphIds": [],
+      "workloadIdentity": null,
+      "requestGraphIds": null,
+      "expectedRowCountRange": null,
+      "configuredTimeoutMillis": null,
+      "fixtureDistributionId": null
+    }
+  },
+  {
+    "index": 888,
+    "case": {
+      "id": "global-six-or-wrapped-dense",
+      "family": "global",
+      "shape": "global-six-or-wrapped",
+      "selectivity": "dense",
+      "operator": "contains",
+      "boundary": "single-query",
+      "projection": "distinct-six-properties",
+      "limit": 200,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'set'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {},
+      "expectZeroRows": false,
+      "targetGraphId": null,
+      "targetGraphIds": [],
+      "workloadIdentity": null,
+      "requestGraphIds": null,
+      "expectedRowCountRange": null,
+      "configuredTimeoutMillis": null,
+      "fixtureDistributionId": null
+    }
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "version": "v1",
+    "head": "513e2b96d4cd5136560461d06f3b804e6aa67c41",
+    "moduleFilesBeforeHelper": 2534,
+    "compiledModuleFiles": 2535,
+    "changedFromBaseline": [
+      "internal/query/indexed_distinct.go",
+      "internal/query/main_string_candidates.go"
+    ],
+    "addedFromBaseline": [],
+    "missingFromBaseline": [],
+    "allExplicitInputsUnchanged": true,
+    "compiledModuleUnchanged": true,
+    "production": [
+      {
+        "path": "internal/query/indexed_distinct.go",
+        "size": 25218,
+        "sha256": "55ca5a6e0a88007b8ed7005eed70d12a20cd15d2905cb12ded5fa277c28ccfca"
+      },
+      {
+        "path": "internal/query/main_string_candidates.go",
+        "size": 8929,
+        "sha256": "7c0d54abf2fcece574e6f08b0ccf7b70dfccce736f8eda0b9bea9aea2ed995f6"
+      }
+    ]
+  },
+  {
+    "version": "v2",
+    "head": "513e2b96d4cd5136560461d06f3b804e6aa67c41",
+    "moduleFilesBeforeHelper": 2535,
+    "compiledModuleFiles": 2536,
+    "changedFromBaseline": [
+      "internal/query/indexed_distinct.go",
+      "internal/query/main_string_candidates.go"
+    ],
+    "addedFromBaseline": [
+      "internal/query/generic_disjunction_test.go"
+    ],
+    "missingFromBaseline": [],
+    "allExplicitInputsUnchanged": true,
+    "compiledModuleUnchanged": true,
+    "production": [
+      {
+        "path": "internal/query/indexed_distinct.go",
+        "size": 25218,
+        "sha256": "55ca5a6e0a88007b8ed7005eed70d12a20cd15d2905cb12ded5fa277c28ccfca"
+      },
+      {
+        "path": "internal/query/main_string_candidates.go",
+        "size": 8952,
+        "sha256": "92ba468a45227473e7b7dfc446e0889b4f1ac9fe1e2a8cf2958ab693296a8b35"
+      }
+    ]
+  }
+]

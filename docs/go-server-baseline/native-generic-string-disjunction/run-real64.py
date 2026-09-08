@@ -1,0 +1,49 @@
+"""Frozen complete-module replay of all original cases in three index states."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+MODULE = ROOT / 'graphite-server'
+DRIVERS = BASE.parent / 'native64-filtered-count-attempt21'
+parser = argparse.ArgumentParser()
+parser.add_argument('--output', type=Path, required=True)
+parser.add_argument('--source', type=Path, required=True)
+parser.add_argument('--suffix', required=True)
+parser.add_argument('--states', nargs='+', choices=['cold', 'warm', 'startup-prepared'],
+    default=['cold', 'warm', 'startup-prepared'])
+args = parser.parse_args()
+out, source = args.output.resolve(), args.source.resolve()
+assert not source.exists(), 'Never replace a frozen source'
+out.mkdir(exist_ok=False)
+subprocess.run(['/bin/cp', '-cRp', str(MODULE), str(source)], check=True)
+files = {str(p.relative_to(MODULE)): hashlib.sha256(p.read_bytes()).hexdigest()
+         for p in MODULE.rglob('*') if p.is_file()}
+assert all(hashlib.sha256((source / p).read_bytes()).hexdigest() == h for p, h in files.items())
+(out / 'module-source.json').write_text(json.dumps(dict(module=str(source),
+    baselineRevision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+    files=files, performanceMeasurements=0), indent=2) + '\n')
+env = dict(os.environ, PATH='/opt/homebrew/Cellar/go/1.22.0/libexec/bin:' + os.environ['PATH'],
+    GOTOOLCHAIN='local', GRAPHITE_NATIVE_MODULE=str(source), GRAPHITE_CAPTURE_BASE=str(out),
+    GRAPHITE_TRIAL_SUFFIX=args.suffix)
+steps = []
+for state in args.states:
+    command = ['python3', str(DRIVERS / 'run-state.py'), 'native', state]
+    result = subprocess.run(command, cwd=ROOT, env=env)
+    step = dict(state=state, command=command, exitCode=result.returncode)
+    steps.append(step)
+    (out / 'controller.json').write_text(json.dumps(steps, indent=2) + '\n')
+    assert result.returncode == 1, 'Preserve the original failed-query gate'
+    command = ['python3', str(DRIVERS / 'verify-state.py'), state]
+    with (out / ('verify-' + state + '.log')).open('x') as log:
+        result = subprocess.run(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
+    step.update(verifyCommand=command, verifyExitCode=result.returncode)
+    (out / 'controller.json').write_text(json.dumps(steps, indent=2) + '\n')
+    assert result.returncode == 0, 'Full case/state comparison failed'
+assert all(hashlib.sha256((source / p).read_bytes()).hexdigest() == h for p, h in files.items())
+assert all(hashlib.sha256((MODULE / p).read_bytes()).hexdigest() == h for p, h in files.items())
+print('Verified complete correctness replays:', args.states, '; source unchanged; formal warm remains unprepared', flush=True)

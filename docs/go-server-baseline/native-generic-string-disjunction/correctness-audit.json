@@ -1,0 +1,46 @@
+{
+  "baselineGoRevision": "513e2b96d4cd5136560461d06f3b804e6aa67c41",
+  "currentModuleFiles": 2535,
+  "internalGoFiles": 285,
+  "moduleMatchesAllFrozenReal64Sources": true,
+  "fullModuleChecksInputsUnchanged": 2539,
+  "states": {
+    "cold": {
+      "report": "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/cold-comparison.json",
+      "cases": {
+        "replay": 1267
+      },
+      "publicDifferences": [],
+      "stateDifferenceCounts": {},
+      "graphStateObservations": 162304
+    },
+    "warm": {
+      "report": "docs/go-server-baseline/native-generic-string-disjunction/real64/warm-startup/warm-comparison.json",
+      "cases": {
+        "warmup": 1267
+      },
+      "publicDifferences": [],
+      "stateDifferenceCounts": {},
+      "graphStateObservations": 162240
+    },
+    "startup-prepared": {
+      "report": "docs/go-server-baseline/native-generic-string-disjunction/real64/warm-startup/startup-prepared-comparison.json",
+      "cases": {
+        "replay": 1267
+      },
+      "publicDifferences": [],
+      "stateDifferenceCounts": {},
+      "graphStateObservations": 162304
+    }
+  },
+  "successfulComparisonObservations": 486848,
+  "initialColdStateFailureRetained": {
+    "mappedRangeCount": 15162
+  },
+  "initialColdConcurrentCorrectnessActivity": true,
+  "serialControlsBothStrictComparatorsPassed": true,
+  "schedulingSensitivityFullyResolved": false,
+  "formalWarmPrepared": false,
+  "performanceMeasurements": 0,
+  "perCaseP95AcceptanceProven": false
+}

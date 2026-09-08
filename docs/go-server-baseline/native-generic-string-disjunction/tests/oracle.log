@@ -1,0 +1,39 @@
+{
+  "cases": 201,
+  "publicCases": 181,
+  "directProviderCases": 20,
+  "outcomes": {
+    "SUCCESS": 149,
+    "FAILED": 52
+  },
+  "exactRepeatCases": 199,
+  "repeatOrderVariations": [
+    {
+      "name": "six-empty-1",
+      "differingFields": [
+        "rows",
+        "rowsUTF16"
+      ],
+      "rowMultisetsEqual": true,
+      "rawRowOrderPreserved": true
+    },
+    {
+      "name": "six-empty-2",
+      "differingFields": [
+        "rows",
+        "rowsUTF16"
+      ],
+      "rowMultisetsEqual": true,
+      "rawRowOrderPreserved": true
+    }
+  ],
+  "fixtureVariants": 49,
+  "fixtureFiles": 588,
+  "originalFilesPerRun": [
+    3036,
+    3036
+  ],
+  "allOriginalFilesUnchanged": true,
+  "actualMainInputsEqual": true,
+  "performanceMeasurements": 0
+}

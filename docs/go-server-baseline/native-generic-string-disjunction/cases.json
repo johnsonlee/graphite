@@ -1,0 +1,2384 @@
+[
+  {
+    "name": "original-886",
+    "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'graphitepressureabsent43zerox'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+    "parameters": {},
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false,
+    "originalCaseIndex": 886
+  },
+  {
+    "name": "original-887",
+    "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'kotlin'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+    "parameters": {},
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false,
+    "originalCaseIndex": 887
+  },
+  {
+    "name": "original-888",
+    "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'set'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+    "parameters": {},
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false,
+    "originalCaseIndex": 888
+  },
+  {
+    "name": "six-empty-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": ""
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-empty-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": ""
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-red-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-red-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-x-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-x-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-field-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "field"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-field-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "field"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-example-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-example-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-deprecated-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "deprecated"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-deprecated-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "deprecated"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-run-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "run"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-run-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "run"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-missing-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "missing"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "six-missing-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "missing"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-sid-0-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-sid-0-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-sid-0-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-sid-1-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-sid-1-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-sid-1-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-tail-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-tail-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-bad-tail-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-payload-tag-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-payload-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-payload-tag-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-payload-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-payload-id-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-payload-id"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-payload-id-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-payload-id"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-offset-missing-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-offset-missing"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-offset-missing-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-offset-missing"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-offset-negative-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-offset-negative"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-offset-negative-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-offset-negative"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-offset-wrapped-valid-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-offset-wrapped-valid"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-offset-wrapped-valid-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-offset-wrapped-valid"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-offset-wrapped-oob-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-offset-wrapped-oob"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-offset-wrapped-oob-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-offset-wrapped-oob"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-invalid-argument-tag-hit",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-invalid-argument-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-invalid-argument-tag-miss",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-invalid-argument-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-limit-0-False",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 0",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-limit-0-True",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 0",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-limit-1-False",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-limit-1-True",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-limit-2-False",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 2",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-limit-2-True",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 2",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-limit-200-False",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "enum-limit-200-True",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-sid-0-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-sid-0-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-sid-0-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-sid-1-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-sid-1-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-sid-1-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-tail-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-tail-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-bad-tail-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-payload-tag-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-payload-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-payload-tag-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-payload-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-payload-id-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-payload-id"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-payload-id-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-payload-id"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-offset-missing-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-offset-missing"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-offset-missing-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-offset-missing"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-offset-negative-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-offset-negative"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-offset-negative-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-offset-negative"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-offset-wrapped-valid-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-offset-wrapped-valid"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-offset-wrapped-valid-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-offset-wrapped-valid"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-offset-wrapped-oob-hit",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "local-offset-wrapped-oob"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-offset-wrapped-oob-miss",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "local-offset-wrapped-oob"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-limit-0-False",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 0",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-limit-0-True",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 0",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-limit-1-False",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-limit-1-True",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-limit-2-False",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 2",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-limit-2-True",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 2",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-limit-200-False",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "local-limit-200-True",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "x"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-0-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-0-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-0-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-1-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-1-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-1-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-2-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-sid-2"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-2-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-2"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-sid-2-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-2"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-tail-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-tail-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-bad-tail-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-payload-tag-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-payload-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-payload-tag-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-payload-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-payload-id-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-payload-id"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-payload-id-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-payload-id"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-offset-missing-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-offset-missing"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-offset-missing-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-offset-missing"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-offset-negative-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-offset-negative"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-offset-negative-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-offset-negative"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-offset-wrapped-valid-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-offset-wrapped-valid"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-offset-wrapped-valid-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-offset-wrapped-valid"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-offset-wrapped-oob-hit",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-offset-wrapped-oob"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-offset-wrapped-oob-miss",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-offset-wrapped-oob"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-limit-0-False",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 0",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-limit-0-True",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 0",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-limit-1-False",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-limit-1-True",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-limit-2-False",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 2",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-limit-2-True",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 2",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-limit-200-False",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "field-limit-200-True",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-0-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-0-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-0-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-bad-sid-0"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-1-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-1-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-1-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-2-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-bad-sid-2"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-2-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-bad-sid-2"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-sid-2-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-bad-sid-2"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-tail-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-tail-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-bad-tail-global-miss",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-bad-tail"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-payload-tag-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-payload-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-payload-tag-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-payload-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-payload-id-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-payload-id"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-payload-id-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-payload-id"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-offset-missing-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-offset-missing"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-offset-missing-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-offset-missing"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-offset-negative-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-offset-negative"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-offset-negative-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-offset-negative"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-offset-wrapped-valid-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-offset-wrapped-valid"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-offset-wrapped-valid-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-offset-wrapped-valid"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-offset-wrapped-oob-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-offset-wrapped-oob"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-offset-wrapped-oob-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-offset-wrapped-oob"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-invalid-value-tag-hit",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "annotation-invalid-value-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-invalid-value-tag-miss",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "annotation-invalid-value-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-limit-0-False",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 0",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-limit-0-True",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 0",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-limit-1-False",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-limit-1-True",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-limit-2-False",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 2",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-limit-2-True",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 2",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-limit-200-False",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "annotation-limit-200-True",
+    "query": "MATCH (n:Annotation) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "annotation"
+    },
+    "fixtures": [
+      "clean",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "cross-field-bad-sid-1-False-False",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-sid-1",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "cross-field-bad-sid-1-False-True",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-sid-1",
+      "clean"
+    ],
+    "scoped": true
+  },
+  {
+    "name": "cross-field-bad-sid-1-True-False",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "field-bad-sid-1"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "cross-field-bad-sid-1-True-True",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "field-bad-sid-1"
+    ],
+    "scoped": true
+  },
+  {
+    "name": "cross-enum-invalid-argument-tag-False-False",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "enum-invalid-argument-tag",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "cross-enum-invalid-argument-tag-False-True",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "enum-invalid-argument-tag",
+      "clean"
+    ],
+    "scoped": true
+  },
+  {
+    "name": "cross-enum-invalid-argument-tag-True-False",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "enum-invalid-argument-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "cross-enum-invalid-argument-tag-True-True",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "enum-invalid-argument-tag"
+    ],
+    "scoped": true
+  },
+  {
+    "name": "cross-annotation-invalid-value-tag-False-False",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "annotation-invalid-value-tag",
+      "clean"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "cross-annotation-invalid-value-tag-False-True",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "annotation-invalid-value-tag",
+      "clean"
+    ],
+    "scoped": true
+  },
+  {
+    "name": "cross-annotation-invalid-value-tag-True-False",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "annotation-invalid-value-tag"
+    ],
+    "scoped": false
+  },
+  {
+    "name": "cross-annotation-invalid-value-tag-True-True",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN n.graphId, n.id, n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 1",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean",
+      "annotation-invalid-value-tag"
+    ],
+    "scoped": true
+  },
+  {
+    "name": "unicode-0-EnumConstant",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "i\u0307"
+    },
+    "fixtures": [
+      "unicode-0"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-0-LocalVariable",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "i\u0307"
+    },
+    "fixtures": [
+      "unicode-0"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-0-Field",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "i\u0307"
+    },
+    "fixtures": [
+      "unicode-0"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-1-EnumConstant",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u03bf\u03c2"
+    },
+    "fixtures": [
+      "unicode-1"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-1-LocalVariable",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u03bf\u03c2"
+    },
+    "fixtures": [
+      "unicode-1"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-1-Field",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u03bf\u03c2"
+    },
+    "fixtures": [
+      "unicode-1"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-2-EnumConstant",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u03c3\u03bf\u03c2"
+    },
+    "fixtures": [
+      "unicode-2"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-2-LocalVariable",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u03c3\u03bf\u03c2"
+    },
+    "fixtures": [
+      "unicode-2"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-2-Field",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u03c3\u03bf\u03c2"
+    },
+    "fixtures": [
+      "unicode-2"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-3-EnumConstant",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\ud83d\ude00"
+    },
+    "fixtures": [
+      "unicode-3"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-3-LocalVariable",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\ud83d\ude00"
+    },
+    "fixtures": [
+      "unicode-3"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-3-Field",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\ud83d\ude00"
+    },
+    "fixtures": [
+      "unicode-3"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-4-EnumConstant",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\ud800"
+    },
+    "fixtures": [
+      "unicode-4"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-4-LocalVariable",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\ud800"
+    },
+    "fixtures": [
+      "unicode-4"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-4-Field",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\ud800"
+    },
+    "fixtures": [
+      "unicode-4"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-5-EnumConstant",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\udc00"
+    },
+    "fixtures": [
+      "unicode-5"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-5-LocalVariable",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\udc00"
+    },
+    "fixtures": [
+      "unicode-5"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-5-Field",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\udc00"
+    },
+    "fixtures": [
+      "unicode-5"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-6-EnumConstant",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u0000"
+    },
+    "fixtures": [
+      "unicode-6"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-6-LocalVariable",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u0000"
+    },
+    "fixtures": [
+      "unicode-6"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-6-Field",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u0000"
+    },
+    "fixtures": [
+      "unicode-6"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-7-EnumConstant",
+    "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u00e4\u00f6\u00fc"
+    },
+    "fixtures": [
+      "unicode-7"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-7-LocalVariable",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u00e4\u00f6\u00fc"
+    },
+    "fixtures": [
+      "unicode-7"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "unicode-7-Field",
+    "query": "MATCH (n:Field) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "parameters": {
+      "term": "\u00e4\u00f6\u00fc"
+    },
+    "fixtures": [
+      "unicode-7"
+    ],
+    "scoped": false,
+    "unicodeTableOrder": "original slots replaced; table may be unsorted"
+  },
+  {
+    "name": "provider-clean-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-clean-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "clean"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-bad-sid-0-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-sid-0"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-bad-sid-0-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-0"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-bad-sid-1-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-sid-1"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-bad-sid-1-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-1"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-bad-sid-2-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-bad-sid-2"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-bad-sid-2-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-bad-sid-2"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-offset-missing-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-offset-missing"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-offset-missing-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-offset-missing"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-offset-negative-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-offset-negative"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-offset-negative-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-offset-negative"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-offset-wrapped-valid-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-offset-wrapped-valid"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-offset-wrapped-valid-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-offset-wrapped-valid"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-payload-tag-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-payload-tag"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-payload-tag-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-payload-tag"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-payload-id-example",
+    "query": "",
+    "parameters": {
+      "term": "example"
+    },
+    "fixtures": [
+      "field-payload-id"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-field-payload-id-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "field-payload-id"
+    ],
+    "scoped": false,
+    "providerType": "FieldNode",
+    "providerProperties": [
+      "class",
+      "name"
+    ]
+  },
+  {
+    "name": "provider-enum-invalid-argument-tag-red",
+    "query": "",
+    "parameters": {
+      "term": "red"
+    },
+    "fixtures": [
+      "enum-invalid-argument-tag"
+    ],
+    "scoped": false,
+    "providerType": "EnumConstant",
+    "providerProperties": [
+      "name"
+    ]
+  },
+  {
+    "name": "provider-enum-invalid-argument-tag-never-matches-generic-oracle",
+    "query": "",
+    "parameters": {
+      "term": "never-matches-generic-oracle"
+    },
+    "fixtures": [
+      "enum-invalid-argument-tag"
+    ],
+    "scoped": false,
+    "providerType": "EnumConstant",
+    "providerProperties": [
+      "name"
+    ]
+  }
+]

@@ -448,55 +448,18 @@ func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan)
 	}
 	return state
 }
-func distinctGenericKindSupports(kind, property string) bool {
-	switch kind {
-	case "AnnotationNode":
-		return property == "class" || property == "name" || property == "caller_class" || property == "caller_name" || property == "callee_class" || property == "callee_name"
-	case "FieldNode":
-		return property == "class" || property == "name"
-	case "LocalVariable", "EnumConstant":
-		return property == "name"
-	}
-	return false
-}
 func (e evaluator) distinctGenericRows(source Graph, plan *indexedDistinctPlan, selected map[string]bool) []distinctProjectedRow {
 	if !plan.generic {
 		return nil
 	}
-	positions := []candidateNodePosition{}
-	for _, kind := range []string{"EnumConstant", "LocalVariable", "FieldNode", "AnnotationNode"} {
-		needed := false
-		for _, atom := range plan.atoms {
-			if distinctGenericKindSupports(kind, atom.property) {
-				needed = true
-				break
-			}
-		}
-		if !needed {
-			continue
-		}
-		for _, id := range source.Store.NodesOfKind(kind) {
-			order, err := source.Store.ProjectionNodeOrder(e.ctx, id)
-			failProjectionRead(err)
-			positions = append(positions, candidateNodePosition{id, order})
-		}
-	}
-	sort.SliceStable(positions, func(a, b int) bool { return positions[a].offset < positions[b].offset })
+	next := e.mainGenericStringCandidates(source, plan.atoms, plan.sourceCount)
 	rows := []distinctProjectedRow{}
 	seen := map[string]bool{}
-	for _, position := range positions {
+	for {
 		e.check()
-		node, err := source.Store.CandidateNode(e.ctx, position.id)
-		failProjectionRead(err)
-		matched := false
-		for _, atom := range plan.atoms {
-			if distinctGenericKindSupports(node.Kind, atom.property) && e.distinctAtomMatches(atom, NodeProperty(node, atom.property)) {
-				matched = true
-				break
-			}
-		}
-		if !matched {
-			continue
+		node, present := next(e.ctx)
+		if !present {
+			break
 		}
 		row := map[string]any{}
 		for i, property := range plan.properties {
@@ -514,7 +477,9 @@ func (e evaluator) distinctGenericRows(source Graph, plan *indexedDistinctPlan, 
 			continue
 		}
 		seen[k] = true
-		rows = append(rows, distinctProjectedRow{position.offset, row})
+		order, err := source.Store.ProjectionNodeOrder(e.ctx, node.ID)
+		failMainStringRead(err)
+		rows = append(rows, distinctProjectedRow{order, row})
 		if len(rows) >= plan.limit {
 			break
 		}

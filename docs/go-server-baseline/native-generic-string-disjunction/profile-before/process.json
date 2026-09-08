@@ -1,0 +1,40 @@
+{
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphs-relocated.tsv",
+    "--state",
+    "cold",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/observations.jsonl"
+  ],
+  "status": "exited",
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false,
+  "allRunLatenciesProfileContaminated": true,
+  "clone": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/fixture",
+  "inputsSHA256": "92f681c8c7ccec7d251ba2226106bb9eb6581a39376c526a03f388db25411629",
+  "binarySHA256": "d2ab4684b1c4176fa1f32676cb9c2dea83e0e35f1a1b0038e8e34c15c1c6c81f",
+  "manifestSHA256": "e6d6088f787e6548f17c4ca50e290c2e857f457e7e87ec50b64ffca394d37a41",
+  "mayOverlapOtherCorrectnessWork": false,
+  "serialBeforeAfterProtocol": true,
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null,
+    "GRAPHITE_DIAGNOSTIC_PROFILE_DIR": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles"
+  },
+  "pid": 4756,
+  "startedAtNanos": 1788854549411779000,
+  "startedAt": "2026-09-08T08:02:29.411806+00:00",
+  "exitCode": 1,
+  "finishedAtNanos": 1788854623765668000,
+  "finishedAt": "2026-09-08T08:03:43.765671+00:00",
+  "inputsUnchanged": true,
+  "completeModuleUnchanged": true,
+  "frozenSourceUnchanged": true,
+  "fixtureAuditPassed": true
+}

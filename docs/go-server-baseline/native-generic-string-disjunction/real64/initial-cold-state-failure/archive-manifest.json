@@ -1,0 +1,97 @@
+{
+  "performanceMeasurements": 0,
+  "terminalRuntimeCount": 1,
+  "comparisonsMustBeReadSeparately": true,
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/cold-comparison.json",
+      "sourceBytes": 1697,
+      "sourceSHA256": "d16ffbe78b79a4484f06d16bcf4f9e0070a4386477ac4dbeb1fb92f6f306897f",
+      "archive": "cold-comparison.json",
+      "archiveBytes": 1697,
+      "archiveSHA256": "d16ffbe78b79a4484f06d16bcf4f9e0070a4386477ac4dbeb1fb92f6f306897f",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/controller.json",
+      "sourceBytes": 531,
+      "sourceSHA256": "3c933e59c674b71af4f81a1b19a7a5f50b73348576308f43de7d9c5aba6f12ec",
+      "archive": "controller.json",
+      "archiveBytes": 531,
+      "archiveSHA256": "3c933e59c674b71af4f81a1b19a7a5f50b73348576308f43de7d9c5aba6f12ec",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/module-source.json",
+      "sourceBytes": 365817,
+      "sourceSHA256": "fd5be1b3fd79101e68d9c55f747aa1dae05856dd04a62f793306298b41edfd0d",
+      "archive": "module-source.json",
+      "archiveBytes": 365817,
+      "archiveSHA256": "fd5be1b3fd79101e68d9c55f747aa1dae05856dd04a62f793306298b41edfd0d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/native-cold/responses.jsonl",
+      "sourceBytes": 97903444,
+      "sourceSHA256": "c29e38a40419913810ec2746acb21850f7a62b171f917e5d5d43c762bc056a15",
+      "archive": "native-cold/responses.jsonl.gz",
+      "archiveBytes": 3272342,
+      "archiveSHA256": "9520ee80028a7c38a8d766808ad3ade8c2527b6b9c12b6cf9b6015b09763b44a",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/native-cold-inputs.json",
+      "sourceBytes": 59209,
+      "sourceSHA256": "e1dd37c49e205f4705a81996bcc02ac8a42d5236862cc35f022ae5897026e60f",
+      "archive": "native-cold-inputs.json",
+      "archiveBytes": 59209,
+      "archiveSHA256": "e1dd37c49e205f4705a81996bcc02ac8a42d5236862cc35f022ae5897026e60f",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/native-cold-postrun-fixtures.json",
+      "sourceBytes": 220,
+      "sourceSHA256": "79f99c0c82818042d45242b02b2dfeb29760a4e0de8a0389b9a33a971e4fda8d",
+      "archive": "native-cold-postrun-fixtures.json",
+      "archiveBytes": 220,
+      "archiveSHA256": "79f99c0c82818042d45242b02b2dfeb29760a4e0de8a0389b9a33a971e4fda8d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/native-cold-preflight.json",
+      "sourceBytes": 220,
+      "sourceSHA256": "79f99c0c82818042d45242b02b2dfeb29760a4e0de8a0389b9a33a971e4fda8d",
+      "archive": "native-cold-preflight.json",
+      "archiveBytes": 220,
+      "archiveSHA256": "79f99c0c82818042d45242b02b2dfeb29760a4e0de8a0389b9a33a971e4fda8d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/native-cold-process.json",
+      "sourceBytes": 1345,
+      "sourceSHA256": "682fe8fdc65ec8831e6f6c43c5f0707c366ab71d5ea834291567ad87b3b1096c",
+      "archive": "native-cold-process.json",
+      "archiveBytes": 1345,
+      "archiveSHA256": "682fe8fdc65ec8831e6f6c43c5f0707c366ab71d5ea834291567ad87b3b1096c",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/native-cold-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "archive": "native-cold-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-v1/verify-cold.log",
+      "sourceBytes": 2112,
+      "sourceSHA256": "e0450c54357d6744f63a1bde79f82d8b95a03f74eebe99e47e52d719ed8bcbcd",
+      "archive": "verify-cold.log",
+      "archiveBytes": 2112,
+      "archiveSHA256": "e0450c54357d6744f63a1bde79f82d8b95a03f74eebe99e47e52d719ed8bcbcd",
+      "decompressedBytesEqual": true
+    }
+  ]
+}

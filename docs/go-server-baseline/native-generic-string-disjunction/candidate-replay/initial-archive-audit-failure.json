@@ -1,0 +1,6 @@
+{
+  "failure": "Expected new 83-case query unit file in both captures, but root v1 ran before adding that unit file; source set proves v1 added no files and final v2 includes new unit file",
+  "executionAffected": false,
+  "correction": "Version-specific source set assertions; all existing captured files retained",
+  "secondFailure": "Initially used wrong filename generic_string_disjunction_test.go; actual added final-v2 file is generic_disjunction_test.go"
+}

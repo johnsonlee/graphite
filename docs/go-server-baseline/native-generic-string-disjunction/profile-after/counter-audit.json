@@ -1,0 +1,79 @@
+{
+  "exactBracketsIndependentlyRecomputed": true,
+  "performanceMeasurement": false,
+  "samplingDiscrepancy": "Sampled CPU totals exceed exact process Rusage brackets. They have different scopes and runtime-wait frames dominate; no OS-bug diagnosis or precise CPU-share conclusion is supported.",
+  "profiles": [
+    {
+      "id": "global-six-or-zero",
+      "index": 883,
+      "beforeTotalAlloc": 82154225536,
+      "afterTotalAlloc": 82237960928,
+      "totalAllocDelta": 83735392,
+      "processCPUMicroseconds": 6022078,
+      "sampledCPUSeconds": 73.16,
+      "cpuSamples": 7316,
+      "gcStackSamples": 0,
+      "numGCDelta": 0
+    },
+    {
+      "id": "global-six-or-targeted",
+      "index": 884,
+      "beforeTotalAlloc": 82261647792,
+      "afterTotalAlloc": 82638452408,
+      "totalAllocDelta": 376804616,
+      "processCPUMicroseconds": 6676716,
+      "sampledCPUSeconds": 72.7,
+      "cpuSamples": 7270,
+      "gcStackSamples": 0,
+      "numGCDelta": 0
+    },
+    {
+      "id": "global-six-or-dense",
+      "index": 885,
+      "beforeTotalAlloc": 82665010360,
+      "afterTotalAlloc": 82959389504,
+      "totalAllocDelta": 294379144,
+      "processCPUMicroseconds": 6396731,
+      "sampledCPUSeconds": 66.38,
+      "cpuSamples": 6638,
+      "gcStackSamples": 0,
+      "numGCDelta": 0
+    },
+    {
+      "id": "global-six-or-wrapped-zero",
+      "index": 886,
+      "beforeTotalAlloc": 82985667440,
+      "afterTotalAlloc": 83148833848,
+      "totalAllocDelta": 163166408,
+      "processCPUMicroseconds": 7344588,
+      "sampledCPUSeconds": 57.13,
+      "cpuSamples": 5713,
+      "gcStackSamples": 0,
+      "numGCDelta": 0
+    },
+    {
+      "id": "global-six-or-wrapped-targeted",
+      "index": 887,
+      "beforeTotalAlloc": 83173304632,
+      "afterTotalAlloc": 83594977568,
+      "totalAllocDelta": 421672936,
+      "processCPUMicroseconds": 11768850,
+      "sampledCPUSeconds": 49.39,
+      "cpuSamples": 4939,
+      "gcStackSamples": 240,
+      "numGCDelta": 1
+    },
+    {
+      "id": "global-six-or-wrapped-dense",
+      "index": 888,
+      "beforeTotalAlloc": 83622014272,
+      "afterTotalAlloc": 84001033472,
+      "totalAllocDelta": 379019200,
+      "processCPUMicroseconds": 7535464,
+      "sampledCPUSeconds": 48.76,
+      "cpuSamples": 4876,
+      "gcStackSamples": 0,
+      "numGCDelta": 0
+    }
+  ]
+}

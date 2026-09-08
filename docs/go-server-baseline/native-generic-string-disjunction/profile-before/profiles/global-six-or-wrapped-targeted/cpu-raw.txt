@@ -1,0 +1,394 @@
+PeriodType: cpu nanoseconds
+Period: 10000000
+Time: 2026-09-08 17:03:20.828241 +0900 KST
+Duration: 3.31
+Samples:
+samples/count cpu/nanoseconds
+          1   10000000: 1 2 3 4 5 
+       3247 32470000000: 6 7 8 9 10 11 12 13 
+        333 3330000000: 14 15 16 17 18 11 12 13 
+          1   10000000: 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 
+          6   60000000: 36 37 38 39 40 41 42 43 
+          1   10000000: 44 45 46 47 30 31 32 33 34 35 
+          1   10000000: 48 30 31 32 33 34 35 
+          1   10000000: 49 50 51 47 30 31 32 33 34 35 
+          1   10000000: 52 30 31 32 33 34 35 
+          1   10000000: 36 37 38 39 40 53 54 
+         73  730000000: 6 55 56 57 58 59 60 61 62 63 64 
+         39  390000000: 6 55 65 66 67 68 60 61 62 63 64 
+          1   10000000: 14 15 69 65 66 67 68 60 61 62 63 64 
+          1   10000000: 14 15 69 56 57 58 59 60 61 62 63 64 
+          3   30000000: 6 55 70 18 11 12 13 
+          3   30000000: 44 71 72 73 63 64 
+          1   10000000: 74 23 24 27 28 29 73 63 64 
+          1   10000000: 19 20 21 75 76 24 26 25 25 26 26 27 28 29 73 63 64 
+          1   10000000: 77 20 21 22 23 24 25 25 26 26 25 25 25 26 26 26 27 28 29 73 63 64 
+          1   10000000: 78 21 22 23 24 25 25 25 26 25 25 25 26 26 26 26 27 28 29 73 63 64 
+          1   10000000: 19 20 21 22 76 24 27 28 29 73 63 64 
+          1   10000000: 79 75 76 24 26 26 26 26 26 26 25 26 26 26 25 25 26 26 27 28 29 73 63 64 
+          1   10000000: 80 81 25 25 25 25 26 26 26 26 25 25 25 26 26 26 25 26 27 28 29 73 63 64 
+          1   10000000: 78 21 22 23 24 26 25 26 26 26 26 25 26 25 27 28 29 73 63 64 
+        422 4220000000: 6 55 56 57 58 59 82 83 73 63 64 
+        272 2720000000: 6 55 65 66 67 68 84 83 73 63 64 
+          1   10000000: 85 24 26 26 25 26 25 26 25 27 28 29 73 63 64 
+        226 2260000000: 6 55 65 66 67 68 82 83 73 63 64 
+         19  190000000: 14 15 69 56 57 58 59 84 83 73 63 64 
+        508 5080000000: 6 55 56 57 58 59 84 83 73 63 64 
+          3   30000000: 36 37 86 87 66 67 68 84 83 73 63 64 
+          1   10000000: 88 89 90 83 73 63 64 
+          4   40000000: 91 68 82 83 73 63 64 
+         17  170000000: 14 15 69 56 57 58 59 82 83 73 63 64 
+          3   30000000: 92 93 94 47 73 63 64 
+          9   90000000: 14 15 69 65 66 67 68 82 83 73 63 64 
+          1   10000000: 95 96 97 93 94 47 73 63 64 
+          1   10000000: 98 99 89 90 83 73 63 64 
+          4   40000000: 14 15 69 100 11 12 13 
+          1   10000000: 101 66 67 68 82 83 73 63 64 
+         10  100000000: 6 55 102 11 12 13 
+         37  370000000: 6 55 100 11 12 13 
+          8   80000000: 14 15 69 65 66 67 68 84 83 73 63 64 
+          1   10000000: 6 55 56 57 58 59 103 104 105 106 62 63 64 
+          1   10000000: 6 55 56 57 58 59 107 108 109 110 62 63 64 
+          2   20000000: 111 71 72 73 63 64 
+          1   10000000: 112 113 28 29 73 63 64 
+          2   20000000: 6 55 114 115 54 
+          1   10000000: 116 23 24 25 25 25 26 26 27 28 29 73 63 64 
+          1   10000000: 117 73 63 64 
+          1   10000000: 118 20 21 22 23 24 26 26 26 26 25 25 26 26 25 25 25 27 28 29 73 63 64 
+          1   10000000: 79 119 23 24 26 25 26 25 26 25 25 26 25 27 28 29 73 63 64 
+          1   10000000: 79 119 23 24 26 26 27 28 29 73 63 64 
+          1   10000000: 120 121 94 47 73 63 64 
+          1   10000000: 122 94 47 73 63 64 
+          1   10000000: 123 124 89 90 83 73 63 64 
+          3   30000000: 125 126 90 83 73 63 64 
+          2   20000000: 6 55 127 128 129 54 
+          1   10000000: 36 37 86 130 131 13 
+          1   10000000: 132 10 11 12 13 
+          2   20000000: 36 37 38 39 40 133 134 12 13 
+          3   30000000: 91 68 84 83 73 63 64 
+          1   10000000: 135 136 137 28 29 73 63 64 
+          1   10000000: 19 20 21 119 23 24 26 25 25 26 26 26 26 25 27 28 29 73 63 64 
+          1   10000000: 138 68 84 83 73 63 64 
+          2   20000000: 139 68 84 83 73 63 64 
+          1   10000000: 6 55 56 57 58 59 140 105 106 62 63 64 
+          1   10000000: 141 142 143 72 73 63 64 
+          4   40000000: 36 37 38 39 40 128 129 54 
+          1   10000000: 78 21 22 23 24 26 25 27 28 29 73 63 64 
+          7   70000000: 139 68 82 83 73 63 64 
+          2   20000000: 78 21 75 23 24 27 28 29 73 63 64 
+          1   10000000: 144 126 90 83 73 63 64 
+          1   10000000: 145 71 72 73 63 64 
+          1   10000000: 146 147 143 72 73 63 64 
+          1   10000000: 148 149 90 83 73 63 64 
+          1   10000000: 150 59 82 83 73 63 64 
+          1   10000000: 151 84 83 73 63 64 
+          1   10000000: 152 72 73 63 64 
+          1   10000000: 153 121 94 47 73 63 64 
+          1   10000000: 78 21 75 23 24 26 25 27 28 29 73 63 64 
+          1   10000000: 154 155 156 157 158 159 160 73 63 64 
+          1   10000000: 36 37 86 87 66 67 68 82 83 73 63 64 
+          1   10000000: 161 162 51 47 73 63 64 
+          1   10000000: 163 66 67 68 82 83 73 63 64 
+          2   20000000: 164 82 83 73 63 64 
+          5   50000000: 111 165 143 72 73 63 64 
+          1   10000000: 6 55 166 167 168 115 54 
+          1   10000000: 164 60 61 62 63 64 
+          1   10000000: 169 71 72 73 63 64 
+          2   20000000: 164 84 83 73 63 64 
+          1   10000000: 170 68 82 83 73 63 64 
+          1   10000000: 79 75 23 24 25 26 26 25 26 27 28 29 73 63 64 
+          1   10000000: 74 23 24 26 26 27 28 29 73 63 64 
+          1   10000000: 171 94 172 62 63 64 
+          1   10000000: 173 45 121 94 47 73 63 64 
+          1   10000000: 174 24 27 28 29 73 63 64 
+          1   10000000: 175 137 28 29 73 63 64 
+          1   10000000: 92 46 47 73 63 64 
+          1   10000000: 176 177 83 73 63 64 
+          1   10000000: 178 179 83 73 63 64 
+          1   10000000: 180 121 94 172 62 63 64 
+          1   10000000: 19 20 21 119 23 24 27 28 29 73 63 64 
+          1   10000000: 181 23 24 26 25 26 27 28 29 73 63 64 
+          1   10000000: 182 183 124 89 90 83 73 63 64 
+          1   10000000: 184 71 72 73 63 64 
+          1   10000000: 74 23 24 25 25 26 26 26 26 26 25 25 25 26 27 28 29 73 63 64 
+          1   10000000: 185 143 72 73 63 64 
+          1   10000000: 186 187 188 11 12 13 
+          1   10000000: 189 190 90 83 73 63 64 
+          1   10000000: 191 143 72 73 63 64 
+          1   10000000: 79 119 23 24 26 26 26 25 26 25 26 27 28 29 73 63 64 
+          1   10000000: 192 71 72 73 63 64 
+          1   10000000: 193 94 172 62 63 64 
+          1   10000000: 92 121 94 47 73 63 64 
+          1   10000000: 194 195 90 83 73 63 64 
+          1   10000000: 36 37 86 87 66 67 68 60 61 62 63 64 
+          1   10000000: 196 158 197 198 199 73 63 64 
+          1   10000000: 116 23 24 26 27 28 29 73 63 64 
+          1   10000000: 200 73 63 64 
+          1   10000000: 74 23 24 26 25 26 25 26 26 25 25 27 28 29 73 63 64 
+          1   10000000: 120 201 73 63 64 
+          1   10000000: 36 37 86 202 115 54 
+          1   10000000: 203 47 73 63 64 
+          1   10000000: 204 205 206 198 199 73 63 64 
+          1   10000000: 207 208 209 89 90 83 73 63 64 
+          1   10000000: 210 208 211 124 89 90 83 73 63 64 
+Locations
+     1: 0x100f2fabb M=1 runtime/pprof.mach_vm_region /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:583 s=557
+     2: 0x100fbcfdf M=1 runtime/pprof.machVMInfo /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/pprof/vminfo_darwin.go:25 s=18
+     3: 0x100fba90b M=1 runtime/pprof.(*profileBuilder).readMapping /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/pprof/proto_darwin.go:16 s=15
+     4: 0x100fb7dc7 M=1 runtime/pprof.newProfileBuilder /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/pprof/proto.go:270 s=259
+     5: 0x100fb4ea3 M=1 runtime/pprof.profileWriter /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/pprof/pprof.go:846 s=845
+     6: 0x100f1e0cb M=1 runtime.usleep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:302 s=301
+     7: 0x100f0db67 M=1 runtime.runqgrab /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:6835 s=6813
+     8: 0x100f0dcff M=1 runtime.runqsteal /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:6870 s=6868
+     9: 0x100f057bb M=1 runtime.stealWork /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3600 s=3544
+    10: 0x100f043e3 M=1 runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3254 s=3139
+    11: 0x100f06367 M=1 runtime.schedule /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3868 s=3839
+    12: 0x100f069ff M=1 runtime.park_m /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4036 s=4007
+    13: 0x100f30a73 M=1 runtime.mcall /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:192 s=166
+    14: 0x100f1e5bf M=1 runtime.pthread_cond_wait /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:507 s=506
+    15: 0x100ef9033 M=1 runtime.semasleep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/os_darwin.go:71 s=39
+    16: 0x100ecf657 M=1 runtime.notesleep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:183 s=167
+    17: 0x100f02f93 M=1 runtime.mPark /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:1761 s=1759
+             runtime.stopm /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:2782 s=2766
+    18: 0x100f04f1f M=1 runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3512 s=3139
+    19: 0x100f33710 M=1 runtime.memmove /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/memmove_arm64.s:30 s=29
+    20: 0x100ed7127 M=1 runtime.typedmemmove /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbarrier.go:169 s=152
+    21: 0x100f2ce7f M=1 reflect.typedmemmove /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbarrier.go:216 s=203
+             internal/reflectlite.typedmemmove /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbarrier.go:221 s=220
+    22: 0x100f36a3f M=1 internal/reflectlite.Swapper.func9 /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/swapper.go:75 s=68
+    23: 0x100f6f4cf M=1 sort.swapRange_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:331 s=329
+             sort.rotate_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:470 s=464
+    24: 0x100f6f1b3 M=1 sort.symMerge_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:450 s=378
+    25: 0x100f6f223 M=1 sort.symMerge_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:456 s=378
+    26: 0x100f6f1ef M=1 sort.symMerge_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:453 s=378
+    27: 0x100f6f01f M=1 sort.stable_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:353 s=335
+    28: 0x100f6dccb M=1 sort.SliceStable /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/slice.go:44 s=41
+    29: 0x1010edb9f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:484 s=462
+    30: 0x1010ed40f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourcePrefix /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:435 s=408
+    31: 0x1010ea597 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:122 s=68
+    32: 0x1010cd93b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/engine.go:187 s=173
+    33: 0x1010cc963 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/engine.go:108 s=60
+    34: 0x1010cc277 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCrossWithOptions /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/engine.go:57 s=42
+    35: 0x10113b7af M=1 main.newWorker.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/cmd/graphite-benchmark-latency/main.go:49 s=46
+    36: 0x100f1e63f M=1 runtime.pthread_cond_signal /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:528 s=527
+    37: 0x100ef9187 M=1 runtime.semawakeup /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/os_darwin.go:84 s=77
+    38: 0x100ecf563 M=1 runtime.notewakeup /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:163 s=144
+    39: 0x100f03223 M=1 runtime.startm /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:2895 s=2809
+    40: 0x100f03913 M=1 runtime.wakep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3006 s=2975
+    41: 0x100f06bff M=1 runtime.goschedImpl /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4062 s=4039
+    42: 0x100f18dbb M=1 runtime.gopreempt_m /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4082 s=4081
+             runtime.newstack /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/stack.go:1070 s=962
+    43: 0x100f30c0f M=1 runtime.morestack /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:341 s=301
+    44: 0x100f52140 M=1 context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:438 s=438
+    45: 0x1010d2797 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/eval.go:62 s=60
+    46: 0x1010e9caf M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:57 s=44
+    47: 0x1010ee347 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:493 s=462
+    48: 0x1010ee274 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:493 s=462
+    49: 0x100f560e0 M=1 unicode/utf8.ValidString /opt/homebrew/Cellar/go/1.22.0/libexec/src/unicode/utf8/utf8.go:528 s=528
+    50: 0x101123a97 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringPredicate /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/string_predicate.go:17 s=10
+    51: 0x1010e9d03 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:58 s=44
+    52: 0x1010edee8 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:492 s=462
+    53: 0x100f08acf M=1 runtime.newproc.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4884 s=4877
+    54: 0x100f30b0b M=1 runtime.systemstack /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:243 s=206
+    55: 0x100ecf273 M=1 runtime.osyield /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/os_darwin.go:362 s=361
+             runtime.lock2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:77 s=42
+    56: 0x100f129cf M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.semrelease1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:187 s=175
+    57: 0x100f2eb1b M=1 sync.runtime_Semrelease /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:72 s=71
+    58: 0x100f3bcbf M=1 sync.(*Mutex).unlockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:246 s=227
+    59: 0x100f52503 M=1 sync.(*Mutex).Unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:223 s=212
+             context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:456 s=453
+    60: 0x1010920eb M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionString /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:226 s=220
+    61: 0x1010f19ef M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:803 s=780
+    62: 0x1010eed43 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:571 s=527
+    63: 0x1010eb1c3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func4 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:171 s=167
+    64: 0x101130c83 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[string]bool].func1.1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:232 s=229
+    65: 0x100f1271b M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.semacquire1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:148 s=114
+    66: 0x100f2eb77 M=1 sync.runtime_SemacquireMutex /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:77 s=76
+    67: 0x100f3b9f3 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:171 s=117
+    68: 0x100f524a3 M=1 sync.(*Mutex).Lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:90 s=81
+             context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:454 s=453
+    69: 0x100ecf30b M=1 runtime.lock2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:95 s=42
+    70: 0x100f02f5b M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.stopm /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:2779 s=2766
+    71: 0x101091343 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:120 s=110
+    72: 0x1010ee8c7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:479 s=462
+    73: 0x1010eef1b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:669 s=527
+    74: 0x100f369dc M=1 internal/reflectlite.Swapper.func9 /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/swapper.go:69 s=68
+    75: 0x100f36a2f M=1 internal/reflectlite.Swapper.func9 /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/swapper.go:74 s=68
+    76: 0x100f6f483 M=1 sort.swapRange_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:331 s=329
+             sort.rotate_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:473 s=464
+    77: 0x100f3375c M=1 runtime.memmove /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/memmove_arm64.s:58 s=29
+    78: 0x100ed7128 M=1 runtime.typedmemmove /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbarrier.go:173 s=152
+    79: 0x100f2ce60 M=1 internal/reflectlite.typedmemmove /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbarrier.go:220 s=220
+    80: 0x100f36a50 M=1 internal/reflectlite.Swapper.func9 /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/swapper.go:77 s=68
+    81: 0x100f6f29f M=1 sort.symMerge_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:422 s=378
+    82: 0x10108d073 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/candidate_certificate.go:25 s=16
+    83: 0x1010edcb3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:489 s=462
+    84: 0x10108cfd7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/candidate_certificate.go:17 s=16
+    85: 0x100f6f4e8 M=1 sort.swapRange_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:331 s=329
+             sort.rotate_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:470 s=464
+    86: 0x100ecf463 M=1 runtime.unlock2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:124 s=109
+    87: 0x100f12853 M=1 runtime.unlockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:34 s=33
+             runtime.unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:103 s=102
+             runtime.semacquire1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:154 s=114
+    88: 0x10108f314 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:289 s=279
+    89: 0x1010a360b M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/store.go:306 s=286
+    90: 0x10108d0e7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/candidate_certificate.go:28 s=16
+    91: 0x100f3b89c M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:122 s=117
+    92: 0x1010d2790 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/eval.go:62 s=60
+    93: 0x100fbe3e7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/javastring/unicode.go:29 s=10
+    94: 0x1010e9b93 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/java_string.go:14 s=14
+             github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:50 s=44
+    95: 0x100ec9b2c M=1 runtime.chanrecv /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:489 s=457
+    96: 0x100eca3cb M=1 runtime.selectnbrecv /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:714 s=713
+    97: 0x1010d27a3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/eval.go:62 s=60
+    98: 0x10108e494 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:168 s=159
+    99: 0x10108f513 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:312 s=279
+   100: 0x100f0458f M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3322 s=3139
+   101: 0x100f1288c M=1 runtime.cansemacquire /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:256 s=254
+             runtime.semacquire1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:161 s=114
+   102: 0x100f0472b M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3398 s=3139
+   103: 0x101089bd7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).readLock /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/callsite_index.go:323 s=314
+   104: 0x101089eb3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/callsite_index.go:337 s=336
+   105: 0x10109381b M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).Directory /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:432 s=430
+   106: 0x1010f0b3b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:800 s=780
+   107: 0x101089aff M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).readLock /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/callsite_index.go:315 s=314
+   108: 0x10108a2c7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Postings /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/callsite_index.go:364 s=363
+   109: 0x101093e03 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).Postings /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:455 s=453
+   110: 0x1010f1637 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:850 s=780
+   111: 0x100f52174 M=1 sync/atomic.(*Value).Load /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/atomic/value.go:30 s=28
+             context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:439 s=438
+   112: 0x100f6f17c M=1 sort.symMerge_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:453 s=378
+   113: 0x100f6f053 M=1 sort.stable_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:348 s=335
+   114: 0x100eed253 M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.(*mheap).allocSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1210 s=1171
+   115: 0x100eecd8b M=1 runtime.(*mheap).alloc.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:964 s=958
+   116: 0x100f36a14 M=1 internal/reflectlite.add /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/type.go:395 s=394
+             internal/reflectlite.arrayAt /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/value.go:465 s=464
+             internal/reflectlite.Swapper.func9 /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/swapper.go:73 s=68
+   117: 0x1010ee890 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:478 s=462
+   118: 0x100f33748 M=1 runtime.memmove /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/memmove_arm64.s:53 s=29
+   119: 0x100f36a4f M=1 internal/reflectlite.Swapper.func9 /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/swapper.go:76 s=68
+   120: 0x1010d276c M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/eval.go:60 s=60
+   121: 0x100fbe2f7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/javastring/unicode.go:36 s=10
+   122: 0x100fbe294 M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/javastring/unicode.go:24 s=10
+   123: 0x10108e980 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:203 s=195
+   124: 0x10108f533 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:314 s=279
+   125: 0x100ed4404 M=1 runtime.mapaccess2_fast32 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/map_fast32.go:85 s=53
+   126: 0x1010a33bb M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/store.go:294 s=286
+   127: 0x100f0384f M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.wakep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:2990 s=2975
+   128: 0x100eff9a3 M=1 runtime.ready /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:970 s=952
+   129: 0x100f12577 M=1 runtime.readyWithTime.goready.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:413 s=412
+   130: 0x100f06787 M=1 runtime.unlockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:34 s=33
+             runtime.unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:103 s=102
+             runtime.parkunlock_c /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4002 s=4001
+   131: 0x100f068f7 M=1 runtime.park_m /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4023 s=4007
+   132: 0x100f05638 M=1 runtime.stealWork /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3551 s=3544
+   133: 0x100f05f03 M=1 runtime.resetspinning /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3750 s=3737
+   134: 0x100f063db M=1 runtime.schedule /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3886 s=3839
+   135: 0x1010ee9e8 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:484 s=484
+   136: 0x100f6dfbf M=1 sort.insertionSort_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:12 s=10
+   137: 0x100f6efa3 M=1 sort.stable_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:339 s=335
+   138: 0x100f3ba28 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:173 s=117
+   139: 0x100f3b988 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:162 s=117
+   140: 0x10108a06f M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/callsite_index.go:349 s=336
+   141: 0x100f3d244 M=1 sync/atomic.(*Int32).Add /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/atomic/type.go:88 s=88
+             sync.(*RWMutex).Unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/rwmutex.go:205 s=197
+   142: 0x101090feb M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:69 s=55
+   143: 0x1010912ab M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:111 s=110
+   144: 0x100ed43e4 M=1 runtime.mapaccess2_fast32 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/map_fast32.go:84 s=53
+   145: 0x100f521d0 M=1 context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:441 s=438
+   146: 0x100f3d0d0 M=1 sync.(*RWMutex).Lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/rwmutex.go:140 s=140
+   147: 0x101090d77 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:56 s=55
+   148: 0x100f3334c M=1 runtime.duffzero /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/duff_arm64.s:71 s=7
+   149: 0x1010a341b M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.newMappedNodeDecoder /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:105 s=104
+             github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/store.go:300 s=286
+   150: 0x100f3bc60 M=1 sync.(*Mutex).unlockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:240 s=227
+   151: 0x100f5245c M=1 sync.(*Mutex).Lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:83 s=81
+             context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:454 s=453
+   152: 0x10109132c M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:116 s=110
+   153: 0x1010d2770 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/eval.go:60 s=60
+   154: 0x100ed8c1c M=1 runtime.(*mspan).heapBits /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:722 s=708
+   155: 0x100ed8dd3 M=1 runtime.(*mspan).writeHeapBitsSmall /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:806 s=786
+   156: 0x100ed904b M=1 runtime.heapSetType /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:863 s=854
+   157: 0x100ed0e7f M=1 runtime.mallocgc /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:1183 s=971
+   158: 0x100ece427 M=1 runtime.convTstring /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/iface.go:392 s=388
+   159: 0x10111631f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/properties.go:52 s=9
+   160: 0x1010ee2af M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:493 s=462
+   161: 0x100f56150 M=1 unicode/utf8.ValidString /opt/homebrew/Cellar/go/1.22.0/libexec/src/unicode/utf8/utf8.go:545 s=528
+   162: 0x101123a7f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringPredicate /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/string_predicate.go:17 s=10
+   163: 0x100f125dc M=1 runtime.cansemacquire /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:260 s=254
+             runtime.semacquire1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:121 s=114
+   164: 0x100f524d0 M=1 sync.(*Mutex).Unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:219 s=212
+             context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:456 s=453
+   165: 0x101090dbb M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:62 s=55
+   166: 0x100eef01f M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.newMarkBits /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:2154 s=2142
+   167: 0x100eed907 M=1 runtime.(*mheap).initSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1413 s=1377
+   168: 0x100eed517 M=1 runtime.(*mheap).allocSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1340 s=1171
+   169: 0x100f521b4 M=1 context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:441 s=438
+   170: 0x100f3b9b0 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:197 s=117
+   171: 0x100fbe28c M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/javastring/unicode.go:24 s=10
+   172: 0x1010f1b07 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:806 s=780
+   173: 0x100f5217c M=1 sync/atomic.(*Value).Load /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/atomic/value.go:31 s=28
+             context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:439 s=438
+   174: 0x100f6f4b4 M=1 sort.swapRange_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:331 s=329
+             sort.rotate_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:470 s=464
+   175: 0x100f6dfd8 M=1 sort.insertionSort_func /opt/homebrew/Cellar/go/1.22.0/libexec/src/sort/zsortfunc.go:12 s=10
+   176: 0x100f33334 M=1 runtime.duffzero /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/duff_arm64.s:65 s=7
+   177: 0x10108d0d3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/candidate_certificate.go:28 s=16
+   178: 0x100f334c8 M=1 runtime.duffcopy /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/duff_arm64.s:210 s=74
+   179: 0x10108d123 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/candidate_certificate.go:28 s=16
+   180: 0x1010d2740 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/eval.go:60 s=60
+   181: 0x100f36a48 M=1 internal/reflectlite.Swapper.func9 /opt/homebrew/Cellar/go/1.22.0/libexec/src/internal/reflectlite/swapper.go:76 s=68
+   182: 0x10108e2d0 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).count /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:153 s=151
+   183: 0x10108e89b M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:197 s=195
+   184: 0x100f52178 M=1 sync/atomic.(*Value).Load /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/atomic/value.go:31 s=28
+             context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:439 s=438
+   185: 0x101090fe4 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:69 s=55
+   186: 0x100f1e48f M=1 runtime.kevent /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:458 s=457
+   187: 0x100ef8c9f M=1 runtime.netpoll /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/netpoll_kqueue.go:141 s=121
+   188: 0x100f0492b M=1 runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3470 s=3139
+   189: 0x100f33560 M=1 runtime.duffcopy /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/duff_arm64.s:267 s=74
+   190: 0x1010a370f M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/store.go:313 s=286
+   191: 0x101090d30 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/distinct_projection.go:55 s=55
+   192: 0x100f52188 M=1 sync/atomic.(*Value).Load /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/atomic/value.go:31 s=28
+             context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:439 s=438
+   193: 0x100fbe280 M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/javastring/unicode.go:24 s=10
+   194: 0x100f33510 M=1 runtime.duffcopy /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/duff_arm64.s:237 s=74
+   195: 0x1010a3623 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/store.go:306 s=286
+   196: 0x100ed0c38 M=1 runtime.nextFreeFast /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:912 s=911
+             runtime.mallocgc /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:1147 s=971
+   197: 0x10112f553 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.key /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/values.go:453 s=402
+   198: 0x1010ea00b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.distinctVisibleKey /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:66 s=63
+   199: 0x1010edd73 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:512 s=462
+   200: 0x1010edeb0 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:492 s=462
+   201: 0x1010edc83 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:488 s=462
+   202: 0x100eed303 M=1 runtime.unlockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:34 s=33
+             runtime.unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:103 s=102
+             runtime.(*mheap).allocSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1262 s=1171
+   203: 0x1010e9cd0 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/indexed_distinct.go:58 s=44
+   204: 0x100f5ddfc M=1 strconv.appendEscapedRune /opt/homebrew/Cellar/go/1.22.0/libexec/src/strconv/quote.go:69 s=68
+   205: 0x100f5dc1b M=1 strconv.appendQuotedWith /opt/homebrew/Cellar/go/1.22.0/libexec/src/strconv/quote.go:52 s=31
+   206: 0x10112f507 M=1 strconv.quoteWith /opt/homebrew/Cellar/go/1.22.0/libexec/src/strconv/quote.go:24 s=23
+             strconv.Quote /opt/homebrew/Cellar/go/1.22.0/libexec/src/strconv/quote.go:126 s=125
+             github.com/johnsonlee/graphite/graphite-server/internal/query.key /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/query/values.go:453 s=402
+   207: 0x10108e1ec M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).scalarBytes /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:119 s=107
+   208: 0x10108e3d3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:138 s=137
+             github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:160 s=159
+   209: 0x10108f523 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:313 s=279
+   210: 0x10108e100 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).scalarBytes /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:114 s=107
+   211: 0x10108e867 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/source/internal/store/decode.go:196 s=195
+Mappings
+1: 0x100ec4000/0x1011cc000/0x0 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile  [FN]

@@ -1,0 +1,7933 @@
+{
+  "performanceMeasurements": 0,
+  "cases": 201,
+  "publicCases": 181,
+  "providerWrapperControls": 20,
+  "diagnosticsComparison": "unavailable: Go lacks original diagnostics API; no diagnostics values suppressed or fabricated in source main captures",
+  "providerScope": "Go mainStringCandidates includes merge/order checks absent from the private original provider API; matching controls are bounded payload evidence, not exact API fidelity",
+  "fixtureOriginalChanged": [],
+  "fixtureAdded": [
+    {
+      "path": "annotation-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "annotation-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "annotation-bad-sid-2-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "annotation-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "enum-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "enum-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "enum-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "field-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "field-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "field-bad-sid-2-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "local-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "local-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "local-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "original-886/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "original-887/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "original-888/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-deprecated-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-example-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-field-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-missing-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-red-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-run-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    }
+  ],
+  "sourceUnchanged": true,
+  "comparisons": [
+    {
+      "reference": "main",
+      "matches": {
+        "public": 157,
+        "providerWrapper": 19
+      },
+      "differences": [
+        {
+          "name": "six-empty-1",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": null
+              },
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  82,
+                  69,
+                  68
+                ]
+              },
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  120
+                ]
+              },
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  102,
+                  105,
+                  101,
+                  108,
+                  100
+                ]
+              },
+              {
+                "n.callee_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.callee_name": [
+                  99,
+                  97,
+                  108,
+                  108,
+                  101,
+                  101
+                ],
+                "n.caller_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.caller_name": [
+                  114,
+                  117,
+                  110
+                ],
+                "n.class": null,
+                "n.name": null
+              },
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  65,
+                  110,
+                  110,
+                  111,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  65,
+                  110,
+                  110,
+                  111,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  102,
+                  105,
+                  101,
+                  108,
+                  100
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": null,
+                "n.name": null,
+                "n.caller_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.caller_name": [
+                  114,
+                  117,
+                  110
+                ],
+                "n.callee_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.callee_name": [
+                  99,
+                  97,
+                  108,
+                  108,
+                  101,
+                  101
+                ]
+              },
+              {
+                "n.class": null,
+                "n.name": [
+                  82,
+                  69,
+                  68
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": null,
+                "n.name": [
+                  120
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "six-empty-2",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "z-first",
+                "mappedView": false,
+                "retained": false
+              },
+              {
+                "id": "a-second",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "z-first",
+                "mappedView": false,
+                "retained": false
+              },
+              {
+                "id": "a-second",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": null
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  82,
+                  69,
+                  68
+                ]
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  120
+                ]
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  102,
+                  105,
+                  101,
+                  108,
+                  100
+                ]
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.callee_name": [
+                  99,
+                  97,
+                  108,
+                  108,
+                  101,
+                  101
+                ],
+                "n.caller_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.caller_name": [
+                  114,
+                  117,
+                  110
+                ],
+                "n.class": null,
+                "n.name": null
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  65,
+                  110,
+                  110,
+                  111,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "z-first",
+                "retained": false,
+                "mappedView": false
+              },
+              {
+                "id": "a-second",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "z-first",
+                "retained": false,
+                "mappedView": false
+              },
+              {
+                "id": "a-second",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  65,
+                  110,
+                  110,
+                  111,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  102,
+                  105,
+                  101,
+                  108,
+                  100
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": null,
+                "n.name": null,
+                "n.caller_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.caller_name": [
+                  114,
+                  117,
+                  110
+                ],
+                "n.callee_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.callee_name": [
+                  99,
+                  97,
+                  108,
+                  108,
+                  101,
+                  101
+                ],
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": null,
+                "n.name": [
+                  82,
+                  69,
+                  68
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": null,
+                "n.name": [
+                  120
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "enum-bad-sid-0-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "enum-bad-sid-1-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "ArrayIndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              111,
+              117,
+              116,
+              32,
+              111,
+              102,
+              32,
+              98,
+              111,
+              117,
+              110,
+              100,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              110,
+              103,
+              116,
+              104,
+              32,
+              50,
+              49
+            ]
+          }
+        },
+        {
+          "name": "enum-bad-tail-hit",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              51,
+              51,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              51,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          }
+        },
+        {
+          "name": "enum-bad-tail-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              110,
+              111,
+              100,
+              101,
+              32,
+              49,
+              52,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              51,
+              51,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "local-bad-sid-0-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "ArrayIndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              111,
+              117,
+              116,
+              32,
+              111,
+              102,
+              32,
+              98,
+              111,
+              117,
+              110,
+              100,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              110,
+              103,
+              116,
+              104,
+              32,
+              50,
+              49
+            ]
+          }
+        },
+        {
+          "name": "local-bad-sid-1-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "local-bad-tail-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "field-bad-sid-0-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "ArrayIndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              111,
+              117,
+              116,
+              32,
+              111,
+              102,
+              32,
+              98,
+              111,
+              117,
+              110,
+              100,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              110,
+              103,
+              116,
+              104,
+              32,
+              50,
+              49
+            ]
+          }
+        },
+        {
+          "name": "field-bad-sid-1-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "ArrayIndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              111,
+              117,
+              116,
+              32,
+              111,
+              102,
+              32,
+              98,
+              111,
+              117,
+              110,
+              100,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              110,
+              103,
+              116,
+              104,
+              32,
+              50,
+              49
+            ]
+          }
+        },
+        {
+          "name": "field-bad-sid-2-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "field-bad-tail-hit",
+          "scope": "public",
+          "fields": [
+            "after",
+            "before",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "phase"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "after": [],
+            "phase": "load",
+            "error": "Go:*fmt.wrapError",
+            "nullMessage": false,
+            "errorUTF16": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              46,
+              110,
+              111,
+              100,
+              101,
+              105,
+              110,
+              100,
+              101,
+              120,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              110,
+              111,
+              100,
+              101,
+              32,
+              105,
+              110,
+              100,
+              101,
+              120,
+              32,
+              114,
+              101,
+              99,
+              111,
+              114,
+              100,
+              32,
+              105,
+              100,
+              61,
+              50,
+              48,
+              32,
+              116,
+              97,
+              103,
+              61,
+              49,
+              48,
+              32,
+              111,
+              102,
+              102,
+              115,
+              101,
+              116,
+              61,
+              49,
+              55,
+              48
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "EOFException",
+            "nullMessage": true,
+            "errorUTF16": []
+          }
+        },
+        {
+          "name": "field-bad-tail-miss",
+          "scope": "public",
+          "fields": [
+            "after",
+            "before",
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "phase",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "after": [],
+            "phase": "load",
+            "error": "Go:*fmt.wrapError",
+            "nullMessage": false,
+            "errorUTF16": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              46,
+              110,
+              111,
+              100,
+              101,
+              105,
+              110,
+              100,
+              101,
+              120,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              110,
+              111,
+              100,
+              101,
+              32,
+              105,
+              110,
+              100,
+              101,
+              120,
+              32,
+              114,
+              101,
+              99,
+              111,
+              114,
+              100,
+              32,
+              105,
+              100,
+              61,
+              50,
+              48,
+              32,
+              116,
+              97,
+              103,
+              61,
+              49,
+              48,
+              32,
+              111,
+              102,
+              102,
+              115,
+              101,
+              116,
+              61,
+              49,
+              55,
+              48
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "field-bad-tail-global-miss",
+          "scope": "public",
+          "fields": [
+            "after",
+            "before",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "phase"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "after": [],
+            "phase": "load",
+            "error": "Go:*fmt.wrapError",
+            "nullMessage": false,
+            "errorUTF16": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              46,
+              110,
+              111,
+              100,
+              101,
+              105,
+              110,
+              100,
+              101,
+              120,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              110,
+              111,
+              100,
+              101,
+              32,
+              105,
+              110,
+              100,
+              101,
+              120,
+              32,
+              114,
+              101,
+              99,
+              111,
+              114,
+              100,
+              32,
+              105,
+              100,
+              61,
+              50,
+              48,
+              32,
+              116,
+              97,
+              103,
+              61,
+              49,
+              48,
+              32,
+              111,
+              102,
+              102,
+              115,
+              101,
+              116,
+              61,
+              49,
+              55,
+              48
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": true,
+            "errorUTF16": []
+          }
+        },
+        {
+          "name": "annotation-bad-tail-hit",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              49,
+              48,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              56,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          }
+        },
+        {
+          "name": "annotation-bad-tail-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              49,
+              48,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              56,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          }
+        },
+        {
+          "name": "annotation-bad-tail-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              110,
+              111,
+              100,
+              101,
+              32,
+              50,
+              54,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              49,
+              48,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              56,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          }
+        },
+        {
+          "name": "unicode-4-EnumConstant",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": [
+                  65,
+                  55296,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-4-LocalVariable",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": [
+                  65,
+                  55296,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-4-Field",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  65,
+                  63,
+                  66
+                ],
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": [
+                  65,
+                  55296,
+                  66
+                ],
+                "n.name": [
+                  65,
+                  55296,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-5-EnumConstant",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": [
+                  65,
+                  56320,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-5-LocalVariable",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": [
+                  65,
+                  56320,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-5-Field",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  65,
+                  63,
+                  66
+                ],
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": [
+                  65,
+                  56320,
+                  66
+                ],
+                "n.name": [
+                  65,
+                  56320,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "provider-field-payload-id-example",
+          "scope": "providerWrapper",
+          "fields": [
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "yielded"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "provider-consume",
+            "providerSupported": true,
+            "yielded": [],
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": true,
+            "errorUTF16": []
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "provider-consume",
+            "providerSupported": true,
+            "yielded": [
+              {
+                "type": "io.johnsonlee.graphite.core.FieldNode",
+                "id": 1152,
+                "valueUTF16": [
+                  70,
+                  105,
+                  101,
+                  108,
+                  100,
+                  78,
+                  111,
+                  100,
+                  101,
+                  40,
+                  105,
+                  100,
+                  61,
+                  110,
+                  111,
+                  100,
+                  101,
+                  35,
+                  49,
+                  49,
+                  53,
+                  50,
+                  44,
+                  32,
+                  100,
+                  101,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  111,
+                  114,
+                  61,
+                  70,
+                  105,
+                  101,
+                  108,
+                  100,
+                  68,
+                  101,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  111,
+                  114,
+                  40,
+                  100,
+                  101,
+                  99,
+                  108,
+                  97,
+                  114,
+                  105,
+                  110,
+                  103,
+                  67,
+                  108,
+                  97,
+                  115,
+                  115,
+                  61,
+                  84,
+                  121,
+                  112,
+                  101,
+                  68,
+                  101,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  111,
+                  114,
+                  40,
+                  99,
+                  108,
+                  97,
+                  115,
+                  115,
+                  78,
+                  97,
+                  109,
+                  101,
+                  61,
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101,
+                  44,
+                  32,
+                  116,
+                  121,
+                  112,
+                  101,
+                  65,
+                  114,
+                  103,
+                  117,
+                  109,
+                  101,
+                  110,
+                  116,
+                  115,
+                  61,
+                  91,
+                  93,
+                  41,
+                  44,
+                  32,
+                  110,
+                  97,
+                  109,
+                  101,
+                  61,
+                  102,
+                  105,
+                  101,
+                  108,
+                  100,
+                  44,
+                  32,
+                  116,
+                  121,
+                  112,
+                  101,
+                  61,
+                  84,
+                  121,
+                  112,
+                  101,
+                  68,
+                  101,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  111,
+                  114,
+                  40,
+                  99,
+                  108,
+                  97,
+                  115,
+                  115,
+                  78,
+                  97,
+                  109,
+                  101,
+                  61,
+                  105,
+                  110,
+                  116,
+                  44,
+                  32,
+                  116,
+                  121,
+                  112,
+                  101,
+                  65,
+                  114,
+                  103,
+                  117,
+                  109,
+                  101,
+                  110,
+                  116,
+                  115,
+                  61,
+                  91,
+                  93,
+                  41,
+                  41,
+                  44,
+                  32,
+                  105,
+                  115,
+                  83,
+                  116,
+                  97,
+                  116,
+                  105,
+                  99,
+                  61,
+                  116,
+                  114,
+                  117,
+                  101,
+                  41
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "reference": "repeat",
+      "matches": {
+        "public": 157,
+        "providerWrapper": 19
+      },
+      "differences": [
+        {
+          "name": "six-empty-1",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": null
+              },
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  82,
+                  69,
+                  68
+                ]
+              },
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  120
+                ]
+              },
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  102,
+                  105,
+                  101,
+                  108,
+                  100
+                ]
+              },
+              {
+                "n.callee_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.callee_name": [
+                  99,
+                  97,
+                  108,
+                  108,
+                  101,
+                  101
+                ],
+                "n.caller_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.caller_name": [
+                  114,
+                  117,
+                  110
+                ],
+                "n.class": null,
+                "n.name": null
+              },
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  65,
+                  110,
+                  110,
+                  111,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": null,
+                "n.name": [
+                  120
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": null,
+                "n.name": [
+                  82,
+                  69,
+                  68
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  65,
+                  110,
+                  110,
+                  111,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  102,
+                  105,
+                  101,
+                  108,
+                  100
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              },
+              {
+                "n.class": null,
+                "n.name": null,
+                "n.caller_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.caller_name": [
+                  114,
+                  117,
+                  110
+                ],
+                "n.callee_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.callee_name": [
+                  99,
+                  97,
+                  108,
+                  108,
+                  101,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "six-empty-2",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "z-first",
+                "mappedView": false,
+                "retained": false
+              },
+              {
+                "id": "a-second",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "z-first",
+                "mappedView": false,
+                "retained": false
+              },
+              {
+                "id": "a-second",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": null
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  82,
+                  69,
+                  68
+                ]
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  120
+                ]
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  102,
+                  105,
+                  101,
+                  108,
+                  100
+                ]
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.callee_name": [
+                  99,
+                  97,
+                  108,
+                  108,
+                  101,
+                  101
+                ],
+                "n.caller_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.caller_name": [
+                  114,
+                  117,
+                  110
+                ],
+                "n.class": null,
+                "n.name": null
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                },
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  65,
+                  110,
+                  110,
+                  111,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "z-first",
+                "retained": false,
+                "mappedView": false
+              },
+              {
+                "id": "a-second",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "z-first",
+                "retained": false,
+                "mappedView": false
+              },
+              {
+                "id": "a-second",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": null,
+                "n.name": [
+                  120
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": null,
+                "n.name": [
+                  82,
+                  69,
+                  68
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  65,
+                  110,
+                  110,
+                  111,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.name": [
+                  102,
+                  105,
+                  101,
+                  108,
+                  100
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              },
+              {
+                "n.class": null,
+                "n.name": null,
+                "n.caller_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.caller_name": [
+                  114,
+                  117,
+                  110
+                ],
+                "n.callee_class": [
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101
+                ],
+                "n.callee_name": [
+                  99,
+                  97,
+                  108,
+                  108,
+                  101,
+                  101
+                ],
+                "$metadata": {
+                  "graphIds": [
+                    [
+                      97,
+                      45,
+                      115,
+                      101,
+                      99,
+                      111,
+                      110,
+                      100
+                    ],
+                    [
+                      122,
+                      45,
+                      102,
+                      105,
+                      114,
+                      115,
+                      116
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "enum-bad-sid-0-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "enum-bad-sid-1-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "ArrayIndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              111,
+              117,
+              116,
+              32,
+              111,
+              102,
+              32,
+              98,
+              111,
+              117,
+              110,
+              100,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              110,
+              103,
+              116,
+              104,
+              32,
+              50,
+              49
+            ]
+          }
+        },
+        {
+          "name": "enum-bad-tail-hit",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              51,
+              51,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              51,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          }
+        },
+        {
+          "name": "enum-bad-tail-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              110,
+              111,
+              100,
+              101,
+              32,
+              49,
+              52,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              51,
+              51,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "local-bad-sid-0-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "ArrayIndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              111,
+              117,
+              116,
+              32,
+              111,
+              102,
+              32,
+              98,
+              111,
+              117,
+              110,
+              100,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              110,
+              103,
+              116,
+              104,
+              32,
+              50,
+              49
+            ]
+          }
+        },
+        {
+          "name": "local-bad-sid-1-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "local-bad-tail-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "field-bad-sid-0-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "ArrayIndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              111,
+              117,
+              116,
+              32,
+              111,
+              102,
+              32,
+              98,
+              111,
+              117,
+              110,
+              100,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              110,
+              103,
+              116,
+              104,
+              32,
+              50,
+              49
+            ]
+          }
+        },
+        {
+          "name": "field-bad-sid-1-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "ArrayIndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              111,
+              117,
+              116,
+              32,
+              111,
+              102,
+              32,
+              98,
+              111,
+              117,
+              110,
+              100,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              110,
+              103,
+              116,
+              104,
+              32,
+              50,
+              49
+            ]
+          }
+        },
+        {
+          "name": "field-bad-sid-2-global-miss",
+          "scope": "public",
+          "fields": [
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "field-bad-tail-hit",
+          "scope": "public",
+          "fields": [
+            "after",
+            "before",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "phase"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "after": [],
+            "phase": "load",
+            "error": "Go:*fmt.wrapError",
+            "nullMessage": false,
+            "errorUTF16": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              46,
+              110,
+              111,
+              100,
+              101,
+              105,
+              110,
+              100,
+              101,
+              120,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              110,
+              111,
+              100,
+              101,
+              32,
+              105,
+              110,
+              100,
+              101,
+              120,
+              32,
+              114,
+              101,
+              99,
+              111,
+              114,
+              100,
+              32,
+              105,
+              100,
+              61,
+              50,
+              48,
+              32,
+              116,
+              97,
+              103,
+              61,
+              49,
+              48,
+              32,
+              111,
+              102,
+              102,
+              115,
+              101,
+              116,
+              61,
+              49,
+              55,
+              48
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "EOFException",
+            "nullMessage": true,
+            "errorUTF16": []
+          }
+        },
+        {
+          "name": "field-bad-tail-miss",
+          "scope": "public",
+          "fields": [
+            "after",
+            "before",
+            "columns",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "phase",
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "after": [],
+            "phase": "load",
+            "error": "Go:*fmt.wrapError",
+            "nullMessage": false,
+            "errorUTF16": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              46,
+              110,
+              111,
+              100,
+              101,
+              105,
+              110,
+              100,
+              101,
+              120,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              110,
+              111,
+              100,
+              101,
+              32,
+              105,
+              110,
+              100,
+              101,
+              120,
+              32,
+              114,
+              101,
+              99,
+              111,
+              114,
+              100,
+              32,
+              105,
+              100,
+              61,
+              50,
+              48,
+              32,
+              116,
+              97,
+              103,
+              61,
+              49,
+              48,
+              32,
+              111,
+              102,
+              102,
+              115,
+              101,
+              116,
+              61,
+              49,
+              55,
+              48
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": []
+          }
+        },
+        {
+          "name": "field-bad-tail-global-miss",
+          "scope": "public",
+          "fields": [
+            "after",
+            "before",
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "phase"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "after": [],
+            "phase": "load",
+            "error": "Go:*fmt.wrapError",
+            "nullMessage": false,
+            "errorUTF16": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              46,
+              110,
+              111,
+              100,
+              101,
+              105,
+              110,
+              100,
+              101,
+              120,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              110,
+              111,
+              100,
+              101,
+              32,
+              105,
+              110,
+              100,
+              101,
+              120,
+              32,
+              114,
+              101,
+              99,
+              111,
+              114,
+              100,
+              32,
+              105,
+              100,
+              61,
+              50,
+              48,
+              32,
+              116,
+              97,
+              103,
+              61,
+              49,
+              48,
+              32,
+              111,
+              102,
+              102,
+              115,
+              101,
+              116,
+              61,
+              49,
+              55,
+              48
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": true,
+            "errorUTF16": []
+          }
+        },
+        {
+          "name": "annotation-bad-tail-hit",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              49,
+              48,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              56,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          }
+        },
+        {
+          "name": "annotation-bad-tail-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              49,
+              48,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              56,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          }
+        },
+        {
+          "name": "annotation-bad-tail-global-miss",
+          "scope": "public",
+          "fields": [
+            "error",
+            "errorUTF16"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": true
+              }
+            ],
+            "phase": "execute",
+            "error": "CypherException",
+            "nullMessage": false,
+            "errorUTF16": [
+              110,
+              111,
+              100,
+              101,
+              32,
+              50,
+              54,
+              58,
+              32,
+              105,
+              110,
+              118,
+              97,
+              108,
+              105,
+              100,
+              32,
+              99,
+              111,
+              108,
+              108,
+              101,
+              99,
+              116,
+              105,
+              111,
+              110,
+              32,
+              99,
+              111,
+              117,
+              110,
+              116,
+              32,
+              50,
+              49,
+              52,
+              55,
+              52,
+              56,
+              51,
+              54,
+              52,
+              55,
+              32,
+              40,
+              49,
+              48,
+              52,
+              32,
+              98,
+              121,
+              116,
+              101,
+              115,
+              32,
+              114,
+              101,
+              109,
+              97,
+              105,
+              110,
+              41
+            ]
+          },
+          "main": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": true,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": false,
+            "errorUTF16": [
+              73,
+              110,
+              100,
+              101,
+              120,
+              32,
+              40,
+              50,
+              56,
+              41,
+              32,
+              105,
+              115,
+              32,
+              103,
+              114,
+              101,
+              97,
+              116,
+              101,
+              114,
+              32,
+              116,
+              104,
+              97,
+              110,
+              32,
+              111,
+              114,
+              32,
+              101,
+              113,
+              117,
+              97,
+              108,
+              32,
+              116,
+              111,
+              32,
+              108,
+              105,
+              115,
+              116,
+              32,
+              115,
+              105,
+              122,
+              101,
+              32,
+              40,
+              50,
+              49,
+              41
+            ]
+          }
+        },
+        {
+          "name": "unicode-4-EnumConstant",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": [
+                  65,
+                  55296,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-4-LocalVariable",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": [
+                  65,
+                  55296,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-4-Field",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  65,
+                  63,
+                  66
+                ],
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": [
+                  65,
+                  55296,
+                  66
+                ],
+                "n.name": [
+                  65,
+                  55296,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-5-EnumConstant",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": [
+                  65,
+                  56320,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-5-LocalVariable",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": null,
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": null,
+                "n.name": [
+                  65,
+                  56320,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "unicode-5-Field",
+          "scope": "public",
+          "fields": [
+            "rowsUTF16"
+          ],
+          "go": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.callee_class": null,
+                "n.callee_name": null,
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.class": [
+                  65,
+                  63,
+                  66
+                ],
+                "n.name": [
+                  65,
+                  63,
+                  66
+                ]
+              }
+            ]
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "execute",
+            "columns": [
+              "n.class",
+              "n.name",
+              "n.caller_class",
+              "n.caller_name",
+              "n.callee_class",
+              "n.callee_name"
+            ],
+            "rowsUTF16": [
+              {
+                "n.class": [
+                  65,
+                  56320,
+                  66
+                ],
+                "n.name": [
+                  65,
+                  56320,
+                  66
+                ],
+                "n.caller_class": null,
+                "n.caller_name": null,
+                "n.callee_class": null,
+                "n.callee_name": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "provider-field-payload-id-example",
+          "scope": "providerWrapper",
+          "fields": [
+            "error",
+            "errorUTF16",
+            "nullMessage",
+            "outcome",
+            "yielded"
+          ],
+          "go": {
+            "outcome": "FAILED",
+            "before": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "mappedView": false,
+                "retained": false
+              }
+            ],
+            "phase": "provider-consume",
+            "providerSupported": true,
+            "yielded": [],
+            "error": "IndexOutOfBoundsException",
+            "nullMessage": true,
+            "errorUTF16": []
+          },
+          "main": {
+            "outcome": "SUCCESS",
+            "before": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "after": [
+              {
+                "id": "single",
+                "retained": false,
+                "mappedView": false
+              }
+            ],
+            "phase": "provider-consume",
+            "providerSupported": true,
+            "yielded": [
+              {
+                "type": "io.johnsonlee.graphite.core.FieldNode",
+                "id": 1152,
+                "valueUTF16": [
+                  70,
+                  105,
+                  101,
+                  108,
+                  100,
+                  78,
+                  111,
+                  100,
+                  101,
+                  40,
+                  105,
+                  100,
+                  61,
+                  110,
+                  111,
+                  100,
+                  101,
+                  35,
+                  49,
+                  49,
+                  53,
+                  50,
+                  44,
+                  32,
+                  100,
+                  101,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  111,
+                  114,
+                  61,
+                  70,
+                  105,
+                  101,
+                  108,
+                  100,
+                  68,
+                  101,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  111,
+                  114,
+                  40,
+                  100,
+                  101,
+                  99,
+                  108,
+                  97,
+                  114,
+                  105,
+                  110,
+                  103,
+                  67,
+                  108,
+                  97,
+                  115,
+                  115,
+                  61,
+                  84,
+                  121,
+                  112,
+                  101,
+                  68,
+                  101,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  111,
+                  114,
+                  40,
+                  99,
+                  108,
+                  97,
+                  115,
+                  115,
+                  78,
+                  97,
+                  109,
+                  101,
+                  61,
+                  69,
+                  120,
+                  97,
+                  109,
+                  112,
+                  108,
+                  101,
+                  44,
+                  32,
+                  116,
+                  121,
+                  112,
+                  101,
+                  65,
+                  114,
+                  103,
+                  117,
+                  109,
+                  101,
+                  110,
+                  116,
+                  115,
+                  61,
+                  91,
+                  93,
+                  41,
+                  44,
+                  32,
+                  110,
+                  97,
+                  109,
+                  101,
+                  61,
+                  102,
+                  105,
+                  101,
+                  108,
+                  100,
+                  44,
+                  32,
+                  116,
+                  121,
+                  112,
+                  101,
+                  61,
+                  84,
+                  121,
+                  112,
+                  101,
+                  68,
+                  101,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  111,
+                  114,
+                  40,
+                  99,
+                  108,
+                  97,
+                  115,
+                  115,
+                  78,
+                  97,
+                  109,
+                  101,
+                  61,
+                  105,
+                  110,
+                  116,
+                  44,
+                  32,
+                  116,
+                  121,
+                  112,
+                  101,
+                  65,
+                  114,
+                  103,
+                  117,
+                  109,
+                  101,
+                  110,
+                  116,
+                  115,
+                  61,
+                  91,
+                  93,
+                  41,
+                  41,
+                  44,
+                  32,
+                  105,
+                  115,
+                  83,
+                  116,
+                  97,
+                  116,
+                  105,
+                  99,
+                  61,
+                  116,
+                  114,
+                  117,
+                  101,
+                  41
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "allComparedFieldsEqual": false
+}

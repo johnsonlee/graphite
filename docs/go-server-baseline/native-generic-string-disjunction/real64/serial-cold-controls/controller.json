@@ -1,0 +1,40 @@
+[
+  {
+    "name": "baseline",
+    "module": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-go-baseline-513e2b96-v1/module",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+      "native",
+      "cold"
+    ],
+    "exitCode": 1,
+    "performanceMeasurements": 0,
+    "verifyCommand": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+      "cold"
+    ],
+    "verifyExitCode": 0,
+    "sourceUnchanged": true
+  },
+  {
+    "name": "candidate",
+    "module": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-513e2b96-real64-source-v1",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+      "native",
+      "cold"
+    ],
+    "exitCode": 1,
+    "performanceMeasurements": 0,
+    "verifyCommand": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+      "cold"
+    ],
+    "verifyExitCode": 0,
+    "sourceUnchanged": true
+  }
+]

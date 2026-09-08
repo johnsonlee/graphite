@@ -1,0 +1,16 @@
+{
+  "head": "513e2b96d4cd5136560461d06f3b804e6aa67c41",
+  "trackedModuleFilesVerified": 2530,
+  "frozenModuleFiles": 2534,
+  "inputHashesVerified": true,
+  "dependencyPackages": 106,
+  "dependencyFiles": 1453,
+  "fixtureOriginalFilesVerified": 3036,
+  "fixtureOnlyAddedCallsiteSidecars": 22,
+  "captureExitCode": 0,
+  "comparisonExitCode": 1,
+  "publicMatchesEachReference": 157,
+  "providerWrapperMatchesEachReference": 19,
+  "differencesEachReference": 25,
+  "performanceMeasurements": 0
+}

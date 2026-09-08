@@ -1,0 +1,716 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-zero/after-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-targeted/after-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-dense/after-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-zero/after-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-targeted/after-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profiles/global-six-or-wrapped-dense/after-heap-top.txt",
+    "exitCode": 0
+  }
+]

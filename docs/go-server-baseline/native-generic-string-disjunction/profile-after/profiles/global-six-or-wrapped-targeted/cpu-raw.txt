@@ -1,0 +1,585 @@
+PeriodType: cpu nanoseconds
+Period: 10000000
+Time: 2026-09-08 17:05:19.678981 +0900 KST
+Duration: 1.81
+Samples:
+samples/count cpu/nanoseconds
+          1   10000000: 1 2 3 4 5 6 7 
+       2596 25960000000: 8 9 10 11 12 13 14 15 
+        152 1520000000: 16 17 18 19 20 13 14 15 
+          2   20000000: 8 21 22 23 24 25 26 27 28 29 30 
+          1   10000000: 31 32 33 34 35 36 37 38 39 40 41 42 
+        129 1290000000: 8 21 43 44 45 46 47 48 49 50 51 
+          2   20000000: 8 21 52 20 13 14 15 
+         47  470000000: 8 21 22 23 24 53 47 48 49 50 51 
+        869 8690000000: 8 21 43 44 45 46 54 55 34 56 36 57 50 51 
+        243 2430000000: 8 21 22 23 24 53 54 55 34 56 36 57 50 51 
+         10  100000000: 16 17 58 22 23 24 53 54 55 34 56 36 57 50 51 
+         15  150000000: 8 21 22 23 24 53 59 60 34 56 36 57 50 51 
+         75  750000000: 8 21 43 44 45 46 59 60 34 56 36 57 50 51 
+         54  540000000: 16 17 58 43 44 45 46 54 55 34 56 36 57 50 51 
+          4   40000000: 8 21 61 62 7 
+          1   10000000: 63 12 13 14 15 
+          3   30000000: 16 17 58 43 44 45 46 59 60 34 56 36 57 50 51 
+        174 1740000000: 8 21 43 44 45 46 54 55 34 35 36 57 50 51 
+          9   90000000: 16 17 58 43 44 45 46 54 55 34 35 36 57 50 51 
+         35  350000000: 8 21 43 44 45 46 59 60 34 35 36 57 50 51 
+         49  490000000: 8 21 22 23 24 53 54 55 34 35 36 57 50 51 
+          6   60000000: 8 21 22 23 24 53 59 60 34 35 36 57 50 51 
+          2   20000000: 64 53 54 55 34 35 36 57 50 51 
+          2   20000000: 16 17 58 22 23 24 53 54 55 34 35 36 57 50 51 
+          1   10000000: 65 54 55 34 56 36 57 50 51 
+          2   20000000: 66 67 68 13 14 15 
+          8   80000000: 8 21 69 13 14 15 
+          1   10000000: 8 21 70 71 72 7 
+          1   10000000: 1 2 3 4 5 73 74 14 15 
+          1   10000000: 75 32 76 77 78 49 50 51 
+          1   10000000: 79 80 81 82 83 84 7 
+          2   20000000: 85 86 87 88 7 89 
+          1   10000000: 79 80 81 90 91 92 93 87 94 7 
+          4   40000000: 95 87 94 7 89 
+          1   10000000: 96 60 34 35 36 57 50 51 
+          6   60000000: 97 87 98 7 89 
+          8   80000000: 99 87 88 7 89 
+          2   20000000: 100 88 7 89 
+          6   60000000: 101 102 76 77 78 49 50 51 
+          4   40000000: 103 86 87 88 7 89 
+          2   20000000: 104 88 7 89 
+          4   40000000: 105 93 87 88 7 89 
+          2   20000000: 106 93 87 88 7 89 
+          1   10000000: 107 76 77 78 49 50 51 
+          2   20000000: 108 93 87 98 7 89 
+          1   10000000: 109 110 7 111 112 113 114 77 78 49 50 51 
+          1   10000000: 115 94 7 89 
+          4   40000000: 116 86 87 88 7 89 
+          1   10000000: 117 88 7 89 
+          3   30000000: 118 86 87 88 7 89 
+          8   80000000: 119 88 7 89 
+          1   10000000: 120 121 87 94 7 89 
+          1   10000000: 122 123 87 88 7 89 
+          1   10000000: 124 87 88 7 89 
+         14  140000000: 97 87 88 7 89 
+          3   30000000: 125 123 87 88 7 89 
+          2   20000000: 126 93 87 88 7 89 
+          2   20000000: 127 87 88 7 89 
+          1   10000000: 128 98 7 89 
+          3   30000000: 129 86 87 88 7 89 
+          1   10000000: 85 130 110 7 111 112 113 114 77 78 49 50 51 
+          1   10000000: 131 76 77 78 49 50 51 
+          4   40000000: 132 93 87 88 7 89 
+          4   40000000: 133 87 88 7 89 
+          1   10000000: 134 98 7 89 
+          4   40000000: 95 87 88 7 89 
+          1   10000000: 135 86 87 98 7 89 
+          2   20000000: 104 98 7 89 
+          6   60000000: 108 93 87 88 7 89 
+          4   40000000: 136 93 87 88 7 89 
+          1   10000000: 137 138 123 87 98 7 89 
+          1   10000000: 139 93 87 88 7 89 
+          2   20000000: 140 34 56 36 57 50 51 
+          1   10000000: 141 53 47 48 49 50 51 
+          1   10000000: 142 88 7 89 
+          2   20000000: 116 86 87 98 7 89 
+          3   30000000: 143 86 87 88 7 89 
+          2   20000000: 144 88 7 89 
+          6   60000000: 99 87 98 7 89 
+          1   10000000: 106 93 87 98 7 89 
+          1   10000000: 145 88 7 89 
+          1   10000000: 146 47 48 49 50 51 
+          1   10000000: 147 93 87 98 7 89 
+          2   20000000: 148 94 7 89 
+          1   10000000: 149 23 24 53 59 60 34 35 36 57 50 51 
+          1   10000000: 150 55 34 56 36 57 50 51 
+          2   20000000: 151 93 87 88 7 89 
+          1   10000000: 79 80 81 90 91 92 93 87 98 7 
+          3   30000000: 152 87 88 7 89 
+          2   20000000: 153 86 87 88 7 89 
+          2   20000000: 97 87 94 7 89 
+          1   10000000: 142 94 7 89 
+          1   10000000: 128 88 7 89 
+          1   10000000: 147 93 87 88 7 89 
+         11  110000000: 79 80 81 90 154 155 88 7 
+          1   10000000: 156 87 88 7 89 
+          1   10000000: 157 87 94 7 89 
+          2   20000000: 141 53 59 60 34 56 36 57 50 51 
+          1   10000000: 158 138 123 87 94 7 89 
+          1   10000000: 159 93 87 88 7 89 
+          1   10000000: 160 93 87 98 7 89 
+          2   20000000: 161 87 88 7 89 
+          1   10000000: 137 138 123 87 94 7 89 
+          1   10000000: 162 121 87 98 7 89 
+          2   20000000: 163 87 88 7 89 
+          2   20000000: 164 93 87 88 7 89 
+          1   10000000: 8 21 165 166 167 168 169 92 93 87 94 7 
+          1   10000000: 170 87 98 7 89 
+          1   10000000: 65 54 55 34 35 36 57 50 51 
+          1   10000000: 171 121 87 88 7 89 
+          1   10000000: 148 88 7 89 
+          1   10000000: 172 86 87 88 7 89 
+          2   20000000: 85 86 87 98 7 89 
+          1   10000000: 173 174 175 34 56 36 57 50 51 
+          1   10000000: 176 34 35 36 57 50 51 
+          2   20000000: 79 80 81 90 91 92 93 87 88 7 
+          3   30000000: 160 93 87 88 7 89 
+          1   10000000: 177 46 54 55 34 56 36 57 50 51 
+          2   20000000: 142 98 7 89 
+          1   10000000: 178 121 87 88 7 89 
+          5   50000000: 79 80 81 90 154 155 94 7 
+          1   10000000: 170 87 88 7 89 
+          1   10000000: 179 180 181 182 183 184 114 77 78 49 50 51 
+          1   10000000: 131 33 34 56 36 57 50 51 
+          2   20000000: 99 87 94 7 89 
+          1   10000000: 185 10 11 12 13 14 15 
+          1   10000000: 186 87 98 7 89 
+          1   10000000: 187 121 87 94 7 89 
+          2   20000000: 188 87 88 7 89 
+          1   10000000: 189 94 7 89 
+          1   10000000: 190 102 76 77 78 49 50 51 
+          1   10000000: 191 174 192 34 35 36 57 50 51 
+          2   20000000: 85 86 87 94 7 89 
+          1   10000000: 193 138 123 87 98 7 89 
+          1   10000000: 194 76 77 78 49 50 51 
+          1   10000000: 95 87 98 7 89 
+          2   20000000: 132 93 87 98 7 89 
+          1   10000000: 195 196 32 76 77 78 49 50 51 
+          1   10000000: 197 93 87 98 7 89 
+          1   10000000: 198 138 123 87 88 7 89 
+          2   20000000: 101 102 199 78 49 50 51 
+          1   10000000: 200 93 87 88 7 89 
+          2   20000000: 201 93 87 88 7 89 
+          1   10000000: 202 93 87 88 7 89 
+          4   40000000: 141 53 54 55 34 56 36 57 50 51 
+          2   20000000: 135 86 87 88 7 89 
+          2   20000000: 144 98 7 89 
+          1   10000000: 163 87 94 7 89 
+          1   10000000: 203 86 87 98 7 89 
+          1   10000000: 195 196 204 205 55 34 56 36 57 50 51 
+          1   10000000: 206 87 88 7 89 
+          1   10000000: 101 102 207 208 209 34 56 36 57 50 51 
+          1   10000000: 133 87 98 7 89 
+          1   10000000: 210 87 88 7 89 
+          1   10000000: 211 212 88 7 89 
+          3   30000000: 79 80 81 90 154 155 98 7 
+          1   10000000: 213 87 88 7 89 
+          1   10000000: 214 34 56 36 57 50 51 
+          1   10000000: 103 86 87 98 7 89 
+          1   10000000: 104 94 7 89 
+          1   10000000: 195 196 32 76 77 209 34 56 36 57 50 51 
+          2   20000000: 64 53 54 55 34 56 36 57 50 51 
+          1   10000000: 215 53 54 55 34 35 36 57 50 51 
+          1   10000000: 197 93 87 88 7 89 
+          1   10000000: 195 196 32 33 34 35 36 57 50 51 
+          1   10000000: 118 86 87 94 7 89 
+          1   10000000: 216 94 7 89 
+          1   10000000: 217 93 87 94 7 89 
+          1   10000000: 218 93 87 88 7 89 
+          1   10000000: 219 88 7 89 
+          1   10000000: 127 87 98 7 89 
+          1   10000000: 1 2 220 221 23 24 53 54 55 34 35 36 57 50 51 
+          2   20000000: 222 223 174 192 34 35 36 57 50 51 
+          1   10000000: 224 86 87 88 7 89 
+          1   10000000: 119 94 7 89 
+          1   10000000: 225 138 123 87 88 7 89 
+          1   10000000: 164 93 87 98 7 89 
+          1   10000000: 137 138 123 87 88 7 89 
+          1   10000000: 118 86 87 98 7 89 
+          1   10000000: 226 86 87 88 7 89 
+          1   10000000: 227 123 87 98 7 89 
+          1   10000000: 101 102 76 77 209 34 35 36 57 50 51 
+          1   10000000: 228 229 208 209 34 35 36 57 50 51 
+          1   10000000: 141 53 54 55 34 35 36 57 50 51 
+          1   10000000: 116 86 87 94 7 89 
+          1   10000000: 65 47 48 49 50 51 
+          1   10000000: 230 182 183 184 114 77 209 34 35 36 57 50 51 
+          1   10000000: 231 53 54 55 34 35 36 57 50 51 
+          1   10000000: 227 123 87 88 7 89 
+          1   10000000: 232 87 98 7 89 
+          1   10000000: 233 234 34 35 36 57 50 51 
+          1   10000000: 66 67 68 13 235 236 237 
+          1   10000000: 238 239 208 78 49 50 51 
+          1   10000000: 240 205 55 34 56 36 57 50 51 
+          1   10000000: 241 77 78 49 50 51 
+          2   20000000: 16 17 58 22 23 24 53 47 48 49 50 51 
+          2   20000000: 242 34 56 36 57 50 51 
+          1   10000000: 243 77 209 34 35 36 57 50 51 
+          3   30000000: 16 17 58 43 44 45 46 47 48 49 50 51 
+          1   10000000: 1 2 220 221 23 24 53 54 55 34 56 36 57 50 51 
+          1   10000000: 244 53 47 48 49 50 51 
+          2   20000000: 8 21 245 246 7 
+          1   10000000: 247 248 180 249 250 251 252 50 51 
+          1   10000000: 253 254 220 255 44 45 46 54 55 34 56 36 57 50 51 
+          1   10000000: 256 257 258 7 259 260 261 
+          1   10000000: 262 77 209 34 56 36 57 50 51 
+          2   20000000: 8 21 263 13 14 15 
+          1   10000000: 264 265 266 7 259 260 261 
+          1   10000000: 267 34 56 36 57 50 51 
+          1   10000000: 268 269 260 261 
+          1   10000000: 149 23 24 53 54 55 34 56 36 57 50 51 
+        114 1140000000: 270 271 272 7 
+          1   10000000: 231 53 59 60 34 56 36 57 50 51 
+          1   10000000: 231 53 54 55 34 56 36 57 50 51 
+          1   10000000: 273 23 24 53 47 48 49 50 51 
+          1   10000000: 231 53 47 48 49 50 51 
+          1   10000000: 107 76 77 209 34 35 36 57 50 51 
+          1   10000000: 274 54 55 34 56 36 57 50 51 
+          1   10000000: 16 17 58 43 44 45 46 59 60 34 35 36 57 50 51 
+          1   10000000: 1 2 3 4 5 71 275 7 
+          1   10000000: 276 277 278 279 62 7 280 281 282 248 180 249 283 284 285 57 50 51 
+Locations
+     1: 0x100a8263f M=1 runtime.pthread_cond_signal /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:528 s=527
+     2: 0x100a5d187 M=1 runtime.semawakeup /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/os_darwin.go:84 s=77
+     3: 0x100a33563 M=1 runtime.notewakeup /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:163 s=144
+     4: 0x100a67223 M=1 runtime.startm /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:2895 s=2809
+     5: 0x100a67913 M=1 runtime.wakep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3006 s=2975
+     6: 0x100a6cacf M=1 runtime.newproc.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4884 s=4877
+     7: 0x100a94b0b M=1 runtime.systemstack /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:243 s=206
+     8: 0x100a820cb M=1 runtime.usleep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:302 s=301
+     9: 0x100a71b67 M=1 runtime.runqgrab /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:6835 s=6813
+    10: 0x100a71cff M=1 runtime.runqsteal /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:6870 s=6868
+    11: 0x100a697bb M=1 runtime.stealWork /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3600 s=3544
+    12: 0x100a683e3 M=1 runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3254 s=3139
+    13: 0x100a6a367 M=1 runtime.schedule /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3868 s=3839
+    14: 0x100a6a9ff M=1 runtime.park_m /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4036 s=4007
+    15: 0x100a94a73 M=1 runtime.mcall /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:192 s=166
+    16: 0x100a825bf M=1 runtime.pthread_cond_wait /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:507 s=506
+    17: 0x100a5d033 M=1 runtime.semasleep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/os_darwin.go:71 s=39
+    18: 0x100a33657 M=1 runtime.notesleep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:183 s=167
+    19: 0x100a66f93 M=1 runtime.mPark /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:1761 s=1759
+             runtime.stopm /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:2782 s=2766
+    20: 0x100a68f1f M=1 runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3512 s=3139
+    21: 0x100a33273 M=1 runtime.osyield /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/os_darwin.go:362 s=361
+             runtime.lock2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:77 s=42
+    22: 0x100a7671b M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.semacquire1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:148 s=114
+    23: 0x100a92b77 M=1 sync.runtime_SemacquireMutex /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:77 s=76
+    24: 0x100a9f9f3 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:171 s=117
+    25: 0x100aa113f M=1 sync.(*Mutex).Lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:90 s=81
+             sync.(*RWMutex).Lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/rwmutex.go:146 s=140
+    26: 0x100bf4d77 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/distinct_projection.go:56 s=55
+    27: 0x100bf5b93 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionStringIDs /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/distinct_projection.go:184 s=182
+    28: 0x100c5311f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRange /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:648 s=643
+    29: 0x100c55357 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:852 s=842
+    30: 0x100c55193 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows.func2 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:857 s=857
+    31: 0x100a2e3a0 M=1 runtime.selectnbrecv /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:713 s=713
+    32: 0x100c367a3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:62 s=60
+    33: 0x100c65b53 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:98 s=78
+    34: 0x100c6551f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.evaluator.mainMergeNodeSequences.func3.1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:195 s=194
+    35: 0x100c652d3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.evaluator.mainMergeNodeSequences.func3 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:215 s=192
+    36: 0x100c51b73 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:460 s=451
+    37: 0x100c5142f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourcePrefix /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:435 s=408
+    38: 0x100c4e5b7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:122 s=68
+    39: 0x100c3193b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/engine.go:187 s=173
+    40: 0x100c30963 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/engine.go:108 s=60
+    41: 0x100c30277 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCrossWithOptions /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/engine.go:57 s=42
+    42: 0x100c9f3ff M=1 main.newWorker.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/cmd/graphite-benchmark-latency/main.go:49 s=46
+    43: 0x100a769cf M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.semrelease1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:187 s=175
+    44: 0x100a92b1b M=1 sync.runtime_Semrelease /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:72 s=71
+    45: 0x100a9fcbf M=1 sync.(*Mutex).unlockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:246 s=227
+    46: 0x100ab6503 M=1 sync.(*Mutex).Unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:223 s=212
+             context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:456 s=453
+    47: 0x100bf60eb M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionString /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/distinct_projection.go:226 s=220
+    48: 0x100c54f1f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:768 s=745
+    49: 0x100c52273 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:536 s=492
+    50: 0x100c4f1e3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func4 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:171 s=167
+    51: 0x100c948d3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[string]bool].func1.1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:232 s=229
+    52: 0x100a66f5b M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.stopm /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:2779 s=2766
+    53: 0x100ab64a3 M=1 sync.(*Mutex).Lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:90 s=81
+             context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:454 s=453
+    54: 0x100c026ff M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionPropertyStringID /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/projection_property.go:41 s=11
+    55: 0x100c660cf M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:105 s=78
+    56: 0x100c6527f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.evaluator.mainMergeNodeSequences.func3 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:209 s=192
+    57: 0x100c5244b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:634 s=492
+    58: 0x100a3330b M=1 runtime.lock2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:95 s=42
+    59: 0x100bfd3bf M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionArrayString /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/ordinary_projection.go:125 s=119
+    60: 0x100c6618f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:118 s=78
+    61: 0x100a5118f M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.(*mheap).allocSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1191 s=1171
+    62: 0x100a50d8b M=1 runtime.(*mheap).alloc.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:964 s=958
+    63: 0x100a6960c M=1 runtime.(*randomEnum).position /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:7112 s=7111
+             runtime.stealWork /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3558 s=3544
+    64: 0x100a9f89c M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:122 s=117
+    65: 0x100ab64d0 M=1 sync.(*Mutex).Unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:219 s=212
+             context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:456 s=453
+    66: 0x100a8248f M=1 runtime.kevent /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:458 s=457
+    67: 0x100a5cc9f M=1 runtime.netpoll /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/netpoll_kqueue.go:141 s=121
+    68: 0x100a6892b M=1 runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3470 s=3139
+    69: 0x100a6858f M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3322 s=3139
+    70: 0x100a6784f M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.wakep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:2990 s=2975
+    71: 0x100a639a3 M=1 runtime.ready /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:970 s=952
+    72: 0x100a76577 M=1 runtime.readyWithTime.goready.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:413 s=412
+    73: 0x100a69f03 M=1 runtime.resetspinning /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3750 s=3737
+    74: 0x100a6a3db M=1 runtime.schedule /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3886 s=3839
+    75: 0x100a2e3cc M=1 runtime.selectnbrecv /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:714 s=713
+    76: 0x100b222f7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/javastring/unicode.go:36 s=10
+    77: 0x100c4dbb3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/java_string.go:14 s=14
+             github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:50 s=44
+    78: 0x100c55037 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:771 s=745
+    79: 0x100a81eab M=1 runtime.pthread_kill /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:177 s=176
+    80: 0x100a789db M=1 runtime.signalM /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/os_darwin.go:475 s=474
+             runtime.preemptM /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/signal_unix.go:385 s=368
+    81: 0x100a7044b M=1 runtime.preemptone /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:6226 s=6205
+    82: 0x100a703a7 M=1 runtime.preemptall /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:6188 s=6182
+    83: 0x100a64adb M=1 runtime.stopTheWorldWithSema /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:1467 s=1449
+    84: 0x100a420d7 M=1 runtime.gcStart.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:681 s=680
+    85: 0x100a3b7cc M=1 runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:305 s=304
+    86: 0x100a4807b M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1492 s=1395
+    87: 0x100a478a3 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1242 s=1163
+    88: 0x100a43a83 M=1 runtime.gcDrainMarkWorkerIdle /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1114 s=1113
+             runtime.gcBgMarkWorker.func2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:1406 s=1370
+    89: 0x100a43743 M=1 runtime.gcBgMarkWorker /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:1370 s=1276
+    90: 0x100a497d7 M=1 runtime.(*gcControllerState).enlistWorker /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcpacer.go:723 s=691
+    91: 0x100a4f307 M=1 runtime.(*gcWork).put /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcwork.go:144 s=113
+    92: 0x100a48633 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1663 s=1615
+    93: 0x100a48097 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1493 s=1395
+    94: 0x100a43aaf M=1 runtime.gcDrainMarkWorkerDedicated /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1124 s=1119
+             runtime.gcBgMarkWorker.func2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:1387 s=1370
+    95: 0x100a4804c M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1482 s=1395
+    96: 0x100bfd34c M=1 sync/atomic.(*Int32).Add /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/atomic/type.go:88 s=88
+             sync.(*RWMutex).RLock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/rwmutex.go:68 s=63
+             github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionArrayString /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/ordinary_projection.go:120 s=119
+    97: 0x100a47ff0 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1474 s=1395
+    98: 0x100a43b63 M=1 runtime.gcDrainMarkWorkerDedicated /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1124 s=1119
+             runtime.gcBgMarkWorker.func2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:1402 s=1370
+    99: 0x100a48000 M=1 runtime.typePointers.nextFast /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:257 s=249
+             runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1458 s=1395
+   100: 0x100a478b4 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1248 s=1163
+   101: 0x100ab61ac M=1 context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:439 s=438
+   102: 0x100c36797 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:62 s=60
+   103: 0x100a3b7b0 M=1 runtime.spanOf /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:694 s=672
+             runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:305 s=304
+   104: 0x100a47804 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1223 s=1163
+   105: 0x100a484f8 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1640 s=1615
+   106: 0x100a48580 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1645 s=1615
+   107: 0x100c36790 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:62 s=60
+   108: 0x100a48524 M=1 runtime.(*mspan).base /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:495 s=494
+             runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1643 s=1615
+   109: 0x100a5bcac M=1 runtime.wbBufFlush1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mwbbuf.go:230 s=195
+   110: 0x100a8e943 M=1 runtime.wbBufFlush.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mwbbuf.go:181 s=180
+   111: 0x100a5bbdb M=1 runtime.wbBufFlush /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mwbbuf.go:180 s=166
+   112: 0x100a94313 M=1 gcWriteBarrier /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1294 s=1250
+   113: 0x100ae87df M=1 strings.(*Builder).copyCheck /opt/homebrew/Cellar/go/1.22.0/libexec/src/strings/builder.go:41 s=34
+             strings.(*Builder).Grow /opt/homebrew/Cellar/go/1.22.0/libexec/src/strings/builder.go:78 s=77
+   114: 0x100b222c3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/javastring/unicode.go:34 s=10
+   115: 0x100a4785c M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1228 s=1163
+   116: 0x100a3b784 M=1 runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:304 s=304
+   117: 0x100a47834 M=1 runtime.(*gcWork).tryGetFast /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcwork.go:236 s=234
+             runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1227 s=1163
+   118: 0x100a3b88c M=1 runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:309 s=304
+   119: 0x100a4782c M=1 runtime.(*gcWork).tryGetFast /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcwork.go:235 s=234
+             runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1227 s=1163
+   120: 0x100a3c410 M=1 runtime.typePointers.next /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:283 s=275
+   121: 0x100a4802b M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1459 s=1395
+   122: 0x100a3c2a4 M=1 runtime.(*mspan).typePointersOfUnchecked /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:177 s=177
+   123: 0x100a47fdb M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1446 s=1395
+   124: 0x100a48038 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1482 s=1395
+   125: 0x100a3c2ac M=1 runtime.(*mspan).typePointersOfUnchecked /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:184 s=177
+   126: 0x100a4854c M=1 runtime.pageIndexOf /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:735 s=733
+             runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1643 s=1615
+   127: 0x100a48018 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1458 s=1395
+   128: 0x100a4779c M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1217 s=1163
+   129: 0x100a3b7a4 M=1 runtime.spanOf /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:690 s=672
+             runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:305 s=304
+   130: 0x100a5bcdb M=1 runtime.wbBufFlush1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mwbbuf.go:240 s=195
+   131: 0x100c3677c M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:60 s=60
+   132: 0x100a485cc M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1638 s=1615
+   133: 0x100a48044 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1478 s=1395
+   134: 0x100a477b4 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1217 s=1163
+   135: 0x100a3b880 M=1 runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:336 s=304
+   136: 0x100a48574 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1644 s=1615
+   137: 0x100a3ccf4 M=1 runtime.(*mspan).heapBitsSmallForAddr /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:768 s=746
+   138: 0x100a3c2ff M=1 runtime.(*mspan).typePointersOfUnchecked /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:190 s=177
+   139: 0x100a4846c M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1615 s=1615
+   140: 0x100c65bbc M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:102 s=78
+   141: 0x100a9f988 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:162 s=117
+   142: 0x100a47894 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1238 s=1163
+   143: 0x100a3b7c8 M=1 runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:305 s=304
+   144: 0x100a478d0 M=1 runtime/internal/atomic.(*Int64).Add /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/internal/atomic/types.go:109 s=108
+             runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1248 s=1163
+   145: 0x100a47808 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1223 s=1163
+   146: 0x100ab6488 M=1 context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:454 s=453
+   147: 0x100a48470 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1615 s=1615
+   148: 0x100a477f0 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1217 s=1163
+   149: 0x100a768ac M=1 runtime.cansemacquire /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:260 s=254
+             runtime.semacquire1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:161 s=114
+   150: 0x100c02700 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionPropertyStringID /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/projection_property.go:41 s=11
+   151: 0x100a48634 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1665 s=1615
+   152: 0x100a47ff8 M=1 runtime.typePointers.nextFast /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:251 s=249
+             runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1458 s=1395
+   153: 0x100a3b8d4 M=1 runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:315 s=304
+   154: 0x100a4f7df M=1 runtime.(*gcWork).balance /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcwork.go:304 s=288
+   155: 0x100a4780f M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1224 s=1163
+   156: 0x100a47f40 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1395 s=1395
+   157: 0x100a480a4 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1458 s=1395
+   158: 0x100a3ccd8 M=1 runtime.(*mspan).heapBitsSmallForAddr /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:766 s=746
+   159: 0x100a484ac M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1628 s=1615
+   160: 0x100a48550 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1644 s=1615
+   161: 0x100a47ff4 M=1 runtime.typePointers.nextFast /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:251 s=249
+             runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1458 s=1395
+   162: 0x100a3c38c M=1 runtime.typePointers.next /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:295 s=275
+   163: 0x100a4803c M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1478 s=1395
+   164: 0x100a48488 M=1 runtime.(*gcBits).bytep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:2091 s=2090
+             runtime.(*gcBits).bitp /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:2097 s=2096
+             runtime.(*mspan).markBitsForIndex /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:201 s=200
+             runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1620 s=1615
+   165: 0x100a51253 M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.(*mheap).allocSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1210 s=1171
+   166: 0x100a50dd7 M=1 runtime.(*mheap).allocManual /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:990 s=986
+   167: 0x100a4fb23 M=1 runtime.getempty.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcwork.go:378 s=377
+   168: 0x100a4f997 M=1 runtime.getempty /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcwork.go:377 s=352
+   169: 0x100a4f287 M=1 runtime.(*gcWork).put /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcwork.go:130 s=113
+   170: 0x100a4802c M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1459 s=1395
+   171: 0x100a3c428 M=1 runtime.typePointers.nextFast /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:257 s=249
+             runtime.typePointers.next /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:278 s=275
+   172: 0x100a3b870 M=1 runtime.(*mspan).divideByElemSize /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:178 s=174
+             runtime.(*mspan).objIndex /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:191 s=190
+             runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:334 s=304
+   173: 0x100a9dc10 M=1 errors.Is /opt/homebrew/Cellar/go/1.22.0/libexec/src/errors/wrap.go:50 s=44
+   174: 0x100c6af33 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.failMainStringRead /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_source.go:210 s=209
+   175: 0x100c661a3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:119 s=78
+   176: 0x100c65c24 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:99 s=78
+   177: 0x100a9fc88 M=1 sync.(*Mutex).unlockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:245 s=227
+   178: 0x100a3c358 M=1 runtime.typePointers.next /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:277 s=275
+   179: 0x100a3d360 M=1 runtime.(*mcache).refill /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mcache.go:163 s=147
+   180: 0x100a346eb M=1 runtime.(*mcache).nextFree /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:948 s=938
+   181: 0x100a34b2f M=1 runtime.mallocgc /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:1120 s=971
+   182: 0x100a932a3 M=1 internal/bytealg.MakeNoZero /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/slice.go:369 s=365
+   183: 0x100ae86fb M=1 strings.(*Builder).grow /opt/homebrew/Cellar/go/1.22.0/libexec/src/strings/builder.go:69 s=68
+   184: 0x100ae880b M=1 strings.(*Builder).Grow /opt/homebrew/Cellar/go/1.22.0/libexec/src/strings/builder.go:83 s=77
+   185: 0x100a71c48 M=1 runtime.runqgrab /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:6850 s=6813
+   186: 0x100a48068 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1458 s=1395
+   187: 0x100a3c374 M=1 runtime.typePointers.next /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:288 s=275
+   188: 0x100a480a8 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1482 s=1395
+   189: 0x100a477ac M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1217 s=1163
+   190: 0x100ab6140 M=1 context.(*cancelCtx).Done /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:438 s=438
+   191: 0x100a9dbcc M=1 errors.Is /opt/homebrew/Cellar/go/1.22.0/libexec/src/errors/wrap.go:45 s=44
+   192: 0x100c660e3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:106 s=78
+   193: 0x100a3ccec M=1 runtime.(*mspan).heapBitsSmallForAddr /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:766 s=746
+   194: 0x100c3678c M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:62 s=60
+   195: 0x100a2dac4 M=1 runtime.chanrecv /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:474 s=457
+   196: 0x100a2e3cb M=1 runtime.selectnbrecv /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:714 s=713
+   197: 0x100a484b0 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1628 s=1615
+   198: 0x100a3cd5c M=1 runtime.(*mspan).heapBitsSmallForAddr /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:776 s=746
+   199: 0x100c4dccf M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:57 s=44
+   200: 0x100a48508 M=1 runtime.markBits.setMarked /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:219 s=215
+             runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1640 s=1615
+   201: 0x100a48564 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1644 s=1615
+   202: 0x100a485f8 M=1 runtime.(*gcWork).putFast /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcwork.go:153 s=152
+             runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1662 s=1615
+   203: 0x100a3b7ec M=1 runtime.(*mspan).base /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:495 s=494
+             runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:321 s=304
+   204: 0x100bf4dc7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/distinct_projection.go:62 s=55
+   205: 0x100c02667 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionPropertyStringID /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/projection_property.go:33 s=11
+   206: 0x100a47f9c M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1412 s=1395
+   207: 0x100c8788f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringPredicate /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/string_predicate.go:26 s=10
+   208: 0x100c4dd23 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:58 s=44
+   209: 0x100c6624f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:121 s=78
+   210: 0x100a4807c M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1492 s=1395
+   211: 0x100a46ce4 M=1 runtime/internal/atomic.(*Int64).Add /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/internal/atomic/types.go:109 s=108
+             runtime.gcFlushBgCredit /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:769 s=763
+   212: 0x100a4790f M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1250 s=1163
+   213: 0x100a48080 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1493 s=1395
+   214: 0x100c65b3c M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:98 s=78
+   215: 0x100a9f934 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:154 s=117
+   216: 0x100a47858 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1227 s=1163
+   217: 0x100a485c0 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1652 s=1615
+   218: 0x100a485f4 M=1 runtime.greyobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1660 s=1615
+   219: 0x100a47790 M=1 runtime.gcDrain /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1217 s=1163
+   220: 0x100a33463 M=1 runtime.unlock2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:124 s=109
+   221: 0x100a76853 M=1 runtime.unlockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:34 s=33
+             runtime.unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:103 s=102
+             runtime.semacquire1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:154 s=114
+   222: 0x100a9dcbc M=1 errors.is /opt/homebrew/Cellar/go/1.22.0/libexec/src/errors/wrap.go:58 s=53
+   223: 0x100a9dc23 M=1 errors.Is /opt/homebrew/Cellar/go/1.22.0/libexec/src/errors/wrap.go:50 s=44
+   224: 0x100a3b7b8 M=1 runtime.spanOf /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:698 s=672
+             runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:305 s=304
+   225: 0x100a3cd58 M=1 runtime.(*mspan).heapBitsSmallForAddr /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:774 s=746
+   226: 0x100a3b780 M=1 runtime.findObject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap.go:304 s=304
+   227: 0x100a3c2a0 M=1 runtime.(*mspan).typePointersOfUnchecked /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mbitmap_allocheaders.go:177 s=177
+   228: 0x100aba120 M=1 unicode/utf8.ValidString /opt/homebrew/Cellar/go/1.22.0/libexec/src/unicode/utf8/utf8.go:536 s=528
+   229: 0x100c876cf M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringPredicate /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/string_predicate.go:17 s=10
+   230: 0x100a34f14 M=1 runtime.mallocgc /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:1259 s=971
+   231: 0x100a9f8d8 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:126 s=117
+   232: 0x100a48098 M=1 runtime.scanobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcmark.go:1458 s=1395
+   233: 0x100a97980 M=1 runtime.asyncPreempt /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/preempt_arm64.s:7 s=6
+   234: 0x100c66088 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:104 s=78
+   235: 0x100a6ac03 M=1 runtime.goschedImpl /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4065 s=4039
+   236: 0x100a7cdbb M=1 runtime.gopreempt_m /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4082 s=4081
+             runtime.newstack /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/stack.go:1070 s=962
+   237: 0x100a94c0f M=1 runtime.morestack /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:341 s=301
+   238: 0x100c36780 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:60 s=60
+   239: 0x100c876c3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringPredicate /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/string_predicate.go:13 s=10
+   240: 0x100bf4db4 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/distinct_projection.go:62 s=55
+   241: 0x100b22284 M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/javastring/unicode.go:24 s=10
+   242: 0x100c66078 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:104 s=78
+   243: 0x100b22294 M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/javastring/unicode.go:24 s=10
+   244: 0x100a9f9b0 M=1 sync.(*Mutex).lockSlow /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:197 s=117
+   245: 0x100a330ef M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+   246: 0x100a4ea63 M=1 runtime.(*sweepLocked).sweep.(*mheap).freeSpan.func3 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1554 s=1551
+   247: 0x100a3de0c M=1 runtime.(*mcentral).fullUnswept /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mcentral.go:71 s=70
+             runtime.(*mcentral).cacheSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mcentral.go:141 s=81
+   248: 0x100a3d41b M=1 runtime.(*mcache).refill /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mcache.go:182 s=147
+   249: 0x100a34cdf M=1 runtime.mallocgc /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:1149 s=971
+   250: 0x100a3a583 M=1 runtime.newobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:1390 s=1389
+             runtime.mapassign_faststr /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/map_faststr.go:221 s=203
+   251: 0x100c4dfcb M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.clone /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:72 s=69
+             github.com/johnsonlee/graphite/graphite-server/internal/query.distinctVisibleKey /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:64 s=63
+   252: 0x100c51fef M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:496 s=492
+   253: 0x100a824ff M=1 runtime.pthread_mutex_lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:479 s=478
+   254: 0x100a5d163 M=1 runtime.semawakeup /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/os_darwin.go:81 s=77
+   255: 0x100a76a43 M=1 runtime.unlockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:34 s=33
+             runtime.unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:103 s=102
+             runtime.semrelease1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:198 s=175
+   256: 0x100a33400 M=1 runtime.unlock2 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:115 s=109
+   257: 0x100a3336f M=1 runtime.unlockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:34 s=33
+             runtime.unlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:103 s=102
+   258: 0x100a4ea7b M=1 runtime.(*sweepLocked).sweep.(*mheap).freeSpan.func3 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1568 s=1551
+   259: 0x100a4e23f M=1 runtime.(*mheap).freeSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1551 s=1550
+             runtime.(*sweepLocked).sweep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcsweep.go:758 s=499
+   260: 0x100a4d71f M=1 runtime.sweepone /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcsweep.go:390 s=353
+   261: 0x100a4d45f M=1 runtime.bgsweep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcsweep.go:299 s=271
+   262: 0x100b22324 M=1 strings.(*Builder).copyCheck /opt/homebrew/Cellar/go/1.22.0/libexec/src/strings/builder.go:42 s=34
+             strings.(*Builder).WriteByte /opt/homebrew/Cellar/go/1.22.0/libexec/src/strings/builder.go:98 s=97
+             github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/javastring/unicode.go:41 s=10
+   263: 0x100a6872b M=1 runtime.lockWithRank /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lockrank_off.go:24 s=23
+             runtime.lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/lock_sema.go:39 s=38
+             runtime.findRunnable /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3398 s=3139
+   264: 0x100a550bc M=1 runtime.(*pageAlloc).chunkOf /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mpagealloc.go:350 s=349
+             runtime.(*pageAlloc).free /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mpagealloc.go:949 s=936
+   265: 0x100a520f7 M=1 runtime.(*mheap).freeSpanLocked /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1640 s=1592
+   266: 0x100a4ea73 M=1 runtime.(*sweepLocked).sweep.(*mheap).freeSpan.func3 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1567 s=1551
+   267: 0x100c660a8 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:104 s=78
+   268: 0x100a52f80 M=1 runtime.(*gcBitsArena).tryAlloc /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:2127 s=2126
+             runtime.newMarkBits /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:2148 s=2142
+   269: 0x100a4df63 M=1 runtime.(*sweepLocked).sweep /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcsweep.go:668 s=499
+   270: 0x100a81fab M=1 runtime.madvise /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:253 s=252
+   271: 0x100a4b8ef M=1 runtime.sysUnusedOS /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mem_darwin.go:26 s=23
+             runtime.sysUnused /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mem.go:62 s=60
+             runtime.(*pageAlloc).scavengeOne /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcscavenge.go:780 s=732
+   272: 0x100a4b50b M=1 runtime.(*pageAlloc).scavenge.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcscavenge.go:683 s=682
+   273: 0x100a765dc M=1 runtime.cansemacquire /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:260 s=254
+             runtime.semacquire1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:121 s=114
+   274: 0x100ab645c M=1 sync.(*Mutex).Lock /opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:83 s=81
+             context.(*cancelCtx).Err /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go:454 s=453
+   275: 0x100a2d487 M=1 runtime.send.goready.func1 /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:413 s=412
+   276: 0x100a533fc M=1 runtime.newArenaMayUnlock /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:2250 s=2238
+   277: 0x100a530c3 M=1 runtime.newMarkBits /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:2164 s=2142
+   278: 0x100a51907 M=1 runtime.(*mheap).initSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1413 s=1377
+   279: 0x100a51517 M=1 runtime.(*mheap).allocSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:1340 s=1171
+   280: 0x100a50ce3 M=1 runtime.(*mheap).alloc /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mheap.go:958 s=953
+   281: 0x100a3e12b M=1 runtime.(*mcentral).grow /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mcentral.go:254 s=250
+   282: 0x100a3df7b M=1 runtime.(*mcentral).cacheSpan /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mcentral.go:170 s=81
+   283: 0x100a352cb M=1 runtime.newobject /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/malloc.go:1390 s=1389
+   284: 0x100a35e13 M=1 runtime.makemap_small /opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/map.go:295 s=294
+   285: 0x100c51bc3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:464 s=451
+Mappings
+1: 0x100a28000/0x100d30000/0x0 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/graphite-benchmark-profile  [FN]

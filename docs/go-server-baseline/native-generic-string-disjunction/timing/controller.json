@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "workload": {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json",
+    "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+  },
+  "graphManifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "states": [
+    "cold",
+    "startup-prepared",
+    "warm-after-failed-prewarm"
+  ],
+  "trials": [
+    {
+      "id": "cold-0001",
+      "state": "cold",
+      "recordsPath": "cold-0001/records.json",
+      "recordsSHA256": "dd82824dbdbd853af16e0403cd719aadec18aa56b06444a3b64c1ca195f78444",
+      "verificationPassed": true,
+      "complete": true,
+      "serialExecutionVerified": true
+    },
+    {
+      "id": "startup-prepared-0001",
+      "state": "startup-prepared",
+      "recordsPath": "startup-prepared-0001/records.json",
+      "recordsSHA256": "edb28e8012e253a4a6f8b049c6c4d1065d36272234b69b007cc3fbaf5b93fe58",
+      "verificationPassed": true,
+      "complete": true,
+      "serialExecutionVerified": true
+    },
+    {
+      "id": "warm-after-failed-prewarm-0001",
+      "state": "warm-after-failed-prewarm",
+      "recordsPath": "warm-after-failed-prewarm-0001/records.json",
+      "recordsSHA256": "1f2cd4aa4a9f77789262ada86644d76f891b0f9963766ad1833e8a80d4649c65",
+      "verificationPassed": true,
+      "complete": true,
+      "serialExecutionVerified": true
+    }
+  ],
+  "schedule": [
+    {
+      "id": "cold-0001",
+      "state": "cold",
+      "runtimeOrder": [
+        "main",
+        "go"
+      ]
+    },
+    {
+      "id": "startup-prepared-0001",
+      "state": "startup-prepared",
+      "runtimeOrder": [
+        "go",
+        "main"
+      ]
+    },
+    {
+      "id": "warm-after-failed-prewarm-0001",
+      "state": "warm-after-failed-prewarm",
+      "runtimeOrder": [
+        "main",
+        "go"
+      ]
+    }
+  ],
+  "plannedPairsPerState": 1,
+  "measurementAcceptanceEligible": false,
+  "limitations": [
+    "Original all-success benchmark gate fails on case821",
+    "warm-after-failed-prewarm is diagnostic continuation, not formal original warm",
+    "Go lacks main-equivalent resource sampler and work metrics; full server fidelity unfinished"
+  ],
+  "protocol": "fresh process per runtime/state/whole ordered workload; no discarded process JIT warmup; alternating paired runtime order",
+  "build": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-acb06574-build-v1",
+  "buildInputsSHA256": "6959f0e70dba50d44828e546845b86fd6ab25e90e8b50144d24e2f952db6a73c",
+  "buildSHA256": "0ca96135b4317d2364277b7e346ef92620e4cc08ea707a0c898caeab08638ff5",
+  "status": "complete",
+  "currentTrial": null
+}

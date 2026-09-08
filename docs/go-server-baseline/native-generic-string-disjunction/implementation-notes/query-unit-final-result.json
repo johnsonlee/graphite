@@ -1,0 +1,12 @@
+{
+  "command": "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go test ./internal/query -run '^TestGenericDisjunctionMainReadSemantics$' -count=1",
+  "workingDirectory": "graphite-server",
+  "sessionId": 30719,
+  "exitCode": 0,
+  "output": "ok  \tgithub.com/johnsonlee/graphite/graphite-server/internal/query\t0.576s\n",
+  "selectedJavaPublicCases": 83,
+  "totalJavaOracleCases": 201,
+  "testFile": "graphite-server/internal/query/generic_disjunction_test.go",
+  "testFileSHA256": "d7940832ea7c69e4f761ee2781aeebff5255b18f36569838913f20bb2c605aa2",
+  "performanceEvidence": false
+}

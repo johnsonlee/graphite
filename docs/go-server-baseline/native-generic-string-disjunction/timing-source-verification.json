@@ -1,0 +1,14 @@
+{
+  "measurementEngineRevision": "acb065745f123d1dc362e24574628e40a05b4e91",
+  "internalGoFilesCompared": 285,
+  "workspaceAndFrozenBuildEqualMeasuredCommit": true,
+  "sourceBundleSHA256": "922e345b8726fdd476ac0eeb686f5b586b99555f0c00cccb6afcabd43d7c974f",
+  "sourceBundleBytes": 41624085,
+  "sourceBundlePrerequisite": "513e2b96d4cd5136560461d06f3b804e6aa67c41",
+  "fullCaseCountPerRuntime": 1267,
+  "stateCaseRows": 3801,
+  "samplesPerCasePerRuntimePerState": 1,
+  "perCaseP95Available": false,
+  "tenfoldP95AcceptanceProven": false,
+  "allThreePairsVerified": true
+}

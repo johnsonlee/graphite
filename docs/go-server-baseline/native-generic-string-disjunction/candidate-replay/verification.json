@@ -1,0 +1,112 @@
+{
+  "performanceMeasurements": 0,
+  "versions": [
+    {
+      "version": "v1",
+      "cases": 201,
+      "publicMatchesEachReference": 166,
+      "providerWrapperMatchesEachReference": 19,
+      "differencesEachReference": 16,
+      "newMismatchCasesComparedWithBaseline": [],
+      "resolvedMismatchCasesComparedWithBaseline": [
+        "enum-bad-sid-0-global-miss",
+        "enum-bad-sid-1-global-miss",
+        "enum-bad-tail-global-miss",
+        "field-bad-sid-0-global-miss",
+        "field-bad-sid-1-global-miss",
+        "field-bad-sid-2-global-miss",
+        "local-bad-sid-0-global-miss",
+        "local-bad-sid-1-global-miss",
+        "local-bad-tail-global-miss"
+      ],
+      "publicOutputErrorStateChangedCasesComparedWithBaseline": [
+        "enum-bad-sid-0-global-miss",
+        "enum-bad-sid-1-global-miss",
+        "enum-bad-tail-global-miss",
+        "local-bad-sid-0-global-miss",
+        "local-bad-sid-1-global-miss",
+        "local-bad-tail-global-miss",
+        "field-bad-sid-0-global-miss",
+        "field-bad-sid-1-global-miss",
+        "field-bad-sid-2-global-miss",
+        "annotation-bad-tail-global-miss"
+      ],
+      "sourceFiles": 2535,
+      "originalFixtureFilesUnchanged": 3036,
+      "addedFixtureFiles": 22
+    },
+    {
+      "version": "v2",
+      "cases": 201,
+      "publicMatchesEachReference": 166,
+      "providerWrapperMatchesEachReference": 19,
+      "differencesEachReference": 16,
+      "newMismatchCasesComparedWithBaseline": [],
+      "resolvedMismatchCasesComparedWithBaseline": [
+        "enum-bad-sid-0-global-miss",
+        "enum-bad-sid-1-global-miss",
+        "enum-bad-tail-global-miss",
+        "field-bad-sid-0-global-miss",
+        "field-bad-sid-1-global-miss",
+        "field-bad-sid-2-global-miss",
+        "local-bad-sid-0-global-miss",
+        "local-bad-sid-1-global-miss",
+        "local-bad-tail-global-miss"
+      ],
+      "publicOutputErrorStateChangedCasesComparedWithBaseline": [
+        "enum-bad-sid-0-global-miss",
+        "enum-bad-sid-1-global-miss",
+        "enum-bad-tail-global-miss",
+        "local-bad-sid-0-global-miss",
+        "local-bad-sid-1-global-miss",
+        "local-bad-tail-global-miss",
+        "field-bad-sid-0-global-miss",
+        "field-bad-sid-1-global-miss",
+        "field-bad-sid-2-global-miss",
+        "annotation-bad-tail-global-miss"
+      ],
+      "sourceFiles": 2536,
+      "originalFixtureFilesUnchanged": 3036,
+      "addedFixtureFiles": 22
+    }
+  ],
+  "v1V2ComparedFieldsEqual": true,
+  "v1V2RawDifferencesPreserved": [
+    {
+      "name": "provider-field-bad-sid-0-example",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "name": "provider-field-bad-sid-0-never-matches-generic-oracle",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "name": "provider-field-bad-sid-1-example",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "name": "provider-field-bad-sid-1-never-matches-generic-oracle",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "name": "provider-field-bad-sid-2-example",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "name": "provider-field-payload-id-example",
+      "fields": [
+        "goStack"
+      ]
+    }
+  ]
+}

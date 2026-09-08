@@ -1,0 +1,38 @@
+[
+  {
+    "id": "global-six-or-zero",
+    "totalAllocDelta": 83735392,
+    "processCPUSecondsDelta": 6.022077999999999,
+    "cpuSamples": 7316
+  },
+  {
+    "id": "global-six-or-targeted",
+    "totalAllocDelta": 376804616,
+    "processCPUSecondsDelta": 6.676716000000015,
+    "cpuSamples": 7270
+  },
+  {
+    "id": "global-six-or-dense",
+    "totalAllocDelta": 294379144,
+    "processCPUSecondsDelta": 6.396731000000003,
+    "cpuSamples": 6638
+  },
+  {
+    "id": "global-six-or-wrapped-zero",
+    "totalAllocDelta": 163166408,
+    "processCPUSecondsDelta": 7.344588000000002,
+    "cpuSamples": 5713
+  },
+  {
+    "id": "global-six-or-wrapped-targeted",
+    "totalAllocDelta": 421672936,
+    "processCPUSecondsDelta": 11.768850000000004,
+    "cpuSamples": 4939
+  },
+  {
+    "id": "global-six-or-wrapped-dense",
+    "totalAllocDelta": 379019200,
+    "processCPUSecondsDelta": 7.535464000000001,
+    "cpuSamples": 4876
+  }
+]

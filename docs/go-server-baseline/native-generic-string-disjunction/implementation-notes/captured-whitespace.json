@@ -1,0 +1,31 @@
+{
+  "gitDiffCheckExitCode": 2,
+  "capturedArtifactNotices": [
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-after.txt:631: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-after.txt:641: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-after.txt:650: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-after.txt:655: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-after.txt:681: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-after.txt:778: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-before.txt:635: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-before.txt:645: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-before.txt:654: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-before.txt:659: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-before.txt:685: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/baseline/processes-before.txt:782: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-after.txt:633: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-after.txt:643: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-after.txt:652: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-after.txt:657: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-after.txt:683: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-after.txt:780: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-before.txt:631: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-before.txt:641: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-before.txt:650: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-before.txt:655: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-before.txt:681: trailing whitespace.",
+    "docs/go-server-baseline/native-generic-string-disjunction/real64/serial-cold-controls/candidate/processes-before.txt:778: trailing whitespace."
+  ],
+  "originalCapturedBytesRetained": true,
+  "productionDiffCheckExitCode": 0
+}

@@ -1,0 +1,25 @@
+{
+  "noticeCount": 3365,
+  "byFile": {
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-after/main-overlay.diff": 12,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-after/profiles/global-six-or-dense/cpu-raw.txt": 53,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-after/profiles/global-six-or-targeted/cpu-raw.txt": 79,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-after/profiles/global-six-or-wrapped-dense/cpu-raw.txt": 53,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-after/profiles/global-six-or-wrapped-targeted/alloc-delta-raw.txt": 177,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-after/profiles/global-six-or-wrapped-targeted/cpu-raw.txt": 221,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-after/profiles/global-six-or-wrapped-zero/cpu-raw.txt": 44,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-after/profiles/global-six-or-zero/cpu-raw.txt": 40,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/main-overlay.diff": 12,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/profiles/global-six-or-dense/cpu-raw.txt": 131,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/profiles/global-six-or-targeted/cpu-raw.txt": 170,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/profiles/global-six-or-wrapped-dense/alloc-delta-raw.txt": 1354,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/profiles/global-six-or-wrapped-dense/cpu-raw.txt": 310,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/profiles/global-six-or-wrapped-targeted/cpu-raw.txt": 127,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/profiles/global-six-or-wrapped-zero/cpu-raw.txt": 121,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/profiles/global-six-or-zero/alloc-delta-raw.txt": 169,
+    "docs/go-server-baseline/native-generic-string-disjunction/profile-before/profiles/global-six-or-zero/cpu-raw.txt": 292
+  },
+  "authoredFilesWhitespaceCheckPassed": true,
+  "capturedBytesRetained": true,
+  "correction": "Earlier wrappers omitted captured pprof whitespace and unified-diff context indentation. All notices are confined to these frozen raw artifacts; no captured bytes were rewritten."
+}

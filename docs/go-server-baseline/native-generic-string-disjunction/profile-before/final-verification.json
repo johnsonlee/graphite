@@ -1,0 +1,66 @@
+{
+  "artifactFiles": 119,
+  "completeModuleFiles": 2536,
+  "caseCount": 1267,
+  "successCount": 1266,
+  "originalFailures": 1,
+  "performanceMeasurement": false,
+  "verifiedBrackets": [
+    {
+      "id": "global-six-or-zero",
+      "totalAllocDelta": 1512904392,
+      "processCPUMicroseconds": 17680708,
+      "sampledCPUSeconds": 46.07,
+      "gcSampleCount": 252,
+      "numGCDelta": 1,
+      "note": "Sample totals are not exact process CPU shares; all groups overlap and runtime-wait samples dominate."
+    },
+    {
+      "id": "global-six-or-targeted",
+      "totalAllocDelta": 1785231040,
+      "processCPUMicroseconds": 13565079,
+      "sampledCPUSeconds": 40.65,
+      "gcSampleCount": 0,
+      "numGCDelta": 0,
+      "note": "Sample totals are not exact process CPU shares; all groups overlap and runtime-wait samples dominate."
+    },
+    {
+      "id": "global-six-or-dense",
+      "totalAllocDelta": 1711444576,
+      "processCPUMicroseconds": 14214895,
+      "sampledCPUSeconds": 51.7,
+      "gcSampleCount": 0,
+      "numGCDelta": 0,
+      "note": "Sample totals are not exact process CPU shares; all groups overlap and runtime-wait samples dominate."
+    },
+    {
+      "id": "global-six-or-wrapped-zero",
+      "totalAllocDelta": 1632995480,
+      "processCPUMicroseconds": 18012802,
+      "sampledCPUSeconds": 47.45,
+      "gcSampleCount": 0,
+      "numGCDelta": 0,
+      "note": "Sample totals are not exact process CPU shares; all groups overlap and runtime-wait samples dominate."
+    },
+    {
+      "id": "global-six-or-wrapped-targeted",
+      "totalAllocDelta": 1882581256,
+      "processCPUMicroseconds": 19750954,
+      "sampledCPUSeconds": 53.77,
+      "gcSampleCount": 0,
+      "numGCDelta": 0,
+      "note": "Sample totals are not exact process CPU shares; all groups overlap and runtime-wait samples dominate."
+    },
+    {
+      "id": "global-six-or-wrapped-dense",
+      "totalAllocDelta": 1833654184,
+      "processCPUMicroseconds": 24346378,
+      "sampledCPUSeconds": 53.84,
+      "gcSampleCount": 268,
+      "numGCDelta": 1,
+      "note": "Sample totals are not exact process CPU shares; all groups overlap and runtime-wait samples dominate."
+    }
+  ],
+  "verifierExitCode": 0,
+  "verificationScope": "Complete source/executable archive bytes,1152fixture audit receipts,all1267cases and original821failure,6exactrawcounterbrackets; originalcanonical comparison independently passed before archive."
+}

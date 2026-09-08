@@ -1,0 +1,38 @@
+File: graphite-benchmark-profile
+Type: inuse_space
+Time: Sep 8, 2026 at 5:03pm (KST)
+Showing nodes accounting for 11.07GB, 99.42% of 11.14GB total
+Dropped 85 nodes (cum <= 0.06GB)
+      flat  flat%   sum%        cum   cum%
+    5.06GB 45.45% 45.45%     5.06GB 45.45%  os.ReadFile
+    3.96GB 35.55% 81.01%     3.96GB 35.55%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).loadEdges
+    0.94GB  8.46% 89.47%     0.94GB  8.46%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenMode.func2
+    0.47GB  4.22% 93.70%     0.78GB  7.04%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).metadata
+    0.15GB  1.32% 95.01%     0.15GB  1.32%  github.com/johnsonlee/graphite/graphite-server/internal/store.MethodDescriptor.Signature (inline)
+    0.15GB  1.31% 96.32%     0.19GB  1.67%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows
+    0.09GB  0.78% 97.10%     0.09GB  0.78%  unicode/utf8.AppendRune (inline)
+    0.09GB  0.78% 97.88%     0.09GB  0.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+    0.07GB  0.61% 98.49%     0.08GB  0.68%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).ids
+    0.06GB  0.54% 99.03%     0.06GB  0.54%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenMode.func4
+    0.04GB   0.4% 99.42%     0.13GB  1.18%  github.com/johnsonlee/graphite/graphite-server/internal/store.decodeStringRecords[go.shape.uint16]
+         0     0% 99.42%     0.19GB  1.72%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourcePrefix
+         0     0% 99.42%     0.19GB  1.72%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func2
+         0     0% 99.42%     5.06GB 45.45%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator
+         0     0% 99.42%     5.06GB 45.45%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.ordinaryCandidateIterator
+         0     0% 99.42%     5.06GB 45.43%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.ordinaryProjection.func1
+         0     0% 99.42%     5.06GB 45.45%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.ordinarySourceRows
+         0     0% 99.42%     5.06GB 45.43%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.[]map[string]interface {}].func1.1
+         0     0% 99.42%     0.19GB  1.72%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.struct { github.com/johnsonlee/graphite/graphite-server/internal/query.rows []map[string]interface {}; github.com/johnsonlee/graphite/graphite-server/internal/query.known map[string]bool; github.com/johnsonlee/graphite/graphite-server/internal/query.index *github.com/johnsonlee/graphite/graphite-server/internal/store.DistinctStringIndex }].func1.1
+         0     0% 99.42%     5.06GB 45.45%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).PrepareDistinctStringIndex
+         0     0% 99.42%     5.06GB 45.45%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets
+         0     0% 99.42%     0.13GB  1.18%  github.com/johnsonlee/graphite/graphite-server/internal/store.LoadStrings
+         0     0% 99.42%     0.09GB  0.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.LoadStrings.func1
+         0     0% 99.42%     5.88GB 52.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenMode
+         0     0% 99.42%     0.78GB  7.04%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenMode.func3
+         0     0% 99.42%     5.88GB 52.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenModeWithOptions
+         0     0% 99.42%     1.79GB 16.04%  github.com/johnsonlee/graphite/graphite-server/internal/store.decodeFile
+         0     0% 99.42%     0.09GB  0.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.stringFromUTF16
+         0     0% 99.42%     5.88GB 52.81%  main.main
+         0     0% 99.42%     5.88GB 52.81%  main.run
+         0     0% 99.42%     5.88GB 52.82%  runtime.main
+         0     0% 99.42%     0.09GB  0.78%  strings.(*Builder).WriteRune

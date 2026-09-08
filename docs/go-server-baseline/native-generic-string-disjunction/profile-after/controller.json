@@ -1,0 +1,15 @@
+{
+  "status": "terminal",
+  "exitCode": 0,
+  "runtimeExitCode": 1,
+  "performanceMeasurement": false,
+  "profilesSelected": [
+    "global-six-or-zero",
+    "global-six-or-targeted",
+    "global-six-or-dense",
+    "global-six-or-wrapped-zero",
+    "global-six-or-wrapped-targeted",
+    "global-six-or-wrapped-dense"
+  ],
+  "fullOrderedCaseCount": 1267
+}

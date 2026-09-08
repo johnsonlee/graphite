@@ -36,8 +36,21 @@ func (e evaluator) mainStreamingStringCandidates(source Graph, pattern cypher.No
 }
 
 func (e evaluator) mainStringCandidatesWithStorage(source Graph, pattern cypher.NodePattern, atoms []distinctStringAtom, sourceCount int, forcePersisted, fullSplitScan bool) mainNodeNext {
+	return e.mainStringCandidatesExcludingCallSites(source, pattern, atoms, sourceCount, forcePersisted, fullSplitScan, false)
+}
+
+// Indexed projection has already consumed the CallSite storage capability. Its
+// remaining direct-string candidates exclude that type before lookup creation.
+func (e evaluator) mainGenericStringCandidates(source Graph, atoms []distinctStringAtom, sourceCount int) mainNodeNext {
+	return e.mainStringCandidatesExcludingCallSites(source, cypher.NodePattern{}, atoms, sourceCount, false, false, true)
+}
+
+func (e evaluator) mainStringCandidatesExcludingCallSites(source Graph, pattern cypher.NodePattern, atoms []distinctStringAtom, sourceCount int, forcePersisted, fullSplitScan, excludeCallSites bool) mainNodeNext {
 	children := []mainNodeNext{}
 	for _, entry := range mainDirectStringTypes {
+		if excludeCallSites && entry.kind == "CallSiteNode" {
+			continue
+		}
 		if len(pattern.Labels) > 0 && !matchesLabel(store.Node{Kind: entry.kind}, pattern.Labels[0]) {
 			continue
 		}
@@ -61,9 +74,26 @@ func (e evaluator) mainStringCandidatesWithStorage(source Graph, pattern cypher.
 		}
 		kind := entry.kind
 		position := 0
+		var matchStates [][]byte
 		children = append(children, func(ctx context.Context) (store.Node, bool) {
 			local := e
 			local.ctx = ctx
+			if position < len(ids) && source.Store.Mode == "MAPPED" && kind != "AnnotationNode" && matchStates == nil {
+				local.check()
+				// Main shares match states by transform/mode/expected within
+				// this concrete iterator, including across different properties.
+				shared := map[string][]byte{}
+				matchStates = make([][]byte, len(filters))
+				for i, atom := range filters {
+					key := ordinaryStringKey(atom)
+					states, exists := shared[key]
+					if !exists {
+						states = make([]byte, len(source.Store.Strings))
+						shared[key] = states
+					}
+					matchStates[i] = states
+				}
+			}
 			for position < len(ids) {
 				local.check()
 				id := ids[position]
@@ -71,15 +101,28 @@ func (e evaluator) mainStringCandidatesWithStorage(source Graph, pattern cypher.
 				var node store.Node
 				if source.Store.Mode == "MAPPED" && kind != "AnnotationNode" {
 					matched := false
-					for _, atom := range filters {
+					for i, atom := range filters {
 						sid, present, err := source.Store.ProjectionPropertyStringID(ctx, id, kind, atom.property)
 						failMainStringRead(err)
 						if !present {
 							continue
 						}
-						text, err := source.Store.ProjectionArrayString(ctx, sid)
-						failMainStringRead(err)
-						if local.distinctAtomMatches(atom, text) {
+						states := matchStates[i]
+						if sid < 0 || int64(sid) >= int64(len(states)) {
+							// Preserve the original ByteArray bounds exception;
+							// a Go slice panic has different public semantics.
+							_, err := source.Store.ProjectionArrayString(ctx, sid)
+							failMainStringRead(err)
+						}
+						if states[sid] == 0 {
+							text, err := source.Store.ProjectionArrayString(ctx, sid)
+							failMainStringRead(err)
+							states[sid] = 2
+							if local.distinctAtomMatches(atom, text) {
+								states[sid] = 1
+							}
+						}
+						if states[sid] == 1 {
 							matched = true
 							break
 						}

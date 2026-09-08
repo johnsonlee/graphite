@@ -1,0 +1,8 @@
+PeriodType: space bytes
+Period: 524288
+Time: 2026-09-08 17:03:14.951334 +0900 KST
+Samples:
+alloc_objects/count alloc_space/bytes[dflt] inuse_objects/count inuse_space/bytes
+Locations
+Mappings
+1: 0x100ec4000/0x1011cc000/0x0 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/graphite-benchmark-profile  [FN]

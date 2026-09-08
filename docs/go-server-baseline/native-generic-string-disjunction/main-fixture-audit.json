@@ -1,0 +1,29 @@
+{
+  "originalFiles": 3036,
+  "changed": [],
+  "missing": [],
+  "added": [
+    "annotation-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+    "annotation-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+    "annotation-bad-sid-2-global-miss/store0/graph.callsite-string-index",
+    "annotation-bad-tail-global-miss/store0/graph.callsite-string-index",
+    "enum-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+    "enum-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+    "enum-bad-tail-global-miss/store0/graph.callsite-string-index",
+    "field-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+    "field-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+    "field-bad-sid-2-global-miss/store0/graph.callsite-string-index",
+    "local-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+    "local-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+    "local-bad-tail-global-miss/store0/graph.callsite-string-index",
+    "original-886/store0/graph.callsite-string-index",
+    "original-887/store0/graph.callsite-string-index",
+    "original-888/store0/graph.callsite-string-index",
+    "six-deprecated-1/store0/graph.callsite-string-index",
+    "six-example-1/store0/graph.callsite-string-index",
+    "six-field-1/store0/graph.callsite-string-index",
+    "six-missing-1/store0/graph.callsite-string-index",
+    "six-red-1/store0/graph.callsite-string-index",
+    "six-run-1/store0/graph.callsite-string-index"
+  ]
+}

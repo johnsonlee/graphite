@@ -1,0 +1,107 @@
+File: graphite-benchmark-profile
+Type: cpu
+Time: Sep 8, 2026 at 5:03pm (KST)
+Duration: 2.61s, Total samples = 51.70s (1979.82%)
+Showing nodes accounting for 51.59s, 99.79% of 51.70s total
+Showing top 100 nodes out of 136
+      flat  flat%   sum%        cum   cum%
+       48s 92.84% 92.84%        48s 92.84%  runtime.usleep
+         0     0% 92.84%     33.19s 64.20%  runtime.mcall
+         0     0% 92.84%     33.19s 64.20%  runtime.park_m
+         0     0% 92.84%     33.17s 64.16%  runtime.schedule
+     0.01s 0.019% 92.86%     33.15s 64.12%  runtime.findRunnable
+         0     0% 92.86%     30.93s 59.83%  runtime.stealWork
+         0     0% 92.86%     30.91s 59.79%  runtime.runqgrab
+         0     0% 92.86%     30.91s 59.79%  runtime.runqsteal
+         0     0% 92.86%     18.33s 35.45%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits
+         0     0% 92.86%     18.33s 35.45%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func4
+         0     0% 92.86%     18.33s 35.45%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[string]bool].func1.1
+         0     0% 92.86%     17.70s 34.24%  runtime.lock2
+         0     0% 92.86%     17.70s 34.24%  runtime.lockWithRank (inline)
+         0     0% 92.86%     17.35s 33.56%  context.(*cancelCtx).Err
+         0     0% 92.86%     17.09s 33.06%  runtime.osyield (inline)
+     0.03s 0.058% 92.92%     17.01s 32.90%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows
+         0     0% 92.92%     16.37s 31.66%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode
+         0     0% 92.92%     11.91s 23.04%  runtime.semrelease1
+         0     0% 92.92%     11.91s 23.04%  sync.runtime_Semrelease
+     0.02s 0.039% 92.96%     11.88s 22.98%  sync.(*Mutex).Unlock (inline)
+         0     0% 92.96%     11.86s 22.94%  sync.(*Mutex).unlockSlow
+     0.01s 0.019% 92.98%      5.54s 10.72%  sync.(*Mutex).Lock (inline)
+     0.11s  0.21% 93.19%      5.53s 10.70%  sync.(*Mutex).lockSlow
+         0     0% 93.19%      5.40s 10.44%  runtime.semacquire1
+         0     0% 93.19%      5.40s 10.44%  sync.runtime_SemacquireMutex
+     2.40s  4.64% 97.83%      2.40s  4.64%  runtime.pthread_cond_wait
+         0     0% 97.83%      2.40s  4.64%  runtime.semasleep
+         0     0% 97.83%      1.85s  3.58%  runtime.stopm
+         0     0% 97.83%      1.79s  3.46%  runtime.mPark (inline)
+         0     0% 97.83%      1.79s  3.46%  runtime.notesleep
+         0     0% 97.83%      1.33s  2.57%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows
+         0     0% 97.83%      1.30s  2.51%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionString
+         0     0% 97.83%      0.48s  0.93%  runtime.lock (inline)
+         0     0% 97.83%      0.31s   0.6%  sort.SliceStable
+         0     0% 97.83%      0.31s   0.6%  sort.stable_func
+         0     0% 97.83%      0.30s  0.58%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+     0.01s 0.019% 97.85%      0.29s  0.56%  sort.symMerge_func
+     0.01s 0.019% 97.87%      0.26s   0.5%  sort.rotate_func
+     0.02s 0.039% 97.91%      0.25s  0.48%  sort.swapRange_func (inline)
+     0.04s 0.077% 97.99%      0.24s  0.46%  internal/reflectlite.Swapper.func9
+     0.07s  0.14% 98.12%      0.19s  0.37%  internal/reflectlite.typedmemmove
+     0.14s  0.27% 98.39%      0.15s  0.29%  runtime.mapaccess2_fast32
+         0     0% 98.39%      0.14s  0.27%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets
+         0     0% 98.39%      0.13s  0.25%  runtime.semawakeup
+         0     0% 98.39%      0.12s  0.23%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRange
+         0     0% 98.39%      0.12s  0.23%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows.func1
+         0     0% 98.39%      0.12s  0.23%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionStringIDs
+         0     0% 98.39%      0.12s  0.23%  reflect.typedmemmove (inline)
+     0.12s  0.23% 98.63%      0.12s  0.23%  runtime.pthread_cond_signal
+     0.04s 0.077% 98.70%      0.12s  0.23%  runtime.typedmemmove
+         0     0% 98.70%      0.11s  0.21%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+         0     0% 98.70%      0.10s  0.19%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows.func2
+     0.01s 0.019% 98.72%      0.10s  0.19%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder
+         0     0% 98.72%      0.10s  0.19%  runtime.unlock (inline)
+         0     0% 98.72%      0.10s  0.19%  runtime.unlock2
+         0     0% 98.72%      0.10s  0.19%  runtime.unlockWithRank (inline)
+     0.08s  0.15% 98.88%      0.08s  0.15%  context.(*cancelCtx).Done
+     0.01s 0.019% 98.90%      0.08s  0.15%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches
+     0.08s  0.15% 99.05%      0.08s  0.15%  runtime.duffcopy
+     0.08s  0.15% 99.21%      0.08s  0.15%  runtime.memmove
+     0.07s  0.14% 99.34%      0.07s  0.14%  runtime.duffzero
+     0.02s 0.039% 99.38%      0.06s  0.12%  runtime.mallocgc
+         0     0% 99.38%      0.06s  0.12%  runtime.systemstack
+         0     0% 99.38%      0.06s  0.12%  runtime.wakep
+         0     0% 99.38%      0.05s 0.097%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringPredicate
+         0     0% 99.38%      0.05s 0.097%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+     0.05s 0.097% 99.48%      0.05s 0.097%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).scalarBytes
+         0     0% 99.48%      0.05s 0.097%  sync.(*RWMutex).RUnlock
+         0     0% 99.48%      0.05s 0.097%  sync.(*RWMutex).rUnlockSlow
+     0.05s 0.097% 99.57%      0.05s 0.097%  unicode/utf8.ValidString
+         0     0% 99.57%      0.04s 0.077%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+     0.01s 0.019% 99.59%      0.04s 0.077%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+         0     0% 99.59%      0.04s 0.077%  runtime.convTstring
+         0     0% 99.59%      0.04s 0.077%  sync.(*RWMutex).Unlock
+     0.02s 0.039% 99.63%      0.03s 0.058%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check
+         0     0% 99.63%      0.03s 0.058%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32
+         0     0% 99.63%      0.03s 0.058%  runtime.(*mheap).alloc.func1
+         0     0% 99.63%      0.03s 0.058%  runtime.(*mheap).allocSpan
+     0.01s 0.019% 99.65%      0.03s 0.058%  runtime.heapSetType
+         0     0% 99.65%      0.03s 0.058%  runtime.notewakeup
+         0     0% 99.65%      0.03s 0.058%  runtime.ready
+         0     0% 99.65%      0.03s 0.058%  runtime.startm
+         0     0% 99.65%      0.03s 0.058%  sync.(*RWMutex).Lock
+     0.02s 0.039% 99.69%      0.02s 0.039%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows.func1
+         0     0% 99.69%      0.02s 0.039%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).u8
+     0.01s 0.019% 99.71%      0.02s 0.039%  runtime.(*mspan).writeHeapBitsSmall
+     0.02s 0.039% 99.75%      0.02s 0.039%  runtime.chanrecv
+         0     0% 99.75%      0.02s 0.039%  runtime.makeslice
+         0     0% 99.75%      0.02s 0.039%  runtime.parkunlock_c
+         0     0% 99.75%      0.02s 0.039%  runtime.readyWithTime.goready.func1
+         0     0% 99.75%      0.02s 0.039%  runtime.resetspinning
+         0     0% 99.75%      0.02s 0.039%  runtime.selectnbrecv
+     0.01s 0.019% 99.77%      0.02s 0.039%  sort.insertionSort_func
+         0     0% 99.77%      0.01s 0.019%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+         0     0% 99.77%      0.01s 0.019%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCrossWithOptions
+     0.01s 0.019% 99.79%      0.01s 0.019%  github.com/johnsonlee/graphite/graphite-server/internal/query.clone
+         0     0% 99.79%      0.01s 0.019%  github.com/johnsonlee/graphite/graphite-server/internal/query.distinctVisibleKey
+         0     0% 99.79%      0.01s 0.019%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 99.79%      0.01s 0.019%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourcePrefix
+         0     0% 99.79%      0.01s 0.019%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctStringTableID

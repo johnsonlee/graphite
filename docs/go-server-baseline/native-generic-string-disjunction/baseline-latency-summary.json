@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Frozen previous quoted-contains campaign inputs for raw generic SID comparison; no new timing",
+  "baselineEngineRevision": "8677aff8f9b7a5e575879b698546c38d7af4a48c",
+  "baselineFinalRevision": "513e2b96d4cd5136560461d06f3b804e6aa67c41",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "workload": {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json",
+    "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+  },
+  "graphManifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "samplesPerCasePerRuntimePerState": 1,
+  "perCaseP95Available": false,
+  "tenfoldP95AcceptanceProven": false,
+  "states": [
+    {
+      "state": "cold",
+      "trialId": "cold-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/timing/cold-0001/records.json.gz",
+        "archiveSHA256": "ad9fb9ed6634b6d2408eca1d94a99ab800f47b2d036036be0532df8b73c49d4f",
+        "archiveBytes": 93454,
+        "uncompressedSHA256": "9fec5073db6817ab773eca044b9a787962ec87b8e93b7e8ed6d59cc210e75c4a",
+        "uncompressedBytes": 1195452
+      }
+    },
+    {
+      "state": "startup-prepared",
+      "trialId": "startup-prepared-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/timing/startup-prepared-0001/records.json.gz",
+        "archiveSHA256": "74b2716db3344db40ef01126c5f0d7e7bbb2059ce7093bbf3868e4f812d49bf6",
+        "archiveBytes": 93278,
+        "uncompressedSHA256": "43175d440f4ca4219b0dbc2f1094a61ce98d67e3f8beb60e051770c752bb2440",
+        "uncompressedBytes": 1195311
+      }
+    },
+    {
+      "state": "warm-after-failed-prewarm",
+      "trialId": "warm-after-failed-prewarm-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/timing/warm-after-failed-prewarm-0001/records.json.gz",
+        "archiveSHA256": "834b572b76ea06d694dd513afc8e05dcea51708915dcd4907da99dd50fd74486",
+        "archiveBytes": 93131,
+        "uncompressedSHA256": "246aaf03835b45c53499980a623505ae7a112e87acabb730c8e1e2ce81f63036",
+        "uncompressedBytes": 1195036
+      }
+    }
+  ],
+  "limitations": [
+    "Independent n=1 paired campaigns; no statistical or P95 acceptance claim.",
+    "Exact parent production source; frozen measurement commit retained in previous campaign source bundle.",
+    "Warm state is diagnostic continuation after original failed prewarm."
+  ]
+}

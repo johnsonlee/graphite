@@ -1,0 +1,8 @@
+{
+  "terminalAndVerified": true,
+  "removed": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-data-e6f7df6a80d5-cold-0001-main",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-data-e6f7df6a80d5-cold-0001-go"
+  ],
+  "originalReferenceUntouched": "/Users/johnsonlee/.codex/fixtures/graphite-real64-1152-20260908"
+}

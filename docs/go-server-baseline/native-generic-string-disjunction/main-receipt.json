@@ -1,0 +1,92 @@
+{
+  "commands": {
+    "compile": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/private/tmp/graphite-generic-disjunction-oracle-v2/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/GenericDisjunctionOracle.java"
+    ],
+    "prepare": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/private/tmp/graphite-generic-disjunction-oracle-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericDisjunctionOracle",
+      "prepare",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/cases.json",
+      "/private/tmp/graphite-generic-disjunction-oracle-v2/fixtures",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/mutations.json"
+    ],
+    "run": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/private/tmp/graphite-generic-disjunction-oracle-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericDisjunctionOracle",
+      "run",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/cases.json",
+      "/private/tmp/graphite-generic-disjunction-oracle-v2/fixtures",
+      "/private/tmp/graphite-generic-disjunction-oracle-v2/main.json"
+    ]
+  },
+  "exitCodes": {
+    "compile": 0,
+    "prepare": 0,
+    "run": 0
+  },
+  "inputs": {
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/GenericDisjunctionOracle.java": "200c14b294cefded0dd79ba0c4ba1f766b414cc01275695e97a2cbc588fe273c",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/cases.json": "d7bea6c61759fe2d24ffa9d1222eddcd506913e189854900dad628f93418fbc1",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/mutations.json": "6e24637fa4de4bb21cb0216f3214e9e9ee838609b7f8df4779333e3a03cfeac2",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/actual-main64.json": "25d9506fbd24e0898dd68c827da2f91d99252ff85610ae9993a879b6cf9cba26",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/run.py": "b0425921bc7bdfc62e307bcf306865813cca16870dc9d02777fececda2765bcd",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/prepare.py": "ff233aa9eeb2abf9a10cfefe392a1a1b5e88a1d7938d30fb4e5a2963214ff2e2",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java": "9400f622fd1e220aa1a0cbd578aff060d837468b64227db40d099791b717729f",
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac": "954b31239fbf59e5b7c16e2af639a8a7ec36f6b602afd970e64054eabad0ac54",
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/modules": "0473441a67b3287836922b4ad05a140029f9fcc5e688fd3cf1ac3a21d15afcf9",
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/release": "d940b2ac1d3f585fd23451d205bed9c91ad6f3f07d14b6765eb33029911aadc9",
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/server/libjvm.dylib": "51d9529a35eed323d31f38813cc295e072248701bf51360bbcd1431198e52f99",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt": "56b438a5ec4495e547903bb906c19ff31085574b250ef4f70a611ffdddd41699",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeOffsetIndex.kt": "b0be23221c4b6736f53cd72da6b325d40cce93042af8c63beb3831806c4d69a3",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeTypeIndex.kt": "476ffd5884114dc18beb37e03cf1da9e2a5fcb64092a244564d09b688a46ab2e",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt": "d7dd6b85cce88f9202ce1e2b4087a0e6ac07211d1e52758f4964be48f2df18a8"
+  },
+  "inputsUnchanged": true,
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "oracleClassSha256": "7785c2b7022d010023e72c1a6dc324b0afeac355130915f1bdb72ffa614c6951",
+  "fixtureAudit": {
+    "originalFiles": 3036,
+    "changed": [],
+    "missing": [],
+    "added": [
+      "annotation-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "annotation-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "annotation-bad-sid-2-global-miss/store0/graph.callsite-string-index",
+      "annotation-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "enum-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "enum-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "enum-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "field-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "field-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "field-bad-sid-2-global-miss/store0/graph.callsite-string-index",
+      "local-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "local-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "local-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "original-886/store0/graph.callsite-string-index",
+      "original-887/store0/graph.callsite-string-index",
+      "original-888/store0/graph.callsite-string-index",
+      "six-deprecated-1/store0/graph.callsite-string-index",
+      "six-example-1/store0/graph.callsite-string-index",
+      "six-field-1/store0/graph.callsite-string-index",
+      "six-missing-1/store0/graph.callsite-string-index",
+      "six-red-1/store0/graph.callsite-string-index",
+      "six-run-1/store0/graph.callsite-string-index"
+    ]
+  },
+  "performanceMeasurements": 0
+}

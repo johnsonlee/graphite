@@ -1,0 +1,55 @@
+Initial targeted query test probe, session29984, terminal exit1.
+Command: /opt/homebrew/Cellar/go/1.22.0/libexec/bin/go test ./internal/query -run '^TestGenericDisjunctionMainReadSemantics$' -count=1
+Working directory: graphite-server
+The following is the full command output returned by write_stdin (tool chunk7c4b9d):
+
+--- FAIL: TestGenericDisjunctionMainReadSemantics (0.21s)
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/enum-bad-tail-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / 0x14000194a40, Go error CypherException / invalid collection count 2147483647 (334 bytes remain)
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/enum-payload-id-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/enum-offset-wrapped-oob-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/enum-offset-wrapped-oob-miss (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/local-bad-tail-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / 0x14000195e30, Go error IndexOutOfBoundsException / Index (2147483647) is greater than or equal to list size (21)
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/local-payload-id-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/local-offset-wrapped-oob-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/local-offset-wrapped-oob-miss (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-sid-0-hit (0.00s)
+        generic_disjunction_test.go:123: main error ArrayIndexOutOfBoundsException / 0x140001b2fa0, Go error ArrayIndexOutOfBoundsException / Index 2147483647 out of bounds for length 21
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-sid-0-miss (0.00s)
+        generic_disjunction_test.go:123: main error ArrayIndexOutOfBoundsException / 0x140001b2ff0, Go error ArrayIndexOutOfBoundsException / Index 2147483647 out of bounds for length 21
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-sid-0-global-miss (0.00s)
+        generic_disjunction_test.go:123: main error ArrayIndexOutOfBoundsException / 0x140001b3040, Go error ArrayIndexOutOfBoundsException / Index 2147483647 out of bounds for length 21
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-sid-1-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / 0x140001b3090, Go error IndexOutOfBoundsException / Index (2147483647) is greater than or equal to list size (21)
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-sid-1-miss (0.00s)
+        generic_disjunction_test.go:123: main error ArrayIndexOutOfBoundsException / 0x140001b30e0, Go error ArrayIndexOutOfBoundsException / Index 2147483647 out of bounds for length 21
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-sid-1-global-miss (0.00s)
+        generic_disjunction_test.go:123: main error ArrayIndexOutOfBoundsException / 0x140001b3130, Go error ArrayIndexOutOfBoundsException / Index 2147483647 out of bounds for length 21
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-sid-2-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / 0x140001b3180, Go error IndexOutOfBoundsException / Index (2147483647) is greater than or equal to list size (21)
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-tail-hit (0.00s)
+        generic_disjunction_test.go:100: graph.nodeindex: invalid node index record id=20 tag=10 offset=170
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-tail-miss (0.00s)
+        generic_disjunction_test.go:100: graph.nodeindex: invalid node index record id=20 tag=10 offset=170
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-bad-tail-global-miss (0.00s)
+        generic_disjunction_test.go:100: graph.nodeindex: invalid node index record id=20 tag=10 offset=170
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-payload-id-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-offset-wrapped-oob-hit (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/field-offset-wrapped-oob-miss (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / <nil>, Go error IndexOutOfBoundsException / <nil>
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/cross-field-bad-sid-1-False-False (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / 0x140001d5980, Go error IndexOutOfBoundsException / Index (2147483647) is greater than or equal to list size (21)
+    --- FAIL: TestGenericDisjunctionMainReadSemantics/cross-field-bad-sid-1-False-True (0.00s)
+        generic_disjunction_test.go:123: main error IndexOutOfBoundsException / 0x140001d59d0, Go error IndexOutOfBoundsException / Index (2147483647) is greater than or equal to list size (21)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.633s
+FAIL

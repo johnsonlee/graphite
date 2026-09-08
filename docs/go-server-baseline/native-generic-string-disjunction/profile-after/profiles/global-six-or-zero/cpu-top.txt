@@ -1,0 +1,71 @@
+File: graphite-benchmark-profile
+Type: cpu
+Time: Sep 8, 2026 at 5:05pm (KST)
+Duration: 1.51s, Total samples = 73.16s (4843.34%)
+Showing nodes accounting for 73.16s, 100% of 73.16s total
+      flat  flat%   sum%        cum   cum%
+    68.22s 93.25% 93.25%     68.22s 93.25%  runtime.usleep
+     4.65s  6.36% 99.60%      4.65s  6.36%  runtime.pthread_cond_wait
+     0.12s  0.16% 99.77%      0.12s  0.16%  runtime.pthread_cond_signal
+     0.05s 0.068% 99.84%      5.65s  7.72%  sync.(*Mutex).lockSlow
+     0.02s 0.027% 99.86%      0.03s 0.041%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches
+     0.02s 0.027% 99.89%      0.02s 0.027%  runtime.pthread_mutex_lock
+     0.01s 0.014% 99.90%      0.01s 0.014%  errors.is
+     0.01s 0.014% 99.92%      0.01s 0.014%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check
+     0.01s 0.014% 99.93%     24.61s 33.64%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionPropertyStringID
+     0.01s 0.014% 99.95%     40.22s 54.98%  runtime.stealWork
+     0.01s 0.014%   100%      0.01s 0.014%  runtime/pprof.mach_vm_region
+     0.01s 0.014%   100%      5.66s  7.74%  sync.(*Mutex).Lock (inline)
+     0.01s 0.014%   100%      0.01s 0.014%  sync.(*RWMutex).RLock
+     0.01s 0.014%   100%     24.02s 32.83%  sync.runtime_Semrelease
+         0     0%   100%     29.68s 40.57%  context.(*cancelCtx).Err
+         0     0%   100%      0.01s 0.014%  errors.Is
+         0     0%   100%     26.90s 36.77%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows
+         0     0%   100%      2.84s  3.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows
+         0     0%   100%     29.74s 40.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourcePrefix
+         0     0%   100%     29.74s 40.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func2
+         0     0%   100%     26.90s 36.77%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.evaluator.mainMergeNodeSequences.func3
+         0     0%   100%     26.90s 36.77%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.evaluator.mainMergeNodeSequences.func3.1
+         0     0%   100%     26.90s 36.77%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.func1
+         0     0%   100%      0.01s 0.014%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringPredicate
+         0     0%   100%      0.01s 0.014%  github.com/johnsonlee/graphite/graphite-server/internal/query.failMainStringRead
+         0     0%   100%     29.74s 40.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.struct { github.com/johnsonlee/graphite/graphite-server/internal/query.rows []map[string]interface {}; github.com/johnsonlee/graphite/graphite-server/internal/query.known map[string]bool; github.com/johnsonlee/graphite/graphite-server/internal/query.index *github.com/johnsonlee/graphite/graphite-server/internal/store.DistinctStringIndex }].func1.1
+         0     0%   100%      0.01s 0.014%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory
+         0     0%   100%      0.01s 0.014%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).Directory
+         0     0%   100%      2.27s  3.10%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionArrayString
+         0     0%   100%      2.81s  3.84%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionString
+         0     0%   100%     43.35s 59.25%  runtime.findRunnable
+         0     0%   100%      0.18s  0.25%  runtime.lock (inline)
+         0     0%   100%     29.70s 40.60%  runtime.lock2
+         0     0%   100%     29.70s 40.60%  runtime.lockWithRank (inline)
+         0     0%   100%      2.96s  4.05%  runtime.mPark (inline)
+         0     0%   100%     43.40s 59.32%  runtime.mcall
+         0     0%   100%      2.96s  4.05%  runtime.notesleep
+         0     0%   100%      0.02s 0.027%  runtime.notewakeup
+         0     0%   100%     28.01s 38.29%  runtime.osyield (inline)
+         0     0%   100%     43.40s 59.32%  runtime.park_m
+         0     0%   100%      0.03s 0.041%  runtime.parkunlock_c
+         0     0%   100%      0.01s 0.014%  runtime.ready
+         0     0%   100%      0.01s 0.014%  runtime.readyWithTime.goready.func1
+         0     0%   100%      0.02s 0.027%  runtime.resetspinning
+         0     0%   100%     40.21s 54.96%  runtime.runqgrab
+         0     0%   100%     40.21s 54.96%  runtime.runqsteal
+         0     0%   100%     43.37s 59.28%  runtime.schedule
+         0     0%   100%      5.60s  7.65%  runtime.semacquire1
+         0     0%   100%      4.65s  6.36%  runtime.semasleep
+         0     0%   100%      0.14s  0.19%  runtime.semawakeup
+         0     0%   100%     24.01s 32.82%  runtime.semrelease1
+         0     0%   100%      0.02s 0.027%  runtime.startm
+         0     0%   100%      2.98s  4.07%  runtime.stopm
+         0     0%   100%      0.01s 0.014%  runtime.systemstack
+         0     0%   100%      0.12s  0.16%  runtime.unlock
+         0     0%   100%      0.12s  0.16%  runtime.unlock2
+         0     0%   100%      0.12s  0.16%  runtime.unlockWithRank (inline)
+         0     0%   100%      0.03s 0.041%  runtime.wakep
+         0     0%   100%      0.01s 0.014%  runtime/pprof.(*profileBuilder).readMapping
+         0     0%   100%      0.01s 0.014%  runtime/pprof.machVMInfo
+         0     0%   100%      0.01s 0.014%  runtime/pprof.newProfileBuilder
+         0     0%   100%      0.01s 0.014%  runtime/pprof.profileWriter
+         0     0%   100%     24.02s 32.83%  sync.(*Mutex).Unlock (inline)
+         0     0%   100%     24.02s 32.83%  sync.(*Mutex).unlockSlow
+         0     0%   100%      5.60s  7.65%  sync.runtime_SemacquireMutex

@@ -1,0 +1,14 @@
+{
+  "trialId": "warm-after-failed-prewarm-0001",
+  "state": "warm-after-failed-prewarm",
+  "passed": true,
+  "orderedCasesPerRuntime": 1267,
+  "successesPerRuntime": 1266,
+  "originalErrorsPerRuntime": 1,
+  "censoredTimeouts": 0,
+  "canonicalSignaturesReverified": true,
+  "normalizedClocksMatchRawLedgers": true,
+  "warmLedgersReverified": true,
+  "graphClonesReopened": false,
+  "graphAuditScope": "Original controller receipts retained; already cleaned clones are not reopened."
+}

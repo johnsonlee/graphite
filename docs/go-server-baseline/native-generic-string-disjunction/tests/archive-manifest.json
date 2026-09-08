@@ -1,0 +1,32 @@
+[
+  {
+    "path": "baseline.log",
+    "sha256": "08ba74eb1c33bee1483e61558b6af2995957811e0d7c86de6e043ba478341ebd",
+    "bytes": 216
+  },
+  {
+    "path": "inputs.json",
+    "sha256": "58d1b6d5a45411718c03bf5333db936a1e4cd1cc58e777d2caa36f4743215912",
+    "bytes": 607325
+  },
+  {
+    "path": "oracle.log",
+    "sha256": "a77c9454e8d288a18ae364668d3eebe2a11e8bd50f9d9ec4063e492abcca51a0",
+    "bytes": 753
+  },
+  {
+    "path": "race.log",
+    "sha256": "9b33fded46bfa9a865a8fe3770e8a7940fd9799013290b8bf2264ef32e2aa5e5",
+    "bytes": 1478
+  },
+  {
+    "path": "receipt.json",
+    "sha256": "3ccbc1737fa57e8702731fd4d4caa230b25de246e9fcecad27b38ad81979158f",
+    "bytes": 1452
+  },
+  {
+    "path": "vet.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  }
+]

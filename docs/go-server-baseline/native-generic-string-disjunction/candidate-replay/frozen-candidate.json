@@ -1,0 +1,18 @@
+{
+  "head": "513e2b96d4cd5136560461d06f3b804e6aa67c41",
+  "module": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-candidate-513e2b96-v2/module",
+  "production": [
+    {
+      "path": "internal/query/indexed_distinct.go",
+      "candidateSHA256": "55ca5a6e0a88007b8ed7005eed70d12a20cd15d2905cb12ded5fa277c28ccfca",
+      "baselineSHA256": "9b9c43f6b5e767131b5feb863649db2569e3680b8d56b8289fd40fde8d1773cc",
+      "workspaceBytesEqual": true
+    },
+    {
+      "path": "internal/query/main_string_candidates.go",
+      "candidateSHA256": "92ba468a45227473e7b7dfc446e0889b4f1ac9fe1e2a8cf2958ab693296a8b35",
+      "baselineSHA256": "89179a31a43c2c0e501204a640312e8be1e80500d2c83877e4566a8fc2ce8f0c",
+      "workspaceBytesEqual": true
+    }
+  ]
+}

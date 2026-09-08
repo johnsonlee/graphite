@@ -1,0 +1,464 @@
+PeriodType: space bytes
+Period: 524288
+Time: 2026-09-08 17:05:19.653689 +0900 KST
+Samples:
+alloc_objects/count alloc_space/bytes[dflt] inuse_objects/count inuse_space/bytes
+        108     526723        108     526723: 1 2 3 4 5 
+                bytes:[4864]
+       1024     524544          0          0: 6 7 8 9 10 11 12 3 4 5 
+                bytes:[512]
+        164     525889        164     525889: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[3200]
+       1024     524544          0          0: 6 7 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[512]
+        171     525825          0          0: 32 16 17 18 19 20 21 5 
+                bytes:[3072]
+         19     538038          0          0: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[27264]
+         55     529038          0          0: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[9472]
+         64     528394          0          0: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[8192]
+         39     531101          0          0: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[13568]
+         16     540842          0          0: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[32768]
+        152     526017          0          0: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[3456]
+        256     525312          0          0: 33 16 17 18 19 20 21 5 
+                bytes:[2048]
+      21845     524300          0          0: 33 16 17 18 19 20 21 5 
+                bytes:[24]
+         43    1073343         21     536671: 1 2 3 4 5 
+                bytes:[24576]
+        152     526017          0          0: 32 16 17 18 19 20 21 5 
+                bytes:[3456]
+        385    1579015        128     526338: 33 16 17 18 19 20 21 5 
+                bytes:[4096]
+        129    1056789          0          0: 1 2 3 4 5 
+                bytes:[8192]
+         68    4461908         17    1115476: 1 2 3 4 5 
+                bytes:[65536]
+         43     530456          0          0: 1 2 3 4 5 
+                bytes:[12288]
+        456     524864          0          0: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[1152]
+          7     566314          0          0: 34 35 36 16 17 18 19 20 21 5 
+                bytes:[81920]
+      32769     524296          0          0: 6 7 8 9 10 11 12 37 23 24 25 26 27 28 29 30 31 
+                bytes:[16]
+       1025     524544       1024     524544: 38 39 40 41 42 43 21 5 
+                bytes:[512]
+         49    1622528         16     540842: 1 2 3 4 5 
+                bytes:[32768]
+         29     533558          0          0: 1 2 3 4 5 
+                bytes:[18432]
+          0          0        -17   -1115476: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[65536]
+        257     525313        256     525312: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[2048]
+        513     524800          0          0: 33 16 17 18 19 20 21 5 
+                bytes:[1024]
+     376843   12058992      81922    2621520: 6 7 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[32]
+       8193    1048704          0          0: 6 7 8 9 10 11 12 37 23 24 25 26 27 28 29 30 31 
+                bytes:[128]
+      32769    1048608          0          0: 6 7 8 9 10 11 12 37 23 24 25 26 27 28 29 30 31 
+                bytes:[32]
+     589842   18874944      16384     524304: 6 44 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[32]
+     458759    7340144      32768     524296: 6 44 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[16]
+       8193    1048704          0          0: 6 44 8 9 10 11 12 37 23 24 25 26 27 28 29 30 31 
+                bytes:[128]
+      32768     524296          0          0: 6 44 8 9 10 11 12 37 23 24 25 26 27 28 29 30 31 
+                bytes:[16]
+      16384     524304          0          0: 6 44 8 9 10 11 12 37 23 24 25 26 27 28 29 30 31 
+                bytes:[32]
+      24578    1572960          0          0: 6 44 8 9 10 11 12 37 23 24 25 26 27 28 29 30 31 
+                bytes:[64]
+     131076    4194432          0          0: 6 44 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[32]
+      65540    4194560          0          0: 6 44 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[64]
+     196611    3145776          0          0: 6 7 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[16]
+      49153    1572912          0          0: 6 7 8 9 10 48 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[32]
+     450587   28837600      49155    3145920: 6 44 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[64]
+      98307    3145824          0          0: 6 7 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[32]
+      40963    2621600          0          0: 6 7 8 9 10 48 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[64]
+      45061    5767872          0          0: 6 44 8 9 10 48 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[128]
+      81922    2621520          0          0: 6 44 8 9 10 48 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[32]
+       2048     524416          0          0: 6 7 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[256]
+       2049     524416          0          0: 6 44 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[256]
+      98305    1572888          0          0: 6 7 8 9 10 48 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[16]
+      73732    4718880          0          0: 6 7 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[64]
+     196611    3145776          0          0: 6 44 8 9 10 48 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[16]
+     688138   11010216     -98305   -1572888: 49 50 51 52 53 54 53 52 53 55 5 
+                bytes:[16]
+     917518   14680288      65537    1048592: 56 50 51 52 53 54 53 55 5 
+                bytes:[16]
+         76    6847608         12    1141268: 1 2 3 4 5 
+                bytes:[90112]
+    1245203   19923248     131074    2097184: 57 50 51 58 59 5 
+                bytes:[16]
+         56    2746240         22    1098495: 1 2 3 4 5 
+                bytes:[49152]
+    1048592   16777472    -131074   -2097184: 56 50 51 58 59 5 
+                bytes:[16]
+     917518   14680288      65537    1048592: 60 50 51 52 53 52 53 52 53 52 53 55 5 
+                bytes:[16]
+     983100   62918400     122887    7864800: 61 62 5 
+                bytes:[64]
+    1277971   20447544     196611    3145776: 57 50 51 52 53 54 53 52 53 52 53 55 5 
+                bytes:[16]
+         16    1124031          0          0: 34 35 36 16 17 18 19 20 21 5 
+                bytes:[73728]
+          8     557739          8     557738: 34 35 36 16 17 18 19 20 21 5 
+                bytes:[65536]
+     524296    8388736     163842    2621480: 6 44 8 9 10 11 12 3 4 5 
+                bytes:[16]
+     503870   64495296      81930   10487040: 6 7 8 9 10 11 12 3 4 5 
+                bytes:[128]
+     405553   51910848      53254    6816576: 6 44 8 9 10 11 12 3 4 5 
+                bytes:[128]
+    1015824   16253176     196611    3145776: 6 7 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[16]
+     532512   34080800      98310    6291840: 6 44 8 9 10 11 12 3 4 5 
+                bytes:[64]
+     458808   58727424      69640    8913984: 6 7 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[128]
+        129     526339        128     526338: 63 16 17 18 19 20 21 5 
+                bytes:[4096]
+          3     666237          2     666237: 64 18 19 20 21 5 
+                bytes:[262144]
+     524304   16777728      81922    2621520: 6 7 8 9 10 11 12 3 4 5 
+                bytes:[32]
+       2048     524416      -2048    -524416: 38 65 40 41 42 43 21 5 
+                bytes:[256]
+     589860   37751040      73732    4718880: 6 7 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[64]
+      16392    8392705       1024     524544: 6 7 8 9 10 45 46 47 4 5 
+                bytes:[512]
+      18441    9441793          0          0: 6 7 8 9 10 48 46 47 4 5 
+                bytes:[512]
+       4097     524352          0          0: 38 39 40 41 42 43 21 5 
+                bytes:[128]
+      57348    3670240          0          0: 38 39 40 41 42 43 21 5 
+                bytes:[64]
+      35858   18359042          0          0: 6 44 8 9 10 45 46 47 4 5 
+                bytes:[512]
+     851981   13631696     131074    2097184: 66 62 5 
+                bytes:[16]
+      57351    7340928      12290    1573056: 38 65 40 41 42 43 21 5 
+                bytes:[128]
+     491527    7864440     -65537   -1048592: 6 7 8 9 10 11 12 37 4 5 
+                bytes:[16]
+     360454    5767256          0          0: 67 40 41 42 43 21 5 
+                bytes:[16]
+     720907   11534512     -65537   -1048592: 6 44 8 9 22 4 5 
+                bytes:[16]
+     475150   15204816          0          0: 6 7 8 9 10 11 12 37 4 5 
+                bytes:[32]
+     458759    7340144     196611    3145776: 38 39 40 41 42 43 21 5 
+                bytes:[16]
+     131076    4194432          0          0: 38 39 40 41 42 43 21 5 
+                bytes:[32]
+     344075   11010384     -16385    -524304: 6 7 8 9 22 4 5 
+                bytes:[32]
+     491550   31459200     -49155   -3145920: 6 7 8 9 10 11 12 37 4 5 
+                bytes:[64]
+     573475   36702400      90117    5767520: 6 7 8 9 10 11 12 3 4 5 
+                bytes:[64]
+     157734   40380033      36873    9439488: 6 7 8 9 10 11 12 3 4 5 
+                bytes:[256]
+      32769     524296      32768     524296: 13 14 15 16 17 18 19 20 21 5 
+                bytes:[16]
+         65    1065045          0          0: 63 16 17 18 19 20 21 5 
+                bytes:[16384]
+         43     530456          0          0: 34 35 36 16 17 18 19 20 21 5 
+                bytes:[12288]
+          2     750356          0          0: 64 18 19 20 21 5 
+                bytes:[401408]
+          2     710033          0          0: 64 18 19 20 21 5 
+                bytes:[335872]
+          4    1439984          0          0: 64 18 19 20 21 5 
+                bytes:[352256]
+          2     671021          0          0: 64 18 19 20 21 5 
+                bytes:[270336]
+     884749   14155992     -65537   -1048592: 49 50 51 58 59 5 
+                bytes:[16]
+    1288904   30933700     131075    3145800: 68 69 62 5 
+                bytes:[24]
+      18441    9441793          0          0: 6 44 8 9 10 48 46 47 4 5 
+                bytes:[512]
+    8454273  135268368    -786444  -12583104: 6 7 8 9 10 48 46 47 4 5 
+                bytes:[16]
+     950315   45615144      21847    1048624: 70 21 5 
+                bytes:[48]
+     178220   45624193      10242    2622080: 6 44 8 9 10 11 12 37 4 5 
+                bytes:[256]
+    6979690  111675048    -393222   -6291552: 6 44 8 9 10 48 46 47 4 5 
+                bytes:[16]
+    4464913  285754400    -286738  -18351200: 6 7 8 9 10 48 46 47 4 5 
+                bytes:[64]
+     507935   32507840      -8193    -524320: 6 44 8 9 22 4 5 
+                bytes:[64]
+     819212   13107400     131074    2097184: 6 7 8 9 10 11 12 3 4 5 
+                bytes:[16]
+     376843   12058992      65538    2097216: 6 44 8 9 10 11 12 3 4 5 
+                bytes:[32]
+      20483    2621760          0          0: 6 44 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[128]
+     131074    2097184          0          0: 6 44 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[16]
+      24579    3146112          0          0: 6 44 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[128]
+      49155    3145920          0          0: 6 44 8 9 10 48 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[64]
+      40965    5243520          0          0: 6 7 8 9 10 45 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[128]
+     131104   33562624      51212   13110400: 6 7 8 9 22 23 24 25 26 27 28 29 30 31 
+                bytes:[256]
+      20483    2621760          0          0: 6 7 8 9 10 48 46 47 23 24 25 26 27 28 29 30 31 
+                bytes:[128]
+    1114137   26739300          0          0: 68 71 21 5 
+                bytes:[24]
+    1146933   55052760     109232    5243120: 72 73 62 5 
+                bytes:[48]
+       1024     524544          0          0: 6 7 8 9 22 4 5 
+                bytes:[512]
+     172043   11010720       8193     524320: 38 65 40 41 42 43 21 5 
+                bytes:[64]
+     393228   12583296      65538    2097216: 38 65 40 41 42 43 21 5 
+                bytes:[32]
+     475151   15204816     -32769   -1048608: 6 44 8 9 10 11 12 37 4 5 
+                bytes:[32]
+     688138   11010216      32769     524296: 38 65 40 41 42 43 21 5 
+                bytes:[16]
+     557064    8913032    -163842   -2621480: 6 7 8 9 22 4 5 
+                bytes:[16]
+    1146898   18350360          0          0: 74 69 62 5 
+                bytes:[16]
+    1048592   16777472     -32768    -524296: 75 71 21 5 
+                bytes:[16]
+     319508   20448480     -57348   -3670240: 6 7 8 9 22 4 5 
+                bytes:[64]
+     638996   20447856          0          0: 6 44 8 9 22 4 5 
+                bytes:[32]
+    4849812  155193984    -409613  -13107600: 6 44 8 9 10 48 46 47 4 5 
+                bytes:[32]
+     319508   20448480     -40962   -2621600: 6 44 8 9 10 11 12 37 4 5 
+                bytes:[64]
+    5079195  162534240     -32769   -1048608: 6 7 8 9 10 48 46 47 4 5 
+                bytes:[32]
+    5685595  363878080    -213005  -13632320: 6 7 8 9 10 45 46 47 4 5 
+                bytes:[64]
+     983085   47188080      10923     524312: 76 59 5 
+                bytes:[48]
+    5931370  379607680    -327700  -20972800: 6 44 8 9 10 45 46 47 4 5 
+                bytes:[64]
+    6226110  199235520    -311306   -9961776: 6 7 8 9 10 45 46 47 4 5 
+                bytes:[32]
+     851988   20447700     152920    3670100: 68 77 59 5 
+                bytes:[24]
+    1015823   16253176     131074    2097184: 60 50 51 58 59 5 
+                bytes:[16]
+     688139   11010216          0          0: 6 44 8 9 10 11 12 37 4 5 
+                bytes:[16]
+     430133   55056960      -4097    -524352: 6 7 8 9 10 11 12 37 4 5 
+                bytes:[128]
+     458759    7340144      65537    1048592: 78 40 41 42 43 21 5 
+                bytes:[16]
+     983055   15728880     -32768    -524296: 75 77 59 5 
+                bytes:[16]
+    4112635  263208640    -221198  -14156640: 6 44 8 9 10 48 46 47 4 5 
+                bytes:[64]
+    9273486  148375768    -327685   -5242960: 6 7 8 9 10 45 46 47 4 5 
+                bytes:[16]
+     471098   60300480     -40965   -5243520: 6 44 8 9 22 4 5 
+                bytes:[128]
+    3813841  488171715    -114702  -14681856: 6 7 8 9 10 48 46 47 4 5 
+                bytes:[128]
+     413747   52959552      12289    1573056: 6 44 8 9 10 11 12 37 4 5 
+                bytes:[128]
+     186414   47721857      26631    6817408: 6 44 8 9 22 4 5 
+                bytes:[256]
+     133152   34087041      16388    4195328: 6 7 8 9 10 11 12 37 4 5 
+                bytes:[256]
+    1384786  354505223      40970   10488320: 6 44 8 9 10 48 46 47 4 5 
+                bytes:[256]
+     462904   59251776      -8193   -1048704: 6 7 8 9 22 4 5 
+                bytes:[128]
+    2005482  513403274      49164   12585984: 6 7 8 9 10 45 46 47 4 5 
+                bytes:[256]
+     753675   12058808      65537    1048592: 79 59 5 
+                bytes:[16]
+    5800113  185603616    -589842  -18874944: 6 44 8 9 10 45 46 47 4 5 
+                bytes:[32]
+    5440152  696339459    -131088  -16779264: 6 7 8 9 10 45 46 47 4 5 
+                bytes:[128]
+     159783   40904449       6145    1573248: 6 7 8 9 22 4 5 
+                bytes:[256]
+    3510700  449369666    -155667  -19925376: 6 44 8 9 10 48 46 47 4 5 
+                bytes:[128]
+    2023918  518123018     165928   42477697: 6 44 8 9 10 45 46 47 4 5 
+                bytes:[256]
+    5591722  715740484    -135184  -17303616: 6 44 8 9 10 45 46 47 4 5 
+                bytes:[128]
+    1339719  342968071      12291    3146496: 6 7 8 9 10 48 46 47 4 5 
+                bytes:[256]
+    8126588  130025408    -131074   -2097184: 6 44 8 9 10 45 46 47 4 5 
+                bytes:[16]
+    1008803  290535335      61912   17830688: 80 73 62 5 
+                bytes:[288]
+     968886  620086733      52460   33574916: 81 82 21 5 
+                bytes:[640]
+     992415  285815447      72838   20977281: 83 84 59 5 
+                bytes:[288]
+     198704   50868353      40970   10488320: 6 44 8 9 10 11 12 3 4 5 
+                bytes:[256]
+     935965  269558055      38239   11013072: 83 85 21 5 
+                bytes:[288]
+     852020   54529280      65540    4194560: 86 5 
+                bytes:[64]
+         26    1090069         13     545034: 34 35 36 16 17 18 19 20 21 5 
+                bytes:[40960]
+          3     642633          2     642633: 64 18 19 20 21 5 
+                bytes:[221184]
+          3     647312          0          0: 64 18 19 20 21 5 
+                bytes:[229376]
+          3     637975          2     637974: 64 18 19 20 21 5 
+                bytes:[212992]
+        257     525313          0          0: 87 88 89 90 16 17 18 19 20 21 5 
+                bytes:[2048]
+          4    1430005          0          0: 64 18 19 20 21 5 
+                bytes:[344064]
+          2     705085          0          0: 64 18 19 20 21 5 
+                bytes:[327680]
+         22    1098496          0          0: 34 35 36 16 17 18 19 20 21 5 
+                bytes:[49152]
+          3     661475          0          0: 64 18 19 20 21 5 
+                bytes:[253952]
+          5    1304024          2     652012: 64 18 19 20 21 5 
+                bytes:[237568]
+         19    1106965          0          0: 34 35 36 16 17 18 19 20 21 5 
+                bytes:[57344]
+          2     755487          0          0: 64 18 19 20 21 5 
+                bytes:[409600]
+Locations
+     1: 0x100c7f9bf M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.(*streamingRowHeap).Push /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:52 s=52
+     2: 0x100c1cd5b M=1 container/heap.Push /opt/homebrew/Cellar/go/1.22.0/libexec/src/container/heap/heap.go:52 s=51
+     3: 0x100c7fbc7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.(*streamingRowHeap).add /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:61 s=59
+     4: 0x100c81dfb M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:228 s=204
+     5: 0x100c93aeb M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.[]*github.com/johnsonlee/graphite/graphite-server/internal/query.streamingRankedRow].func1.1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:232 s=229
+     6: 0x100b229ef M=1 github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/javastring/utf16.go:26 s=12
+     7: 0x100c915c7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.javaUTF16 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/java_string.go:9 s=9
+             github.com/johnsonlee/graphite/graphite-server/internal/query.compareUTF16 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/values.go:334 s=330
+     8: 0x100c90393 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.compare /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/values.go:207 s=168
+     9: 0x100c7f6d7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.(*streamingRowHeap).compare /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:33 s=27
+    10: 0x100c7f7db M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.(*streamingRowHeap).Less /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:50 s=50
+    11: 0x100c1cedb M=1 container/heap.up /opt/homebrew/Cellar/go/1.22.0/libexec/src/container/heap/heap.go:92 s=89
+    12: 0x100c1cd7b M=1 container/heap.Push /opt/homebrew/Cellar/go/1.22.0/libexec/src/container/heap/heap.go:53 s=51
+    13: 0x100bee533 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Postings /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/callsite_index.go:389 s=363
+    14: 0x100bf7e03 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).Postings /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/distinct_projection.go:455 s=453
+    15: 0x100c68047 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_postings.go:65 s=11
+    16: 0x100c691a3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_source.go:102 s=27
+    17: 0x100c649cf M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:72 s=48
+    18: 0x100c82d37 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithStorage /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:39 s=38
+             github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStreamingStringCandidates /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:35 s=34
+             github.com/johnsonlee/graphite/graphite-server/internal/query.realStreamingNodes /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:90 s=88
+    19: 0x100c823eb M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1.1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:213 s=212
+    20: 0x100c8200f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1.evaluator.streamingBindings.2 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:149 s=143
+    21: 0x100c81c6b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:218 s=204
+    22: 0x100c7fb4f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.(*streamingRowHeap).add /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:64 s=59
+    23: 0x100c8191b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func2 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:233 s=231
+    24: 0x100c951bf M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.[]*github.com/johnsonlee/graphite/graphite-server/internal/query.streamingRankedRow] /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/indexed_distinct.go:279 s=211
+    25: 0x100c813db M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:204 s=193
+    26: 0x100c83f5f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingPaginationSources /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:187 s=183
+    27: 0x100c83557 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingPagination /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:135 s=95
+    28: 0x100c31b57 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/engine.go:198 s=173
+    29: 0x100c30963 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/engine.go:108 s=60
+    30: 0x100c30277 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCrossWithOptions /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/engine.go:57 s=42
+    31: 0x100c9f3ff M=1 main.newWorker.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/cmd/graphite-benchmark-latency/main.go:49 s=46
+    32: 0x100c67b93 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_postings.go:76 s=11
+    33: 0x100c67e3f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_postings.go:48 s=11
+    34: 0x100bedf3b M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/callsite_index.go:345 s=336
+    35: 0x100bf781b M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).Directory /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/distinct_projection.go:432 s=430
+    36: 0x100c67a83 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_postings.go:40 s=11
+    37: 0x100c7fb8b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.(*streamingRowHeap).add /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:66 s=59
+    38: 0x100c0055b M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/projection_node.go:97 s=93
+    39: 0x100bffd17 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/projection_node.go:103 s=13
+    40: 0x100c6a7ef M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator.func6 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_source.go:165 s=121
+    41: 0x100c6551f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.evaluator.mainMergeNodeSequences.func3.1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:195 s=194
+    42: 0x100c652d3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites.evaluator.mainMergeNodeSequences.func3 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:215 s=192
+    43: 0x100c82073 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1.evaluator.streamingBindings.2 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:151 s=143
+    44: 0x100c915df M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.javaUTF16 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/java_string.go:9 s=9
+             github.com/johnsonlee/graphite/graphite-server/internal/query.compareUTF16 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/values.go:334 s=330
+    45: 0x100c1cfef M=1 container/heap.down /opt/homebrew/Cellar/go/1.22.0/libexec/src/container/heap/heap.go:111 s=100
+    46: 0x100c1ce1b M=1 container/heap.Pop /opt/homebrew/Cellar/go/1.22.0/libexec/src/container/heap/heap.go:62 s=59
+    47: 0x100c7fb63 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.(*streamingRowHeap).add /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:65 s=59
+    48: 0x100c1cfb3 M=1 container/heap.down /opt/homebrew/Cellar/go/1.22.0/libexec/src/container/heap/heap.go:108 s=100
+    49: 0x100c799f7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/properties.go:18 s=9
+    50: 0x100c2da03 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.qualifiedProperty /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:54 s=45
+    51: 0x100c372fb M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:101 s=82
+    52: 0x100c39757 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:359 s=347
+    53: 0x100c378eb M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:162 s=82
+    54: 0x100c3994b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/eval.go:366 s=347
+    55: 0x100c81cbb M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:222 s=204
+    56: 0x100c79943 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/properties.go:20 s=9
+    57: 0x100c7999b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/properties.go:26 s=9
+    58: 0x100c8395b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingProject /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:177 s=174
+    59: 0x100c81d27 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:225 s=204
+    60: 0x100c79a47 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/properties.go:24 s=9
+    61: 0x100c8015f M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingSortValues /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:91 s=85
+    62: 0x100c81d73 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:226 s=204
+    63: 0x100c68097 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_postings.go:68 s=11
+    64: 0x100c64873 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).NodesOfKind /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/store.go:285 s=285
+             github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesExcludingCallSites /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_candidates.go:69 s=48
+    65: 0x100bffc9f M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/projection_node.go:102 s=13
+    66: 0x100c800f7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.provenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:65 s=63
+             github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:86 s=86
+             github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingSortValues /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:90 s=85
+    67: 0x100bffd8f M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/projection_node.go:104 s=13
+    68: 0x100c2dd47 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:83 s=67
+    69: 0x100c80143 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:86 s=86
+             github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingSortValues /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:90 s=85
+    70: 0x100c82237 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1.evaluator.streamingBindings.2 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:161 s=143
+    71: 0x100c822cb M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1.evaluator.streamingBindings.2 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:165 s=143
+    72: 0x100c7ef37 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.cloneRow /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/row_order.go:102 s=101
+    73: 0x100c7ffa3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingSortValues /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:86 s=85
+    74: 0x100c2dbf7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.provenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:65 s=63
+             github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:68 s=67
+    75: 0x100c2dcd7 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:78 s=67
+    76: 0x100c8385b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingProject /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:175 s=174
+    77: 0x100c83bbf M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:86 s=86
+             github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingProject /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:179 s=174
+    78: 0x100c002db M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/projection_node.go:115 s=13
+    79: 0x100c83b73 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.provenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:65 s=63
+             github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/cross.go:86 s=86
+             github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingProject /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:179 s=174
+    80: 0x100c7f143 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.cloneRow /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/row_order.go:104 s=101
+    81: 0x100c8aad3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeValue /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/traversal.go:262 s=260
+    82: 0x100c8213b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1.evaluator.streamingBindings.2 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:157 s=143
+    83: 0x100c7f523 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.bind /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/row_order.go:119 s=111
+    84: 0x100c838d3 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingProject /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:177 s=174
+    85: 0x100c82297 M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1.evaluator.streamingBindings.2 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_pagination.go:163 s=143
+    86: 0x100c81d8b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.streamingParallelOrder.func1 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/streaming_order.go:226 s=204
+    87: 0x100beea37 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).TrigramStringIDs /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/callsite_index.go:423 s=400
+    88: 0x100bfd907 M=1 github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).ProjectionTrigramStrings /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/store/ordinary_projection.go:137 s=135
+    89: 0x100c70f6b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringIndexMatches /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/ordinary_cache.go:88 s=44
+    90: 0x100c67a5b M=1 github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source/internal/query/main_string_postings.go:39 s=11
+Mappings
+1: 0x100a28000/0x100d30000/0x0 /Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/graphite-benchmark-profile  [FN]

@@ -1137,3 +1137,118 @@ unproven acceptance. The full 10x target, required benchmark gates, formal warm,
 resource/work accounting and server fidelity remain open. Commands, environment,
 source hashes, complete captures and limitations are in
 `docs/go-server-baseline/native-regex-quoted-contains/`.
+
+### 2026-09-08 — Attempt 24: reuse fused generic SID filtering
+
+Hypothesis: the six-term wrapped DISTINCT OR path needlessly fully decodes every
+Enum/Local/Field node and repeats lowercase matching for identical string IDs.
+Main filters raw SIDs with per-concrete-iterator match arrays, then lazily decodes
+and merges only matching nodes. Baseline Go is `513e2b96`; pinned main remains
+`4e328b0109e13c896b74004823fb049fcb19251a`. Candidate source is frozen in the
+complete `native-generic-string-disjunction/candidate-replay/` archives. The
+measured revision is `acb065745f123d1dc362e24574628e40a05b4e91`, preserved by an
+incremental source bundle before its evidence amend.
+
+Reuse the existing raw SID accessor and lazy provider, exclude CallSite before
+creating its lookup, share memo states by Java transform/mode/expected identity,
+and derive order from yielded payload IDs. Annotation retains full decoding.
+Do not allocate memo arrays for empty concrete types. The general node decoder,
+worker scheduler and separate scalar-reader hypothesis are unchanged.
+
+Two actual Java captures contain 181 public scenarios and20 private-provider
+controls. Baseline matches157 public and19 provider controls; both candidate
+captures match166 public and19 controls. All nine corrected public cases concern
+raw-filter skip/error ordering. All16 remaining differences stay in the archive,
+including malformed decoding/loading, surrogate materialization, fallback order,
+and one explicit provider-wrapper API scope difference. The bounded corpus has
+no newly mismatching case; it does not prove full server parity.
+
+83 focused Java-observed regression cases pass, plus full-module race tests and
+vet with2,539 recorded inputs unchanged. Initial test-authoring failures and
+corrections remain recorded. Full real64 cold replay uses the same64 real
+persisted graphs,1,152 unchanged files and all1,267 original ordered cases.
+Every public output agrees, including the original failed case821. Strict state
+comparison nevertheless FAILS with15,162 mappedRangeCount differences; the
+controller correctly stops before warm/startup preparation.
+
+The first state difference occurs in case3's unchanged ordinary CallSite path,
+before either changed function is involved. Inspection points to existing
+ordered source-task cancellation and speculative cache publication. Predeclared
+sequential old/new cold controls investigate it; failures must not be resampled
+away or hidden by relaxing the comparator. A source-level explanation is not a
+passing validation result.
+
+Both predeclared sequential cold controls subsequently pass the unchanged strict
+comparator: baseline and candidate each preserve all 1,267 public outcomes and
+162,304 graph-state observations. Candidate warm prewarm and startup-prepared
+also pass, giving 486,848 observations across the candidate's three successful
+state comparisons. All five runtime captures and the first state failure are
+retained. This supports matched behavior in the isolated captures; it does not
+prove schedule-invariant speculative cache state under arbitrary contention.
+The complete 2,535-file candidate module matches both frozen replay sources.
+
+| Evidence | Current result |
+| --- | --- |
+| Focused public regression checks |83 passed |
+| Complete adversarial Java comparison |166/181 public,19/20 scoped provider controls equal |
+| Full module race tests and vet | Passed |
+| First real64 cold public results |1,267/1,267 agree, original error retained |
+| First real64 cold state comparison | Failed; mappedRangeCount differs |
+| Sequential baseline/candidate cold controls | Both strict comparisons pass |
+| Candidate warm prewarm/startup-prepared | Both strict comparisons pass |
+| Paired latency observations | Three complete main/Go pairs, n=1 per case/state |
+| Go CPU/allocation diagnostics | Both complete original workloads verified; exact brackets retained |
+| Per-case P95 /10x acceptance | Unproven |
+| Keep/revert decision | Keep; full target remains unproven |
+
+All three controlled pairs complete and verify every original case/result/error;
+six timed runtimes terminate with the original gate failure. Builds/tests end
+before timing, and each runtime receives its own audited real64 clone. The
+previous campaign's final Go revision is513e2b96, measured as8677aff8; its exact
+source identity and all point observations remain bound in the comparison.
+
+| State | Previous Go success sum (s) | Candidate Go success sum (s) | Paired main success sum (s) | Candidate Go slower than main |
+| --- | ---: | ---: | ---: | ---: |
+| cold |56.654 |47.519 |27.065 |925 /1266 |
+| startup-prepared |56.084 |46.956 |22.414 |935 /1266 |
+| warm-after-failed-prewarm (diagnostic) |50.492 |41.551 |19.279 |1188 /1266 |
+
+Wrapped six-term OR takes1.46–1.68 s in Go versus3.07–3.38 s previously and
+0.053–0.072 s for paired main. Unwrapped six-term OR takes1.31–1.39 s versus
+2.58–2.74 s previously. These are independent single observations, not per-case
+P95 or statistical causal speedups. All3,801 state/case summary rows retain an
+insufficient-sample result and the full10x goal remains unproven. Original main
+resource sampling is archived; Go's equivalent formal resource/work metrics
+remain missing. CPU/allocation profiles run separately only after timing ends.
+
+Both separate diagnostic runtimes complete with identical instrumentation and
+the entire original workload, no additional GC or warmup, unchanged source and
+fixtures, all canonical outcomes and the original gate preserved. The exact
+process counter brackets, including runtime/profiler activity, are:
+
+| Case | Before TotalAlloc (bytes) | Candidate TotalAlloc (bytes) | Before process CPU (s) | Candidate process CPU (s) |
+| --- | ---: | ---: | ---: | ---: |
+| global-six-or-zero |1,512,904,392 |83,735,392 |17.680708 |6.022078 |
+| global-six-or-targeted |1,785,231,040 |376,804,616 |13.565079 |6.676716 |
+| global-six-or-dense |1,711,444,576 |294,379,144 |14.214895 |6.396731 |
+| global-six-or-wrapped-zero |1,632,995,480 |163,166,408 |18.012802 |7.344588 |
+| global-six-or-wrapped-targeted |1,882,581,256 |421,672,936 |19.750954 |11.768850 |
+| global-six-or-wrapped-dense |1,833,654,184 |379,019,200 |24.346378 |7.535464 |
+
+CPU sample mass strongly disagrees with Rusage: after zero records73.16 sampled
+seconds but6.022078 process CPU seconds inside the counter bracket. Profile and
+counter boundaries differ; runtime wait frames dominate. Preserve this anomaly
+without claiming a system/runtime bug or using sampled percentages as precise
+CPU shares. Sampled allocation deltas can lag GC; stack groups overlap and zero
+GC samples do not prove no GC. These clocks remain excluded from P95 acceptance.
+
+Keep the fused generic route: nine observed fidelity differences are corrected,
+complete isolated real64 results/state are preserved, and all six relevant
+queries show lower paired point clocks and lower diagnostic allocation/CPU.
+Retain the first state failure under concurrent correctness activity and every
+remaining malformed/source/context/ordering gap. This does not establish the
+full performance or server goal; no acceptance requirement is waived.
+
+The full goal and required benchmark gates remain open. Exact commands, source
+archives, raw outcomes and limitations are under
+`docs/go-server-baseline/native-generic-string-disjunction/`.

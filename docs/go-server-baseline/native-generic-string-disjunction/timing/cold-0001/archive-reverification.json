@@ -1,0 +1,14 @@
+{
+  "trialId": "cold-0001",
+  "state": "cold",
+  "passed": true,
+  "orderedCasesPerRuntime": 1267,
+  "successesPerRuntime": 1266,
+  "originalErrorsPerRuntime": 1,
+  "censoredTimeouts": 0,
+  "canonicalSignaturesReverified": true,
+  "normalizedClocksMatchRawLedgers": true,
+  "warmLedgersReverified": false,
+  "graphClonesReopened": false,
+  "graphAuditScope": "Original controller receipts retained; already cleaned clones are not reopened."
+}

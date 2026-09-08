@@ -1,0 +1,642 @@
+{
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false,
+  "allRunLatenciesProfileContaminated": true,
+  "perCaseP95Available": false,
+  "forcedGCAdded": false,
+  "fullOrderedCaseCount": 1267,
+  "observedSource": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/source",
+  "binary": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/graphite-benchmark-profile",
+  "profiles": [
+    {
+      "id": "global-six-or-zero",
+      "index": 883,
+      "outcome": "SUCCESS",
+      "rowCount": 0,
+      "digest": "d2b17268d8269d7036af5c7df40521da6219ae5e057618f231fe2b805452fd98",
+      "diagnosticMeasureNanos": 1314395833,
+      "totalAllocDelta": 83735392,
+      "mallocsDelta": 7229,
+      "freesDelta": 479,
+      "numGCDelta": 0,
+      "pauseTotalNsDelta": 0,
+      "heapAllocBefore": 20956936096,
+      "heapAllocAfter": 21040671488,
+      "processCPUSecondsDelta": 6.022077999999999,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 73160000000,
+        "totalCount": 7316,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "ProjectionPropertyStringID": {
+            "value": 24610000000,
+            "count": 2461,
+            "fraction": 0.3363860032804811
+          },
+          "ProjectionArrayString": {
+            "value": 2270000000,
+            "count": 227,
+            "fraction": 0.031027884089666485
+          },
+          "genericStringCandidates": {
+            "value": 26900000000,
+            "count": 2690,
+            "fraction": 0.3676872607982504
+          },
+          "distinctAtomMatches": {
+            "value": 30000000,
+            "count": 3,
+            "fraction": 0.0004100601421541826
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 0,
+        "totalCount": 0,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionPropertyStringID": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionArrayString": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "genericStringCandidates": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "distinctAtomMatches": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    },
+    {
+      "id": "global-six-or-targeted",
+      "index": 884,
+      "outcome": "SUCCESS",
+      "rowCount": 200,
+      "digest": "b781b11457d29cff97574767540737dd860b84ebf0e19939eaeffc28acdad38a",
+      "diagnosticMeasureNanos": 1375526917,
+      "totalAllocDelta": 376804616,
+      "mallocsDelta": 5213784,
+      "freesDelta": 718350,
+      "numGCDelta": 0,
+      "pauseTotalNsDelta": 0,
+      "heapAllocBefore": 21064358352,
+      "heapAllocAfter": 21441162968,
+      "processCPUSecondsDelta": 6.676716000000015,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 72700000000,
+        "totalCount": 7270,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 10000000,
+            "count": 1,
+            "fraction": 0.0001375515818431912
+          },
+          "ProjectionPropertyStringID": {
+            "value": 24660000000,
+            "count": 2466,
+            "fraction": 0.3392022008253095
+          },
+          "ProjectionArrayString": {
+            "value": 2170000000,
+            "count": 217,
+            "fraction": 0.02984869325997249
+          },
+          "genericStringCandidates": {
+            "value": 26890000000,
+            "count": 2689,
+            "fraction": 0.3698762035763411
+          },
+          "distinctAtomMatches": {
+            "value": 20000000,
+            "count": 2,
+            "fraction": 0.0002751031636863824
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 0,
+        "totalCount": 0,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionPropertyStringID": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionArrayString": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "genericStringCandidates": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "distinctAtomMatches": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    },
+    {
+      "id": "global-six-or-dense",
+      "index": 885,
+      "outcome": "SUCCESS",
+      "rowCount": 200,
+      "digest": "f98c7c38fe41cd80e40f61990a7d175a389186e90164587b23debd9446fb3a0f",
+      "diagnosticMeasureNanos": 1327975958,
+      "totalAllocDelta": 294379144,
+      "mallocsDelta": 5459468,
+      "freesDelta": 1184834,
+      "numGCDelta": 0,
+      "pauseTotalNsDelta": 0,
+      "heapAllocBefore": 21467720920,
+      "heapAllocAfter": 21762100064,
+      "processCPUSecondsDelta": 6.396731000000003,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 66380000000,
+        "totalCount": 6638,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "ProjectionPropertyStringID": {
+            "value": 22720000000,
+            "count": 2272,
+            "fraction": 0.3422717686050015
+          },
+          "ProjectionArrayString": {
+            "value": 2580000000,
+            "count": 258,
+            "fraction": 0.0388671286532088
+          },
+          "genericStringCandidates": {
+            "value": 25300000000,
+            "count": 2530,
+            "fraction": 0.3811388972582103
+          },
+          "distinctAtomMatches": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 0,
+        "totalCount": 0,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionPropertyStringID": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionArrayString": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "genericStringCandidates": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "distinctAtomMatches": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    },
+    {
+      "id": "global-six-or-wrapped-zero",
+      "index": 886,
+      "outcome": "SUCCESS",
+      "rowCount": 0,
+      "digest": "d2b17268d8269d7036af5c7df40521da6219ae5e057618f231fe2b805452fd98",
+      "diagnosticMeasureNanos": 1460209208,
+      "totalAllocDelta": 163166408,
+      "mallocsDelta": 2409724,
+      "freesDelta": 129206,
+      "numGCDelta": 0,
+      "pauseTotalNsDelta": 0,
+      "heapAllocBefore": 21788378000,
+      "heapAllocAfter": 21951544408,
+      "processCPUSecondsDelta": 7.344588000000002,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 57130000000,
+        "totalCount": 5713,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "ProjectionPropertyStringID": {
+            "value": 18160000000,
+            "count": 1816,
+            "fraction": 0.31787152109224576
+          },
+          "ProjectionArrayString": {
+            "value": 1840000000,
+            "count": 184,
+            "fraction": 0.03220724663049186
+          },
+          "genericStringCandidates": {
+            "value": 20080000000,
+            "count": 2008,
+            "fraction": 0.35147908279362855
+          },
+          "distinctAtomMatches": {
+            "value": 120000000,
+            "count": 12,
+            "fraction": 0.002100472606336426
+          },
+          "stringCase": {
+            "value": 90000000,
+            "count": 9,
+            "fraction": 0.0015753544547523193
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 0,
+        "totalCount": 0,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionPropertyStringID": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionArrayString": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "genericStringCandidates": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "distinctAtomMatches": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    },
+    {
+      "id": "global-six-or-wrapped-targeted",
+      "index": 887,
+      "outcome": "SUCCESS",
+      "rowCount": 200,
+      "digest": "b5eb9ba04fb3f1d50f207e047b90f66987f59218b156ea64df2c01b808761387",
+      "diagnosticMeasureNanos": 1636443000,
+      "totalAllocDelta": 421672936,
+      "mallocsDelta": 7325576,
+      "freesDelta": 174529316,
+      "numGCDelta": 1,
+      "pauseTotalNsDelta": 741374,
+      "heapAllocBefore": 21976015192,
+      "heapAllocAfter": 12103625240,
+      "processCPUSecondsDelta": 11.768850000000004,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 49390000000,
+        "totalCount": 4939,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "ProjectionPropertyStringID": {
+            "value": 14330000000,
+            "count": 1433,
+            "fraction": 0.2901397043936019
+          },
+          "ProjectionArrayString": {
+            "value": 1400000000,
+            "count": 140,
+            "fraction": 0.028345818991698725
+          },
+          "genericStringCandidates": {
+            "value": 15960000000,
+            "count": 1596,
+            "fraction": 0.32314233650536545
+          },
+          "distinctAtomMatches": {
+            "value": 270000000,
+            "count": 27,
+            "fraction": 0.005466693662684754
+          },
+          "stringCase": {
+            "value": 220000000,
+            "count": 22,
+            "fraction": 0.004454342984409799
+          },
+          "GCStacks": {
+            "value": 2400000000,
+            "count": 240,
+            "fraction": 0.04859283255719781
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 9987083207,
+        "totalCount": 146562300,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 71830688,
+            "count": 2784326,
+            "fraction": 0.0071923590212659375
+          },
+          "ProjectionPropertyStringID": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "ProjectionArrayString": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "genericStringCandidates": {
+            "value": 100542143,
+            "count": 2842269,
+            "fraction": 0.010067217916991968
+          },
+          "distinctAtomMatches": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    },
+    {
+      "id": "global-six-or-wrapped-dense",
+      "index": 888,
+      "outcome": "SUCCESS",
+      "rowCount": 200,
+      "digest": "3061e81ef06781c8157aca6ad7dc22157f48cf001e213d7ce8a896a8df874f2d",
+      "diagnosticMeasureNanos": 1483669875,
+      "totalAllocDelta": 379019200,
+      "mallocsDelta": 7675485,
+      "freesDelta": 1192584,
+      "numGCDelta": 0,
+      "pauseTotalNsDelta": 0,
+      "heapAllocBefore": 12130661944,
+      "heapAllocAfter": 12509681144,
+      "processCPUSecondsDelta": 7.535464000000001,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 48760000000,
+        "totalCount": 4876,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          },
+          "ProjectionPropertyStringID": {
+            "value": 14110000000,
+            "count": 1411,
+            "fraction": 0.2893765381460213
+          },
+          "ProjectionArrayString": {
+            "value": 1800000000,
+            "count": 180,
+            "fraction": 0.03691550451189499
+          },
+          "genericStringCandidates": {
+            "value": 15980000000,
+            "count": 1598,
+            "fraction": 0.3277276456111567
+          },
+          "distinctAtomMatches": {
+            "value": 80000000,
+            "count": 8,
+            "fraction": 0.0016406890894175555
+          },
+          "stringCase": {
+            "value": 70000000,
+            "count": 7,
+            "fraction": 0.001435602953240361
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 0,
+        "totalCount": 0,
+        "groups": {
+          "ProjectionCandidateNode": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionPropertyStringID": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "ProjectionArrayString": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "genericStringCandidates": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "distinctAtomMatches": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "stringCase": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    }
+  ],
+  "limitations": [
+    "Profile covers all goroutines in this process, including GC and profiler bookkeeping.",
+    "Before and after processes run serially with the same helper; host activity is recorded but this is not acceptance timing.",
+    "Default sampled alloc/heap profiles can lag GC; use exact MemStats counters for total allocation delta.",
+    "Before/after profile writes outside original measure still affect later history; no extra cases or forced GC added."
+  ]
+}

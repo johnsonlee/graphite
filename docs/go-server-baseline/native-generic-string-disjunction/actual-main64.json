@@ -1,0 +1,74 @@
+{
+  "workloadSha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+  "cases": [
+    {
+      "index": 886,
+      "case": {
+        "id": "global-six-or-wrapped-zero",
+        "family": "global",
+        "shape": "global-six-or-wrapped",
+        "selectivity": "zero",
+        "operator": "contains",
+        "boundary": "single-query",
+        "projection": "distinct-six-properties",
+        "limit": 200,
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'graphitepressureabsent43zerox'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'graphitepressureabsent43zerox'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+        "parameters": {},
+        "expectZeroRows": true,
+        "targetGraphId": null,
+        "targetGraphIds": [],
+        "workloadIdentity": null,
+        "requestGraphIds": null,
+        "expectedRowCountRange": null,
+        "configuredTimeoutMillis": null,
+        "fixtureDistributionId": null
+      }
+    },
+    {
+      "index": 887,
+      "case": {
+        "id": "global-six-or-wrapped-targeted",
+        "family": "global",
+        "shape": "global-six-or-wrapped",
+        "selectivity": "targeted",
+        "operator": "contains",
+        "boundary": "single-query",
+        "projection": "distinct-six-properties",
+        "limit": 200,
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'kotlin'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'kotlin'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+        "parameters": {},
+        "expectZeroRows": false,
+        "targetGraphId": null,
+        "targetGraphIds": [],
+        "workloadIdentity": null,
+        "requestGraphIds": null,
+        "expectedRowCountRange": null,
+        "configuredTimeoutMillis": null,
+        "fixtureDistributionId": null
+      }
+    },
+    {
+      "index": 888,
+      "case": {
+        "id": "global-six-or-wrapped-dense",
+        "family": "global",
+        "shape": "global-six-or-wrapped",
+        "selectivity": "dense",
+        "operator": "contains",
+        "boundary": "single-query",
+        "projection": "distinct-six-properties",
+        "limit": 200,
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.name, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.caller_class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'set'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'set'\nRETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+        "parameters": {},
+        "expectZeroRows": false,
+        "targetGraphId": null,
+        "targetGraphIds": [],
+        "workloadIdentity": null,
+        "requestGraphIds": null,
+        "expectedRowCountRange": null,
+        "configuredTimeoutMillis": null,
+        "fixtureDistributionId": null
+      }
+    }
+  ]
+}

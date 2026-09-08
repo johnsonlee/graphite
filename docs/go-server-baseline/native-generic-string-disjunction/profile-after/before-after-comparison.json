@@ -1,0 +1,559 @@
+{
+  "performanceMeasurement": false,
+  "perCaseP95Available": false,
+  "statisticalSpeedupClaim": false,
+  "beforeProcessFinishedNanos": 1788854623765668000,
+  "afterProcessStartedNanos": 1788854672230724000,
+  "processesDidNotOverlap": true,
+  "commandAndHelperBytesIdentical": true,
+  "full1267PublicResultsEqual": true,
+  "originalFailureRetained": true,
+  "originalFixtureFilesUnchangedEachRuntime": 1152,
+  "beforeSource": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-go-baseline-513e2b96-v1/module",
+  "afterSource": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-acb06574-build-v1/source",
+  "frozenSourceChangedFiles": [
+    "internal/query/indexed_distinct.go",
+    "internal/query/main_string_candidates.go"
+  ],
+  "frozenSourceAddedFiles": [
+    "internal/query/generic_disjunction_test.go"
+  ],
+  "frozenSourceRemovedFiles": [
+    "internal/query/generic_disjunction_diagnostic_test.go"
+  ],
+  "inputs": {
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/profile-summary.json": "752477dc2d67ea060e7d2c2a9ecb833a9ca19264887cb83d0e089176004acafd",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/process.json": "835e7d97455f005a7b68561add3eab038afe0b220ac7b04ccd0817d7fb04783b",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/correctness.json": "6ef9299266d7ec4df98e751de17097d87face96ee4653f4e4f1eb0dbf9d60133",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/selected-cases.json": "6db20d37295f6b63dadc473c74a41d2add08910d713774fc32ff91b3047b1fdf",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/main-overlay.go": "be97e0d48c251291f419b12d1faaea0016fc6d47927061f2f6fccb30ed10a7b3",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/helper-overlay.go": "a8b7a744282fbba2cd6d33224ecabd6df0f08fcf8a86eaedc2b4f12cb0d8c7bb",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-before-513e2b96-v1/frozen-source.json": "370f4605a063736a71901d946cc57261e6fa108aa9fa4862d45eaf56bd1df440",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/profile-summary.json": "f153a46b1d403bb7ce6bf51cd37c21655394b10adbfd8520e4daf6cc0d386ea0",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/process.json": "307f7566c98fb88c77902944213c83982577b0ab78b2e100665768419c2fcfbb",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/correctness.json": "c8bb0c3b4d6d4786a37992e96c1f66fb1e86546e652d50052b5d879f7c57d535",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/selected-cases.json": "6db20d37295f6b63dadc473c74a41d2add08910d713774fc32ff91b3047b1fdf",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/main-overlay.go": "be97e0d48c251291f419b12d1faaea0016fc6d47927061f2f6fccb30ed10a7b3",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/helper-overlay.go": "a8b7a744282fbba2cd6d33224ecabd6df0f08fcf8a86eaedc2b4f12cb0d8c7bb",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-string-profile-after-acb06574-v1/frozen-source.json": "187a14426fe03cb7024747c28252e24c715a7f008573d67818523e86e131da57"
+  },
+  "profiles": [
+    {
+      "id": "global-six-or-zero",
+      "index": 883,
+      "beforeTotalAllocDelta": 1512904392,
+      "afterTotalAllocDelta": 83735392,
+      "observedAllocationDeltaReductionFraction": 0.9446525554140899,
+      "beforeProcessCPUSeconds": 17.680708000000006,
+      "afterProcessCPUSeconds": 6.022077999999999,
+      "beforeCPUSamples": 4607,
+      "afterCPUSamples": 7316,
+      "beforeInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionArrayString": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "genericStringCandidates": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "distinctAtomMatches": {
+          "value": 200000000,
+          "count": 20,
+          "fraction": 0.004341219882787063
+        },
+        "stringCase": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "GCStacks": {
+          "value": 2520000000,
+          "count": 252,
+          "fraction": 0.054699370523117
+        }
+      },
+      "afterInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 24610000000,
+          "count": 2461,
+          "fraction": 0.3363860032804811
+        },
+        "ProjectionArrayString": {
+          "value": 2270000000,
+          "count": 227,
+          "fraction": 0.031027884089666485
+        },
+        "genericStringCandidates": {
+          "value": 26900000000,
+          "count": 2690,
+          "fraction": 0.3676872607982504
+        },
+        "distinctAtomMatches": {
+          "value": 30000000,
+          "count": 3,
+          "fraction": 0.0004100601421541826
+        },
+        "stringCase": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      }
+    },
+    {
+      "id": "global-six-or-targeted",
+      "index": 884,
+      "beforeTotalAllocDelta": 1785231040,
+      "afterTotalAllocDelta": 376804616,
+      "observedAllocationDeltaReductionFraction": 0.7889322964046155,
+      "beforeProcessCPUSeconds": 13.565078999999988,
+      "afterProcessCPUSeconds": 6.676716000000015,
+      "beforeCPUSamples": 4065,
+      "afterCPUSamples": 7270,
+      "beforeInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionArrayString": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "genericStringCandidates": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "distinctAtomMatches": {
+          "value": 120000000,
+          "count": 12,
+          "fraction": 0.002952029520295203
+        },
+        "stringCase": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      },
+      "afterInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 10000000,
+          "count": 1,
+          "fraction": 0.0001375515818431912
+        },
+        "ProjectionPropertyStringID": {
+          "value": 24660000000,
+          "count": 2466,
+          "fraction": 0.3392022008253095
+        },
+        "ProjectionArrayString": {
+          "value": 2170000000,
+          "count": 217,
+          "fraction": 0.02984869325997249
+        },
+        "genericStringCandidates": {
+          "value": 26890000000,
+          "count": 2689,
+          "fraction": 0.3698762035763411
+        },
+        "distinctAtomMatches": {
+          "value": 20000000,
+          "count": 2,
+          "fraction": 0.0002751031636863824
+        },
+        "stringCase": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      }
+    },
+    {
+      "id": "global-six-or-dense",
+      "index": 885,
+      "beforeTotalAllocDelta": 1711444576,
+      "afterTotalAllocDelta": 294379144,
+      "observedAllocationDeltaReductionFraction": 0.8279937614526642,
+      "beforeProcessCPUSeconds": 14.214895000000016,
+      "afterProcessCPUSeconds": 6.396731000000003,
+      "beforeCPUSamples": 5170,
+      "afterCPUSamples": 6638,
+      "beforeInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionArrayString": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "genericStringCandidates": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "distinctAtomMatches": {
+          "value": 80000000,
+          "count": 8,
+          "fraction": 0.0015473887814313346
+        },
+        "stringCase": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      },
+      "afterInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 22720000000,
+          "count": 2272,
+          "fraction": 0.3422717686050015
+        },
+        "ProjectionArrayString": {
+          "value": 2580000000,
+          "count": 258,
+          "fraction": 0.0388671286532088
+        },
+        "genericStringCandidates": {
+          "value": 25300000000,
+          "count": 2530,
+          "fraction": 0.3811388972582103
+        },
+        "distinctAtomMatches": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "stringCase": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      }
+    },
+    {
+      "id": "global-six-or-wrapped-zero",
+      "index": 886,
+      "beforeTotalAllocDelta": 1632995480,
+      "afterTotalAllocDelta": 163166408,
+      "observedAllocationDeltaReductionFraction": 0.9000815311503495,
+      "beforeProcessCPUSeconds": 18.01280199999999,
+      "afterProcessCPUSeconds": 7.344588000000002,
+      "beforeCPUSamples": 4745,
+      "afterCPUSamples": 5713,
+      "beforeInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionArrayString": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "genericStringCandidates": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "distinctAtomMatches": {
+          "value": 110000000,
+          "count": 11,
+          "fraction": 0.0023182297154899895
+        },
+        "stringCase": {
+          "value": 80000000,
+          "count": 8,
+          "fraction": 0.0016859852476290833
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      },
+      "afterInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 18160000000,
+          "count": 1816,
+          "fraction": 0.31787152109224576
+        },
+        "ProjectionArrayString": {
+          "value": 1840000000,
+          "count": 184,
+          "fraction": 0.03220724663049186
+        },
+        "genericStringCandidates": {
+          "value": 20080000000,
+          "count": 2008,
+          "fraction": 0.35147908279362855
+        },
+        "distinctAtomMatches": {
+          "value": 120000000,
+          "count": 12,
+          "fraction": 0.002100472606336426
+        },
+        "stringCase": {
+          "value": 90000000,
+          "count": 9,
+          "fraction": 0.0015753544547523193
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      }
+    },
+    {
+      "id": "global-six-or-wrapped-targeted",
+      "index": 887,
+      "beforeTotalAllocDelta": 1882581256,
+      "afterTotalAllocDelta": 421672936,
+      "observedAllocationDeltaReductionFraction": 0.7760134205861869,
+      "beforeProcessCPUSeconds": 19.750954000000018,
+      "afterProcessCPUSeconds": 11.768850000000004,
+      "beforeCPUSamples": 5377,
+      "afterCPUSamples": 4939,
+      "beforeInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionArrayString": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "genericStringCandidates": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "distinctAtomMatches": {
+          "value": 170000000,
+          "count": 17,
+          "fraction": 0.003161614283057467
+        },
+        "stringCase": {
+          "value": 120000000,
+          "count": 12,
+          "fraction": 0.0022317277292170355
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      },
+      "afterInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 14330000000,
+          "count": 1433,
+          "fraction": 0.2901397043936019
+        },
+        "ProjectionArrayString": {
+          "value": 1400000000,
+          "count": 140,
+          "fraction": 0.028345818991698725
+        },
+        "genericStringCandidates": {
+          "value": 15960000000,
+          "count": 1596,
+          "fraction": 0.32314233650536545
+        },
+        "distinctAtomMatches": {
+          "value": 270000000,
+          "count": 27,
+          "fraction": 0.005466693662684754
+        },
+        "stringCase": {
+          "value": 220000000,
+          "count": 22,
+          "fraction": 0.004454342984409799
+        },
+        "GCStacks": {
+          "value": 2400000000,
+          "count": 240,
+          "fraction": 0.04859283255719781
+        }
+      }
+    },
+    {
+      "id": "global-six-or-wrapped-dense",
+      "index": 888,
+      "beforeTotalAllocDelta": 1833654184,
+      "afterTotalAllocDelta": 379019200,
+      "observedAllocationDeltaReductionFraction": 0.7932984292746009,
+      "beforeProcessCPUSeconds": 24.346378000000005,
+      "afterProcessCPUSeconds": 7.535464000000001,
+      "beforeCPUSamples": 5384,
+      "afterCPUSamples": 4876,
+      "beforeInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionArrayString": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "genericStringCandidates": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "distinctAtomMatches": {
+          "value": 310000000,
+          "count": 31,
+          "fraction": 0.005757800891530461
+        },
+        "stringCase": {
+          "value": 240000000,
+          "count": 24,
+          "fraction": 0.004457652303120356
+        },
+        "GCStacks": {
+          "value": 2680000000,
+          "count": 268,
+          "fraction": 0.04977711738484398
+        }
+      },
+      "afterInclusiveGroups": {
+        "ProjectionCandidateNode": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        },
+        "ProjectionPropertyStringID": {
+          "value": 14110000000,
+          "count": 1411,
+          "fraction": 0.2893765381460213
+        },
+        "ProjectionArrayString": {
+          "value": 1800000000,
+          "count": 180,
+          "fraction": 0.03691550451189499
+        },
+        "genericStringCandidates": {
+          "value": 15980000000,
+          "count": 1598,
+          "fraction": 0.3277276456111567
+        },
+        "distinctAtomMatches": {
+          "value": 80000000,
+          "count": 8,
+          "fraction": 0.0016406890894175555
+        },
+        "stringCase": {
+          "value": 70000000,
+          "count": 7,
+          "fraction": 0.001435602953240361
+        },
+        "GCStacks": {
+          "value": 0,
+          "count": 0,
+          "fraction": 0.0
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Exactly one diagnostic invocation per source. No confidence interval or causal/statistical speedup estimate.",
+    "Every latency is profile-contaminated and excluded from acceptance P95.",
+    "MemStats and Rusage deltas are exact process-wide brackets including profiler/runtime/background work.",
+    "Inclusive CPU groups overlap; sampled alloc/heap differences can lag GC and include earlier query allocations.",
+    "Full ordered workload and all failures are retained; no synthetic graph, added forced GC, or warmup."
+  ]
+}

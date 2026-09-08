@@ -1,0 +1,419 @@
+{
+  "clean": [],
+  "enum-bad-sid-0": [
+    {
+      "file": "graph.nodedata",
+      "offset": 77,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "enum-bad-sid-1": [
+    {
+      "file": "graph.nodedata",
+      "offset": 81,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "enum-bad-tail": [
+    {
+      "file": "graph.nodedata",
+      "offset": 85,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "enum-payload-tag": [
+    {
+      "file": "graph.nodedata",
+      "offset": 76,
+      "format": "byte",
+      "value": 0
+    }
+  ],
+  "enum-payload-id": [
+    {
+      "file": "graph.nodedata",
+      "offset": 72,
+      "format": "int",
+      "value": 1072
+    }
+  ],
+  "enum-offset-missing": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 120,
+      "format": "long",
+      "value": 0
+    }
+  ],
+  "enum-offset-negative": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 120,
+      "format": "long",
+      "value": -1
+    }
+  ],
+  "enum-offset-wrapped-valid": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 120,
+      "format": "long",
+      "value": 4294967369
+    }
+  ],
+  "enum-offset-wrapped-oob": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 120,
+      "format": "long",
+      "value": 4295967297
+    }
+  ],
+  "local-bad-sid-0": [
+    {
+      "file": "graph.nodedata",
+      "offset": 124,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "local-bad-sid-1": [
+    {
+      "file": "graph.nodedata",
+      "offset": 128,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "local-bad-tail": [
+    {
+      "file": "graph.nodedata",
+      "offset": 132,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "local-payload-tag": [
+    {
+      "file": "graph.nodedata",
+      "offset": 123,
+      "format": "byte",
+      "value": 0
+    }
+  ],
+  "local-payload-id": [
+    {
+      "file": "graph.nodedata",
+      "offset": 119,
+      "format": "int",
+      "value": 1119
+    }
+  ],
+  "local-offset-missing": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 136,
+      "format": "long",
+      "value": 0
+    }
+  ],
+  "local-offset-negative": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 136,
+      "format": "long",
+      "value": -1
+    }
+  ],
+  "local-offset-wrapped-valid": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 136,
+      "format": "long",
+      "value": 4294967416
+    }
+  ],
+  "local-offset-wrapped-oob": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 136,
+      "format": "long",
+      "value": 4295967297
+    }
+  ],
+  "field-bad-sid-0": [
+    {
+      "file": "graph.nodedata",
+      "offset": 157,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "field-bad-sid-1": [
+    {
+      "file": "graph.nodedata",
+      "offset": 161,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "field-bad-sid-2": [
+    {
+      "file": "graph.nodedata",
+      "offset": 165,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "field-bad-tail": [
+    {
+      "file": "graph.nodedata",
+      "offset": 169,
+      "format": "truncate",
+      "value": 169
+    }
+  ],
+  "field-payload-tag": [
+    {
+      "file": "graph.nodedata",
+      "offset": 156,
+      "format": "byte",
+      "value": 0
+    }
+  ],
+  "field-payload-id": [
+    {
+      "file": "graph.nodedata",
+      "offset": 152,
+      "format": "int",
+      "value": 1152
+    }
+  ],
+  "field-offset-missing": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 152,
+      "format": "long",
+      "value": 0
+    }
+  ],
+  "field-offset-negative": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 152,
+      "format": "long",
+      "value": -1
+    }
+  ],
+  "field-offset-wrapped-valid": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 152,
+      "format": "long",
+      "value": 4294967449
+    }
+  ],
+  "field-offset-wrapped-oob": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 152,
+      "format": "long",
+      "value": 4295967297
+    }
+  ],
+  "annotation-bad-sid-0": [
+    {
+      "file": "graph.nodedata",
+      "offset": 303,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "annotation-bad-sid-1": [
+    {
+      "file": "graph.nodedata",
+      "offset": 307,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "annotation-bad-sid-2": [
+    {
+      "file": "graph.nodedata",
+      "offset": 311,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "annotation-bad-tail": [
+    {
+      "file": "graph.nodedata",
+      "offset": 315,
+      "format": "int",
+      "value": 2147483647
+    }
+  ],
+  "annotation-payload-tag": [
+    {
+      "file": "graph.nodedata",
+      "offset": 302,
+      "format": "byte",
+      "value": 0
+    }
+  ],
+  "annotation-payload-id": [
+    {
+      "file": "graph.nodedata",
+      "offset": 298,
+      "format": "int",
+      "value": 1298
+    }
+  ],
+  "annotation-offset-missing": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 216,
+      "format": "long",
+      "value": 0
+    }
+  ],
+  "annotation-offset-negative": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 216,
+      "format": "long",
+      "value": -1
+    }
+  ],
+  "annotation-offset-wrapped-valid": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 216,
+      "format": "long",
+      "value": 4294967595
+    }
+  ],
+  "annotation-offset-wrapped-oob": [
+    {
+      "file": "graph.nodeoffsets",
+      "offset": 216,
+      "format": "long",
+      "value": 4295967297
+    }
+  ],
+  "enum-invalid-argument-tag": [
+    {
+      "file": "graph.nodedata",
+      "offset": 89,
+      "format": "byte",
+      "value": 127
+    }
+  ],
+  "annotation-invalid-value-tag": [
+    {
+      "file": "graph.nodedata",
+      "offset": 323,
+      "format": "byte",
+      "value": 127
+    }
+  ],
+  "unicode-0": [
+    {
+      "file": "graph.strings",
+      "format": "string-replace",
+      "values": {
+        "5": "\u0130STANBUL",
+        "12": "\u0130STANBUL",
+        "7": "\u0130STANBUL",
+        "19": "\u0130STANBUL"
+      }
+    }
+  ],
+  "unicode-1": [
+    {
+      "file": "graph.strings",
+      "format": "string-replace",
+      "values": {
+        "5": "\u039f\u03a3",
+        "12": "\u039f\u03a3",
+        "7": "\u039f\u03a3",
+        "19": "\u039f\u03a3"
+      }
+    }
+  ],
+  "unicode-2": [
+    {
+      "file": "graph.strings",
+      "format": "string-replace",
+      "values": {
+        "5": "\u03a3\u039f\u03a3",
+        "12": "\u03a3\u039f\u03a3",
+        "7": "\u03a3\u039f\u03a3",
+        "19": "\u03a3\u039f\u03a3"
+      }
+    }
+  ],
+  "unicode-3": [
+    {
+      "file": "graph.strings",
+      "format": "string-replace",
+      "values": {
+        "5": "A\ud83d\ude00B",
+        "12": "A\ud83d\ude00B",
+        "7": "A\ud83d\ude00B",
+        "19": "A\ud83d\ude00B"
+      }
+    }
+  ],
+  "unicode-4": [
+    {
+      "file": "graph.strings",
+      "format": "string-replace",
+      "values": {
+        "5": "A\ud800B",
+        "12": "A\ud800B",
+        "7": "A\ud800B",
+        "19": "A\ud800B"
+      }
+    }
+  ],
+  "unicode-5": [
+    {
+      "file": "graph.strings",
+      "format": "string-replace",
+      "values": {
+        "5": "A\udc00B",
+        "12": "A\udc00B",
+        "7": "A\udc00B",
+        "19": "A\udc00B"
+      }
+    }
+  ],
+  "unicode-6": [
+    {
+      "file": "graph.strings",
+      "format": "string-replace",
+      "values": {
+        "5": "A\u0000B",
+        "12": "A\u0000B",
+        "7": "A\u0000B",
+        "19": "A\u0000B"
+      }
+    }
+  ],
+  "unicode-7": [
+    {
+      "file": "graph.strings",
+      "format": "string-replace",
+      "values": {
+        "5": "\u00c4\u00d6\u00dc",
+        "12": "\u00c4\u00d6\u00dc",
+        "7": "\u00c4\u00d6\u00dc",
+        "19": "\u00c4\u00d6\u00dc"
+      }
+    }
+  ]
+}

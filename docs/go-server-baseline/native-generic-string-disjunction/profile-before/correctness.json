@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "caseCount": 1267,
+  "successCount": 1266,
+  "originalFailureCount": 1,
+  "timeoutCount": 0,
+  "originalFailure": {
+    "index": 821,
+    "id": "four-or-graph-id-targeted",
+    "family": "projection",
+    "shape": "four-or-graph-id",
+    "outcome": "failed",
+    "samplesPerRuntime": 1,
+    "measurementKind": "time-to-failure",
+    "mainLatencyNanos": 87692542,
+    "goLatencyNanos": 1756584,
+    "mainOverGoSingleSampleRatio": 49.92220241104325,
+    "rowCount": 0,
+    "responseBytes": 0,
+    "digest": "java.lang.IllegalStateException",
+    "mainErrorClass": "java.lang.IllegalStateException",
+    "mainReferenceErrorMessage": "Unsafe expression reached parallel string projection",
+    "goErrorClass": "IllegalStateException",
+    "goErrorMessage": "Unsafe expression reached parallel string projection"
+  },
+  "canonicalReference": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-fullcase-replay/main-cold-complete/responses.jsonl.gz",
+  "canonicalReferenceSHA256": "ec5a289455443d1c09a8c33abf4ebda9acadf958532c17e3fbf373e970a0777f",
+  "mainLedger": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-p95-sampling/evidence/smoke-3b5ecae5-v1/cold-0001/main/capture/main-observations.tsv.gz",
+  "mainLedgerSHA256": "431049471078168345a1610fdc856969afff9499390f2558aaec089f88bc53ae",
+  "allRunLatenciesProfileContaminated": true,
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false
+}
