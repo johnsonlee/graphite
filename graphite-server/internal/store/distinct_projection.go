@@ -37,10 +37,11 @@ func projectionStringError(id int32, size int) error {
 // Protected by callSiteIndex.mu; Close shares this lifetime lock. The retained
 // marker belongs to DISTINCT's initialization, not A6's full-node certificate.
 type distinctProjectionState struct {
-	offsetsLoaded bool
-	offsets       []byte
-	index         *DistinctStringIndex
-	mappedView    *DistinctStringIndex
+	offsetsLoaded   bool
+	offsets         []byte
+	index           *DistinctStringIndex
+	mappedView      *DistinctStringIndex
+	retainPersisted bool
 }
 type DistinctStringIndex struct {
 	owner       *Store
@@ -254,6 +255,9 @@ type DistinctProjectionOptions struct {
 	SkipPreparedPreference bool
 	MainSource             bool
 	CannotMatch            func() bool
+	// A preferred persisted lookup keeps its structural index across a
+	// zero-hit DISTINCT release. Explicit benchmark clear resets this policy.
+	RetainPersisted bool
 }
 
 // PrepareDistinctStringIndex validates only the representation consumed by
@@ -265,10 +269,13 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	if err := s.prepareProjectionOffsets(ctx); err != nil {
 		return nil, false, err
 	}
-	s.callSiteIndex.mu.RLock()
+	s.callSiteIndex.mu.Lock()
 	existing := s.distinctProjection.index
 	closed := s.callSiteIndex.closed
-	s.callSiteIndex.mu.RUnlock()
+	if !closed && ctx.Err() == nil && options.RetainPersisted {
+		s.distinctProjection.retainPersisted = true
+	}
+	s.callSiteIndex.mu.Unlock()
 	if closed {
 		return nil, false, ErrStoreClosed
 	}
@@ -452,9 +459,10 @@ func (i *DistinctStringIndex) Postings(ctx context.Context, p CallSiteStringProp
 	return append([]int32(nil), i.entries[p][sid]...), nil
 }
 
-// ReleaseDistinctStringIndex drops DISTINCT's retained-state marker after a
-// zero-hit multi-source merge. Existing immutable handles stay valid until
-// Store.Close; ordinary projection remains disabled in this change.
+// ReleaseDistinctStringIndex releases request caches after a zero-hit merge.
+// Main retains preferred persisted indexes and newly built trigram indexes;
+// other indexes lose their retained marker. Immutable handles remain valid
+// until Store.Close or the explicit benchmark clear boundary.
 func (s *Store) ReleaseDistinctStringIndex(ctx context.Context) error {
 	s.callSiteIndex.mu.Lock()
 	defer s.callSiteIndex.mu.Unlock()
@@ -464,6 +472,15 @@ func (s *Store) ReleaseDistinctStringIndex(ctx context.Context) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	index := s.distinctProjection.index
+	if index != nil && (index.view != nil && s.distinctProjection.retainPersisted ||
+		index.view == nil && index.ordinary != nil && index.ordinary.trigramsReady && len(index.ordinary.trigrams) > 0) {
+		if index.ordinary != nil {
+			index.ordinary.caches = [3]projectionLRU{}
+		}
+		return nil
+	}
 	s.distinctProjection.index = nil
+	s.distinctProjection.retainPersisted = false
 	return nil
 }

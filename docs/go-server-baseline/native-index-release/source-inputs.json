@@ -1,0 +1,9 @@
+{
+  "graphite-server/internal/store/distinct_projection.go": "5e717e3ebc715aae71d3957d79990374895a46c6063539576112d8d402934900",
+  "graphite-server/internal/store/index_lifecycle.go": "19662f19c33d9434a3e31a4b946b81dbfb49a04903708d49afc023fe1026861b",
+  "graphite-server/internal/query/main_string_source.go": "2af113ae64ebb833d9487013163a3ac7c9d76a1953ac7d3d57ae1d9f46f846bb",
+  "graphite-server/internal/query/index_release_test.go": "6a61ee067a0866f1d7429209a840d8492945bc658139cb9850264ac0259df0f5",
+  "graphite-server/internal/query/testdata/index-release/main.json": "18b1d0df680daa468ddda249a789039a90697e5bbb3c03a94ad3a279cd680abc",
+  "docs/go-server-baseline/native-index-lifecycle/IndexLifecycleOracle.java": "27b4ce42d4c3c208b5d361c1f5355c12fd7cc29852fc3f8b533f2e5d4ae97ead",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d"
+}

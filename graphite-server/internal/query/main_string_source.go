@@ -40,7 +40,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			prepared, err := source.Store.PreparedProjectionFile(e.ctx)
 			failMainStringRead(err)
 			if prepared {
-				index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 1, Limit: limit})
+				index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 1, Limit: limit, RetainPersisted: true})
 				failMainStringRead(err)
 				raw = index.Raw
 			} else {

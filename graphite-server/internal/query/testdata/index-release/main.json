@@ -1,0 +1,710 @@
+[
+  {
+    "scenario": "persisted-scoped",
+    "loaded": {
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "trigrams": false,
+      "loadedFromPersistence": false,
+      "retained": false,
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "prepared": true,
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    }
+  },
+  {
+    "scenario": "persisted-prepared",
+    "loaded": {
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "trigrams": false,
+      "loadedFromPersistence": false,
+      "retained": false,
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      }
+    },
+    "steps": [
+      {
+        "action": "prepare",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "prepared": true,
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "prepared": true,
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    }
+  },
+  {
+    "scenario": "built-prepared",
+    "loaded": {
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "trigrams": false,
+      "loadedFromPersistence": false,
+      "retained": false,
+      "indexFile": null
+    },
+    "steps": [
+      {
+        "action": "prepare",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": null
+        },
+        "prepared": true,
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "indexFile": null
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "indexFile": null
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "indexFile": null
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "prepared": true,
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "release",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    }
+  }
+]

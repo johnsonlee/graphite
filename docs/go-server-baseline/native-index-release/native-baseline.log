@@ -1,0 +1,8 @@
+--- FAIL: TestIndexReleaseMain (0.02s)
+    --- FAIL: TestIndexReleaseMain/persisted-scoped (0.01s)
+        index_release_test.go:82: main lifecycle differs; complete candidate retained in INDEX_RELEASE_OUTPUT
+    --- FAIL: TestIndexReleaseMain/built-prepared (0.00s)
+        index_release_test.go:82: main lifecycle differs; complete candidate retained in INDEX_RELEASE_OUTPUT
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.264s
+FAIL

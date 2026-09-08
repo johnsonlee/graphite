@@ -1,0 +1,17 @@
+{
+  "scenarios": 3,
+  "operations": 21,
+  "stateAndFileObservations": 45,
+  "publicQueryResponses": 4,
+  "candidateExactlyEqualsMain": true,
+  "baselineFailingScenarios": [
+    "persisted-scoped",
+    "built-prepared"
+  ],
+  "originalFixtureFilesUnchanged": 50,
+  "newMainFiles": [
+    "built-prepared/graph.callsite-string-index"
+  ],
+  "performanceMeasurement": false,
+  "scope": "Preferred persisted and built-trigram release lifecycle; not full server parity"
+}

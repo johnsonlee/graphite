@@ -1,0 +1,6 @@
+--- FAIL: TestIndexReleaseMain (0.02s)
+    index_release_test.go:92: open ../docs/go-server-baseline/native-index-release/native-candidate.json: no such file or directory
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.588s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.696s
+FAIL

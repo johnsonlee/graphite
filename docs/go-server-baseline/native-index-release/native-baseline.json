@@ -1,0 +1,596 @@
+[
+  {
+    "finalIndexFile": {
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    "loaded": {
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      },
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "scenario": "persisted-scoped",
+    "steps": [
+      {
+        "action": "query",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        }
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        }
+      },
+      {
+        "action": "clear",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        }
+      },
+      {
+        "action": "prepare",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "prepared": true
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        }
+      },
+      {
+        "action": "query",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "finalIndexFile": {
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    "loaded": {
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      },
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "scenario": "persisted-prepared",
+    "steps": [
+      {
+        "action": "prepare",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "prepared": true
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        }
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        }
+      },
+      {
+        "action": "clear",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        }
+      },
+      {
+        "action": "prepare",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "prepared": true
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        }
+      },
+      {
+        "action": "query",
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "finalIndexFile": null,
+    "loaded": {
+      "indexFile": null,
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "scenario": "built-prepared",
+    "steps": [
+      {
+        "action": "prepare",
+        "after": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        },
+        "before": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "prepared": true
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        }
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        }
+      },
+      {
+        "action": "clear",
+        "after": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        }
+      },
+      {
+        "action": "prepare",
+        "after": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        },
+        "before": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "prepared": true
+      },
+      {
+        "action": "release",
+        "after": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": true,
+          "trigrams": true
+        }
+      },
+      {
+        "action": "query",
+        "after": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": null,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      }
+    ]
+  }
+]

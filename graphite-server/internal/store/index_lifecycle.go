@@ -109,6 +109,7 @@ func (s *Store) ClearStringPropertyIndexes(ctx context.Context) error {
 		// The mapped node-offset table is graph ownership, not a query index.
 		s.distinctProjection.index = nil
 		s.distinctProjection.mappedView = nil
+		s.distinctProjection.retainPersisted = false
 		for _, proof := range []*candidateCertificateState{&s.candidateProof, &s.trigramProof} {
 			proof.mu.Lock()
 			proof.completed, proof.valid = false, false

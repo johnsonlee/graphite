@@ -1,0 +1,12 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./internal/query",
+    "-run",
+    "^TestIndexReleaseMain$",
+    "-count=1"
+  ],
+  "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-index-release-base-vfwd5jyx/graphite-server",
+  "exitCode": 1
+}
