@@ -1,0 +1,39 @@
+{
+  "runtime": "go",
+  "state": "warm-after-failed-prewarm",
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-3b5ecae5-build-v1/graphite-benchmark-latency",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-3b5ecae5-smoke-v1/warm-after-failed-prewarm-0001/go/graphs-relocated.tsv",
+    "--state",
+    "warm-after-failed-prewarm",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-3b5ecae5-build-v1/source/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-3b5ecae5-smoke-v1/warm-after-failed-prewarm-0001/go/capture/observations.jsonl"
+  ],
+  "status": "exited",
+  "clone": "/Users/johnsonlee/.codex/benchmarks/graphite/p95-data-1fc33bb1f496-warm-after-failed-prewarm-0001-go/fixture",
+  "engineRevision": "3b5ecae5c9a4c1425f18a3b5af3e373b41a184eb",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "performanceMeasurement": true,
+  "diagnosticOnly": true,
+  "samplesPerCase": 1,
+  "manifestSHA256": "174351de574245bd8e098ffa3e993fe104769667be6d48b4c2bc6b68873ee197",
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null,
+    "JAVA_TOOL_OPTIONS": null,
+    "JDK_JAVA_OPTIONS": null
+  },
+  "pid": 77897,
+  "startedAtNanos": 1788845416183631000,
+  "startedAt": "2026-09-08T05:30:16.183643+00:00",
+  "exitCode": 1,
+  "finishedAtNanos": 1788845576100073000,
+  "finishedAt": "2026-09-08T05:32:56.100076+00:00",
+  "inputsUnchanged": true,
+  "fixtureAuditPassed": true
+}

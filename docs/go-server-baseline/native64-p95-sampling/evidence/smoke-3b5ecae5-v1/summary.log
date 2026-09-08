@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "caseCountPerState": 1267,
+  "states": [
+    "cold",
+    "startup-prepared",
+    "warm-after-failed-prewarm"
+  ],
+  "workloadSHA256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+  "graphManifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "minimumSamplesPerCasePerRuntime": 200,
+  "quantileMethod": "nearest-rank ceil(0.95*n); independent per state/case/runtime",
+  "trialCountByState": {
+    "cold": 1,
+    "startup-prepared": 1,
+    "warm-after-failed-prewarm": 1
+  },
+  "measurementAcceptanceEligible": false,
+  "limitations": [
+    "Original all-success benchmark gate fails on case821",
+    "warm-after-failed-prewarm is diagnostic continuation, not formal original warm",
+    "Go lacks main-equivalent resource sampler and work metrics; full server fidelity unfinished"
+  ],
+  "integrityPassed": false,
+  "tenfoldP95AcceptanceProven": false,
+  "notes": [
+    "No average or pooled P95 across cases is calculated.",
+    "P95 below 200 exact samples is descriptive only and insufficient for acceptance.",
+    "Timeouts are censored and excluded from exact latency distributions.",
+    "Failure timings remain separate time-to-failure distributions; failures block acceptance.",
+    "Reference-derived messages are not claimed to be observed during the timed trial."
+  ]
+}

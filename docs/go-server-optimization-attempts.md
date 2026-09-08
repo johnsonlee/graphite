@@ -916,3 +916,41 @@ was made or attributed to this candidate. Mapped supertype order and deliberatel
 inconsistent type/node indexes, non-CallSite malformed decoding, work metrics and
 worker configuration, remaining JVM-backed CLI paths, formal warm replay, repeated
 per-case P95/10x and required PR benchmark gates remain open.
+
+
+### 2026-09-08 — Measurement follow-up: complete per-case latency sampling
+
+Freeze Go engine `3b5ecae5c9a4c1425f18a3b5af3e373b41a184eb` and original main
+`4e328b0109e13c896b74004823fb049fcb19251a` in an independently hashed measurement
+build. The controller runs full ordered 1,267-case workloads on independent clones
+of the same 64 real persisted graphs (1,152 files), with paired runtime order
+alternating and state order rotating. Each runtime is a fresh process, timed runs
+are serial, and original main retains its timer, executor, sampler and counters.
+No production query engine changes are part of this measurement follow-up.
+
+The three-state smoke capture completed cold, startup-prepared and the explicitly
+diagnostic warm-after-failed-prewarm state. All six runtime processes completed
+all 1,267 cases: 1,266 canonical successes match and the one original
+four-or-graph-id-targeted failure is preserved. Both diagnostic prewarm ledgers
+also contain all 1,267 original signatures. Runtime exits remain 1 for the
+original all-success gate; the three independent pair verifications pass.
+Fixture and frozen-input audits pass. Generated clones were removed only after
+both processes terminated and pair verification succeeded.
+
+This capture has exactly one sample per case/runtime/state, so it establishes
+measurement plumbing and correctness, not P95 or speedup. The summarizer keeps
+3,801 separate state/case rows, reports successful latency separately from failure
+time and censored timeouts, and labels every smoke row insufficient. Acceptance
+requires at least 200 samples per case/runtime/state and main P95 / Go P95 >=10
+for each successful case. The original failed query and diagnostic warm status,
+Go resource/work accounting gaps, and remaining server fidelity still block
+full acceptance; the controller explicitly remains ineligible.
+
+Before freezing this measurement build, full-module go test -race -count=1 ./...
+and go vet ./... passed, as did nine statistics tests and original-main tooling
+verification, with 2,533 inputs unchanged. The archive independently verifies all
+79 copied files, canonical ledgers and raw/normalized clocks. Complete commands,
+environment, raw timing/CPU/GC counter records, build closure and limitations are
+in `docs/go-server-baseline/native64-p95-sampling/`. The three-pair capture and
+summary are retained under its evidence directory; no 200-sample campaign has
+been run or attributed to this follow-up. Keep the measurement tooling.

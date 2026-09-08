@@ -1,0 +1,47 @@
+{
+  "steps": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "log": "vet.log"
+    },
+    {
+      "command": [
+        "python3",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-p95-sampling/test_summarize.py"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite",
+      "exitCode": 0,
+      "log": "statistics.log"
+    },
+    {
+      "command": [
+        "python3",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-p95-sampling/main-tooling/build.py",
+        "--verify-only"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite",
+      "exitCode": 0,
+      "log": "main-build-verification.log"
+    }
+  ],
+  "inputsUnchanged": true,
+  "inputCount": 2533
+}

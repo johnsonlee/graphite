@@ -1,0 +1,61 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "scope": "Only independent main-tooling files; build/audit without graph or query execution",
+  "files": [
+    {
+      "file": "MainLatencyCapture.java",
+      "bytes": 14353,
+      "sha256": "1c7dadec056cae22fd0f675494b7b4968fb7b78c56bc50669b5c8af9bdf2881a"
+    },
+    {
+      "file": "build.py",
+      "bytes": 6947,
+      "sha256": "efac5b9626c4100a58a27fedd3e1c8db1645cf1b94dbc274c59a033a03ddcc77"
+    },
+    {
+      "file": "README.md",
+      "bytes": 5386,
+      "sha256": "bb7cc2f6b0d2c92f4f665569c0c78082498c377aa5ad671e405213742a3d0769"
+    },
+    {
+      "file": "compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "classpath.txt",
+      "bytes": 8579,
+      "sha256": "9b359da5d87a7f7d1794763b71a56393f36c46873aa914f555168094fab6eddd"
+    },
+    {
+      "file": "classes/MainLatencyCapture.class",
+      "bytes": 16083,
+      "sha256": "f03392548b85a10833c4b349f8da5ac94aaac616e73ae91d35910bfaca5d1313"
+    },
+    {
+      "file": "launcher-bytecode.txt",
+      "bytes": 71663,
+      "sha256": "1fc20d5709cad9c17ac871cecbc58a600a25a42a649ed4b42e1cf4e39174bff9"
+    },
+    {
+      "file": "original-boundary-bytecode.txt",
+      "bytes": 57006,
+      "sha256": "20501a25773725bfb16d20b92d5f672dd0388d8cc632f5eb4aeb954335be1a32"
+    },
+    {
+      "file": "diagnostic-reference.tsv",
+      "bytes": 426275,
+      "sha256": "f375c6fa6f44734545923e0ab28628aca175fd05d56087e0d0a6c62fbeb7eb45"
+    },
+    {
+      "file": "expected-workload.json",
+      "bytes": 1555088,
+      "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+    },
+    {
+      "file": "build-verification.json",
+      "bytes": 115141,
+      "sha256": "66bbc75ba07636a020bb2339c9f863329ba34294665d6aada33fa0426928eff2"
+    }
+  ]
+}

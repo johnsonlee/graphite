@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -232,13 +233,13 @@ func (r *replay) run(ctx context.Context) ([]caseRecord, error) {
 func run() error {
 	workload := flag.String("workload", "internal/benchmarkcase/testdata/main64.json", "exact pinned-main workload export")
 	manifest := flag.String("graphs", "", "six-column manifest for fresh writable real64 clone")
-	state := flag.String("state", "cold", "cold or startup-prepared (formal warm is gate-blocked)")
+	state := flag.String("state", "cold", "cold, startup-prepared, or warm-after-failed-prewarm (diagnostic continuation)")
 	output := flag.String("output", "", "new JSONL output file; never overwritten")
 	flag.Parse()
 	if flag.NArg() != 0 || *manifest == "" || *output == "" {
 		return fmt.Errorf("--graphs and --output are required")
 	}
-	if *state != "cold" && *state != "startup-prepared" {
+	if *state != "cold" && *state != "startup-prepared" && *state != "warm-after-failed-prewarm" {
 		return fmt.Errorf("unsupported state %q", *state)
 	}
 	data, err := os.ReadFile(*workload)
@@ -301,12 +302,52 @@ func run() error {
 		fmt.Fprintf(os.Stderr, "loaded %d/64 %s\n", i+1, source.ID)
 	}
 	r.worker = newWorker(query.ExecuteCrossWithOptions)
-	if *state == "cold" {
+	if *state == "cold" || *state == "warm-after-failed-prewarm" {
 		for _, g := range r.graphs {
 			if err := g.Store.ClearStringPropertyIndexes(ctx); err != nil {
 				return err
 			}
 		}
+	}
+	var warmupRecords []caseRecord
+	var warmupErr error
+	if *state == "warm-after-failed-prewarm" {
+		warmupRecords, warmupErr = r.run(ctx)
+		for i := range warmupRecords {
+			warmupRecords[i].Phase = "warmup"
+		}
+		if !knownOriginalWarmupFailure(warmupRecords, w) {
+			enc := json.NewEncoder(f)
+			for _, record := range warmupRecords {
+				if err := enc.Encode(record); err != nil {
+					return err
+				}
+			}
+			if err := enc.Encode(map[string]any{"kind": "completion", "completeReplay": false,
+				"originalGatePassed": false, "diagnosticWarmupContinued": false,
+				"error": "warmup differs from the pinned original failure; no timed replay dispatched"}); err != nil {
+				return err
+			}
+			return fmt.Errorf("warmup differs from the pinned original failure: %v", warmupErr)
+		}
+		// Match main's prewarm frame lifetime: persist compact observations before
+		// the setup GC boundary and release them before the measured invocation.
+		warmFile, err := os.OpenFile(filepath.Join(filepath.Dir(*output), "warmup-observations.jsonl"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+		if err != nil {
+			return err
+		}
+		warmEncoder := json.NewEncoder(warmFile)
+		for _, record := range warmupRecords {
+			if err := warmEncoder.Encode(record); err != nil {
+				warmFile.Close()
+				return err
+			}
+		}
+		if err := warmFile.Close(); err != nil {
+			return err
+		}
+		warmupRecords = nil
+
 	}
 	for i := 0; i < 3; i++ {
 		runtime.GC()
@@ -321,7 +362,12 @@ func run() error {
 	// the entire replay, including when the original all-success gate fails.
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
-	header := map[string]any{"kind": "header", "protocol": "real64-dispatch-inclusive-pilot-v1", "state": *state, "caseCount": len(w.Cases), "graphCount": len(r.graphs), "sourceOrder": w.SourceOrder, "workloadSHA256": main64SHA256, "mainRevision": w.MainRevision, "performanceMeasurement": true, "diagnosticOnly": true, "sampleCountPerCase": 1, "timingBoundary": "context-source-selection-worker-dispatch-parse-execute-materialize-reply", "workTrackingEnabled": true, "workBudget": "unlimited", "cancellationGraceMillis": cancellationGrace.Milliseconds(), "runtime": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "gomaxprocs": runtime.GOMAXPROCS(0), "unavailableParity": []string{"finite work accounting", "main resource sampler and execution metrics"}}
+	header := map[string]any{"kind": "header", "protocol": "real64-dispatch-inclusive-sampling-v1", "state": *state, "caseCount": len(w.Cases), "graphCount": len(r.graphs), "sourceOrder": w.SourceOrder, "workloadSHA256": main64SHA256, "mainRevision": w.MainRevision, "performanceMeasurement": true, "diagnosticOnly": true, "sampleCountPerCase": 1, "timingBoundary": "context-source-selection-worker-dispatch-parse-execute-materialize-reply", "workTrackingEnabled": true, "workBudget": "unlimited", "cancellationGraceMillis": cancellationGrace.Milliseconds(), "runtime": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "gomaxprocs": runtime.GOMAXPROCS(0), "unavailableParity": []string{"finite work accounting", "main resource sampler and execution metrics"}}
+	header["diagnosticWarmupContinued"] = *state == "warm-after-failed-prewarm"
+	header["formalWarmPrepared"] = false
+	if warmupErr != nil {
+		header["originalWarmupGateError"] = warmupErr.Error()
+	}
 	if err := enc.Encode(header); err != nil {
 		return err
 	}
@@ -334,7 +380,7 @@ func run() error {
 	if replayErr != nil {
 		failureText = replayErr.Error()
 	}
-	if err := enc.Encode(map[string]any{"kind": "completion", "caseCount": len(records), "expectedCaseCount": len(w.Cases), "completeReplay": len(records) == len(w.Cases), "originalGatePassed": replayErr == nil, "error": failureText}); err != nil {
+	if err := enc.Encode(map[string]any{"kind": "completion", "caseCount": len(records), "expectedCaseCount": len(w.Cases), "completeReplay": len(records) == len(w.Cases), "originalGatePassed": replayErr == nil && warmupErr == nil, "replayGatePassed": replayErr == nil, "diagnosticWarmupContinued": *state == "warm-after-failed-prewarm", "error": failureText}); err != nil {
 		return err
 	}
 	if err := f.Sync(); err != nil {
@@ -343,7 +389,10 @@ func run() error {
 	if err := f.Close(); err != nil {
 		return err
 	}
-	return replayErr
+	if replayErr != nil {
+		return replayErr
+	}
+	return warmupErr
 }
 func main() {
 	if err := run(); err != nil {

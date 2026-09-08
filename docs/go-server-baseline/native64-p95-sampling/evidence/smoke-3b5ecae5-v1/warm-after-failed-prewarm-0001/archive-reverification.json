@@ -1,0 +1,16 @@
+{
+  "trialId": "warm-after-failed-prewarm-0001",
+  "state": "warm-after-failed-prewarm",
+  "archiveReverificationPassed": true,
+  "exactOriginalOrderedCases": 1267,
+  "successCountPerRuntime": 1266,
+  "originalFailureCountPerRuntime": 1,
+  "censoredTimeoutCount": 0,
+  "canonicalReferenceComparisonPassed": true,
+  "normalizedTimingsMatchRawLedgers": true,
+  "mainFailureMessageSource": "reference-derived",
+  "goFailureMessageSource": "observed",
+  "warmLedgersReverified": true,
+  "graphClonesAvailableNow": false,
+  "graphAuditScope": "Existing controller process and pre/post audit receipts retained; deleted graph clones were not reopened during archival."
+}

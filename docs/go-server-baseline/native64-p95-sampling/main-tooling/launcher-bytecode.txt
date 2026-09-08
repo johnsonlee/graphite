@@ -1,0 +1,1255 @@
+Compiled from "MainLatencyCapture.java"
+public final class MainLatencyCapture {
+  static final java.lang.String WARM;
+
+  static final java.lang.String GATE_MESSAGE;
+
+  static final java.lang.String OUTPUT;
+
+  static final java.lang.String OBSERVATIONS;
+
+  public MainLatencyCapture();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  static java.lang.Object read(java.lang.Object, java.lang.String) throws java.lang.Exception;
+    Code:
+       0: aload_0
+       1: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+       4: aload_1
+       5: invokevirtual #11                 // Method java/lang/Class.getDeclaredField:(Ljava/lang/String;)Ljava/lang/reflect/Field;
+       8: astore_2
+       9: aload_2
+      10: iconst_1
+      11: invokevirtual #17                 // Method java/lang/reflect/Field.setAccessible:(Z)V
+      14: aload_2
+      15: aload_0
+      16: invokevirtual #23                 // Method java/lang/reflect/Field.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      19: areturn
+
+  static java.lang.Object call(java.lang.Object, java.lang.Class<?>, java.lang.String, java.lang.Class<?>[], java.lang.Object...) throws java.lang.Throwable;
+    Code:
+       0: aload_1
+       1: aload_2
+       2: aload_3
+       3: invokevirtual #27                 // Method java/lang/Class.getDeclaredMethod:(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;
+       6: astore        5
+       8: aload         5
+      10: iconst_1
+      11: invokevirtual #31                 // Method java/lang/reflect/Method.setAccessible:(Z)V
+      14: aload         5
+      16: aload_0
+      17: aload         4
+      19: invokevirtual #34                 // Method java/lang/reflect/Method.invoke:(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
+      22: areturn
+      23: astore        6
+      25: aload         6
+      27: invokevirtual #40                 // Method java/lang/reflect/InvocationTargetException.getCause:()Ljava/lang/Throwable;
+      30: athrow
+    Exception table:
+       from    to  target type
+          14    22    23   Class java/lang/reflect/InvocationTargetException
+
+  static java.lang.Object call(java.lang.Object, java.lang.String) throws java.lang.Throwable;
+    Code:
+       0: aload_0
+       1: aload_0
+       2: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+       5: aload_1
+       6: iconst_0
+       7: anewarray     #12                 // class java/lang/Class
+      10: iconst_0
+      11: anewarray     #2                  // class java/lang/Object
+      14: invokestatic  #44                 // Method call:(Ljava/lang/Object;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+      17: areturn
+
+  static void clearGraph(java.lang.Object) throws java.lang.Throwable;
+    Code:
+       0: new           #50                 // class java/util/ArrayList
+       3: dup
+       4: invokespecial #52                 // Method java/util/ArrayList."<init>":()V
+       7: astore_1
+       8: aload_0
+       9: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+      12: invokevirtual #53                 // Method java/lang/Class.getDeclaredMethods:()[Ljava/lang/reflect/Method;
+      15: astore_2
+      16: aload_2
+      17: arraylength
+      18: istore_3
+      19: iconst_0
+      20: istore        4
+      22: iload         4
+      24: iload_3
+      25: if_icmpge     70
+      28: aload_2
+      29: iload         4
+      31: aaload
+      32: astore        5
+      34: aload         5
+      36: invokevirtual #57                 // Method java/lang/reflect/Method.getName:()Ljava/lang/String;
+      39: ldc           #61                 // String clearStringPropertyIndexes
+      41: invokevirtual #63                 // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+      44: ifeq          64
+      47: aload         5
+      49: invokevirtual #69                 // Method java/lang/reflect/Method.getParameterCount:()I
+      52: ifne          64
+      55: aload_1
+      56: aload         5
+      58: invokeinterface #73,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      63: pop
+      64: iinc          4, 1
+      67: goto          22
+      70: aload_1
+      71: invokeinterface #79,  1           // InterfaceMethod java/util/List.size:()I
+      76: iconst_1
+      77: if_icmpeq     90
+      80: new           #82                 // class java/lang/IllegalStateException
+      83: dup
+      84: ldc           #84                 // String ambiguous original index clear method
+      86: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+      89: athrow
+      90: aload_0
+      91: aload_0
+      92: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+      95: aload_1
+      96: iconst_0
+      97: invokeinterface #89,  2           // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     102: checkcast     #32                 // class java/lang/reflect/Method
+     105: invokevirtual #57                 // Method java/lang/reflect/Method.getName:()Ljava/lang/String;
+     108: iconst_0
+     109: anewarray     #12                 // class java/lang/Class
+     112: iconst_0
+     113: anewarray     #2                  // class java/lang/Object
+     116: invokestatic  #44                 // Method call:(Ljava/lang/Object;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+     119: pop
+     120: return
+
+  static void write(java.nio.file.Path, java.lang.Object) throws java.lang.Exception;
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokestatic  #92                 // Method ExportBenchmarkCases.json:(Ljava/lang/Object;)Ljava/lang/String;
+       5: invokedynamic #98,  0             // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      10: iconst_1
+      11: anewarray     #102                // class java/nio/file/OpenOption
+      14: dup
+      15: iconst_0
+      16: getstatic     #104                // Field java/nio/file/StandardOpenOption.CREATE_NEW:Ljava/nio/file/StandardOpenOption;
+      19: aastore
+      20: invokestatic  #110                // Method java/nio/file/Files.writeString:(Ljava/nio/file/Path;Ljava/lang/CharSequence;[Ljava/nio/file/OpenOption;)Ljava/nio/file/Path;
+      23: pop
+      24: return
+
+  static java.util.Map<java.lang.String, java.lang.Object> exception(java.lang.Throwable);
+    Code:
+       0: new           #116                // class java/util/LinkedHashMap
+       3: dup
+       4: invokespecial #118                // Method java/util/LinkedHashMap."<init>":()V
+       7: astore_1
+       8: aload_1
+       9: ldc           #119                // String class
+      11: aload_0
+      12: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+      15: invokevirtual #121                // Method java/lang/Class.getName:()Ljava/lang/String;
+      18: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      21: pop
+      22: aload_1
+      23: ldc           #126                // String message
+      25: aload_0
+      26: invokevirtual #128                // Method java/lang/Throwable.getMessage:()Ljava/lang/String;
+      29: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      32: pop
+      33: aload_1
+      34: ldc           #133                // String stack
+      36: aload_0
+      37: invokevirtual #135                // Method java/lang/Throwable.getStackTrace:()[Ljava/lang/StackTraceElement;
+      40: invokestatic  #139                // Method java/util/Arrays.stream:([Ljava/lang/Object;)Ljava/util/stream/Stream;
+      43: invokedynamic #145,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      48: invokeinterface #149,  2          // InterfaceMethod java/util/stream/Stream.map:(Ljava/util/function/Function;)Ljava/util/stream/Stream;
+      53: invokeinterface #155,  1          // InterfaceMethod java/util/stream/Stream.toList:()Ljava/util/List;
+      58: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      61: pop
+      62: aload_1
+      63: areturn
+
+  static void checkGateFailure(java.lang.Throwable);
+    Code:
+       0: aload_0
+       1: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+       4: ldc           #82                 // class java/lang/IllegalStateException
+       6: if_acmpne     21
+       9: ldc           #159                // String A correctness oracle requires every query to succeed; incomplete results: four-or-graph-id-targeted=failed
+      11: aload_0
+      12: invokevirtual #128                // Method java/lang/Throwable.getMessage:()Ljava/lang/String;
+      15: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      18: ifne          32
+      21: new           #82                 // class java/lang/IllegalStateException
+      24: dup
+      25: ldc           #164                // String Unexpected original gate failure
+      27: aload_0
+      28: invokespecial #166                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+      31: athrow
+      32: return
+
+  static void unchanged(io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark, java.lang.Object, java.lang.Object) throws java.lang.Exception;
+    Code:
+       0: aload_1
+       1: aload_0
+       2: ldc           #169                // String queryExecutor
+       4: invokestatic  #171                // Method read:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+       7: if_acmpne     20
+      10: aload_2
+      11: aload_0
+      12: ldc           #175                // String sampler
+      14: invokestatic  #171                // Method read:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+      17: if_acmpeq     30
+      20: new           #82                 // class java/lang/IllegalStateException
+      23: dup
+      24: ldc           #177                // String original worker or sampler identity changed
+      26: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+      29: athrow
+      30: return
+
+  static void outputs(java.nio.file.Path, java.lang.String);
+    Code:
+       0: ldc           #179                // String graphite.broad.pressure.output
+       2: aload_0
+       3: aload_1
+       4: invokedynamic #181,  0            // InvokeDynamic #2:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+       9: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+      14: invokeinterface #188,  1          // InterfaceMethod java/nio/file/Path.toString:()Ljava/lang/String;
+      19: invokestatic  #191                // Method java/lang/System.setProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+      22: pop
+      23: ldc           #197                // String graphite.broad.pressure.observations.output
+      25: aload_0
+      26: aload_1
+      27: invokedynamic #199,  0            // InvokeDynamic #3:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      32: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+      37: invokeinterface #188,  1          // InterfaceMethod java/nio/file/Path.toString:()Ljava/lang/String;
+      42: invokestatic  #191                // Method java/lang/System.setProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+      45: pop
+      46: return
+
+  static void validateRecords(java.util.List<io.johnsonlee.graphite.webgraph.QueryCorrectnessRecord>, java.util.List<io.johnsonlee.graphite.webgraph.QueryCorrectnessRecord>);
+    Code:
+       0: aload_0
+       1: invokeinterface #79,  1           // InterfaceMethod java/util/List.size:()I
+       6: sipush        1267
+       9: if_icmpne     24
+      12: aload_1
+      13: invokeinterface #79,  1           // InterfaceMethod java/util/List.size:()I
+      18: sipush        1267
+      21: if_icmpeq     34
+      24: new           #82                 // class java/lang/IllegalStateException
+      27: dup
+      28: ldc           #200                // String incomplete diagnostic records
+      30: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+      33: athrow
+      34: iconst_0
+      35: istore_2
+      36: iload_2
+      37: sipush        1267
+      40: if_icmpge     189
+      43: aload_0
+      44: iload_2
+      45: invokeinterface #89,  2           // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      50: checkcast     #202                // class io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord
+      53: astore_3
+      54: aload_3
+      55: aload_1
+      56: iload_2
+      57: invokeinterface #89,  2           // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      62: invokevirtual #204                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord.equals:(Ljava/lang/Object;)Z
+      65: ifne          86
+      68: new           #82                 // class java/lang/IllegalStateException
+      71: dup
+      72: iload_2
+      73: aload_3
+      74: invokevirtual #205                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord.getId:()Ljava/lang/String;
+      77: invokedynamic #208,  0            // InvokeDynamic #4:makeConcatWithConstants:(ILjava/lang/String;)Ljava/lang/String;
+      82: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+      85: athrow
+      86: iload_2
+      87: sipush        821
+      90: if_icmpne     157
+      93: aload_3
+      94: invokevirtual #205                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord.getId:()Ljava/lang/String;
+      97: ldc           #211                // String four-or-graph-id-targeted
+      99: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     102: ifeq          147
+     105: aload_3
+     106: invokevirtual #213                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord.getOutcome:()Ljava/lang/String;
+     109: ldc           #216                // String failed
+     111: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     114: ifeq          147
+     117: aload_3
+     118: invokevirtual #218                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord.getDigest:()Ljava/lang/String;
+     121: ldc           #221                // String java.lang.IllegalStateException
+     123: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     126: ifeq          147
+     129: aload_3
+     130: invokevirtual #223                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord.getRowCount:()J
+     133: lconst_0
+     134: lcmp
+     135: ifne          147
+     138: aload_3
+     139: invokevirtual #227                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord.getResponseBytes:()J
+     142: lconst_0
+     143: lcmp
+     144: ifeq          183
+     147: new           #82                 // class java/lang/IllegalStateException
+     150: dup
+     151: ldc           #230                // String known original failure changed
+     153: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     156: athrow
+     157: aload_3
+     158: invokevirtual #213                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessRecord.getOutcome:()Ljava/lang/String;
+     161: ldc           #232                // String success
+     163: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     166: ifne          183
+     169: new           #82                 // class java/lang/IllegalStateException
+     172: dup
+     173: iload_2
+     174: invokedynamic #234,  0            // InvokeDynamic #5:makeConcatWithConstants:(I)Ljava/lang/String;
+     179: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     182: athrow
+     183: iinc          2, 1
+     186: goto          36
+     189: return
+
+  static void prepareDiagnosticWarm(io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark, java.lang.Object, java.lang.Object, java.nio.file.Path, java.util.List<io.johnsonlee.graphite.webgraph.QueryCorrectnessRecord>, java.util.Map<java.lang.String, java.lang.Object>) throws java.lang.Throwable;
+    Code:
+       0: aload         5
+       2: ldc           #237                // String stage
+       4: ldc           #239                // String diagnostic-prewarm
+       6: invokeinterface #241,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      11: pop
+      12: aload_0
+      13: ldc           #244                // String graphs
+      15: invokestatic  #171                // Method read:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+      18: checkcast     #74                 // class java/util/List
+      21: invokeinterface #246,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      26: astore        6
+      28: aload         6
+      30: invokeinterface #250,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      35: ifeq          55
+      38: aload         6
+      40: invokeinterface #256,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      45: astore        7
+      47: aload         7
+      49: invokestatic  #260                // Method clearGraph:(Ljava/lang/Object;)V
+      52: goto          28
+      55: aload_0
+      56: ldc_w         #264                // String resetCallSiteScanMetrics
+      59: invokestatic  #266                // Method call:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+      62: pop
+      63: aload_0
+      64: aload_0
+      65: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+      68: ldc_w         #268                // String replay
+      71: iconst_1
+      72: anewarray     #12                 // class java/lang/Class
+      75: dup
+      76: iconst_0
+      77: getstatic     #270                // Field java/lang/Boolean.TYPE:Ljava/lang/Class;
+      80: aastore
+      81: iconst_1
+      82: anewarray     #2                  // class java/lang/Object
+      85: dup
+      86: iconst_0
+      87: iconst_1
+      88: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+      91: aastore
+      92: invokestatic  #44                 // Method call:(Ljava/lang/Object;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+      95: checkcast     #74                 // class java/util/List
+      98: astore        6
+     100: aload_3
+     101: ldc_w         #280                // String warmup
+     104: invokestatic  #282                // Method outputs:(Ljava/nio/file/Path;Ljava/lang/String;)V
+     107: aload_0
+     108: aload_0
+     109: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+     112: ldc_w         #286                // String writeCorrectnessManifest
+     115: iconst_1
+     116: anewarray     #12                 // class java/lang/Class
+     119: dup
+     120: iconst_0
+     121: ldc           #74                 // class java/util/List
+     123: aastore
+     124: iconst_1
+     125: anewarray     #2                  // class java/lang/Object
+     128: dup
+     129: iconst_0
+     130: aload         6
+     132: aastore
+     133: invokestatic  #44                 // Method call:(Ljava/lang/Object;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+     136: pop
+     137: aload_0
+     138: aload_0
+     139: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+     142: ldc_w         #288                // String writeObservations
+     145: iconst_1
+     146: anewarray     #12                 // class java/lang/Class
+     149: dup
+     150: iconst_0
+     151: ldc           #74                 // class java/util/List
+     153: aastore
+     154: iconst_1
+     155: anewarray     #2                  // class java/lang/Object
+     158: dup
+     159: iconst_0
+     160: aload         6
+     162: aastore
+     163: invokestatic  #44                 // Method call:(Ljava/lang/Object;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+     166: pop
+     167: getstatic     #290                // Field io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.INSTANCE:Lio/johnsonlee/graphite/webgraph/QueryCorrectnessManifest;
+     170: aload_3
+     171: ldc_w         #296                // String warmup-correctness.tsv
+     174: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+     179: invokevirtual #298                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.read:(Ljava/nio/file/Path;)Ljava/util/List;
+     182: astore        7
+     184: aload_3
+     185: ldc_w         #301                // String warmup-records.json
+     188: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+     193: aload         7
+     195: invokestatic  #303                // Method ExportBenchmarkCases.plain:(Ljava/lang/Object;)Ljava/lang/Object;
+     198: invokestatic  #306                // Method write:(Ljava/nio/file/Path;Ljava/lang/Object;)V
+     201: aconst_null
+     202: astore        8
+     204: aload_0
+     205: aload_0
+     206: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+     209: ldc_w         #310                // String enforceCorrectness
+     212: iconst_1
+     213: anewarray     #12                 // class java/lang/Class
+     216: dup
+     217: iconst_0
+     218: ldc           #74                 // class java/util/List
+     220: aastore
+     221: iconst_1
+     222: anewarray     #2                  // class java/lang/Object
+     225: dup
+     226: iconst_0
+     227: aload         6
+     229: aastore
+     230: invokestatic  #44                 // Method call:(Ljava/lang/Object;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+     233: pop
+     234: goto          259
+     237: astore        9
+     239: aload         9
+     241: astore        8
+     243: aload         5
+     245: ldc_w         #312                // String prewarmOriginalGateFailure
+     248: aload         9
+     250: invokestatic  #314                // Method exception:(Ljava/lang/Throwable;)Ljava/util/Map;
+     253: invokeinterface #241,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     258: pop
+     259: aload         5
+     261: ldc_w         #318                // String warmOriginalGatePassed
+     264: aload         8
+     266: ifnonnull     273
+     269: iconst_1
+     270: goto          274
+     273: iconst_0
+     274: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     277: invokeinterface #241,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     282: pop
+     283: aload         5
+     285: ldc_w         #320                // String prewarmCapturedCaseCount
+     288: aload         7
+     290: invokeinterface #79,  1           // InterfaceMethod java/util/List.size:()I
+     295: invokestatic  #322                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     298: invokeinterface #241,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     303: pop
+     304: aload         8
+     306: ifnonnull     320
+     309: new           #82                 // class java/lang/IllegalStateException
+     312: dup
+     313: ldc_w         #327                // String original warm gate unexpectedly passed
+     316: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     319: athrow
+     320: aload         8
+     322: invokestatic  #329                // Method checkGateFailure:(Ljava/lang/Throwable;)V
+     325: aload         7
+     327: aload         4
+     329: invokestatic  #333                // Method validateRecords:(Ljava/util/List;Ljava/util/List;)V
+     332: aload         5
+     334: ldc_w         #337                // String prewarmSignaturesMatchArchivedMain
+     337: iconst_1
+     338: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     341: invokeinterface #241,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     346: pop
+     347: aload_0
+     348: aload_1
+     349: aload_2
+     350: invokestatic  #339                // Method unchanged:(Lio/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark;Ljava/lang/Object;Ljava/lang/Object;)V
+     353: return
+    Exception table:
+       from    to  target type
+         204   234   237   Class java/lang/Throwable
+
+  public static void main(java.lang.String[]) throws java.lang.Throwable;
+    Code:
+       0: aload_0
+       1: arraylength
+       2: iconst_4
+       3: if_icmpeq     17
+       6: new           #343                // class java/lang/IllegalArgumentException
+       9: dup
+      10: ldc_w         #345                // String graphs.tsv cold|startup-prepared|warm-after-failed-prewarm new-output-directory reference-directory
+      13: invokespecial #347                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      16: athrow
+      17: aload_0
+      18: iconst_1
+      19: aaload
+      20: astore_1
+      21: ldc_w         #348                // String cold
+      24: ldc_w         #350                // String startup-prepared
+      27: ldc_w         #352                // String warm-after-failed-prewarm
+      30: invokestatic  #354                // InterfaceMethod java/util/Set.of:(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/Set;
+      33: aload_1
+      34: invokeinterface #360,  2          // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      39: ifne          51
+      42: new           #343                // class java/lang/IllegalArgumentException
+      45: dup
+      46: aload_1
+      47: invokespecial #347                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      50: athrow
+      51: aload_0
+      52: iconst_2
+      53: aaload
+      54: iconst_0
+      55: anewarray     #64                 // class java/lang/String
+      58: invokestatic  #363                // InterfaceMethod java/nio/file/Path.of:(Ljava/lang/String;[Ljava/lang/String;)Ljava/nio/file/Path;
+      61: astore_2
+      62: aload_0
+      63: iconst_3
+      64: aaload
+      65: iconst_0
+      66: anewarray     #64                 // class java/lang/String
+      69: invokestatic  #363                // InterfaceMethod java/nio/file/Path.of:(Ljava/lang/String;[Ljava/lang/String;)Ljava/nio/file/Path;
+      72: astore_3
+      73: aload_2
+      74: iconst_0
+      75: anewarray     #366                // class java/nio/file/attribute/FileAttribute
+      78: invokestatic  #368                // Method java/nio/file/Files.createDirectory:(Ljava/nio/file/Path;[Ljava/nio/file/attribute/FileAttribute;)Ljava/nio/file/Path;
+      81: pop
+      82: getstatic     #290                // Field io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.INSTANCE:Lio/johnsonlee/graphite/webgraph/QueryCorrectnessManifest;
+      85: aload_3
+      86: ldc_w         #372                // String diagnostic-reference.tsv
+      89: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+      94: invokevirtual #298                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.read:(Ljava/nio/file/Path;)Ljava/util/List;
+      97: astore        4
+      99: aload         4
+     101: aload         4
+     103: invokestatic  #333                // Method validateRecords:(Ljava/util/List;Ljava/util/List;)V
+     106: aload_3
+     107: ldc_w         #374                // String expected-workload.json
+     110: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+     115: invokestatic  #376                // Method java/nio/file/Files.readString:(Ljava/nio/file/Path;)Ljava/lang/String;
+     118: invokestatic  #380                // Method com/google/gson/JsonParser.parseString:(Ljava/lang/String;)Lcom/google/gson/JsonElement;
+     121: invokevirtual #386                // Method com/google/gson/JsonElement.getAsJsonObject:()Lcom/google/gson/JsonObject;
+     124: astore        5
+     126: ldc_w         #392                // String graphite.broad.pressure.graphs
+     129: aload_0
+     130: iconst_0
+     131: aaload
+     132: invokestatic  #191                // Method java/lang/System.setProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+     135: pop
+     136: ldc_w         #394                // String graphite.broad.pressure.correctness.mode
+     139: ldc_w         #396                // String record
+     142: invokestatic  #191                // Method java/lang/System.setProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+     145: pop
+     146: aload_2
+     147: ldc_w         #398                // String main
+     150: invokestatic  #282                // Method outputs:(Ljava/nio/file/Path;Ljava/lang/String;)V
+     153: new           #400                // class io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark
+     156: dup
+     157: invokespecial #402                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark."<init>":()V
+     160: astore        6
+     162: aload         6
+     164: bipush        64
+     166: invokevirtual #403                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.setGraphCount:(I)V
+     169: aload         6
+     171: ldc2_w        #407                // long 60000l
+     174: invokevirtual #409                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.setTimeoutMillis:(J)V
+     177: aload         6
+     179: ldc_w         #413                // String all
+     182: invokevirtual #415                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.setCoverageFamily:(Ljava/lang/String;)V
+     185: aload         6
+     187: aload_1
+     188: ldc_w         #352                // String warm-after-failed-prewarm
+     191: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     194: ifeq          203
+     197: ldc_w         #418                // String warm
+     200: goto          204
+     203: aload_1
+     204: invokevirtual #420                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.setIndexState:(Ljava/lang/String;)V
+     207: new           #116                // class java/util/LinkedHashMap
+     210: dup
+     211: invokespecial #118                // Method java/util/LinkedHashMap."<init>":()V
+     214: astore        7
+     216: aload         7
+     218: ldc_w         #423                // String originalGatePassed
+     221: iconst_0
+     222: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     225: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     228: pop
+     229: aload         7
+     231: ldc_w         #425                // String diagnosticReplayComplete
+     234: iconst_0
+     235: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     238: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     241: pop
+     242: aload         7
+     244: ldc_w         #427                // String diagnosticWarmupContinued
+     247: iconst_0
+     248: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     251: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     254: pop
+     255: aload         7
+     257: ldc_w         #429                // String formalWarmPrepared
+     260: iconst_0
+     261: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     264: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     267: pop
+     268: aload         7
+     270: ldc_w         #318                // String warmOriginalGatePassed
+     273: aload_1
+     274: ldc_w         #352                // String warm-after-failed-prewarm
+     277: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     280: ifeq          290
+     283: iconst_0
+     284: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     287: goto          291
+     290: aconst_null
+     291: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     294: pop
+     295: aload         7
+     297: ldc           #237                // String stage
+     299: ldc_w         #431                // String setupTrial
+     302: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     305: pop
+     306: aconst_null
+     307: astore        8
+     309: aconst_null
+     310: astore        9
+     312: aconst_null
+     313: astore        10
+     315: aload         6
+     317: invokevirtual #433                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.setupTrial:()V
+     320: aload         6
+     322: ldc           #169                // String queryExecutor
+     324: invokestatic  #171                // Method read:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+     327: astore        8
+     329: aload         6
+     331: ldc           #175                // String sampler
+     333: invokestatic  #171                // Method read:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+     336: astore        9
+     338: aload         6
+     340: ldc_w         #435                // String workload
+     343: invokestatic  #171                // Method read:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+     346: checkcast     #74                 // class java/util/List
+     349: astore        11
+     351: aload         6
+     353: ldc_w         #437                // String sources
+     356: invokestatic  #171                // Method read:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+     359: checkcast     #74                 // class java/util/List
+     362: astore        12
+     364: aload         11
+     366: invokeinterface #79,  1           // InterfaceMethod java/util/List.size:()I
+     371: sipush        1267
+     374: if_icmpne     389
+     377: aload         12
+     379: invokeinterface #79,  1           // InterfaceMethod java/util/List.size:()I
+     384: bipush        64
+     386: if_icmpeq     400
+     389: new           #82                 // class java/lang/IllegalStateException
+     392: dup
+     393: ldc_w         #439                // String incomplete workload
+     396: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     399: athrow
+     400: new           #50                 // class java/util/ArrayList
+     403: dup
+     404: invokespecial #52                 // Method java/util/ArrayList."<init>":()V
+     407: astore        13
+     409: aload         12
+     411: invokeinterface #246,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+     416: astore        14
+     418: aload         14
+     420: invokeinterface #250,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     425: ifeq          456
+     428: aload         14
+     430: invokeinterface #256,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     435: astore        15
+     437: aload         13
+     439: aload         15
+     441: checkcast     #441                // class io/johnsonlee/graphite/cypher/CypherGraph
+     444: invokevirtual #443                // Method io/johnsonlee/graphite/cypher/CypherGraph.getId:()Ljava/lang/String;
+     447: invokeinterface #73,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     452: pop
+     453: goto          418
+     456: aload         11
+     458: invokestatic  #303                // Method ExportBenchmarkCases.plain:(Ljava/lang/Object;)Ljava/lang/Object;
+     461: astore        14
+     463: aload         14
+     465: invokestatic  #92                 // Method ExportBenchmarkCases.json:(Ljava/lang/Object;)Ljava/lang/String;
+     468: invokestatic  #380                // Method com/google/gson/JsonParser.parseString:(Ljava/lang/String;)Lcom/google/gson/JsonElement;
+     471: aload         5
+     473: ldc_w         #444                // String cases
+     476: invokevirtual #446                // Method com/google/gson/JsonObject.get:(Ljava/lang/String;)Lcom/google/gson/JsonElement;
+     479: invokevirtual #450                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+     482: ifeq          507
+     485: aload         13
+     487: invokestatic  #92                 // Method ExportBenchmarkCases.json:(Ljava/lang/Object;)Ljava/lang/String;
+     490: invokestatic  #380                // Method com/google/gson/JsonParser.parseString:(Ljava/lang/String;)Lcom/google/gson/JsonElement;
+     493: aload         5
+     495: ldc_w         #451                // String sourceOrder
+     498: invokevirtual #446                // Method com/google/gson/JsonObject.get:(Ljava/lang/String;)Lcom/google/gson/JsonElement;
+     501: invokevirtual #450                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+     504: ifne          518
+     507: new           #82                 // class java/lang/IllegalStateException
+     510: dup
+     511: ldc_w         #453                // String actual full workload/source order differs from frozen main
+     514: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     517: athrow
+     518: aload_2
+     519: ldc_w         #455                // String actual-cases.json
+     522: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+     527: aload         14
+     529: invokestatic  #306                // Method write:(Ljava/nio/file/Path;Ljava/lang/Object;)V
+     532: new           #116                // class java/util/LinkedHashMap
+     535: dup
+     536: invokespecial #118                // Method java/util/LinkedHashMap."<init>":()V
+     539: astore        15
+     541: aload         15
+     543: ldc_w         #457                // String protocol
+     546: ldc_w         #459                // String real64-original-timer-diagnostic-v2
+     549: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     552: pop
+     553: aload         15
+     555: ldc_w         #461                // String mainRevision
+     558: ldc_w         #463                // String 4e328b0109e13c896b74004823fb049fcb19251a
+     561: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     564: pop
+     565: aload         15
+     567: ldc_w         #465                // String state
+     570: aload_1
+     571: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     574: pop
+     575: aload         15
+     577: ldc_w         #467                // String originalBenchmarkIndexState
+     580: aload         6
+     582: invokevirtual #469                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.getIndexState:()Ljava/lang/String;
+     585: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     588: pop
+     589: aload         15
+     591: ldc_w         #472                // String caseCount
+     594: sipush        1267
+     597: invokestatic  #322                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     600: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     603: pop
+     604: aload         15
+     606: ldc_w         #474                // String graphCount
+     609: bipush        64
+     611: invokestatic  #322                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     614: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     617: pop
+     618: aload         15
+     620: ldc_w         #451                // String sourceOrder
+     623: aload         13
+     625: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     628: pop
+     629: aload         15
+     631: ldc_w         #476                // String timeoutMillis
+     634: ldc_w         #478                // int 60000
+     637: invokestatic  #322                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     640: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     643: pop
+     644: aload         15
+     646: ldc_w         #479                // String coverageFamily
+     649: ldc_w         #413                // String all
+     652: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     655: pop
+     656: aload         15
+     658: ldc_w         #481                // String performanceMeasurement
+     661: iconst_1
+     662: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     665: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     668: pop
+     669: aload         15
+     671: ldc_w         #483                // String diagnosticOnly
+     674: iconst_1
+     675: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     678: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     681: pop
+     682: aload         15
+     684: ldc_w         #485                // String samplesPerCase
+     687: iconst_1
+     688: invokestatic  #322                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     691: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     694: pop
+     695: aload         15
+     697: ldc_w         #427                // String diagnosticWarmupContinued
+     700: aload_1
+     701: ldc_w         #352                // String warm-after-failed-prewarm
+     704: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     707: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     710: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     713: pop
+     714: aload         15
+     716: ldc_w         #487                // String originalAllSuccessGateRequired
+     719: iconst_1
+     720: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     723: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     726: pop
+     727: aload         15
+     729: ldc_w         #429                // String formalWarmPrepared
+     732: iconst_0
+     733: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     736: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     739: pop
+     740: aload         15
+     742: ldc_w         #318                // String warmOriginalGatePassed
+     745: aload_1
+     746: ldc_w         #352                // String warm-after-failed-prewarm
+     749: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     752: ifeq          762
+     755: iconst_0
+     756: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     759: goto          763
+     762: aconst_null
+     763: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     766: pop
+     767: aload         15
+     769: ldc_w         #489                // String warmPreparation
+     772: aload_1
+     773: ldc_w         #352                // String warm-after-failed-prewarm
+     776: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     779: ifeq          788
+     782: ldc_w         #491                // String Original private warm replay and original gate, followed by explicitly separate diagnostic continuation
+     785: goto          791
+     788: ldc_w         #493                // String Original setupInvocation
+     791: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     794: pop
+     795: aload         15
+     797: ldc_w         #495                // String queryExecutorReplaced
+     800: iconst_0
+     801: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     804: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     807: pop
+     808: aload         15
+     810: ldc_w         #497                // String queryExecutorClass
+     813: aload         8
+     815: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+     818: invokevirtual #121                // Method java/lang/Class.getName:()Ljava/lang/String;
+     821: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     824: pop
+     825: aload         15
+     827: ldc_w         #499                // String samplerDisabled
+     830: iconst_0
+     831: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     834: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     837: pop
+     838: aload         15
+     840: ldc_w         #501                // String newQueryTimer
+     843: iconst_0
+     844: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+     847: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     850: pop
+     851: aload         15
+     853: ldc_w         #503                // String timingBoundary
+     856: ldc_w         #505                // String Original replay: context/source selection, persistent executor dispatch, execution, Future.get; excludes canonicalization and graph observations
+     859: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     862: pop
+     863: aload         15
+     865: ldc_w         #507                // String failedSampleMeaning
+     868: ldc_w         #509                // String time-to-failure; excluded from successful latency percentiles
+     871: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     874: pop
+     875: aload         15
+     877: ldc_w         #511                // String errorMessageSource
+     880: ldc_w         #513                // String Archived full canonical main capture; current original samples record error class only
+     883: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     886: pop
+     887: aload         15
+     889: ldc_w         #515                // String javaVersion
+     892: ldc_w         #517                // String java.version
+     895: invokestatic  #519                // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+     898: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     901: pop
+     902: aload         15
+     904: ldc_w         #522                // String maxHeapBytes
+     907: invokestatic  #524                // Method java/lang/Runtime.getRuntime:()Ljava/lang/Runtime;
+     910: invokevirtual #530                // Method java/lang/Runtime.maxMemory:()J
+     913: invokestatic  #533                // Method java/lang/Long.valueOf:(J)Ljava/lang/Long;
+     916: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     919: pop
+     920: aload_2
+     921: ldc_w         #538                // String header.json
+     924: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+     929: aload         15
+     931: invokestatic  #306                // Method write:(Ljava/nio/file/Path;Ljava/lang/Object;)V
+     934: aload_1
+     935: ldc_w         #352                // String warm-after-failed-prewarm
+     938: invokevirtual #161                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     941: ifeq          1027
+     944: aload         6
+     946: aload         8
+     948: aload         9
+     950: aload_2
+     951: aload         4
+     953: aload         7
+     955: invokestatic  #540                // Method prepareDiagnosticWarm:(Lio/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark;Ljava/lang/Object;Ljava/lang/Object;Ljava/nio/file/Path;Ljava/util/List;Ljava/util/Map;)V
+     958: aload         6
+     960: ldc_w         #264                // String resetCallSiteScanMetrics
+     963: invokestatic  #266                // Method call:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+     966: pop
+     967: aconst_null
+     968: ldc_w         #544                // String io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmarkKt
+     971: invokestatic  #546                // Method java/lang/Class.forName:(Ljava/lang/String;)Ljava/lang/Class;
+     974: ldc_w         #550                // String forcePressureGc
+     977: iconst_0
+     978: anewarray     #12                 // class java/lang/Class
+     981: iconst_0
+     982: anewarray     #2                  // class java/lang/Object
+     985: invokestatic  #44                 // Method call:(Ljava/lang/Object;Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+     988: pop
+     989: aload         9
+     991: ldc_w         #552                // String start
+     994: invokestatic  #266                // Method call:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+     997: pop
+     998: aload         7
+    1000: ldc_w         #554                // String diagnosticWarmContinuationPrepared
+    1003: iconst_1
+    1004: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1007: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1010: pop
+    1011: aload         7
+    1013: ldc_w         #427                // String diagnosticWarmupContinued
+    1016: iconst_1
+    1017: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1020: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1023: pop
+    1024: goto          1043
+    1027: aload         7
+    1029: ldc           #237                // String stage
+    1031: ldc_w         #556                // String setupInvocation
+    1034: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1037: pop
+    1038: aload         6
+    1040: invokevirtual #558                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.setupInvocation:()V
+    1043: aload         6
+    1045: aload         8
+    1047: aload         9
+    1049: invokestatic  #339                // Method unchanged:(Lio/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark;Ljava/lang/Object;Ljava/lang/Object;)V
+    1052: aload_2
+    1053: ldc_w         #398                // String main
+    1056: invokestatic  #282                // Method outputs:(Ljava/nio/file/Path;Ljava/lang/String;)V
+    1059: aload         7
+    1061: ldc           #237                // String stage
+    1063: ldc_w         #560                // String replayBroadQueries
+    1066: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1069: pop
+    1070: aconst_null
+    1071: astore        16
+    1073: new           #562                // class io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureCounters
+    1076: dup
+    1077: invokespecial #564                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureCounters."<init>":()V
+    1080: astore        17
+    1082: aload         6
+    1084: aload         17
+    1086: invokevirtual #565                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.replayBroadQueries:(Lio/johnsonlee/graphite/webgraph/LargeBroadQueryPressureCounters;)J
+    1089: lstore        18
+    1091: aload         7
+    1093: ldc_w         #423                // String originalGatePassed
+    1096: iconst_1
+    1097: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1100: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1103: pop
+    1104: aload         7
+    1106: ldc_w         #568                // String consumedBytesAndRows
+    1109: lload         18
+    1111: invokestatic  #533                // Method java/lang/Long.valueOf:(J)Ljava/lang/Long;
+    1114: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1117: pop
+    1118: goto          1141
+    1121: astore        18
+    1123: aload         18
+    1125: astore        16
+    1127: aload         7
+    1129: ldc_w         #570                // String formalOriginalGateFailure
+    1132: aload         18
+    1134: invokestatic  #314                // Method exception:(Ljava/lang/Throwable;)Ljava/util/Map;
+    1137: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1140: pop
+    1141: aload_2
+    1142: ldc_w         #572                // String original-counters.json
+    1145: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+    1150: aload         17
+    1152: invokestatic  #303                // Method ExportBenchmarkCases.plain:(Ljava/lang/Object;)Ljava/lang/Object;
+    1155: invokestatic  #306                // Method write:(Ljava/nio/file/Path;Ljava/lang/Object;)V
+    1158: aload         16
+    1160: ifnonnull     1174
+    1163: new           #82                 // class java/lang/IllegalStateException
+    1166: dup
+    1167: ldc_w         #574                // String original formal gate unexpectedly passed
+    1170: invokespecial #86                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+    1173: athrow
+    1174: aload         16
+    1176: invokestatic  #329                // Method checkGateFailure:(Ljava/lang/Throwable;)V
+    1179: getstatic     #290                // Field io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.INSTANCE:Lio/johnsonlee/graphite/webgraph/QueryCorrectnessManifest;
+    1182: aload_2
+    1183: ldc_w         #576                // String main-correctness.tsv
+    1186: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+    1191: invokevirtual #298                // Method io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.read:(Ljava/nio/file/Path;)Ljava/util/List;
+    1194: astore        18
+    1196: aload         18
+    1198: aload         4
+    1200: invokestatic  #333                // Method validateRecords:(Ljava/util/List;Ljava/util/List;)V
+    1203: aload         7
+    1205: ldc_w         #578                // String formalCapturedCaseCount
+    1208: aload         18
+    1210: invokeinterface #79,  1           // InterfaceMethod java/util/List.size:()I
+    1215: invokestatic  #322                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+    1218: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1221: pop
+    1222: aload         7
+    1224: ldc_w         #580                // String formalSignaturesMatchArchivedMain
+    1227: iconst_1
+    1228: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1231: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1234: pop
+    1235: aload         7
+    1237: ldc_w         #425                // String diagnosticReplayComplete
+    1240: iconst_1
+    1241: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1244: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1247: pop
+    1248: aload         7
+    1250: ldc           #237                // String stage
+    1252: ldc_w         #582                // String complete-original-gate-failed
+    1255: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1258: pop
+    1259: aload         16
+    1261: athrow
+    1262: astore        11
+    1264: aload         11
+    1266: astore        10
+    1268: aload         7
+    1270: ldc_w         #584                // String terminalFailure
+    1273: aload         11
+    1275: invokestatic  #314                // Method exception:(Ljava/lang/Throwable;)Ljava/util/Map;
+    1278: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1281: pop
+    1282: aload         7
+    1284: ldc_w         #586                // String exceptionClass
+    1287: aload         11
+    1289: invokevirtual #7                  // Method java/lang/Object.getClass:()Ljava/lang/Class;
+    1292: invokevirtual #121                // Method java/lang/Class.getName:()Ljava/lang/String;
+    1295: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1298: pop
+    1299: aload         7
+    1301: ldc_w         #588                // String exceptionMessage
+    1304: aload         11
+    1306: invokevirtual #128                // Method java/lang/Throwable.getMessage:()Ljava/lang/String;
+    1309: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1312: pop
+    1313: aload         8
+    1315: ifnull        1353
+    1318: aload         6
+    1320: aload         8
+    1322: aload         9
+    1324: invokestatic  #339                // Method unchanged:(Lio/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark;Ljava/lang/Object;Ljava/lang/Object;)V
+    1327: aload         7
+    1329: ldc_w         #590                // String queryExecutorIdentityUnchanged
+    1332: iconst_1
+    1333: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1336: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1339: pop
+    1340: aload         7
+    1342: ldc_w         #592                // String samplerIdentityUnchanged
+    1345: iconst_1
+    1346: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1349: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1352: pop
+    1353: goto          1377
+    1356: astore        11
+    1358: aload         10
+    1360: ifnonnull     1370
+    1363: aload         11
+    1365: astore        10
+    1367: goto          1377
+    1370: aload         10
+    1372: aload         11
+    1374: invokevirtual #594                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+    1377: aload         6
+    1379: invokevirtual #597                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.tearDownTrial:()V
+    1382: goto          1406
+    1385: astore        11
+    1387: aload         10
+    1389: ifnonnull     1399
+    1392: aload         11
+    1394: astore        10
+    1396: goto          1406
+    1399: aload         10
+    1401: aload         11
+    1403: invokevirtual #594                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+    1406: aload         7
+    1408: ldc_w         #600                // String correctnessManifestWritten
+    1411: aload_2
+    1412: ldc_w         #576                // String main-correctness.tsv
+    1415: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+    1420: iconst_0
+    1421: anewarray     #602                // class java/nio/file/LinkOption
+    1424: invokestatic  #604                // Method java/nio/file/Files.isRegularFile:(Ljava/nio/file/Path;[Ljava/nio/file/LinkOption;)Z
+    1427: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1430: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1433: pop
+    1434: aload         7
+    1436: ldc_w         #608                // String observationsWritten
+    1439: aload_2
+    1440: ldc_w         #610                // String main-observations.tsv
+    1443: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+    1448: iconst_0
+    1449: anewarray     #602                // class java/nio/file/LinkOption
+    1452: invokestatic  #604                // Method java/nio/file/Files.isRegularFile:(Ljava/nio/file/Path;[Ljava/nio/file/LinkOption;)Z
+    1455: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1458: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1461: pop
+    1462: aload         7
+    1464: ldc_w         #612                // String launcherSucceeded
+    1467: aload         10
+    1469: ifnonnull     1476
+    1472: iconst_1
+    1473: goto          1477
+    1476: iconst_0
+    1477: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1480: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1483: pop
+    1484: aload_2
+    1485: ldc_w         #614                // String completion.json
+    1488: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+    1493: aload         7
+    1495: invokestatic  #306                // Method write:(Ljava/nio/file/Path;Ljava/lang/Object;)V
+    1498: goto          1739
+    1501: astore        11
+    1503: aload         10
+    1505: ifnonnull     1515
+    1508: aload         11
+    1510: astore        10
+    1512: goto          1522
+    1515: aload         10
+    1517: aload         11
+    1519: invokevirtual #594                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+    1522: goto          1739
+    1525: astore        20
+    1527: aload         8
+    1529: ifnull        1567
+    1532: aload         6
+    1534: aload         8
+    1536: aload         9
+    1538: invokestatic  #339                // Method unchanged:(Lio/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark;Ljava/lang/Object;Ljava/lang/Object;)V
+    1541: aload         7
+    1543: ldc_w         #590                // String queryExecutorIdentityUnchanged
+    1546: iconst_1
+    1547: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1550: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1553: pop
+    1554: aload         7
+    1556: ldc_w         #592                // String samplerIdentityUnchanged
+    1559: iconst_1
+    1560: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1563: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1566: pop
+    1567: goto          1591
+    1570: astore        21
+    1572: aload         10
+    1574: ifnonnull     1584
+    1577: aload         21
+    1579: astore        10
+    1581: goto          1591
+    1584: aload         10
+    1586: aload         21
+    1588: invokevirtual #594                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+    1591: aload         6
+    1593: invokevirtual #597                // Method io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.tearDownTrial:()V
+    1596: goto          1620
+    1599: astore        21
+    1601: aload         10
+    1603: ifnonnull     1613
+    1606: aload         21
+    1608: astore        10
+    1610: goto          1620
+    1613: aload         10
+    1615: aload         21
+    1617: invokevirtual #594                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+    1620: aload         7
+    1622: ldc_w         #600                // String correctnessManifestWritten
+    1625: aload_2
+    1626: ldc_w         #576                // String main-correctness.tsv
+    1629: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+    1634: iconst_0
+    1635: anewarray     #602                // class java/nio/file/LinkOption
+    1638: invokestatic  #604                // Method java/nio/file/Files.isRegularFile:(Ljava/nio/file/Path;[Ljava/nio/file/LinkOption;)Z
+    1641: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1644: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1647: pop
+    1648: aload         7
+    1650: ldc_w         #608                // String observationsWritten
+    1653: aload_2
+    1654: ldc_w         #610                // String main-observations.tsv
+    1657: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+    1662: iconst_0
+    1663: anewarray     #602                // class java/nio/file/LinkOption
+    1666: invokestatic  #604                // Method java/nio/file/Files.isRegularFile:(Ljava/nio/file/Path;[Ljava/nio/file/LinkOption;)Z
+    1669: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1672: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1675: pop
+    1676: aload         7
+    1678: ldc_w         #612                // String launcherSucceeded
+    1681: aload         10
+    1683: ifnonnull     1690
+    1686: iconst_1
+    1687: goto          1691
+    1690: iconst_0
+    1691: invokestatic  #276                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+    1694: invokevirtual #122                // Method java/util/LinkedHashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    1697: pop
+    1698: aload_2
+    1699: ldc_w         #614                // String completion.json
+    1702: invokeinterface #182,  2          // InterfaceMethod java/nio/file/Path.resolve:(Ljava/lang/String;)Ljava/nio/file/Path;
+    1707: aload         7
+    1709: invokestatic  #306                // Method write:(Ljava/nio/file/Path;Ljava/lang/Object;)V
+    1712: goto          1736
+    1715: astore        21
+    1717: aload         10
+    1719: ifnonnull     1729
+    1722: aload         21
+    1724: astore        10
+    1726: goto          1736
+    1729: aload         10
+    1731: aload         21
+    1733: invokevirtual #594                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+    1736: aload         20
+    1738: athrow
+    1739: aload         10
+    1741: ifnull        1747
+    1744: aload         10
+    1746: athrow
+    1747: return
+    Exception table:
+       from    to  target type
+        1082  1118  1121   Class java/lang/Throwable
+         315  1262  1262   Class java/lang/Throwable
+        1313  1353  1356   Class java/lang/Throwable
+        1377  1382  1385   Class java/lang/Throwable
+        1484  1498  1501   Class java/lang/Throwable
+         315  1313  1525   any
+        1527  1567  1570   Class java/lang/Throwable
+        1591  1596  1599   Class java/lang/Throwable
+        1698  1712  1715   Class java/lang/Throwable
+        1525  1527  1525   any
+}

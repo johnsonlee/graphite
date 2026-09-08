@@ -1,0 +1,8 @@
+{
+  "terminalAndVerified": true,
+  "removed": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-data-1fc33bb1f496-warm-after-failed-prewarm-0001-main",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-data-1fc33bb1f496-warm-after-failed-prewarm-0001-go"
+  ],
+  "originalReferenceUntouched": "/Users/johnsonlee/.codex/fixtures/graphite-real64-1152-20260908"
+}

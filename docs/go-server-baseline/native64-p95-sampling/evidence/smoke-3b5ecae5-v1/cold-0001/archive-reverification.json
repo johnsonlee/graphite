@@ -1,0 +1,16 @@
+{
+  "trialId": "cold-0001",
+  "state": "cold",
+  "archiveReverificationPassed": true,
+  "exactOriginalOrderedCases": 1267,
+  "successCountPerRuntime": 1266,
+  "originalFailureCountPerRuntime": 1,
+  "censoredTimeoutCount": 0,
+  "canonicalReferenceComparisonPassed": true,
+  "normalizedTimingsMatchRawLedgers": true,
+  "mainFailureMessageSource": "reference-derived",
+  "goFailureMessageSource": "observed",
+  "warmLedgersReverified": false,
+  "graphClonesAvailableNow": false,
+  "graphAuditScope": "Existing controller process and pre/post audit receipts retained; deleted graph clones were not reopened during archival."
+}

@@ -1,0 +1,39 @@
+{
+  "runtime": "go",
+  "state": "startup-prepared",
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-3b5ecae5-build-v1/graphite-benchmark-latency",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-3b5ecae5-smoke-v1/startup-prepared-0001/go/graphs-relocated.tsv",
+    "--state",
+    "startup-prepared",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-3b5ecae5-build-v1/source/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/p95-3b5ecae5-smoke-v1/startup-prepared-0001/go/capture/observations.jsonl"
+  ],
+  "status": "exited",
+  "clone": "/Users/johnsonlee/.codex/benchmarks/graphite/p95-data-1fc33bb1f496-startup-prepared-0001-go/fixture",
+  "engineRevision": "3b5ecae5c9a4c1425f18a3b5af3e373b41a184eb",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "performanceMeasurement": true,
+  "diagnosticOnly": true,
+  "samplesPerCase": 1,
+  "manifestSHA256": "4f88a139c0ab621024c82643bf86309210fdd228a10453bac57e0bf440c38539",
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null,
+    "JAVA_TOOL_OPTIONS": null,
+    "JDK_JAVA_OPTIONS": null
+  },
+  "pid": 77647,
+  "startedAtNanos": 1788845199431010000,
+  "startedAt": "2026-09-08T05:26:39.431026+00:00",
+  "exitCode": 1,
+  "finishedAtNanos": 1788845291609733000,
+  "finishedAt": "2026-09-08T05:28:11.609736+00:00",
+  "inputsUnchanged": true,
+  "fixtureAuditPassed": true
+}
