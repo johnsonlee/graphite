@@ -1,0 +1,43 @@
+{
+  "GoJVMOrReplayLaunched": false,
+  "checks": [
+    {
+      "addedFiles": 1,
+      "edits": 41,
+      "instrumentedSHA256": {
+        "cmd/graphite-benchmark-replay/main.go": "ac691404863c18a378248dec1278a5c724dc96dc19c216a352ec2dfd4b32a191",
+        "internal/entrytrace/trace.go": "0866c39cb4cf1017a86b7af8b7f69a64eb956101c62ecd98e9d41475fbea5d7d",
+        "internal/query/indexed_distinct.go": "0003001bc284b4f9b3fbb35fe536fa4c39911dc2f9d5a85077a6eee7f8045a22",
+        "internal/query/main_fixed_workers.go": "f5aabd7b913d68ebd19436d228870c98f002983ca3e21a650c301e3d892d5956",
+        "internal/query/main_string_mapped.go": "b5c2eb9453147a76cebf3afca45db5312c0d9ead8b075a7f5744c9650c38ef10",
+        "internal/query/ordinary_parallel.go": "a971f899609cfbe8b2cfa85b4d3c756ee1fc5d7b53738eff8ea2049be78dee24",
+        "internal/query/ordinary_projection.go": "d8e3830c38f7bafa6bbf8f04482295440727bbf55855f6f47e1b80e912082086",
+        "internal/store/main_mapped_cursor.go": "f8d5b408958ea073fa3c6d3645bdad4f7ba06108ce2c3c63078ff22fba969c2c"
+      },
+      "inverseOriginalRestoration": "exact",
+      "label": "lazy-core-v1",
+      "modifiedFiles": 7,
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-real64-source-v1"
+    },
+    {
+      "addedFiles": 1,
+      "edits": 40,
+      "instrumentedSHA256": {
+        "cmd/graphite-benchmark-replay/main.go": "ac691404863c18a378248dec1278a5c724dc96dc19c216a352ec2dfd4b32a191",
+        "internal/entrytrace/trace.go": "0866c39cb4cf1017a86b7af8b7f69a64eb956101c62ecd98e9d41475fbea5d7d",
+        "internal/query/indexed_distinct.go": "0003001bc284b4f9b3fbb35fe536fa4c39911dc2f9d5a85077a6eee7f8045a22",
+        "internal/query/main_fixed_workers.go": "1cdef92a200738580a066aa01a8395fb054bfc5248e1a08b2d75116b3beabc35",
+        "internal/query/main_string_mapped.go": "b5c2eb9453147a76cebf3afca45db5312c0d9ead8b075a7f5744c9650c38ef10",
+        "internal/query/ordinary_parallel.go": "a971f899609cfbe8b2cfa85b4d3c756ee1fc5d7b53738eff8ea2049be78dee24",
+        "internal/query/ordinary_projection.go": "d8e3830c38f7bafa6bbf8f04482295440727bbf55855f6f47e1b80e912082086",
+        "internal/store/main_mapped_cursor.go": "f8d5b408958ea073fa3c6d3645bdad4f7ba06108ce2c3c63078ff22fba969c2c"
+      },
+      "inverseOriginalRestoration": "exact",
+      "label": "v4",
+      "modifiedFiles": 7,
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-source-v4"
+    }
+  ],
+  "originalLoggerSHA256": "0866c39cb4cf1017a86b7af8b7f69a64eb956101c62ecd98e9d41475fbea5d7d",
+  "originalRunnerSHA256": "12db5120452bff803cdffdc7cc4919b44aa7fe08365f48a19ba8bacbea90168f"
+}

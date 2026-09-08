@@ -1,0 +1,77 @@
+[
+  {
+    "path": "baseline-overlay.json",
+    "bytes": 295,
+    "sha256": "6db45f7cc903f08fcca92ef523b57bf934da3b54385ae6f323706f948af8ef50"
+  },
+  {
+    "path": "baseline.log",
+    "bytes": 10664,
+    "sha256": "2c387d072269b933c7288658c0c074c3252d0a73b423a7fa534f1a5006b26fcb"
+  },
+  {
+    "path": "candidate.log",
+    "bytes": 29641,
+    "sha256": "340752a783d88e46050ff6b685a83cd166bad5f22c49543e75bbb71e7d5868f0"
+  },
+  {
+    "path": "commands.json",
+    "bytes": 1497,
+    "sha256": "60554bbb3f5b3edcd25a3d085fe758c8c5ccacf8b1c7ee906752d2f857675b96"
+  },
+  {
+    "path": "inputs-after.json",
+    "bytes": 2607,
+    "sha256": "c8fa3b7aaa8a3995c8a0227ca002340560db09c5bc9134374e38d44edcf4d2e9"
+  },
+  {
+    "path": "inputs-before.json",
+    "bytes": 2607,
+    "sha256": "c8fa3b7aaa8a3995c8a0227ca002340560db09c5bc9134374e38d44edcf4d2e9"
+  },
+  {
+    "path": "public.log",
+    "bytes": 685,
+    "sha256": "39d98aed9441807bb11dd297c40ce8205941eb5c8a65910153bfb285a9910c16"
+  },
+  {
+    "path": "receipt.json",
+    "bytes": 1938,
+    "sha256": "549d533c445893f0f8722e6073bb7c61914403fc7342a57573bf900b9fd61c29"
+  },
+  {
+    "path": "run.py",
+    "bytes": 3225,
+    "sha256": "0290ccf4c221201181b4cd530bb913277635c502314dc875b72f22a2a722ec34"
+  },
+  {
+    "path": "source/internal/query/generic_disjunction_test.go",
+    "bytes": 8591,
+    "sha256": "fa0c60c78af3cf3885c2df56809a239df4de8e038f75b4a6fa5557b36994b7ca"
+  },
+  {
+    "path": "source/internal/store/projection_annotation_test.go",
+    "bytes": 7598,
+    "sha256": "09761b8f8a7e95ddb9eaf4fa275346c9863cb2294de90a635116cfcdbe233f59"
+  },
+  {
+    "path": "source/internal/store/projection_node.go",
+    "bytes": 4843,
+    "sha256": "c6ed6b622e9933e62b489981eaeb16cda156da609aa1eee749f99dfd326646fc"
+  },
+  {
+    "path": "stages.json",
+    "bytes": 1640,
+    "sha256": "fdcfcdd082c064d6372e449e0008cbdc62a64eb6dec9619451ea49d161c77ac3"
+  },
+  {
+    "path": "verification-summary.json",
+    "bytes": 815,
+    "sha256": "0674b525c24a35497cd14901baef8f5457441d81c9bfe931d79fe04186936dd1"
+  },
+  {
+    "path": "version.log",
+    "bytes": 33,
+    "sha256": "e4861670ffcc0e096d69e05badac4bf74867d77ed97366be2116e104932b6ba5"
+  }
+]

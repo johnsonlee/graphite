@@ -1,0 +1,10 @@
+[
+  {
+    "path": "graphite-server/internal/query/main_fixed_workers.go",
+    "sha256": "dfc418d602fbe17261c4565155cf1061fb2f84bc2172d29e7a497ce48fd31e87"
+  },
+  {
+    "path": "graphite-server/internal/query/main_fixed_workers_test.go",
+    "sha256": "863210f83f5f4427160bcb7985ae8484ff8ec0c0c68f9d9a2c046aefc26ff1aa"
+  }
+]

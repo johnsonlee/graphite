@@ -1,0 +1,13 @@
+{
+  "phase": "capture",
+  "pid": 31509,
+  "command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx512m",
+    "-cp",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "MappedCursorOracle",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/fixtures",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/main.json"
+  ]
+}

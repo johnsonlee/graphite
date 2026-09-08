@@ -1,0 +1,88 @@
+{
+  "actualCaseIndices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "binarySHA256": "272e538067b949b4d4df0c125aa0256fe379f1bac3f8decc221088b609ec7174",
+  "controllerPID": 40336,
+  "diagnosticOnly": true,
+  "executedCaseIndices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "finishedUnixSeconds": 1788877309.300399,
+  "fixtureAuditSHA256": "aea6f5c8f59a51f4e71deb3ab59c7af7f014d1f2dba6c24b556e08dbfafc7194",
+  "fixtureManifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "go": {
+    "path": "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "sha256": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4"
+  },
+  "inheritedRuntimeEnvironment": {
+    "CGO_ENABLED": null,
+    "GOARCH": null,
+    "GODEBUG": null,
+    "GOGC": null,
+    "GOMAXPROCS": null,
+    "GOMEMLIMIT": null,
+    "GOOS": null
+  },
+  "originalGraphsManifestSHA256": "809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2",
+  "output": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-trace-v4-1",
+  "performanceMeasurement": false,
+  "publicErrors": [],
+  "relocatedGraphsManifestSHA256": "537f238543c756a6d347cffc25f86337f8d3f3c584bce61b7517798069df08a2",
+  "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-source-v4",
+  "startedUnixSeconds": 1788877266.971992,
+  "status": "complete",
+  "steps": [
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "build",
+        "-o",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-trace-v4-1/diagnostic-replay",
+        "./cmd/graphite-benchmark-replay"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-trace-v4-1/module",
+      "exitCode": 0,
+      "finishedUnixSeconds": 1788877282.7221901,
+      "name": "build",
+      "pid": 40341,
+      "startedUnixSeconds": 1788877280.769098
+    },
+    {
+      "command": [
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-trace-v4-1/diagnostic-replay",
+        "--workload",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-trace-v4-1/module/internal/benchmarkcase/testdata/main64.json",
+        "--graphs",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-trace-v4-1/graphs-relocated.tsv",
+        "--state",
+        "cold",
+        "--output",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-trace-v4-1/responses.jsonl"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-trace-v4-1/module",
+      "exitCode": 0,
+      "finishedUnixSeconds": 1788877299.772376,
+      "name": "replay",
+      "pid": 40404,
+      "startedUnixSeconds": 1788877282.726698
+    }
+  ],
+  "supportedFrozenVersion": "v4",
+  "traceSummary": {
+    "capacity": 262144,
+    "diagnosticOnly": true,
+    "dropped": 0,
+    "kind": "trace_summary",
+    "reserved": 20925,
+    "unpublished": 0
+  },
+  "validatedWorkloadCaseCount": 1267,
+  "workloadSHA256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+}

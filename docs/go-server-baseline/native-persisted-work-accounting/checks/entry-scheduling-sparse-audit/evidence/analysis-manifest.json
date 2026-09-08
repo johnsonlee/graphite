@@ -1,0 +1,22 @@
+[
+  {
+    "bytes": 462672,
+    "path": "sparse-lazy-history.json",
+    "sha256": "b5db1cb42aa30468f485926f498dd1af1b9c7757047e0232d53d0d752d203c54"
+  },
+  {
+    "bytes": 3,
+    "path": "sparse-lazy-vs-main-differences.json",
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  {
+    "bytes": 128,
+    "path": "sparse-lazy-vs-plain-lazy-differences.json",
+    "sha256": "ce9ee8da47bc44cef2c876b5dc519dd39bafa332103f3de05d29d416fdc4e3e8"
+  },
+  {
+    "bytes": 4360,
+    "path": "summary.json",
+    "sha256": "9c14b7711a0f645b162c2d4cb4888ae94553c8ed12972653528c73411b7e9bcf"
+  }
+]

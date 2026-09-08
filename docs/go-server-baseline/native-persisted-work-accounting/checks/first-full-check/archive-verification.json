@@ -1,0 +1,37 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v1/context.log",
+      "sourceSHA256": "9b1de060dc82450af97bc9fb0a5653cfa5ec0b9c7db4c54114fea9e4010c0931",
+      "archive": "context.log.gz",
+      "archiveSHA256": "a3b8f67ba83a183d4bddc9b100fa0f179bf2b35c34973d9b92663b6f59b94a7d",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v1/inputs.json",
+      "sourceSHA256": "363a14b78484c847b5b33b4db22a478a54b0253932ebaf57626881c2e5fcf3eb",
+      "archive": "inputs.json",
+      "archiveSHA256": "363a14b78484c847b5b33b4db22a478a54b0253932ebaf57626881c2e5fcf3eb",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v1/race.log",
+      "sourceSHA256": "7d825124f08adb39aa03bab5f7e013ea7574fa02e5fd963967e927bcc321beba",
+      "archive": "race.log.gz",
+      "archiveSHA256": "d90578f3a91f02e6291c7381e77be1791bf6ad96532586803e146b39e4d5360c",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v1/receipt.json",
+      "sourceSHA256": "5eb019edafe41839ce5b81cd136e15a7caa78aa7867ae522641162d67026f294",
+      "archive": "receipt.json",
+      "archiveSHA256": "5eb019edafe41839ce5b81cd136e15a7caa78aa7867ae522641162d67026f294",
+      "originalBytesVerified": true
+    }
+  ],
+  "passedAllSteps": false,
+  "unexecutedSteps": [
+    "vet"
+  ],
+  "performanceMeasurements": 0
+}

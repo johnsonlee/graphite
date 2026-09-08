@@ -1,0 +1,79 @@
+{
+  "state": "cold",
+  "caseDefinitionsExactlyEqual": true,
+  "loadedGraphCapabilityCounts": {
+    "main": {
+      "retained": 0,
+      "mappedView": 0,
+      "trigrams": 0,
+      "loadedFromPersistence": 0
+    },
+    "native": {
+      "retained": 0,
+      "mappedView": 0,
+      "trigrams": 0,
+      "loadedFromPersistence": 0
+    }
+  },
+  "phaseCaseCounts": {
+    "replay": 1267
+  },
+  "mainPhaseOutcomes": {
+    "replay": {
+      "success": 1266,
+      "error": 1
+    }
+  },
+  "publicDifferences": [],
+  "stateDifferenceCounts": {
+    "mappedRangeCount": 15162
+  },
+  "firstStateDifferences": {
+    "mappedRangeCount": {
+      "observation": "replay/3/after",
+      "graph": "fixture-android-02",
+      "main": 7,
+      "native": 0
+    }
+  },
+  "graphStateObservations": 162304,
+  "errors": [
+    {
+      "phase": "replay",
+      "index": 821,
+      "id": "four-or-graph-id-targeted",
+      "error": "IllegalStateException",
+      "message": "Unsafe expression reached parallel string projection"
+    }
+  ],
+  "observerFieldDifferences": [
+    {
+      "phase": "replay",
+      "index": 821,
+      "field": "errorClass",
+      "main": "java.lang.IllegalStateException",
+      "native": null
+    }
+  ],
+  "nativeUnavailableStateCounters": [],
+  "mainRawCacheNonzeroObservationCounts": {
+    "rawMatchCount": 0,
+    "rawProjectionCount": 2515
+  },
+  "mainRawCacheMaximumCounts": {
+    "rawMatchCount": 0,
+    "rawProjectionCount": 4
+  },
+  "mainManifestSuccessfulDigestsVerified": 1266,
+  "invocationPrepared": true,
+  "replayPhaseCovered": true,
+  "originalAllSuccessGatePassed": false,
+  "runtimeExitCode": 1,
+  "originalGraphFilesUnchangedPerRuntime": 1152,
+  "performanceMeasurement": false
+}
+Traceback (most recent call last):
+  File "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py", line 156, in <module>
+    assert not differences and not state_differences, 'Captured runtime behavior differs'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Captured runtime behavior differs

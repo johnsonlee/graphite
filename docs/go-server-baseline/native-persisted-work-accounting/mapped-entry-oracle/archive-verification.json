@@ -1,0 +1,188 @@
+{
+  "artifacts": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/capture.stderr",
+      "file": "main-capture/capture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/capture.stdout",
+      "file": "main-capture/capture.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/classes/MappedEntryOracle$Action.class",
+      "file": "main-capture/classes/MappedEntryOracle$Action.class",
+      "bytes": 289,
+      "sha256": "33b788634588a865c53284ae8bccfd6bc8c20af5dfa6ad0d20d2c891ca2c2976"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/classes/MappedEntryOracle$Request.class",
+      "file": "main-capture/classes/MappedEntryOracle$Request.class",
+      "bytes": 5376,
+      "sha256": "c2acfd78d1a613c8d128b23c97f92be6b04d764c9272310fb32172d32948f259"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/classes/MappedEntryOracle.class",
+      "file": "main-capture/classes/MappedEntryOracle.class",
+      "bytes": 15010,
+      "sha256": "201830fc39ee1c938732f6a0f0eacdc48d78e3f14fd9896bd4b8fb9dbb6cb9df"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/commands.json",
+      "file": "main-capture/commands.json",
+      "bytes": 1567,
+      "sha256": "b78a466390a1450091800889a6e17ef37474609027df6fd2caef9bd7e9abb7f0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/fixture-after.json",
+      "file": "main-capture/fixture-after.json",
+      "bytes": 23732,
+      "sha256": "e421434f75defd4f9396d8806542bbab38b7e7106d7cdf59d8c6da145252985d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/fixture-before.json",
+      "file": "main-capture/fixture-before.json",
+      "bytes": 23732,
+      "sha256": "e421434f75defd4f9396d8806542bbab38b7e7106d7cdf59d8c6da145252985d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/fixture-variant.json",
+      "file": "main-capture/fixture-variant.json",
+      "bytes": 2508,
+      "sha256": "ecdc3650483c1fc81a40b7f428d2d4c652bde45ccb231432e385f3bc592cb715"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/inputs.json",
+      "file": "main-capture/inputs.json",
+      "bytes": 3160,
+      "sha256": "06f1340f7e1c9e4c4f96e1cac48a8d2cb5d65d21660e1653060e08a55165d12b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/live-process.json",
+      "file": "main-capture/live-process.json",
+      "bytes": 751,
+      "sha256": "88b64782aee13be6d875ce6f69d3b30f95e42e405b74f313163ee38d88bc8fb4"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/main.json",
+      "file": "main-capture/main.json",
+      "bytes": 418274,
+      "sha256": "bee9be0ec1c1d6c5ec6b192769e056b56c3f57bc4a757fbfc04ae2d06e6e7635"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v1/receipt.json",
+      "file": "main-capture/receipt.json",
+      "bytes": 688,
+      "sha256": "4366b9a7f92abf6d980d24113ee9d645b89282ae294782973eede28604285cb0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/capture.stderr",
+      "file": "repeat-capture/capture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/capture.stdout",
+      "file": "repeat-capture/capture.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/classes/MappedEntryOracle$Action.class",
+      "file": "repeat-capture/classes/MappedEntryOracle$Action.class",
+      "bytes": 289,
+      "sha256": "33b788634588a865c53284ae8bccfd6bc8c20af5dfa6ad0d20d2c891ca2c2976"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/classes/MappedEntryOracle$Request.class",
+      "file": "repeat-capture/classes/MappedEntryOracle$Request.class",
+      "bytes": 5376,
+      "sha256": "c2acfd78d1a613c8d128b23c97f92be6b04d764c9272310fb32172d32948f259"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/classes/MappedEntryOracle.class",
+      "file": "repeat-capture/classes/MappedEntryOracle.class",
+      "bytes": 15010,
+      "sha256": "201830fc39ee1c938732f6a0f0eacdc48d78e3f14fd9896bd4b8fb9dbb6cb9df"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/commands.json",
+      "file": "repeat-capture/commands.json",
+      "bytes": 1567,
+      "sha256": "3e0e7dd8d0f2c917713a1f262995aeabc47c7236125c15c7822969ee74840334"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/fixture-after.json",
+      "file": "repeat-capture/fixture-after.json",
+      "bytes": 23732,
+      "sha256": "e421434f75defd4f9396d8806542bbab38b7e7106d7cdf59d8c6da145252985d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/fixture-before.json",
+      "file": "repeat-capture/fixture-before.json",
+      "bytes": 23732,
+      "sha256": "e421434f75defd4f9396d8806542bbab38b7e7106d7cdf59d8c6da145252985d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/fixture-variant.json",
+      "file": "repeat-capture/fixture-variant.json",
+      "bytes": 2508,
+      "sha256": "ecdc3650483c1fc81a40b7f428d2d4c652bde45ccb231432e385f3bc592cb715"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "bytes": 3160,
+      "sha256": "06f1340f7e1c9e4c4f96e1cac48a8d2cb5d65d21660e1653060e08a55165d12b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/live-process.json",
+      "file": "repeat-capture/live-process.json",
+      "bytes": 751,
+      "sha256": "fba0e243153fb1abdcdcc2b9dac444942c63465807db73276bf81f1d5c16c2e7"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/main.json",
+      "file": "repeat-capture/main.json",
+      "bytes": 418274,
+      "sha256": "bee9be0ec1c1d6c5ec6b192769e056b56c3f57bc4a757fbfc04ae2d06e6e7635"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-work-accounting-v2/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "bytes": 688,
+      "sha256": "4366b9a7f92abf6d980d24113ee9d645b89282ae294782973eede28604285cb0"
+    }
+  ],
+  "cases": 8,
+  "probePhases": 16,
+  "warmupPhases": 23,
+  "fullParsedRepeatEqual": true
+}

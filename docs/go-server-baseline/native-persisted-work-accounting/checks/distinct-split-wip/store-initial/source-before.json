@@ -1,0 +1,12 @@
+[
+  {
+    "file": "graphite-server/internal/store/main_ordinary_entry.go",
+    "sha256": "022190f421442de825656f5c0a8264f47b8f0b579a5c97da2cb9e7f0f8c8fa27",
+    "bytes": 1999
+  },
+  {
+    "file": "graphite-server/internal/store/main_callsite_index.go",
+    "sha256": "59cc5cf3ced0a005ab367476784c614bb8abb66e9df7769d790ca1b0348e2dad",
+    "bytes": 3408
+  }
+]

@@ -1,0 +1,259 @@
+{
+  "performanceMeasurements": 0,
+  "terminalRuntimeCount": 3,
+  "comparisonsMustBeReadSeparately": true,
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/cold-comparison.json",
+      "sourceBytes": 1518,
+      "sourceSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "archive": "cold-comparison.json",
+      "archiveBytes": 1518,
+      "archiveSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/controller.json",
+      "sourceBytes": 1623,
+      "sourceSHA256": "3f988e0a025ba77d2fa90d082ee57e759701f24f589dc5464cb11d5842b4a29e",
+      "archive": "controller.json",
+      "archiveBytes": 1623,
+      "archiveSHA256": "3f988e0a025ba77d2fa90d082ee57e759701f24f589dc5464cb11d5842b4a29e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/module-source.json",
+      "sourceBytes": 370727,
+      "sourceSHA256": "651ea5926354e79adfe8f105574c34e6493e58cf514eb0e5a17044243cdeb96c",
+      "archive": "module-source.json",
+      "archiveBytes": 370727,
+      "archiveSHA256": "651ea5926354e79adfe8f105574c34e6493e58cf514eb0e5a17044243cdeb96c",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-cold/responses.jsonl",
+      "sourceBytes": 97903444,
+      "sourceSHA256": "664f8c59753b3d676aeb31479b41d2e367cf9ee6a4b56f331fd9afe66e7ca46f",
+      "archive": "native-cold/responses.jsonl.gz",
+      "archiveBytes": 3278413,
+      "archiveSHA256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-cold-inputs.json",
+      "sourceBytes": 69172,
+      "sourceSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+      "archive": "native-cold-inputs.json",
+      "archiveBytes": 69172,
+      "archiveSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-cold-postrun-fixtures.json",
+      "sourceBytes": 234,
+      "sourceSHA256": "754dc8157a4b07efaa524bd1abc5c1c577d25d7fb293f10dcdf6742a9de2fa21",
+      "archive": "native-cold-postrun-fixtures.json",
+      "archiveBytes": 234,
+      "archiveSHA256": "754dc8157a4b07efaa524bd1abc5c1c577d25d7fb293f10dcdf6742a9de2fa21",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-cold-preflight.json",
+      "sourceBytes": 234,
+      "sourceSHA256": "754dc8157a4b07efaa524bd1abc5c1c577d25d7fb293f10dcdf6742a9de2fa21",
+      "archive": "native-cold-preflight.json",
+      "archiveBytes": 234,
+      "archiveSHA256": "754dc8157a4b07efaa524bd1abc5c1c577d25d7fb293f10dcdf6742a9de2fa21",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-cold-process.json",
+      "sourceBytes": 1398,
+      "sourceSHA256": "6e36096d2b22fa65665d2432618505785ad6053e8d772e3218afbc23717b4224",
+      "archive": "native-cold-process.json",
+      "archiveBytes": 1398,
+      "archiveSHA256": "6e36096d2b22fa65665d2432618505785ad6053e8d772e3218afbc23717b4224",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-cold-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "archive": "native-cold-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-startup-prepared/responses.jsonl",
+      "sourceBytes": 97901990,
+      "sourceSHA256": "c4041f6e8336cd67646f4aa9e1a93008de06f99f0bd8dc60dd54d4851b0b371e",
+      "archive": "native-startup-prepared/responses.jsonl.gz",
+      "archiveBytes": 3271162,
+      "archiveSHA256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-startup-prepared-inputs.json",
+      "sourceBytes": 69172,
+      "sourceSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+      "archive": "native-startup-prepared-inputs.json",
+      "archiveBytes": 69172,
+      "archiveSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-startup-prepared-postrun-fixtures.json",
+      "sourceBytes": 246,
+      "sourceSHA256": "f6a03edb3c64b16a530b5ec76465733b8ad57881a12fab9191324ca366ce8e90",
+      "archive": "native-startup-prepared-postrun-fixtures.json",
+      "archiveBytes": 246,
+      "archiveSHA256": "f6a03edb3c64b16a530b5ec76465733b8ad57881a12fab9191324ca366ce8e90",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-startup-prepared-preflight.json",
+      "sourceBytes": 246,
+      "sourceSHA256": "f6a03edb3c64b16a530b5ec76465733b8ad57881a12fab9191324ca366ce8e90",
+      "archive": "native-startup-prepared-preflight.json",
+      "archiveBytes": 246,
+      "archiveSHA256": "f6a03edb3c64b16a530b5ec76465733b8ad57881a12fab9191324ca366ce8e90",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-startup-prepared-process.json",
+      "sourceBytes": 1470,
+      "sourceSHA256": "ca20a6f9fd9fa5847f736a7d3f457c16f8fe8d9b3cd27db9090a0eb39dace8ad",
+      "archive": "native-startup-prepared-process.json",
+      "archiveBytes": 1470,
+      "archiveSHA256": "ca20a6f9fd9fa5847f736a7d3f457c16f8fe8d9b3cd27db9090a0eb39dace8ad",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-startup-prepared-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "archive": "native-startup-prepared-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-warm/responses.jsonl",
+      "sourceBytes": 97892293,
+      "sourceSHA256": "e30afa52e21042d949b2e09e661e3f6f2eac7a88f2e13ba711780fe7e45e1440",
+      "archive": "native-warm/responses.jsonl.gz",
+      "archiveBytes": 3278959,
+      "archiveSHA256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-warm-inputs.json",
+      "sourceBytes": 69172,
+      "sourceSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+      "archive": "native-warm-inputs.json",
+      "archiveBytes": 69172,
+      "archiveSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-warm-postrun-fixtures.json",
+      "sourceBytes": 234,
+      "sourceSHA256": "4a58222eef2bc1b3a7cd726fe98a08aa26777b224bb7a5fa9e120dab0940de14",
+      "archive": "native-warm-postrun-fixtures.json",
+      "archiveBytes": 234,
+      "archiveSHA256": "4a58222eef2bc1b3a7cd726fe98a08aa26777b224bb7a5fa9e120dab0940de14",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-warm-preflight.json",
+      "sourceBytes": 234,
+      "sourceSHA256": "4a58222eef2bc1b3a7cd726fe98a08aa26777b224bb7a5fa9e120dab0940de14",
+      "archive": "native-warm-preflight.json",
+      "archiveBytes": 234,
+      "archiveSHA256": "4a58222eef2bc1b3a7cd726fe98a08aa26777b224bb7a5fa9e120dab0940de14",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-warm-process.json",
+      "sourceBytes": 1398,
+      "sourceSHA256": "f90ba2b1351d49f17e70c6bf67d4139f46eb2db112e43c1b8a9dc88a9b2a8cbf",
+      "archive": "native-warm-process.json",
+      "archiveBytes": 1398,
+      "archiveSHA256": "f90ba2b1351d49f17e70c6bf67d4139f46eb2db112e43c1b8a9dc88a9b2a8cbf",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-warm-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "d5f7c883aed183cdd870e8c2ee532893529b3b68ef728e82c2fa5fd4da8caf68",
+      "archive": "native-warm-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "d5f7c883aed183cdd870e8c2ee532893529b3b68ef728e82c2fa5fd4da8caf68",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/runner.py",
+      "sourceBytes": 2925,
+      "sourceSHA256": "52589ce94160fdc4b9307fa01e9db12c100bff62063288ef071933439972c404",
+      "archive": "runner.py",
+      "archiveBytes": 2925,
+      "archiveSHA256": "52589ce94160fdc4b9307fa01e9db12c100bff62063288ef071933439972c404",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/source-verification.json",
+      "sourceBytes": 153,
+      "sourceSHA256": "1464f36f16ae15d06664c564f0ec3ed973d2251f297fb96fb7d66fa99459dbcf",
+      "archive": "source-verification.json",
+      "archiveBytes": 153,
+      "archiveSHA256": "1464f36f16ae15d06664c564f0ec3ed973d2251f297fb96fb7d66fa99459dbcf",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/startup-prepared-comparison.json",
+      "sourceBytes": 1536,
+      "sourceSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+      "archive": "startup-prepared-comparison.json",
+      "archiveBytes": 1536,
+      "archiveSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/verify-cold.log",
+      "sourceBytes": 1518,
+      "sourceSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "archive": "verify-cold.log",
+      "archiveBytes": 1518,
+      "archiveSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/verify-startup-prepared.log",
+      "sourceBytes": 1536,
+      "sourceSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+      "archive": "verify-startup-prepared.log",
+      "archiveBytes": 1536,
+      "archiveSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/verify-warm.log",
+      "sourceBytes": 1517,
+      "sourceSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+      "archive": "verify-warm.log",
+      "archiveBytes": 1517,
+      "archiveSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/warm-comparison.json",
+      "sourceBytes": 1517,
+      "sourceSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+      "archive": "warm-comparison.json",
+      "archiveBytes": 1517,
+      "archiveSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+      "decompressedBytesEqual": true
+    }
+  ]
+}

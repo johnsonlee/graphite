@@ -1,0 +1,87 @@
+[
+  {
+    "file": "hit64/forward.graph",
+    "bytes": 18,
+    "sha256": "a5ebb9b2a1864649d070cdb70734a3b7226226414f3b7b5d52be5f6369836810"
+  },
+  {
+    "file": "hit64/forward.offsets",
+    "bytes": 52,
+    "sha256": "fae54849755cd0b89856066d4a68f35038438446bc090cf737ac33075b598efb"
+  },
+  {
+    "file": "hit64/forward.properties",
+    "bytes": 622,
+    "sha256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d"
+  },
+  {
+    "file": "hit64/graph.callsite-string-content.identity",
+    "bytes": 32,
+    "sha256": "10c7a837e495657a8e576a8d353882ee7aa9559a4b0f7c6d0fe589b6b4ac1a09"
+  },
+  {
+    "file": "hit64/graph.callsite-string-index",
+    "bytes": 10524,
+    "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+  },
+  {
+    "file": "hit64/graph.classoverview",
+    "bytes": 24,
+    "sha256": "796a31375a502700c69cc8893d130b0f0efab0a042ff7e9e19bd100877b63aba"
+  },
+  {
+    "file": "hit64/graph.comparisons",
+    "bytes": 8,
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "file": "hit64/graph.labelprefix",
+    "bytes": 556,
+    "sha256": "4c97fe401a408f816de906763598223e5ac2da928868588d1775c406269d1d32"
+  },
+  {
+    "file": "hit64/graph.labels",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "hit64/graph.metadata",
+    "bytes": 36,
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "file": "hit64/graph.nodedata",
+    "bytes": 6280,
+    "sha256": "c63d18f81c6209cb21350a0edca8f994fb9eb8d306cd54dcfb6cf60eba6ebf7e"
+  },
+  {
+    "file": "hit64/graph.nodeindex",
+    "bytes": 1672,
+    "sha256": "e18e7eb45c70abcbdc32ca75623f27b34da6af4253cdb11e37e998505fdbb4f8"
+  },
+  {
+    "file": "hit64/graph.nodeoffsets",
+    "bytes": 1112,
+    "sha256": "0a14c3a0b3bc0028ecf3af979eae3716abe204436f05a38c02b9a68797f623cc"
+  },
+  {
+    "file": "hit64/graph.resources",
+    "bytes": 8,
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "file": "hit64/graph.strings",
+    "bytes": 1339,
+    "sha256": "e8c81de1f8fe08daf5208a10f626b5eee9d06976444783176b15fb7e010b0f45"
+  },
+  {
+    "file": "hit64/graph.strings.identity",
+    "bytes": 32,
+    "sha256": "b15196bb2b6c43da48e0660a4235b47d303b14409ab63bd3973e5a6876edc8db"
+  },
+  {
+    "file": "hit64/graph.typeindex",
+    "bytes": 728,
+    "sha256": "cd7016a069f22358dfab6778e2f2fe90b075f5ae9c9068016f649799a46eff5c"
+  }
+]

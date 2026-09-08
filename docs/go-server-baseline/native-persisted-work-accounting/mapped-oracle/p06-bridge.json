@@ -1,0 +1,18 @@
+{
+  "cases": [
+    {
+      "name": "M04-P06-reference-hit64-bad-caller_name",
+      "priorCase": "P06-retained-projection-bad-caller_name",
+      "commonOperationEqual": true,
+      "differences": []
+    },
+    {
+      "name": "M04-P06-reference-hit64-bad-callee_name",
+      "priorCase": "P06-retained-projection-bad-callee_name",
+      "commonOperationEqual": true,
+      "differences": []
+    }
+  ],
+  "priorCaptureSHA256": "c31af696a17f1a22fc13c652126021a5dc58b0d153a5172c57918e8b8c6a61bb",
+  "excludedNewField": "storage[].mappedViewUnavailable"
+}

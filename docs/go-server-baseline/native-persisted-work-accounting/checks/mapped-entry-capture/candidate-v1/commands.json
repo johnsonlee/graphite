@@ -1,0 +1,39 @@
+[
+  {
+    "phase": "plain",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "-v",
+      "-run",
+      "^TestMappedEntryCapture$",
+      "./internal/query"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T13:37:10.083801+00:00",
+    "endUTC": "2026-09-08T13:37:15.552725+00:00"
+  },
+  {
+    "phase": "instrumented",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "-v",
+      "-run",
+      "^TestMappedEntryCapture$",
+      "-vet=off",
+      "-overlay",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/overlay.json",
+      "-tags",
+      "mapped_entry_instrumented",
+      "./internal/query"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T13:37:15.553228+00:00",
+    "endUTC": "2026-09-08T13:37:19.319213+00:00"
+  }
+]

@@ -1,0 +1,88 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "commands": [
+    {
+      "phase": "javap",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+        "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+        "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+        "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+        "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:23:25.353878+00:00",
+      "endUTC": "2026-09-08T11:23:25.489109+00:00"
+    },
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-accounting-v2/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/LeadingWorkFixture.java",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/PersistedWorkOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:23:25.489435+00:00",
+      "endUTC": "2026-09-08T11:23:25.900288+00:00"
+    },
+    {
+      "phase": "prepare",
+      "command": [
+        "/usr/bin/python3",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/prepare.py",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-accounting-v2/variants"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:23:25.900610+00:00",
+      "endUTC": "2026-09-08T11:23:25.976968+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-accounting-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "PersistedWorkOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-accounting-v2/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-accounting-v2/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:23:31.132801+00:00",
+      "endUTC": "2026-09-08T11:23:33.323293+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "LeadingWorkFixture.class",
+      "bytes": 8981,
+      "sha256": "c9e957d09ea6f398c47f61fcbd793f87b86dea22f860c9d999a92b3432385869"
+    },
+    {
+      "file": "PersistedWorkOracle$State.class",
+      "bytes": 6499,
+      "sha256": "928fa12f66f37a03b6dc3fc29f7114cc329c9f07e667ee01a032f0e3d533bd2f"
+    },
+    {
+      "file": "PersistedWorkOracle.class",
+      "bytes": 17232,
+      "sha256": "8c1cd9d4d471aa28b419db8a789827044bd04d2187e674e14f0fd2782e554b86"
+    }
+  ],
+  "fixtureAudit": {
+    "originalFiles": 33335,
+    "changed": [],
+    "added": [],
+    "missing": []
+  },
+  "performanceMeasurements": 0
+}

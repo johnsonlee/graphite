@@ -1,0 +1,38 @@
+=== RUN   TestDistinctSplitRawWorker
+=== RUN   TestDistinctSplitRawWorker/early-limit
+=== RUN   TestDistinctSplitRawWorker/last-hit
+=== RUN   TestDistinctSplitRawWorker/miss
+=== RUN   TestDistinctSplitRawWorker/last-flush-budget
+=== RUN   TestDistinctSplitRawWorker/bad-first-SID
+=== RUN   TestDistinctSplitRawWorker/bad-last-SID
+=== RUN   TestDistinctSplitRawWorker/finally-budget-overrides-bad-SID
+=== RUN   TestDistinctSplitRawWorker/full-batch-budget-before-bad-SID
+=== RUN   TestDistinctSplitRawWorker/preinterrupt
+=== RUN   TestDistinctSplitRawWorker/next-poll-before-last-bad-SID
+=== RUN   TestDistinctSplitRawWorker/sibling-abort-before-worker-poll
+=== RUN   TestDistinctSplitRawWorker/unused-bad-SID-and-selected-filter
+=== RUN   TestDistinctSplitRawWorker/duplicate-alias-preserves-storage-tuple
+=== RUN   TestDistinctSplitRawWorker/callback-first-cause-overrides-decode
+=== RUN   TestDistinctSplitRawWorker/shared-states-concurrent-segments
+--- PASS: TestDistinctSplitRawWorker (0.29s)
+    --- PASS: TestDistinctSplitRawWorker/early-limit (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/last-hit (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/miss (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/last-flush-budget (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/bad-first-SID (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/bad-last-SID (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/finally-budget-overrides-bad-SID (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/full-batch-budget-before-bad-SID (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/preinterrupt (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/next-poll-before-last-bad-SID (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/sibling-abort-before-worker-poll (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/unused-bad-SID-and-selected-filter (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/duplicate-alias-preserves-storage-tuple (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/callback-first-cause-overrides-decode (0.01s)
+    --- PASS: TestDistinctSplitRawWorker/shared-states-concurrent-segments (0.02s)
+=== RUN   TestDistinctSplitCannotMatch
+--- PASS: TestDistinctSplitCannotMatch (0.01s)
+=== RUN   TestDistinctSplitStringUTF16
+--- PASS: TestDistinctSplitStringUTF16 (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.548s

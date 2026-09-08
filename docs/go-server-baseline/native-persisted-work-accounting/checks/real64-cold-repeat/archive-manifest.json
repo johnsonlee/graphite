@@ -1,0 +1,97 @@
+{
+  "performanceMeasurements": 0,
+  "terminalRuntimeCount": 1,
+  "comparisonsMustBeReadSeparately": true,
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/cold-comparison.json",
+      "sourceBytes": 1697,
+      "sourceSHA256": "d16ffbe78b79a4484f06d16bcf4f9e0070a4386477ac4dbeb1fb92f6f306897f",
+      "archive": "cold-comparison.json",
+      "archiveBytes": 1697,
+      "archiveSHA256": "d16ffbe78b79a4484f06d16bcf4f9e0070a4386477ac4dbeb1fb92f6f306897f",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/controller.json",
+      "sourceBytes": 531,
+      "sourceSHA256": "3c933e59c674b71af4f81a1b19a7a5f50b73348576308f43de7d9c5aba6f12ec",
+      "archive": "controller.json",
+      "archiveBytes": 531,
+      "archiveSHA256": "3c933e59c674b71af4f81a1b19a7a5f50b73348576308f43de7d9c5aba6f12ec",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/module-source.json",
+      "sourceBytes": 368519,
+      "sourceSHA256": "ada7f855907309a7b2f9dc602027029dce3ee2235aac254addc36cb4133b8687",
+      "archive": "module-source.json",
+      "archiveBytes": 368519,
+      "archiveSHA256": "ada7f855907309a7b2f9dc602027029dce3ee2235aac254addc36cb4133b8687",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/native-cold/responses.jsonl",
+      "sourceBytes": 97903444,
+      "sourceSHA256": "c29e38a40419913810ec2746acb21850f7a62b171f917e5d5d43c762bc056a15",
+      "archive": "native-cold/responses.jsonl.gz",
+      "archiveBytes": 3272342,
+      "archiveSHA256": "9520ee80028a7c38a8d766808ad3ade8c2527b6b9c12b6cf9b6015b09763b44a",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/native-cold-inputs.json",
+      "sourceBytes": 67755,
+      "sourceSHA256": "5d1dc0996c19bc11dba25dcde93cc1d70c311e9e3220c6ae1c460f8c70ae6272",
+      "archive": "native-cold-inputs.json",
+      "archiveBytes": 67755,
+      "archiveSHA256": "5d1dc0996c19bc11dba25dcde93cc1d70c311e9e3220c6ae1c460f8c70ae6272",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/native-cold-postrun-fixtures.json",
+      "sourceBytes": 241,
+      "sourceSHA256": "7525005d7a05a5d06a2aa50102c7af52bb00e285b6a1fe3513c20018117e5409",
+      "archive": "native-cold-postrun-fixtures.json",
+      "archiveBytes": 241,
+      "archiveSHA256": "7525005d7a05a5d06a2aa50102c7af52bb00e285b6a1fe3513c20018117e5409",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/native-cold-preflight.json",
+      "sourceBytes": 241,
+      "sourceSHA256": "7525005d7a05a5d06a2aa50102c7af52bb00e285b6a1fe3513c20018117e5409",
+      "archive": "native-cold-preflight.json",
+      "archiveBytes": 241,
+      "archiveSHA256": "7525005d7a05a5d06a2aa50102c7af52bb00e285b6a1fe3513c20018117e5409",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/native-cold-process.json",
+      "sourceBytes": 1433,
+      "sourceSHA256": "adec112b42906b32adddfa56711452d1a11f8c36a65a513f77e693fd81b68030",
+      "archive": "native-cold-process.json",
+      "archiveBytes": 1433,
+      "archiveSHA256": "adec112b42906b32adddfa56711452d1a11f8c36a65a513f77e693fd81b68030",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/native-cold-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "archive": "native-cold-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1/verify-cold.log",
+      "sourceBytes": 2112,
+      "sourceSHA256": "e0450c54357d6744f63a1bde79f82d8b95a03f74eebe99e47e52d719ed8bcbcd",
+      "archive": "verify-cold.log",
+      "archiveBytes": 2112,
+      "archiveSHA256": "e0450c54357d6744f63a1bde79f82d8b95a03f74eebe99e47e52d719ed8bcbcd",
+      "decompressedBytesEqual": true
+    }
+  ]
+}

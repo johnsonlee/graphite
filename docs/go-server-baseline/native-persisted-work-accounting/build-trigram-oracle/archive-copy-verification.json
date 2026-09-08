@@ -1,0 +1,245 @@
+{
+  "copied": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/classes/BuildTrigramOracle$State.class",
+      "file": "main-capture/classes/BuildTrigramOracle$State.class",
+      "bytes": 7409,
+      "sha256": "8a630aa171a3c56208eb61aa719ba6a260c088454919bc78930164c1592f7bd6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/classes/BuildTrigramOracle.class",
+      "file": "main-capture/classes/BuildTrigramOracle.class",
+      "bytes": 17226,
+      "sha256": "68a493b8b22303347521246c53275e26e15d3f4d3dfcb18e48dfa0155185d7e9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/commands.json",
+      "file": "main-capture/commands.json",
+      "bytes": 2749,
+      "sha256": "437a6b8c1430e4d49f6bfad83ecc2c6a1d06ac62f4ea29fcd2ed7971cf25bd99"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixture-after.json.gz",
+      "file": "main-capture/fixture-after.json.gz",
+      "bytes": 21979,
+      "sha256": "49d6c90d1af8197259c260430238e0dba85e8eeba2d8c11f60a2256b6f2934c2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixture-audit.json",
+      "file": "main-capture/fixture-audit.json",
+      "bytes": 599,
+      "sha256": "9c1848529ffe50bf333ceedd52f2b70d5342049141721f9002f8215a479c45b9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixture-before.json.gz",
+      "file": "main-capture/fixture-before.json.gz",
+      "bytes": 21964,
+      "sha256": "17938066ab902e24f4768c83844fc5d3c3bfb67db69fdc290b7d4bad3329fa4a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixture-variants.json",
+      "file": "main-capture/fixture-variants.json",
+      "bytes": 4909,
+      "sha256": "9d88f8b91ef64caaf18e7a461c044b5dce0447d23c7acdca8a6b9ceeabfc705d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures.tar.gz",
+      "file": "main-capture/fixtures.tar.gz",
+      "bytes": 8290,
+      "sha256": "734a5e7ecf853aa9a44c928159d4c7d2a499e4704210bedce7096543727bf6c4"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/inputs.json",
+      "file": "main-capture/inputs.json",
+      "bytes": 4809,
+      "sha256": "eec96ee217d7d057501f0e2678b72e7cd66411e18ce07404ccb4dc530bcd8f1d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/javap.stderr",
+      "file": "main-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/javap.stdout",
+      "file": "main-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/main.json",
+      "file": "main-capture/main.json",
+      "bytes": 5693841,
+      "sha256": "edea482414c126f59de5a2331c7c95ba3b4743c3bbc5eca7da85d96d69cd5662"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/mutations.json",
+      "file": "main-capture/mutations.json",
+      "bytes": 447,
+      "sha256": "70ebfda8a4aba79a3501bb55c363c4dd1a1d281c1d1dc3b695d8b1a12c308747"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/prepare.stderr",
+      "file": "main-capture/prepare.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/prepare.stdout",
+      "file": "main-capture/prepare.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/receipt.json",
+      "file": "main-capture/receipt.json",
+      "bytes": 3994,
+      "sha256": "437966f0daf2aac44fc6c6dccde396a708823056353370abd886d83a494bffad"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/run.stderr",
+      "file": "main-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/run.stdout",
+      "file": "main-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/classes/BuildTrigramOracle$State.class",
+      "file": "repeat-capture/classes/BuildTrigramOracle$State.class",
+      "bytes": 7409,
+      "sha256": "8a630aa171a3c56208eb61aa719ba6a260c088454919bc78930164c1592f7bd6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/classes/BuildTrigramOracle.class",
+      "file": "repeat-capture/classes/BuildTrigramOracle.class",
+      "bytes": 17226,
+      "sha256": "68a493b8b22303347521246c53275e26e15d3f4d3dfcb18e48dfa0155185d7e9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/commands.json",
+      "file": "repeat-capture/commands.json",
+      "bytes": 2749,
+      "sha256": "a9d3ed65791e67916d655cb8bc8c1ac174639284d31198e242a9a8286b5c4894"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixture-after.json.gz",
+      "file": "repeat-capture/fixture-after.json.gz",
+      "bytes": 21979,
+      "sha256": "670e9d0b539c56483bb78ac3bd298c8aa426250905a40116af22f23ecd76f91e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixture-audit.json",
+      "file": "repeat-capture/fixture-audit.json",
+      "bytes": 599,
+      "sha256": "9c1848529ffe50bf333ceedd52f2b70d5342049141721f9002f8215a479c45b9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixture-before.json.gz",
+      "file": "repeat-capture/fixture-before.json.gz",
+      "bytes": 21964,
+      "sha256": "809760aef8829be5f09cb31dd1f15007eda895f4040f5c0d3549dd51cca2c917"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixture-variants.json",
+      "file": "repeat-capture/fixture-variants.json",
+      "bytes": 4909,
+      "sha256": "9d88f8b91ef64caaf18e7a461c044b5dce0447d23c7acdca8a6b9ceeabfc705d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures.tar.gz",
+      "file": "repeat-capture/fixtures.tar.gz",
+      "bytes": 8268,
+      "sha256": "4299e275c0b96aacccc309178ac5923c48ec40716338a6def73e7e1b79487084"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "bytes": 4809,
+      "sha256": "eec96ee217d7d057501f0e2678b72e7cd66411e18ce07404ccb4dc530bcd8f1d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/javap.stderr",
+      "file": "repeat-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/javap.stdout",
+      "file": "repeat-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/main.json",
+      "file": "repeat-capture/main.json",
+      "bytes": 5693841,
+      "sha256": "edea482414c126f59de5a2331c7c95ba3b4743c3bbc5eca7da85d96d69cd5662"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/mutations.json",
+      "file": "repeat-capture/mutations.json",
+      "bytes": 447,
+      "sha256": "70ebfda8a4aba79a3501bb55c363c4dd1a1d281c1d1dc3b695d8b1a12c308747"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/prepare.stderr",
+      "file": "repeat-capture/prepare.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/prepare.stdout",
+      "file": "repeat-capture/prepare.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "bytes": 3994,
+      "sha256": "907ad06b18ea8b5d93b0eb89e14ccb801cc374e29d95f81a77762b3c0e65c54b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/run.stderr",
+      "file": "repeat-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/run.stdout",
+      "file": "repeat-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "allCopiedBytesVerified": true
+}

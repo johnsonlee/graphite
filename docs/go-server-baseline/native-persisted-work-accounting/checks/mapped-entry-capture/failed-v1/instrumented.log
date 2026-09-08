@@ -1,0 +1,5 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query
+# [github.com/johnsonlee/graphite/graphite-server/internal/query]
+vet: internal/query/mapped_entry_observer_instrumented_test.go:9:2: undefined: mappedEntryConsumeObserver
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

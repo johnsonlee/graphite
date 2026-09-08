@@ -1,0 +1,14 @@
+{
+  "pid": 32521,
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "-count=1",
+    "-v",
+    "-run",
+    "^Test(MainMapped|MainStringMappedColdWarmDemandAndCancellation)",
+    "./internal/store",
+    "./internal/query"
+  ]
+}

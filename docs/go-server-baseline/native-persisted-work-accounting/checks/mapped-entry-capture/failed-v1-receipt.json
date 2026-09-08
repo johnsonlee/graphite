@@ -1,0 +1,10 @@
+{
+  "external": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-baseline-v1",
+  "controllerTerminal": true,
+  "controllerExitCode": 1,
+  "plainCaptureComplete": true,
+  "instrumentedCaptureComplete": false,
+  "failurePhase": "Go1.22 implicit vet",
+  "failure": "undefined: mappedEntryConsumeObserver in tagged test; temporary symbol added by compiler overlay",
+  "followup": "Disable implicit vet only for instrumented capture; ordinary plain and production vet remain unchanged."
+}

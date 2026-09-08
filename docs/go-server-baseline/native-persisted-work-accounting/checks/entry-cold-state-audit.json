@@ -1,0 +1,5475 @@
+{
+  "scope": "Bounded read-only cold-state audit; no source or acceptance changes",
+  "inputArchives": {
+    "main": {
+      "path": "docs/go-server-baseline/native64-fullcase-replay/main-cold-complete/responses.jsonl.gz",
+      "sha256": "ec5a289455443d1c09a8c33abf4ebda9acadf958532c17e3fbf373e970a0777f"
+    },
+    "v2": {
+      "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/cursor-real64-cold/native-cold/responses.jsonl.gz",
+      "sha256": "9520ee80028a7c38a8d766808ad3ade8c2527b6b9c12b6cf9b6015b09763b44a"
+    },
+    "v3": {
+      "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/scheduler-real64/evidence/native-cold/responses.jsonl.gz",
+      "sha256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97"
+    },
+    "v4": {
+      "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/entry-first-real64-cold/native-cold/responses.jsonl.gz",
+      "sha256": "1e9bb345f33e8fd81246f094bd7bca11c9c3f7c338cd6508b03c27d7637e0349"
+    }
+  },
+  "caseCounts": {
+    "main": 1267,
+    "v2": 1267,
+    "v3": 1267,
+    "v4": 1267
+  },
+  "case3Id": "single-contains-unlabeled-dense",
+  "comparisons": {
+    "main-v4": {
+      "publicDifferences": [],
+      "stateDifferences": {
+        "mappedRangeCount": 15162
+      },
+      "graphs": {
+        "fixture-android-03": 2527,
+        "fixture-android-04": 2527,
+        "fixture-android-05": 2527,
+        "fixture-android-06": 2527,
+        "fixture-android-07": 2527,
+        "fixture-android-08": 2527
+      },
+      "first": {
+        "observation": "replay/3/after",
+        "graph": "fixture-android-03",
+        "field": "mappedRangeCount",
+        "main": 6,
+        "v4": 0
+      },
+      "observations": 162304
+    },
+    "v3-v4": {
+      "publicDifferences": [],
+      "stateDifferences": {
+        "mappedRangeCount": 15162
+      },
+      "graphs": {
+        "fixture-android-03": 2527,
+        "fixture-android-04": 2527,
+        "fixture-android-05": 2527,
+        "fixture-android-06": 2527,
+        "fixture-android-07": 2527,
+        "fixture-android-08": 2527
+      },
+      "first": {
+        "observation": "replay/3/after",
+        "graph": "fixture-android-03",
+        "field": "mappedRangeCount",
+        "v3": 6,
+        "v4": 0
+      },
+      "observations": 162304
+    },
+    "v2-v4": {
+      "publicDifferences": [],
+      "stateDifferences": {
+        "mappedRangeCount": 5054
+      },
+      "graphs": {
+        "fixture-android-02": 2527,
+        "fixture-android-08": 2527
+      },
+      "first": {
+        "observation": "replay/3/after",
+        "graph": "fixture-android-02",
+        "field": "mappedRangeCount",
+        "v2": 0,
+        "v4": 7
+      },
+      "observations": 162304
+    }
+  },
+  "case3EveryGraph": [
+    {
+      "graph": "fixture-android-00",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1024,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": true,
+          "mappedView": true,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 1024,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1024,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": true,
+          "mappedView": true,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 1024,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1024,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": true,
+          "mappedView": true,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 1024,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1024,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": true,
+          "mappedView": true,
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "mappedRangeCount": 1024,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-01",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 4,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 4,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 4,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 4,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-02",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 7,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 7,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 7,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-03",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 6,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 6,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-04",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 7,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 7,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-05",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-06",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 5,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 5,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-07",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 5,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 5,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-08",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 4,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 4,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 4,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-09",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-10",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-11",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-12",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-13",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-14",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-android-15",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-00",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-01",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-02",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-03",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-04",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-05",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-06",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-07",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-08",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-09",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-10",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-11",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-12",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-13",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-14",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-tika-15",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-00",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-01",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-02",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-03",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-04",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-05",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-06",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-07",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-08",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-09",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-10",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-11",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-12",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-13",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-14",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-hive-15",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-00",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-01",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-02",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-03",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-04",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-05",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-06",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-07",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-08",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-09",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-10",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-11",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-12",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-13",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-14",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    },
+    {
+      "graph": "fixture-kotlin-compiler-15",
+      "main": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v2": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v3": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      },
+      "v4": {
+        "before": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        },
+        "after": {
+          "retained": false,
+          "mappedView": true,
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "rawMatchCount": 0,
+          "rawProjectionCount": 0
+        }
+      }
+    }
+  ],
+  "real64RegressionPassed": false,
+  "performanceMeasurements": 0,
+  "nativeFullRawComparisons": {
+    "v2-v4": {
+      "records": 1269,
+      "allRawFieldDifferenceCounts": {
+        "/after/*/mappedRangeCount": 2528,
+        "/before/*/mappedRangeCount": 2526
+      },
+      "firstRecordByPath": {
+        "/after/*/mappedRangeCount": 5,
+        "/before/*/mappedRangeCount": 6
+      }
+    },
+    "v3-v4": {
+      "records": 1269,
+      "allRawFieldDifferenceCounts": {
+        "/after/*/mappedRangeCount": 7584,
+        "/before/*/mappedRangeCount": 7578
+      },
+      "firstRecordByPath": {
+        "/after/*/mappedRangeCount": 5,
+        "/before/*/mappedRangeCount": 6
+      }
+    }
+  },
+  "oldFrozenV3ColdRepeatSupplement": {
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/scheduler-cold-repeat",
+    "responseSHA256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97",
+    "rawNativeRecordsEqualV3": 1269,
+    "mainComparedCaseCount": 1267,
+    "mainComparedGraphStateObservations": 162304,
+    "mainDeclaredPublicAndStateDifferences": 0,
+    "excludedObserverDifferences": [
+      {
+        "record": 823,
+        "index": 821,
+        "main": "java.lang.IllegalStateException",
+        "native": null
+      }
+    ],
+    "moduleManifestFilesEqualOriginalV3": 2568,
+    "sourceVerificationReceipt": {
+      "originalModuleUnchanged": true,
+      "frozenModuleUnchanged": true,
+      "moduleFiles": 2568,
+      "controllerExitCode": 0,
+      "performanceMeasurements": 0
+    },
+    "controller": [
+      {
+        "state": "cold",
+        "command": [
+          "python3",
+          "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+          "native",
+          "cold"
+        ],
+        "exitCode": 1,
+        "verifyCommand": [
+          "python3",
+          "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+          "cold"
+        ],
+        "verifyExitCode": 0
+      }
+    ],
+    "doesNotChangeV4FailedConclusion": true
+  }
+}

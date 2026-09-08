@@ -1,0 +1,10 @@
+[
+  {
+    "path": "graphite-server/internal/store/projection_node.go",
+    "sha256": "a560857181ec6b8b029005a715e4cd847330fa5ea6a43ea98c0aafcc23da244d"
+  },
+  {
+    "path": "graphite-server/internal/store/projection_enum_test.go",
+    "sha256": "51b6b4843d5312c302a2008165f856ba27da40292f3fd6998269ec7d167292f8"
+  }
+]

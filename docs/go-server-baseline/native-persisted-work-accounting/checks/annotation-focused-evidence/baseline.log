@@ -1,0 +1,67 @@
+=== RUN   TestProjectionAnnotationActualMainPairConsumption
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/candidate
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/candidate/clean
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-bad-tail
+    projection_annotation_test.go:47: node=store.Node{ID:26, Kind:"AnnotationNode", Value:interface {}(nil), Name:"Annotation", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"", EnumName:"", EnumArguments:[]interface {}(nil), ClassName:"Example", MemberName:"run", Values:map[string]interface {}{}, ValueOrder:[]string{}, Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false err=&errors.errorString{s:"invalid collection count 2147483647 (104 bytes remain)"}; want SID 28/list 21
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-bad-sid-0
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-bad-sid-1
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-bad-sid-2
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-invalid-value-tag
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/main-ordinary
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/main-ordinary/clean
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-bad-tail
+    projection_annotation_test.go:47: node=store.Node{ID:26, Kind:"AnnotationNode", Value:interface {}(nil), Name:"Annotation", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"", EnumName:"", EnumArguments:[]interface {}(nil), ClassName:"Example", MemberName:"run", Values:map[string]interface {}{}, ValueOrder:[]string{}, Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false err=&errors.errorString{s:"invalid collection count 2147483647 (104 bytes remain)"}; want SID 28/list 21
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-bad-sid-0
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-bad-sid-1
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-bad-sid-2
+=== RUN   TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-invalid-value-tag
+--- FAIL: TestProjectionAnnotationActualMainPairConsumption (0.16s)
+    --- FAIL: TestProjectionAnnotationActualMainPairConsumption/candidate (0.09s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/candidate/clean (0.02s)
+        --- FAIL: TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-bad-tail (0.02s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-bad-sid-0 (0.01s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-bad-sid-1 (0.01s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-bad-sid-2 (0.01s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/candidate/annotation-invalid-value-tag (0.01s)
+    --- FAIL: TestProjectionAnnotationActualMainPairConsumption/main-ordinary (0.07s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/main-ordinary/clean (0.01s)
+        --- FAIL: TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-bad-tail (0.01s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-bad-sid-0 (0.01s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-bad-sid-1 (0.01s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-bad-sid-2 (0.01s)
+        --- PASS: TestProjectionAnnotationActualMainPairConsumption/main-ordinary/annotation-invalid-value-tag (0.01s)
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/candidate/empty-0
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/candidate/empty--1
+    projection_annotation_test.go:137: count=-1 node=store.Node{ID:26, Kind:"AnnotationNode", Value:interface {}(nil), Name:"Annotation", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"", EnumName:"", EnumArguments:[]interface {}(nil), ClassName:"Example", MemberName:"run", Values:map[string]interface {}{}, ValueOrder:[]string{}, Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false err=invalid collection count -1 (104 bytes remain)
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/candidate/empty--2147483648
+    projection_annotation_test.go:137: count=-2147483648 node=store.Node{ID:26, Kind:"AnnotationNode", Value:interface {}(nil), Name:"Annotation", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"", EnumName:"", EnumArguments:[]interface {}(nil), ClassName:"Example", MemberName:"run", Values:map[string]interface {}{}, ValueOrder:[]string{}, Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false err=invalid collection count -2147483648 (104 bytes remain)
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/candidate/duplicate-key
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/candidate/key-before-value
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/empty-0
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/empty--1
+    projection_annotation_test.go:137: count=-1 node=store.Node{ID:26, Kind:"AnnotationNode", Value:interface {}(nil), Name:"Annotation", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"", EnumName:"", EnumArguments:[]interface {}(nil), ClassName:"Example", MemberName:"run", Values:map[string]interface {}{}, ValueOrder:[]string{}, Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false err=invalid collection count -1 (104 bytes remain)
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/empty--2147483648
+    projection_annotation_test.go:137: count=-2147483648 node=store.Node{ID:26, Kind:"AnnotationNode", Value:interface {}(nil), Name:"Annotation", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"", EnumName:"", EnumArguments:[]interface {}(nil), ClassName:"Example", MemberName:"run", Values:map[string]interface {}{}, ValueOrder:[]string{}, Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false err=invalid collection count -2147483648 (104 bytes remain)
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/duplicate-key
+=== RUN   TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/key-before-value
+--- FAIL: TestProjectionAnnotationSignedCountAndMapOrder (0.12s)
+    --- PASS: TestProjectionAnnotationSignedCountAndMapOrder/candidate/empty-0 (0.01s)
+    --- FAIL: TestProjectionAnnotationSignedCountAndMapOrder/candidate/empty--1 (0.01s)
+    --- FAIL: TestProjectionAnnotationSignedCountAndMapOrder/candidate/empty--2147483648 (0.01s)
+    --- PASS: TestProjectionAnnotationSignedCountAndMapOrder/candidate/duplicate-key (0.01s)
+    --- PASS: TestProjectionAnnotationSignedCountAndMapOrder/candidate/key-before-value (0.01s)
+    --- PASS: TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/empty-0 (0.01s)
+    --- FAIL: TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/empty--1 (0.01s)
+    --- FAIL: TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/empty--2147483648 (0.01s)
+    --- PASS: TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/duplicate-key (0.01s)
+    --- PASS: TestProjectionAnnotationSignedCountAndMapOrder/main-ordinary/key-before-value (0.01s)
+=== RUN   TestProjectionAnnotationLegacyValueContract
+=== RUN   TestProjectionAnnotationLegacyValueContract/candidate
+=== RUN   TestProjectionAnnotationLegacyValueContract/main-ordinary
+--- PASS: TestProjectionAnnotationLegacyValueContract (0.02s)
+    --- PASS: TestProjectionAnnotationLegacyValueContract/candidate (0.01s)
+    --- PASS: TestProjectionAnnotationLegacyValueContract/main-ordinary (0.01s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/store	0.683s
+FAIL

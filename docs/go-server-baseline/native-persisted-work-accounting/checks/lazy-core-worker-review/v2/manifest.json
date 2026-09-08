@@ -1,0 +1,15 @@
+{
+  "files": {
+    "focused-start.json": "dceb9c4edb916ee0d3027acd5f92a7fd0e09df5972b01716e2a98f3ed358cf22",
+    "main_fixed_workers_test.go": "6790f97f35bbf31ed82fd4c549ae62901d1ebd3b48e964d6d5b7a524b00ea371",
+    "run-focused.py": "c06363df84c8119f999e7018b2c9c4c575369a93ad0e88c1623862f640cf3209",
+    "lazy-first-task.patch": "1b06321e870c05dbdfbe538d41bc86b036bb887d59acfca7edd5ab97e4ab7084",
+    "focused-terminal.json": "c657ff2797f599560cd8519ed61c4c6cf69108056f0d79c281f2033dcbbf827c",
+    "main_fixed_workers.go": "18748857606af60bc785f0051004dc7be87c137eae30629581d1d0501efbface",
+    "source-files.json": "8eb6b760a31da6db90b0e97e74cbedde521c1b38f95ea72ae0b94da4c19b758f",
+    "focused.log": "ab15b1d8e613c2783e2b2dcf4629e79000bb01d70be5f31e4d477659684243b6"
+  },
+  "uniqueTopLevelPassed": 14,
+  "totalTopLevelPasses": 42,
+  "performanceMeasurement": false
+}

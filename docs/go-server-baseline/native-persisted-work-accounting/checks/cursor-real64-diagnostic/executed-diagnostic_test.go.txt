@@ -1,0 +1,139 @@
+package query
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+)
+
+// Private query/storage observation only: no public-query or timing claim.
+func TestCursorReal64Diagnostic(t *testing.T) {
+	var input struct {
+		Query  string
+		Graphs []struct {
+			ID, Path string
+			V2Before map[string]any
+		}
+	}
+	b, err := os.ReadFile(os.Getenv("CURSOR_DIAGNOSTIC_INPUT"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(b, &input); err != nil {
+		t.Fatal(err)
+	}
+	records := []map[string]any{}
+	for _, spec := range input.Graphs {
+		record := map[string]any{"id": spec.ID, "fixture": spec.Path, "query": input.Query, "sourceCount": 64, "limit": 200, "executionContext": nil, "localCancellation": false, "v2Case3Before": spec.V2Before}
+		records = append(records, record)
+		func() {
+			var graph *store.Store
+			defer func() {
+				if graph != nil {
+					state, stateErr := graph.StringPropertyIndexes(context.Background())
+					record["finalBeforeClose"] = state
+					record["finalStateError"] = cursorDiagnosticError(stateErr)
+					record["closeError"] = cursorDiagnosticError(graph.Close())
+				}
+				if failure := recover(); failure != nil {
+					record["failure"] = cursorDiagnosticError(failure)
+				}
+			}()
+			var err error
+			record["stage"] = "open"
+			graph, err = store.OpenMode(spec.Path, "MAPPED")
+			if err != nil {
+				panic(err)
+			}
+			snapshot := func(label string) {
+				state, err := graph.StringPropertyIndexes(context.Background())
+				if err != nil {
+					panic(err)
+				}
+				record[label] = state
+			}
+			snapshot("loaded")
+			record["stage"] = "prepare-mapped-view"
+			index, available, err := graph.PrepareDistinctStringIndex(context.Background(), store.DistinctProjectionOptions{MainSource: true, SourceCount: 40, Limit: 200, InitializeMappedView: true})
+			if err != nil {
+				panic(err)
+			}
+			record["mappedPreparationAvailable"] = available
+			snapshot("prepared")
+			if index == nil {
+				return
+			}
+			record["mainMappedCapability"] = index.MainMappedCapability()
+			source := Graph{ID: spec.ID, Store: graph}
+			plan := &mainStringSourceSpec{lazyMain: true, generic: true, sourceCount: 64, atoms: []distinctStringAtom{{property: "caller_class", op: "CONTAINS", term: "java"}}}
+			e := evaluator{ctx: context.Background()}
+			record["stage"] = "exact-matching-probe"
+			exact, supported := e.mainExactMatches(source, index, plan)
+			record["exactSupported"] = supported
+			matching := []map[string]any{}
+			for _, set := range exact {
+				for _, sid := range mainSortedStringIDs(set) {
+					matching = append(matching, map[string]any{"stringID": sid, "text": graph.Strings[sid]})
+				}
+			}
+			record["exactMatchingStrings"] = matching
+			snapshot("afterExactProbe")
+			// The explicit exact probe above is diagnostic. The actual candidate
+			// constructor below recomputes its own matches with the original API.
+			record["stage"] = "candidate-construction"
+			next := e.mainCandidateIterator(source, plan, 200)
+			snapshot("afterIteratorConstruction")
+			ids := []int32{}
+			nodes := []map[string]any{}
+			record["ids"] = ids
+			record["nodes"] = nodes
+			digest := sha256.New()
+			record["stage"] = "candidate-iteration"
+			for {
+				node, present := next(context.Background())
+				if !present {
+					record["eof"] = true
+					break
+				}
+				encoded, err := json.Marshal(node)
+				if err != nil {
+					panic(err)
+				}
+				sum := sha256.Sum256(encoded)
+				digest.Write(encoded)
+				digest.Write([]byte{'\n'})
+				ids = append(ids, node.ID)
+				nodes = append(nodes, map[string]any{"id": node.ID, "kind": node.Kind, "callerClass": NodeProperty(node, "caller_class"), "nodeJSONBytes": len(encoded), "nodeJSONSHA256": hex.EncodeToString(sum[:])})
+				record["ids"] = ids
+				record["nodes"] = nodes
+			}
+			record["allNodeJSONLinesSHA256"] = hex.EncodeToString(digest.Sum(nil))
+			snapshot("afterIteration")
+			record["stage"] = "complete"
+		}()
+	}
+	output := map[string]any{"kind": "private-mainCandidateIterator-diagnostic", "publicQuery": false, "performanceMeasurement": false, "records": records}
+	b, err = json.MarshalIndent(output, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(os.Getenv("CURSOR_DIAGNOSTIC_OUTPUT"), append(b, '\n'), 0600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func cursorDiagnosticError(value any) any {
+	if value == nil {
+		return nil
+	}
+	if e, ok := value.(*Error); ok {
+		return map[string]any{"type": fmt.Sprintf("%T", value), "class": e.Class, "message": e.JavaMessage()}
+	}
+	return map[string]any{"type": fmt.Sprintf("%T", value), "message": fmt.Sprint(value)}
+}

@@ -1,0 +1,13 @@
+{
+  "pid": 33413,
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-count=1",
+    "-v",
+    "-timeout=30m",
+    "-run",
+    "^TestCursorReal64Diagnostic$",
+    "./internal/query"
+  ]
+}

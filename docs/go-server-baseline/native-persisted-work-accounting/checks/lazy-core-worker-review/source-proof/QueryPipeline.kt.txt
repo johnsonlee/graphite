@@ -1,0 +1,101 @@
+153: private val directStringExecutorParallelism: Int by lazy {
+154:     resolveDirectStringExecutorParallelism(configuredGraphWorkers = configuredDirectStringParallelism)
+155: }
+156: private val directStringExecutor by lazy {
+157:     Executors.newFixedThreadPool(directStringExecutorParallelism) { runnable ->
+158:         Thread(runnable, "graphite-cypher-scan-${directStringWorkerNumber.incrementAndGet()}").apply {
+159:             isDaemon = true
+160:         }
+161:     }
+162: }
+
+2572:     private fun <T> runDirectStringTasksWithFixedWorkersInOrderUntil(
+2573:         tasks: List<() -> T>,
+2574:         parallelism: Int,
+2575:         stopAfter: (T) -> Boolean
+2576:     ) {
+2577:         if (tasks.isEmpty()) return
+2578:         data class Outcome<T>(val index: Int, val value: T? = null, val error: Throwable? = null)
+2579: 
+2580:         val workerCount = minOf(tasks.size, parallelism.coerceAtLeast(1))
+2581:         val taskIndexes = LinkedBlockingQueue<Int>()
+2582:         val outcomes = LinkedBlockingQueue<Outcome<T>>()
+2583:         val completions = List(workerCount) { CountDownLatch(1) }
+2584:         val started = List(workerCount) { AtomicBoolean() }
+2585:         val futures = completions.mapIndexed { index, completion ->
+2586:             val taskStarted = started[index]
+2587:             directStringExecutor.submit {
+2588:                 if (!taskStarted.compareAndSet(false, true)) return@submit
+2589:                 val previouslyActive = directStringWorkerActive.get()
+2590:                 directStringWorkerActive.set(true)
+2591:                 val activeWorkers = directStringActiveWorkers.incrementAndGet()
+2592:                 directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
+2593:                 try {
+2594:                     while (true) {
+2595:                         val taskIndex = taskIndexes.take()
+2596:                         if (taskIndex < 0) break
+2597:                         val outcome = try {
+2598:                             Outcome(taskIndex, value = tasks[taskIndex]())
+2599:                         } catch (error: Throwable) {
+2600:                             Outcome(taskIndex, error = error)
+2601:                         }
+2602:                         // The storage call may preserve the worker's interrupted status while
+2603:                         // throwing cancellation. Publishing to this unbounded queue must therefore
+2604:                         // be non-interruptible, or the coordinator can wait forever for this index.
+2605:                         outcomes.add(outcome)
+2606:                         if (outcome.error != null) return@submit
+2607:                     }
+2608:                 } finally {
+2609:                     directStringActiveWorkers.decrementAndGet()
+2610:                     if (previouslyActive) {
+2611:                         directStringWorkerActive.set(true)
+2612:                     } else {
+2613:                         directStringWorkerActive.remove()
+2614:                     }
+2615:                     completion.countDown()
+2616:                 }
+2617:             }
+2618:         }
+2619:         fun stopWorkers(cancel: Boolean) {
+2620:             if (cancel) {
+2621:                 futures.forEachIndexed { index, future ->
+2622:                     if (future.cancel(true) && started[index].compareAndSet(false, true)) {
+2623:                         completions[index].countDown()
+2624:                     }
+2625:                 }
+2626:             } else {
+2627:                 repeat(workerCount) { taskIndexes.add(-1) }
+2628:             }
+2629:             awaitDirectStringTasks(completions)
+2630:         }
+2631: 
+2632:         var nextTask = 0
+2633:         repeat(workerCount) { taskIndexes.add(nextTask++) }
+2634:         try {
+2635:             val completed = arrayOfNulls<Outcome<T>>(tasks.size)
+2636:             var nextResult = 0
+2637:             while (nextResult < tasks.size) {
+2638:                 val outcome = outcomes.take()
+2639:                 completed[outcome.index] = outcome
+2640:                 while (nextResult < tasks.size) {
+2641:                     val ordered = completed[nextResult] ?: break
+2642:                     ordered.error?.let { throw it }
+2643:                     @Suppress("UNCHECKED_CAST")
+2644:                     if (stopAfter(ordered.value as T)) {
+2645:                         stopWorkers(cancel = true)
+2646:                         return
+2647:                     }
+2648:                     nextResult++
+2649:                     if (nextTask < tasks.size) taskIndexes.add(nextTask++)
+2650:                 }
+2651:             }
+2652:             stopWorkers(cancel = false)
+2653:         } catch (error: Throwable) {
+2654:             stopWorkers(cancel = true)
+2655:             val cause = (error as? ExecutionException)?.cause ?: error
+2656:             when (cause) {
+2657:                 is RuntimeException -> throw cause
+2658:                 is Error -> throw cause
+2659:                 else -> throw IllegalStateException("Parallel graph scan failed", cause)
+2660:             }
+2661:         }

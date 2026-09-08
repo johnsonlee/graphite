@@ -1,0 +1,49 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-fullchecks-v1/artifacts.json",
+      "sourceSHA256": "7a8cd6e79bbf02f2043790420af4b4b20322a8700d4bc2d65092e0d7eccab6bf",
+      "archive": "artifacts.json",
+      "archiveSHA256": "7a8cd6e79bbf02f2043790420af4b4b20322a8700d4bc2d65092e0d7eccab6bf",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-fullchecks-v1/context.log",
+      "sourceSHA256": "ae25ecf16786fd2925ecc8d4b39ab6e10ba359144a0edb120bd23977879f80f1",
+      "archive": "context.log.gz",
+      "archiveSHA256": "a6e6e7f4f78a19ff8cb38fd659529f995ea23c46c54d7cd5073f55f9ea54c3da",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-fullchecks-v1/inputs.json",
+      "sourceSHA256": "5ed5320ddb98750b2fb02899693279d282f298db498f731c4a340dd114570c2c",
+      "archive": "inputs.json",
+      "archiveSHA256": "5ed5320ddb98750b2fb02899693279d282f298db498f731c4a340dd114570c2c",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-fullchecks-v1/race.log",
+      "sourceSHA256": "e4d36a202115d119bba42ff47450f42faabc9c5c48bb4fa9533ac881fef0e931",
+      "archive": "race.log.gz",
+      "archiveSHA256": "63eb8d585da67a7d1aaf163114a39b239dcf1c22c094bb07ab61de559bd1e91a",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-fullchecks-v1/receipt.json",
+      "sourceSHA256": "843a31be5d8156f81ae09437e8e3e4527ef35dfb90b462451b65d65cf5aefa73",
+      "archive": "receipt.json",
+      "archiveSHA256": "843a31be5d8156f81ae09437e8e3e4527ef35dfb90b462451b65d65cf5aefa73",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-fullchecks-v1/vet.log",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "vet.log.gz",
+      "archiveSHA256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytesVerified": true
+    }
+  ],
+  "passedAllSteps": true,
+  "unexecutedSteps": [],
+  "performanceMeasurements": 0
+}

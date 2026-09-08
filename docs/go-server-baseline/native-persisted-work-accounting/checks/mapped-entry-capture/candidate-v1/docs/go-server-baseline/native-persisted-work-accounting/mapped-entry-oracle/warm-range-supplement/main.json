@@ -1,0 +1,4158 @@
+{
+  "javaVersion": "17.0.18",
+  "scope": "actual public storage method and actual main consumer factory; not public Cypher or benchmark",
+  "cases": [
+    {
+      "spec": {
+        "name": "E09-warm-mapped-range-entry-interrupt",
+        "warmup": "mapped-hit",
+        "term": "hit",
+        "limit": 2,
+        "preInterrupted": true,
+        "action": "none",
+        "budget": "1000000"
+      },
+      "warmup": {
+        "term": "hit",
+        "limit": 2,
+        "budget": "1000000",
+        "preInterrupted": false,
+        "callbackAction": "none",
+        "consumerClass": "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer",
+        "preferredMapped": true,
+        "split": true,
+        "segmentWorkerCount": 8,
+        "factorySourceCount": 40,
+        "steps": [
+          {
+            "phase": "sequence-construction",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 0
+              },
+              "remaining": "1000000",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": false,
+              "mappedPostingRangeValidationCount": 0,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 0,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "sequenceReturned": true
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "iterator-construction",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "iteratorReturned": true
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "hasNext-0",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": true,
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "next-0",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "node": {
+                "id": 74,
+                "caller": {
+                  "declaringClass": {
+                    "className": "Neutral",
+                    "typeArguments": []
+                  },
+                  "name": "hit-64",
+                  "parameterTypes": [],
+                  "returnType": {
+                    "className": "Neutral",
+                    "typeArguments": []
+                  }
+                },
+                "callee": {
+                  "declaringClass": {
+                    "className": "Neutral",
+                    "typeArguments": []
+                  },
+                  "name": "hit-64",
+                  "parameterTypes": [],
+                  "returnType": {
+                    "className": "Neutral",
+                    "typeArguments": []
+                  }
+                },
+                "lineNumber": null,
+                "receiver": null,
+                "arguments": []
+              },
+              "nodeId": 74,
+              "nodeClass": "io.johnsonlee.graphite.core.CallSiteNode"
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "hasNext-1",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": false,
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          }
+        ],
+        "callbacks": [
+          {
+            "phase": "sequence-construction",
+            "ordinal": 1,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 0
+              },
+              "remaining": "1000000",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1
+              },
+              "remaining": "999999",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 2,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1
+              },
+              "remaining": "999999",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 2
+              },
+              "remaining": "999998",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 3,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 2
+              },
+              "remaining": "999998",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 3
+              },
+              "remaining": "999997",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 4,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 3
+              },
+              "remaining": "999997",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 4
+              },
+              "remaining": "999996",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 5,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 4
+              },
+              "remaining": "999996",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 5
+              },
+              "remaining": "999995",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 6,
+            "units": 32,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 5
+              },
+              "remaining": "999995",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 37
+              },
+              "remaining": "999963",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 7,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 37
+              },
+              "remaining": "999963",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 38
+              },
+              "remaining": "999962",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 8,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 38
+              },
+              "remaining": "999962",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 39
+              },
+              "remaining": "999961",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 9,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 39
+              },
+              "remaining": "999961",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 40
+              },
+              "remaining": "999960",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 10,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 40
+              },
+              "remaining": "999960",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 41
+              },
+              "remaining": "999959",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 11,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 41
+              },
+              "remaining": "999959",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 42
+              },
+              "remaining": "999958",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 12,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 42
+              },
+              "remaining": "999958",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 43
+              },
+              "remaining": "999957",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 13,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 43
+              },
+              "remaining": "999957",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 44
+              },
+              "remaining": "999956",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 14,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 44
+              },
+              "remaining": "999956",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 45
+              },
+              "remaining": "999955",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 15,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 45
+              },
+              "remaining": "999955",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 173
+              },
+              "remaining": "999827",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 16,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 173
+              },
+              "remaining": "999827",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 301
+              },
+              "remaining": "999699",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 17,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 301
+              },
+              "remaining": "999699",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 429
+              },
+              "remaining": "999571",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 18,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 429
+              },
+              "remaining": "999571",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 557
+              },
+              "remaining": "999443",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 19,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 557
+              },
+              "remaining": "999443",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 558
+              },
+              "remaining": "999442",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 20,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 558
+              },
+              "remaining": "999442",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 559
+              },
+              "remaining": "999441",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 21,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 559
+              },
+              "remaining": "999441",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 687
+              },
+              "remaining": "999313",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 22,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 687
+              },
+              "remaining": "999313",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 815
+              },
+              "remaining": "999185",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 23,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 815
+              },
+              "remaining": "999185",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 943
+              },
+              "remaining": "999057",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 24,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 943
+              },
+              "remaining": "999057",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1071
+              },
+              "remaining": "998929",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 25,
+            "units": 129,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1071
+              },
+              "remaining": "998929",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1200
+              },
+              "remaining": "998800",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 26,
+            "units": 662,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1200
+              },
+              "remaining": "998800",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1862
+              },
+              "remaining": "998138",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 27,
+            "units": 2,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1862
+              },
+              "remaining": "998138",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1864
+              },
+              "remaining": "998136",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 28,
+            "units": 7,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1864
+              },
+              "remaining": "998136",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1871
+              },
+              "remaining": "998129",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 29,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1871
+              },
+              "remaining": "998129",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "hasNext-0",
+            "ordinal": 30,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          }
+        ],
+        "before": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "1000000",
+          "signalCancelled": false,
+          "signalReason": null,
+          "threadInterrupted": false
+        },
+        "storageBefore": {
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "mappedPostingRangeValidationCount": 0,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 0,
+          "callSiteStringIndexLookupCount": 0,
+          "isCallSiteTrigramIndexInitialized": false,
+          "isCallSiteStringIndexLoadedFromPersistence": false,
+          "mappedViewUnavailable": false,
+          "retainedPreference": false,
+          "matchingStringIdsCount": null,
+          "matchingNodeIdsCount": null,
+          "projectedRowsCount": null
+        },
+        "outcome": "SUCCESS",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 1873
+          },
+          "remaining": "998127",
+          "signalCancelled": false,
+          "signalReason": null,
+          "threadInterrupted": false
+        },
+        "storageAfter": {
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": true,
+          "mappedPostingRangeValidationCount": 1,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "isCallSiteTrigramIndexInitialized": false,
+          "isCallSiteStringIndexLoadedFromPersistence": false,
+          "mappedViewUnavailable": false,
+          "retainedPreference": false,
+          "matchingStringIdsCount": null,
+          "matchingNodeIdsCount": null,
+          "projectedRowsCount": null
+        },
+        "clearedThreadInterruptedForIsolation": false
+      },
+      "probe": {
+        "term": "hit",
+        "limit": 2,
+        "budget": "1000000",
+        "preInterrupted": true,
+        "callbackAction": "none",
+        "consumerClass": "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer",
+        "preferredMapped": true,
+        "split": true,
+        "segmentWorkerCount": 8,
+        "factorySourceCount": 40,
+        "steps": [
+          {
+            "phase": "sequence-construction",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 0
+              },
+              "remaining": "1000000",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "sequenceReturned": true
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "iterator-construction",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "iteratorReturned": true
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "hasNext-0",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "FAILED",
+            "errorClass": "java.util.concurrent.CancellationException",
+            "message": "Mapped CallSite string index view interrupted",
+            "stack": [
+              "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.checkViewInterrupted(MappedCallSiteStringIndexView.kt:551)",
+              "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.access$checkViewInterrupted(MappedCallSiteStringIndexView.kt:1)",
+              "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$matchingNodeIds$2.invokeSuspend(MappedCallSiteStringIndexView.kt:144)",
+              "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+              "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+              "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+              "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+              "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+              "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+              "MappedEntryOracle.lambda$lookup$4(MappedEntryOracle.java:49)",
+              "MappedEntryOracle.step(MappedEntryOracle.java:41)",
+              "MappedEntryOracle.lookup(MappedEntryOracle.java:49)",
+              "MappedEntryOracle.main(MappedEntryOracle.java:59)"
+            ],
+            "sameAsCallbackFailure": false,
+            "sameAsSignalReason": false,
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          }
+        ],
+        "callbacks": [
+          {
+            "phase": "sequence-construction",
+            "ordinal": 1,
+            "units": 2,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 0
+              },
+              "remaining": "1000000",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 2
+              },
+              "remaining": "999998",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 2,
+            "units": 7,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 2
+              },
+              "remaining": "999998",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            }
+          }
+        ],
+        "before": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "1000000",
+          "signalCancelled": false,
+          "signalReason": null,
+          "threadInterrupted": false
+        },
+        "storageBefore": {
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": true,
+          "mappedPostingRangeValidationCount": 1,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "isCallSiteTrigramIndexInitialized": false,
+          "isCallSiteStringIndexLoadedFromPersistence": false,
+          "mappedViewUnavailable": false,
+          "retainedPreference": false,
+          "matchingStringIdsCount": null,
+          "matchingNodeIdsCount": null,
+          "projectedRowsCount": null
+        },
+        "outcome": "FAILED",
+        "errorClass": "java.util.concurrent.CancellationException",
+        "message": "Mapped CallSite string index view interrupted",
+        "stack": [
+          "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.checkViewInterrupted(MappedCallSiteStringIndexView.kt:551)",
+          "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.access$checkViewInterrupted(MappedCallSiteStringIndexView.kt:1)",
+          "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$matchingNodeIds$2.invokeSuspend(MappedCallSiteStringIndexView.kt:144)",
+          "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+          "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+          "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+          "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+          "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+          "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+          "MappedEntryOracle.lambda$lookup$4(MappedEntryOracle.java:49)",
+          "MappedEntryOracle.step(MappedEntryOracle.java:41)",
+          "MappedEntryOracle.lookup(MappedEntryOracle.java:49)",
+          "MappedEntryOracle.main(MappedEntryOracle.java:59)"
+        ],
+        "sameAsCallbackFailure": false,
+        "sameAsSignalReason": false,
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 9
+          },
+          "remaining": "999991",
+          "signalCancelled": false,
+          "signalReason": null,
+          "threadInterrupted": true
+        },
+        "storageAfter": {
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": true,
+          "mappedPostingRangeValidationCount": 1,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 2,
+          "callSiteStringIndexLookupCount": 0,
+          "isCallSiteTrigramIndexInitialized": false,
+          "isCallSiteStringIndexLoadedFromPersistence": false,
+          "mappedViewUnavailable": false,
+          "retainedPreference": false,
+          "matchingStringIdsCount": null,
+          "matchingNodeIdsCount": null,
+          "projectedRowsCount": null
+        },
+        "clearedThreadInterruptedForIsolation": true
+      },
+      "beforeClose": {
+        "isCallSiteStringIndexInitialized": false,
+        "isMappedCallSiteStringIndexViewInitialized": true,
+        "mappedPostingRangeValidationCount": 1,
+        "rawStringMatchStateCount": 0,
+        "rawProjectionMatchCount": 0,
+        "callSiteParallelScanCount": 0,
+        "callSiteStringLookupEntryCount": 2,
+        "callSiteStringIndexLookupCount": 0,
+        "isCallSiteTrigramIndexInitialized": false,
+        "isCallSiteStringIndexLoadedFromPersistence": false,
+        "mappedViewUnavailable": false,
+        "retainedPreference": false,
+        "matchingStringIdsCount": null,
+        "matchingNodeIdsCount": null,
+        "projectedRowsCount": null
+      },
+      "afterClose": {
+        "isCallSiteStringIndexInitialized": false,
+        "isMappedCallSiteStringIndexViewInitialized": false,
+        "mappedPostingRangeValidationCount": 0,
+        "rawStringMatchStateCount": 0,
+        "rawProjectionMatchCount": 0,
+        "callSiteParallelScanCount": 0,
+        "callSiteStringLookupEntryCount": 2,
+        "callSiteStringIndexLookupCount": 0,
+        "isCallSiteTrigramIndexInitialized": false,
+        "isCallSiteStringIndexLoadedFromPersistence": false,
+        "mappedViewUnavailable": false,
+        "retainedPreference": false,
+        "matchingStringIdsCount": null,
+        "matchingNodeIdsCount": null,
+        "projectedRowsCount": null
+      }
+    },
+    {
+      "spec": {
+        "name": "E10-warm-mapped-range-callback-interrupt",
+        "warmup": "mapped-hit",
+        "term": "hit",
+        "limit": 2,
+        "preInterrupted": false,
+        "action": "interrupt-after-first",
+        "budget": "1000000"
+      },
+      "warmup": {
+        "term": "hit",
+        "limit": 2,
+        "budget": "1000000",
+        "preInterrupted": false,
+        "callbackAction": "none",
+        "consumerClass": "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer",
+        "preferredMapped": true,
+        "split": true,
+        "segmentWorkerCount": 8,
+        "factorySourceCount": 40,
+        "steps": [
+          {
+            "phase": "sequence-construction",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 0
+              },
+              "remaining": "1000000",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": false,
+              "mappedPostingRangeValidationCount": 0,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 0,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "sequenceReturned": true
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "iterator-construction",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "iteratorReturned": true
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "hasNext-0",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": true,
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "next-0",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "node": {
+                "id": 74,
+                "caller": {
+                  "declaringClass": {
+                    "className": "Neutral",
+                    "typeArguments": []
+                  },
+                  "name": "hit-64",
+                  "parameterTypes": [],
+                  "returnType": {
+                    "className": "Neutral",
+                    "typeArguments": []
+                  }
+                },
+                "callee": {
+                  "declaringClass": {
+                    "className": "Neutral",
+                    "typeArguments": []
+                  },
+                  "name": "hit-64",
+                  "parameterTypes": [],
+                  "returnType": {
+                    "className": "Neutral",
+                    "typeArguments": []
+                  }
+                },
+                "lineNumber": null,
+                "receiver": null,
+                "arguments": []
+              },
+              "nodeId": 74,
+              "nodeClass": "io.johnsonlee.graphite.core.CallSiteNode"
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "hasNext-1",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": false,
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          }
+        ],
+        "callbacks": [
+          {
+            "phase": "sequence-construction",
+            "ordinal": 1,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 0
+              },
+              "remaining": "1000000",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1
+              },
+              "remaining": "999999",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 2,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1
+              },
+              "remaining": "999999",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 2
+              },
+              "remaining": "999998",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 3,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 2
+              },
+              "remaining": "999998",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 3
+              },
+              "remaining": "999997",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 4,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 3
+              },
+              "remaining": "999997",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 4
+              },
+              "remaining": "999996",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 5,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 4
+              },
+              "remaining": "999996",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 5
+              },
+              "remaining": "999995",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 6,
+            "units": 32,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 5
+              },
+              "remaining": "999995",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 37
+              },
+              "remaining": "999963",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 7,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 37
+              },
+              "remaining": "999963",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 38
+              },
+              "remaining": "999962",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 8,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 38
+              },
+              "remaining": "999962",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 39
+              },
+              "remaining": "999961",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 9,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 39
+              },
+              "remaining": "999961",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 40
+              },
+              "remaining": "999960",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 10,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 40
+              },
+              "remaining": "999960",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 41
+              },
+              "remaining": "999959",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 11,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 41
+              },
+              "remaining": "999959",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 42
+              },
+              "remaining": "999958",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 12,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 42
+              },
+              "remaining": "999958",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 43
+              },
+              "remaining": "999957",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 13,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 43
+              },
+              "remaining": "999957",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 44
+              },
+              "remaining": "999956",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 14,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 44
+              },
+              "remaining": "999956",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 45
+              },
+              "remaining": "999955",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 15,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 45
+              },
+              "remaining": "999955",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 173
+              },
+              "remaining": "999827",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 16,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 173
+              },
+              "remaining": "999827",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 301
+              },
+              "remaining": "999699",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 17,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 301
+              },
+              "remaining": "999699",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 429
+              },
+              "remaining": "999571",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 18,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 429
+              },
+              "remaining": "999571",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 557
+              },
+              "remaining": "999443",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 19,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 557
+              },
+              "remaining": "999443",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 558
+              },
+              "remaining": "999442",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 20,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 558
+              },
+              "remaining": "999442",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 559
+              },
+              "remaining": "999441",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 21,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 559
+              },
+              "remaining": "999441",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 687
+              },
+              "remaining": "999313",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 22,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 687
+              },
+              "remaining": "999313",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 815
+              },
+              "remaining": "999185",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 23,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 815
+              },
+              "remaining": "999185",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 943
+              },
+              "remaining": "999057",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 24,
+            "units": 128,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 943
+              },
+              "remaining": "999057",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1071
+              },
+              "remaining": "998929",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 25,
+            "units": 129,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1071
+              },
+              "remaining": "998929",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1200
+              },
+              "remaining": "998800",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 26,
+            "units": 662,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1200
+              },
+              "remaining": "998800",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1862
+              },
+              "remaining": "998138",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 27,
+            "units": 2,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1862
+              },
+              "remaining": "998138",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1864
+              },
+              "remaining": "998136",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 28,
+            "units": 7,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1864
+              },
+              "remaining": "998136",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1871
+              },
+              "remaining": "998129",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 29,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1871
+              },
+              "remaining": "998129",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          },
+          {
+            "phase": "hasNext-0",
+            "ordinal": 30,
+            "units": 1,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1872
+              },
+              "remaining": "998128",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 1873
+              },
+              "remaining": "998127",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            }
+          }
+        ],
+        "before": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "1000000",
+          "signalCancelled": false,
+          "signalReason": null,
+          "threadInterrupted": false
+        },
+        "storageBefore": {
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "mappedPostingRangeValidationCount": 0,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 0,
+          "callSiteStringIndexLookupCount": 0,
+          "isCallSiteTrigramIndexInitialized": false,
+          "isCallSiteStringIndexLoadedFromPersistence": false,
+          "mappedViewUnavailable": false,
+          "retainedPreference": false,
+          "matchingStringIdsCount": null,
+          "matchingNodeIdsCount": null,
+          "projectedRowsCount": null
+        },
+        "outcome": "SUCCESS",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 1873
+          },
+          "remaining": "998127",
+          "signalCancelled": false,
+          "signalReason": null,
+          "threadInterrupted": false
+        },
+        "storageAfter": {
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": true,
+          "mappedPostingRangeValidationCount": 1,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "isCallSiteTrigramIndexInitialized": false,
+          "isCallSiteStringIndexLoadedFromPersistence": false,
+          "mappedViewUnavailable": false,
+          "retainedPreference": false,
+          "matchingStringIdsCount": null,
+          "matchingNodeIdsCount": null,
+          "projectedRowsCount": null
+        },
+        "clearedThreadInterruptedForIsolation": false
+      },
+      "probe": {
+        "term": "hit",
+        "limit": 2,
+        "budget": "1000000",
+        "preInterrupted": false,
+        "callbackAction": "interrupt-after-first",
+        "consumerClass": "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer",
+        "preferredMapped": true,
+        "split": true,
+        "segmentWorkerCount": 8,
+        "factorySourceCount": 40,
+        "steps": [
+          {
+            "phase": "sequence-construction",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 0
+              },
+              "remaining": "1000000",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 1,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "sequenceReturned": true
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "iterator-construction",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "SUCCESS",
+            "value": {
+              "iteratorReturned": true
+            },
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          },
+          {
+            "phase": "hasNext-0",
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageBefore": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            },
+            "outcome": "FAILED",
+            "errorClass": "java.util.concurrent.CancellationException",
+            "message": "Mapped CallSite string index view interrupted",
+            "stack": [
+              "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.checkViewInterrupted(MappedCallSiteStringIndexView.kt:551)",
+              "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.access$checkViewInterrupted(MappedCallSiteStringIndexView.kt:1)",
+              "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$matchingNodeIds$2.invokeSuspend(MappedCallSiteStringIndexView.kt:144)",
+              "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+              "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+              "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+              "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+              "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+              "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+              "MappedEntryOracle.lambda$lookup$4(MappedEntryOracle.java:49)",
+              "MappedEntryOracle.step(MappedEntryOracle.java:41)",
+              "MappedEntryOracle.lookup(MappedEntryOracle.java:49)",
+              "MappedEntryOracle.main(MappedEntryOracle.java:59)"
+            ],
+            "sameAsCallbackFailure": false,
+            "sameAsSignalReason": false,
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "storageAfter": {
+              "isCallSiteStringIndexInitialized": false,
+              "isMappedCallSiteStringIndexViewInitialized": true,
+              "mappedPostingRangeValidationCount": 1,
+              "rawStringMatchStateCount": 0,
+              "rawProjectionMatchCount": 0,
+              "callSiteParallelScanCount": 0,
+              "callSiteStringLookupEntryCount": 2,
+              "callSiteStringIndexLookupCount": 0,
+              "isCallSiteTrigramIndexInitialized": false,
+              "isCallSiteStringIndexLoadedFromPersistence": false,
+              "mappedViewUnavailable": false,
+              "retainedPreference": false,
+              "matchingStringIdsCount": null,
+              "matchingNodeIdsCount": null,
+              "projectedRowsCount": null
+            }
+          }
+        ],
+        "callbacks": [
+          {
+            "phase": "sequence-construction",
+            "ordinal": 1,
+            "units": 2,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 0
+              },
+              "remaining": "1000000",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": false
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 2
+              },
+              "remaining": "999998",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            }
+          },
+          {
+            "phase": "sequence-construction",
+            "ordinal": 2,
+            "units": 7,
+            "before": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 2
+              },
+              "remaining": "999998",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            },
+            "outcome": "SUCCESS",
+            "after": {
+              "diagnostics": {
+                "graphIdSourceSelections": 0,
+                "graphIdSourcePruningExecutions": 0,
+                "graphIdSourcesPruned": 0,
+                "graphIdSourceConflicts": 0,
+                "fastPathExecutions": 0,
+                "filteredNodeLimitFastPathExecutions": 0,
+                "generalFallbackExecutions": 0,
+                "workUnitsConsumed": 9
+              },
+              "remaining": "999991",
+              "signalCancelled": false,
+              "signalReason": null,
+              "threadInterrupted": true
+            }
+          }
+        ],
+        "before": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "1000000",
+          "signalCancelled": false,
+          "signalReason": null,
+          "threadInterrupted": false
+        },
+        "storageBefore": {
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": true,
+          "mappedPostingRangeValidationCount": 1,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "isCallSiteTrigramIndexInitialized": false,
+          "isCallSiteStringIndexLoadedFromPersistence": false,
+          "mappedViewUnavailable": false,
+          "retainedPreference": false,
+          "matchingStringIdsCount": null,
+          "matchingNodeIdsCount": null,
+          "projectedRowsCount": null
+        },
+        "outcome": "FAILED",
+        "errorClass": "java.util.concurrent.CancellationException",
+        "message": "Mapped CallSite string index view interrupted",
+        "stack": [
+          "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.checkViewInterrupted(MappedCallSiteStringIndexView.kt:551)",
+          "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.access$checkViewInterrupted(MappedCallSiteStringIndexView.kt:1)",
+          "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$matchingNodeIds$2.invokeSuspend(MappedCallSiteStringIndexView.kt:144)",
+          "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+          "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+          "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+          "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+          "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+          "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+          "MappedEntryOracle.lambda$lookup$4(MappedEntryOracle.java:49)",
+          "MappedEntryOracle.step(MappedEntryOracle.java:41)",
+          "MappedEntryOracle.lookup(MappedEntryOracle.java:49)",
+          "MappedEntryOracle.main(MappedEntryOracle.java:59)"
+        ],
+        "sameAsCallbackFailure": false,
+        "sameAsSignalReason": false,
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 9
+          },
+          "remaining": "999991",
+          "signalCancelled": false,
+          "signalReason": null,
+          "threadInterrupted": true
+        },
+        "storageAfter": {
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": true,
+          "mappedPostingRangeValidationCount": 1,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 2,
+          "callSiteStringIndexLookupCount": 0,
+          "isCallSiteTrigramIndexInitialized": false,
+          "isCallSiteStringIndexLoadedFromPersistence": false,
+          "mappedViewUnavailable": false,
+          "retainedPreference": false,
+          "matchingStringIdsCount": null,
+          "matchingNodeIdsCount": null,
+          "projectedRowsCount": null
+        },
+        "clearedThreadInterruptedForIsolation": true
+      },
+      "beforeClose": {
+        "isCallSiteStringIndexInitialized": false,
+        "isMappedCallSiteStringIndexViewInitialized": true,
+        "mappedPostingRangeValidationCount": 1,
+        "rawStringMatchStateCount": 0,
+        "rawProjectionMatchCount": 0,
+        "callSiteParallelScanCount": 0,
+        "callSiteStringLookupEntryCount": 2,
+        "callSiteStringIndexLookupCount": 0,
+        "isCallSiteTrigramIndexInitialized": false,
+        "isCallSiteStringIndexLoadedFromPersistence": false,
+        "mappedViewUnavailable": false,
+        "retainedPreference": false,
+        "matchingStringIdsCount": null,
+        "matchingNodeIdsCount": null,
+        "projectedRowsCount": null
+      },
+      "afterClose": {
+        "isCallSiteStringIndexInitialized": false,
+        "isMappedCallSiteStringIndexViewInitialized": false,
+        "mappedPostingRangeValidationCount": 0,
+        "rawStringMatchStateCount": 0,
+        "rawProjectionMatchCount": 0,
+        "callSiteParallelScanCount": 0,
+        "callSiteStringLookupEntryCount": 2,
+        "callSiteStringIndexLookupCount": 0,
+        "isCallSiteTrigramIndexInitialized": false,
+        "isCallSiteStringIndexLoadedFromPersistence": false,
+        "mappedViewUnavailable": false,
+        "retainedPreference": false,
+        "matchingStringIdsCount": null,
+        "matchingNodeIdsCount": null,
+        "projectedRowsCount": null
+      }
+    }
+  ],
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "performanceMeasurements": 0
+}

@@ -1,0 +1,19 @@
+{
+  "originalModuleFiles": 2575,
+  "currentModuleFiles": 2575,
+  "productionFilesUnchanged": true,
+  "changedFiles": [
+    "internal/query/lazy_filtered_slot_test.go",
+    "internal/query/projection_context_test.go"
+  ],
+  "exactChangesAreOnlyTwoObservedFunctionNames": true,
+  "assertionsUnchanged": true,
+  "fullCheckV6": {
+    "context": 0,
+    "race": 1,
+    "vet": "unexecuted"
+  },
+  "focusedV3ExitCode": 0,
+  "candidateV2ProductionAndCaptureAdapterStillExact": true,
+  "performanceMeasurements": 0
+}

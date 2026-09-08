@@ -1,0 +1,37 @@
+{
+  "runtime": "native",
+  "state": "startup-prepared",
+  "performanceMeasurement": false,
+  "buildCommand": [
+    "go",
+    "build",
+    "-o",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-startup-prepared-64-filtered-count-attempt21-persisted-work-f0838dda-enum-v1/graphite-benchmark-replay",
+    "./cmd/graphite-benchmark-replay"
+  ],
+  "binarySHA256": "b32e779393c2927db06538c2cdf6f7f6754a3d226ed914f1413fcf58dfbc4bc8",
+  "goEnvironment": [
+    "go1.22.0",
+    "/opt/homebrew/Cellar/go/1.22.0/libexec",
+    "darwin",
+    "arm64"
+  ],
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-startup-prepared-64-filtered-count-attempt21-persisted-work-f0838dda-enum-v1/graphite-benchmark-replay",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-startup-prepared-64-filtered-count-attempt21-persisted-work-f0838dda-enum-v1/fixture/graphs-relocated.tsv",
+    "--state",
+    "startup-prepared",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-source-v1/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-real64-v1/native-startup-prepared/responses.jsonl"
+  ],
+  "status": "exited",
+  "pid": 42424,
+  "startedAt": "2026-09-08T14:43:44.662349+00:00",
+  "exitCode": 1,
+  "finishedAt": "2026-09-08T14:44:50.715271+00:00",
+  "inputsUnchanged": true,
+  "binaryUnchanged": true
+}

@@ -1,0 +1,141 @@
+{
+  "externalSource": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-real64-diagnostic-v1",
+  "copiedRawFiles": [
+    {
+      "file": "clones-after.json",
+      "bytes": 17004,
+      "sha256": "f3b4562c31877050fbe0e1b467dacee85f810f475659a7d48858541dffedd60a"
+    },
+    {
+      "file": "clones-before.json",
+      "bytes": 17004,
+      "sha256": "f3b4562c31877050fbe0e1b467dacee85f810f475659a7d48858541dffedd60a"
+    },
+    {
+      "file": "executable-module-files.json",
+      "bytes": 493053,
+      "sha256": "919f45e0eedfa2bba46c2a6d914b53be778b930b98b6125eda817c2ce7b34bcf"
+    },
+    {
+      "file": "input.json",
+      "bytes": 2928,
+      "sha256": "189ea80310a4fe340f332741c13605d841d7b5ff454a6538729aa5af704845b7"
+    },
+    {
+      "file": "original-module-files.json",
+      "bytes": 492881,
+      "sha256": "1227049e44a1833f2d41f552a5fda8d4627e12f84a175300b466df227c3dec70"
+    },
+    {
+      "file": "preflight.json",
+      "bytes": 1219,
+      "sha256": "5c11fec845094718503806c747c079908a5f34781a29094c7c7e342288f306b7"
+    },
+    {
+      "file": "prepared-state-comparison.json",
+      "bytes": 513,
+      "sha256": "3fee57ef65bff77e90e366681647687e7e2e65ab7142a73820d20d9f28e5bbf8"
+    },
+    {
+      "file": "process.json",
+      "bytes": 221,
+      "sha256": "e0f60079d28f503307d8e85e387b24b019e23b4448cfab045ad6806d8baacc04"
+    },
+    {
+      "file": "receipt.json",
+      "bytes": 1377,
+      "sha256": "31719f08e8cf586f9ece5c19da341a677113cc42831077a0d06b42c8cd373256"
+    },
+    {
+      "file": "reference-selected-after.json",
+      "bytes": 17004,
+      "sha256": "f3b4562c31877050fbe0e1b467dacee85f810f475659a7d48858541dffedd60a"
+    },
+    {
+      "file": "reference-selected-before.json",
+      "bytes": 17004,
+      "sha256": "f3b4562c31877050fbe0e1b467dacee85f810f475659a7d48858541dffedd60a"
+    },
+    {
+      "file": "result.json",
+      "bytes": 386114,
+      "sha256": "39a703b0e40c12e183e1ea9ccfd28c2577e1fd1d5b2cf4c214aed294dda86294"
+    },
+    {
+      "file": "runner.py",
+      "bytes": 6801,
+      "sha256": "384003eff6e4710b5d749937512e334c88ba804bf3c94af740a4518d91bcae57"
+    },
+    {
+      "file": "test.log",
+      "bytes": 161,
+      "sha256": "8907586c16ea0d320a992157d950a01d45d8a60a241b79b3d3f9b50844d8f5a6"
+    },
+    {
+      "file": "v2-case3.json",
+      "bytes": 106879,
+      "sha256": "17a3cdffd5acf0f4d6fec3251eb6c7c9f93dc5aaf868a01c73e8e8cea5009d93"
+    }
+  ],
+  "rawFileCount": 15,
+  "originalModuleFiles": 2563,
+  "executedModuleFiles": 2564,
+  "onlyModuleDifference": "internal/query/cursor_real64_diagnostic_test.go",
+  "executedTestSHA256": "5ed32db7c6f53061c24977d11915cae3a0498622bfde0f2bcdb93b75d7965883",
+  "actualModuleInventoriesRehashed": true,
+  "allSelectedFixtureFileCount": 108,
+  "recordedReferenceAndCloneBeforeAfterIdentical": true,
+  "affectedStateEvidenceSHA256": "ce78b38f175d47f6ba79ddf0d01b69f5ffc869cdc9d6fb64c09497fafc14c582",
+  "observations": [
+    {
+      "id": "fixture-android-02",
+      "returnedIDs": 79,
+      "exactMatchingStrings": 314,
+      "diagnosticRangeCount": 7,
+      "originalMainAfterRangeCount": 7,
+      "originalNativeAfterRangeCount": 0
+    },
+    {
+      "id": "fixture-android-03",
+      "returnedIDs": 55,
+      "exactMatchingStrings": 323,
+      "diagnosticRangeCount": 6,
+      "originalMainAfterRangeCount": 6,
+      "originalNativeAfterRangeCount": 0
+    },
+    {
+      "id": "fixture-android-04",
+      "returnedIDs": 106,
+      "exactMatchingStrings": 320,
+      "diagnosticRangeCount": 7,
+      "originalMainAfterRangeCount": 7,
+      "originalNativeAfterRangeCount": 0
+    },
+    {
+      "id": "fixture-android-05",
+      "returnedIDs": 5,
+      "exactMatchingStrings": 323,
+      "diagnosticRangeCount": 1,
+      "originalMainAfterRangeCount": 1,
+      "originalNativeAfterRangeCount": 0
+    },
+    {
+      "id": "fixture-android-06",
+      "returnedIDs": 200,
+      "exactMatchingStrings": 368,
+      "diagnosticRangeCount": 5,
+      "originalMainAfterRangeCount": 5,
+      "originalNativeAfterRangeCount": 0
+    },
+    {
+      "id": "fixture-android-07",
+      "returnedIDs": 168,
+      "exactMatchingStrings": 343,
+      "diagnosticRangeCount": 5,
+      "originalMainAfterRangeCount": 5,
+      "originalNativeAfterRangeCount": 0
+    }
+  ],
+  "scope": "Same observed state, fresh independently opened graphs, private iterator without local cancellation; not full-history or public-route parity.",
+  "runtimeExecutions": 0
+}

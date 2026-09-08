@@ -1,0 +1,47 @@
+{
+  "workspace": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite",
+  "draftOnly": true,
+  "applied": false,
+  "GoJVMBuildTestsRun": false,
+  "scope": "matching bridge candidate; cold reader protocol migration intentionally not asserted complete",
+  "inputs": [
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/indexed_distinct.go",
+      "sha256": "e890e0d64cb6334af0e4c60cc37a89dd37765679842118a86a7a9d251a9a8405"
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/main_retained_entry.go",
+      "sha256": "df6b001ba11cba54b34cb5151140cc5d7128f2b18382e6fafe79faa933b3235a"
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/ordinary_parallel.go",
+      "sha256": "eca83c4a7159d9b1b5c0ea9315c61d9ee538cab7c154df230bf75665cef1ee17"
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/ordinary_cache.go",
+      "sha256": "d28a0feb575e5323ec80500a9c754a86225774cef06f834803c51c1d9522e45b"
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/distinct_projection.go",
+      "sha256": "b96a5aef4e68bb4b62cd213dce988b887c291fb81599b0e86598aa45133a8390"
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/main_ordinary_entry.go",
+      "sha256": "022190f421442de825656f5c0a8264f47b8f0b579a5c97da2cb9e7f0f8c8fa27"
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/main_callsite_index.go",
+      "sha256": "59cc5cf3ced0a005ab367476784c614bb8abb66e9df7769d790ca1b0348e2dad"
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/main_persistent_reader.go",
+      "sha256": "496897e51589c1c5c2a165649b6311ce2170601bca1690de275f43cfcfde463d"
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/main_mapped_work_reader.go",
+      "sha256": "003aced116310b28ac4be8154c5e5117cd2900dbebc37bc8c056f508116fa80d"
+    }
+  ],
+  "patchSHA256": "26857284cb6aece533a2d7c972be9d599f554b8121a1169c71253b66473f2b77",
+  "textHunksVerifiedAgainstOriginal": true
+}

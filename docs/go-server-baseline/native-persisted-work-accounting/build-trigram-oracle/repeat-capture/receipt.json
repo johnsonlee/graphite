@@ -1,0 +1,91 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "commands": [
+    {
+      "phase": "javap",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+        "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+        "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+        "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+        "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:51:38.227387+00:00",
+      "endUTC": "2026-09-08T11:51:38.365693+00:00"
+    },
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/build-trigram-oracle/BuildTrigramOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:51:38.366032+00:00",
+      "endUTC": "2026-09-08T11:51:38.765707+00:00"
+    },
+    {
+      "phase": "prepare",
+      "command": [
+        "/usr/bin/python3",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/build-trigram-oracle/prepare.py",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/variants"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:51:38.766076+00:00",
+      "endUTC": "2026-09-08T11:51:38.812463+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "BuildTrigramOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/build-trigram-oracle/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:51:39.500268+00:00",
+      "endUTC": "2026-09-08T11:51:40.144729+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "BuildTrigramOracle$State.class",
+      "bytes": 7409,
+      "sha256": "8a630aa171a3c56208eb61aa719ba6a260c088454919bc78930164c1592f7bd6"
+    },
+    {
+      "file": "BuildTrigramOracle.class",
+      "bytes": 17226,
+      "sha256": "68a493b8b22303347521246c53275e26e15d3f4d3dfcb18e48dfa0155185d7e9"
+    }
+  ],
+  "fixtureAudit": {
+    "originalFiles": 5128,
+    "changed": [
+      "BT-bad-magic-budget258/store0/graph.callsite-string-index",
+      "BT-bad-magic-budget259/store0/graph.callsite-string-index",
+      "BT-bad-magic-budget387/store0/graph.callsite-string-index",
+      "BT-bad-magic-budget388/store0/graph.callsite-string-index",
+      "BT-bad-magic-budget516/store0/graph.callsite-string-index",
+      "BT-bad-magic-budget517/store0/graph.callsite-string-index",
+      "BT-bad-magic-budget518/store0/graph.callsite-string-index",
+      "BT-bad-magic-budget519/store0/graph.callsite-string-index"
+    ],
+    "added": [],
+    "missing": []
+  },
+  "performanceMeasurements": 0
+}

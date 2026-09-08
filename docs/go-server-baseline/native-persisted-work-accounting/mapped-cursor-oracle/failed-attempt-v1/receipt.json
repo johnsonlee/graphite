@@ -1,0 +1,7 @@
+{
+  "exitCode": 1,
+  "phase": "preflight identity enumeration",
+  "cause": "BufferedGraphWorkConsumer.kt does not exist; class is defined in MappedCallSiteStringIndex.kt",
+  "runtimeLaunched": false,
+  "external": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v1"
+}

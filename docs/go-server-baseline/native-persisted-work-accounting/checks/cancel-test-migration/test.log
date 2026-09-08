@@ -1,0 +1,61 @@
+=== RUN   TestMainIndexCancellationDoesNotPublish
+    main_callsite_index_test.go:108: mapped=false reachable Err-triggered cancellation polls=6
+=== RUN   TestMainIndexCancellationDoesNotPublish/false/1
+=== RUN   TestMainIndexCancellationDoesNotPublish/false/2
+=== RUN   TestMainIndexCancellationDoesNotPublish/false/3
+=== RUN   TestMainIndexCancellationDoesNotPublish/false/4
+=== RUN   TestMainIndexCancellationDoesNotPublish/false/5
+=== RUN   TestMainIndexCancellationDoesNotPublish/false/6
+=== RUN   TestMainIndexCancellationDoesNotPublish/false/after-last-success
+=== NAME  TestMainIndexCancellationDoesNotPublish
+    main_callsite_index_test.go:108: mapped=true reachable Err-triggered cancellation polls=19
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/1
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/2
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/3
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/4
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/5
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/6
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/7
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/8
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/9
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/10
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/11
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/12
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/13
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/14
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/15
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/16
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/17
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/18
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/19
+=== RUN   TestMainIndexCancellationDoesNotPublish/true/after-last-success
+--- PASS: TestMainIndexCancellationDoesNotPublish (0.01s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/false/1 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/false/2 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/false/3 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/false/4 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/false/5 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/false/6 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/false/after-last-success (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/1 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/2 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/3 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/4 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/5 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/6 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/7 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/8 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/9 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/10 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/11 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/12 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/13 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/14 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/15 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/16 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/17 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/18 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/19 (0.00s)
+    --- PASS: TestMainIndexCancellationDoesNotPublish/true/after-last-success (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.360s

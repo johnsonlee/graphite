@@ -1,0 +1,458 @@
+{
+  "main.json": {
+    "sha256": "3c45fe10bb660fd11f96211a85c7188ac6b429ba7147def746368c39f38cf91f",
+    "cases": [
+      {
+        "name": "enum-bad-tail-hit",
+        "spec": {
+          "name": "enum-bad-tail-hit",
+          "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+          "parameters": {
+            "term": "red"
+          },
+          "fixtures": [
+            "enum-bad-tail"
+          ],
+          "scoped": false
+        },
+        "before": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "outcome": "FAILED",
+        "error": "IndexOutOfBoundsException",
+        "errorClass": "java.lang.IndexOutOfBoundsException",
+        "message": "Index (37) is greater than or equal to list size (21)",
+        "errorUTF16": [
+          73,
+          110,
+          100,
+          101,
+          120,
+          32,
+          40,
+          51,
+          55,
+          41,
+          32,
+          105,
+          115,
+          32,
+          103,
+          114,
+          101,
+          97,
+          116,
+          101,
+          114,
+          32,
+          116,
+          104,
+          97,
+          110,
+          32,
+          111,
+          114,
+          32,
+          101,
+          113,
+          117,
+          97,
+          108,
+          32,
+          116,
+          111,
+          32,
+          108,
+          105,
+          115,
+          116,
+          32,
+          115,
+          105,
+          122,
+          101,
+          32,
+          40,
+          50,
+          49,
+          41
+        ],
+        "stack": [
+          "it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex(AbstractObjectList.java:68)",
+          "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(CharArrayFrontCodedList.java:298)",
+          "it.unimi.dsi.util.FrontCodedStringList.get(FrontCodedStringList.java:179)",
+          "io.johnsonlee.graphite.webgraph.StringTable.get(StringTable.kt:59)",
+          "io.johnsonlee.graphite.webgraph.NodeSerializer.readAnyValue(NodeSerializer.kt:837)",
+          "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:502)",
+          "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+          "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+          "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$lookupStringPropertyDisjunction$11.invokeSuspend(MappedWebGraphBackedGraph.kt:1019)",
+          "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+          "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+          "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+          "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionSerial(QueryPipeline.kt:1975)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(QueryPipeline.kt:1626)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(QueryPipeline.kt:1589)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1364)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+          "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+          "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+          "GenericDisjunctionOracle.main(GenericDisjunctionOracle.java:46)"
+        ],
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "after": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "phase": "execute"
+      },
+      {
+        "name": "enum-bad-tail-miss",
+        "spec": {
+          "name": "enum-bad-tail-miss",
+          "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+          "parameters": {
+            "term": "never-matches-generic-oracle"
+          },
+          "fixtures": [
+            "enum-bad-tail"
+          ],
+          "scoped": false
+        },
+        "before": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "n.class",
+          "n.name",
+          "n.caller_class",
+          "n.caller_name",
+          "n.callee_class",
+          "n.callee_name"
+        ],
+        "rows": [],
+        "rowsUTF16": [],
+        "outcome": "SUCCESS",
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "after": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "phase": "execute"
+      },
+      {
+        "name": "enum-bad-tail-global-miss",
+        "spec": {
+          "name": "enum-bad-tail-global-miss",
+          "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+          "parameters": {
+            "term": "never-matches-generic-oracle"
+          },
+          "fixtures": [
+            "enum-bad-tail"
+          ],
+          "scoped": false
+        },
+        "before": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "n.class",
+          "n.name",
+          "n.caller_class",
+          "n.caller_name",
+          "n.callee_class",
+          "n.callee_name"
+        ],
+        "rows": [],
+        "rowsUTF16": [],
+        "outcome": "SUCCESS",
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 14
+        },
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "phase": "execute"
+      }
+    ]
+  },
+  "repeat-main.json.gz": {
+    "sha256": "891bf0c101e67ca5540eb327d2356b7051f0fd290a16abcb3ab71f59deca8f31",
+    "cases": [
+      {
+        "name": "enum-bad-tail-hit",
+        "spec": {
+          "name": "enum-bad-tail-hit",
+          "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+          "parameters": {
+            "term": "red"
+          },
+          "fixtures": [
+            "enum-bad-tail"
+          ],
+          "scoped": false
+        },
+        "before": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "outcome": "FAILED",
+        "error": "IndexOutOfBoundsException",
+        "errorClass": "java.lang.IndexOutOfBoundsException",
+        "message": "Index (37) is greater than or equal to list size (21)",
+        "errorUTF16": [
+          73,
+          110,
+          100,
+          101,
+          120,
+          32,
+          40,
+          51,
+          55,
+          41,
+          32,
+          105,
+          115,
+          32,
+          103,
+          114,
+          101,
+          97,
+          116,
+          101,
+          114,
+          32,
+          116,
+          104,
+          97,
+          110,
+          32,
+          111,
+          114,
+          32,
+          101,
+          113,
+          117,
+          97,
+          108,
+          32,
+          116,
+          111,
+          32,
+          108,
+          105,
+          115,
+          116,
+          32,
+          115,
+          105,
+          122,
+          101,
+          32,
+          40,
+          50,
+          49,
+          41
+        ],
+        "stack": [
+          "it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex(AbstractObjectList.java:68)",
+          "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(CharArrayFrontCodedList.java:298)",
+          "it.unimi.dsi.util.FrontCodedStringList.get(FrontCodedStringList.java:179)",
+          "io.johnsonlee.graphite.webgraph.StringTable.get(StringTable.kt:59)",
+          "io.johnsonlee.graphite.webgraph.NodeSerializer.readAnyValue(NodeSerializer.kt:837)",
+          "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:502)",
+          "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+          "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+          "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$lookupStringPropertyDisjunction$11.invokeSuspend(MappedWebGraphBackedGraph.kt:1019)",
+          "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+          "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+          "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+          "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionSerial(QueryPipeline.kt:1975)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(QueryPipeline.kt:1626)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(QueryPipeline.kt:1589)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1364)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+          "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+          "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+          "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+          "GenericDisjunctionOracle.main(GenericDisjunctionOracle.java:46)"
+        ],
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "after": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "phase": "execute"
+      },
+      {
+        "name": "enum-bad-tail-miss",
+        "spec": {
+          "name": "enum-bad-tail-miss",
+          "query": "MATCH (n:EnumConstant) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+          "parameters": {
+            "term": "never-matches-generic-oracle"
+          },
+          "fixtures": [
+            "enum-bad-tail"
+          ],
+          "scoped": false
+        },
+        "before": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "n.class",
+          "n.name",
+          "n.caller_class",
+          "n.caller_name",
+          "n.callee_class",
+          "n.callee_name"
+        ],
+        "rows": [],
+        "rowsUTF16": [],
+        "outcome": "SUCCESS",
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "after": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "phase": "execute"
+      },
+      {
+        "name": "enum-bad-tail-global-miss",
+        "spec": {
+          "name": "enum-bad-tail-global-miss",
+          "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class, n.name, n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+          "parameters": {
+            "term": "never-matches-generic-oracle"
+          },
+          "fixtures": [
+            "enum-bad-tail"
+          ],
+          "scoped": false
+        },
+        "before": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "n.class",
+          "n.name",
+          "n.caller_class",
+          "n.caller_name",
+          "n.callee_class",
+          "n.callee_name"
+        ],
+        "rows": [],
+        "rowsUTF16": [],
+        "outcome": "SUCCESS",
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 14
+        },
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "phase": "execute"
+      }
+    ]
+  }
+}

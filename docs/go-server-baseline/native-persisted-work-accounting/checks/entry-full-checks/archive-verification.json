@@ -1,0 +1,49 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v7/artifacts.json",
+      "sourceSHA256": "58c8745af7455a09c7cbeda82f0854af960190355a83341c6e74ce467a26aa72",
+      "archive": "artifacts.json",
+      "archiveSHA256": "58c8745af7455a09c7cbeda82f0854af960190355a83341c6e74ce467a26aa72",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v7/context.log",
+      "sourceSHA256": "350a0a152293ff0c971249c4e44c2d4b70edf91e14d8ba134bca56a1e17dbfa3",
+      "archive": "context.log.gz",
+      "archiveSHA256": "3f5b30a333a9d1b7392a862dbf56bca0b8824e939c424d7a563e6f588f69c61a",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v7/inputs.json",
+      "sourceSHA256": "4a7d373c1f05b599c5bb81706c91c26f2ab1f83b4bd8815642bc4317f34f92dd",
+      "archive": "inputs.json",
+      "archiveSHA256": "4a7d373c1f05b599c5bb81706c91c26f2ab1f83b4bd8815642bc4317f34f92dd",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v7/race.log",
+      "sourceSHA256": "a4f911104e6a01394d88703f4c042a8cacbc9ca110f2d0f7ee74b33a3a890fa5",
+      "archive": "race.log.gz",
+      "archiveSHA256": "a369532a062552568f6e15e67e74bb7c399a102539c38c8babc7b7fcef9632df",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v7/receipt.json",
+      "sourceSHA256": "843a31be5d8156f81ae09437e8e3e4527ef35dfb90b462451b65d65cf5aefa73",
+      "archive": "receipt.json",
+      "archiveSHA256": "843a31be5d8156f81ae09437e8e3e4527ef35dfb90b462451b65d65cf5aefa73",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-checks-v7/vet.log",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "vet.log.gz",
+      "archiveSHA256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytesVerified": true
+    }
+  ],
+  "passedAllSteps": true,
+  "unexecutedSteps": [],
+  "performanceMeasurements": 0
+}

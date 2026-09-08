@@ -1,0 +1,9 @@
+{
+  "originalSHA256": "819ebc0b39fd269d12af49f70175d54c0e75f62f1ec607e490e69795e08d85bc",
+  "instrumentedSHA256": "02b4d107481a8b9da3b77efc56da48e61b17cd39e03a99dce9f1c85d35502f7d",
+  "removedObserverExactlyRestoresOriginal": true,
+  "originalConsumeBodyUnmodified": true,
+  "insertedDeclaration": "// Test-only observer declaration: exists exclusively in the frozen-copy overlay.\nvar mappedEntryConsumeObserver func(*ExecutionContext, int64, string, any)\n\n",
+  "insertedObserver": "\t// Test-only observation: preserve actual algorithm and panic instance below.\n\tif observer := mappedEntryConsumeObserver; observer != nil {\n\t\tobserver(c, units, \"before\", nil)\n\t\tdefer func() {\n\t\t\tif failure := recover(); failure != nil {\n\t\t\t\tobserver(c, units, \"after\", failure)\n\t\t\t\tpanic(failure)\n\t\t\t}\n\t\t\tobserver(c, units, \"after\", nil)\n\t\t}()\n\t}\n",
+  "scope": "actual consume calls; no injected work; original panics rethrown with identity"
+}

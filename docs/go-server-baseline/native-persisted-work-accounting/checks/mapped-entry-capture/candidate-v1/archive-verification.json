@@ -1,0 +1,199 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/adapter-inputs.json",
+      "file": "adapter-inputs.json",
+      "bytes": 329,
+      "sha256": "20c609798540942888cc4f1f1a50c506e76f6702592dc444d58161bfec05a420"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/adapter-installation.json",
+      "file": "adapter-installation.json",
+      "bytes": 180,
+      "sha256": "36b9ed0ee14315478cea8717b3f584457111dca346b09bbaaed12d553e565dd1"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/baseline-module-inputs.json",
+      "file": "baseline-module-inputs.json",
+      "bytes": 365131,
+      "sha256": "45360ced72f1206b87cfdd4883b699df36e85ee044c08f9eda29851b204ffe46"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/commands.json",
+      "file": "commands.json",
+      "bytes": 916,
+      "sha256": "745379ebd613abc8385af2917ce11520f124cf0b3c8540dffcf2095e84bf876d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/fixtures.tar.gz",
+      "file": "docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/fixtures.tar.gz",
+      "bytes": 6151,
+      "sha256": "59b4c9ac321c8aa4bba2b487ce5d4406cdd54727f5fc9b26cc0bb73044f4ab64"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/main.json",
+      "file": "docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/main.json",
+      "bytes": 418274,
+      "sha256": "bee9be0ec1c1d6c5ec6b192769e056b56c3f57bc4a757fbfc04ae2d06e6e7635"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/repeat-capture/main.json",
+      "file": "docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/repeat-capture/main.json",
+      "bytes": 418274,
+      "sha256": "bee9be0ec1c1d6c5ec6b192769e056b56c3f57bc4a757fbfc04ae2d06e6e7635"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/warm-range-supplement/fixtures.tar.gz",
+      "file": "docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/warm-range-supplement/fixtures.tar.gz",
+      "bytes": 6151,
+      "sha256": "ae6866ba911a496311a99fd2cd9623b5104f9b169d0abf6c3d95432f769ced9b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/warm-range-supplement/main.json",
+      "file": "docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/warm-range-supplement/main.json",
+      "bytes": 160589,
+      "sha256": "f0616438b4b19bbbebd66514ae1f80d27aae170dfb06a3c481cce98d650e7c69"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/warm-range-supplement/repeat-capture/main.json",
+      "file": "docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/warm-range-supplement/repeat-capture/main.json",
+      "bytes": 160589,
+      "sha256": "0a76f9576e39fc01ba1e08501b3a030617f825a3de5453f41c0134edd4d4d7b1"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/execution_context.instrumented.go",
+      "file": "execution_context.instrumented.go",
+      "bytes": 7325,
+      "sha256": "02b4d107481a8b9da3b77efc56da48e61b17cd39e03a99dce9f1c85d35502f7d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/instrumentation.json",
+      "file": "instrumentation.json",
+      "bytes": 975,
+      "sha256": "29e10d6a693d045ddfa3b84e64bf52fe384d977bc0d1f4e2091caedcd6311846"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/instrumented.json",
+      "file": "instrumented.json",
+      "bytes": 535669,
+      "sha256": "72faf1770b33be9f85fb04bb6284b5c190b7bed49100666029786ebccb334983"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/instrumented.log",
+      "file": "instrumented.log",
+      "bytes": 1621,
+      "sha256": "59110cc69d02ad1f62a276f8388baac7dca311f3121625243cbc61f0c1dbfafa"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/live-process.json",
+      "file": "live-process.json",
+      "bytes": 409,
+      "sha256": "1a9620805935dc6df6c45d47968d99eee7c75bc15ca8ccf1bf8de9fa9b9943dd"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/module-with-adapter-inputs.json",
+      "file": "module-with-adapter-inputs.json",
+      "bytes": 365131,
+      "sha256": "45360ced72f1206b87cfdd4883b699df36e85ee044c08f9eda29851b204ffe46"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/observer-comparison.json",
+      "file": "observer-comparison.json",
+      "bytes": 651,
+      "sha256": "a06e0c199484f81019f9c44bbcf1fb0227bfd5c33cac98b902f7625d336e5fa1"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/oracle-inputs.json",
+      "file": "oracle-inputs.json",
+      "bytes": 1557,
+      "sha256": "47f0ed3ef20d8477f0006fc70527baafb737575563905ab73825cebc759db586"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/overlay.json",
+      "file": "overlay.json",
+      "bytes": 257,
+      "sha256": "594a11062fa4810a3ad2f9761b80568124e241adf051510b8bd573c254295e58"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/plain.json",
+      "file": "plain.json",
+      "bytes": 158882,
+      "sha256": "95f215397fb52acd74eeb68fb72fdefe40809095066d6368d04484eedab0d825"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/plain.log",
+      "file": "plain.log",
+      "bytes": 1163,
+      "sha256": "afc3aea4ad0d223b3594e232f9fbd5d0aef00106d4124c0d7131b192661410d0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/receipt.json",
+      "file": "receipt.json",
+      "bytes": 1586,
+      "sha256": "21ca4be6b0b0bfabfd5265823dd4c531131287544c55a45bb8071a7f6c48357e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/runner.py",
+      "file": "runner.py",
+      "bytes": 6481,
+      "sha256": "0c2d7d5c088d9c50db82c4fe26b0e6303565081d899f016a0ade707766102b2e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/source-root.json",
+      "file": "source-root.json",
+      "bytes": 336,
+      "sha256": "ca91aff5994f41c93575efc761e04fd70e00f08654a3519d907cf5b019e7cc75"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/source-with-adapter.tar.gz",
+      "file": "source-with-adapter.tar.gz",
+      "bytes": 9207187,
+      "sha256": "a7e23ef882fc663c54de55ed2b0a5a36c463a7a4547796f51ae87162dda7cdb6"
+    }
+  ],
+  "moduleFiles": 2575,
+  "plainDifferences": 0,
+  "instrumentedDifferences": 0,
+  "observerComparisonEqual": true,
+  "originalConsumeRestoredExactly": true,
+  "commands": [
+    {
+      "phase": "plain",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestMappedEntryCapture$",
+        "./internal/query"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T13:37:10.083801+00:00",
+      "endUTC": "2026-09-08T13:37:15.552725+00:00"
+    },
+    {
+      "phase": "instrumented",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestMappedEntryCapture$",
+        "-vet=off",
+        "-overlay",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v1/overlay.json",
+        "-tags",
+        "mapped_entry_instrumented",
+        "./internal/query"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T13:37:15.553228+00:00",
+      "endUTC": "2026-09-08T13:37:19.319213+00:00"
+    }
+  ],
+  "performanceMeasurements": 0
+}

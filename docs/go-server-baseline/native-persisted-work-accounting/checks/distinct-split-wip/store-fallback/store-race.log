@@ -1,0 +1,142 @@
+=== RUN   TestDistinctProjectionRetainedLifecycle
+--- PASS: TestDistinctProjectionRetainedLifecycle (0.01s)
+=== RUN   TestDistinctProjectionCanceledInitializationIsRetryable
+--- PASS: TestDistinctProjectionCanceledInitializationIsRetryable (0.01s)
+=== RUN   TestDistinctProjectionConcurrentClose
+--- PASS: TestDistinctProjectionConcurrentClose (0.00s)
+=== RUN   TestMainDistinctSplitOptionalReader
+=== RUN   TestMainDistinctSplitOptionalReader/mapped=false/valid
+=== RUN   TestMainDistinctSplitOptionalReader/mapped=false/missing
+=== RUN   TestMainDistinctSplitOptionalReader/mapped=false/directory
+=== RUN   TestMainDistinctSplitOptionalReader/mapped=false/corrupt
+=== RUN   TestMainDistinctSplitOptionalReader/mapped=true/valid
+=== RUN   TestMainDistinctSplitOptionalReader/mapped=true/missing
+=== RUN   TestMainDistinctSplitOptionalReader/mapped=true/directory
+=== RUN   TestMainDistinctSplitOptionalReader/mapped=true/corrupt
+--- PASS: TestMainDistinctSplitOptionalReader (0.03s)
+    --- PASS: TestMainDistinctSplitOptionalReader/mapped=false/valid (0.00s)
+    --- PASS: TestMainDistinctSplitOptionalReader/mapped=false/missing (0.00s)
+    --- PASS: TestMainDistinctSplitOptionalReader/mapped=false/directory (0.00s)
+    --- PASS: TestMainDistinctSplitOptionalReader/mapped=false/corrupt (0.00s)
+    --- PASS: TestMainDistinctSplitOptionalReader/mapped=true/valid (0.00s)
+    --- PASS: TestMainDistinctSplitOptionalReader/mapped=true/missing (0.00s)
+    --- PASS: TestMainDistinctSplitOptionalReader/mapped=true/directory (0.00s)
+    --- PASS: TestMainDistinctSplitOptionalReader/mapped=true/corrupt (0.00s)
+=== RUN   TestMainDistinctSplitRetainedPriorityAndRawHandle
+--- PASS: TestMainDistinctSplitRetainedPriorityAndRawHandle (0.00s)
+=== RUN   TestMainDistinctSplitWarmMappedFileGate
+--- PASS: TestMainDistinctSplitWarmMappedFileGate (0.00s)
+=== RUN   TestMainDistinctSplitZeroCountAdmission
+=== RUN   TestMainDistinctSplitZeroCountAdmission/false
+=== RUN   TestMainDistinctSplitZeroCountAdmission/true
+--- PASS: TestMainDistinctSplitZeroCountAdmission (0.01s)
+    --- PASS: TestMainDistinctSplitZeroCountAdmission/false (0.01s)
+    --- PASS: TestMainDistinctSplitZeroCountAdmission/true (0.00s)
+=== RUN   TestMainDistinctSplitCancellationAndClose
+=== RUN   TestMainDistinctSplitCancellationAndClose/mapped=false/worker
+=== RUN   TestMainDistinctSplitCancellationAndClose/mapped=false/callback
+=== RUN   TestMainDistinctSplitCancellationAndClose/mapped=false/close
+=== RUN   TestMainDistinctSplitCancellationAndClose/mapped=true/worker
+=== RUN   TestMainDistinctSplitCancellationAndClose/mapped=true/callback
+=== RUN   TestMainDistinctSplitCancellationAndClose/mapped=true/close
+--- PASS: TestMainDistinctSplitCancellationAndClose (0.02s)
+    --- PASS: TestMainDistinctSplitCancellationAndClose/mapped=false/worker (0.00s)
+    --- PASS: TestMainDistinctSplitCancellationAndClose/mapped=false/callback (0.00s)
+    --- PASS: TestMainDistinctSplitCancellationAndClose/mapped=false/close (0.00s)
+    --- PASS: TestMainDistinctSplitCancellationAndClose/mapped=true/worker (0.00s)
+    --- PASS: TestMainDistinctSplitCancellationAndClose/mapped=true/callback (0.00s)
+    --- PASS: TestMainDistinctSplitCancellationAndClose/mapped=true/close (0.00s)
+=== RUN   TestMainDistinctProjectionStringIDsReadOrder
+=== RUN   TestMainDistinctProjectionStringIDsReadOrder/count-before-fields
+=== RUN   TestMainDistinctProjectionStringIDsReadOrder/callee-after-caller
+=== RUN   TestMainDistinctProjectionStringIDsReadOrder/callee-name-last
+=== RUN   TestMainDistinctProjectionStringIDsReadOrder/all-four
+--- PASS: TestMainDistinctProjectionStringIDsReadOrder (0.00s)
+    --- PASS: TestMainDistinctProjectionStringIDsReadOrder/count-before-fields (0.00s)
+    --- PASS: TestMainDistinctProjectionStringIDsReadOrder/callee-after-caller (0.00s)
+    --- PASS: TestMainDistinctProjectionStringIDsReadOrder/callee-name-last (0.00s)
+    --- PASS: TestMainDistinctProjectionStringIDsReadOrder/all-four (0.00s)
+=== RUN   TestMainDistinctFallbackRetryAndBuild
+=== RUN   TestMainDistinctFallbackRetryAndBuild/missing
+=== RUN   TestMainDistinctFallbackRetryAndBuild/corrupt
+=== RUN   TestMainDistinctFallbackRetryAndBuild/valid
+--- PASS: TestMainDistinctFallbackRetryAndBuild (0.01s)
+    --- PASS: TestMainDistinctFallbackRetryAndBuild/missing (0.00s)
+    --- PASS: TestMainDistinctFallbackRetryAndBuild/corrupt (0.00s)
+    --- PASS: TestMainDistinctFallbackRetryAndBuild/valid (0.00s)
+=== RUN   TestMainDistinctFallbackDoesNotUseMappedAsRetained
+--- PASS: TestMainDistinctFallbackDoesNotUseMappedAsRetained (0.00s)
+=== RUN   TestMainDistinctFallbackRejectAndZero
+=== RUN   TestMainDistinctFallbackRejectAndZero/1
+=== RUN   TestMainDistinctFallbackRejectAndZero/2
+=== RUN   TestMainDistinctFallbackRejectAndZero/zero-before-offsets
+=== RUN   TestMainDistinctFallbackRejectAndZero/cold-identity-before-worker
+--- PASS: TestMainDistinctFallbackRejectAndZero (0.01s)
+    --- PASS: TestMainDistinctFallbackRejectAndZero/1 (0.00s)
+    --- PASS: TestMainDistinctFallbackRejectAndZero/2 (0.00s)
+    --- PASS: TestMainDistinctFallbackRejectAndZero/zero-before-offsets (0.00s)
+    --- PASS: TestMainDistinctFallbackRejectAndZero/cold-identity-before-worker (0.00s)
+=== RUN   TestMainDistinctMembershipRepresentations
+=== RUN   TestMainDistinctMembershipRepresentations/mapped
+=== RUN   TestMainDistinctMembershipRepresentations/retained
+=== RUN   TestMainDistinctMembershipRepresentations/built
+--- PASS: TestMainDistinctMembershipRepresentations (0.01s)
+    --- PASS: TestMainDistinctMembershipRepresentations/mapped (0.00s)
+    --- PASS: TestMainDistinctMembershipRepresentations/retained (0.00s)
+    --- PASS: TestMainDistinctMembershipRepresentations/built (0.00s)
+=== RUN   TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure
+=== RUN   TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure/bytes=4/reject=false
+=== RUN   TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure/bytes=4/reject=true
+=== RUN   TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure/bytes=2/reject=false
+=== RUN   TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure/bytes=2/reject=true
+--- PASS: TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure (0.00s)
+    --- PASS: TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure/bytes=4/reject=false (0.00s)
+    --- PASS: TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure/bytes=4/reject=true (0.00s)
+    --- PASS: TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure/bytes=2/reject=false (0.00s)
+    --- PASS: TestMainDistinctMembershipReadsOnlyDirectoryAndFlushesFailure/bytes=2/reject=true (0.00s)
+=== RUN   TestMainOrdinaryColdIdentityBeforeWorkerPoll
+=== RUN   TestMainOrdinaryColdIdentityBeforeWorkerPoll/main
+=== RUN   TestMainOrdinaryColdIdentityBeforeWorkerPoll/legacy
+--- PASS: TestMainOrdinaryColdIdentityBeforeWorkerPoll (0.01s)
+    --- PASS: TestMainOrdinaryColdIdentityBeforeWorkerPoll/main (0.00s)
+    --- PASS: TestMainOrdinaryColdIdentityBeforeWorkerPoll/legacy (0.00s)
+=== RUN   TestMainOrdinaryLegacyIdentityHasNoWorkerPoll
+--- PASS: TestMainOrdinaryLegacyIdentityHasNoWorkerPoll (0.00s)
+=== RUN   TestMainOrdinaryEntryCallbackAndWarmLifetime
+--- PASS: TestMainOrdinaryEntryCallbackAndWarmLifetime (0.00s)
+=== RUN   TestMainOrdinaryWarmMappedFileAdmission
+--- PASS: TestMainOrdinaryWarmMappedFileAdmission (0.00s)
+=== RUN   TestMainBuildWorkBothRawPassesMustComplete
+--- PASS: TestMainBuildWorkBothRawPassesMustComplete (0.01s)
+=== RUN   TestMainBuildSecondPassActuallyReadsRawFields
+--- PASS: TestMainBuildSecondPassActuallyReadsRawFields (0.00s)
+=== RUN   TestProjectionContextStandardStatesAndPrecedence
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/background
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/todo
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/cancelled
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/deadline
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/cause
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/value-child
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/live-parent
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/without-cancel
+--- PASS: TestProjectionContextStandardStatesAndPrecedence (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/background (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/todo (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/cancelled (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/deadline (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/cause (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/value-child (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/live-parent (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/without-cancel (0.00s)
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder/cancel_after_read_before_publication
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder/format_failure_before_postread_checkpoint
+--- PASS: TestProjectionContextPreparationPublicationAndFormatOrder (0.01s)
+    --- PASS: TestProjectionContextPreparationPublicationAndFormatOrder/cancel_after_read_before_publication (0.00s)
+    --- PASS: TestProjectionContextPreparationPublicationAndFormatOrder/format_failure_before_postread_checkpoint (0.00s)
+=== RUN   TestProjectionContextDecoderCancelAndFreshRequest
+--- PASS: TestProjectionContextDecoderCancelAndFreshRequest (0.00s)
+=== RUN   TestProjectionContextCloseWaitsForCanceledDecoder
+--- PASS: TestProjectionContextCloseWaitsForCanceledDecoder (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.513s

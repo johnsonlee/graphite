@@ -1,0 +1,80 @@
+{
+  "originalMainComparison": {
+    "cases": 1267,
+    "graphStateObservations": 162304,
+    "publicDifferences": [],
+    "stateDifferenceCounts": {},
+    "firstStateDifference": null,
+    "observerDifferences": [],
+    "allParsedRecordsExactlyEqual": true
+  },
+  "newMainToNativeComparisons": [
+    {
+      "cases": 1267,
+      "graphStateObservations": 162304,
+      "publicDifferences": [],
+      "stateDifferenceCounts": {
+        "mappedRangeCount": 15162
+      },
+      "firstStateDifference": {
+        "observation": "replay/3/after",
+        "graph": "fixture-android-02",
+        "field": "mappedRangeCount",
+        "main": 7,
+        "other": 0
+      },
+      "observerDifferences": [
+        {
+          "index": 821,
+          "field": "errorClass",
+          "main": "java.lang.IllegalStateException",
+          "other": null
+        }
+      ],
+      "nativeDirectory": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-v1"
+    },
+    {
+      "cases": 1267,
+      "graphStateObservations": 162304,
+      "publicDifferences": [],
+      "stateDifferenceCounts": {
+        "mappedRangeCount": 15162
+      },
+      "firstStateDifference": {
+        "observation": "replay/3/after",
+        "graph": "fixture-android-02",
+        "field": "mappedRangeCount",
+        "main": 7,
+        "other": 0
+      },
+      "observerDifferences": [
+        {
+          "index": 821,
+          "field": "errorClass",
+          "main": "java.lang.IllegalStateException",
+          "other": null
+        }
+      ],
+      "nativeDirectory": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1"
+    }
+  ],
+  "nativeRepeatsAllParsedRecordsExactlyEqual": true,
+  "nativeFrozenModuleFilesEqual": 2558,
+  "nativeCompiledInputsEqual": 327,
+  "originalCasesAndSourceOrderExactlyEqual": true,
+  "verifiedSuccessfulOriginalManifestDigests": 1266,
+  "originalErrorsRetained": [
+    {
+      "index": 821,
+      "id": "four-or-graph-id-targeted",
+      "error": "IllegalStateException",
+      "errorClass": "java.lang.IllegalStateException",
+      "message": "Unsafe expression reached parallel string projection"
+    }
+  ],
+  "mainRuntimeExitCode": 1,
+  "originalReferenceReplaced": false,
+  "existingComparisonsModified": false,
+  "performanceMeasurement": false,
+  "interpretation": "This independently repeated main capture does not justify relaxing mappedRangeCount comparison; report raw differences and fix semantics before claiming parity."
+}

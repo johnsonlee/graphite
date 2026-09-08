@@ -1,0 +1,18 @@
+{
+  "baselineRevision": "f0838dda4f0d67628d028826d0577a8151765288",
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-count=1",
+    "-v",
+    "-run",
+    "^Test(ExecutionContextStoreWorkFailureIdentity|PersistedWorkAccountingMainOracle|MappedWorkAccountingMainOracle|MappedWorkLargeAccountingMainOracle|BuildTrigramWorkAccountingMainOracle)$",
+    "./internal/query"
+  ],
+  "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+  "exitCode": 0,
+  "inputsUnchanged": true,
+  "moduleFiles": 2568,
+  "inputCount": 2590,
+  "performanceMeasurements": 0
+}

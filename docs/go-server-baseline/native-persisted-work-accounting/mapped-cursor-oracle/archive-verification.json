@@ -1,0 +1,278 @@
+{
+  "artifacts": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/capture.stderr",
+      "file": "initial-capture/capture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/capture.stdout",
+      "file": "initial-capture/capture.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/classes/MappedCursorOracle$Action.class",
+      "file": "initial-capture/classes/MappedCursorOracle$Action.class",
+      "bytes": 361,
+      "sha256": "618157b469db63c2aa7eaf0536445ac3a507930981f9534be76ebbe053fb444c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/classes/MappedCursorOracle$View.class",
+      "file": "initial-capture/classes/MappedCursorOracle$View.class",
+      "bytes": 4058,
+      "sha256": "261e9d24f81a50aa30af749312e7dc90221cb165b7ef36117bb3cd1b21c96f54"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/classes/MappedCursorOracle$Work.class",
+      "file": "initial-capture/classes/MappedCursorOracle$Work.class",
+      "bytes": 1313,
+      "sha256": "ed95a41449cb0f2bad677c53deba558cc12d733fa98375d37cd0eda56e35c5af"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/classes/MappedCursorOracle.class",
+      "file": "initial-capture/classes/MappedCursorOracle.class",
+      "bytes": 14766,
+      "sha256": "d71d91f9c616db946ef22a142cc8ffcf1151baed43fefbea140a112681a593b2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/commands.json",
+      "file": "initial-capture/commands.json",
+      "bytes": 1396,
+      "sha256": "726993eadfb51bf90334799a016926a942f44515d3c842400863b2015fc4c2b9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/compile.stderr",
+      "file": "initial-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/compile.stdout",
+      "file": "initial-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/fixture-after.json",
+      "file": "initial-capture/fixture-after.json",
+      "bytes": 5038,
+      "sha256": "05f6e4ab696f1729390dc029f8f5fb8b972416e8ce6f9d2da4701be11a1bd303"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/fixture-before.json",
+      "file": "initial-capture/fixture-before.json",
+      "bytes": 5038,
+      "sha256": "05f6e4ab696f1729390dc029f8f5fb8b972416e8ce6f9d2da4701be11a1bd303"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/inputs.json",
+      "file": "initial-capture/inputs.json",
+      "bytes": 2568,
+      "sha256": "002f04bf18ee89e7f4d65170f5964c38284cd7919e7c96d6e1da451dd0546d81"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/live-process.json",
+      "file": "initial-capture/live-process.json",
+      "bytes": 579,
+      "sha256": "81cdc78961f9e6c8b504462cad8c62d8b4fc5dc7f38c65241610dd6ec55d4163"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/main.json",
+      "file": "initial-capture/main.json",
+      "bytes": 45101,
+      "sha256": "31b4cc21c99c41981bef550d1edae4f8b38a7af6a6a8126b9bec3a028b2ce33a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v2/receipt.json",
+      "file": "initial-capture/receipt.json",
+      "bytes": 822,
+      "sha256": "afcbe6bfffe0c8a63360151249f58c1138bb08e114c8fef079218cea64b8d97e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/capture.stderr",
+      "file": "main-capture/capture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/capture.stdout",
+      "file": "main-capture/capture.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/classes/MappedCursorOracle$Action.class",
+      "file": "main-capture/classes/MappedCursorOracle$Action.class",
+      "bytes": 361,
+      "sha256": "618157b469db63c2aa7eaf0536445ac3a507930981f9534be76ebbe053fb444c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/classes/MappedCursorOracle$View.class",
+      "file": "main-capture/classes/MappedCursorOracle$View.class",
+      "bytes": 4058,
+      "sha256": "261e9d24f81a50aa30af749312e7dc90221cb165b7ef36117bb3cd1b21c96f54"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/classes/MappedCursorOracle$Work.class",
+      "file": "main-capture/classes/MappedCursorOracle$Work.class",
+      "bytes": 1313,
+      "sha256": "ed95a41449cb0f2bad677c53deba558cc12d733fa98375d37cd0eda56e35c5af"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/classes/MappedCursorOracle.class",
+      "file": "main-capture/classes/MappedCursorOracle.class",
+      "bytes": 15085,
+      "sha256": "36b36bd83b92a17af933d109cd8553033ef81339f40ba9cae0932cec0d567bec"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/commands.json",
+      "file": "main-capture/commands.json",
+      "bytes": 1396,
+      "sha256": "97db7d5c036478974e5907980e6ee8c1a0a9991875dcf121fe1b4070a8c7b571"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/fixture-after.json",
+      "file": "main-capture/fixture-after.json",
+      "bytes": 5038,
+      "sha256": "05f6e4ab696f1729390dc029f8f5fb8b972416e8ce6f9d2da4701be11a1bd303"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/fixture-before.json",
+      "file": "main-capture/fixture-before.json",
+      "bytes": 5038,
+      "sha256": "05f6e4ab696f1729390dc029f8f5fb8b972416e8ce6f9d2da4701be11a1bd303"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/inputs.json",
+      "file": "main-capture/inputs.json",
+      "bytes": 2781,
+      "sha256": "b60f77c569aa96c6c30132e664e67e30dde4e7febe2fb377c98d466e0882f34c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/live-process.json",
+      "file": "main-capture/live-process.json",
+      "bytes": 579,
+      "sha256": "81c4f234225dbcd9462af924d90f64e9b99d9a7787cd4939d04c8aef0b842960"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/main.json",
+      "file": "main-capture/main.json",
+      "bytes": 49161,
+      "sha256": "b78531e3103a29d0760106286dc2ce49b326f437cea80a808a4156696d497157"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v3/receipt.json",
+      "file": "main-capture/receipt.json",
+      "bytes": 822,
+      "sha256": "a28045b14facc0bc188ae8c663b05486df1ac3c57ac6aeba3d836e29017aca97"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/capture.stderr",
+      "file": "repeat-capture/capture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/capture.stdout",
+      "file": "repeat-capture/capture.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/classes/MappedCursorOracle$Action.class",
+      "file": "repeat-capture/classes/MappedCursorOracle$Action.class",
+      "bytes": 361,
+      "sha256": "618157b469db63c2aa7eaf0536445ac3a507930981f9534be76ebbe053fb444c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/classes/MappedCursorOracle$View.class",
+      "file": "repeat-capture/classes/MappedCursorOracle$View.class",
+      "bytes": 4058,
+      "sha256": "261e9d24f81a50aa30af749312e7dc90221cb165b7ef36117bb3cd1b21c96f54"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/classes/MappedCursorOracle$Work.class",
+      "file": "repeat-capture/classes/MappedCursorOracle$Work.class",
+      "bytes": 1313,
+      "sha256": "ed95a41449cb0f2bad677c53deba558cc12d733fa98375d37cd0eda56e35c5af"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/classes/MappedCursorOracle.class",
+      "file": "repeat-capture/classes/MappedCursorOracle.class",
+      "bytes": 15085,
+      "sha256": "36b36bd83b92a17af933d109cd8553033ef81339f40ba9cae0932cec0d567bec"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/commands.json",
+      "file": "repeat-capture/commands.json",
+      "bytes": 1396,
+      "sha256": "5d20b0e96bc07761ecad442854a6ce690fe9b6815bf1d2bbb489cafd848c9098"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/fixture-after.json",
+      "file": "repeat-capture/fixture-after.json",
+      "bytes": 5038,
+      "sha256": "05f6e4ab696f1729390dc029f8f5fb8b972416e8ce6f9d2da4701be11a1bd303"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/fixture-before.json",
+      "file": "repeat-capture/fixture-before.json",
+      "bytes": 5038,
+      "sha256": "05f6e4ab696f1729390dc029f8f5fb8b972416e8ce6f9d2da4701be11a1bd303"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "bytes": 2781,
+      "sha256": "b60f77c569aa96c6c30132e664e67e30dde4e7febe2fb377c98d466e0882f34c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/live-process.json",
+      "file": "repeat-capture/live-process.json",
+      "bytes": 579,
+      "sha256": "cb00efbff6d29fab6d39fe076c2a27c829ba554877a435c36bf47dc1f5862f9c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/main.json",
+      "file": "repeat-capture/main.json",
+      "bytes": 49161,
+      "sha256": "957bdbf25334cbb60c02b958798c08d295b019caff4fed4af82998ea9b4bd19e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "bytes": 822,
+      "sha256": "a28045b14facc0bc188ae8c663b05486df1ac3c57ac6aeba3d836e29017aca97"
+    }
+  ],
+  "cases": 11,
+  "operations": 19,
+  "allParsedFieldsRepeatEqual": true,
+  "performanceMeasurements": 0
+}

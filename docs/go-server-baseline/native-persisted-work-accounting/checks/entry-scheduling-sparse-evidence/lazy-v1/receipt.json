@@ -1,0 +1,88 @@
+{
+  "actualCaseIndices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "binarySHA256": "be5def9d7c7ff8426ab23bb15c66b06aedcffc54e164317916ae10dad9f39f70",
+  "controllerPID": 40879,
+  "diagnosticOnly": true,
+  "executedCaseIndices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "finishedUnixSeconds": 1788877836.768487,
+  "fixtureAuditSHA256": "aea6f5c8f59a51f4e71deb3ab59c7af7f014d1f2dba6c24b556e08dbfafc7194",
+  "fixtureManifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "go": {
+    "path": "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "sha256": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4"
+  },
+  "inheritedRuntimeEnvironment": {
+    "CGO_ENABLED": null,
+    "GOARCH": null,
+    "GODEBUG": null,
+    "GOGC": null,
+    "GOMAXPROCS": null,
+    "GOMEMLIMIT": null,
+    "GOOS": null
+  },
+  "originalGraphsManifestSHA256": "809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2",
+  "output": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1",
+  "performanceMeasurement": false,
+  "publicErrors": [],
+  "relocatedGraphsManifestSHA256": "60c6649192cb1d80c3b6a047687ee164ced572948ad0506a2e4aecb8afbeb361",
+  "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-real64-source-v1",
+  "startedUnixSeconds": 1788877794.583701,
+  "status": "complete",
+  "steps": [
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "build",
+        "-o",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/diagnostic-replay",
+        "./cmd/graphite-benchmark-replay"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/module",
+      "exitCode": 0,
+      "finishedUnixSeconds": 1788877810.276581,
+      "name": "build",
+      "pid": 40888,
+      "startedUnixSeconds": 1788877808.381446
+    },
+    {
+      "command": [
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/diagnostic-replay",
+        "--workload",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/module/internal/benchmarkcase/testdata/main64.json",
+        "--graphs",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/graphs-relocated.tsv",
+        "--state",
+        "cold",
+        "--output",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/responses.jsonl"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/module",
+      "exitCode": 0,
+      "finishedUnixSeconds": 1788877827.195385,
+      "name": "replay",
+      "pid": 40951,
+      "startedUnixSeconds": 1788877810.281043
+    }
+  ],
+  "supportedFrozenVersion": "lazy-core-v1",
+  "traceSummary": {
+    "capacity": 262144,
+    "diagnosticOnly": true,
+    "dropped": 0,
+    "kind": "trace_summary",
+    "reserved": 1100,
+    "unpublished": 0
+  },
+  "validatedWorkloadCaseCount": 1267,
+  "workloadSHA256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+}

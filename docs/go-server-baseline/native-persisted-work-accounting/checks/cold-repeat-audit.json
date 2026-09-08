@@ -1,0 +1,202 @@
+{
+  "nativeSourcesEqual": true,
+  "moduleFiles": 2558,
+  "allRawNativeRecordsEqual": true,
+  "rawNativeBytesEqual": true,
+  "captures": [
+    {
+      "directory": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-v1",
+      "responsesSHA256": "c29e38a40419913810ec2746acb21850f7a62b171f917e5d5d43c762bc056a15",
+      "comparison": {
+        "state": "cold",
+        "caseDefinitionsExactlyEqual": true,
+        "loadedGraphCapabilityCounts": {
+          "main": {
+            "retained": 0,
+            "mappedView": 0,
+            "trigrams": 0,
+            "loadedFromPersistence": 0
+          },
+          "native": {
+            "retained": 0,
+            "mappedView": 0,
+            "trigrams": 0,
+            "loadedFromPersistence": 0
+          }
+        },
+        "phaseCaseCounts": {
+          "replay": 1267
+        },
+        "mainPhaseOutcomes": {
+          "replay": {
+            "success": 1266,
+            "error": 1
+          }
+        },
+        "publicDifferences": [],
+        "stateDifferenceCounts": {
+          "mappedRangeCount": 15162
+        },
+        "firstStateDifferences": {
+          "mappedRangeCount": {
+            "observation": "replay/3/after",
+            "graph": "fixture-android-02",
+            "main": 7,
+            "native": 0
+          }
+        },
+        "graphStateObservations": 162304,
+        "errors": [
+          {
+            "phase": "replay",
+            "index": 821,
+            "id": "four-or-graph-id-targeted",
+            "error": "IllegalStateException",
+            "message": "Unsafe expression reached parallel string projection"
+          }
+        ],
+        "observerFieldDifferences": [
+          {
+            "phase": "replay",
+            "index": 821,
+            "field": "errorClass",
+            "main": "java.lang.IllegalStateException",
+            "native": null
+          }
+        ],
+        "nativeUnavailableStateCounters": [],
+        "mainRawCacheNonzeroObservationCounts": {
+          "rawMatchCount": 0,
+          "rawProjectionCount": 2515
+        },
+        "mainRawCacheMaximumCounts": {
+          "rawMatchCount": 0,
+          "rawProjectionCount": 4
+        },
+        "mainManifestSuccessfulDigestsVerified": 1266,
+        "invocationPrepared": true,
+        "replayPhaseCovered": true,
+        "originalAllSuccessGatePassed": false,
+        "runtimeExitCode": 1,
+        "originalGraphFilesUnchangedPerRuntime": 1152,
+        "performanceMeasurement": false
+      },
+      "controller": [
+        {
+          "state": "cold",
+          "command": [
+            "python3",
+            "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+            "native",
+            "cold"
+          ],
+          "exitCode": 1,
+          "verifyCommand": [
+            "python3",
+            "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+            "cold"
+          ],
+          "verifyExitCode": 1
+        }
+      ]
+    },
+    {
+      "directory": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-cold-repeat-v1",
+      "responsesSHA256": "c29e38a40419913810ec2746acb21850f7a62b171f917e5d5d43c762bc056a15",
+      "comparison": {
+        "state": "cold",
+        "caseDefinitionsExactlyEqual": true,
+        "loadedGraphCapabilityCounts": {
+          "main": {
+            "retained": 0,
+            "mappedView": 0,
+            "trigrams": 0,
+            "loadedFromPersistence": 0
+          },
+          "native": {
+            "retained": 0,
+            "mappedView": 0,
+            "trigrams": 0,
+            "loadedFromPersistence": 0
+          }
+        },
+        "phaseCaseCounts": {
+          "replay": 1267
+        },
+        "mainPhaseOutcomes": {
+          "replay": {
+            "success": 1266,
+            "error": 1
+          }
+        },
+        "publicDifferences": [],
+        "stateDifferenceCounts": {
+          "mappedRangeCount": 15162
+        },
+        "firstStateDifferences": {
+          "mappedRangeCount": {
+            "observation": "replay/3/after",
+            "graph": "fixture-android-02",
+            "main": 7,
+            "native": 0
+          }
+        },
+        "graphStateObservations": 162304,
+        "errors": [
+          {
+            "phase": "replay",
+            "index": 821,
+            "id": "four-or-graph-id-targeted",
+            "error": "IllegalStateException",
+            "message": "Unsafe expression reached parallel string projection"
+          }
+        ],
+        "observerFieldDifferences": [
+          {
+            "phase": "replay",
+            "index": 821,
+            "field": "errorClass",
+            "main": "java.lang.IllegalStateException",
+            "native": null
+          }
+        ],
+        "nativeUnavailableStateCounters": [],
+        "mainRawCacheNonzeroObservationCounts": {
+          "rawMatchCount": 0,
+          "rawProjectionCount": 2515
+        },
+        "mainRawCacheMaximumCounts": {
+          "rawMatchCount": 0,
+          "rawProjectionCount": 4
+        },
+        "mainManifestSuccessfulDigestsVerified": 1266,
+        "invocationPrepared": true,
+        "replayPhaseCovered": true,
+        "originalAllSuccessGatePassed": false,
+        "runtimeExitCode": 1,
+        "originalGraphFilesUnchangedPerRuntime": 1152,
+        "performanceMeasurement": false
+      },
+      "controller": [
+        {
+          "state": "cold",
+          "command": [
+            "python3",
+            "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+            "native",
+            "cold"
+          ],
+          "exitCode": 1,
+          "verifyCommand": [
+            "python3",
+            "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+            "cold"
+          ],
+          "verifyExitCode": 1
+        }
+      ]
+    }
+  ],
+  "performanceMeasurements": 0,
+  "acceptancePassed": false
+}

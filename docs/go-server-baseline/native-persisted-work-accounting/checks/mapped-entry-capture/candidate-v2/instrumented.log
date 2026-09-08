@@ -1,0 +1,24 @@
+=== RUN   TestMappedEntryCapture
+=== RUN   TestMappedEntryCapture/E01-cold-view-entry-interrupt
+=== RUN   TestMappedEntryCapture/E02-warm-view-empty-entry-interrupt
+=== RUN   TestMappedEntryCapture/E03-warm-view-hit-entry-interrupt
+=== RUN   TestMappedEntryCapture/E04-warm-view-hit-callback-interrupt
+=== RUN   TestMappedEntryCapture/E05-warm-view-hit-callback-signal
+=== RUN   TestMappedEntryCapture/E06-warm-view-hit-budget1
+=== RUN   TestMappedEntryCapture/E07-retained-empty-entry-interrupt
+=== RUN   TestMappedEntryCapture/E08-retained-hit-entry-interrupt
+=== RUN   TestMappedEntryCapture/E09-warm-mapped-range-entry-interrupt
+=== RUN   TestMappedEntryCapture/E10-warm-mapped-range-callback-interrupt
+--- PASS: TestMappedEntryCapture (0.30s)
+    --- PASS: TestMappedEntryCapture/E01-cold-view-entry-interrupt (0.01s)
+    --- PASS: TestMappedEntryCapture/E02-warm-view-empty-entry-interrupt (0.01s)
+    --- PASS: TestMappedEntryCapture/E03-warm-view-hit-entry-interrupt (0.01s)
+    --- PASS: TestMappedEntryCapture/E04-warm-view-hit-callback-interrupt (0.01s)
+    --- PASS: TestMappedEntryCapture/E05-warm-view-hit-callback-signal (0.01s)
+    --- PASS: TestMappedEntryCapture/E06-warm-view-hit-budget1 (0.01s)
+    --- PASS: TestMappedEntryCapture/E07-retained-empty-entry-interrupt (0.01s)
+    --- PASS: TestMappedEntryCapture/E08-retained-hit-entry-interrupt (0.01s)
+    --- PASS: TestMappedEntryCapture/E09-warm-mapped-range-entry-interrupt (0.02s)
+    --- PASS: TestMappedEntryCapture/E10-warm-mapped-range-callback-interrupt (0.02s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.682s

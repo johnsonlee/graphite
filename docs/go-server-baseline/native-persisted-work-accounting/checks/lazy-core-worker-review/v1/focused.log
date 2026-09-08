@@ -1,0 +1,14 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/main_fixed_workers.go:104:26: unknown field capacity in struct literal of type mainFixedExecutor
+internal/query/main_fixed_workers.go:118:7: e.cores undefined (type *mainFixedExecutor has no field or method cores)
+internal/query/main_fixed_workers.go:118:17: e.capacity undefined (type *mainFixedExecutor has no field or method capacity)
+internal/query/main_fixed_workers.go:119:5: e.cores undefined (type *mainFixedExecutor has no field or method cores)
+internal/query/main_fixed_workers_test.go:346:14: executor.cores undefined (type *mainFixedExecutor has no field or method cores)
+internal/query/main_fixed_workers_test.go:346:37: executor.capacity undefined (type *mainFixedExecutor has no field or method capacity)
+internal/query/main_fixed_workers_test.go:347:52: executor.cores undefined (type *mainFixedExecutor has no field or method cores)
+internal/query/main_fixed_workers_test.go:347:68: executor.capacity undefined (type *mainFixedExecutor has no field or method capacity)
+internal/query/main_fixed_workers_test.go:355:29: executor.cores undefined (type *mainFixedExecutor has no field or method cores)
+internal/query/main_fixed_workers_test.go:375:28: executor.cores undefined (type *mainFixedExecutor has no field or method cores)
+internal/query/main_fixed_workers_test.go:375:28: too many errors
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

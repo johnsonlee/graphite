@@ -1,0 +1,1153 @@
+{
+  "scope": "Independent artifact audit; no runtime",
+  "sourceBinding": {
+    "moduleFiles": 2576,
+    "fullCheckInputs": 3396,
+    "fullCheckModuleMapEqualsFrozenManifest": true,
+    "fullCheckReceiptHashMatchesFrozenReceipt": true,
+    "changedFromLazyCore": [
+      "internal/query/generic_disjunction_test.go",
+      "internal/store/projection_enum_test.go",
+      "internal/store/projection_node.go"
+    ],
+    "entireCurrentAndExplicitFrozenModuleRehashed": true,
+    "sourceManifestSHA256": "7206fb40029ac5ce4493d9425f4c8c65bd827358778645a1e320001ba246bb55"
+  },
+  "fullchecks": {
+    "steps": [
+      {
+        "name": "context",
+        "command": [
+          "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+          "test",
+          "-count=1",
+          "-v",
+          "-run",
+          "^Test(ExecutionContext|RawWork|BufferedGraphWork|LeadingWork|PersistedWork|RetainedWork|MappedWork|BuildTrigramWork)",
+          "./internal/query"
+        ],
+        "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      },
+      {
+        "name": "race",
+        "command": [
+          "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+          "test",
+          "-race",
+          "-count=1",
+          "./..."
+        ],
+        "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      },
+      {
+        "name": "vet",
+        "command": [
+          "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+          "vet",
+          "./..."
+        ],
+        "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      }
+    ],
+    "verifiedArtifacts": [
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-fullchecks/artifacts.json",
+        "sha256": "0c5bfe8f76f83acd781bfc52a9d5ea0bead94fae65eba5af9734aaa16728bef2",
+        "originalSHA256": "0c5bfe8f76f83acd781bfc52a9d5ea0bead94fae65eba5af9734aaa16728bef2"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-fullchecks/context.log.gz",
+        "sha256": "9595a47991a69d9e45603c0c2774560a3a1b958f92caf4d0ae7c66ba922d87a5",
+        "originalSHA256": "3785f883674b5d14d6b80dd049dfb4e30fc16b657684918225b254831ca43899"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-fullchecks/inputs.json",
+        "sha256": "4d506159b830ca5e7dd05e7b8c356d762b927a91367a65e2068f8d9d9e25a70d",
+        "originalSHA256": "4d506159b830ca5e7dd05e7b8c356d762b927a91367a65e2068f8d9d9e25a70d"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-fullchecks/race.log.gz",
+        "sha256": "bcfa2f115cf0a004a4458c64231f0e18806026c826968ef6acded259627ed1f0",
+        "originalSHA256": "71a3deaff1081e387812afa83a808a343ecd872b976202b6f07682e9a45245c7"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-fullchecks/receipt.json",
+        "sha256": "a1b13d5c4e6e2db06043c3c51cc7897d153b9c754658d0c33181fb2efaa1ce6b",
+        "originalSHA256": "a1b13d5c4e6e2db06043c3c51cc7897d153b9c754658d0c33181fb2efaa1ce6b"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-fullchecks/vet.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+        "originalSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "focused": {
+    "receipt": {
+      "timeUTC": "2026-09-08T14:35:34.486193+00:00",
+      "sourceFiles": [
+        {
+          "path": "graphite-server/internal/store/projection_node.go",
+          "sha256": "a560857181ec6b8b029005a715e4cd847330fa5ea6a43ea98c0aafcc23da244d"
+        },
+        {
+          "path": "graphite-server/internal/store/projection_enum_test.go",
+          "sha256": "51b6b4843d5312c302a2008165f856ba27da40292f3fd6998269ec7d167292f8"
+        }
+      ],
+      "sourcesUnchangedAcrossTests": true,
+      "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+      "scope": "Main projection Enum top-level argument iteration only; strict Node/count, nested List, other nodes, query dispatch unchanged",
+      "baseline": {
+        "session": 16011,
+        "exit": 1,
+        "overlay": "exact pre-change production + new tests",
+        "log": "baseline-test.log"
+      },
+      "candidate": {
+        "session": 69263,
+        "exit": 0,
+        "command": "go test -race ./internal/store -run '^Test(ProjectionEnum|ProjectionContext|IntegrationProjectionCandidateCloseAndOwnedValues)' -count=3 -v",
+        "topLevelPassExecutions": 21
+      },
+      "public": {
+        "session": 7035,
+        "exit": 0,
+        "cases": 3,
+        "overlay": "existing frozen main test adds wanted enum-bad-tail-hit and changes selection denominator 83 to84; only named three subtests run; original on-disk query test unchanged",
+        "command": "go test -race -overlay /tmp/graphite-enum-count-f0838dda-v1/query-overlay.json ./internal/query -run '^TestGenericDisjunctionMainReadSemantics/enum-bad-tail' -count=1 -v"
+      },
+      "limits": [
+        "No new JVM capture; original and repeat actual main agree for these three cases.",
+        "No full module, full 201 replay, or real64 run in this focused task.",
+        "Nested collection deserialization retains pre-existing contracts; this is not a claim of all malformed decoding parity."
+      ]
+    },
+    "verifiedArtifacts": [
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/baseline-overlay.json",
+        "sha256": "a72abd7e92c2d6c5be81be58ec1ea713e36f371212cf69dbc4e7fba3c4b0ae7c",
+        "originalSHA256": "a72abd7e92c2d6c5be81be58ec1ea713e36f371212cf69dbc4e7fba3c4b0ae7c"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/baseline-test.exit",
+        "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "originalSHA256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/baseline-test.log",
+        "sha256": "7728e829c2504dfc7218e1a3fe88df02e2842c1bf9f43b9b98047d85d2f34648",
+        "originalSHA256": "7728e829c2504dfc7218e1a3fe88df02e2842c1bf9f43b9b98047d85d2f34648"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/before.json",
+        "sha256": "3f5a4c92fa7f4b1cb8cc9b1ee6b192102c025dfb442646ee49cca9d9c919ac85",
+        "originalSHA256": "3f5a4c92fa7f4b1cb8cc9b1ee6b192102c025dfb442646ee49cca9d9c919ac85"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/candidate-test.exit",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "originalSHA256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/candidate-test.log",
+        "sha256": "fcda84d1d849f9846b3d1c4e61ea34c97ca44c8206b7d7757fe706d15765bba6",
+        "originalSHA256": "fcda84d1d849f9846b3d1c4e61ea34c97ca44c8206b7d7757fe706d15765bba6"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/enum-count.patch",
+        "sha256": "9ceacdd45121e5fa60e56919f3c6fc5cd615382dd0b4d37087aa195f8d7cbd05",
+        "originalSHA256": "9ceacdd45121e5fa60e56919f3c6fc5cd615382dd0b4d37087aa195f8d7cbd05"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/manifest.json",
+        "sha256": "61246656007264b65bbc42ea00c682d4c7ee547cce12bd24782fb422c58faa08",
+        "originalSHA256": "61246656007264b65bbc42ea00c682d4c7ee547cce12bd24782fb422c58faa08"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/original-repeat-three-cases.json",
+        "sha256": "eb20375b008472f3f824c653d6b92438edb832fc43eafeb9c747fa985a6b1763",
+        "originalSHA256": "eb20375b008472f3f824c653d6b92438edb832fc43eafeb9c747fa985a6b1763"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/projection_enum_test.go",
+        "sha256": "51b6b4843d5312c302a2008165f856ba27da40292f3fd6998269ec7d167292f8",
+        "originalSHA256": "51b6b4843d5312c302a2008165f856ba27da40292f3fd6998269ec7d167292f8"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/projection_node.before.go",
+        "sha256": "800f40f148f88a0a65084618e9da4054ded36c7439b64c57326a5464bcfd24c4",
+        "originalSHA256": "800f40f148f88a0a65084618e9da4054ded36c7439b64c57326a5464bcfd24c4"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/projection_node.go",
+        "sha256": "a560857181ec6b8b029005a715e4cd847330fa5ea6a43ea98c0aafcc23da244d",
+        "originalSHA256": "a560857181ec6b8b029005a715e4cd847330fa5ea6a43ea98c0aafcc23da244d"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/public-test.exit",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "originalSHA256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/public-test.log",
+        "sha256": "2babb67d89dcb949084ebcc775cdde05dd11a20f5cd1b27c0cd7998e646991d1",
+        "originalSHA256": "2babb67d89dcb949084ebcc775cdde05dd11a20f5cd1b27c0cd7998e646991d1"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/query-overlay.json",
+        "sha256": "fdd93613f23a96e595aaf1cd056c16d83860bf3d3d8351bdba0b8902ec1f851e",
+        "originalSHA256": "fdd93613f23a96e595aaf1cd056c16d83860bf3d3d8351bdba0b8902ec1f851e"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/query-test.original.go",
+        "sha256": "042d76f879bf27453ab1d50eaa05ca6b482881b80f9fdb0aade75e328879f1a5",
+        "originalSHA256": "042d76f879bf27453ab1d50eaa05ca6b482881b80f9fdb0aade75e328879f1a5"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/query-test.overlay.go",
+        "sha256": "c53918bc40e038bd59b4708fe4af388b3e987e83e956d461878dd629b3a79c7c",
+        "originalSHA256": "c53918bc40e038bd59b4708fe4af388b3e987e83e956d461878dd629b3a79c7c"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/receipt.json",
+        "sha256": "249323460771306a4b20b89d71a783ec940345d2e882b8e6fa2e01c2a78217be",
+        "originalSHA256": "249323460771306a4b20b89d71a783ec940345d2e882b8e6fa2e01c2a78217be"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-focused-evidence/source-before-tests.json",
+        "sha256": "7a1258649b1d243b0b9c7a2775ec9142b22554e1f9f1ae66d6a65a7b3faab84e",
+        "originalSHA256": "7a1258649b1d243b0b9c7a2775ec9142b22554e1f9f1ae66d6a65a7b3faab84e"
+      }
+    ],
+    "candidateTopLevelPassCounts": {
+      "TestProjectionContextStandardStatesAndPrecedence": 3,
+      "TestProjectionContextPreparationPublicationAndFormatOrder": 3,
+      "TestProjectionContextDecoderCancelAndFreshRequest": 3,
+      "TestProjectionContextCloseWaitsForCanceledDecoder": 3,
+      "TestProjectionEnumActualMainArgumentConsumption": 3,
+      "TestProjectionEnumZeroAndNegativeArgumentCounts": 3,
+      "TestIntegrationProjectionCandidateCloseAndOwnedValues": 3
+    },
+    "permanentQueryTestEqualsPublicOverlayBytes": false,
+    "permanentQuerySelectionDenominator": 84,
+    "permanentQueryVsOverlay": "Same added enum-bad-tail-hit wanted entry, moved into existing list; comment updated. Source diff reviewed.",
+    "threeActualMainCasesRevalidatedAgainstFullOriginalAndRepeat": true
+  },
+  "matrix201": {
+    "sourceBeforeFiles": 2576,
+    "sourceAfterAndCompiledFiles": 2577,
+    "onlyAdditionalDiagnosticHelper": {
+      "internal/query/generic_disjunction_diagnostic_test.go": "8e788981cbcd8a3ef96edd5bf3257cfa9eb4ebdc7dc0c2d6c6bb8fca031d4594"
+    },
+    "commands": [
+      {
+        "name": "compile",
+        "command": [
+          "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+          "test",
+          "-c",
+          "-o",
+          "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/diagnostic.test",
+          "./internal/query"
+        ],
+        "exitCode": 0
+      },
+      {
+        "name": "capture",
+        "command": [
+          "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/diagnostic.test",
+          "-test.run=^TestGenericDisjunctionDiagnosticCapture$",
+          "-test.count=1",
+          "-test.v"
+        ],
+        "exitCode": 0
+      }
+    ],
+    "comparisonExitCode": 1,
+    "summary": [
+      {
+        "reference": "main",
+        "matches": {
+          "public": 167,
+          "providerWrapper": 19
+        },
+        "differenceCount": 15,
+        "differences": [
+          {
+            "name": "six-empty-1",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "six-empty-2",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "field-bad-tail-hit",
+            "scope": "public",
+            "fields": [
+              "after",
+              "before",
+              "error",
+              "errorUTF16",
+              "nullMessage",
+              "phase"
+            ]
+          },
+          {
+            "name": "field-bad-tail-miss",
+            "scope": "public",
+            "fields": [
+              "after",
+              "before",
+              "columns",
+              "error",
+              "errorUTF16",
+              "nullMessage",
+              "outcome",
+              "phase",
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "field-bad-tail-global-miss",
+            "scope": "public",
+            "fields": [
+              "after",
+              "before",
+              "error",
+              "errorUTF16",
+              "nullMessage",
+              "phase"
+            ]
+          },
+          {
+            "name": "annotation-bad-tail-hit",
+            "scope": "public",
+            "fields": [
+              "error",
+              "errorUTF16"
+            ]
+          },
+          {
+            "name": "annotation-bad-tail-miss",
+            "scope": "public",
+            "fields": [
+              "error",
+              "errorUTF16"
+            ]
+          },
+          {
+            "name": "annotation-bad-tail-global-miss",
+            "scope": "public",
+            "fields": [
+              "error",
+              "errorUTF16"
+            ]
+          },
+          {
+            "name": "unicode-4-EnumConstant",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-4-LocalVariable",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-4-Field",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-5-EnumConstant",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-5-LocalVariable",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-5-Field",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "provider-field-payload-id-example",
+            "scope": "providerWrapper",
+            "fields": [
+              "error",
+              "errorUTF16",
+              "nullMessage",
+              "outcome",
+              "yielded"
+            ]
+          }
+        ]
+      },
+      {
+        "reference": "repeat",
+        "matches": {
+          "public": 167,
+          "providerWrapper": 19
+        },
+        "differenceCount": 15,
+        "differences": [
+          {
+            "name": "six-empty-1",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "six-empty-2",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "field-bad-tail-hit",
+            "scope": "public",
+            "fields": [
+              "after",
+              "before",
+              "error",
+              "errorUTF16",
+              "nullMessage",
+              "phase"
+            ]
+          },
+          {
+            "name": "field-bad-tail-miss",
+            "scope": "public",
+            "fields": [
+              "after",
+              "before",
+              "columns",
+              "error",
+              "errorUTF16",
+              "nullMessage",
+              "outcome",
+              "phase",
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "field-bad-tail-global-miss",
+            "scope": "public",
+            "fields": [
+              "after",
+              "before",
+              "error",
+              "errorUTF16",
+              "nullMessage",
+              "phase"
+            ]
+          },
+          {
+            "name": "annotation-bad-tail-hit",
+            "scope": "public",
+            "fields": [
+              "error",
+              "errorUTF16"
+            ]
+          },
+          {
+            "name": "annotation-bad-tail-miss",
+            "scope": "public",
+            "fields": [
+              "error",
+              "errorUTF16"
+            ]
+          },
+          {
+            "name": "annotation-bad-tail-global-miss",
+            "scope": "public",
+            "fields": [
+              "error",
+              "errorUTF16"
+            ]
+          },
+          {
+            "name": "unicode-4-EnumConstant",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-4-LocalVariable",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-4-Field",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-5-EnumConstant",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-5-LocalVariable",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "unicode-5-Field",
+            "scope": "public",
+            "fields": [
+              "rowsUTF16"
+            ]
+          },
+          {
+            "name": "provider-field-payload-id-example",
+            "scope": "providerWrapper",
+            "fields": [
+              "error",
+              "errorUTF16",
+              "nullMessage",
+              "outcome",
+              "yielded"
+            ]
+          }
+        ]
+      }
+    ],
+    "projectedChangesVsLazyCore": [
+      {
+        "index": 25,
+        "name": "enum-bad-tail-hit",
+        "fields": [
+          "error",
+          "errorUTF16",
+          "message"
+        ],
+        "before": {
+          "error": "CypherException",
+          "errorUTF16": [
+            105,
+            110,
+            118,
+            97,
+            108,
+            105,
+            100,
+            32,
+            99,
+            111,
+            108,
+            108,
+            101,
+            99,
+            116,
+            105,
+            111,
+            110,
+            32,
+            99,
+            111,
+            117,
+            110,
+            116,
+            32,
+            50,
+            49,
+            52,
+            55,
+            52,
+            56,
+            51,
+            54,
+            52,
+            55,
+            32,
+            40,
+            51,
+            51,
+            52,
+            32,
+            98,
+            121,
+            116,
+            101,
+            115,
+            32,
+            114,
+            101,
+            109,
+            97,
+            105,
+            110,
+            41
+          ],
+          "message": "invalid collection count 2147483647 (334 bytes remain)"
+        },
+        "after": {
+          "error": "IndexOutOfBoundsException",
+          "errorUTF16": [
+            73,
+            110,
+            100,
+            101,
+            120,
+            32,
+            40,
+            51,
+            55,
+            41,
+            32,
+            105,
+            115,
+            32,
+            103,
+            114,
+            101,
+            97,
+            116,
+            101,
+            114,
+            32,
+            116,
+            104,
+            97,
+            110,
+            32,
+            111,
+            114,
+            32,
+            101,
+            113,
+            117,
+            97,
+            108,
+            32,
+            116,
+            111,
+            32,
+            108,
+            105,
+            115,
+            116,
+            32,
+            115,
+            105,
+            122,
+            101,
+            32,
+            40,
+            50,
+            49,
+            41
+          ],
+          "message": "Index (37) is greater than or equal to list size (21)"
+        }
+      }
+    ],
+    "allRawChangedCaseFieldsVsLazyCore": [
+      {
+        "index": 25,
+        "name": "enum-bad-tail-hit",
+        "fields": [
+          "error",
+          "errorUTF16",
+          "message"
+        ]
+      },
+      {
+        "index": 183,
+        "name": "provider-field-bad-sid-0-example",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "index": 184,
+        "name": "provider-field-bad-sid-0-never-matches-generic-oracle",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "index": 185,
+        "name": "provider-field-bad-sid-1-example",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "index": 186,
+        "name": "provider-field-bad-sid-1-never-matches-generic-oracle",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "index": 187,
+        "name": "provider-field-bad-sid-2-example",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "index": 197,
+        "name": "provider-field-payload-id-example",
+        "fields": [
+          "goStack"
+        ]
+      }
+    ],
+    "verifiedSmallArtifacts": [
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/source-before.json",
+        "sha256": "56706a4adbdb3fc398010fedd2be31d4e19dfe257adada0dbb87b8c57c2c545d",
+        "originalSHA256": "56706a4adbdb3fc398010fedd2be31d4e19dfe257adada0dbb87b8c57c2c545d"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/inputs.json",
+        "sha256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+        "originalSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/input.json",
+        "sha256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+        "originalSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/compiled-source.json",
+        "sha256": "368a1309474a1181bd38aa06f576bd3272ff429567233aa52322d72104f4287d",
+        "originalSHA256": "368a1309474a1181bd38aa06f576bd3272ff429567233aa52322d72104f4287d"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/compile.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "originalSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/compile.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "originalSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/capture.stdout",
+        "sha256": "56c35162f67dcb95e6077fcc03ce2ac70cb5e9ce5306c2270d221d3b68e33a97",
+        "originalSHA256": "56c35162f67dcb95e6077fcc03ce2ac70cb5e9ce5306c2270d221d3b68e33a97"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/capture.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "originalSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/commands.json",
+        "sha256": "3a9598510ddc3f44e65aaa5b5082e9ab275a4f7de4927327b295b833d1f59b06",
+        "originalSHA256": "3a9598510ddc3f44e65aaa5b5082e9ab275a4f7de4927327b295b833d1f59b06"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/go.json",
+        "sha256": "9d5dd92c1bb8e606cca66a69ab641a798a11f4aff5942012497a8ee5941a78ec",
+        "originalSHA256": "9d5dd92c1bb8e606cca66a69ab641a798a11f4aff5942012497a8ee5941a78ec"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/source-after.json",
+        "sha256": "368a1309474a1181bd38aa06f576bd3272ff429567233aa52322d72104f4287d",
+        "originalSHA256": "368a1309474a1181bd38aa06f576bd3272ff429567233aa52322d72104f4287d"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/comparison.json",
+        "sha256": "4acbe47ec83a2804f3e67a9e6e4ae84448c8008f98bc6894a86d2c3e1bea00f2",
+        "originalSHA256": "4acbe47ec83a2804f3e67a9e6e4ae84448c8008f98bc6894a86d2c3e1bea00f2"
+      },
+      {
+        "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-matrix201/artifact-manifest.json",
+        "sha256": "95b3e907e19a63d91e453db8add6a3372c0e1b7312f8138d1b5a5bfc18bed433",
+        "originalSHA256": "95b3e907e19a63d91e453db8add6a3372c0e1b7312f8138d1b5a5bfc18bed433"
+      }
+    ],
+    "diagnosticsScope": "The legacy adapter does not pass the new ExecutionContext or compare its diagnostics; full route accounting remains incomplete. Its original comparison wording is retained verbatim."
+  },
+  "real64": {
+    "independentlyAudited": true,
+    "stateReports": [
+      {
+        "state": "cold",
+        "rawRecords": 1269,
+        "phaseCaseCounts": {
+          "replay": 1267
+        },
+        "publicDifferences": [],
+        "graphStateObservations": 162304,
+        "stateDifferenceCounts": {},
+        "errors": [
+          {
+            "phase": "replay",
+            "index": 821,
+            "id": "four-or-graph-id-targeted",
+            "error": "IllegalStateException",
+            "message": "Unsafe expression reached parallel string projection"
+          }
+        ],
+        "observerFieldDifferences": [
+          {
+            "index": 821,
+            "main": "java.lang.IllegalStateException",
+            "native": null
+          }
+        ],
+        "loadedCapabilities": {
+          "retained": 0,
+          "mappedView": 0,
+          "trigrams": 0,
+          "loadedFromPersistence": 0
+        },
+        "originalAllSuccessGatePassed": false,
+        "formalReplayExecuted": true,
+        "compiledInputsMatched": 345,
+        "unchangedOriginalFixtureFiles": 1152,
+        "originalMainRawArchiveSHA256": "ec5a289455443d1c09a8c33abf4ebda9acadf958532c17e3fbf373e970a0777f",
+        "nativeRawArchiveSHA256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97"
+      },
+      {
+        "state": "warm",
+        "rawRecords": 1268,
+        "phaseCaseCounts": {
+          "warmup": 1267
+        },
+        "publicDifferences": [],
+        "graphStateObservations": 162240,
+        "stateDifferenceCounts": {},
+        "errors": [
+          {
+            "phase": "warmup",
+            "index": 821,
+            "id": "four-or-graph-id-targeted",
+            "error": "IllegalStateException",
+            "message": "Unsafe expression reached parallel string projection"
+          }
+        ],
+        "observerFieldDifferences": [
+          {
+            "index": 821,
+            "main": "java.lang.IllegalStateException",
+            "native": null
+          }
+        ],
+        "loadedCapabilities": {
+          "retained": 0,
+          "mappedView": 0,
+          "trigrams": 0,
+          "loadedFromPersistence": 0
+        },
+        "originalAllSuccessGatePassed": false,
+        "formalReplayExecuted": false,
+        "compiledInputsMatched": 345,
+        "unchangedOriginalFixtureFiles": 1152,
+        "originalMainRawArchiveSHA256": "b5facadfc1bde64b5b97f7cfcd32ecfc818236579b60f3131f53978a8681dea1",
+        "nativeRawArchiveSHA256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7"
+      },
+      {
+        "state": "startup-prepared",
+        "rawRecords": 1269,
+        "phaseCaseCounts": {
+          "replay": 1267
+        },
+        "publicDifferences": [],
+        "graphStateObservations": 162304,
+        "stateDifferenceCounts": {},
+        "errors": [
+          {
+            "phase": "replay",
+            "index": 821,
+            "id": "four-or-graph-id-targeted",
+            "error": "IllegalStateException",
+            "message": "Unsafe expression reached parallel string projection"
+          }
+        ],
+        "observerFieldDifferences": [
+          {
+            "index": 821,
+            "main": "java.lang.IllegalStateException",
+            "native": null
+          }
+        ],
+        "loadedCapabilities": {
+          "retained": 64,
+          "mappedView": 0,
+          "trigrams": 64,
+          "loadedFromPersistence": 64
+        },
+        "originalAllSuccessGatePassed": false,
+        "formalReplayExecuted": true,
+        "compiledInputsMatched": 345,
+        "unchangedOriginalFixtureFiles": 1152,
+        "originalMainRawArchiveSHA256": "a0c4159689383a4096f0fe33eb05a2ee839dc3c5811b495febced33722deac65",
+        "nativeRawArchiveSHA256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2"
+      }
+    ],
+    "controller": [
+      {
+        "state": "cold",
+        "command": [
+          "python3",
+          "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+          "native",
+          "cold"
+        ],
+        "exitCode": 1,
+        "verifyCommand": [
+          "python3",
+          "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+          "cold"
+        ],
+        "verifyExitCode": 0
+      },
+      {
+        "state": "warm",
+        "command": [
+          "python3",
+          "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+          "native",
+          "warm"
+        ],
+        "exitCode": 1,
+        "verifyCommand": [
+          "python3",
+          "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+          "warm"
+        ],
+        "verifyExitCode": 0
+      },
+      {
+        "state": "startup-prepared",
+        "command": [
+          "python3",
+          "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+          "native",
+          "startup-prepared"
+        ],
+        "exitCode": 1,
+        "verifyCommand": [
+          "python3",
+          "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+          "startup-prepared"
+        ],
+        "verifyExitCode": 0
+      }
+    ],
+    "stateManifestEqualsCheckedFrozenModule": true,
+    "completeReal64FrozenModuleRehashed": 2576,
+    "verifiedArtifacts": [
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/cold-comparison.json",
+        "sha256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+        "rawSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/controller.json",
+        "sha256": "3f988e0a025ba77d2fa90d082ee57e759701f24f589dc5464cb11d5842b4a29e",
+        "rawSHA256": "3f988e0a025ba77d2fa90d082ee57e759701f24f589dc5464cb11d5842b4a29e"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/module-source.json",
+        "sha256": "651ea5926354e79adfe8f105574c34e6493e58cf514eb0e5a17044243cdeb96c",
+        "rawSHA256": "651ea5926354e79adfe8f105574c34e6493e58cf514eb0e5a17044243cdeb96c"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-cold/responses.jsonl.gz",
+        "sha256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97",
+        "rawSHA256": "664f8c59753b3d676aeb31479b41d2e367cf9ee6a4b56f331fd9afe66e7ca46f"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-cold-inputs.json",
+        "sha256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+        "rawSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-cold-postrun-fixtures.json",
+        "sha256": "754dc8157a4b07efaa524bd1abc5c1c577d25d7fb293f10dcdf6742a9de2fa21",
+        "rawSHA256": "754dc8157a4b07efaa524bd1abc5c1c577d25d7fb293f10dcdf6742a9de2fa21"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-cold-preflight.json",
+        "sha256": "754dc8157a4b07efaa524bd1abc5c1c577d25d7fb293f10dcdf6742a9de2fa21",
+        "rawSHA256": "754dc8157a4b07efaa524bd1abc5c1c577d25d7fb293f10dcdf6742a9de2fa21"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-cold-process.json",
+        "sha256": "6e36096d2b22fa65665d2432618505785ad6053e8d772e3218afbc23717b4224",
+        "rawSHA256": "6e36096d2b22fa65665d2432618505785ad6053e8d772e3218afbc23717b4224"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-cold-process.log",
+        "sha256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+        "rawSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-startup-prepared/responses.jsonl.gz",
+        "sha256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2",
+        "rawSHA256": "c4041f6e8336cd67646f4aa9e1a93008de06f99f0bd8dc60dd54d4851b0b371e"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-startup-prepared-inputs.json",
+        "sha256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+        "rawSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-startup-prepared-postrun-fixtures.json",
+        "sha256": "f6a03edb3c64b16a530b5ec76465733b8ad57881a12fab9191324ca366ce8e90",
+        "rawSHA256": "f6a03edb3c64b16a530b5ec76465733b8ad57881a12fab9191324ca366ce8e90"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-startup-prepared-preflight.json",
+        "sha256": "f6a03edb3c64b16a530b5ec76465733b8ad57881a12fab9191324ca366ce8e90",
+        "rawSHA256": "f6a03edb3c64b16a530b5ec76465733b8ad57881a12fab9191324ca366ce8e90"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-startup-prepared-process.json",
+        "sha256": "ca20a6f9fd9fa5847f736a7d3f457c16f8fe8d9b3cd27db9090a0eb39dace8ad",
+        "rawSHA256": "ca20a6f9fd9fa5847f736a7d3f457c16f8fe8d9b3cd27db9090a0eb39dace8ad"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-startup-prepared-process.log",
+        "sha256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+        "rawSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-warm/responses.jsonl.gz",
+        "sha256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7",
+        "rawSHA256": "e30afa52e21042d949b2e09e661e3f6f2eac7a88f2e13ba711780fe7e45e1440"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-warm-inputs.json",
+        "sha256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca",
+        "rawSHA256": "eb996163da88e0bb77bee593bb217e04c8b7b59b484bda7355b96390416b43ca"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-warm-postrun-fixtures.json",
+        "sha256": "4a58222eef2bc1b3a7cd726fe98a08aa26777b224bb7a5fa9e120dab0940de14",
+        "rawSHA256": "4a58222eef2bc1b3a7cd726fe98a08aa26777b224bb7a5fa9e120dab0940de14"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-warm-preflight.json",
+        "sha256": "4a58222eef2bc1b3a7cd726fe98a08aa26777b224bb7a5fa9e120dab0940de14",
+        "rawSHA256": "4a58222eef2bc1b3a7cd726fe98a08aa26777b224bb7a5fa9e120dab0940de14"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-warm-process.json",
+        "sha256": "f90ba2b1351d49f17e70c6bf67d4139f46eb2db112e43c1b8a9dc88a9b2a8cbf",
+        "rawSHA256": "f90ba2b1351d49f17e70c6bf67d4139f46eb2db112e43c1b8a9dc88a9b2a8cbf"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/native-warm-process.log",
+        "sha256": "d5f7c883aed183cdd870e8c2ee532893529b3b68ef728e82c2fa5fd4da8caf68",
+        "rawSHA256": "d5f7c883aed183cdd870e8c2ee532893529b3b68ef728e82c2fa5fd4da8caf68"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/runner.py",
+        "sha256": "52589ce94160fdc4b9307fa01e9db12c100bff62063288ef071933439972c404",
+        "rawSHA256": "52589ce94160fdc4b9307fa01e9db12c100bff62063288ef071933439972c404"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/source-verification.json",
+        "sha256": "1464f36f16ae15d06664c564f0ec3ed973d2251f297fb96fb7d66fa99459dbcf",
+        "rawSHA256": "1464f36f16ae15d06664c564f0ec3ed973d2251f297fb96fb7d66fa99459dbcf"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/startup-prepared-comparison.json",
+        "sha256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+        "rawSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/verify-cold.log",
+        "sha256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+        "rawSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/verify-startup-prepared.log",
+        "sha256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+        "rawSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/verify-warm.log",
+        "sha256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+        "rawSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8"
+      },
+      {
+        "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/enum-real64/warm-comparison.json",
+        "sha256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+        "rawSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8"
+      }
+    ],
+    "totalCaseExecutions": 3801,
+    "totalGraphStateObservations": 486848,
+    "declaredPublicAndStateComparisonPassed": true,
+    "originalAllSuccessGatePassed": false,
+    "formalWarmReplayExecuted": false,
+    "causalClaim": "No inference that Enum decoding caused cache-count agreement or that suffix scheduling is deterministic"
+  },
+  "functionalAcceptanceProven": false,
+  "performanceAcceptanceProven": false,
+  "performanceMeasurements": 0,
+  "build": {
+    "path": "/Users/johnsonlee/.codex/benchmarks/graphite/p95-enum-f0838dda-build-v1",
+    "metadataAuditedOnly": true,
+    "moduleFiles": 2576,
+    "inputFiles": 1427,
+    "sourceIdentitySHA256": "7e9f6b88fa28a505270117472c340e4ccd171bcf27c82127186f5cc7ecf8cfd0",
+    "engineRevision": "source-sha256:7e9f6b88fa28a505270117472c340e4ccd171bcf27c82127186f5cc7ecf8cfd0",
+    "workspaceRevisionAtBuild": "f0838dda4f0d67628d028826d0577a8151765288",
+    "sourceCommitMatchClaimed": false,
+    "nativeBinarySHA256Recorded": "f65002ba89f6d8c3c6e73c679186a8570b3244e94b0acf02d8d627f952e42734",
+    "nativeBinaryNotRehashedDuringActiveTiming": true,
+    "bothManifestCopiesEqualCheckedCorrectnessManifest": true,
+    "bothManifestHashesBoundIntoBuildInputs": true,
+    "buildJSONSHA256": "23d25a3efde028da9fea29a808ebf0840d2156ff9a8b54a09f4633cd517ad9e7",
+    "inputsJSONSHA256": "bc479d3a4ced2318995fbe6738275bbdcda08f7b0ba6140a1d6284b9bbb06974",
+    "campaign": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/graphite/p95-enum-f0838dda-200-v1",
+      "plannedPairsPerState": 200,
+      "measurementAcceptanceEligible": false,
+      "statusAtRead": "running",
+      "completionOrP95NotAudited": true
+    }
+  }
+}

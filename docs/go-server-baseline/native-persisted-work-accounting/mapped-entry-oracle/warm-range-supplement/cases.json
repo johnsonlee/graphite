@@ -1,0 +1,20 @@
+[
+  {
+    "name": "E09-warm-mapped-range-entry-interrupt",
+    "warmup": "mapped-hit",
+    "term": "hit",
+    "limit": 2,
+    "preInterrupted": true,
+    "action": "none",
+    "budget": "1000000"
+  },
+  {
+    "name": "E10-warm-mapped-range-callback-interrupt",
+    "warmup": "mapped-hit",
+    "term": "hit",
+    "limit": 2,
+    "preInterrupted": false,
+    "action": "interrupt-after-first",
+    "budget": "1000000"
+  }
+]

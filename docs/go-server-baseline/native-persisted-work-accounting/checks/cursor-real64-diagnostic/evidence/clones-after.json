@@ -1,0 +1,554 @@
+{
+  "fixture-android-02": [
+    {
+      "file": "forward.graph",
+      "bytes": 530244,
+      "sha256": "cc25669ba32bb382cac3740a6b79ba3d55c9b414c4affcc14acadd3748dd2a33"
+    },
+    {
+      "file": "forward.offsets",
+      "bytes": 549218,
+      "sha256": "66d7d4935088a49de3f9284299c92becb95b3b800f395894fcbaa10e2e17a0e1"
+    },
+    {
+      "file": "forward.properties",
+      "bytes": 940,
+      "sha256": "06f279a93ad58e3dbcf913f8b78ef7c10866a2e712c1c27c70daf6318624f1ea"
+    },
+    {
+      "file": "graph.callsite-projection-tuple-filter",
+      "bytes": 262196,
+      "sha256": "bdbe417683fda858ed280baece1b2927fe0c656c1adaf535af984eea7868018a"
+    },
+    {
+      "file": "graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "ef3ac78684d403d46d3c73c626f1c34ae58fa3500aa598c852f9db36248263c9"
+    },
+    {
+      "file": "graph.callsite-string-index",
+      "bytes": 7373324,
+      "sha256": "8f2bf39a8aa8561dfff8e3229fdf1d2de9e815f1a112026c44933fc51d6d3979"
+    },
+    {
+      "file": "graph.classoverview",
+      "bytes": 76308,
+      "sha256": "a019e92123c08ee82a6ed72d8bd10955460beebee17be9fe72da7eefd129ee45"
+    },
+    {
+      "file": "graph.comparisons",
+      "bytes": 598984,
+      "sha256": "a4d5ed349a46f30103896f3f5b068428593f5504d8bf83a870827c9e2e720e78"
+    },
+    {
+      "file": "graph.labelprefix",
+      "bytes": 4420080,
+      "sha256": "85e43ae8803b50b3bbd73c016633cd7c0ea6a2c3a4910e04fee0469d3da7abcc"
+    },
+    {
+      "file": "graph.labels",
+      "bytes": 394557,
+      "sha256": "fa804cbcb8a045445ed4c9ceb3d69b0e8751beb120a7833c54f55b44d55fa98d"
+    },
+    {
+      "file": "graph.metadata",
+      "bytes": 2956896,
+      "sha256": "e545a675dd75945dd11d7a9079a370f3736400fe58e8d24f337ebea88998423c"
+    },
+    {
+      "file": "graph.nodedata",
+      "bytes": 15400996,
+      "sha256": "aa86bc091735e7e15abaa5bd65cd53bdc6563a24f367b3083b605354cfdbbbb6"
+    },
+    {
+      "file": "graph.nodeindex",
+      "bytes": 4759217,
+      "sha256": "bf72624acb95a0c32416267781b548a2bc4c25a378c95d6928fbcc82c9ecce49"
+    },
+    {
+      "file": "graph.nodeoffsets",
+      "bytes": 8840160,
+      "sha256": "a835feb74a09f68679d6e13a13aadd0aa13dafb719a685d8ac4d0df8cdfe06b1"
+    },
+    {
+      "file": "graph.resources",
+      "bytes": 114790,
+      "sha256": "b8061834e3c69954095fb73b363277a69fbe9a65229c1bec58507d98bac6f9eb"
+    },
+    {
+      "file": "graph.strings",
+      "bytes": 1853807,
+      "sha256": "2057b900d2fd75b24c4fd0555982b049decaf0d0d2a653a5945aa95b3886eb28"
+    },
+    {
+      "file": "graph.strings.identity",
+      "bytes": 32,
+      "sha256": "f8c7f0e10670e4a619ed7bdf08684c62b93896bfa2e8fb4c9d031d9104e9dac7"
+    },
+    {
+      "file": "graph.typeindex",
+      "bytes": 1464588,
+      "sha256": "16e2522bec87d335cb11ab656f83c2307e592f85c0d21715efe11839dff8db14"
+    }
+  ],
+  "fixture-android-03": [
+    {
+      "file": "forward.graph",
+      "bytes": 601863,
+      "sha256": "05f9d00f3c9d3786ea61f56a702bc01b6d957f74865e7fee0a62277492f6f5b2"
+    },
+    {
+      "file": "forward.offsets",
+      "bytes": 698060,
+      "sha256": "8403e32f9b9e8c8b7d0d26d7faee5b6ba9efe436e208b28b32a5c83cfc7e0c46"
+    },
+    {
+      "file": "forward.properties",
+      "bytes": 948,
+      "sha256": "34189703779d280849306c56fad58452bd626ffc528c8ad79e98b38a5c88f0bc"
+    },
+    {
+      "file": "graph.callsite-projection-tuple-filter",
+      "bytes": 262196,
+      "sha256": "43df7e3d83bea6fd263184a6119fc632afcf2089ddb92eddf5d2c2cff5c1eabe"
+    },
+    {
+      "file": "graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "a74839a6eb106d54095dd25b4a307ca84c4482225ec31fb7fff43d52cecacc0f"
+    },
+    {
+      "file": "graph.callsite-string-index",
+      "bytes": 7632604,
+      "sha256": "97c7e95567243461f267c141e47da73b34a82fa7be5d87f1fb9a99758e4d32cb"
+    },
+    {
+      "file": "graph.classoverview",
+      "bytes": 74376,
+      "sha256": "6d513f0ad927972966dd7e9864aa8fcd825010e378fb44f8f8471559c16385b6"
+    },
+    {
+      "file": "graph.comparisons",
+      "bytes": 624136,
+      "sha256": "4cb1f834bde2cf85f7e2b464c7bf24017d0ec58a7723e2ca8779fa400b5b6f3b"
+    },
+    {
+      "file": "graph.labelprefix",
+      "bytes": 5945300,
+      "sha256": "b371733a30d040d6e57322a1b8c69a96533a4130cd15a9af9b4999153dd3d07c"
+    },
+    {
+      "file": "graph.labels",
+      "bytes": 417318,
+      "sha256": "b444bb394cf9a7e491bce1ee173be5d108eff028756b8385f3f05adf06387779"
+    },
+    {
+      "file": "graph.metadata",
+      "bytes": 2953052,
+      "sha256": "566390881c636a3cf2b1074dc4ba4ae82be36773821f1e13daed0dc75e8eadbf"
+    },
+    {
+      "file": "graph.nodedata",
+      "bytes": 15957257,
+      "sha256": "c0825178ca2a372c524208ebb7fe9a240260637b21a08afe2754d14e5ab4cf46"
+    },
+    {
+      "file": "graph.nodeindex",
+      "bytes": 4956973,
+      "sha256": "e7bd499d95d9cdce543ef264fbb17ce747a6a419577b4a8b0e563c88624cb5aa"
+    },
+    {
+      "file": "graph.nodeoffsets",
+      "bytes": 11890600,
+      "sha256": "6d534140168b0e3153d8fbe9a2e7998cec38420bc92bd7bcc32d8d0ce9ab7c56"
+    },
+    {
+      "file": "graph.resources",
+      "bytes": 115115,
+      "sha256": "4cfd80caf9173ed2780ccdc3e2411f54d2a47e1e9de0e8ea5d2bcbf5b430b558"
+    },
+    {
+      "file": "graph.strings",
+      "bytes": 1879629,
+      "sha256": "86bb081d7acb174c7f42ebb9955e7541fb791c0603d26c5aba2f6a5f4350fade"
+    },
+    {
+      "file": "graph.strings.identity",
+      "bytes": 32,
+      "sha256": "f25974db872560d5e56136ac54f74bd9f460cd23a8f2ceb8262d51b464f91a7b"
+    },
+    {
+      "file": "graph.typeindex",
+      "bytes": 1525436,
+      "sha256": "f49b2fa4561facc87f614051a0540678ed026001cb71d9fa2e3b8caca62d5433"
+    }
+  ],
+  "fixture-android-04": [
+    {
+      "file": "forward.graph",
+      "bytes": 612843,
+      "sha256": "cbeb3cfaafe80c377b3c70e2532b20a6b4df77e96fb60929aa07819c2895eafb"
+    },
+    {
+      "file": "forward.offsets",
+      "bytes": 826677,
+      "sha256": "f071bad6955bcdc1ac96aedde3eba8358e0b8d51f3abf32f3945180bd7bf1fad"
+    },
+    {
+      "file": "forward.properties",
+      "bytes": 934,
+      "sha256": "5af44321a91e1c1fcf64e9a84be077e52ae92818b72fd5203719ddd49067485a"
+    },
+    {
+      "file": "graph.callsite-projection-tuple-filter",
+      "bytes": 262196,
+      "sha256": "1fd6223d2c587e8d78f04c6770b6b80e4255c6379a3e0f91351ea91c69712926"
+    },
+    {
+      "file": "graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "671f7ccc92cdd5177a66db8f604e1330615fc98199761d2e84e5ed7d536be003"
+    },
+    {
+      "file": "graph.callsite-string-index",
+      "bytes": 6984596,
+      "sha256": "0142e0fe7f55f47e1b85199a23a7e2d849710c6eeca23184110748c2d0016bef"
+    },
+    {
+      "file": "graph.classoverview",
+      "bytes": 78072,
+      "sha256": "e563dec767056a616fadb9f3977ab16b058baebcb89efb49228e14afc10973fd"
+    },
+    {
+      "file": "graph.comparisons",
+      "bytes": 508232,
+      "sha256": "61dc41311432016389042c15e7ec86084145b965fbbb13f85c70edfec287c2f7"
+    },
+    {
+      "file": "graph.labelprefix",
+      "bytes": 7401028,
+      "sha256": "ae9029c1938f4d502b5d4aca591439259f22d7cac2ac2c040ebeb947ed6d3162"
+    },
+    {
+      "file": "graph.labels",
+      "bytes": 383925,
+      "sha256": "65d204eb01c0d340370af3f71a8f2f0d81f42df56fa1a3b86f760eb8454d416a"
+    },
+    {
+      "file": "graph.metadata",
+      "bytes": 2475820,
+      "sha256": "5d9d0fc4f8fdccf60f4675a1766ef85c158e35a2e9b723696763810cb33290f8"
+    },
+    {
+      "file": "graph.nodedata",
+      "bytes": 15534874,
+      "sha256": "d754a7bbc1cf54b57c096b58ef4cb03e1abb6b0c5ee8e5803a03388f0e3391d0"
+    },
+    {
+      "file": "graph.nodeindex",
+      "bytes": 4731124,
+      "sha256": "f80d5ea131aa83a19d0e493b727de9156c51b5820eb9446eb2d5fe45c95087b5"
+    },
+    {
+      "file": "graph.nodeoffsets",
+      "bytes": 14802056,
+      "sha256": "03d1ebe8087dc7e2d58873e6f0d0351f8ac0dc79c385a9441545afb6b7b2c0d2"
+    },
+    {
+      "file": "graph.resources",
+      "bytes": 106380,
+      "sha256": "a0770d90fb20f64168b42d357237bf111608224d23e9036db2a29f48a49c4004"
+    },
+    {
+      "file": "graph.strings",
+      "bytes": 1927371,
+      "sha256": "76c638e939aa12df365ce4f4f49f66a3655a957d73deac8a5b19206be61b63cf"
+    },
+    {
+      "file": "graph.strings.identity",
+      "bytes": 32,
+      "sha256": "cbe63b377a313407179cc953427bea24578c4cacdfeb97b6b54925d6aa8d3e64"
+    },
+    {
+      "file": "graph.typeindex",
+      "bytes": 1455944,
+      "sha256": "14045ce5b651fef99c1b4bb8f9f1cd69284e91516dad675b3aec833215cd3bfe"
+    }
+  ],
+  "fixture-android-05": [
+    {
+      "file": "forward.graph",
+      "bytes": 662111,
+      "sha256": "0c134a8723e4a2bf756b0f6d32a5d09fec488313ca31d9004d6892bcb281a049"
+    },
+    {
+      "file": "forward.offsets",
+      "bytes": 959984,
+      "sha256": "7b46acbe6636ebd4adac720bafd06a2e64eddc5cb5fbcc255a4ef26bad8c1ca3"
+    },
+    {
+      "file": "forward.properties",
+      "bytes": 940,
+      "sha256": "618ac1dcf9f1d2e86e98042fc317272a7e00d67335c7227be82d3313f763ffde"
+    },
+    {
+      "file": "graph.callsite-projection-tuple-filter",
+      "bytes": 262196,
+      "sha256": "a640eb43c5a5677b00d6d01ecd02857a78bdacf0e49e1fb9f7411c214a6f658d"
+    },
+    {
+      "file": "graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "e47e7d1a35a784dfec3838cfb4f1ad42a89e334dd6f6afd4f9ab8b33b173206f"
+    },
+    {
+      "file": "graph.callsite-string-index",
+      "bytes": 6988300,
+      "sha256": "e015bb1ca6fccea7ba63dcb1095a265566ab0423d250ac350fa9f768f4bf0d83"
+    },
+    {
+      "file": "graph.classoverview",
+      "bytes": 80340,
+      "sha256": "b70511d2a409181e2f20b6932a18ab8ed5b1382cf41377a1ae6acb8660e9c878"
+    },
+    {
+      "file": "graph.comparisons",
+      "bytes": 583784,
+      "sha256": "82ee2489aad0774564f31f23f954fc657775b76ead6f32a14e4e996733191ab8"
+    },
+    {
+      "file": "graph.labelprefix",
+      "bytes": 8830068,
+      "sha256": "fb46602a2d31fea6e8cf93ff7ca1be198563ac47850dc2cf96f37d11da1d3f54"
+    },
+    {
+      "file": "graph.labels",
+      "bytes": 386922,
+      "sha256": "c7787f7f9e4a53369b6451b1bcee02cee2740abaf0b0d7f6303ea86de9b52e75"
+    },
+    {
+      "file": "graph.metadata",
+      "bytes": 2771928,
+      "sha256": "d9fcb1928443586fb71449a10b78f84954d2449e8f0cd42fdd881588f10aacee"
+    },
+    {
+      "file": "graph.nodedata",
+      "bytes": 14794086,
+      "sha256": "115758d57147a248e564a57ce4ff30ce1fab1d607952cd4ef6f55b4864938cac"
+    },
+    {
+      "file": "graph.nodeindex",
+      "bytes": 4644388,
+      "sha256": "567f3dfd97db3795998d4bbc53344f2cf6b5181505c95e1c4cd0ecd9e882c62c"
+    },
+    {
+      "file": "graph.nodeoffsets",
+      "bytes": 17660136,
+      "sha256": "e7afcef2b69656639487c04c4b01d4dae907463f57dc2fe52c864516d59f2acd"
+    },
+    {
+      "file": "graph.resources",
+      "bytes": 115762,
+      "sha256": "db76037d8d59b9c30acdbbf164226a893e70d24d69f1b91979aef4d56462c30b"
+    },
+    {
+      "file": "graph.strings",
+      "bytes": 1809887,
+      "sha256": "6b2ffb49620fc8ad892c7231f562f7d3ec499b7cd35f821f856468f9c5757de0"
+    },
+    {
+      "file": "graph.strings.identity",
+      "bytes": 32,
+      "sha256": "b449110f7c45dc3b9fbfb7aba4a6d244896e2d9ad3b5b67dd2cc60bf6723f9a1"
+    },
+    {
+      "file": "graph.typeindex",
+      "bytes": 1429256,
+      "sha256": "79b789049e39c1220510fc677b83925e5b07d19b763014837692ed6c87c41df2"
+    }
+  ],
+  "fixture-android-06": [
+    {
+      "file": "forward.graph",
+      "bytes": 756413,
+      "sha256": "c6e6270a1dad88d2b6d495450ff29155f1c8e2aa30d3d121a11108ddd3529908"
+    },
+    {
+      "file": "forward.offsets",
+      "bytes": 1122762,
+      "sha256": "1ed1e832f5931d1204b0d7e15bcc5734a2d3049adc913bb4170be4b31abf832e"
+    },
+    {
+      "file": "forward.properties",
+      "bytes": 941,
+      "sha256": "db6a59b29ae39abf94c8915f5fae80032500e8cb091a7f435142669f09550add"
+    },
+    {
+      "file": "graph.callsite-projection-tuple-filter",
+      "bytes": 262196,
+      "sha256": "ee8248d9bd9e3eb6abea062a6d0b4da771027e60a776a3b13d257f2b20ef8382"
+    },
+    {
+      "file": "graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "f07506913b7ae1be77df83fdd5c4283b7816c558e1f81919be673ade297c88e3"
+    },
+    {
+      "file": "graph.callsite-string-index",
+      "bytes": 7894004,
+      "sha256": "2bca94ab70ffbf853b25fdd24e779d7eeb7873d97ef5005d294805082557821f"
+    },
+    {
+      "file": "graph.classoverview",
+      "bytes": 84528,
+      "sha256": "ec855fab03ea51d647d391f6561f7f5f1ad90f2d943f19381f78953aceb77cdb"
+    },
+    {
+      "file": "graph.comparisons",
+      "bytes": 647720,
+      "sha256": "5d2638b261b0100bad16afe7d9c799cc38f6d007cde8ce1a3cb9a0059d13706c"
+    },
+    {
+      "file": "graph.labelprefix",
+      "bytes": 10412136,
+      "sha256": "23074326018c145bfbbcf745b21682c937833d33fa82e4ca940e3ef17117b7af"
+    },
+    {
+      "file": "graph.labels",
+      "bytes": 432252,
+      "sha256": "82cb5aa624005cf796838b3771d6414d49959cdd02d269b1d55c4ff544680c96"
+    },
+    {
+      "file": "graph.metadata",
+      "bytes": 3072108,
+      "sha256": "042d8fd76e9054a965359415e77a0055affaa2387ba230a13b226fd160537a04"
+    },
+    {
+      "file": "graph.nodedata",
+      "bytes": 16654405,
+      "sha256": "0702e746e2b4d1c1a9776170eb2ecad37bb66fa6726bb0c06c42479653f8a776"
+    },
+    {
+      "file": "graph.nodeindex",
+      "bytes": 5141729,
+      "sha256": "d5b454c774000b94810c5f00b39ddc6042bfd2883e13c545916fd5f0b5078a95"
+    },
+    {
+      "file": "graph.nodeoffsets",
+      "bytes": 20824272,
+      "sha256": "b73389166654a0b972ebef2ece61fabe2ed995c51c08816c946e3089dc210d4a"
+    },
+    {
+      "file": "graph.resources",
+      "bytes": 169540,
+      "sha256": "24af456bc7f273cf1dfbd2323e7283a7f27e271854f37e2a00411d2c1f431b58"
+    },
+    {
+      "file": "graph.strings",
+      "bytes": 1980183,
+      "sha256": "00701f82ed82735ca511c51b595bcbe08842ae3ca723b44a75bd59d9d0e28806"
+    },
+    {
+      "file": "graph.strings.identity",
+      "bytes": 32,
+      "sha256": "3d751c251841183ad10e439aa9f3baa8b08bbaa0a8d0e5e771b1449f8975f272"
+    },
+    {
+      "file": "graph.typeindex",
+      "bytes": 1582284,
+      "sha256": "add9de896e0a854b7bad38d8ec511d4c1acc6d423bcbba4fc0a8dc15fbff44d9"
+    }
+  ],
+  "fixture-android-07": [
+    {
+      "file": "forward.graph",
+      "bytes": 787123,
+      "sha256": "a920d80b9467287dfc3972a60714c774c37546c223132b22ff0ee7d555ded660"
+    },
+    {
+      "file": "forward.offsets",
+      "bytes": 1262108,
+      "sha256": "4957462efbda9b412cf8297982749636e171642a16365b461d6c6f853dedd474"
+    },
+    {
+      "file": "forward.properties",
+      "bytes": 942,
+      "sha256": "2bdfefec22867807bf153c03f03db863299f22ad5f642990f952b94c86288d9c"
+    },
+    {
+      "file": "graph.callsite-projection-tuple-filter",
+      "bytes": 262196,
+      "sha256": "26472ecf2d4e237abd4d26ccfd441ee7efd5f1746e6218db491039c36d18b3e2"
+    },
+    {
+      "file": "graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "05ce32d336382d1b96cd3aa434c686969912469c09882ef448a3bb2752c7cca3"
+    },
+    {
+      "file": "graph.callsite-string-index",
+      "bytes": 7498956,
+      "sha256": "e88074dd59d78130e8dddd8ca2010f48d3237025df2091f7775acf8083ba24d8"
+    },
+    {
+      "file": "graph.classoverview",
+      "bytes": 82224,
+      "sha256": "c5c3eea4834a4b7a3281d8b8c696ba49622f17d838281daea905a52d2129ce8a"
+    },
+    {
+      "file": "graph.comparisons",
+      "bytes": 573480,
+      "sha256": "8a5a71ea3fd2b0a592cf4e48c341e90afef973aaaa6f6bfc6e9c2aa4bf63ad74"
+    },
+    {
+      "file": "graph.labelprefix",
+      "bytes": 11947224,
+      "sha256": "566c4bd2847fa24642785b2f65eb764bd21926760bed719fe04bda445be56f86"
+    },
+    {
+      "file": "graph.labels",
+      "bytes": 413134,
+      "sha256": "736c1546eba9482410419b3a79f3e52c42bef29ae4acba8b4fd33419782dd2bd"
+    },
+    {
+      "file": "graph.metadata",
+      "bytes": 2891468,
+      "sha256": "e41eacb980ed861a12d7237dd19deae5602ada2df3e40e1212d363f7cb285ea0"
+    },
+    {
+      "file": "graph.nodedata",
+      "bytes": 16157282,
+      "sha256": "6e0d9e33b3228a5668091e3cdec48757c87899bd84be905fe2db4488f6a57d91"
+    },
+    {
+      "file": "graph.nodeindex",
+      "bytes": 4989044,
+      "sha256": "6385d2131c1dfe04470b8315fe1d35abcb4233d29d68dc0f5b312a7102ccd2f4"
+    },
+    {
+      "file": "graph.nodeoffsets",
+      "bytes": 23894448,
+      "sha256": "6bd2904fa1479425e8b5f3374f58dcdffa22197a9b7e8985cc5dd55363360463"
+    },
+    {
+      "file": "graph.resources",
+      "bytes": 141383,
+      "sha256": "69a50605e6d30bc5b4ebd786b2d008d5318b2d479a7cd6b6f116d5898fa591c2"
+    },
+    {
+      "file": "graph.strings",
+      "bytes": 1942097,
+      "sha256": "68868b0ac8c46b195f119ddb23c8ef2743cc9e6d4c5a0e2db16630637b412f02"
+    },
+    {
+      "file": "graph.strings.identity",
+      "bytes": 32,
+      "sha256": "86277348aa9066f66555637c10f80dc3bf5bdae48ccc21103859f807fb94f8a9"
+    },
+    {
+      "file": "graph.typeindex",
+      "bytes": 1535304,
+      "sha256": "ffc3bfd7645f4475ad2a50677265496a8b3f517721945f1eee7641f8289d2811"
+    }
+  ]
+}

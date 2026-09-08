@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"runtime"
 	"sort"
+	"sync/atomic"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
 )
 
 type distinctProjectedRow struct {
-	order int64
-	row   map[string]any
+	order      int64
+	row        map[string]any
+	storageKey string
 }
 type distinctSourceResult struct {
 	rows  []map[string]any
@@ -24,6 +26,12 @@ type distinctSourceResult struct {
 func failProjectionRead(err error) {
 	if err == nil {
 		return
+	}
+	var aborted *store.WorkAbortedError
+	if errors.As(err, &aborted) {
+		// Work rejection escapes the optional persisted-file fallback. Preserve
+		// the exact budget/cancellation cause after Store releases the loader.
+		panic(aborted.Cause)
 	}
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		panic(err)
@@ -371,50 +379,30 @@ func (e evaluator) distinctRawValues(source Graph, id int32, plan *indexedDistin
 	return sids, row
 }
 
-// A previously initialized mapped view can prove an empty split lookup before
-// a retained reader examines unrelated node offsets. Keep generic node handling
-// in the caller: a CallSite miss does not rule out matching annotations.
-func (e evaluator) prepareDistinctSourceIndex(source Graph, plan *indexedDistinctPlan) (*store.DistinctStringIndex, bool) {
+// Split preparation follows the storage provider's reader/preflight/fallback
+// order. A proven CallSite miss still leaves generic supplementation to callers.
+func (e evaluator) prepareDistinctSourceIndex(source Graph, plan *indexedDistinctPlan) (*store.DistinctStringIndex, bool, map[int]map[int32]bool) {
 	defer ordinarySourceFailure()
-	if plan.preferMappedView && plan.sourceCount >= 40 {
-		_, retained, err := source.Store.RetainedProjectionIndex(e.ctx)
-		failProjectionRead(err)
-		if !retained {
-			view, present, err := source.Store.InitializedProjectionView(e.ctx)
-			failProjectionRead(err)
-			if present {
-				atoms := []distinctStringAtom{}
-				for _, atom := range plan.atoms {
-					if _, callsite := distinctCallSiteProperties[atom.property]; callsite {
-						atoms = append(atoms, atom)
-					}
-				}
-				if len(atoms) > 0 {
-					sets, supported := e.mainExactMatches(source, view, &mainStringSourceSpec{atoms: atoms})
-					if supported && !ordinaryAnyExact(sets) {
-						return view, true
-					}
-				}
-			}
-		}
+	if plan.sourceCount >= 40 {
+		return e.prepareDistinctSplitSourceIndex(source, plan)
 	}
 	index, available, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: plan.sourceCount, Limit: plan.limit, PreferMappedView: plan.preferMappedView, CannotMatch: func() bool { return e.distinctCannotMatch(source, plan) }})
 	failProjectionRead(err)
 	if !available {
-		return nil, false
+		return nil, false, nil
 	}
-	return index, false
+	return index, false, nil
 }
 func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan) distinctSourceResult {
 	e.check()
-	index, empty := e.prepareDistinctSourceIndex(source, plan)
+	index, empty, exact := e.prepareDistinctSourceIndex(source, plan)
 	if index == nil {
 		functionError("IllegalStateException", "Distinct projection capability became unavailable")
 	}
 	rows := []distinctProjectedRow{}
 	seenIDs := map[string]bool{}
 	if !empty && (index.Raw || index.ParallelRaw) {
-		rows = e.distinctRawRows(source, index, plan, nil, nil)
+		rows = e.distinctRawRows(source, index, plan, nil, nil, exact)
 	} else if !empty {
 		for _, id := range e.distinctMatchingIDs(source, index, plan) {
 			sids, row := e.distinctRawValues(source, id, plan)
@@ -429,7 +417,7 @@ func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan)
 			seenIDs[k] = true
 			order, err := source.Store.ProjectionNodeOrder(e.ctx, id)
 			failProjectionRead(err)
-			rows = append(rows, distinctProjectedRow{order, row})
+			rows = append(rows, distinctProjectedRow{order: order, row: row})
 			if len(rows) >= plan.limit {
 				break
 			}
@@ -487,7 +475,7 @@ func (e evaluator) distinctGenericRows(source Graph, plan *indexedDistinctPlan) 
 		seen[k] = true
 		order, err := source.Store.ProjectionNodeOrder(e.ctx, node.ID)
 		failMainStringRead(err)
-		rows = append(rows, distinctProjectedRow{order, row})
+		rows = append(rows, distinctProjectedRow{order: order, row: row})
 		if len(rows) >= plan.limit {
 			break
 		}
@@ -555,7 +543,7 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
 		return hits
 	}
 	selectedRows = rawTargets
-	index, empty := e.prepareDistinctSourceIndex(source, plan)
+	index, empty, exact := e.prepareDistinctSourceIndex(source, plan)
 	// Main accepts an unavailable storage capability during provenance probing,
 	// then still consumes generic candidates for the selected rows.
 	if empty || index == nil {
@@ -563,7 +551,7 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
 		return hits
 	}
 	if index.Raw || index.ParallelRaw {
-		for _, row := range e.distinctRawRows(source, index, plan, selectedKeys, selectedRows) {
+		for _, row := range e.distinctRawRows(source, index, plan, selectedKeys, selectedRows, exact) {
 			hits[distinctVisibleKey(row.row)] = true
 		}
 	} else if exact, handled := e.distinctExactTupleHits(source, index, plan, selectedRows); handled {
@@ -734,7 +722,7 @@ func (e evaluator) distinctRawRange(source Graph, plan *indexedDistinctPlan, sel
 		seen[k] = true
 		order, err := source.Store.ProjectionNodeOrder(e.ctx, id)
 		failProjectionRead(err)
-		rows = append(rows, distinctProjectedRow{order, row})
+		rows = append(rows, distinctProjectedRow{order: order, row: row})
 		target := plan.limit
 		if selected != nil {
 			target = min(target, len(selected))
@@ -770,13 +758,12 @@ func (e evaluator) distinctCannotMatch(source Graph, plan *indexedDistinctPlan) 
 	return true
 }
 
-func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringIndex, plan *indexedDistinctPlan, selected map[string]bool, targets []map[string]any) []distinctProjectedRow {
+func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringIndex, plan *indexedDistinctPlan, selected map[string]bool, targets []map[string]any, exact map[int]map[int32]bool) []distinctProjectedRow {
 	ids := source.Store.NodesOfKind("CallSiteNode")
 	if !index.ParallelRaw {
 		return e.distinctRawRange(source, plan, selected, ids, nil, nil)
 	}
-	var exact map[int]map[int32]bool
-	if !index.Raw {
+	if exact == nil && !index.Raw {
 		exact = map[int]map[int32]bool{}
 		for p := store.CallerClass; p <= store.CalleeName; p++ {
 			set := map[int32]bool{}
@@ -812,49 +799,58 @@ func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringInde
 		}
 	}
 	var selectedIDs map[string]bool
-	if selected != nil {
-		selectedIDs = map[string]bool{}
-		for _, target := range targets {
-			values := make([]any, len(plan.properties))
-			valid := true
-			for i, property := range plan.properties {
-				value := target[plan.columns[i]]
-				p, raw := distinctCallSiteProperties[property]
-				if !raw {
-					values[i] = int32(-1)
-					if property == "graphId" {
-						valid = valid && value == source.ID
-					} else {
-						valid = valid && value == nil
+	if plan.sourceCount >= 40 {
+		if selected != nil {
+			selectedIDs = e.distinctSplitSelectedIDs(source, index, plan, targets, exact != nil)
+			if len(selectedIDs) == 0 {
+				return nil
+			}
+		}
+	} else {
+		if selected != nil {
+			selectedIDs = map[string]bool{}
+			for _, target := range targets {
+				values := make([]any, len(plan.properties))
+				valid := true
+				for i, property := range plan.properties {
+					value := target[plan.columns[i]]
+					p, raw := distinctCallSiteProperties[property]
+					if !raw {
+						values[i] = int32(-1)
+						if property == "graphId" {
+							valid = valid && value == source.ID
+						} else {
+							valid = valid && value == nil
+						}
+						continue
 					}
-					continue
-				}
-				text, ok := value.(string)
-				if !ok {
-					valid = false
-					break
-				}
-				sid := e.distinctStringTableID(source.Store.Strings, text)
-				if sid < 0 {
-					valid = false
-					break
-				}
-				if !index.Raw {
-					postings, err := index.Postings(e.ctx, store.CallSiteStringProperty(p), sid)
-					failProjectionRead(err)
-					if len(postings) == 0 {
+					text, ok := value.(string)
+					if !ok {
 						valid = false
 						break
 					}
+					sid := e.distinctStringTableID(source.Store.Strings, text)
+					if sid < 0 {
+						valid = false
+						break
+					}
+					if !index.Raw {
+						postings, err := index.Postings(e.ctx, store.CallSiteStringProperty(p), sid)
+						failProjectionRead(err)
+						if len(postings) == 0 {
+							valid = false
+							break
+						}
+					}
+					values[i] = sid
 				}
-				values[i] = sid
+				if valid {
+					selectedIDs[key(values)] = true
+				}
 			}
-			if valid {
-				selectedIDs[key(values)] = true
+			if len(selectedIDs) == 0 {
+				return nil
 			}
-		}
-		if len(selectedIDs) == 0 {
-			return nil
 		}
 	}
 	workers := min(len(ids), max(0, runtime.NumCPU()-max(1, runtime.NumCPU()/2))+1)
@@ -867,17 +863,36 @@ func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringInde
 	done := make(chan outcome, workers)
 	ctx, cancel := context.WithCancel(e.ctx)
 	defer cancel()
+	var abort atomic.Bool
+	var states *distinctSplitMatchStates
+	split := plan.sourceCount >= 40
+	targetSize := plan.limit
+	if selected != nil {
+		targetSize = min(targetSize, len(targets))
+	}
+	if split && exact == nil {
+		states = newDistinctSplitMatchStates(plan.atoms, len(source.Store.Strings))
+	}
 	task := func(i int) (out outcome) {
 		out.index = i
 		defer func() {
 			out.failure = recover()
 			if out.failure != nil {
-				cancel()
+				if split {
+					abort.Store(true)
+				} else {
+					cancel()
+				}
 			}
 		}()
 		local := e
 		local.ctx = ctx
-		out.rows = local.distinctRawRange(source, plan, selected, ids[i*chunk:min(len(ids), (i+1)*chunk)], exact, selectedIDs)
+		segment := ids[i*chunk : min(len(ids), (i+1)*chunk)]
+		if split {
+			out.rows = local.distinctSplitRawRange(source, plan, segment, exact, selectedIDs, targetSize, states, &abort)
+		} else {
+			out.rows = local.distinctRawRange(source, plan, selected, segment, exact, selectedIDs)
+		}
 		return
 	}
 	count := (len(ids) + chunk - 1) / chunk
@@ -907,10 +922,16 @@ func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringInde
 	limit := plan.limit
 	if selected != nil {
 		limit = min(limit, len(selectedIDs))
+		if split {
+			limit = targetSize
+		}
 	}
 	for _, part := range results {
 		for _, row := range part {
 			k := distinctVisibleKey(row.row)
+			if split {
+				k = row.storageKey
+			}
 			if seen[k] {
 				continue
 			}

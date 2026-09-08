@@ -1,0 +1,89 @@
+{
+  "Query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'java'\nRETURN n.caller_class AS callerClass\nLIMIT 200",
+  "Graphs": [
+    {
+      "ID": "fixture-android-02",
+      "Path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-real64-diagnostic-v1/fixtures/fixture-android-02",
+      "V2Before": {
+        "id": "fixture-android-02",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      }
+    },
+    {
+      "ID": "fixture-android-03",
+      "Path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-real64-diagnostic-v1/fixtures/fixture-android-03",
+      "V2Before": {
+        "id": "fixture-android-03",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      }
+    },
+    {
+      "ID": "fixture-android-04",
+      "Path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-real64-diagnostic-v1/fixtures/fixture-android-04",
+      "V2Before": {
+        "id": "fixture-android-04",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      }
+    },
+    {
+      "ID": "fixture-android-05",
+      "Path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-real64-diagnostic-v1/fixtures/fixture-android-05",
+      "V2Before": {
+        "id": "fixture-android-05",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      }
+    },
+    {
+      "ID": "fixture-android-06",
+      "Path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-real64-diagnostic-v1/fixtures/fixture-android-06",
+      "V2Before": {
+        "id": "fixture-android-06",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      }
+    },
+    {
+      "ID": "fixture-android-07",
+      "Path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-real64-diagnostic-v1/fixtures/fixture-android-07",
+      "V2Before": {
+        "id": "fixture-android-07",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      }
+    }
+  ]
+}

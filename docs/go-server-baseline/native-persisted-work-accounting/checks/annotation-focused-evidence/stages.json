@@ -1,0 +1,62 @@
+[
+  {
+    "stage": "version",
+    "startedAtUTC": "2026-09-08T15:17:40.504502+00:00",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "version"
+    ],
+    "exitCode": 0,
+    "endedAtUTC": "2026-09-08T15:17:40.522576+00:00"
+  },
+  {
+    "stage": "baseline",
+    "startedAtUTC": "2026-09-08T15:17:40.522746+00:00",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "test",
+      "-race",
+      "-overlay",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-focused-v1/baseline-overlay.json",
+      "./internal/store",
+      "-run",
+      "^TestProjectionAnnotation",
+      "-count=1",
+      "-v"
+    ],
+    "exitCode": 1,
+    "endedAtUTC": "2026-09-08T15:17:42.438007+00:00"
+  },
+  {
+    "stage": "candidate",
+    "startedAtUTC": "2026-09-08T15:17:42.438229+00:00",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "test",
+      "-race",
+      "./internal/store",
+      "-run",
+      "^Test(ProjectionAnnotation|ProjectionEnum|ProjectionContext|IntegrationProjectionCandidateCloseAndOwnedValues)",
+      "-count=3",
+      "-v"
+    ],
+    "exitCode": 0,
+    "endedAtUTC": "2026-09-08T15:17:46.097726+00:00"
+  },
+  {
+    "stage": "public",
+    "startedAtUTC": "2026-09-08T15:17:46.098527+00:00",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "test",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestGenericDisjunctionMainReadSemantics/annotation-bad-tail",
+      "-count=1",
+      "-v"
+    ],
+    "exitCode": 0,
+    "endedAtUTC": "2026-09-08T15:17:50.242064+00:00"
+  }
+]

@@ -1,0 +1,38 @@
+{
+  "finding": "Canceled queued futures retain completed request payloads",
+  "originalReviewSHA256": "fc5b4f5afa7bb41ec85a94e748ba0966fe327ef3818393a2b48a7a675a7711ef",
+  "resolution": "resolved for the reviewed source",
+  "resolvedProductionSHA256": "dfc418d602fbe17261c4565155cf1061fb2f84bc2172d29e7a497ce48fd31e87",
+  "resolvedTestsSHA256": "863210f83f5f4427160bcb7985ae8484ff8ec0c0c68f9d9a2c046aefc26ff1aa",
+  "verifiedSourceRules": [
+    "Every callable is installed before parent AfterFunc registration",
+    "setRun rejects canceled and completed futures under the future mutex",
+    "execute captures the callable locally while marking started under the mutex",
+    "Never-started cancellation clears callable and worker references before completion",
+    "finish clears callable and worker references before completion",
+    "Cancellation checks completed/canceled before dereferencing worker"
+  ],
+  "evidence": {
+    "directory": "checks/scheduler-focused-v1",
+    "exitCode": 0,
+    "raceEnabled": true,
+    "inputsUnchanged": true,
+    "completeSourceArchiveMembersVerified": 2568,
+    "sourceArchiveSHA256": "1eed96bfaf5a0f0bab99dadee4d873893e17dfaca2a5ebd32eb996ed347a522f",
+    "rawTestLogSHA256": "6476265d60ebbc39ebc7017757142f6764d44c57a5646751ee432c61e5db297f",
+    "archivedArtifactsEqualExternalOriginals": true,
+    "currentReviewedFilesEqualFrozenSnapshot": true,
+    "deterministicControlsPassed": [
+      "TestMainFixedExecutorQueuedFutureCancellationDoesNotWaitForCapacity",
+      "TestMainFixedFutureCannotRestoreCanceledClosure",
+      "TestMainFixedFutureCompletionClearsRunningClosure",
+      "TestMainFixedWorkersReuseAndNormalContextLifetime"
+    ]
+  },
+  "originalReviewFilesModified": false,
+  "productionOrTestFilesEditedByReviewer": false,
+  "engineProcessesStartedByReviewer": 0,
+  "performanceMeasurements": 0,
+  "newReal64ResultReviewed": false,
+  "overallAcceptancePassed": false
+}

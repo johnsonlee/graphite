@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "./internal/query",
+    "-run",
+    "^TestDistinctSplit",
+    "-count=1",
+    "-v"
+  ],
+  "cwd": "/tmp/graphite-distinct-split-raw-focused-v1/module",
+  "startedUnix": 1788882651.929168,
+  "finishedUnix": 1788882657.625978,
+  "pid": 60632,
+  "exitCode": 0
+}

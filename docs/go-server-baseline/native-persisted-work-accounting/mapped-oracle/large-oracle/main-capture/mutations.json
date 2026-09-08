@@ -1,0 +1,44 @@
+{
+  "sources": [
+    {
+      "file": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/large-writer-capture/fixtures.tar.gz",
+      "sha256": "1a4903f0b10d5a9e28f08643e3a902ffaeef75b54d12bfaf45a89192e0560f89"
+    },
+    {
+      "file": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/fixtures.tar.gz",
+      "sha256": "1a5564b5c08c837cda14455f38ad2e7154782dc50ef1c41774ac83b020979052"
+    }
+  ],
+  "mutations": [
+    {
+      "fixture": "large-bad-first-chunk",
+      "file": "graph.callsite-string-index",
+      "byteOffset": 1048656,
+      "postingIndex": 262143,
+      "before": 262153,
+      "after": 2147483647,
+      "beforeSHA256": "0d67ed2384f32382164109ba57d6c2b9e14b097822e7a982a1d26a92b60ff615",
+      "afterSHA256": "5196ed25bfee438067b10503990d2ca32044553fd675a8438ceef076a8962db8",
+      "invalidChunk": 1,
+      "completePriorPostingChunkUnits": 0,
+      "priorIdentityAndHeaderAndDirectoryUnits": 45
+    },
+    {
+      "fixture": "large-bad-second-chunk",
+      "file": "graph.callsite-string-index",
+      "byteOffset": 1048660,
+      "postingIndex": 262144,
+      "before": 262154,
+      "after": 2147483647,
+      "beforeSHA256": "0d67ed2384f32382164109ba57d6c2b9e14b097822e7a982a1d26a92b60ff615",
+      "afterSHA256": "3a6130b418a3be9460ea09463ba5ad720ec4fdf77044296e7fb09313e812722c",
+      "invalidChunk": 2,
+      "completePriorPostingChunkUnits": 262144,
+      "priorIdentityAndHeaderAndDirectoryUnits": 45
+    }
+  ],
+  "actualWriterNodes": 262145,
+  "checksumChunkBytes": 1048576,
+  "integersPerChunk": 262144,
+  "performanceMeasurements": 0
+}

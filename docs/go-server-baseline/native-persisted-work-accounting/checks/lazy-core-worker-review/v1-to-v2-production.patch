@@ -1,0 +1,20 @@
+--- v1/main_fixed_workers.go
++++ v2/main_fixed_workers.go
+@@ -39,11 +39,12 @@
+ // The prepared path shares main's process-wide fixed executor capacity. The
+ // legacy runner is deliberately not migrated by this change.
+ type mainFixedExecutor struct {
+-	mu     sync.Mutex
+-	ready  *sync.Cond
+-	queue  []*mainFixedFuture
+-	closed bool
+-	exited sync.WaitGroup
++	capacity, cores int
++	mu              sync.Mutex
++	ready           *sync.Cond
++	queue           []*mainFixedFuture
++	closed          bool
++	exited          sync.WaitGroup
+ }
+ type mainFixedFuture struct {
+ 	mu                          sync.Mutex

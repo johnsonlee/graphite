@@ -1,0 +1,132 @@
+{
+  "moduleFiles": 2575,
+  "currentSourceBoundToFocusedFullChecksAndFailedCold": true,
+  "fullCheckInputs": 3395,
+  "entryOracleComparedDifferences": 0,
+  "entryOracleSourceDifferencesOnlyTestSymbols": [
+    "internal/query/lazy_filtered_slot_test.go",
+    "internal/query/projection_context_test.go"
+  ],
+  "changedFromSchedulerSource": [
+    "internal/query/lazy_filtered_slot_test.go",
+    "internal/query/main_retained_entry.go",
+    "internal/query/main_retained_entry_test.go",
+    "internal/query/main_string_candidates.go",
+    "internal/query/main_string_mapped.go",
+    "internal/query/main_string_postings.go",
+    "internal/query/main_string_source.go",
+    "internal/query/main_string_source_test.go",
+    "internal/query/mapped_entry_observer_instrumented_test.go",
+    "internal/query/mapped_entry_observer_plain_test.go",
+    "internal/query/mapped_entry_oracle_test.go",
+    "internal/query/ordinary_cache.go",
+    "internal/query/ordinary_parallel.go",
+    "internal/query/projection_context_test.go",
+    "internal/store/distinct_projection.go",
+    "internal/store/main_callsite_index.go",
+    "internal/store/main_ordinary_entry.go",
+    "internal/store/main_ordinary_entry_test.go",
+    "internal/store/main_persistent_identity.go",
+    "internal/store/ordinary_projection.go",
+    "internal/store/projection_cache.go",
+    "internal/store/projection_context_test.go",
+    "internal/store/projection_node.go"
+  ],
+  "productionChanges": [
+    "internal/query/main_retained_entry.go",
+    "internal/query/main_string_candidates.go",
+    "internal/query/main_string_mapped.go",
+    "internal/query/main_string_postings.go",
+    "internal/query/main_string_source.go",
+    "internal/query/ordinary_cache.go",
+    "internal/query/ordinary_parallel.go",
+    "internal/store/distinct_projection.go",
+    "internal/store/main_callsite_index.go",
+    "internal/store/main_ordinary_entry.go",
+    "internal/store/main_persistent_identity.go",
+    "internal/store/ordinary_projection.go",
+    "internal/store/projection_cache.go",
+    "internal/store/projection_node.go"
+  ],
+  "fixedWorkerImplementationUnchanged": true,
+  "real64Cold": {
+    "state": "cold",
+    "caseDefinitionsExactlyEqual": true,
+    "loadedGraphCapabilityCounts": {
+      "main": {
+        "retained": 0,
+        "mappedView": 0,
+        "trigrams": 0,
+        "loadedFromPersistence": 0
+      },
+      "native": {
+        "retained": 0,
+        "mappedView": 0,
+        "trigrams": 0,
+        "loadedFromPersistence": 0
+      }
+    },
+    "phaseCaseCounts": {
+      "replay": 1267
+    },
+    "mainPhaseOutcomes": {
+      "replay": {
+        "success": 1266,
+        "error": 1
+      }
+    },
+    "publicDifferences": [],
+    "stateDifferenceCounts": {
+      "mappedRangeCount": 15162
+    },
+    "firstStateDifferences": {
+      "mappedRangeCount": {
+        "observation": "replay/3/after",
+        "graph": "fixture-android-03",
+        "main": 6,
+        "native": 0
+      }
+    },
+    "graphStateObservations": 162304,
+    "errors": [
+      {
+        "phase": "replay",
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection"
+      }
+    ],
+    "observerFieldDifferences": [
+      {
+        "phase": "replay",
+        "index": 821,
+        "field": "errorClass",
+        "main": "java.lang.IllegalStateException",
+        "native": null
+      }
+    ],
+    "nativeUnavailableStateCounters": [],
+    "mainRawCacheNonzeroObservationCounts": {
+      "rawMatchCount": 0,
+      "rawProjectionCount": 2515
+    },
+    "mainRawCacheMaximumCounts": {
+      "rawMatchCount": 0,
+      "rawProjectionCount": 4
+    },
+    "mainManifestSuccessfulDigestsVerified": 1266,
+    "invocationPrepared": true,
+    "replayPhaseCovered": true,
+    "originalAllSuccessGatePassed": false,
+    "runtimeExitCode": 1,
+    "originalGraphFilesUnchangedPerRuntime": 1152,
+    "performanceMeasurement": false
+  },
+  "previousFrozenSourceRepeatPublicAndStateDifferences": 0,
+  "currentWarmAndStartupPrepared": "unexecuted after cold comparison failure",
+  "currentMatrix201": "not rerun for current entry source",
+  "performanceMeasurements": 0,
+  "functionalAcceptanceProven": false,
+  "performanceAcceptanceProven": false
+}

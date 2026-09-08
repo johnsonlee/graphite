@@ -23,16 +23,27 @@ type mainCallSiteIndexState struct {
 }
 
 func (s *Store) tryMainCallSiteStringIndex(ctx context.Context, mapped bool) (*CallSiteStringIndex, bool, error) {
-	if err := s.prepareProjectionOffsets(ctx); err != nil {
+	return s.tryMainCallSiteStringIndexWithWork(ctx, mapped, nil)
+}
+
+func (s *Store) tryMainCallSiteStringIndexWithWork(ctx context.Context, mapped bool, consumeWork func(int64) error) (*CallSiteStringIndex, bool, error) {
+	if isMainReaderEntry(ctx) && mapped {
+		prepared, err := s.MainPreparedProjectionFile()
+		if err != nil || !prepared {
+			return nil, false, err
+		}
+	}
+	metadataCtx := mainEntryMetadataContext(ctx)
+	if err := s.prepareProjectionOffsets(metadataCtx); err != nil {
 		return nil, false, err
 	}
-	slot, policy := 0, mainRetainedIndex
+	slot := 0
 	if mapped {
-		slot, policy = 1, mainMappedIndex
+		slot = 1
 	}
 	st := &s.callSiteIndex
 	for {
-		if err := ctx.Err(); err != nil {
+		if err := metadataCtx.Err(); err != nil {
 			return nil, false, err
 		}
 		st.mu.Lock()
@@ -40,7 +51,7 @@ func (s *Store) tryMainCallSiteStringIndex(ctx context.Context, mapped bool) (*C
 			st.mu.Unlock()
 			return nil, false, ErrStoreClosed
 		}
-		if err := ctx.Err(); err != nil {
+		if err := metadataCtx.Err(); err != nil {
 			st.mu.Unlock()
 			return nil, false, err
 		}
@@ -55,10 +66,16 @@ func (s *Store) tryMainCallSiteStringIndex(ctx context.Context, mapped bool) (*C
 			return nil, false, nil
 		}
 		if pending := state.loading; pending != nil {
+			var closing <-chan struct{}
+			if isMainReaderEntry(ctx) {
+				closing = st.closing
+			}
 			st.mu.Unlock()
 			select {
-			case <-ctx.Done():
-				return nil, false, ctx.Err()
+			case <-metadataCtx.Done():
+				return nil, false, metadataCtx.Err()
+			case <-closing:
+				return nil, false, ErrStoreClosed
 			case <-pending:
 			}
 			continue
@@ -80,27 +97,41 @@ func (s *Store) tryMainCallSiteStringIndex(ctx context.Context, mapped bool) (*C
 		state.loading = done
 		closing := st.closing
 		st.mu.Unlock()
-		v, _, cache, err := s.loadCallSiteStringIndexWithPolicy(ctx, closing, policy, capacity)
-		st.mu.Lock()
-		if st.closed {
-			err = ErrStoreClosed
-		} else if ctx.Err() != nil {
-			err = ctx.Err()
-		}
-		if err == nil {
-			if v != nil {
-				state.view = v
-			} else if mapped {
-				state.unavailable = cache
+		return func() (v *CallSiteStringIndex, available bool, err error) {
+			cache, completed := false, false
+			// Even an unexpected panic must release the preparation ticket. The
+			// loader owns mapping cleanup until it returns a complete view.
+			defer func() {
+				st.mu.Lock()
+				defer st.mu.Unlock()
+				if err == nil {
+					if st.closed {
+						err = ErrStoreClosed
+					} else if metadataCtx.Err() != nil {
+						err = metadataCtx.Err()
+					}
+				}
+				if completed && err == nil {
+					if v != nil {
+						state.view = v
+					} else if mapped {
+						state.unavailable = cache
+					}
+				} else if v != nil {
+					_ = unmapNodeData(v.data)
+					v = nil
+				}
+				available = v != nil
+				state.loading = nil
+				close(done)
+			}()
+			if mapped {
+				v, cache, err = s.loadMainMappedIndex(ctx, closing, capacity, consumeWork)
+			} else {
+				v, err = s.loadMainRetainedIndex(ctx, closing, capacity, consumeWork)
 			}
-		}
-		if err != nil && v != nil {
-			_ = unmapNodeData(v.data)
-			v = nil
-		}
-		state.loading = nil
-		close(done)
-		st.mu.Unlock()
-		return v, v != nil, err
+			completed = true
+			return v, v != nil, err
+		}()
 	}
 }

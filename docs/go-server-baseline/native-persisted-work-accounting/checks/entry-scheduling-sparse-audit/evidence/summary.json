@@ -1,0 +1,137 @@
+{
+  "captures": {
+    "sparse-lazy": {
+      "eventCount": 1100,
+      "queries": [
+        {
+          "fixedEntryCount": 1,
+          "futuresCanceledBeforeStart": 0,
+          "futuresStarted": 8,
+          "index": 0,
+          "legacyEntryCount": 0,
+          "pollRejections": 0,
+          "poolBeforeQuery": [],
+          "rangePublications": 0,
+          "sourceTasks": 63,
+          "taskWorkers": 8
+        },
+        {
+          "fixedEntryCount": 1,
+          "futuresCanceledBeforeStart": 0,
+          "futuresStarted": 8,
+          "index": 1,
+          "legacyEntryCount": 0,
+          "pollRejections": 0,
+          "poolBeforeQuery": [
+            {
+              "capacity": 8,
+              "capacityReachedByObservedStarts": true,
+              "createdAtQuery": 0,
+              "executor": 1374614096384,
+              "observedCoreExitsBeforeQuery": 0,
+              "observedCoreStartsBeforeQuery": 8
+            }
+          ],
+          "rangePublications": 0,
+          "sourceTasks": 63,
+          "taskWorkers": 8
+        },
+        {
+          "fixedEntryCount": 0,
+          "futuresCanceledBeforeStart": 0,
+          "futuresStarted": 0,
+          "index": 2,
+          "legacyEntryCount": 0,
+          "pollRejections": 0,
+          "poolBeforeQuery": [
+            {
+              "capacity": 8,
+              "capacityReachedByObservedStarts": true,
+              "createdAtQuery": 0,
+              "executor": 1374614096384,
+              "observedCoreExitsBeforeQuery": 0,
+              "observedCoreStartsBeforeQuery": 8
+            }
+          ],
+          "rangePublications": 0,
+          "sourceTasks": 0,
+          "taskWorkers": 0
+        },
+        {
+          "fixedEntryCount": 1,
+          "futuresCanceledBeforeStart": 7,
+          "futuresStarted": 1,
+          "index": 3,
+          "legacyEntryCount": 0,
+          "pollRejections": 0,
+          "poolBeforeQuery": [
+            {
+              "capacity": 8,
+              "capacityReachedByObservedStarts": true,
+              "createdAtQuery": 0,
+              "executor": 1374614096384,
+              "observedCoreExitsBeforeQuery": 0,
+              "observedCoreStartsBeforeQuery": 8
+            }
+          ],
+          "rangePublications": 0,
+          "sourceTasks": 8,
+          "taskWorkers": 1
+        }
+      ],
+      "queryCount": 4
+    }
+  },
+  "comparisons": [
+    {
+      "byCategory": {},
+      "differences": 0,
+      "file": "sparse-lazy-vs-main-differences.json",
+      "left": "sparse-lazy",
+      "leftCaseCount": 4,
+      "right": "main",
+      "rightCaseCount": 4
+    },
+    {
+      "byCategory": {
+        "state": 1
+      },
+      "differences": 1,
+      "file": "sparse-lazy-vs-plain-lazy-differences.json",
+      "left": "sparse-lazy",
+      "leftCaseCount": 4,
+      "right": "plain-lazy",
+      "rightCaseCount": 4
+    }
+  ],
+  "diagnosticOnly": true,
+  "inputs": [
+    {
+      "instrumented": true,
+      "label": "sparse-lazy",
+      "path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/responses.jsonl",
+      "sha256": "c7816844a51044241c5fb987413df6482fea2a9a7d6b37d7ce44d7a04d68cf33"
+    },
+    {
+      "instrumented": false,
+      "label": "main",
+      "path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-main-cold-repeat-v1/capture/responses.jsonl",
+      "sha256": "9ec87f3c77b4fd1549f6b6d69defaf4481f2f0a547832373101d2f6d6b2bd692"
+    },
+    {
+      "instrumented": false,
+      "label": "plain-lazy",
+      "path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-real64-v1/native-cold/responses.jsonl",
+      "sha256": "1d5e230ce90ffcc629821fd5f1b210a472a7a9e478ede5f7eac13ced254edc65"
+    }
+  ],
+  "limitations": [
+    "Hooks perturb scheduling; results describe only these instrumented runs.",
+    "Sequence numbers order reservations, not exact channel/lock linearization.",
+    "Core events count executor goroutines, not OS threads; individual core identity is unavailable.",
+    "Worker ownership is split by actual source dequeue/outcome; one future can execute many sources.",
+    "Between-query events retain queryIndex -1. No desired speculative cache count is assumed.",
+    "Comparisons include every captured case field; no error/state mask or comparator is changed."
+  ],
+  "noRuntimeLaunched": true
+}

@@ -1,0 +1,14 @@
+{
+  "pid": 34571,
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "-count=1",
+    "-v",
+    "-run",
+    "^TestMain(Fixed|Prepared|DirectString)",
+    "./internal/store",
+    "./internal/query"
+  ]
+}

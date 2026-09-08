@@ -1,0 +1,17 @@
+{
+  "changedFiles": [
+    "internal/query/main_retained_entry_test.go",
+    "internal/query/main_string_source_test.go"
+  ],
+  "productionChangesBetweenCandidates": 0,
+  "sameProductionPassedEntryOracleBeforeTestMigration": true,
+  "currentModuleFiles": 2575,
+  "currentModuleMatchesFocusedAndCandidateV2": true,
+  "firstFocusedExitCode": 1,
+  "secondFocusedExitCode": 0,
+  "reasons": {
+    "main_retained_entry_test.go": "The real empty ID cache is present and returns a nil slice; slices.Equal compares its actual IDs without confusing nil versus empty representation. Cache-hit and work assertions remain.",
+    "main_string_source_test.go": "Actual mapped entry controls and main source establish warm construction before visited-zero cancellation, periodic 0/1024 worker polls, no decoder/EOF poll, and the original CancellationException message. Both IDs and cache persistence remain asserted."
+  },
+  "performanceMeasurements": 0
+}

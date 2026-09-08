@@ -1,0 +1,107 @@
+package store
+
+import (
+	"context"
+	"math"
+)
+
+// Main's fixed direct-mapped cache: collisions repeat validation, never borrow
+// another row's result. Access and publication use the Store lifetime lock.
+type mainPostingRangeCache struct {
+	keys   [1024]uint64
+	states [1024]uint8 // 0 absent, 1 valid, 2 invalid
+}
+
+// MainMappedProjectionRange returns owned IDs and, on cold validation, owned
+// canonical orders. A warm accepted row omits orders: its consumer must read
+// each order only when advancing that position. No query can close this view.
+func (i *DistinctStringIndex) MainMappedProjectionRange(ctx context.Context, p CallSiteStringProperty, sid int32) ([]int32, []int64, bool, error) {
+	v := i.view
+	if v == nil || v.mainRanges == nil {
+		return nil, nil, false, nil
+	}
+	if err := v.readLock(ctx); err != nil {
+		return nil, nil, false, err
+	}
+	s := v.owner
+	if p > CalleeName {
+		s.callSiteIndex.mu.RUnlock()
+		return nil, nil, false, nil
+	}
+	r := v.regions[p]
+	lo, hi := 0, int(v.info.UniqueStringCounts[p])
+	for lo < hi {
+		mid := (lo + hi) / 2
+		if v.intAt(r.strings+4*mid) < sid {
+			lo = mid + 1
+		} else {
+			hi = mid
+		}
+	}
+	if lo >= int(v.info.UniqueStringCounts[p]) || v.intAt(r.strings+4*lo) != sid {
+		s.callSiteIndex.mu.RUnlock()
+		return []int32{}, nil, true, nil
+	}
+	key := uint64(p)<<32 | uint64(uint32(lo))
+	folded := key ^ (key >> 32)
+	slot := (folded ^ (folded >> 16)) & 1023
+	state := uint8(0)
+	if v.mainRanges.keys[slot] == key {
+		state = v.mainRanges.states[slot]
+	}
+	if state == 2 {
+		s.callSiteIndex.mu.RUnlock()
+		return nil, nil, false, nil
+	}
+	start := int32(0)
+	if lo > 0 {
+		start = v.intAt(r.ends + 4*(lo-1))
+	}
+	end := v.intAt(r.ends + 4*lo)
+	ids := make([]int32, int(end-start))
+	for pos := range ids {
+		if pos&1023 == 0 {
+			if err := ctx.Err(); err != nil {
+				s.callSiteIndex.mu.RUnlock()
+				return nil, nil, false, err
+			}
+		}
+		ids[pos] = v.intAt(r.nodes + 4*(int(start)+pos))
+	}
+	s.callSiteIndex.mu.RUnlock()
+	if state == 1 {
+		return ids, nil, true, nil
+	}
+	orders := make([]int64, len(ids))
+	previous := int64(math.MinInt64)
+	valid := true
+	for pos, id := range ids {
+		order, err := s.ProjectionNodeOrder(ctx, id)
+		if err != nil {
+			return nil, nil, false, err
+		}
+		orders[pos] = order
+		if order < 0 || order <= previous {
+			valid = false
+		}
+		previous = order
+	}
+	s.callSiteIndex.mu.Lock()
+	defer s.callSiteIndex.mu.Unlock()
+	if s.callSiteIndex.closed {
+		return nil, nil, false, ErrStoreClosed
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, nil, false, err
+	}
+	if v.mainRanges.states[slot] != 0 && v.mainRanges.keys[slot] == key {
+		valid = v.mainRanges.states[slot] == 1
+	} else {
+		v.mainRanges.keys[slot] = key
+		v.mainRanges.states[slot] = 2
+		if valid {
+			v.mainRanges.states[slot] = 1
+		}
+	}
+	return ids, orders, valid, nil
+}

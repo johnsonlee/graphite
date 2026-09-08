@@ -1,0 +1,18 @@
+{
+  "phase": "instrumented",
+  "pid": 36428,
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "-count=1",
+    "-v",
+    "-run",
+    "^TestMappedEntryCapture$",
+    "-overlay",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-baseline-v1/overlay.json",
+    "-tags",
+    "mapped_entry_instrumented",
+    "./internal/query"
+  ]
+}

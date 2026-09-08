@@ -11,13 +11,20 @@ import (
 // RetainedProjectionIndex observes completed initialization without performing
 // any file or index load. An A6 reader view is not this retained capability.
 func (s *Store) RetainedProjectionIndex(ctx context.Context) (*DistinctStringIndex, bool, error) {
+	return s.retainedProjectionIndex(ctx)
+}
+
+// A nil worker context selects the main lifetime-only metadata getter.
+func (s *Store) retainedProjectionIndex(ctx context.Context) (*DistinctStringIndex, bool, error) {
 	s.callSiteIndex.mu.RLock()
 	defer s.callSiteIndex.mu.RUnlock()
 	if s.callSiteIndex.closed {
 		return nil, false, ErrStoreClosed
 	}
-	if err := ctx.Err(); err != nil {
-		return nil, false, err
+	if ctx != nil {
+		if err := ctx.Err(); err != nil {
+			return nil, false, err
+		}
 	}
 	index := s.distinctProjection.index
 	if index == nil {

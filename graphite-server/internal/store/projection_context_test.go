@@ -146,7 +146,7 @@ func TestProjectionContextDecoderCancelAndFreshRequest(t *testing.T) {
 	}
 	base, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	ctx := &projectionCheckpointContext{Context: base, target: ".ProjectionCandidateNode.func1", at: 2, action: cancel}
+	ctx := &projectionCheckpointContext{Context: base, target: ".projectionCandidateNode.func1", at: 2, action: cancel}
 	node, ok, err := s.ProjectionCandidateNode(ctx, 17)
 	if err != context.Canceled || ok || ctx.calls != 2 || base.Err() != context.Canceled {
 		t.Fatalf("node=%+v ok=%v err=%v actual polls=%d", node, ok, err, ctx.calls)
@@ -165,7 +165,7 @@ func TestProjectionContextCloseWaitsForCanceledDecoder(t *testing.T) {
 	var once sync.Once
 	releaseRead := func() { once.Do(func() { close(release) }) }
 	defer releaseRead()
-	ctx := &projectionCheckpointContext{Context: base, target: ".ProjectionCandidateNode.func1", at: 1, action: func() { close(entered); <-release }}
+	ctx := &projectionCheckpointContext{Context: base, target: ".projectionCandidateNode.func1", at: 1, action: func() { close(entered); <-release }}
 	result := make(chan error, 1)
 	go func() { _, _, err := s.ProjectionCandidateNode(ctx, 17); result <- err }()
 	select {

@@ -1,0 +1,12 @@
+{
+  "analyzerUnchangedSHA256": "d836771e3973d7ca34c6f170240ef68e0f52b43e59f7ea0c3ee12200d5395f01",
+  "frozenRunnerManifestsVerified": [
+    "entry-scheduling-trace",
+    "entry-scheduling-sparse"
+  ],
+  "noGoJVMBuildReplayLaunched": true,
+  "offlineAnalyzerExitCode": 0,
+  "offlineAnalyzerRuns": 1,
+  "summarySHA256": "9c14b7711a0f645b162c2d4cb4888ae94553c8ed12972653528c73411b7e9bcf",
+  "traceEventCount": 1100
+}

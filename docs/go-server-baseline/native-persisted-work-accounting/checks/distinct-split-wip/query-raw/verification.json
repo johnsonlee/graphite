@@ -1,0 +1,14 @@
+{
+  "moduleUnchanged": true,
+  "files": 2582,
+  "artifacts": {
+    "inputs.json": "3cfa14bb93633cabd6f7bcc79d50fae5e706d325fd1a21ecf52070ffbf50e0f1",
+    "run.json": "00d96cc0c5318a73950342d6724f7ebe556d17a9420bbbccb91b1a4c0f17db3a",
+    "stdout.log": "e4e2c4249eff3c33aaf1af26dc272ef8d002bf25ef8a465ee71a86fb0e97ce4b",
+    "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "ownedWorkspaceMatchesSnapshot": {
+    "internal/query/distinct_split_raw.go": true,
+    "internal/query/distinct_split_raw_test.go": true
+  }
+}

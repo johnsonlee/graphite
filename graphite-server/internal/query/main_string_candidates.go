@@ -201,7 +201,7 @@ func (e evaluator) mainMergeNodeSequences(source Graph, children []mainNodeNext)
 				heads[i].present = false
 				return
 			}
-			order, err := source.Store.ProjectionNodeOrder(ctx, n.ID)
+			order, err := source.Store.MainProjectionNodeOrder(n.ID)
 			failMainStringRead(err)
 			if monotonic && order < heads[i].order {
 				functionError("IllegalArgumentException", "String property lookup sequence is not monotonic in canonical graph order")

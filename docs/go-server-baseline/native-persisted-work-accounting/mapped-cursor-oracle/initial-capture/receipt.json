@@ -1,0 +1,30 @@
+{
+  "terminal": true,
+  "exitCode": 0,
+  "inputsUnchanged": true,
+  "fixtureFiles": 34,
+  "fixturesUnchanged": true,
+  "classes": [
+    {
+      "file": "MappedCursorOracle$Action.class",
+      "bytes": 361,
+      "sha256": "618157b469db63c2aa7eaf0536445ac3a507930981f9534be76ebbe053fb444c"
+    },
+    {
+      "file": "MappedCursorOracle$View.class",
+      "bytes": 4058,
+      "sha256": "261e9d24f81a50aa30af749312e7dc90221cb165b7ef36117bb3cd1b21c96f54"
+    },
+    {
+      "file": "MappedCursorOracle$Work.class",
+      "bytes": 1313,
+      "sha256": "ed95a41449cb0f2bad677c53deba558cc12d733fa98375d37cd0eda56e35c5af"
+    },
+    {
+      "file": "MappedCursorOracle.class",
+      "bytes": 14766,
+      "sha256": "d71d91f9c616db946ef22a142cc8ffcf1151baed43fefbea140a112681a593b2"
+    }
+  ],
+  "performanceMeasurements": 0
+}

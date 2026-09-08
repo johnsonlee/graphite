@@ -1,0 +1,7 @@
+{
+  "phase": "prepare",
+  "publicOracleStarted": false,
+  "controllerExitCode": 1,
+  "reason": "Preparation CRC cross-check used serialized big-endian bytes; actual main CRC updates integer/long bytes least significant first. The source sidecars are unchanged.",
+  "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-accounting-v1"
+}

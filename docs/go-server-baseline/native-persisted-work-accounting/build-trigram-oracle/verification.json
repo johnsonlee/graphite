@@ -1,0 +1,29 @@
+{
+  "status": "pass",
+  "ownedManifestFiles": 60,
+  "cases": 8,
+  "operations": 40,
+  "sourcesPerCase": 40,
+  "fixtureRegularFiles": 33,
+  "caseFixtureFilesPerCapture": [
+    5128,
+    5128
+  ],
+  "fullRawRepeatEqual": true,
+  "allEightDiagnosticsAndThreeBuildObserversRetained": true,
+  "rewrittenSidecarsPerCapture": 8,
+  "rewrittenSidecarsEqualOriginalValidWriterBytes": true,
+  "distinctFrozenRuntimeInputs": 24,
+  "precedingOracleFiles": [
+    {
+      "directory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting",
+      "declaredFilesUnchanged": 78
+    },
+    {
+      "directory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle",
+      "declaredFilesUnchanged": 135
+    }
+  ],
+  "performanceMeasurements": 0,
+  "scope": "Input/archive/public-output verification only; no execution of code under test."
+}

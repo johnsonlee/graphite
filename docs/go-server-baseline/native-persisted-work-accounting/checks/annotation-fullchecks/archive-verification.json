@@ -1,0 +1,49 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-fullchecks-v1/artifacts.json",
+      "sourceSHA256": "247399054256311b9b7aa311f1873681b41fa0d6b3b4f1e443eb9543f8cf51a2",
+      "archive": "artifacts.json",
+      "archiveSHA256": "247399054256311b9b7aa311f1873681b41fa0d6b3b4f1e443eb9543f8cf51a2",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-fullchecks-v1/context.log",
+      "sourceSHA256": "996be162b9813de9802164cf6e6b4de6c7440361dacdd9a3f8d97f86cc445c75",
+      "archive": "context.log.gz",
+      "archiveSHA256": "da73f53931f2fa2cc8199134df1e4d6eb253a9521d83b28dfe52726c109f68ee",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-fullchecks-v1/inputs.json",
+      "sourceSHA256": "0ea451fdcafd9e09d64d62517817a202ce572eda92b8f5178a4c448ab6cbe20f",
+      "archive": "inputs.json",
+      "archiveSHA256": "0ea451fdcafd9e09d64d62517817a202ce572eda92b8f5178a4c448ab6cbe20f",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-fullchecks-v1/race.log",
+      "sourceSHA256": "1392b039ec5f15d1a228f0fd68d6bd7e733ea152d6a8e5bc5cbd91be8398b9d2",
+      "archive": "race.log.gz",
+      "archiveSHA256": "37d2dc9ce10299d97f5430f0dd1661cf5761bdd2e61c2699259f6d16502cfffb",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-fullchecks-v1/receipt.json",
+      "sourceSHA256": "7bcb300e16fdaed6a58a5fcd04894a826909e2606e6fa21e6a698208f3ff5277",
+      "archive": "receipt.json",
+      "archiveSHA256": "7bcb300e16fdaed6a58a5fcd04894a826909e2606e6fa21e6a698208f3ff5277",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-fullchecks-v1/vet.log",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "vet.log.gz",
+      "archiveSHA256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytesVerified": true
+    }
+  ],
+  "passedAllSteps": true,
+  "unexecutedSteps": [],
+  "performanceMeasurements": 0
+}

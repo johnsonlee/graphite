@@ -3,27 +3,21 @@ package query
 import (
 	"container/heap"
 	"context"
+
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
-	"sort"
 )
 
-type mainMappedPostingCursor struct {
-	ids      []int32
-	orders   []int64
-	position int
-	order    int64
-}
-type mainMappedPostingHeap []*mainMappedPostingCursor
+type mainMappedPostingHeap []*store.MainMappedCursor
 
 func (h mainMappedPostingHeap) Len() int { return len(h) }
 func (h mainMappedPostingHeap) Less(i, j int) bool {
-	if h[i].order == h[j].order {
-		return h[i].ids[h[i].position] < h[j].ids[h[j].position]
+	if h[i].Order() == h[j].Order() {
+		return h[i].NodeID() < h[j].NodeID()
 	}
-	return h[i].order < h[j].order
+	return h[i].Order() < h[j].Order()
 }
 func (h mainMappedPostingHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
-func (h *mainMappedPostingHeap) Push(v any)   { *h = append(*h, v.(*mainMappedPostingCursor)) }
+func (h *mainMappedPostingHeap) Push(v any)   { *h = append(*h, v.(*store.MainMappedCursor)) }
 func (h *mainMappedPostingHeap) Pop() any {
 	old := *h
 	v := old[len(old)-1]
@@ -32,44 +26,29 @@ func (h *mainMappedPostingHeap) Pop() any {
 	return v
 }
 
-// Cold rows validate their complete canonical order before returning a sequence.
-// Warm rows retain only the validation result; their orders are read on advance.
-// This preserves the mapped-view boundary without pre-consuming unrelated rows.
+// Range validation happens before returning the sequence. A cursor owns cold
+// validation orders; warm cursors read their next order only on advance.
 func (e evaluator) mainSelectedMappedIDs(source Graph, index *store.DistinctStringIndex, plan *mainStringSourceSpec, exact []map[int32]bool, limit int) (func(context.Context) (int32, bool), bool) {
-	pending := mainMappedPostingHeap{}
-	readOrder := func(ctx context.Context, c *mainMappedPostingCursor) {
-		if c.orders != nil {
-			c.order = c.orders[c.position]
-			return
-		}
-		order, err := source.Store.ProjectionNodeOrder(ctx, c.ids[c.position])
-		failMainStringRead(err)
-		c.order = order
+	if !index.MainMappedCapability() || len(plan.atoms) != len(exact) {
+		return nil, false
 	}
+	pending := mainMappedPostingHeap{}
 	for i, atom := range plan.atoms {
-		sids := make([]int32, 0, len(exact[i]))
-		for sid := range exact[i] {
-			sids = append(sids, sid)
-		}
-		sort.Slice(sids, func(i, j int) bool { return sids[i] < sids[j] })
-		for _, sid := range sids {
-			ids, orders, valid, err := index.MainMappedProjectionRange(e.ctx, store.CallSiteStringProperty(distinctCallSiteProperties[atom.property]), sid)
-			failMainStringRead(err)
+		for _, sid := range mainSortedStringIDs(exact[i]) {
+			cursor, valid, err := index.MainMappedCursorWithWork(e.ctx, store.CallSiteStringProperty(distinctCallSiteProperties[atom.property]), sid, e.storeWorkConsumer())
+			failMainMappedRead(err)
 			if !valid {
 				return nil, false
 			}
-			if len(ids) == 0 {
-				continue
+			if cursor.HasCurrent() {
+				pending = append(pending, cursor)
 			}
-			cursor := &mainMappedPostingCursor{ids: ids, orders: orders}
-			readOrder(e.ctx, cursor)
-			pending = append(pending, cursor)
 		}
 	}
 	started := false
-	var resume *mainMappedPostingCursor
+	var resume *store.MainMappedCursor
 	previous := int32(-1)
-	yielded := 0
+	yielded, visited := 0, 0
 	return func(ctx context.Context) (int32, bool) {
 		if yielded >= limit {
 			return 0, false
@@ -78,11 +57,15 @@ func (e evaluator) mainSelectedMappedIDs(source Graph, index *store.DistinctStri
 			heap.Init(&pending)
 			started = true
 		}
+		accounting := bufferedGraphWork{work: e.work}
+		defer accounting.flush()
 		for {
 			if resume != nil {
-				resume.position++
-				if resume.position < len(resume.ids) {
-					readOrder(ctx, resume)
+				// Kotlin resumes after yield before updating previous and advancing.
+				previous = resume.NodeID()
+				current, err := resume.Advance()
+				failMainStringRead(err)
+				if current {
 					heap.Push(&pending, resume)
 				}
 				resume = nil
@@ -90,16 +73,19 @@ func (e evaluator) mainSelectedMappedIDs(source Graph, index *store.DistinctStri
 			if len(pending) == 0 {
 				return 0, false
 			}
-			local := e
-			local.ctx = ctx
-			local.check()
-			cursor := heap.Pop(&pending).(*mainMappedPostingCursor)
+			if visited&1023 == 0 {
+				failMainMappedRead(ctx.Err())
+			}
+			visited++
+			cursor := heap.Pop(&pending).(*store.MainMappedCursor)
+			accounting.consume()
+			id := cursor.NodeID()
 			resume = cursor
-			id := cursor.ids[cursor.position]
+			// Every popped posting consumes work, including duplicate node IDs.
 			if id == previous {
 				continue
 			}
-			previous = id
+			accounting.flush()
 			yielded++
 			return id, true
 		}

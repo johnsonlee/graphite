@@ -1,0 +1,31 @@
+[
+  {
+    "phase": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-cursor-oracle/MappedCursorOracle.java"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T12:33:23.865280+00:00",
+    "endUTC": "2026-09-08T12:33:24.267291+00:00"
+  },
+  {
+    "phase": "capture",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "MappedCursorOracle",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/fixtures",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-cursor-work-accounting-v4/main.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T12:33:24.267596+00:00",
+    "endUTC": "2026-09-08T12:33:24.428846+00:00"
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "moduleFileCount": 2582,
+  "moduleChangesDuringRun": [],
+  "workspaceOwnedFilesEqualTestedSnapshot": true,
+  "files": [
+    {
+      "file": "graphite-server/internal/store/main_distinct_entry.go",
+      "sha256": "07a96a28b27b213f688006ea80ff0f308833747fdf5eb0afbbf3be6b79309a16",
+      "bytes": 7410
+    },
+    {
+      "file": "graphite-server/internal/store/main_distinct_entry_test.go",
+      "sha256": "ea78dabe2782099cd685ef97bfd97dd7bb40800e61c3c0614d9be8de501b0b04",
+      "bytes": 23482
+    }
+  ],
+  "logSha256": "7f57b82d89a86c5131efa000b97f420de1545c75d6b9c77aec93201db8f3c3d7"
+}

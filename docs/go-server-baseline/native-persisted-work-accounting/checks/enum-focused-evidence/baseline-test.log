@@ -1,0 +1,34 @@
+=== RUN   TestProjectionEnumActualMainArgumentConsumption
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/candidate
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/candidate/clean
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/candidate/enum-bad-tail
+    projection_enum_test.go:92: node=store.Node{ID:14, Kind:"EnumConstant", Value:interface {}(nil), Name:"", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"Color", EnumName:"RED", EnumArguments:[]interface {}{}, ClassName:"", MemberName:"", Values:map[string]interface {}(nil), ValueOrder:[]string(nil), Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false error=&errors.errorString{s:"invalid collection count 2147483647 (334 bytes remain)"}, want SID 37/list 21
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/candidate/enum-bad-sid-0
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/candidate/enum-bad-sid-1
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/candidate/enum-invalid-argument-tag
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/main-ordinary
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/main-ordinary/clean
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/main-ordinary/enum-bad-tail
+    projection_enum_test.go:92: node=store.Node{ID:14, Kind:"EnumConstant", Value:interface {}(nil), Name:"", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"Color", EnumName:"RED", EnumArguments:[]interface {}{}, ClassName:"", MemberName:"", Values:map[string]interface {}(nil), ValueOrder:[]string(nil), Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false error=&errors.errorString{s:"invalid collection count 2147483647 (334 bytes remain)"}, want SID 37/list 21
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/main-ordinary/enum-bad-sid-0
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/main-ordinary/enum-bad-sid-1
+=== RUN   TestProjectionEnumActualMainArgumentConsumption/main-ordinary/enum-invalid-argument-tag
+--- FAIL: TestProjectionEnumActualMainArgumentConsumption (0.14s)
+    --- FAIL: TestProjectionEnumActualMainArgumentConsumption/candidate (0.08s)
+        --- PASS: TestProjectionEnumActualMainArgumentConsumption/candidate/clean (0.02s)
+        --- FAIL: TestProjectionEnumActualMainArgumentConsumption/candidate/enum-bad-tail (0.02s)
+        --- PASS: TestProjectionEnumActualMainArgumentConsumption/candidate/enum-bad-sid-0 (0.01s)
+        --- PASS: TestProjectionEnumActualMainArgumentConsumption/candidate/enum-bad-sid-1 (0.01s)
+        --- PASS: TestProjectionEnumActualMainArgumentConsumption/candidate/enum-invalid-argument-tag (0.01s)
+    --- FAIL: TestProjectionEnumActualMainArgumentConsumption/main-ordinary (0.06s)
+        --- PASS: TestProjectionEnumActualMainArgumentConsumption/main-ordinary/clean (0.01s)
+        --- FAIL: TestProjectionEnumActualMainArgumentConsumption/main-ordinary/enum-bad-tail (0.01s)
+        --- PASS: TestProjectionEnumActualMainArgumentConsumption/main-ordinary/enum-bad-sid-0 (0.01s)
+        --- PASS: TestProjectionEnumActualMainArgumentConsumption/main-ordinary/enum-bad-sid-1 (0.01s)
+        --- PASS: TestProjectionEnumActualMainArgumentConsumption/main-ordinary/enum-invalid-argument-tag (0.01s)
+=== RUN   TestProjectionEnumZeroAndNegativeArgumentCounts
+    projection_enum_test.go:150: count=-1 node=store.Node{ID:14, Kind:"EnumConstant", Value:interface {}(nil), Name:"", Type:"", DeclaringClass:"", Method:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Caller:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, Callee:store.MethodDescriptor{DeclaringClass:"", Name:"", ParameterTypes:[]string(nil), ReturnType:""}, IsStatic:false, Index:0, ActualType:(*string)(nil), LineNumber:(*int32)(nil), Receiver:(*int32)(nil), Arguments:[]int32(nil), EnumType:"Color", EnumName:"RED", EnumArguments:[]interface {}{}, ClassName:"", MemberName:"", Values:map[string]interface {}(nil), ValueOrder:[]string(nil), Path:"", Source:"", Format:"", Key:"", Profile:(*string)(nil)} present=false err=invalid collection count -1 (334 bytes remain)
+--- FAIL: TestProjectionEnumZeroAndNegativeArgumentCounts (0.02s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/store	0.610s
+FAIL

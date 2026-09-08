@@ -1,0 +1,44 @@
+[
+  {
+    "caseIndex": 3,
+    "category": "state",
+    "left": 6,
+    "path": "/after/3/mappedRangeCount",
+    "right": 0
+  },
+  {
+    "caseIndex": 3,
+    "category": "state",
+    "left": 7,
+    "path": "/after/4/mappedRangeCount",
+    "right": 0
+  },
+  {
+    "caseIndex": 3,
+    "category": "state",
+    "left": 1,
+    "path": "/after/5/mappedRangeCount",
+    "right": 0
+  },
+  {
+    "caseIndex": 3,
+    "category": "state",
+    "left": 5,
+    "path": "/after/6/mappedRangeCount",
+    "right": 0
+  },
+  {
+    "caseIndex": 3,
+    "category": "state",
+    "left": 5,
+    "path": "/after/7/mappedRangeCount",
+    "right": 0
+  },
+  {
+    "caseIndex": 3,
+    "category": "state",
+    "left": 4,
+    "path": "/after/8/mappedRangeCount",
+    "right": 0
+  }
+]

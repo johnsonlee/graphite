@@ -1,0 +1,26 @@
+{
+  "native": {
+    "path": "graphite-server/internal/benchmarkcase/testdata/main64.json",
+    "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+  },
+  "originalFullExports": [
+    {
+      "path": "docs/go-server-baseline/native64-testcase-audit-20260908/main-cases.json",
+      "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+      "byteIdentical": true
+    },
+    {
+      "path": "docs/go-server-baseline/native64-testcase-audit-20260908/main-cases-repeat.json",
+      "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+      "byteIdentical": true
+    }
+  ],
+  "freshMainColdCases": {
+    "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/main-cold-repeat-audit/evidence/capture/actual-cases.json",
+    "sha256": "7489cfe1b94840792f880e7ab20f32f694db748159c3d919ebe1a40edae1242e",
+    "format": "case array without full export metadata wrapper",
+    "parsedCasesEqual": true,
+    "caseCount": 1267
+  },
+  "performanceMeasurements": 0
+}

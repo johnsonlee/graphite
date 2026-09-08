@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"runtime"
+	"sort"
 
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
 )
 
@@ -25,41 +27,82 @@ func (e evaluator) mainExactMatches(source Graph, index *store.DistinctStringInd
 		}
 	}
 	sets := make([]map[int32]bool, len(plan.atoms))
+	shared := map[string]map[int32]bool{}
 	for i, atom := range plan.atoms {
-		term := atom.term
-		if !atom.lower {
-			term = e.javaCase(term, false)
+		key := ordinaryStringKey(atom)
+		matches, present := shared[key]
+		if !present {
+			var supported bool
+			matches, supported = e.mainMappedStringMatches(source, index, atom)
+			if !supported {
+				return nil, false
+			}
+			shared[key] = matches
 		}
-		units := javaUTF16(term)
-		seen := map[int32]bool{}
-		var anchor []int32
-		for j := 0; j+2 < len(units); j++ {
-			hash := (int32(units[j])*31+int32(units[j+1]))*31 + int32(units[j+2])
-			if seen[hash] {
-				continue
-			}
-			seen[hash] = true
-			ids, err := index.ProjectionTrigramStrings(e.ctx, hash)
-			failMainStringRead(err)
-			if len(ids) == 0 {
-				anchor = []int32{}
-				break
-			}
-			if anchor == nil || len(ids) < len(anchor) {
-				anchor = ids
-			}
-		}
-		sets[i] = map[int32]bool{}
-		for _, sid := range anchor {
-			text, err := source.Store.ProjectionString(e.ctx, sid)
-			failMainStringRead(err)
-			if e.distinctAtomMatches(atom, text) {
-				sets[i][sid] = true
-			}
-		}
+		sets[i] = matches
 	}
 	return sets, true
 }
+
+func (e evaluator) mainMappedStringMatches(source Graph, index *store.DistinctStringIndex, atom distinctStringAtom) (map[int32]bool, bool) {
+	if !index.MainMappedCapability() {
+		ids, supported := e.stringIndexMatches(source, index, atom, failMainStringRead)
+		if !supported {
+			return nil, false
+		}
+		matches := make(map[int32]bool, len(ids))
+		for _, sid := range ids {
+			matches[sid] = true
+		}
+		return matches, true
+	}
+	accounting := bufferedGraphWork{work: e.work}
+	defer accounting.flush()
+	term := atom.term
+	if !atom.lower {
+		term = javastring.Lower(term)
+	}
+	units := javaUTF16(term)
+	seen := map[int32]bool{}
+	anchorStart, anchorEnd := 0, 0
+	matches := map[int32]bool{}
+	for j := 0; j+2 < len(units); j++ {
+		hash := (int32(units[j])*31+int32(units[j+1]))*31 + int32(units[j+2])
+		if seen[hash] {
+			continue
+		}
+		seen[hash] = true
+		accounting.consume()
+		start, end, found, err := index.MainMappedTrigramSpan(hash)
+		failMainStringRead(err)
+		if !found {
+			return matches, true
+		}
+		if anchorEnd == 0 || end-start < anchorEnd-anchorStart {
+			anchorStart, anchorEnd = start, end
+		}
+	}
+	for position := anchorStart; position < anchorEnd; position++ {
+		// main polls the absolute posting position, not every candidate or
+		// binary-search read. Work callbacks retain their own cancellation.
+		if position&1023 == 0 {
+			failMainMappedRead(e.ctx.Err())
+		}
+		accounting.consume()
+		sid, err := index.MainMappedTrigramStringIDAt(position)
+		failMainStringRead(err)
+		if sid < 0 || int64(sid) >= int64(len(source.Store.Strings)) {
+			return nil, false
+		}
+		text, err := source.Store.MainMappedString(sid)
+		failMainStringRead(err)
+		if mainMappedContains(atom, text) {
+			matches[sid] = true
+		}
+	}
+	return matches, true
+}
+
 func ordinaryAnyExact(sets []map[int32]bool) bool {
 	for _, s := range sets {
 		if len(s) > 0 {
@@ -69,6 +112,32 @@ func ordinaryAnyExact(sets []map[int32]bool) bool {
 	return false
 }
 func (e evaluator) mainExactCanFill(index *store.DistinctStringIndex, plan *mainStringSourceSpec, sets []map[int32]bool, limit int) bool {
+	if limit <= 0 {
+		return true
+	}
+	if len(plan.atoms) != len(sets) {
+		return false
+	}
+	if index.MainMappedCapability() {
+		var occurrences int64
+		for i, atom := range plan.atoms {
+			for _, sid := range mainSortedStringIDs(sets[i]) {
+				start, end, found, err := index.MainMappedPostingRangeWithWork(store.CallSiteStringProperty(distinctCallSiteProperties[atom.property]), sid, e.storeWorkConsumer())
+				failMainStringRead(err)
+				if !found {
+					continue
+				}
+				if start < 0 || end < start || end > index.MainMappedCallSiteCount() {
+					return false
+				}
+				occurrences += int64(end - start)
+				if occurrences >= int64(limit) {
+					return true
+				}
+			}
+		}
+		return false
+	}
 	count := 0
 	for i, atom := range plan.atoms {
 		entries, err := index.Directory(e.ctx, store.CallSiteStringProperty(distinctCallSiteProperties[atom.property]))
@@ -83,6 +152,15 @@ func (e evaluator) mainExactCanFill(index *store.DistinctStringIndex, plan *main
 		}
 	}
 	return false
+}
+
+func mainSortedStringIDs(set map[int32]bool) []int32 {
+	ids := make([]int32, 0, len(set))
+	for sid := range set {
+		ids = append(ids, sid)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	return ids
 }
 
 type ordinaryScanRange struct {
@@ -121,10 +199,15 @@ func (e evaluator) mainParallelCandidates(source Graph, plan *mainStringSourceSp
 		}()
 		local := e
 		local.ctx = ctx
+		// Each actual scan task owns its own batch. Flush before the outer
+		// recovery cancels sibling tasks, including on decoding failure.
+		accounting := bufferedGraphWork{work: e.work}
+		defer accounting.flush()
 		start, end := i*chunk, min(len(ids), (i+1)*chunk)
 		out.complete = true
 		for at := start; at < end; at++ {
 			local.check()
+			accounting.consume()
 			id := ids[at]
 			sids, err := source.Store.ProjectionStringIDs(ctx, id)
 			failMainStringRead(err)
@@ -222,26 +305,6 @@ func (e evaluator) mainParallelCandidates(source Graph, plan *mainStringSourceSp
 		}
 	}
 	return matches, true
-}
-
-func (e evaluator) ordinaryMatchingIDs(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan) []int32 {
-	for _, atom := range plan.atoms {
-		units := javaUTF16(atom.term)
-		use := atom.op != "=" && len(units) >= 3
-		if !atom.lower {
-			for _, unit := range units {
-				if unit > 127 {
-					use = false
-					break
-				}
-			}
-		}
-		if use {
-			failProjectionRead(index.PrepareProjectionTrigrams(e.ctx))
-			break
-		}
-	}
-	return e.distinctMatchingIDs(source, index, plan.indexedDistinctPlan)
 }
 
 func (e evaluator) ordinaryExactMatches(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan) ([]map[int32]bool, bool) {

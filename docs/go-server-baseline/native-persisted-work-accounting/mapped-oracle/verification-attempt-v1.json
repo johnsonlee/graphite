@@ -1,0 +1,8 @@
+{
+  "status": "failed",
+  "phase": "archive verification",
+  "assertion": "before == after",
+  "reason": "Incorrect verifier immutability assumption rejected by existing raw small capture: actual main rewrote 22 malformed sidecars during fallback. Captured results and runtime receipts were not changed.",
+  "scriptSHA256": "889a5cfe0cf4c7108e76403a26019fcc7709f6738f4714e5678f2f954b889abe",
+  "runtimeLaunched": false
+}

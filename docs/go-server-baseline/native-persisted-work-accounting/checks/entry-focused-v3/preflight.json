@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "-count=1",
+    "-v",
+    "-run",
+    "^Test(Main(Ordinary|RetainedEntry|StringMapped|MappedIteration|MappedMatching|Fixed|Prepared|DirectString)|ProjectionContext|LazySlotRealCancellation)",
+    "./internal/store",
+    "./internal/query"
+  ],
+  "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-entry-focused-v3/module",
+  "goSha256": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4",
+  "runnerSha256": "68742013f406bfdb2016692d1761725d6c2a2b1cd2676015b26cf01fccbdee41",
+  "moduleFiles": 2575,
+  "sourceArchiveSha256": "485fb9c4fbdc19a4f4f2520269e46ed249ea701125eeb4b93ca8eb3c831eb3aa",
+  "fixtureSha256": "1a5564b5c08c837cda14455f38ad2e7154782dc50ef1c41774ac83b020979052",
+  "performanceMeasurements": 0
+}

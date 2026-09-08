@@ -1,0 +1,46 @@
+{
+  "executedFixtureReplay": false,
+  "executedGo": false,
+  "executedJVM": false,
+  "instrumentationInMemory": [
+    {
+      "addedFiles": 1,
+      "edits": 53,
+      "instrumentedSHA256": {
+        "cmd/graphite-benchmark-replay/main.go": "ac691404863c18a378248dec1278a5c724dc96dc19c216a352ec2dfd4b32a191",
+        "internal/entrytrace/trace.go": "0866c39cb4cf1017a86b7af8b7f69a64eb956101c62ecd98e9d41475fbea5d7d",
+        "internal/query/indexed_distinct.go": "0003001bc284b4f9b3fbb35fe536fa4c39911dc2f9d5a85077a6eee7f8045a22",
+        "internal/query/main_fixed_workers.go": "d68b26912788c70fe0ac02a7b0c3bd6c37ef4b7e209bd0e7dc9896d88d3b1780",
+        "internal/query/main_string_mapped.go": "af6f6893f79a21d3ddcda3caed84debaa8d92c3b374e36fd6ea1a095cc2fffcd",
+        "internal/query/main_string_source.go": "72146f3fbc4b4dd4e40130a36740145379dceb56803c94f68c359c44b567064f",
+        "internal/query/ordinary_parallel.go": "5fac1fb867ed6042aa63c4aaa81731a06ca357191de7549188e00f39f22ebb66",
+        "internal/query/ordinary_projection.go": "d8e3830c38f7bafa6bbf8f04482295440727bbf55855f6f47e1b80e912082086",
+        "internal/store/main_mapped_cursor.go": "591117f5eeb3a603c7a283b8f54f9ea0065f1edad482c801a0e3775197a0eb12"
+      },
+      "inverseRestoration": "exact original text for all modified files",
+      "modifiedFiles": 8,
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-source-v3",
+      "sourceVersion": "v3"
+    },
+    {
+      "addedFiles": 1,
+      "edits": 53,
+      "instrumentedSHA256": {
+        "cmd/graphite-benchmark-replay/main.go": "ac691404863c18a378248dec1278a5c724dc96dc19c216a352ec2dfd4b32a191",
+        "internal/entrytrace/trace.go": "0866c39cb4cf1017a86b7af8b7f69a64eb956101c62ecd98e9d41475fbea5d7d",
+        "internal/query/indexed_distinct.go": "0003001bc284b4f9b3fbb35fe536fa4c39911dc2f9d5a85077a6eee7f8045a22",
+        "internal/query/main_fixed_workers.go": "d68b26912788c70fe0ac02a7b0c3bd6c37ef4b7e209bd0e7dc9896d88d3b1780",
+        "internal/query/main_string_mapped.go": "62530c75cba97d621cab27308a13a9d572d224de6714966df7ab688060f6ef18",
+        "internal/query/main_string_source.go": "4bc6ab04a0a5ca80d6a96facfbf4623bb49f00d16c28c5c4a03056f505348bff",
+        "internal/query/ordinary_parallel.go": "e81a316bff06adc357f1227f9ffa121d05aa19a56e53810490a99188414905f6",
+        "internal/query/ordinary_projection.go": "d8e3830c38f7bafa6bbf8f04482295440727bbf55855f6f47e1b80e912082086",
+        "internal/store/main_mapped_cursor.go": "591117f5eeb3a603c7a283b8f54f9ea0065f1edad482c801a0e3775197a0eb12"
+      },
+      "inverseRestoration": "exact original text for all modified files",
+      "modifiedFiles": 8,
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-source-v4",
+      "sourceVersion": "v4"
+    }
+  ],
+  "pythonSyntax": "all scripts compile() success; no bytecode files"
+}

@@ -1,0 +1,32 @@
+=== RUN   TestMainPersistentWorkValidWarmAndPolicyIsolation
+--- PASS: TestMainPersistentWorkValidWarmAndPolicyIsolation (0.01s)
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/magic
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/version
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/partial-first-int
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/partial-fourth-int
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/partial-identity
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/complete-identity-then-eof
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/invalid-unique-count
+--- PASS: TestMainPersistentWorkMalformedPrefixAndFinally (0.02s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/magic (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/version (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/partial-first-int (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/partial-fourth-int (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/partial-identity (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/complete-identity-then-eof (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/invalid-unique-count (0.00s)
+=== RUN   TestMainPersistentWorkEOFAndAbortRetry
+=== RUN   TestMainPersistentWorkEOFAndAbortRetry/EOF-budget-rejection
+=== RUN   TestMainPersistentWorkEOFAndAbortRetry/trailing-byte
+--- PASS: TestMainPersistentWorkEOFAndAbortRetry (0.01s)
+    --- PASS: TestMainPersistentWorkEOFAndAbortRetry/EOF-budget-rejection (0.00s)
+    --- PASS: TestMainPersistentWorkEOFAndAbortRetry/trailing-byte (0.00s)
+=== RUN   TestMainPersistentLegacyStringIdentitySurvivesFailedRead
+--- PASS: TestMainPersistentLegacyStringIdentitySurvivesFailedRead (0.00s)
+=== RUN   TestMainPersistentOwnerWaiterCancellationAndClose
+--- PASS: TestMainPersistentOwnerWaiterCancellationAndClose (0.00s)
+=== RUN   TestMainPersistentCallbackPanicReleasesTicket
+--- PASS: TestMainPersistentCallbackPanicReleasesTicket (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.476s

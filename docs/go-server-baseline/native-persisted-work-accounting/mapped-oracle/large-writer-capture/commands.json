@@ -1,0 +1,32 @@
+[
+  {
+    "phase": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-writer-v1/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/LargeMappedFixture.java"
+    ],
+    "startUTC": "2026-09-08T11:38:30.118594+00:00",
+    "endUTC": "2026-09-08T11:38:30.480873+00:00",
+    "exitCode": 0
+  },
+  {
+    "phase": "generate",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx2g",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-writer-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "LargeMappedFixture",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/large-fixture-specs.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-writer-v1/variants",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-writer-v1/writer-mutations.json"
+    ],
+    "startUTC": "2026-09-08T11:38:30.481184+00:00",
+    "endUTC": "2026-09-08T11:38:31.095389+00:00",
+    "exitCode": 0
+  }
+]

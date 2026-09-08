@@ -1,0 +1,49 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-fullchecks-v1/artifacts.json",
+      "sourceSHA256": "0c5bfe8f76f83acd781bfc52a9d5ea0bead94fae65eba5af9734aaa16728bef2",
+      "archive": "artifacts.json",
+      "archiveSHA256": "0c5bfe8f76f83acd781bfc52a9d5ea0bead94fae65eba5af9734aaa16728bef2",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-fullchecks-v1/context.log",
+      "sourceSHA256": "3785f883674b5d14d6b80dd049dfb4e30fc16b657684918225b254831ca43899",
+      "archive": "context.log.gz",
+      "archiveSHA256": "9595a47991a69d9e45603c0c2774560a3a1b958f92caf4d0ae7c66ba922d87a5",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-fullchecks-v1/inputs.json",
+      "sourceSHA256": "4d506159b830ca5e7dd05e7b8c356d762b927a91367a65e2068f8d9d9e25a70d",
+      "archive": "inputs.json",
+      "archiveSHA256": "4d506159b830ca5e7dd05e7b8c356d762b927a91367a65e2068f8d9d9e25a70d",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-fullchecks-v1/race.log",
+      "sourceSHA256": "71a3deaff1081e387812afa83a808a343ecd872b976202b6f07682e9a45245c7",
+      "archive": "race.log.gz",
+      "archiveSHA256": "bcfa2f115cf0a004a4458c64231f0e18806026c826968ef6acded259627ed1f0",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-fullchecks-v1/receipt.json",
+      "sourceSHA256": "a1b13d5c4e6e2db06043c3c51cc7897d153b9c754658d0c33181fb2efaa1ce6b",
+      "archive": "receipt.json",
+      "archiveSHA256": "a1b13d5c4e6e2db06043c3c51cc7897d153b9c754658d0c33181fb2efaa1ce6b",
+      "originalBytesVerified": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-fullchecks-v1/vet.log",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "vet.log.gz",
+      "archiveSHA256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytesVerified": true
+    }
+  ],
+  "passedAllSteps": true,
+  "unexecutedSteps": [],
+  "performanceMeasurements": 0
+}

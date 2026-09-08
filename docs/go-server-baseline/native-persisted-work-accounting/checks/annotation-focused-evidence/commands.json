@@ -1,0 +1,60 @@
+{
+  "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+  "environmentOverrides": {
+    "GOTOOLCHAIN": "local"
+  },
+  "commands": [
+    {
+      "stage": "version",
+      "argv": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "version"
+      ],
+      "expectedExit": 0
+    },
+    {
+      "stage": "baseline",
+      "argv": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "-overlay",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-focused-v1/baseline-overlay.json",
+        "./internal/store",
+        "-run",
+        "^TestProjectionAnnotation",
+        "-count=1",
+        "-v"
+      ],
+      "expectedExit": 1
+    },
+    {
+      "stage": "candidate",
+      "argv": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "./internal/store",
+        "-run",
+        "^Test(ProjectionAnnotation|ProjectionEnum|ProjectionContext|IntegrationProjectionCandidateCloseAndOwnedValues)",
+        "-count=3",
+        "-v"
+      ],
+      "expectedExit": 0
+    },
+    {
+      "stage": "public",
+      "argv": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "./internal/query",
+        "-run",
+        "^TestGenericDisjunctionMainReadSemantics/annotation-bad-tail",
+        "-count=1",
+        "-v"
+      ],
+      "expectedExit": 0
+    }
+  ]
+}

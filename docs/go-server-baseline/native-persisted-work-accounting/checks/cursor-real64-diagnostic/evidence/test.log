@@ -1,0 +1,4 @@
+=== RUN   TestCursorReal64Diagnostic
+--- PASS: TestCursorReal64Diagnostic (1.58s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.950s

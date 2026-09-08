@@ -1,0 +1,115 @@
+{
+  "performanceMeasurements": 0,
+  "terminalRuntimeCount": 1,
+  "comparisonsMustBeReadSeparately": true,
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/cold-comparison.json",
+      "sourceBytes": 1518,
+      "sourceSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "archive": "cold-comparison.json",
+      "archiveBytes": 1518,
+      "archiveSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/controller.json",
+      "sourceBytes": 531,
+      "sourceSHA256": "5ffbcb6d8f30f58e989bb013f04eda27c4194b83576a00727ca2862d4b55d293",
+      "archive": "controller.json",
+      "archiveBytes": 531,
+      "archiveSHA256": "5ffbcb6d8f30f58e989bb013f04eda27c4194b83576a00727ca2862d4b55d293",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/module-source.json",
+      "sourceBytes": 369779,
+      "sourceSHA256": "556775fa9a40744617c3028f93fe3b210f3da6a4d9d21759500c1441765b2923",
+      "archive": "module-source.json",
+      "archiveBytes": 369779,
+      "archiveSHA256": "556775fa9a40744617c3028f93fe3b210f3da6a4d9d21759500c1441765b2923",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/native-cold/responses.jsonl",
+      "sourceBytes": 97903444,
+      "sourceSHA256": "664f8c59753b3d676aeb31479b41d2e367cf9ee6a4b56f331fd9afe66e7ca46f",
+      "archive": "native-cold/responses.jsonl.gz",
+      "archiveBytes": 3278413,
+      "archiveSHA256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/native-cold-inputs.json",
+      "sourceBytes": 70877,
+      "sourceSHA256": "6f1ada3cf1e5337fef30ab3822b35108e6fd8fa094d8957272ee77ab88866e87",
+      "archive": "native-cold-inputs.json",
+      "archiveBytes": 70877,
+      "archiveSHA256": "6f1ada3cf1e5337fef30ab3822b35108e6fd8fa094d8957272ee77ab88866e87",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/native-cold-postrun-fixtures.json",
+      "sourceBytes": 246,
+      "sourceSHA256": "9f1b27c4eaafb08cc27f111222f6d16f22d9271cdf88b9583c0ff484906352f6",
+      "archive": "native-cold-postrun-fixtures.json",
+      "archiveBytes": 246,
+      "archiveSHA256": "9f1b27c4eaafb08cc27f111222f6d16f22d9271cdf88b9583c0ff484906352f6",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/native-cold-preflight.json",
+      "sourceBytes": 246,
+      "sourceSHA256": "9f1b27c4eaafb08cc27f111222f6d16f22d9271cdf88b9583c0ff484906352f6",
+      "archive": "native-cold-preflight.json",
+      "archiveBytes": 246,
+      "archiveSHA256": "9f1b27c4eaafb08cc27f111222f6d16f22d9271cdf88b9583c0ff484906352f6",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/native-cold-process.json",
+      "sourceBytes": 1454,
+      "sourceSHA256": "52a1c989c6b28c0550c43a832fc39e400da1f53e75ff342c61a70da1c2771bc3",
+      "archive": "native-cold-process.json",
+      "archiveBytes": 1454,
+      "archiveSHA256": "52a1c989c6b28c0550c43a832fc39e400da1f53e75ff342c61a70da1c2771bc3",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/native-cold-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "archive": "native-cold-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/runner.py",
+      "sourceBytes": 2925,
+      "sourceSHA256": "52589ce94160fdc4b9307fa01e9db12c100bff62063288ef071933439972c404",
+      "archive": "runner.py",
+      "archiveBytes": 2925,
+      "archiveSHA256": "52589ce94160fdc4b9307fa01e9db12c100bff62063288ef071933439972c404",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/source-verification.json",
+      "sourceBytes": 153,
+      "sourceSHA256": "78120c9d4f9f87b0f05d09ef0dd7d1975cea892c2bdc6e5103d801706d004e7a",
+      "archive": "source-verification.json",
+      "archiveBytes": 153,
+      "archiveSHA256": "78120c9d4f9f87b0f05d09ef0dd7d1975cea892c2bdc6e5103d801706d004e7a",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-cold-repeat-v1/verify-cold.log",
+      "sourceBytes": 1518,
+      "sourceSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "archive": "verify-cold.log",
+      "archiveBytes": 1518,
+      "archiveSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "decompressedBytesEqual": true
+    }
+  ]
+}

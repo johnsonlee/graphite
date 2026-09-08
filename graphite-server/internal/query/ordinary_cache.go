@@ -2,6 +2,7 @@ package query
 
 import (
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+	"sort"
 	"unicode/utf8"
 )
 
@@ -42,6 +43,17 @@ func (e evaluator) indexStringMatches(source Graph, index *store.DistinctStringI
 	return e.stringIndexMatches(source, index, atom, failProjectionRead)
 }
 func (e evaluator) stringIndexMatches(source Graph, index *store.DistinctStringIndex, atom distinctStringAtom, failRead func(error)) ([]int32, bool) {
+	return e.stringIndexMatchesWithCache(source, index, atom, failRead, false)
+}
+
+// Retained main storage checks its synchronized matching-string cache before
+// any interruption checkpoint. A miss continues through the actual preparation
+// and candidate-scanning checkpoints; this does not detach the worker context.
+func (e evaluator) mainStringIndexMatches(source Graph, index *store.DistinctStringIndex, atom distinctStringAtom) ([]int32, bool) {
+	return e.stringIndexMatchesWithCache(source, index, atom, failMainStringRead, true)
+}
+
+func (e evaluator) stringIndexMatchesWithCache(source Graph, index *store.DistinctStringIndex, atom distinctStringAtom, failRead func(error), mainEntry bool) ([]int32, bool) {
 	units := javaUTF16(atom.term)
 	if atom.op == "=" || len(units) < 3 {
 		return nil, false
@@ -54,12 +66,19 @@ func (e evaluator) stringIndexMatches(source Graph, index *store.DistinctStringI
 		}
 	}
 	cacheKey := ordinaryStringKey(atom)
-	cached, ok, err := index.ProjectionCachedIDs(e.ctx, store.ProjectionStringMatches, cacheKey)
+	var cached []int32
+	var ok bool
+	var err error
+	if mainEntry {
+		cached, ok, err = index.MainProjectionCachedIDs(store.ProjectionStringMatches, cacheKey)
+	} else {
+		cached, ok, err = index.ProjectionCachedIDs(e.ctx, store.ProjectionStringMatches, cacheKey)
+	}
 	failRead(err)
 	if ok {
 		return cached, true
 	}
-	failRead(index.PrepareProjectionTrigrams(e.ctx))
+	failRead(index.PrepareProjectionTrigramsWithWork(e.ctx, e.storeWorkConsumer()))
 	ready, err := index.HasProjectionTrigrams(e.ctx)
 	failRead(err)
 	if !ready {
@@ -77,34 +96,74 @@ func (e evaluator) stringIndexMatches(source Graph, index *store.DistinctStringI
 			positions = append(positions, at)
 		}
 	}
-	seen := map[int32]bool{}
-	var anchor []int32
-	for _, at := range positions {
-		hash := (int32(term[at])*31+int32(term[at+1]))*31 + int32(term[at+2])
-		if seen[hash] {
-			continue
+	// Main completes and flushes candidate selection before matching strings.
+	// Intersect the actual posting ranges, rather than charging a scan of only
+	// the shortest range (which can contain strings absent from another range).
+	anchor := func() []int32 {
+		accounting := bufferedGraphWork{work: e.work}
+		defer accounting.flush()
+		seen := map[int32]bool{}
+		ranges := [][]int32{}
+		for _, at := range positions {
+			hash := (int32(term[at])*31+int32(term[at+1]))*31 + int32(term[at+2])
+			if seen[hash] {
+				continue
+			}
+			seen[hash] = true
+			// Each unique trigram has one lower-bound and one upper-bound
+			// lookup. Their binary-search comparisons are not separate units.
+			accounting.consume()
+			accounting.consume()
+			ids, err := index.ProjectionTrigramStrings(e.ctx, hash)
+			failRead(err)
+			if len(ids) == 0 {
+				return []int32{}
+			}
+			ranges = append(ranges, ids)
 		}
-		seen[hash] = true
-		ids, err := index.ProjectionTrigramStrings(e.ctx, hash)
-		failRead(err)
-		if len(ids) == 0 {
-			anchor = []int32{}
-			break
+		if len(ranges) == 0 {
+			return nil
 		}
-		if anchor == nil || len(ids) < len(anchor) {
-			anchor = ids
+		sort.SliceStable(ranges, func(i, j int) bool { return len(ranges[i]) < len(ranges[j]) })
+		candidates := append([]int32(nil), ranges[0]...)
+		for _, ids := range ranges[1:] {
+			retained := 0
+			for _, sid := range candidates {
+				e.check()
+				accounting.consume()
+				position := sort.Search(len(ids), func(i int) bool { return ids[i] >= sid })
+				if position < len(ids) && ids[position] == sid {
+					candidates[retained] = sid
+					retained++
+				}
+			}
+			candidates = candidates[:retained]
+			if retained == 0 {
+				break
+			}
 		}
-	}
+		return candidates
+	}()
 	matches := []int32{}
-	for _, sid := range anchor {
-		value, err := source.Store.ProjectionString(e.ctx, sid)
-		failRead(err)
-		if e.distinctAtomMatches(atom, value) {
-			matches = append(matches, sid)
+	func() {
+		accounting := bufferedGraphWork{work: e.work}
+		defer accounting.flush()
+		for _, sid := range anchor {
+			e.check()
+			accounting.consume()
+			value, err := source.Store.ProjectionString(e.ctx, sid)
+			failRead(err)
+			if e.distinctAtomMatches(atom, value) {
+				matches = append(matches, sid)
+			}
 		}
-	}
+	}()
 	bytes := int64(104 + 2*len(units) + 4*len(matches))
-	failRead(index.CacheProjectionIDs(e.ctx, store.ProjectionStringMatches, cacheKey, matches, bytes))
+	if mainEntry {
+		failRead(index.MainCacheProjectionIDs(store.ProjectionStringMatches, cacheKey, matches, bytes))
+	} else {
+		failRead(index.CacheProjectionIDs(e.ctx, store.ProjectionStringMatches, cacheKey, matches, bytes))
+	}
 	return matches, true
 }
 func (e evaluator) mainCacheNodes(index *store.DistinctStringIndex, plan *mainStringSourceSpec, limit int, ids []int32) {
@@ -112,7 +171,11 @@ func (e evaluator) mainCacheNodes(index *store.DistinctStringIndex, plan *mainSt
 		return
 	}
 	bytes := 144 + 2*mainKeyCharacters(plan) + 4*int64(len(ids))
-	failMainStringRead(index.CacheProjectionIDs(e.ctx, store.ProjectionNodeMatches, mainNodeKey(plan, limit), ids, bytes))
+	if plan.lazyMain {
+		failMainStringRead(index.MainCacheProjectionIDs(store.ProjectionNodeMatches, mainNodeKey(plan, limit), ids, bytes))
+	} else {
+		failMainStringRead(index.CacheProjectionIDs(e.ctx, store.ProjectionNodeMatches, mainNodeKey(plan, limit), ids, bytes))
+	}
 }
 func (e evaluator) ordinaryCacheRows(index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, limit int, rows [][]string) {
 	characters := ordinaryKeyCharacters(plan)
@@ -129,31 +192,9 @@ func (e evaluator) ordinaryCacheRows(index *store.DistinctStringIndex, plan *ord
 	failProjectionRead(index.CacheProjectionRows(e.ctx, ordinaryRowsKey(plan, limit), rows, bytes))
 }
 
-func (e evaluator) ordinaryLimitedIndexIDs(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, limit int) []int32 {
-	if limit <= 200 {
-		ids, hit, err := index.ProjectionCachedIDs(e.ctx, store.ProjectionNodeMatches, ordinaryNodeKey(plan, limit))
-		failProjectionRead(err)
-		if hit {
-			return ids
-		}
-	}
-	ids := e.ordinaryMatchingIDs(source, index, plan)
-	if len(ids) > limit {
-		ids = ids[:limit]
-	}
-	if len(ids) == 0 {
-		e.ordinaryCacheNodes(index, plan, limit, ids)
-	}
-	return ids
-}
-
 func ordinaryNodeKey(plan *ordinaryProjectionPlan, limit int) string {
 	return mainNodeKey(plan.mainSourceSpec(), limit)
 }
 func ordinaryKeyCharacters(plan *ordinaryProjectionPlan) int64 {
 	return mainKeyCharacters(plan.mainSourceSpec())
-}
-func (e evaluator) ordinaryCacheNodes(index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, limit int, ids []int32) {
-	defer ordinarySourceFailure()
-	e.mainCacheNodes(index, plan.mainSourceSpec(), limit, ids)
 }

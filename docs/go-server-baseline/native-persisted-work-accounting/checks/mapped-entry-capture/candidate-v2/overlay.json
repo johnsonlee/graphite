@@ -1,0 +1,5 @@
+{
+  "Replace": {
+    "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v2/module/internal/query/execution_context.go": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-go-candidate-v2/execution_context.instrumented.go"
+  }
+}

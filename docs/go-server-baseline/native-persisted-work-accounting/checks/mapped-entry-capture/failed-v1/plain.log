@@ -1,0 +1,25 @@
+=== RUN   TestMappedEntryCapture
+=== RUN   TestMappedEntryCapture/E01-cold-view-entry-interrupt
+    mapped_entry_oracle_test.go:75: 6 actual-main differences; first map[go:0 main:1 path:probe.steps[0].after.diagnostics.workUnitsConsumed]
+=== RUN   TestMappedEntryCapture/E02-warm-view-empty-entry-interrupt
+    mapped_entry_oracle_test.go:75: 12 actual-main differences; first map[go:FAILED main:SUCCESS path:probe.outcome]
+=== RUN   TestMappedEntryCapture/E03-warm-view-hit-entry-interrupt
+    mapped_entry_oracle_test.go:75: 6 actual-main differences; first map[go:1000000 main:999991 path:probe.steps[0].after.remaining]
+=== RUN   TestMappedEntryCapture/E06-warm-view-hit-budget1
+=== RUN   TestMappedEntryCapture/E07-retained-empty-entry-interrupt
+    mapped_entry_oracle_test.go:75: 8 actual-main differences; first map[go:FAILED main:SUCCESS path:probe.outcome]
+=== RUN   TestMappedEntryCapture/E08-retained-hit-entry-interrupt
+    mapped_entry_oracle_test.go:75: 12 actual-main differences; first map[go:0 main:1 path:probe.after.diagnostics.workUnitsConsumed]
+=== RUN   TestMappedEntryCapture/E09-warm-mapped-range-entry-interrupt
+    mapped_entry_oracle_test.go:75: 10 actual-main differences; first map[go:0 main:9 path:probe.after.diagnostics.workUnitsConsumed]
+--- FAIL: TestMappedEntryCapture (0.20s)
+    --- FAIL: TestMappedEntryCapture/E01-cold-view-entry-interrupt (0.00s)
+    --- FAIL: TestMappedEntryCapture/E02-warm-view-empty-entry-interrupt (0.01s)
+    --- FAIL: TestMappedEntryCapture/E03-warm-view-hit-entry-interrupt (0.01s)
+    --- PASS: TestMappedEntryCapture/E06-warm-view-hit-budget1 (0.01s)
+    --- FAIL: TestMappedEntryCapture/E07-retained-empty-entry-interrupt (0.01s)
+    --- FAIL: TestMappedEntryCapture/E08-retained-hit-entry-interrupt (0.01s)
+    --- FAIL: TestMappedEntryCapture/E09-warm-mapped-range-entry-interrupt (0.01s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.612s
+FAIL

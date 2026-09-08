@@ -1,0 +1,10 @@
+=== RUN   TestGenericDisjunctionMainReadSemantics
+=== RUN   TestGenericDisjunctionMainReadSemantics/enum-bad-tail-hit
+=== RUN   TestGenericDisjunctionMainReadSemantics/enum-bad-tail-miss
+=== RUN   TestGenericDisjunctionMainReadSemantics/enum-bad-tail-global-miss
+--- PASS: TestGenericDisjunctionMainReadSemantics (0.17s)
+    --- PASS: TestGenericDisjunctionMainReadSemantics/enum-bad-tail-hit (0.02s)
+    --- PASS: TestGenericDisjunctionMainReadSemantics/enum-bad-tail-miss (0.00s)
+    --- PASS: TestGenericDisjunctionMainReadSemantics/enum-bad-tail-global-miss (0.01s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.787s

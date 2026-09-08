@@ -1,0 +1,38 @@
+{
+  "externalSource": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-focused-v3",
+  "sourceArchive": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-focused-v3/source.tar.gz",
+  "sourceArchiveSha256": "72e4375971fb4bae8f9e90011e7eb3a072928297f1fdfc2c25e2c55e8fe88412",
+  "sourceModuleFiles": 2563,
+  "verified": [
+    {
+      "file": "receipt.json",
+      "sha256": "9f3d32bc7c3480045fdda51b8c6534807e25b3cb184d26423b3bf630a9071100"
+    },
+    {
+      "file": "preflight.json",
+      "sha256": "3e1b9c44a62868edfbbd14aadc034a1fce7047ce08894dab2368e110a00bac29"
+    },
+    {
+      "file": "process.json",
+      "sha256": "4509dfd657b46a2bf362361e442412e37b9ad8d93fb3bd224637412fdc99eed3"
+    },
+    {
+      "file": "module-inputs.json",
+      "sha256": "0cb4643ffcc23a7e3c97ac774741c252335e3662096a7579983c3b5b7ee4fc5c"
+    },
+    {
+      "file": "runner.py",
+      "sha256": "848f93fc939aa6b8a3dcdac010b02b4aef3e9243c5628f48cc163979536ab9c3"
+    },
+    {
+      "file": "artifacts.json",
+      "sha256": "bae99e2821d73360ddcb39500b27c81b3bdcb9f7671b2ac3e0217f9ca2aeb1b9"
+    },
+    {
+      "file": "test.log.gz",
+      "uncompressedSha256": "9670f0af0d323c8beb759401322b2281254b783d97d74ad1e8b457c8dd65e9a6"
+    }
+  ],
+  "exitCode": 0,
+  "performanceMeasurements": 0
+}

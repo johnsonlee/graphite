@@ -3,94 +3,114 @@ package query
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
-	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
 )
 
-// A checkpoint observer over a real cancellable context. Count only the public
-// canonical-order accessor's own check, excluding its nested preparation check.
-type mainOrderCheckpoint struct {
-	context.Context
-	cancel          context.CancelFunc
-	calls, cancelAt int
-}
-
-func (c *mainOrderCheckpoint) observe() {
-	if c.Context.Err() != nil {
-		return
-	}
-	pc, _, _, _ := runtime.Caller(2)
-	if f := runtime.FuncForPC(pc); f != nil && strings.HasSuffix(f.Name(), ".ProjectionNodeOrder") {
-		c.calls++
-		if c.calls == c.cancelAt {
-			c.cancel()
-		}
-	}
-}
-
-func (c *mainOrderCheckpoint) Done() <-chan struct{} { c.observe(); return c.Context.Done() }
-func (c *mainOrderCheckpoint) Err() error            { c.observe(); return c.Context.Err() }
-
+// This query/storage integration control uses real cancellation at pipeline
+// boundaries. Main's mapped cursor does not poll the public ProjectionNodeOrder
+// accessor. Cold full validation and warm lazy order reads are independently
+// covered by store's TestMainMappedCursorFinallyCancellationPublishesCompletedRange
+// and TestMainMappedWarmCursorReadsEachOrderOnlyOnAdvance.
 func TestMainStringMappedColdWarmDemandAndCancellation(t *testing.T) {
 	for _, warm := range []bool{false, true} {
-		for _, cancelAt := range []int{0, 2} {
-			t.Run(fmt.Sprintf("warm=%v/cancel=%d", warm, cancelAt), func(t *testing.T) {
+		for _, cancellation := range []string{"none", "before-construction", "before-first", "after-first"} {
+			t.Run(fmt.Sprintf("warm=%v/cancel=%s", warm, cancellation), func(t *testing.T) {
 				g := candidateGraph(t, "clean")
 				source := Graph{Store: g}
 				plan := &mainStringSourceSpec{lazyMain: true, sourceCount: 40, atoms: []distinctStringAtom{{property: "caller_name", op: "CONTAINS", term: "other"}}}
-				if warm {
-					next := (evaluator{ctx: context.Background()}).mainCandidateIterator(source, plan, 4)
-					for {
-						if _, ok := next(context.Background()); !ok {
-							break
+				assertRangeCount := func(want int) {
+					t.Helper()
+					state, err := g.StringPropertyIndexes(context.Background())
+					if err != nil || state.MappedRangeCount != want {
+						t.Fatalf("mapped validation cache = %d, want %d; error %v", state.MappedRangeCount, want, err)
+					}
+				}
+				assertIDs := func(next mainNodeNext, ctx context.Context) {
+					t.Helper()
+					for _, want := range []int32{2, 41} {
+						n, ok := next(ctx)
+						if !ok || n.ID != want {
+							t.Fatalf("mapped node = %d/%t, want %d/true", n.ID, ok, want)
 						}
 					}
+					if n, ok := next(ctx); ok {
+						t.Fatalf("unexpected node after exhaustion: %d", n.ID)
+					}
 				}
-				base, cancel := context.WithCancel(context.Background())
+				assertRangeCount(0)
+				if warm {
+					assertIDs((evaluator{ctx: context.Background()}).mainCandidateIterator(source, plan, 4), context.Background())
+					assertRangeCount(1)
+				}
+				ctx, cancel := context.WithCancel(context.Background())
 				defer cancel()
-				ctx := &mainOrderCheckpoint{Context: base, cancel: cancel, cancelAt: cancelAt}
+				if cancellation == "before-construction" {
+					cancel()
+				}
 				var next mainNodeNext
 				failure := findIDCaught(func() { next = (evaluator{ctx: ctx}).mainCandidateIterator(source, plan, 4) })
-				if !warm && cancelAt == 2 {
-					if failure != context.Canceled || next != nil || ctx.calls != cancelAt || base.Err() != context.Canceled {
-						t.Fatal("cold full validation must fail before sequence", failure, next != nil)
+				assertInterrupted := func(failure any) {
+					t.Helper()
+					err, ok := failure.(error)
+					var typed *Error
+					if !ok || !errors.Is(err, context.Canceled) || !errors.As(err, &typed) ||
+						typed.Class != "CancellationException" || typed.Message != "Mapped CallSite string index view interrupted" || ctx.Err() != context.Canceled {
+						t.Fatal("mapped checkpoint lost its original interruption error", failure, ctx.Err())
 					}
-					return
 				}
-				if failure != nil {
-					t.Fatal(failure)
-				}
-				want := 2
-				if warm {
-					want = 1
-				}
-				if ctx.calls != want {
-					t.Fatal("construction order checks", ctx.calls, want)
-				}
-				n, ok := next(ctx)
-				if !ok || n.ID != 2 || ctx.calls != want {
-					t.Fatal("first owned node", n.ID, ok, ctx.calls)
-				}
-				failure = findIDCaught(func() { n, ok = next(ctx) })
-				if warm && cancelAt == 2 {
-					if failure != context.Canceled || ctx.calls != cancelAt || base.Err() != context.Canceled {
-						t.Fatal("hot cancellation must occur after first node", failure)
+				if cancellation == "before-construction" && !warm {
+					assertInterrupted(failure)
+					if next != nil {
+						t.Fatal("cold interrupted loader returned a sequence")
 					}
-					return
+					assertRangeCount(0)
+				} else {
+					if failure != nil || next == nil {
+						t.Fatal("construction failed", failure)
+					}
+					// Warm entry and a validated range do not poll the worker;
+					// the mapped sequence first polls at visited=0 (actual E09).
+					assertRangeCount(1)
+					switch cancellation {
+					case "none":
+						assertIDs(next, ctx)
+					case "after-first":
+						n, ok := next(ctx)
+						if !ok || n.ID != 2 {
+							t.Fatal("first mapped node", n.ID, ok)
+						}
+						cancel()
+						// The second visit is 1, not the next 1024-position poll.
+						// Main's node decoder and exhausted EOF add no worker poll.
+						n, ok = next(ctx)
+						if !ok || n.ID != 41 {
+							t.Fatal("mapped sequence polled between scheduled checkpoints", n.ID, ok)
+						}
+						if n, ok = next(ctx); ok || ctx.Err() != context.Canceled {
+							t.Fatal("mapped sequence failed to exhaust", n.ID, ok, ctx.Err())
+						}
+					default:
+						cancel()
+						returned := false
+						failure = findIDCaught(func() { _, returned = next(ctx) })
+						assertInterrupted(failure)
+						if returned {
+							t.Fatal("visited-zero checkpoint returned a node")
+						}
+					}
+					assertRangeCount(1)
 				}
-				if failure != nil || !ok || n.ID != 41 || ctx.calls != 2 {
-					t.Fatal("second node/order", failure, n.ID, ok, ctx.calls)
-				}
-				if _, ok := next(ctx); ok || ctx.calls != 2 {
-					t.Fatal("unexpected exhaustion work", ok, ctx.calls)
-				}
+				// A canceled local iterator neither evicts completed validation
+				// nor poisons a fresh execution on the same source.
+				assertIDs((evaluator{ctx: context.Background()}).mainCandidateIterator(source, plan, 4), context.Background())
+				assertRangeCount(1)
 			})
 		}
 	}

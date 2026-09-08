@@ -1,0 +1,108 @@
+{
+  "scope": "Independent source and archived-correctness-evidence audit only; no runtime launched",
+  "productionSha256": "18748857606af60bc785f0051004dc7be87c137eae30629581d1d0501efbface",
+  "testsSha256": "6790f97f35bbf31ed82fd4c549ae62901d1ebd3b48e964d6d5b7a524b00ea371",
+  "frozenV4ReviewedFilesEqualV1Before": true,
+  "v1": {
+    "exitCode": 1,
+    "classification": "Compile failure: capacity and cores used but missing from struct",
+    "runSourceUnchanged": true,
+    "testsExecuted": false
+  },
+  "v2": {
+    "exitCode": 0,
+    "raceEnabled": true,
+    "count": 3,
+    "runSourceUnchanged": true,
+    "uniqueTopLevelPassed": 14,
+    "totalTopLevelPasses": 42,
+    "passesByTest": {
+      "TestMainFixedWorkersReuseAndNormalContextLifetime": 3,
+      "TestMainFixedWorkersReplenishOnlyMergedPrefix": 3,
+      "TestMainFixedWorkersLimitDiscardsSuffixError": 3,
+      "TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure": 3,
+      "TestMainFixedWorkersParentCancellationPublishesAndJoins": 3,
+      "TestMainFixedExecutorQueuedFutureCancellationDoesNotWaitForCapacity": 3,
+      "TestMainFixedWorkersLimitCancelsAndJoinsActiveSuffix": 3,
+      "TestMainFixedExecutorFIFOUsesDistinctFutureContexts": 3,
+      "TestMainFixedFutureCannotRestoreCanceledClosure": 3,
+      "TestMainFixedFutureCompletionClearsRunningClosure": 3,
+      "TestMainFixedExecutorLazyCoreGrowthPerSubmission": 3,
+      "TestMainFixedExecutorFirstTaskBypassesQueueAndCanceledCoreIsReusable": 3,
+      "TestMainFixedExecutorCloseDrainsAcceptedQueueAndRejectsNewWork": 3,
+      "TestMainFixedExecutorCloseBeforeAnySubmission": 3
+    }
+  },
+  "v1ToV2TestsUnchanged": true,
+  "broaderFocusedBinding": {
+    "path": "docs/go-server-baseline/native-persisted-work-accounting/checks/lazy-core-focused",
+    "moduleFiles": 2575,
+    "exitCode": 0,
+    "twoReviewedFileHashesEqual": true,
+    "scope": "Reads archived manifest/receipt; does not rehash full 2575-file module"
+  },
+  "blockingFindings": [],
+  "findings": [
+    "Core growth and firstTask queue bypass match the pinned main fixed-pool/JDK execute path.",
+    "Executor mutex serializes core count, queue, and close; waitgroup Add precedes launch under same lock; accepted futures drain on private close.",
+    "Future closure/context clearing and parent cancellation bridge logic are unchanged; canceled firstTask skips its body and core remains usable.",
+    "FirstTask reference is cleared after execution; completion/cancellation still release request closure and worker references."
+  ],
+  "limits": [
+    "Correctness controls do not prove actual case3 suffix schedule or real64 cache parity.",
+    "No new full-module, real64, warm/startup, 201, or P95 result audited here.",
+    "Existing legacy runner, configured overrides, and active-worker markers remain outside this change.",
+    "Close test starts its closer goroutine before an intermediate nonblocking assertion, but does not establish that close has acquired its mutex at that instant; its final join/drain/rejection assertions are concrete."
+  ],
+  "sourceProofs": [
+    {
+      "source": "QueryPipeline.kt.txt",
+      "completeSourceSha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae",
+      "ranges": [
+        [
+          153,
+          162
+        ],
+        [
+          2572,
+          2661
+        ]
+      ],
+      "excerpt": "source-proof/QueryPipeline.kt.txt",
+      "excerptSha256": "b72c5cd2df864e2c7ac89cb4d9970b2180ec411bcc45091fcdbd15d1b08a1c77"
+    },
+    {
+      "source": "ThreadPoolExecutor.java.txt",
+      "completeSourceSha256": "f2324097c15108638d1e5d76589000013dd0e5e2383ac0322194836ab7a27912",
+      "ranges": [
+        [
+          627,
+          635
+        ],
+        [
+          1115,
+          1151
+        ],
+        [
+          1330,
+          1366
+        ]
+      ],
+      "excerpt": "source-proof/ThreadPoolExecutor.java.txt",
+      "excerptSha256": "bb34ba5a7dded19e648400de04543306faa40bffa24e6dc8fde5008ac36e6e0b"
+    },
+    {
+      "source": "Executors.java.txt",
+      "completeSourceSha256": "e203e02d6454531b89eb0ba0ffce101107abbabd8853298a59d54262e9e05455",
+      "ranges": [
+        [
+          153,
+          160
+        ]
+      ],
+      "excerpt": "source-proof/Executors.java.txt",
+      "excerptSha256": "1d55c2aff9eff44d39e006b0543a5645222916c8cc1b09c6c471c59b00ad754d"
+    }
+  ],
+  "performanceMeasurements": 0
+}

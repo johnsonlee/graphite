@@ -58,12 +58,14 @@ func (s *Store) prepareProjectionOffsets(ctx context.Context) error {
 	if s.callSiteIndex.closed {
 		return ErrStoreClosed
 	}
-	select {
-	case <-ctx.Done():
-		if err := ctx.Err(); err != nil {
-			return err
+	if ctx != nil {
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+		default:
 		}
-	default:
 	}
 	if s.distinctProjection.offsetsLoaded {
 		return nil
@@ -75,12 +77,14 @@ func (s *Store) prepareProjectionOffsets(ctx context.Context) error {
 	if err == nil && len(data) < 8 {
 		return &ProjectionReadError{}
 	}
-	select {
-	case <-ctx.Done():
-		if err := ctx.Err(); err != nil {
-			return err
+	if ctx != nil {
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+		default:
 		}
-	default:
 	}
 	s.distinctProjection.offsets = data
 	s.distinctProjection.offsetsLoaded = true
@@ -108,6 +112,11 @@ func (s *Store) projectionOffsetLocked(id int32) (int64, error) {
 // ProjectionNodeOrder is main's mapped offset encounter order. It does not read
 // the node header or validate unrelated fields.
 func (s *Store) ProjectionNodeOrder(ctx context.Context, id int32) (int64, error) {
+	return s.projectionNodeOrder(ctx, id)
+}
+
+// A nil worker context preserves only lifetime checks on canonical order reads.
+func (s *Store) projectionNodeOrder(ctx context.Context, id int32) (int64, error) {
 	if err := s.prepareProjectionOffsets(ctx); err != nil {
 		return 0, err
 	}
@@ -116,12 +125,14 @@ func (s *Store) ProjectionNodeOrder(ctx context.Context, id int32) (int64, error
 	if s.callSiteIndex.closed {
 		return 0, ErrStoreClosed
 	}
-	select {
-	case <-ctx.Done():
-		if err := ctx.Err(); err != nil {
-			return 0, err
+	if ctx != nil {
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				return 0, err
+			}
+		default:
 		}
-	default:
 	}
 	return s.projectionOffsetLocked(id)
 }
@@ -192,6 +203,11 @@ func (s *Store) ProjectionStringIDs(ctx context.Context, id int32) ([4]int32, er
 	if err := ctx.Err(); err != nil {
 		return out, err
 	}
+	return s.projectionStringIDsLocked(id)
+}
+
+func (s *Store) projectionStringIDsLocked(id int32) ([4]int32, error) {
+	var out [4]int32
 	offset, err := s.projectionOffsetLocked(id)
 	if err != nil {
 		return out, err
@@ -255,6 +271,9 @@ type DistinctProjectionOptions struct {
 	SkipPreparedPreference bool
 	MainSource             bool
 	CannotMatch            func() bool
+	// ConsumeWork charges the current retained-index preparation owner. It is
+	// never retained on a Store/index or invoked while a lifetime lock is held.
+	ConsumeWork func(int64) error
 	// A preferred persisted lookup keeps its structural index across a
 	// zero-hit DISTINCT release. Explicit benchmark clear resets this policy.
 	RetainPersisted bool
@@ -263,24 +282,36 @@ type DistinctProjectionOptions struct {
 // PrepareDistinctStringIndex validates only the representation consumed by
 // main's index reader. It never invokes Node or CertifyCallSiteCandidates.
 func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options DistinctProjectionOptions) (*DistinctStringIndex, bool, error) {
+	if options.MainSource && !options.InitializeMappedView && s.Mode == "MAPPED" {
+		finish, err := s.beginProjectionWork(mainEntryMetadataContext(ctx), &s.callSiteIndex.projectionPreparing)
+		if err != nil {
+			return nil, false, err
+		}
+		defer finish()
+	}
+	return s.prepareDistinctStringIndex(ctx, options)
+}
+
+func (s *Store) prepareDistinctStringIndex(ctx context.Context, options DistinctProjectionOptions) (*DistinctStringIndex, bool, error) {
+	metadataCtx := mainEntryMetadataContext(ctx)
 	if s.Mode != "MAPPED" {
 		return nil, false, nil
 	}
-	if err := s.prepareProjectionOffsets(ctx); err != nil {
+	if err := s.prepareProjectionOffsets(metadataCtx); err != nil {
 		return nil, false, err
 	}
 	s.callSiteIndex.mu.Lock()
 	existing := s.distinctProjection.index
 	mappedExisting := s.distinctProjection.mappedView
 	closed := s.callSiteIndex.closed
-	if !closed && ctx.Err() == nil && options.RetainPersisted {
+	if !closed && metadataCtx.Err() == nil && options.RetainPersisted {
 		s.distinctProjection.retainPersisted = true
 	}
 	s.callSiteIndex.mu.Unlock()
 	if closed {
 		return nil, false, ErrStoreClosed
 	}
-	if err := ctx.Err(); err != nil {
+	if err := metadataCtx.Err(); err != nil {
 		return nil, false, err
 	}
 	parallelRaw := options.SourceCount >= 40 && len(s.byKind["CallSiteNode"]) >= 4096 && options.Limit < len(s.byKind["CallSiteNode"])
@@ -292,6 +323,14 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	rawFallback := options.SourceCount > 1 && options.SourceCount < 40 || parallelRaw
 	if existing != nil {
 		return adapt(existing), true, nil
+	}
+	if isMainOrdinaryEntry(ctx) && options.InitializeMappedView {
+		// Main checks current file presence before its cached mapped-view field.
+		// An absent path declines this call without erasing a completed view.
+		prepared, err := s.MainPreparedProjectionFile()
+		if err != nil || !prepared {
+			return nil, false, err
+		}
 	}
 	if options.InitializeMappedView && mappedExisting != nil {
 		return adapt(mappedExisting), true, nil
@@ -313,7 +352,7 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	var available bool
 	var err error
 	if options.MainSource {
-		view, available, err = s.tryMainCallSiteStringIndex(ctx, options.InitializeMappedView)
+		view, available, err = s.tryMainCallSiteStringIndexWithWork(ctx, options.InitializeMappedView, options.ConsumeWork)
 	} else {
 		view, available, err = s.TryCallSiteStringIndex(ctx)
 	}
@@ -365,21 +404,27 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 			index.Raw = true
 			return adapt(index), true, nil
 		}
-		for p := range index.entries {
-			index.entries[p] = map[int32][]int32{}
-		}
-		for _, id := range s.byKind["CallSiteNode"] {
-			sids, err := s.ProjectionStringIDs(ctx, id)
-			if err != nil {
+		if options.MainSource {
+			if err := s.buildMainProjectionIndex(ctx, index, options.ConsumeWork); err != nil {
 				return nil, false, err
 			}
-			for p := CallerClass; p <= CalleeName; p++ {
-				sid := sids[p]
-				if sid < 0 || int64(sid) >= int64(len(s.Strings)) {
-					message := fmt.Sprintf("Index %d out of bounds for length %d", sid, len(s.Strings))
-					return nil, false, &ProjectionReadError{Class: "ArrayIndexOutOfBoundsException", Message: &message}
+		} else {
+			for p := range index.entries {
+				index.entries[p] = map[int32][]int32{}
+			}
+			for _, id := range s.byKind["CallSiteNode"] {
+				sids, err := s.ProjectionStringIDs(ctx, id)
+				if err != nil {
+					return nil, false, err
 				}
-				index.entries[p][sid] = append(index.entries[p][sid], id)
+				for p := CallerClass; p <= CalleeName; p++ {
+					sid := sids[p]
+					if sid < 0 || int64(sid) >= int64(len(s.Strings)) {
+						message := fmt.Sprintf("Index %d out of bounds for length %d", sid, len(s.Strings))
+						return nil, false, &ProjectionReadError{Class: "ArrayIndexOutOfBoundsException", Message: &message}
+					}
+					index.entries[p][sid] = append(index.entries[p][sid], id)
+				}
 			}
 		}
 	}
@@ -389,7 +434,7 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 		if s.callSiteIndex.closed {
 			return nil, false, ErrStoreClosed
 		}
-		if err := ctx.Err(); err != nil {
+		if err := metadataCtx.Err(); err != nil {
 			return nil, false, err
 		}
 		if s.distinctProjection.mappedView == nil {
@@ -405,7 +450,7 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 			s.callSiteIndex.mu.Unlock()
 			return nil, false, ErrStoreClosed
 		}
-		if err := ctx.Err(); err != nil {
+		if err := metadataCtx.Err(); err != nil {
 			s.callSiteIndex.mu.Unlock()
 			return nil, false, err
 		}
@@ -424,7 +469,7 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	if s.callSiteIndex.closed {
 		return nil, false, ErrStoreClosed
 	}
-	if err := ctx.Err(); err != nil {
+	if err := metadataCtx.Err(); err != nil {
 		return nil, false, err
 	}
 	if s.distinctProjection.index == nil {

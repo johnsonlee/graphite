@@ -1,0 +1,18 @@
+{
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/run.py": "0939a16b546fea6233e8351099ea7de2319bd8528038f616c31a34ac342a0877",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/MappedEntryOracle.java": "a4837428e463529c7a5c4176575493da0def8e9418daa45df7c0c11ce6b5845b",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-entry-oracle/cases.json": "7bd346ee7b6204112a3aea704b13dab0cbdf2efc9d36d18447ea4d0ab23b3f07",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/fixtures.tar.gz": "1a5564b5c08c837cda14455f38ad2e7154782dc50ef1c41774ac83b020979052",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java": "9400f622fd1e220aa1a0cbd578aff060d837468b64227db40d099791b717729f",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac": "954b31239fbf59e5b7c16e2af639a8a7ec36f6b602afd970e64054eabad0ac54",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/modules": "0473441a67b3287836922b4ad05a140029f9fcc5e688fd3cf1ac3a21d15afcf9",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/release": "d940b2ac1d3f585fd23451d205bed9c91ad6f3f07d14b6765eb33029911aadc9",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/server/libjvm.dylib": "51d9529a35eed323d31f38813cc295e072248701bf51360bbcd1431198e52f99",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutionBudget.kt": "3fdfd1588e92c63a682bfcdbd3e9b79c7b67142a36d3b04700f49c4397ad18a3",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2"
+}

@@ -1,0 +1,28 @@
+{
+  "moduleInputCount": 2579,
+  "moduleChangesDuringFocusedRun": [],
+  "workspaceOwnedFilesEqualTestedSnapshot": true,
+  "files": [
+    {
+      "file": "graphite-server/internal/store/main_distinct_entry.go",
+      "sha256": "052b6bff65af2e774480e9e7f911e1602b014ae3807cf51f79404eef878c6228",
+      "bytes": 4450
+    },
+    {
+      "file": "graphite-server/internal/store/main_distinct_entry_test.go",
+      "sha256": "6175b94a743ad9dab79777c99cc6ab1a2a4fd075c001f5d21345a5ea2140ab90",
+      "bytes": 13249
+    },
+    {
+      "file": "graphite-server/internal/store/main_ordinary_entry.go",
+      "sha256": "6153e0b076f13d9615bb2a5b3eaccb74fdb265e0746e29bc6db34501e736e60c",
+      "bytes": 2180
+    },
+    {
+      "file": "graphite-server/internal/store/main_callsite_index.go",
+      "sha256": "63b4d4bce5a650d4209bf162d298a52361471b15037406c202e45711844ebce1",
+      "bytes": 3404
+    }
+  ],
+  "receiptSha256": "7594223d361c3c35a07170899d1f457e78f67895db859d2836d71acd6acedb9f"
+}

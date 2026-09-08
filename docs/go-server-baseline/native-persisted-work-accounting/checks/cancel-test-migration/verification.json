@@ -1,0 +1,10 @@
+{
+  "productionUnchanged": true,
+  "changed": [],
+  "newTestSha256": "5b85b009a042781e641d5a4e3aa9462fb36916e47cad1b88feb651fff37e74cf",
+  "retainedErrTriggeredPolls": 6,
+  "mappedErrTriggeredPolls": 19,
+  "cancelSubcasesPassed": 25,
+  "negativeControlsPassed": 2,
+  "limitation": "Enumerates every actual Err-triggered boundary of the existing cancelAtPoll test observer, not every Done-only checkpoint; other real context checkpoint tests are retained."
+}

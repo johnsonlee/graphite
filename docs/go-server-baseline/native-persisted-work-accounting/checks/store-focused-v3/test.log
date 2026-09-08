@@ -1,0 +1,84 @@
+=== RUN   TestMainMappedRangeColdWarmAndCancellation
+--- PASS: TestMainMappedRangeColdWarmAndCancellation (0.00s)
+=== RUN   TestMainMappedRangeInvalidConsumesEntireRangeBeforeCaching
+--- PASS: TestMainMappedRangeInvalidConsumesEntireRangeBeforeCaching (0.00s)
+=== RUN   TestMainMappedWorkValidationFailureCacheAndRetry
+=== RUN   TestMainMappedWorkValidationFailureCacheAndRetry/header
+=== RUN   TestMainMappedWorkValidationFailureCacheAndRetry/identity
+=== RUN   TestMainMappedWorkValidationFailureCacheAndRetry/first-directory
+=== RUN   TestMainMappedWorkValidationFailureCacheAndRetry/checksum
+--- PASS: TestMainMappedWorkValidationFailureCacheAndRetry (0.02s)
+    --- PASS: TestMainMappedWorkValidationFailureCacheAndRetry/header (0.01s)
+    --- PASS: TestMainMappedWorkValidationFailureCacheAndRetry/identity (0.00s)
+    --- PASS: TestMainMappedWorkValidationFailureCacheAndRetry/first-directory (0.00s)
+    --- PASS: TestMainMappedWorkValidationFailureCacheAndRetry/checksum (0.00s)
+=== RUN   TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison
+=== RUN   TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison/B
+=== RUN   TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison/C
+=== RUN   TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison/G
+=== RUN   TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison/N
+--- PASS: TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison (0.01s)
+    --- PASS: TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison/B (0.00s)
+    --- PASS: TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison/C (0.00s)
+    --- PASS: TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison/G (0.00s)
+    --- PASS: TestMainMappedWorkRejectedCallbackDoesNotPublishOrPoison/N (0.00s)
+=== RUN   TestMainMappedWorkChunkFailureDoesNotChargePartialChunk
+--- PASS: TestMainMappedWorkChunkFailureDoesNotChargePartialChunk (0.24s)
+=== RUN   TestMainPersistentIdentityOwnerSharedAcrossMappedAndRetained
+--- PASS: TestMainPersistentIdentityOwnerSharedAcrossMappedAndRetained (0.00s)
+=== RUN   TestMainPersistentSnapshotObservesOwnedStateWithoutLRUMutation
+--- PASS: TestMainPersistentSnapshotObservesOwnedStateWithoutLRUMutation (0.00s)
+=== RUN   TestMainPersistentWorkValidWarmAndPolicyIsolation
+--- PASS: TestMainPersistentWorkValidWarmAndPolicyIsolation (0.00s)
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/magic
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/version
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/partial-first-int
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/partial-fourth-int
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/partial-identity
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/complete-identity-then-eof
+=== RUN   TestMainPersistentWorkMalformedPrefixAndFinally/invalid-unique-count
+--- PASS: TestMainPersistentWorkMalformedPrefixAndFinally (0.02s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/magic (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/version (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/partial-first-int (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/partial-fourth-int (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/partial-identity (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/complete-identity-then-eof (0.00s)
+    --- PASS: TestMainPersistentWorkMalformedPrefixAndFinally/invalid-unique-count (0.00s)
+=== RUN   TestMainPersistentWorkEOFAndAbortRetry
+=== RUN   TestMainPersistentWorkEOFAndAbortRetry/EOF-budget-rejection
+=== RUN   TestMainPersistentWorkEOFAndAbortRetry/trailing-byte
+--- PASS: TestMainPersistentWorkEOFAndAbortRetry (0.00s)
+    --- PASS: TestMainPersistentWorkEOFAndAbortRetry/EOF-budget-rejection (0.00s)
+    --- PASS: TestMainPersistentWorkEOFAndAbortRetry/trailing-byte (0.00s)
+=== RUN   TestMainPersistentLegacyStringIdentitySurvivesFailedRead
+--- PASS: TestMainPersistentLegacyStringIdentitySurvivesFailedRead (0.00s)
+=== RUN   TestMainPersistentOwnerWaiterCancellationAndClose
+--- PASS: TestMainPersistentOwnerWaiterCancellationAndClose (0.00s)
+=== RUN   TestMainPersistentCallbackPanicReleasesTicket
+--- PASS: TestMainPersistentCallbackPanicReleasesTicket (0.00s)
+=== RUN   TestMainBuildWorkBothRawPassesMustComplete
+--- PASS: TestMainBuildWorkBothRawPassesMustComplete (0.01s)
+=== RUN   TestMainBuildSecondPassActuallyReadsRawFields
+--- PASS: TestMainBuildSecondPassActuallyReadsRawFields (0.00s)
+=== RUN   TestMainTrigramWorkMetadataAndPostingsRetryStages
+--- PASS: TestMainTrigramWorkMetadataAndPostingsRetryStages (0.00s)
+=== RUN   TestMainTrigramDetachedGenerationCloseJoinsOwner
+--- PASS: TestMainTrigramDetachedGenerationCloseJoinsOwner (0.00s)
+=== RUN   TestProjectionPersistenceMatchesMainBytes
+--- PASS: TestProjectionPersistenceMatchesMainBytes (0.00s)
+=== RUN   TestProjectionPersistenceRequiresCompletedPreparation
+=== RUN   TestProjectionPersistenceRequiresCompletedPreparation/1
+=== RUN   TestProjectionPersistenceRequiresCompletedPreparation/3
+=== RUN   TestProjectionPersistenceRequiresCompletedPreparation/8
+=== RUN   TestProjectionPersistenceRequiresCompletedPreparation/15
+--- PASS: TestProjectionPersistenceRequiresCompletedPreparation (0.01s)
+    --- PASS: TestProjectionPersistenceRequiresCompletedPreparation/1 (0.00s)
+    --- PASS: TestProjectionPersistenceRequiresCompletedPreparation/3 (0.00s)
+    --- PASS: TestProjectionPersistenceRequiresCompletedPreparation/8 (0.00s)
+    --- PASS: TestProjectionPersistenceRequiresCompletedPreparation/15 (0.00s)
+=== RUN   TestProjectionPersistenceBestEffortAndConcurrentClose
+--- PASS: TestProjectionPersistenceBestEffortAndConcurrentClose (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.740s

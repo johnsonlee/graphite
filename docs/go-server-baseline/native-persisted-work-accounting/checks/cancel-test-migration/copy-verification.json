@@ -1,0 +1,42 @@
+{
+  "source": "/tmp/persisted-work-f0838dda-cancel-test-migration-v1",
+  "files": [
+    {
+      "file": "before.json",
+      "sha256": "33191439228f3684b0caf6fa281fc83453f6c1af1e82ce4c36f5a573c8d18bb4",
+      "bytes": 5526
+    },
+    {
+      "file": "main_callsite_index_test.after.go",
+      "sha256": "5b85b009a042781e641d5a4e3aa9462fb36916e47cad1b88feb651fff37e74cf",
+      "bytes": 9656
+    },
+    {
+      "file": "main_callsite_index_test.before.go",
+      "sha256": "0fe27ef2f6fe5b29438a71c7385264269a6868095056afe8425c5bb530875eae",
+      "bytes": 8563
+    },
+    {
+      "file": "receipt.json",
+      "sha256": "adc74a7c9584683794453fda7d3ab60d7b182e1a27763d7411094fbfc56606c5",
+      "bytes": 361
+    },
+    {
+      "file": "run.py",
+      "sha256": "138c3edd53f2f44109a6d86d8a6877f256665a0a5efa21f2bdeffbead5dead3b",
+      "bytes": 599
+    },
+    {
+      "file": "test.log",
+      "sha256": "ea5835f6db25c53e023c5c1fc8140395f69658759edaa8081286ee795e8e2942",
+      "bytes": 3931
+    },
+    {
+      "file": "verification.json",
+      "sha256": "d55ce26697610467aaaa814e5984b15e17e123aa10d91ebeb983222325826c0c",
+      "bytes": 458
+    }
+  ],
+  "allBytesEqual": true,
+  "performanceMeasurements": 0
+}

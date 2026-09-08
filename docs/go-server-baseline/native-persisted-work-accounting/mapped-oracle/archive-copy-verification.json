@@ -1,0 +1,245 @@
+{
+  "copied": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/classes/MappedWorkOracle$State.class",
+      "file": "main-capture/classes/MappedWorkOracle$State.class",
+      "bytes": 6580,
+      "sha256": "1731c8fc49198e2bef585d5246c940643f72749484ee39cdcf3cb35e3d156f73"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/classes/MappedWorkOracle.class",
+      "file": "main-capture/classes/MappedWorkOracle.class",
+      "bytes": 17214,
+      "sha256": "b3e07ac59b0f19e027b0a12dcedfdccf3692a37eb7f2830c0241a9ca443d4a60"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/commands.json",
+      "file": "main-capture/commands.json",
+      "bytes": 2689,
+      "sha256": "4e786e1f8ff7f07147dc690faeab66b292d8d8ea63373d286b7197e5e2cac385"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixture-after.json.gz",
+      "file": "main-capture/fixture-after.json.gz",
+      "bytes": 116690,
+      "sha256": "6125bbd77d87cdc77911bbabfaa7dd82c6f9cd1874807999a31497c31a3beb99"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixture-audit.json",
+      "file": "main-capture/fixture-audit.json",
+      "bytes": 1513,
+      "sha256": "7c99922ffaed8ac3a4e2e75b653d15676b1b1f34e7d47584406ca7381b21f670"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixture-before.json.gz",
+      "file": "main-capture/fixture-before.json.gz",
+      "bytes": 116667,
+      "sha256": "755fa56fd01b84e4e419c92a060107e77241ee17e38fe938fb7159d9454692e6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixture-variants.json",
+      "file": "main-capture/fixture-variants.json",
+      "bytes": 60154,
+      "sha256": "a426ec0ef64f869cb068ed5d83cc1511f695e30d5130d87867d0cc8a3b87b660"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures.tar.gz",
+      "file": "main-capture/fixtures.tar.gz",
+      "bytes": 173792,
+      "sha256": "6281e64255ed8c5932717b1fff95dfce61e2a8a66d2ae471f9b7b4d2fe5d0db2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/inputs.json",
+      "file": "main-capture/inputs.json",
+      "bytes": 4772,
+      "sha256": "20d85d1ef3f8eba2e56ad4369b67b64c0311cfbe13c5cf2a162d9081c18ed28d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/javap.stderr",
+      "file": "main-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/javap.stdout",
+      "file": "main-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/main.json",
+      "file": "main-capture/main.json",
+      "bytes": 27748531,
+      "sha256": "f54492924dfc5577f88dda8c795ba0dd55b85bbad7c50a3f57cacd3d7990725d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/mutations.json",
+      "file": "main-capture/mutations.json",
+      "bytes": 1127,
+      "sha256": "c0a4d319c370537cb358ba851bb884dbdcfef1b61aa88f7d2d0cc2c06af1a5aa"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/prepare.stderr",
+      "file": "main-capture/prepare.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/prepare.stdout",
+      "file": "main-capture/prepare.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/receipt.json",
+      "file": "main-capture/receipt.json",
+      "bytes": 4872,
+      "sha256": "4790772eb6b5b4d8a2a0f5e2ff14a1ecdc86d44031f83a4fefc5c052d347523b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/run.stderr",
+      "file": "main-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/run.stdout",
+      "file": "main-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/classes/MappedWorkOracle$State.class",
+      "file": "repeat-capture/classes/MappedWorkOracle$State.class",
+      "bytes": 6580,
+      "sha256": "1731c8fc49198e2bef585d5246c940643f72749484ee39cdcf3cb35e3d156f73"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/classes/MappedWorkOracle.class",
+      "file": "repeat-capture/classes/MappedWorkOracle.class",
+      "bytes": 17214,
+      "sha256": "b3e07ac59b0f19e027b0a12dcedfdccf3692a37eb7f2830c0241a9ca443d4a60"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/commands.json",
+      "file": "repeat-capture/commands.json",
+      "bytes": 2689,
+      "sha256": "ebe54aff6fe49ff3d837ebc2983044cb4e84fb333d33ab488860c8034a7ee84c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixture-after.json.gz",
+      "file": "repeat-capture/fixture-after.json.gz",
+      "bytes": 116690,
+      "sha256": "aca580e49699237f902372cc2050b9f72e5780e27ed235d0fb3b7fbfd0d667f7"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixture-audit.json",
+      "file": "repeat-capture/fixture-audit.json",
+      "bytes": 1513,
+      "sha256": "7c99922ffaed8ac3a4e2e75b653d15676b1b1f34e7d47584406ca7381b21f670"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixture-before.json.gz",
+      "file": "repeat-capture/fixture-before.json.gz",
+      "bytes": 116667,
+      "sha256": "58abc8b002071499091371b963e9313dab525c630bef6ac9c04771bfece470cf"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixture-variants.json",
+      "file": "repeat-capture/fixture-variants.json",
+      "bytes": 60154,
+      "sha256": "a426ec0ef64f869cb068ed5d83cc1511f695e30d5130d87867d0cc8a3b87b660"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures.tar.gz",
+      "file": "repeat-capture/fixtures.tar.gz",
+      "bytes": 173814,
+      "sha256": "f9c31e435dcbfe7929cc0bf8667c49a1843a00a4ce4ba6461278ce5452280516"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "bytes": 4772,
+      "sha256": "20d85d1ef3f8eba2e56ad4369b67b64c0311cfbe13c5cf2a162d9081c18ed28d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/javap.stderr",
+      "file": "repeat-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/javap.stdout",
+      "file": "repeat-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/main.json",
+      "file": "repeat-capture/main.json",
+      "bytes": 27748531,
+      "sha256": "7a66c4d0fef07565b616291f2b9f65983c39247f7d178cfbc809d3dca5671911"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/mutations.json",
+      "file": "repeat-capture/mutations.json",
+      "bytes": 1127,
+      "sha256": "c0a4d319c370537cb358ba851bb884dbdcfef1b61aa88f7d2d0cc2c06af1a5aa"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/prepare.stderr",
+      "file": "repeat-capture/prepare.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/prepare.stdout",
+      "file": "repeat-capture/prepare.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "bytes": 4872,
+      "sha256": "9b1bdf1e50681354024cbeaea1fd3e36a7b0aa49d25aaf3354ca6b2c8cc51026"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/run.stderr",
+      "file": "repeat-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/run.stdout",
+      "file": "repeat-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "allCopiedBytesVerified": true
+}

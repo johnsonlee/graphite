@@ -20,7 +20,7 @@ type projectionWorkerContext struct {
 
 func (c *projectionWorkerContext) observe() {
 	pc, _, _, _ := runtime.Caller(2)
-	if f := runtime.FuncForPC(pc); f != nil && strings.HasSuffix(f.Name(), ".ProjectionNodeOrder") && c.once.CompareAndSwap(false, true) {
+	if f := runtime.FuncForPC(pc); f != nil && strings.HasSuffix(f.Name(), ".projectionNodeOrder") && c.once.CompareAndSwap(false, true) {
 		close(c.entered)
 		<-c.Context.Done()
 	}

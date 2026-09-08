@@ -1,0 +1,54 @@
+{
+  "cases": 201,
+  "allFieldsExceptPreservedGoStackEqual": true,
+  "completeRawJSONEqual": false,
+  "differences": [
+    {
+      "index": 183,
+      "name": "provider-field-bad-sid-0-example",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "index": 184,
+      "name": "provider-field-bad-sid-0-never-matches-generic-oracle",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "index": 185,
+      "name": "provider-field-bad-sid-1-example",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "index": 186,
+      "name": "provider-field-bad-sid-1-never-matches-generic-oracle",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "index": 187,
+      "name": "provider-field-bad-sid-2-example",
+      "fields": [
+        "goStack"
+      ]
+    },
+    {
+      "index": 197,
+      "name": "provider-field-payload-id-example",
+      "fields": [
+        "goStack"
+      ]
+    }
+  ],
+  "inputSHA256": {
+    "docs/go-server-baseline/native-persisted-work-accounting/checks/matrix201/go.json": "793c332f836901b4aca0503d4c2f47175bd98297c0be169a0b0148804281872d",
+    "docs/go-server-baseline/native-leading-work-accounting/checks/matrix201/go.json": "97045ace87f1d3a84455cbe1b6b50c6a8b5633da91ab41a974a67043e08b0de0"
+  },
+  "performanceMeasurements": 0
+}

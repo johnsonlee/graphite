@@ -1,0 +1,113 @@
+{
+  "captures": [
+    {
+      "capture": "main-capture",
+      "files": [
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures/BT-bad-magic-budget258/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget258/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures/BT-bad-magic-budget259/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget259/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures/BT-bad-magic-budget387/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget387/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures/BT-bad-magic-budget388/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget388/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures/BT-bad-magic-budget516/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget516/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures/BT-bad-magic-budget517/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget517/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures/BT-bad-magic-budget518/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget518/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v1/fixtures/BT-bad-magic-budget519/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget519/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        }
+      ],
+      "archiveSHA256": "46f1d5acc0e1dd2465533f2091bc1d120fe9419acf42c3ce4c723a91f1263dd7"
+    },
+    {
+      "capture": "repeat-capture",
+      "files": [
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures/BT-bad-magic-budget258/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget258/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures/BT-bad-magic-budget259/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget259/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures/BT-bad-magic-budget387/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget387/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures/BT-bad-magic-budget388/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget388/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures/BT-bad-magic-budget516/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget516/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures/BT-bad-magic-budget517/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget517/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures/BT-bad-magic-budget518/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget518/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/build-trigram-work-accounting-v2/fixtures/BT-bad-magic-budget519/store0/graph.callsite-string-index",
+          "file": "BT-bad-magic-budget519/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        }
+      ],
+      "archiveSHA256": "46f1d5acc0e1dd2465533f2091bc1d120fe9419acf42c3ce4c723a91f1263dd7"
+    }
+  ],
+  "scope": "Actual post-execution sidecar bytes corresponding to original fixture-after manifests; not fixture inputs."
+}

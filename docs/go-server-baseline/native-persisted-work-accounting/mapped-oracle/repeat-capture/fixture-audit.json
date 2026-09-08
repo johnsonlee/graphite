@@ -1,0 +1,29 @@
+{
+  "originalFiles": 28196,
+  "changed": [
+    "M02-bad-checksum-100000/store0/graph.callsite-string-index",
+    "M02-bad-checksum-1861/store0/graph.callsite-string-index",
+    "M02-bad-identity-1/store0/graph.callsite-string-index",
+    "M02-bad-identity-100000/store0/graph.callsite-string-index",
+    "M02-bad-magic-1/store0/graph.callsite-string-index",
+    "M02-bad-magic-100000/store0/graph.callsite-string-index",
+    "M02-bad-node-order-100000/store0/graph.callsite-string-index",
+    "M02-bad-node-order-1861/store0/graph.callsite-string-index",
+    "M02-bad-posting-end-100000/store0/graph.callsite-string-index",
+    "M02-bad-posting-end-44/store0/graph.callsite-string-index",
+    "M02-bad-unique-id-100000/store0/graph.callsite-string-index",
+    "M02-bad-unique-id-43/store0/graph.callsite-string-index",
+    "M02-bad-version-1/store0/graph.callsite-string-index",
+    "M02-bad-version-100000/store0/graph.callsite-string-index",
+    "M02-trailing-byte-1/store0/graph.callsite-string-index",
+    "M02-trailing-byte-100000/store0/graph.callsite-string-index",
+    "M02-truncated-identity-1/store0/graph.callsite-string-index",
+    "M02-truncated-identity-100000/store0/graph.callsite-string-index",
+    "M02-truncated-int-1/store0/graph.callsite-string-index",
+    "M02-truncated-int-100000/store0/graph.callsite-string-index",
+    "M05-truncated-layout-1/store0/graph.callsite-string-index",
+    "M05-truncated-layout-100000/store0/graph.callsite-string-index"
+  ],
+  "added": [],
+  "missing": []
+}

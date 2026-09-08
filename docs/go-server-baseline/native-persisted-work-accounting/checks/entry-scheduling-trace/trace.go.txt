@@ -1,0 +1,62 @@
+// Diagnostic copy only. No waits, callbacks, context wrappers, or hot-path I/O.
+package entrytrace
+
+import (
+	"encoding/json"
+	"os"
+	"reflect"
+	"sync/atomic"
+)
+
+const capacity = 262144
+type Event struct {
+	Sequence uint64 `json:"sequence"`
+	Query int64 `json:"queryIndex"`
+	Kind string `json:"kind"`
+	Object uintptr `json:"object"`
+	Related uintptr `json:"related"`
+	Graph string `json:"graph"`
+	A int64 `json:"a"`
+	B int64 `json:"b"`
+	C int64 `json:"c"`
+}
+type slot struct { ready atomic.Bool; event Event }
+var slots []slot
+var position atomic.Uint64
+var current atomic.Int64
+
+func Init() { slots = make([]slot, capacity) }
+func pointer(value any) uintptr {
+	if value == nil { return 0 }
+	v := reflect.ValueOf(value)
+	if v.Kind() == reflect.Pointer { return v.Pointer() }
+	return 0
+}
+func Flag(value bool) int64 { if value { return 1 }; return 0 }
+func Emit(kind string, object, related any, graph string, a, b, c int64) {
+	query := current.Load()
+	if len(slots) == 0 { return }
+	i := position.Add(1)-1
+	if i >= capacity { return }
+	s := &slots[i]
+	s.event = Event{i, query-1, kind, pointer(object), pointer(related), graph, a, b, c}
+	s.ready.Store(true)
+}
+// Existing Err() is evaluated once by the caller; preserve that exact error.
+func Error(err error, kind string, object, related any, graph string, a int64) error {
+	if err != nil { Emit(kind, object, related, graph, a, 0, 0) }
+	return err
+}
+func Begin(query int) { current.Store(int64(query)+1); Emit("query_begin", nil, nil, "", 0, 0, 0) }
+func End() { Emit("query_end", nil, nil, "", 0, 0, 0); current.Store(0) }
+func Dump() error {
+	f, err := os.Create(os.Getenv("GRAPHITE_ENTRY_TRACE")); if err != nil { return err }; defer f.Close()
+	enc := json.NewEncoder(f)
+	n := position.Load(); missing := uint64(0)
+	for i := uint64(0); i < min(n, capacity); i++ {
+		if !slots[i].ready.Load() { missing++; continue }
+		if err := enc.Encode(slots[i].event); err != nil { return err }
+	}
+	dropped := uint64(0); if n > capacity { dropped = n-capacity }
+	return enc.Encode(map[string]any{"kind":"trace_summary", "reserved":n, "capacity":capacity, "dropped":dropped, "unpublished":missing, "diagnosticOnly":true})
+}

@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "-count=1",
+    "-v",
+    "-run",
+    "^TestMain(Fixed|Prepared|DirectString)",
+    "./internal/store",
+    "./internal/query"
+  ],
+  "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-scheduler-focused-v1/module",
+  "goSha256": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4",
+  "runnerSha256": "0a8c9d53590dc8a5f4836183df136b352a7ee6d7cfe4249d2391981c20f6c735",
+  "moduleFiles": 2568,
+  "sourceArchiveSha256": "1eed96bfaf5a0f0bab99dadee4d873893e17dfaca2a5ebd32eb996ed347a522f",
+  "fixtureSha256": "1a5564b5c08c837cda14455f38ad2e7154782dc50ef1c41774ac83b020979052",
+  "performanceMeasurements": 0,
+  "exitCode": 0,
+  "inputsUnchanged": true,
+  "originalModuleStillMatches": true
+}

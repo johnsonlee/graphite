@@ -1,0 +1,213 @@
+--- a/graphite-server/internal/query/main_fixed_workers.go
++++ b/graphite-server/internal/query/main_fixed_workers.go
+@@ -39,11 +39,12 @@
+ // The prepared path shares main's process-wide fixed executor capacity. The
+ // legacy runner is deliberately not migrated by this change.
+ type mainFixedExecutor struct {
+-	mu     sync.Mutex
+-	ready  *sync.Cond
+-	queue  []*mainFixedFuture
+-	closed bool
+-	exited sync.WaitGroup
++	capacity, cores int
++	mu              sync.Mutex
++	ready           *sync.Cond
++	queue           []*mainFixedFuture
++	closed          bool
++	exited          sync.WaitGroup
+ }
+ type mainFixedFuture struct {
+ 	mu                          sync.Mutex
+@@ -101,39 +102,50 @@
+ 	run()
+ }
+ func newMainFixedExecutor(capacity int) *mainFixedExecutor {
+-	e := &mainFixedExecutor{}
++	e := &mainFixedExecutor{capacity: max(1, capacity)}
+ 	e.ready = sync.NewCond(&e.mu)
+-	for range max(1, capacity) {
+-		e.exited.Add(1)
+-		go func() {
+-			defer e.exited.Done()
+-			for {
+-				e.mu.Lock()
+-				for len(e.queue) == 0 && !e.closed {
+-					e.ready.Wait()
+-				}
+-				if len(e.queue) == 0 {
+-					e.mu.Unlock()
+-					return
+-				}
+-				future := e.queue[0]
+-				e.queue[0] = nil
+-				e.queue = e.queue[1:]
+-				e.mu.Unlock()
+-				future.execute()
+-			}
+-		}()
+-	}
+ 	return e
+ }
++
++// Like ThreadPoolExecutor.execute, a submission below core capacity starts a
++// worker with that future as firstTask, even if an existing core is idle.
++// Only later submissions enter the FIFO queue; no core is prestarted.
+ func (e *mainFixedExecutor) submit(future *mainFixedFuture) {
+ 	e.mu.Lock()
+ 	defer e.mu.Unlock()
+ 	if e.closed {
+ 		panic("submit to closed main fixed executor")
+ 	}
++	if e.cores < e.capacity {
++		e.cores++
++		e.exited.Add(1)
++		go e.runWorker(future)
++		return
++	}
+ 	e.queue = append(e.queue, future)
+ 	e.ready.Signal()
++}
++
++func (e *mainFixedExecutor) runWorker(firstTask *mainFixedFuture) {
++	defer e.exited.Done()
++	firstTask.execute()
++	// Do not retain a completed first future while the executor worker is idle.
++	firstTask = nil
++	for {
++		e.mu.Lock()
++		for len(e.queue) == 0 && !e.closed {
++			e.ready.Wait()
++		}
++		if len(e.queue) == 0 {
++			e.mu.Unlock()
++			return
++		}
++		future := e.queue[0]
++		e.queue[0] = nil
++		e.queue = e.queue[1:]
++		e.mu.Unlock()
++		future.execute()
++	}
+ }
+ 
+ // Used only to release private test executors after all their futures join.
+--- a/graphite-server/internal/query/main_fixed_workers_test.go
++++ b/graphite-server/internal/query/main_fixed_workers_test.go
+@@ -333,3 +333,117 @@
+ 		t.Fatal("normal completion canceled context")
+ 	}
+ }
++
++func mainFixedTestFuture(run func()) *mainFixedFuture {
++	worker := &mainFixedWorkerContext{parent: context.Background(), values: context.Background(), done: make(chan struct{})}
++	future := &mainFixedFuture{worker: worker, done: make(chan struct{})}
++	future.setRun(run)
++	return future
++}
++
++func TestMainFixedExecutorLazyCoreGrowthPerSubmission(t *testing.T) {
++	executor := privateFixedExecutor(t, 3)
++	if executor.cores != 0 || executor.capacity != 3 || len(executor.queue) != 0 {
++		t.Fatal("constructor prestarted cores", executor.cores, executor.capacity)
++	}
++	observed := make(chan int, 3)
++	for index := 0; index < 3; index++ {
++		future := mainFixedTestFuture(func() { observed <- index })
++		executor.submit(future)
++		awaitFixed(t, future.done)
++		executor.mu.Lock()
++		cores, queued := executor.cores, len(executor.queue)
++		executor.mu.Unlock()
++		// Previous futures have completed. An available/idle core must not prevent
++		// growth to the configured core capacity on the next submission.
++		if cores != index+1 || queued != 0 {
++			t.Fatal("submission did not get a new firstTask core", index, cores, queued)
++		}
++		if value := awaitFixed(t, observed); value != index {
++			t.Fatal(value, index)
++		}
++	}
++}
++
++func TestMainFixedExecutorFirstTaskBypassesQueueAndCanceledCoreIsReusable(t *testing.T) {
++	executor := privateFixedExecutor(t, 1)
++	var canceledInvoked atomic.Bool
++	canceled := mainFixedTestFuture(func() { canceledInvoked.Store(true) })
++	canceled.interrupt(context.Canceled)
++	executor.submit(canceled)
++	executor.mu.Lock()
++	cores, queued := executor.cores, len(executor.queue)
++	executor.mu.Unlock()
++	if cores != 1 || queued != 0 {
++		t.Fatal("firstTask was queued or no core was created", cores, queued)
++	}
++	actual := make(chan int, 1)
++	next := mainFixedTestFuture(func() { actual <- 73 })
++	executor.submit(next)
++	awaitFixed(t, next.done)
++	if canceledInvoked.Load() || awaitFixed(t, actual) != 73 {
++		t.Fatal("canceled firstTask ran or poisoned its core")
++	}
++	executor.mu.Lock()
++	cores = executor.cores
++	executor.mu.Unlock()
++	if cores != 1 {
++		t.Fatal("replacement unexpectedly created another core", cores)
++	}
++}
++
++func TestMainFixedExecutorCloseDrainsAcceptedQueueAndRejectsNewWork(t *testing.T) {
++	executor := privateFixedExecutor(t, 1)
++	started := make(chan struct{})
++	release := make(chan struct{})
++	defer func() {
++		select {
++		case <-release:
++		default:
++			close(release)
++		}
++	}()
++	order := make(chan int, 2)
++	first := mainFixedTestFuture(func() { close(started); <-release; order <- 1 })
++	second := mainFixedTestFuture(func() { order <- 2 })
++	executor.submit(first)
++	awaitFixed(t, started)
++	executor.submit(second)
++	executor.mu.Lock()
++	queued := len(executor.queue)
++	executor.mu.Unlock()
++	if queued != 1 {
++		t.Fatal("full core did not queue subsequent task", queued)
++	}
++	closeStarted := make(chan struct{})
++	closed := make(chan struct{})
++	go func() { close(closeStarted); executor.close(); close(closed) }()
++	awaitFixed(t, closeStarted)
++	select {
++	case <-closed:
++		t.Fatal("close returned while its firstTask was active")
++	default:
++	}
++	close(release)
++	awaitFixed(t, closed)
++	awaitFixed(t, first.done)
++	awaitFixed(t, second.done)
++	if a, b := awaitFixed(t, order), awaitFixed(t, order); a != 1 || b != 2 {
++		t.Fatal(a, b)
++	}
++	unsubmitted := mainFixedTestFuture(func() { panic("closed executor ran new work") })
++	if failure := fixedRecovered(func() { executor.submit(unsubmitted) }); failure != "submit to closed main fixed executor" {
++		t.Fatal(failure)
++	}
++}
++
++func TestMainFixedExecutorCloseBeforeAnySubmission(t *testing.T) {
++	executor := newMainFixedExecutor(4)
++	executor.close()
++	if executor.cores != 0 || len(executor.queue) != 0 {
++		t.Fatal("closing unused pool created work")
++	}
++	if failure := fixedRecovered(func() { executor.submit(mainFixedTestFuture(func() {})) }); failure != "submit to closed main fixed executor" {
++		t.Fatal(failure)
++	}
++}

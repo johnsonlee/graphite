@@ -1,0 +1,40 @@
+{
+  "status": "pass",
+  "declaredOwnedFiles": 135,
+  "groups": [
+    {
+      "directory": ".",
+      "cases": 44,
+      "operations": 220,
+      "fixtureRegularFiles": 386,
+      "caseFixtureFilesPerCapture": [
+        28196,
+        28196
+      ],
+      "fullRawRepeatEqual": true
+    },
+    {
+      "directory": "large-oracle",
+      "cases": 7,
+      "operations": 35,
+      "fixtureRegularFiles": 67,
+      "caseFixtureFilesPerCapture": [
+        4487,
+        4487
+      ],
+      "fullRawRepeatEqual": true
+    }
+  ],
+  "publicCases": 51,
+  "publicOperations": 255,
+  "allFullRawRepeatsEqual": true,
+  "smallRuntimeRewrittenSidecarsPerCapture": 22,
+  "largeRuntimeChangedFiles": 0,
+  "prior52CaseDeclaredFilesUnchanged": 78,
+  "p06CommonOperationReferencesEqual": 2,
+  "largeWriterNodes": 262145,
+  "largeWriterTerminalExitCode": 0,
+  "distinctFrozenRuntimeInputs": 33,
+  "performanceMeasurements": 0,
+  "scope": "Archive/source/public-output verification only; no execution of code under test."
+}

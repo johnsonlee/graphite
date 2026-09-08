@@ -1,0 +1,188 @@
+{
+  "artifacts": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/capture.stderr",
+      "file": "main-capture/capture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/capture.stdout",
+      "file": "main-capture/capture.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/classes/MappedEntryOracle$Action.class",
+      "file": "main-capture/classes/MappedEntryOracle$Action.class",
+      "bytes": 289,
+      "sha256": "33b788634588a865c53284ae8bccfd6bc8c20af5dfa6ad0d20d2c891ca2c2976"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/classes/MappedEntryOracle$Request.class",
+      "file": "main-capture/classes/MappedEntryOracle$Request.class",
+      "bytes": 5376,
+      "sha256": "c2acfd78d1a613c8d128b23c97f92be6b04d764c9272310fb32172d32948f259"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/classes/MappedEntryOracle.class",
+      "file": "main-capture/classes/MappedEntryOracle.class",
+      "bytes": 15023,
+      "sha256": "f03fbbf87cca9c1c5c795e6431954374bfb86ec6520d066fd70c45d902afa1bd"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/commands.json",
+      "file": "main-capture/commands.json",
+      "bytes": 1591,
+      "sha256": "9e27a0182f84d1ec9dd9e76ac20f1b716a8a92f8411aa8c55a51bc87d2a5e824"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/fixture-after.json",
+      "file": "main-capture/fixture-after.json",
+      "bytes": 6152,
+      "sha256": "41f742b10f8a06d1a8f570cff2db81eee6bfb25e58315ccfd062001510116b7c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/fixture-before.json",
+      "file": "main-capture/fixture-before.json",
+      "bytes": 6152,
+      "sha256": "41f742b10f8a06d1a8f570cff2db81eee6bfb25e58315ccfd062001510116b7c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/fixture-variant.json",
+      "file": "main-capture/fixture-variant.json",
+      "bytes": 2508,
+      "sha256": "ecdc3650483c1fc81a40b7f428d2d4c652bde45ccb231432e385f3bc592cb715"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/inputs.json",
+      "file": "main-capture/inputs.json",
+      "bytes": 3246,
+      "sha256": "ab103cb4e127ff4686fbd6fdc1a216cbfec94763862dd70dae1f345a51bd4186"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/live-process.json",
+      "file": "main-capture/live-process.json",
+      "bytes": 758,
+      "sha256": "6c478f68c5f23d4857dfa9b980eaf29fa8dc7ad8771632eecf9a2c097002f8a6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/main.json",
+      "file": "main-capture/main.json",
+      "bytes": 160589,
+      "sha256": "f0616438b4b19bbbebd66514ae1f80d27aae170dfb06a3c481cce98d650e7c69"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v1/receipt.json",
+      "file": "main-capture/receipt.json",
+      "bytes": 687,
+      "sha256": "71301e0c04c77b3ad0cffb842dc5c811f739e6238ba361d870ade80ad58e74a2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/capture.stderr",
+      "file": "repeat-capture/capture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/capture.stdout",
+      "file": "repeat-capture/capture.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/classes/MappedEntryOracle$Action.class",
+      "file": "repeat-capture/classes/MappedEntryOracle$Action.class",
+      "bytes": 289,
+      "sha256": "33b788634588a865c53284ae8bccfd6bc8c20af5dfa6ad0d20d2c891ca2c2976"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/classes/MappedEntryOracle$Request.class",
+      "file": "repeat-capture/classes/MappedEntryOracle$Request.class",
+      "bytes": 5376,
+      "sha256": "c2acfd78d1a613c8d128b23c97f92be6b04d764c9272310fb32172d32948f259"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/classes/MappedEntryOracle.class",
+      "file": "repeat-capture/classes/MappedEntryOracle.class",
+      "bytes": 15023,
+      "sha256": "f03fbbf87cca9c1c5c795e6431954374bfb86ec6520d066fd70c45d902afa1bd"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/commands.json",
+      "file": "repeat-capture/commands.json",
+      "bytes": 1591,
+      "sha256": "b6f1bdbcc8e130b13f0cffb1d5fd2a62fe107faaa6b0bb2945abe38b8a41aedc"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/fixture-after.json",
+      "file": "repeat-capture/fixture-after.json",
+      "bytes": 6152,
+      "sha256": "41f742b10f8a06d1a8f570cff2db81eee6bfb25e58315ccfd062001510116b7c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/fixture-before.json",
+      "file": "repeat-capture/fixture-before.json",
+      "bytes": 6152,
+      "sha256": "41f742b10f8a06d1a8f570cff2db81eee6bfb25e58315ccfd062001510116b7c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/fixture-variant.json",
+      "file": "repeat-capture/fixture-variant.json",
+      "bytes": 2508,
+      "sha256": "ecdc3650483c1fc81a40b7f428d2d4c652bde45ccb231432e385f3bc592cb715"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "bytes": 3246,
+      "sha256": "ab103cb4e127ff4686fbd6fdc1a216cbfec94763862dd70dae1f345a51bd4186"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/live-process.json",
+      "file": "repeat-capture/live-process.json",
+      "bytes": 758,
+      "sha256": "7dd2979ee53380f04b307d56307892f2d917e652eb82bf080a23f310f74b68cc"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/main.json",
+      "file": "repeat-capture/main.json",
+      "bytes": 160589,
+      "sha256": "0a76f9576e39fc01ba1e08501b3a030617f825a3de5453f41c0134edd4d4d7b1"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-entry-warm-range-v2/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "bytes": 687,
+      "sha256": "71301e0c04c77b3ad0cffb842dc5c811f739e6238ba361d870ade80ad58e74a2"
+    }
+  ],
+  "cases": 2,
+  "probePhases": 6,
+  "warmupPhases": 10,
+  "fullParsedRepeatEqual": true
+}

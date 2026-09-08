@@ -1,0 +1,18 @@
+[
+  {
+    "state": "cold",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-state.py",
+      "native",
+      "cold"
+    ],
+    "exitCode": 1,
+    "verifyCommand": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/verify-state.py",
+      "cold"
+    ],
+    "verifyExitCode": 1
+  }
+]

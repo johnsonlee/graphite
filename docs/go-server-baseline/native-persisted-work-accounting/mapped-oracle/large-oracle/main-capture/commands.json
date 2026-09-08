@@ -1,0 +1,59 @@
+[
+  {
+    "phase": "javap",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+      "-classpath",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+      "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+      "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+      "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+      "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T11:41:09.806428+00:00",
+    "endUTC": "2026-09-08T11:41:09.945688+00:00"
+  },
+  {
+    "phase": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-accounting-v1/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/large-oracle/MappedWorkOracle.java"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T11:41:09.945998+00:00",
+    "endUTC": "2026-09-08T11:41:10.351122+00:00"
+  },
+  {
+    "phase": "prepare",
+    "command": [
+      "/usr/bin/python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/large-oracle/prepare.py",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-accounting-v1/variants"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T11:41:10.351470+00:00",
+    "endUTC": "2026-09-08T11:41:10.449025+00:00"
+  },
+  {
+    "phase": "run",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-accounting-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "MappedWorkOracle",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/large-oracle/cases.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-accounting-v1/fixtures",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-large-accounting-v1/main.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T11:41:23.354891+00:00",
+    "endUTC": "2026-09-08T11:41:25.192848+00:00"
+  }
+]

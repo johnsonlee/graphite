@@ -1,0 +1,23 @@
+{
+  "runnerSession": 63023,
+  "runnerExit": 0,
+  "baselineExit": 1,
+  "baselineFailureLeaves": 6,
+  "baselineFailures": "bad-tail actual SID reading skipped by original count guard in both APIs; negative -1/INT_MIN rejected in both APIs",
+  "candidateExit": 0,
+  "candidateTopLevelPASS": 30,
+  "candidateRepeatCount": 3,
+  "annotationTopLevelTests": 3,
+  "publicExit": 0,
+  "publicCases": [
+    "annotation-bad-tail-hit",
+    "annotation-bad-tail-miss",
+    "annotation-bad-tail-global-miss"
+  ],
+  "publicAssertions": "frozen actual main class/message, empty failed Result, original before/after retained and mappedView states per source",
+  "worktreeMutationsDuringValidation": false,
+  "fullModuleTestsRun": false,
+  "current201ReplayRun": false,
+  "real64OrPerformanceRun": false,
+  "processesTerminal": true
+}

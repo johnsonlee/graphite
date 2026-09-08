@@ -1,0 +1,34 @@
+{
+  "reviewType": "read-only independent source review",
+  "reviewedSource": "graphite-server/internal/query/main_fixed_workers.go",
+  "reviewedSourceSHA256": "fc5b4f5afa7bb41ec85a94e748ba0966fe327ef3818393a2b48a7a675a7711ef",
+  "reviewedTestsSHA256": "97117c5077f7d2a222dbf924c934e0a3f15240b9dd3e2dea476fdf398809f08c",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainMethod": "QueryPipeline.runDirectStringTasksWithFixedWorkersInOrderUntil",
+  "mainMethodLine": 2572,
+  "jdkSource": "/Library/Java/JavaVirtualMachines/openjdk-17.jdk/Contents/Home/lib/src.zip",
+  "jdkVersion": "17.0.18",
+  "findings": [
+    {
+      "priority": 2,
+      "title": "Canceled queued futures retain completed request payloads",
+      "location": "mainFixedFuture.interrupt / future.run initialization",
+      "certainty": "source-backed reachability; no runtime reproduction executed",
+      "reference": "FutureTask.cancel always calls finishCompletion, whose callable=null releases the queued callable",
+      "requiresCorrection": true,
+      "validationControl": "Hold executor capacity, cancel a queued future, join done, verify run and worker payload references are released; also cover cancellation before callable initialization"
+    }
+  ],
+  "definiteOrdinaryPathDeadlockFound": false,
+  "fullSchedulerParityProven": false,
+  "unintegratedScope": [
+    "legacy runDistinctTasks shared executor capacity",
+    "configured worker overrides",
+    "nested-worker markers and metrics"
+  ],
+  "productionFilesEdited": false,
+  "engineProcessesStarted": 0,
+  "testsRunByReviewer": false,
+  "performanceMeasurements": 0,
+  "acceptancePassed": false
+}

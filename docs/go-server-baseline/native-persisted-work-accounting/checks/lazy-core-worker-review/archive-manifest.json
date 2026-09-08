@@ -1,0 +1,120 @@
+{
+  "artifacts": [
+    {
+      "path": "v1/after/main_fixed_workers.go",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/after/main_fixed_workers.go",
+      "bytes": 7688,
+      "sha256": "5fa8660ca2b152c45acf6383af6ce0833aefe69fa98e053128b4539821229603"
+    },
+    {
+      "path": "v1/after/main_fixed_workers_test.go",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/after/main_fixed_workers_test.go",
+      "bytes": 14512,
+      "sha256": "6790f97f35bbf31ed82fd4c549ae62901d1ebd3b48e964d6d5b7a524b00ea371"
+    },
+    {
+      "path": "v1/after.json",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/after.json",
+      "bytes": 324,
+      "sha256": "2e931350fdabb864f73047ffc500c7635f60192ec9b6c4bc54fba8c5022cc115"
+    },
+    {
+      "path": "v1/before/main_fixed_workers.go",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/before/main_fixed_workers.go",
+      "bytes": 7259,
+      "sha256": "dfc418d602fbe17261c4565155cf1061fb2f84bc2172d29e7a497ce48fd31e87"
+    },
+    {
+      "path": "v1/before/main_fixed_workers_test.go",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/before/main_fixed_workers_test.go",
+      "bytes": 10657,
+      "sha256": "863210f83f5f4427160bcb7985ae8484ff8ec0c0c68f9d9a2c046aefc26ff1aa"
+    },
+    {
+      "path": "v1/before.json",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/before.json",
+      "bytes": 324,
+      "sha256": "296c763edfbf66ecb4f388e3f22ee53e21135964dac798effd6219d894d20cfc"
+    },
+    {
+      "path": "v1/focused-start.json",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/focused-start.json",
+      "bytes": 766,
+      "sha256": "b8af678b8ba5ad3a69fc53d773e5227e1bf00bae7c1b36fffcda3faaaa1a784c"
+    },
+    {
+      "path": "v1/focused-terminal.json",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/focused-terminal.json",
+      "bytes": 1309,
+      "sha256": "c5744f97ea56e33f39bc568c7ec6cf67cb3ca86e331c7e2d292d3df0526a8764"
+    },
+    {
+      "path": "v1/focused.log",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/focused.log",
+      "bytes": 1548,
+      "sha256": "4595aa9a6c7b01cd876bc40c35cc2f9880ede4a44c99fa3576a85233368c3594"
+    },
+    {
+      "path": "v1/run-focused.py",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v1/run-focused.py",
+      "bytes": 1211,
+      "sha256": "c06363df84c8119f999e7018b2c9c4c575369a93ad0e88c1623862f640cf3209"
+    },
+    {
+      "path": "v2/focused-start.json",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/focused-start.json",
+      "bytes": 766,
+      "sha256": "dceb9c4edb916ee0d3027acd5f92a7fd0e09df5972b01716e2a98f3ed358cf22"
+    },
+    {
+      "path": "v2/focused-terminal.json",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/focused-terminal.json",
+      "bytes": 1309,
+      "sha256": "c657ff2797f599560cd8519ed61c4c6cf69108056f0d79c281f2033dcbbf827c"
+    },
+    {
+      "path": "v2/focused.log",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/focused.log",
+      "bytes": 6823,
+      "sha256": "ab15b1d8e613c2783e2b2dcf4629e79000bb01d70be5f31e4d477659684243b6"
+    },
+    {
+      "path": "v2/lazy-first-task.patch",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/lazy-first-task.patch",
+      "bytes": 6562,
+      "sha256": "1b06321e870c05dbdfbe538d41bc86b036bb887d59acfca7edd5ab97e4ab7084"
+    },
+    {
+      "path": "v2/main_fixed_workers.go",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/main_fixed_workers.go",
+      "bytes": 7754,
+      "sha256": "18748857606af60bc785f0051004dc7be87c137eae30629581d1d0501efbface"
+    },
+    {
+      "path": "v2/main_fixed_workers_test.go",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/main_fixed_workers_test.go",
+      "bytes": 14512,
+      "sha256": "6790f97f35bbf31ed82fd4c549ae62901d1ebd3b48e964d6d5b7a524b00ea371"
+    },
+    {
+      "path": "v2/manifest.json",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/manifest.json",
+      "bytes": 871,
+      "sha256": "d82a6cbb3632007b6ba16a763cb002b5cc7cc77bdfc46efac81a96c6edd7545e"
+    },
+    {
+      "path": "v2/run-focused.py",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/run-focused.py",
+      "bytes": 1211,
+      "sha256": "c06363df84c8119f999e7018b2c9c4c575369a93ad0e88c1623862f640cf3209"
+    },
+    {
+      "path": "v2/source-files.json",
+      "source": "/tmp/persisted-work-f0838dda-lazy-first-task-v2/source-files.json",
+      "bytes": 324,
+      "sha256": "8eb6b760a31da6db90b0e97e74cbedde521c1b38f95ea72ae0b94da4c19b758f"
+    }
+  ],
+  "count": 19,
+  "totalBytes": 85730
+}

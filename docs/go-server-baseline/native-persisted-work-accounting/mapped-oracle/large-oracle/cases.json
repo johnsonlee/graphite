@@ -1,0 +1,1346 @@
+[
+  {
+    "name": "ML-large-262188",
+    "mode": "context",
+    "budget": "262188",
+    "sources": [
+      {
+        "fixture": "large",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source1"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source2"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source3"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source4"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source5"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source6"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source7"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source8"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source9"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source10"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source11"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source12"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source13"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source14"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source15"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source16"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source17"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source18"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source19"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source20"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source21"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source22"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source23"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source24"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source25"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source26"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source27"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source28"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source29"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source30"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source31"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source32"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source33"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source34"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source35"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source36"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source37"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source38"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source39"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "4000000"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ML-large-262189",
+    "mode": "context",
+    "budget": "262189",
+    "sources": [
+      {
+        "fixture": "large",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source1"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source2"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source3"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source4"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source5"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source6"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source7"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source8"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source9"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source10"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source11"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source12"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source13"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source14"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source15"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source16"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source17"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source18"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source19"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source20"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source21"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source22"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source23"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source24"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source25"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source26"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source27"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source28"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source29"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source30"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source31"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source32"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source33"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source34"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source35"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source36"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source37"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source38"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source39"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "4000000"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ML-large-4000000",
+    "mode": "context",
+    "budget": "4000000",
+    "sources": [
+      {
+        "fixture": "large",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source1"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source2"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source3"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source4"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source5"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source6"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source7"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source8"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source9"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source10"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source11"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source12"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source13"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source14"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source15"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source16"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source17"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source18"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source19"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source20"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source21"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source22"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source23"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source24"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source25"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source26"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source27"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source28"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source29"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source30"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source31"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source32"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source33"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source34"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source35"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source36"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source37"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source38"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source39"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "4000000"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ML-large-bad-first-chunk-45",
+    "mode": "context",
+    "budget": "45",
+    "sources": [
+      {
+        "fixture": "large-bad-first-chunk",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source1"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source2"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source3"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source4"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source5"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source6"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source7"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source8"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source9"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source10"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source11"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source12"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source13"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source14"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source15"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source16"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source17"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source18"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source19"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source20"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source21"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source22"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source23"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source24"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source25"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source26"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source27"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source28"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source29"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source30"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source31"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source32"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source33"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source34"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source35"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source36"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source37"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source38"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source39"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "4000000"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ML-large-bad-first-chunk-4000000",
+    "mode": "context",
+    "budget": "4000000",
+    "sources": [
+      {
+        "fixture": "large-bad-first-chunk",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source1"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source2"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source3"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source4"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source5"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source6"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source7"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source8"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source9"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source10"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source11"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source12"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source13"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source14"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source15"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source16"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source17"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source18"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source19"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source20"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source21"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source22"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source23"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source24"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source25"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source26"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source27"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source28"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source29"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source30"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source31"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source32"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source33"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source34"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source35"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source36"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source37"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source38"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source39"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "4000000"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ML-large-bad-second-chunk-262189",
+    "mode": "context",
+    "budget": "262189",
+    "sources": [
+      {
+        "fixture": "large-bad-second-chunk",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source1"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source2"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source3"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source4"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source5"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source6"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source7"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source8"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source9"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source10"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source11"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source12"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source13"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source14"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source15"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source16"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source17"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source18"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source19"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source20"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source21"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source22"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source23"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source24"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source25"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source26"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source27"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source28"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source29"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source30"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source31"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source32"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source33"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source34"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source35"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source36"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source37"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source38"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source39"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "4000000"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ML-large-bad-second-chunk-4000000",
+    "mode": "context",
+    "budget": "4000000",
+    "sources": [
+      {
+        "fixture": "large-bad-second-chunk",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source1"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source2"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source3"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source4"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source5"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source6"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source7"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source8"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source9"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source10"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source11"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source12"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source13"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source14"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source15"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source16"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source17"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source18"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source19"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source20"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source21"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source22"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source23"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source24"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source25"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source26"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source27"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source28"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source29"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source30"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source31"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source32"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source33"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source34"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source35"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source36"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source37"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source38"
+      },
+      {
+        "fixture": "empty",
+        "graphId": "source39"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "4000000"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "newContext",
+        "budget": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  }
+]

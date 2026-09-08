@@ -1,0 +1,87 @@
+[
+  {
+    "file": "large/forward.graph",
+    "bytes": 32770,
+    "sha256": "0af797f72466b556f3f31c7796a7ca2d65f443b23bdff60cdda6bc1c938628bb"
+  },
+  {
+    "file": "large/forward.offsets",
+    "bytes": 98309,
+    "sha256": "f089b1400f067215398fd5d46342d1b5d23684adfa3955c42d83af4a3b39e69e"
+  },
+  {
+    "file": "large/forward.properties",
+    "bytes": 628,
+    "sha256": "9194af8588972537ef05992ae30d8b8427277546d6f981352ac293311db1acf6"
+  },
+  {
+    "file": "large/graph.callsite-string-content.identity",
+    "bytes": 32,
+    "sha256": "166541e4ffdeda96a4a808a83501560f5c37d83887637863296746df76be4bfd"
+  },
+  {
+    "file": "large/graph.callsite-string-index",
+    "bytes": 4194556,
+    "sha256": "0d67ed2384f32382164109ba57d6c2b9e14b097822e7a982a1d26a92b60ff615"
+  },
+  {
+    "file": "large/graph.classoverview",
+    "bytes": 24,
+    "sha256": "67e8396ddc3277f675cffda450d2fde85f3527ef5e23eabba3f18a53b4c7b885"
+  },
+  {
+    "file": "large/graph.comparisons",
+    "bytes": 8,
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "file": "large/graph.labelprefix",
+    "bytes": 1048624,
+    "sha256": "a51151b77cca62f7a9e33544117dea0a4d83d771dc278401dc6b0d923fbd24a7"
+  },
+  {
+    "file": "large/graph.labels",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "large/graph.metadata",
+    "bytes": 36,
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "file": "large/graph.nodedata",
+    "bytes": 12845113,
+    "sha256": "89fa988688076e73782749758bd1854c18ba5bf9dbf01a508348e8cf4d927436"
+  },
+  {
+    "file": "large/graph.nodeindex",
+    "bytes": 3407893,
+    "sha256": "0b802ad8d48ca95c45ba5bccc14530ca2f827250b54ce61cb9ea02d9c36ab178"
+  },
+  {
+    "file": "large/graph.nodeoffsets",
+    "bytes": 2097248,
+    "sha256": "7a508561e46eb4f4c798ff31791f25a7ce74703268d4049b2c3a41555252fc13"
+  },
+  {
+    "file": "large/graph.resources",
+    "bytes": 8,
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "file": "large/graph.strings",
+    "bytes": 411,
+    "sha256": "55be64fe338935a369915177c077771cd848d1dd8dbd4181b5b78c46a22a33c9"
+  },
+  {
+    "file": "large/graph.strings.identity",
+    "bytes": 32,
+    "sha256": "a0e00a77455c6eea41f2d87a990ff6f851d0bbc0620f19bb3926fda652cd58f7"
+  },
+  {
+    "file": "large/graph.typeindex",
+    "bytes": 1048796,
+    "sha256": "662cb0309d148880bbb6968c4c4a4f5deffd045235d835ac0fbcb8d0c0907a53"
+  }
+]

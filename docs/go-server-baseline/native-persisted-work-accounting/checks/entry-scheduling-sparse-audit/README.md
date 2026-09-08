@@ -1,0 +1,9 @@
+# Sparse trace: failure still not reproduced
+
+The sparse instrumented lazy-core run again **does not reproduce the uninstrumented failure**. Its four complete case records match actual main, but differ from the uninstrumented lazy-core capture at case 3, android08 `mappedRangeCount`: instrumented **4**, uninstrumented **0**. All public fields match. Android01–08 finish with `[4,7,6,7,1,5,5,4]`. Fewer hooks do not establish that the remaining instrumentation preserves natural scheduling; the original failed full replay remains failed.
+
+The actual trace contains **1100 events**, zero dropped and zero unpublished slots. It observes executor creation at query 0, sequence 1, capacity 8, with all eight core-start events before query 1 and no core exits. No legacy-runner entry appears. These are Go executor goroutine observations for this traced run, not JVM thread history.
+
+At query 3 one future/worker processes all eight suffix sources in order. Dequeue sequences are 1038,1042,1046,1050,1054,1058,1062,1066; their outcomes are 1040,1044,1048,1052,1056,1060,1064,1068. All precede prefix consume 1071, LIMIT 1072, and first future cancellation 1073. Seven other futures are canceled before starting. There are no recorded mapped anchor, sequence, or range cancellation rejections. This does not identify the missing android08 progression in the uninstrumented run. Successful range/poll/publication events were intentionally removed; the analyzer's zero publication-event count is **not** zero cache publication.
+
+The unchanged existing offline analyzer ran exactly once and exited 0. `evidence/summary.json` binds full input SHA256 values; ownership histories and complete field differences are retained, with no comparator masks. No Go/JVM/build/replay or additional instrumentation run was launched for this audit. Previous files remain unchanged. Root owns raw capture archives in sibling `entry-scheduling-sparse-evidence/lazy-v1/`.

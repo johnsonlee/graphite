@@ -1,0 +1,12 @@
+{
+  "archiveHelperExecuted": false,
+  "frozenRunnerFilesVerified": 7,
+  "frozenRunnerManifestSHA256": "4454dbc9f6e3e1d661b718d69f2a91a149a802a2a627aa06de774b0b178ded28",
+  "newGoJVMRuntimeLaunched": false,
+  "offlineAnalyzerExitCode": 0,
+  "sourceSHA256": {
+    "analyze.py": "d836771e3973d7ca34c6f170240ef68e0f52b43e59f7ea0c3ee12200d5395f01",
+    "archive.py": "37ef23386589b4af74fed5eddd2e449b5f6ee5e1ba92a9197d81beeda969adac"
+  },
+  "summarySHA256": "4308840865f8d0d7e8b5cfb6ddf0cada760a1152b0ec4f9367ed003b5c484104"
+}

@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-count=1",
+    "-v",
+    "-timeout=30m",
+    "-run",
+    "^TestCursorReal64Diagnostic$",
+    "./internal/query"
+  ],
+  "moduleSource": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-real64-source-v2",
+  "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-real64-diagnostic-v1/module",
+  "originalGraphsManifestSHA256": "809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2",
+  "diagnosticTemplateSHA256": "5ed32db7c6f53061c24977d11915cae3a0498622bfde0f2bcdb93b75d7965883",
+  "runnerSHA256": "384003eff6e4710b5d749937512e334c88ba804bf3c94af740a4518d91bcae57",
+  "goSHA256": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4",
+  "fixtureManifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "workloadSHA256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+  "v2CaseRecordSHA256": "17a3cdffd5acf0f4d6fec3251eb6c7c9f93dc5aaf868a01c73e8e8cea5009d93",
+  "performanceMeasurement": false,
+  "publicQuery": false,
+  "referenceHashScope": "All files in the six selected graphs; graphs.tsv also checked"
+}

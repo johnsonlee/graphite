@@ -1,0 +1,16 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-race",
+    "./internal/store",
+    "-run",
+    "^(TestMainPersistent|TestMainMapped|TestMainBuild|TestMainTrigram|TestProjectionPersistence)",
+    "-count=1",
+    "-v"
+  ],
+  "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+  "started": 1788868471.414987,
+  "exit_code": 0,
+  "finished": 1788868474.139105
+}

@@ -1,0 +1,42 @@
+{
+  "scope": "Read-only interpretation of immutable main-written sidecar layout; actual query outcomes remain in captures.",
+  "stringCount": 129,
+  "callSiteCount": 128,
+  "uniqueCounts": [
+    1,
+    128,
+    1,
+    128
+  ],
+  "trigramPostingCount": 662,
+  "term": "hit",
+  "trigramHash": 103315,
+  "absoluteTrigramPositions": [
+    147
+  ],
+  "matchingStringIds": [
+    1
+  ],
+  "propertyRanges": [
+    {
+      "property": 1,
+      "stringId": 1,
+      "row": 0,
+      "start": 0,
+      "endExclusive": 1,
+      "nodeIds": [
+        74
+      ]
+    },
+    {
+      "property": 3,
+      "stringId": 1,
+      "row": 0,
+      "start": 0,
+      "endExclusive": 1,
+      "nodeIds": [
+        74
+      ]
+    }
+  ]
+}

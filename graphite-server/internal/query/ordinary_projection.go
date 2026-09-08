@@ -173,8 +173,8 @@ func (e evaluator) ordinaryProjection(graph *store.Store, branch cypher.SingleQu
 		}
 	}
 	serial := !parallel || e.workTrackingEnabled && !balanced
+	mayBatch := balanced && (!plan.scoped || parallel)
 	if balanced {
-		mayBatch := !plan.scoped || parallel
 		serial = plan.scoped && allRetained || !rawLeading && !mayBatch && !parallel
 	}
 	if serial {
@@ -193,20 +193,28 @@ func (e evaluator) ordinaryProjection(graph *store.Store, branch cypher.SingleQu
 			result.Rows = e.ordinarySourceRows(sources[0], &firstPlan, plan.limit)
 		}
 		if len(result.Rows) < plan.limit {
-			runDistinctTasks(e.ctx, len(sources)-1, max(1, runtime.NumCPU()/2), true,
-				func(ctx context.Context, i int) []map[string]any {
-					local := e
-					local.ctx = ctx
-					local.rowOrders = nil
-					taskPlan := *plan
-					taskPlan.parallelProjection = true
-					return local.ordinarySourceRows(sources[i+1], &taskPlan, plan.limit)
-				},
-				func(i int, rows []map[string]any) bool {
-					remaining := plan.limit - len(result.Rows)
-					result.Rows = append(result.Rows, rows[:min(remaining, len(rows))]...)
-					return len(result.Rows) >= plan.limit
-				})
+			// Main observes every source's prepared capability only after the
+			// leading source has proved that the query needs its suffix.
+			prepared := mayBatch && mainPreparedWide(plan, sources)
+			task := func(ctx context.Context, i int) []map[string]any {
+				local := e
+				local.ctx = ctx
+				local.rowOrders = nil
+				taskPlan := *plan
+				taskPlan.parallelProjection = true
+				return local.ordinarySourceRows(sources[i+1], &taskPlan, plan.limit)
+			}
+			consume := func(i int, rows []map[string]any) bool {
+				remaining := plan.limit - len(result.Rows)
+				result.Rows = append(result.Rows, rows[:min(remaining, len(rows))]...)
+				return len(result.Rows) >= plan.limit
+			}
+			workers := max(1, runtime.NumCPU()/2)
+			if prepared {
+				runMainFixedWorkersInOrderUntil(e.ctx, len(sources)-1, workers, task, consume)
+			} else {
+				runDistinctTasks(e.ctx, len(sources)-1, workers, true, task, consume)
+			}
 		}
 	} else {
 		workers := min(len(sources), runtime.NumCPU(), 8)
@@ -228,6 +236,28 @@ func (e evaluator) ordinaryProjection(graph *store.Store, branch cypher.SingleQu
 	}
 	return e.ordinaryBindResult(result, plan), true
 }
+
+func mainPreparedWide(plan *ordinaryProjectionPlan, sources []Graph) bool {
+	if len(sources) < 40 || len(plan.atoms) == 0 {
+		return false
+	}
+	for _, atom := range plan.atoms {
+		if _, supported := distinctCallSiteProperties[atom.property]; !supported {
+			return false
+		}
+	}
+	for _, source := range sources {
+		if source.Store == nil {
+			return false
+		}
+		prepared, err := source.Store.MainPreparedStringScan(plan.generic)
+		failMainStringRead(err)
+		if !prepared {
+			return false
+		}
+	}
+	return true
+}
 func (e evaluator) ordinaryBindResult(result Result, plan *ordinaryProjectionPlan) Result {
 	for i, row := range result.Rows {
 		ordered := map[string]any{}
@@ -240,6 +270,9 @@ func (e evaluator) ordinaryBindResult(result Result, plan *ordinaryProjectionPla
 	return result
 }
 func (e evaluator) ordinaryIndexedRows(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, limit int) []map[string]any {
+	if limit <= 0 {
+		return []map[string]any{}
+	}
 	storagePlan := *plan
 	storagePlan.indexedDistinctPlan = &indexedDistinctPlan{}
 	*storagePlan.indexedDistinctPlan = *plan.indexedDistinctPlan
@@ -252,10 +285,16 @@ func (e evaluator) ordinaryIndexedRows(source Graph, index *store.DistinctString
 	cacheKey := ordinaryRowsKey(&storagePlan, limit)
 	values, hit, err := index.ProjectionCachedRows(e.ctx, cacheKey)
 	failProjectionRead(err)
-	if !hit {
-		ids := e.ordinaryLimitedIndexIDs(source, index, plan, limit)
-		values = make([][]string, 0, len(ids))
-		for _, id := range ids {
+	if hit {
+		e.consume(int64(max(len(values), 1)))
+	} else {
+		next := e.mainIndexNodeIDs(source, index, plan.mainSourceSpec(), limit)
+		values = [][]string{}
+		for {
+			id, present := next(e.ctx)
+			if !present {
+				break
+			}
 			row := []string{}
 			for _, property := range storagePlan.properties {
 				p := distinctCallSiteProperties[property]
@@ -267,7 +306,8 @@ func (e evaluator) ordinaryIndexedRows(source Graph, index *store.DistinctString
 			}
 			values = append(values, row)
 		}
-		e.ordinaryCacheNodes(index, plan, limit, ids)
+		// Project each yielded ID before resuming the source. A projection
+		// failure must not read/charge later IDs or complete the node cache.
 		e.ordinaryCacheRows(index, &storagePlan, limit, values)
 	}
 	rows := make([]map[string]any, 0, len(values))

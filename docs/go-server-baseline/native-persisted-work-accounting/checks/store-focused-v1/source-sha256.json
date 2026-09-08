@@ -1,0 +1,10 @@
+{
+  "callsite_index.go": "24b3a3c7861bc73f9daadafc3e28a9534e49589769b842195557b3e4666af807",
+  "distinct_projection.go": "06a6e93f4044897e15727145ade6e6c16f0982e883e13969a733274144da4435",
+  "main_callsite_index.go": "14e90dedc246d255140193f904116e84469fb129526270e3a1f900b161d953a4",
+  "store.go": "3a16356a7a6c050ed8612cac55df95207b87cb6bb5e59e16789f1fab2decf913",
+  "main_persistent_identity.go": "3f85fea733316092b0bafc160659ea6142b492fd30aba6caee2c2ae45237135f",
+  "main_persistent_reader.go": "496897e51589c1c5c2a165649b6311ce2170601bca1690de275f43cfcfde463d",
+  "main_persistent_work_test.go": "e8ed45bf4ce359cb59193667d6093cd17148ef1c1f1556d1d25b14ff9287614a",
+  "persistent_index_snapshot.go": "c02987ac1e613a0ea6d77c29013c805d8a9c90fa27708895d2518e4c0299c0f5"
+}

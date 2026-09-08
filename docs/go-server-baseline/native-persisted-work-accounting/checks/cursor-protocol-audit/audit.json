@@ -1,0 +1,200 @@
+{
+  "scope": "Read-only cross-check of frozen actual-main11/19 storage-method evidence against current Go source and existing terminal focused-v2 outputs; no runtime invoked by auditor.",
+  "actualMain": {
+    "file": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-cursor-oracle/main.json",
+    "sha256": "b78531e3103a29d0760106286dc2ce49b326f437cea80a808a4156696d497157",
+    "cases": 11,
+    "operations": 19,
+    "fullRepeatEqual": true
+  },
+  "goEvidence": {
+    "directory": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-focused-v2",
+    "receiptSHA256": "8239ff10dc1af3ccb87d09e823a09111670f41569ecd7568da303bf93e0db9f3",
+    "logSHA256": "3747c28db2431d54fcda53649c48cdb1c13656510cf3be3d40f95f4aa851419a",
+    "exitCode": 0,
+    "sourceFiles": [
+      {
+        "file": "internal/store/main_mapped_cursor.go",
+        "sha256": "ec52f75a1ad2c5f798c2e744dd407cdc6de11e5ea58fab825aeb56e2c470db34",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/store/main_mapped_cursor_test.go",
+        "sha256": "faeebc614c7244c66439206c534f5156c04ab1efb95d95e21f0ffe4d0cf368e2",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/store/main_callsite_index_test.go",
+        "sha256": "5b85b009a042781e641d5a4e3aa9462fb36916e47cad1b88feb651fff37e74cf",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/store/callsite_index.go",
+        "sha256": "cd7fe357b91a4d38af45b0ef7a03d005c3722cf0cb4439c64e87e6845122ffd0",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/store/main_mapped_work_reader.go",
+        "sha256": "003aced116310b28ac4be8154c5e5117cd2900dbebc37bc8c056f508116fa80d",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/query/main_string_mapped.go",
+        "sha256": "f10241eac34d57936662a289a0da21b222b68c5bc44523651b218900f4529004",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/query/ordinary_parallel.go",
+        "sha256": "5b35f43f05f82142e13e645fb3245d20ad34f0d7bddab44f07deaa351458142c",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/query/main_mapped_iteration_test.go",
+        "sha256": "f8d9973060e3ee18abe04753d76e8582cac6978e6e368a33b15eb723a07eb280",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/query/main_mapped_match.go",
+        "sha256": "c6ab591490ab7889b4bfd5e50c33369931de9d4c1a402b3033c9b97febe6c246",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/query/main_mapped_match_test.go",
+        "sha256": "f65122c8e7a3a298035ed322a34b27a06faa400a551a5bdda9d624f5578537a8",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/query/storage_work.go",
+        "sha256": "bd913061116458817011f853870248e000a685c83b27b592290dc8f5d57dc6e9",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/query/indexed_distinct.go",
+        "sha256": "e890e0d64cb6334af0e4c60cc37a89dd37765679842118a86a7a9d251a9a8405",
+        "equalsTerminalV2Input": true
+      },
+      {
+        "file": "internal/query/ordinary_cache.go",
+        "sha256": "ddb1d48adf9019b9d9b389e4cac4db8cfc84ee6e2bbcb7503edd306b4429afe7",
+        "equalsTerminalV2Input": true
+      }
+    ]
+  },
+  "coverage": [
+    {
+      "mainCase": "C01-preinterrupted-absolute1023",
+      "mainOperations": 1,
+      "status": "source-only",
+      "explanation": "validateMainMappedRange polls position&1023, so a pre-canceled one-item range starting/ending at1023 completes and publishes. No isolated Go singleton1023 test.",
+      "passingGoTests": []
+    },
+    {
+      "mainCase": "C02-preinterrupted-absolute1024",
+      "mainOperations": 1,
+      "status": "partial-runtime-and-source",
+      "explanation": "The1023..1024 test proves no required read at1024; no isolated pre-canceled singleton1024 test asserting zero validation callbacks.",
+      "passingGoTests": [
+        "TestMainMappedCursorPollsAbsolutePositionBeforeRequiredRead"
+      ]
+    },
+    {
+      "mainCase": "C03-preinterrupted-cross1024",
+      "mainOperations": 1,
+      "status": "runtime-equivalent-control",
+      "explanation": "Go synthetic owned range1023..1024 checks required read before the absolute1024 poll and leaves cache empty; adds two binary-search units before the same one-unit validation finally.",
+      "passingGoTests": [
+        "TestMainMappedCursorPollsAbsolutePositionBeforeRequiredRead"
+      ]
+    },
+    {
+      "mainCase": "C04-binary-finally-interrupt",
+      "mainOperations": 1,
+      "status": "source-only",
+      "explanation": "Binary search explicitly flushes before reading ends and does not poll request context afterward. No Go test cancels solely in that first search callback and checks successful return.",
+      "passingGoTests": []
+    },
+    {
+      "mainCase": "C05-binary-finally-original-budget-cause",
+      "mainOperations": 1,
+      "status": "source-only",
+      "explanation": "Binary-search rejection flush resets pending and submitPersistentWork preserves original Cause; no dedicated original-cause rejection at the binary-search finally callback in these tests.",
+      "passingGoTests": []
+    },
+    {
+      "mainCase": "C06-range-finally-interrupt-publishes",
+      "mainOperations": 2,
+      "status": "runtime-equivalent-control",
+      "explanation": "Range-finally callback sets context cancellation without throwing and cache publication succeeds; separate corrected owned-offset test proves cold owned orders versus warm per-Advance reads.",
+      "passingGoTests": [
+        "TestMainMappedCursorFinallyCancellationPublishesCompletedRange",
+        "TestMainMappedWarmCursorReadsEachOrderOnlyOnAdvance"
+      ]
+    },
+    {
+      "mainCase": "C07-range-finally-throw-does-not-publish",
+      "mainOperations": 3,
+      "status": "partial-runtime-and-source",
+      "explanation": "Range-finally original callback error leaves cache empty and preserves Cause. Same-store fresh-success retry after that exact failure is not explicitly tested by the cursor test; source permits it.",
+      "passingGoTests": [
+        "TestMainMappedCursorFinallyCancellationPublishesCompletedRange",
+        "TestMainMappedCursorFinallyFailureOverridesReadFailure"
+      ]
+    },
+    {
+      "mainCase": "C08-invalid-order-fullrange-cached",
+      "mainOperations": 2,
+      "status": "source-only-for-new-cursor",
+      "explanation": "New validation loop reads complete range despite negative/nonmonotone order, flushes, caches false, then skips warm validation. Passing older InvalidConsumesEntireRange test calls MainMappedProjectionRange, not the new MainMappedCursorWithWork route.",
+      "passingGoTests": []
+    },
+    {
+      "mainCase": "C09-real-key-collision-failure-preserves",
+      "mainOperations": 4,
+      "status": "source-only",
+      "explanation": "Same-slot different-key failure cannot publish because err returns before cache lock. Completed invalid validation replaces colliding key. Existing race-loser test injects same-key success, not this collision.",
+      "passingGoTests": []
+    },
+    {
+      "mainCase": "C10-binary-interrupt-continues-nonpoll-range",
+      "mainOperations": 1,
+      "status": "source-only",
+      "explanation": "Binary-finally cancellation can continue into a nonpoll range because subsequent reads enforce Store lifetime rather than request cancellation; no Go combined binary-interrupt->position1023 control.",
+      "passingGoTests": []
+    },
+    {
+      "mainCase": "C11-empty-range-constructor-after-publication",
+      "mainOperations": 2,
+      "status": "runtime-equivalent-control",
+      "explanation": "Empty range publishes valid certificate before cold empty-orders constructor throws; warm cursor has no orders array and reads current posting/order even when hasCurrent false. Tests use positions0 and buffer-end1025; actual-main control used position1.",
+      "passingGoTests": [
+        "TestMainMappedCursorEmptyRangeStillConstructsCurrent"
+      ]
+    }
+  ],
+  "queryIntegration": {
+    "passingTests": [
+      "TestMainMappedIterationBoundaries/exhaust",
+      "TestMainMappedIterationBoundaries/limit",
+      "TestMainMappedIterationBoundaries/budget",
+      "TestMainMappedIterationBoundaries/cancel",
+      "TestMainMappedMatchingRetainedFallback",
+      "TestMainMappedContains (28 subcases)"
+    ],
+    "scope": "Actual Go integration/pure controls, not11/19 direct replay and not new actual-main heap-iteration captures.",
+    "sourceAgreement": [
+      "mainSelectedMappedIDs validates all ranges before returning the sequence; heap uses order then nodeId; consumes every pop including duplicates; flushes before unique yield and at EOF; resumes Advance after a yield; limit prevents resuming an abandoned sequence.",
+      "mainMappedStringMatches uses one lookup per unique trigram, first smallest anchor on ties, absolute posting-index1024 polls, actual string reads without incidental request checks, and finally flush.",
+      "ordinaryStringKey excludes property and includes transform/op/Java term identity, matching main request-local mapped predicate key.",
+      "mainExactCanFill uses charged binary search and posting-end reads, preserving bounds checks and early occurrence return."
+    ],
+    "notEstablished": [
+      "No dedicated actual-main controls here for trigram-anchor absolute polls, heap1024 poll, multiple distinct node-order merge ties, or exact-fill callback interruption.",
+      "No actual-Go replay of this11/19 JSON against the exact34-file oracle fixtures.",
+      "ordinaryParallelCandidates raw scan and optional PublishProjectionScan admission/two-pass/identity protocol are outside this cursor oracle; next-captured-publication.md remains unexecuted.",
+      "Main optional validation-cache reservation denial is outside these captures. Main permits a mapped view with no range cache; Go currently allocates mainRanges unconditionally, so memory-admission equivalence is not established."
+    ]
+  },
+  "confirmedBugsInReviewedElevenControls": [],
+  "conclusion": "No definite new production mismatch found in these11 method controls. Runtime-backed coverage is partial; do not relabel source-only rows as full oracle parity.",
+  "performanceMeasurement": false
+}

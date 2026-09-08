@@ -1,0 +1,405 @@
+{
+  "scope": "Derived index only; raw captures and every mismatch remain preserved. CancellationException in goNativeError.class is a cross-language semantic classification; nativeType and message are the actual Go error, never substituted with JVM text.",
+  "cases": [
+    {
+      "case": "E01-cold-view-entry-interrupt",
+      "differences": 7,
+      "goNativeError": {
+        "class": "CancellationException",
+        "message": "context canceled",
+        "nativeType": "*errors.errorString"
+      },
+      "actualMainError": {
+        "errorClass": "java.util.concurrent.CancellationException",
+        "message": "Mapped CallSite string index view interrupted"
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "FAILED",
+      "goWork": 0,
+      "mainWork": 1,
+      "goCallbacks": [],
+      "mainCallbacks": [
+        1
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ]
+    },
+    {
+      "case": "E02-warm-view-empty-entry-interrupt",
+      "differences": 15,
+      "goNativeError": {
+        "class": "CancellationException",
+        "message": "context canceled",
+        "nativeType": "*errors.errorString"
+      },
+      "actualMainError": {
+        "errorClass": null,
+        "message": null
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "SUCCESS",
+      "goWork": 0,
+      "mainWork": 1,
+      "goCallbacks": [],
+      "mainCallbacks": [
+        1
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "iterator-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "hasNext-0",
+          "outcome": "SUCCESS"
+        }
+      ]
+    },
+    {
+      "case": "E03-warm-view-hit-entry-interrupt",
+      "differences": 7,
+      "goNativeError": {
+        "class": "CancellationException",
+        "message": "context canceled",
+        "nativeType": "*errors.errorString"
+      },
+      "actualMainError": {
+        "errorClass": "java.util.concurrent.CancellationException",
+        "message": "Mapped CallSite string index view interrupted"
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "FAILED",
+      "goWork": 0,
+      "mainWork": 9,
+      "goCallbacks": [],
+      "mainCallbacks": [
+        2,
+        7
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ]
+    },
+    {
+      "case": "E04-warm-view-hit-callback-interrupt",
+      "differences": 2,
+      "goNativeError": {
+        "class": "CancellationException",
+        "message": "context canceled",
+        "nativeType": "*errors.errorString"
+      },
+      "actualMainError": {
+        "errorClass": "java.util.concurrent.CancellationException",
+        "message": "Mapped CallSite string index view interrupted"
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "FAILED",
+      "goWork": 9,
+      "mainWork": 9,
+      "goCallbacks": [
+        2,
+        7
+      ],
+      "mainCallbacks": [
+        2,
+        7
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ]
+    },
+    {
+      "case": "E05-warm-view-hit-callback-signal",
+      "differences": 0,
+      "goNativeError": {
+        "class": "CypherQueryCancelledException",
+        "message": "mapped-entry callback cancellation",
+        "nativeType": "*query.Error"
+      },
+      "actualMainError": {
+        "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+        "message": "mapped-entry callback cancellation"
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "FAILED",
+      "goWork": 2,
+      "mainWork": 2,
+      "goCallbacks": [
+        2,
+        7
+      ],
+      "mainCallbacks": [
+        2,
+        7
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ]
+    },
+    {
+      "case": "E06-warm-view-hit-budget1",
+      "differences": 0,
+      "goNativeError": {
+        "class": "CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 1 graph work units; add a selective label/filter or use a metadata-backed query",
+        "nativeType": "*query.Error"
+      },
+      "actualMainError": {
+        "errorClass": "io.johnsonlee.graphite.cypher.CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 1 graph work units; add a selective label/filter or use a metadata-backed query"
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "FAILED",
+      "goWork": 1,
+      "mainWork": 1,
+      "goCallbacks": [
+        2
+      ],
+      "mainCallbacks": [
+        2
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ]
+    },
+    {
+      "case": "E07-retained-empty-entry-interrupt",
+      "differences": 10,
+      "goNativeError": {
+        "class": "CancellationException",
+        "message": "context canceled",
+        "nativeType": "*errors.errorString"
+      },
+      "actualMainError": {
+        "errorClass": null,
+        "message": null
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "SUCCESS",
+      "goWork": 0,
+      "mainWork": 0,
+      "goCallbacks": [],
+      "mainCallbacks": [],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "iterator-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "hasNext-0",
+          "outcome": "SUCCESS"
+        }
+      ]
+    },
+    {
+      "case": "E08-retained-hit-entry-interrupt",
+      "differences": 15,
+      "goNativeError": {
+        "class": "CancellationException",
+        "message": "context canceled",
+        "nativeType": "*errors.errorString"
+      },
+      "actualMainError": {
+        "errorClass": null,
+        "message": null
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "SUCCESS",
+      "goWork": 0,
+      "mainWork": 1,
+      "goCallbacks": [],
+      "mainCallbacks": [
+        1
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "iterator-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "hasNext-0",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "next-0",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "hasNext-1",
+          "outcome": "SUCCESS"
+        }
+      ]
+    },
+    {
+      "case": "E09-warm-mapped-range-entry-interrupt",
+      "differences": 12,
+      "goNativeError": {
+        "class": "CancellationException",
+        "message": "context canceled",
+        "nativeType": "*errors.errorString"
+      },
+      "actualMainError": {
+        "errorClass": "java.util.concurrent.CancellationException",
+        "message": "Mapped CallSite string index view interrupted"
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "FAILED",
+      "goWork": 0,
+      "mainWork": 9,
+      "goCallbacks": [],
+      "mainCallbacks": [
+        2,
+        7
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "iterator-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "hasNext-0",
+          "outcome": "FAILED"
+        }
+      ]
+    },
+    {
+      "case": "E10-warm-mapped-range-callback-interrupt",
+      "differences": 2,
+      "goNativeError": {
+        "class": "CancellationException",
+        "message": "context canceled",
+        "nativeType": "*errors.errorString"
+      },
+      "actualMainError": {
+        "errorClass": "java.util.concurrent.CancellationException",
+        "message": "Mapped CallSite string index view interrupted"
+      },
+      "goOutcome": "FAILED",
+      "mainOutcome": "FAILED",
+      "goWork": 9,
+      "mainWork": 9,
+      "goCallbacks": [
+        2,
+        7
+      ],
+      "mainCallbacks": [
+        2,
+        7
+      ],
+      "goPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "iterator-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "hasNext-0",
+          "outcome": "FAILED"
+        }
+      ],
+      "mainPhases": [
+        {
+          "phase": "sequence-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "iterator-construction",
+          "outcome": "SUCCESS"
+        },
+        {
+          "phase": "hasNext-0",
+          "outcome": "FAILED"
+        }
+      ]
+    }
+  ]
+}

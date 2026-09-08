@@ -1,0 +1,1824 @@
+{
+  "performanceMeasurements": 0,
+  "loads": [
+    {
+      "callbacks": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        32,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        262144,
+        1,
+        1,
+        1,
+        262144,
+        1,
+        1,
+        1,
+        262144,
+        1,
+        1,
+        1,
+        262144,
+        1,
+        2,
+        13
+      ],
+      "stringCount": 2,
+      "fixture": "large",
+      "callSiteCount": 262145
+    },
+    {
+      "callbacks": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        32,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        128,
+        128,
+        128,
+        128,
+        1,
+        1,
+        128,
+        128,
+        128,
+        128,
+        129,
+        662
+      ],
+      "stringCount": 129,
+      "fixture": "hit64",
+      "callSiteCount": 128
+    }
+  ],
+  "javaVersion": "17.0.18",
+  "cases": [
+    {
+      "name": "C01-preinterrupted-absolute1023",
+      "fixture": "large",
+      "operations": [
+        {
+          "name": "validate",
+          "spec": {
+            "firstPosition": 1023,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 1023,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": true,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "yields": [
+              {
+                "nodeId": 1033,
+                "order": 50135
+              }
+            ],
+            "cursorFinalPosition": 1024,
+            "initialHasCurrent": true
+          },
+          "callbacks": [
+            1
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 50135,
+              "actualOrder": 50135,
+              "nodeId": 1033
+            }
+          ],
+          "interruptedAfterMethod": true,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": true
+        }
+      ]
+    },
+    {
+      "name": "C02-preinterrupted-absolute1024",
+      "fixture": "large",
+      "operations": [
+        {
+          "name": "validate",
+          "spec": {
+            "firstPosition": 1024,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 1024,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": true,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "FAILED",
+          "errorClass": "java.util.concurrent.CancellationException",
+          "message": "Mapped CallSite string index view interrupted",
+          "sameAsCallbackCause": false,
+          "stack": [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.checkViewInterrupted(MappedCallSiteStringIndexView.kt:551)",
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.access$checkViewInterrupted(MappedCallSiteStringIndexView.kt:1)",
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.validatedPostingCursor(MappedCallSiteStringIndexView.kt:178)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)",
+            "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.base/java.lang.reflect.Method.invoke(Method.java:569)",
+            "MappedCursorOracle.call(MappedCursorOracle.java:17)",
+            "MappedCursorOracle.lambda$range$2(MappedCursorOracle.java:47)",
+            "MappedCursorOracle.op(MappedCursorOracle.java:41)",
+            "MappedCursorOracle.range(MappedCursorOracle.java:46)",
+            "MappedCursorOracle.main(MappedCursorOracle.java:61)"
+          ],
+          "callbacks": [],
+          "nodeOrderReads": [],
+          "interruptedAfterMethod": true,
+          "afterCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "clearedForNextOperation": true
+        }
+      ]
+    },
+    {
+      "name": "C03-preinterrupted-cross1024",
+      "fixture": "large",
+      "operations": [
+        {
+          "name": "validate",
+          "spec": {
+            "firstPosition": 1023,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 1024,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": true,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "FAILED",
+          "errorClass": "java.util.concurrent.CancellationException",
+          "message": "Mapped CallSite string index view interrupted",
+          "sameAsCallbackCause": false,
+          "stack": [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.checkViewInterrupted(MappedCallSiteStringIndexView.kt:551)",
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexViewKt.access$checkViewInterrupted(MappedCallSiteStringIndexView.kt:1)",
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.validatedPostingCursor(MappedCallSiteStringIndexView.kt:178)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)",
+            "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.base/java.lang.reflect.Method.invoke(Method.java:569)",
+            "MappedCursorOracle.call(MappedCursorOracle.java:17)",
+            "MappedCursorOracle.lambda$range$2(MappedCursorOracle.java:47)",
+            "MappedCursorOracle.op(MappedCursorOracle.java:41)",
+            "MappedCursorOracle.range(MappedCursorOracle.java:46)",
+            "MappedCursorOracle.main(MappedCursorOracle.java:62)"
+          ],
+          "callbacks": [
+            1
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 50135,
+              "actualOrder": 50135,
+              "nodeId": 1033
+            }
+          ],
+          "interruptedAfterMethod": true,
+          "afterCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "clearedForNextOperation": true
+        }
+      ]
+    },
+    {
+      "name": "C04-binary-finally-interrupt",
+      "fixture": "hit64",
+      "operations": [
+        {
+          "name": "binary",
+          "spec": {
+            "targetIndex": 0,
+            "method": "binarySearch",
+            "property": 0
+          },
+          "callbackAction": "interrupt",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "SUCCESS",
+          "value": 0,
+          "callbacks": [
+            1
+          ],
+          "nodeOrderReads": [],
+          "interruptedAfterMethod": true,
+          "afterCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "clearedForNextOperation": true
+        }
+      ]
+    },
+    {
+      "name": "C05-binary-finally-original-budget-cause",
+      "fixture": "hit64",
+      "operations": [
+        {
+          "name": "binary",
+          "spec": {
+            "targetIndex": 0,
+            "method": "binarySearch",
+            "property": 0
+          },
+          "callbackAction": "throw",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "FAILED",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherBudgetExceededException",
+          "message": "Cypher work budget exceeded after 777 graph work units; add a selective label/filter or use a metadata-backed query",
+          "sameAsCallbackCause": true,
+          "stack": [
+            "MappedCursorOracle$Work.<init>(MappedCursorOracle.java:19)",
+            "MappedCursorOracle.op(MappedCursorOracle.java:40)",
+            "MappedCursorOracle.binary(MappedCursorOracle.java:53)",
+            "MappedCursorOracle.main(MappedCursorOracle.java:64)"
+          ],
+          "callbacks": [
+            1
+          ],
+          "nodeOrderReads": [],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "clearedForNextOperation": false
+        }
+      ]
+    },
+    {
+      "name": "C06-range-finally-interrupt-publishes",
+      "fixture": "large",
+      "operations": [
+        {
+          "name": "cold",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 3,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "interrupt",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "yields": [
+              {
+                "nodeId": 11,
+                "order": 57
+              },
+              {
+                "nodeId": 12,
+                "order": 106
+              },
+              {
+                "nodeId": 13,
+                "order": 155
+              }
+            ],
+            "cursorFinalPosition": 4,
+            "initialHasCurrent": true
+          },
+          "callbacks": [
+            3
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 57,
+              "actualOrder": 57,
+              "nodeId": 11
+            },
+            {
+              "returnedOrder": 106,
+              "actualOrder": 106,
+              "nodeId": 12
+            },
+            {
+              "returnedOrder": 155,
+              "actualOrder": 155,
+              "nodeId": 13
+            }
+          ],
+          "interruptedAfterMethod": true,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": true
+        },
+        {
+          "name": "warm",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 3,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "yields": [
+              {
+                "nodeId": 11,
+                "order": 57
+              },
+              {
+                "nodeId": 12,
+                "order": 106
+              },
+              {
+                "nodeId": 13,
+                "order": 155
+              }
+            ],
+            "cursorFinalPosition": 4,
+            "initialHasCurrent": true
+          },
+          "callbacks": [],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 57,
+              "actualOrder": 57,
+              "nodeId": 11
+            },
+            {
+              "returnedOrder": 106,
+              "actualOrder": 106,
+              "nodeId": 12
+            },
+            {
+              "returnedOrder": 155,
+              "actualOrder": 155,
+              "nodeId": 13
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        }
+      ]
+    },
+    {
+      "name": "C07-range-finally-throw-does-not-publish",
+      "fixture": "large",
+      "operations": [
+        {
+          "name": "failed",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 3,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "throw",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "FAILED",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherBudgetExceededException",
+          "message": "Cypher work budget exceeded after 777 graph work units; add a selective label/filter or use a metadata-backed query",
+          "sameAsCallbackCause": true,
+          "stack": [
+            "MappedCursorOracle$Work.<init>(MappedCursorOracle.java:19)",
+            "MappedCursorOracle.op(MappedCursorOracle.java:40)",
+            "MappedCursorOracle.range(MappedCursorOracle.java:46)",
+            "MappedCursorOracle.main(MappedCursorOracle.java:66)"
+          ],
+          "callbacks": [
+            3
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 57,
+              "actualOrder": 57,
+              "nodeId": 11
+            },
+            {
+              "returnedOrder": 106,
+              "actualOrder": 106,
+              "nodeId": 12
+            },
+            {
+              "returnedOrder": 155,
+              "actualOrder": 155,
+              "nodeId": 13
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "clearedForNextOperation": false
+        },
+        {
+          "name": "retry",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 3,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "yields": [
+              {
+                "nodeId": 11,
+                "order": 57
+              },
+              {
+                "nodeId": 12,
+                "order": 106
+              },
+              {
+                "nodeId": 13,
+                "order": 155
+              }
+            ],
+            "cursorFinalPosition": 4,
+            "initialHasCurrent": true
+          },
+          "callbacks": [
+            3
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 57,
+              "actualOrder": 57,
+              "nodeId": 11
+            },
+            {
+              "returnedOrder": 106,
+              "actualOrder": 106,
+              "nodeId": 12
+            },
+            {
+              "returnedOrder": 155,
+              "actualOrder": 155,
+              "nodeId": 13
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        },
+        {
+          "name": "warm",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 3,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "yields": [
+              {
+                "nodeId": 11,
+                "order": 57
+              },
+              {
+                "nodeId": 12,
+                "order": 106
+              },
+              {
+                "nodeId": 13,
+                "order": 155
+              }
+            ],
+            "cursorFinalPosition": 4,
+            "initialHasCurrent": true
+          },
+          "callbacks": [],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 57,
+              "actualOrder": 57,
+              "nodeId": 11
+            },
+            {
+              "returnedOrder": 106,
+              "actualOrder": 106,
+              "nodeId": 12
+            },
+            {
+              "returnedOrder": 155,
+              "actualOrder": 155,
+              "nodeId": 13
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        }
+      ]
+    },
+    {
+      "name": "C08-invalid-order-fullrange-cached",
+      "fixture": "large",
+      "operations": [
+        {
+          "name": "invalid",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 3,
+            "nodeOrderMode": "negative",
+            "method": "validatedPostingCursor",
+            "faultNode": 11,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "SUCCESS",
+          "value": null,
+          "callbacks": [
+            3
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": -1,
+              "actualOrder": 57,
+              "nodeId": 11
+            },
+            {
+              "returnedOrder": 106,
+              "actualOrder": 106,
+              "nodeId": 12
+            },
+            {
+              "returnedOrder": 155,
+              "actualOrder": 155,
+              "nodeId": 13
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 2
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        },
+        {
+          "name": "cached-invalid",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 3,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": 11,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 2
+              }
+            ]
+          },
+          "outcome": "SUCCESS",
+          "value": null,
+          "callbacks": [],
+          "nodeOrderReads": [],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 2
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        }
+      ]
+    },
+    {
+      "name": "C09-real-key-collision-failure-preserves",
+      "fixture": "hit64",
+      "operations": [
+        {
+          "name": "seed",
+          "spec": {
+            "firstPosition": 0,
+            "row": 0,
+            "drainCursor": false,
+            "lastPosition": 127,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "yields": [],
+            "cursorFinalPosition": 0,
+            "initialHasCurrent": true
+          },
+          "callbacks": [
+            128
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 8,
+              "actualOrder": 8,
+              "nodeId": 10
+            },
+            {
+              "returnedOrder": 57,
+              "actualOrder": 57,
+              "nodeId": 11
+            },
+            {
+              "returnedOrder": 106,
+              "actualOrder": 106,
+              "nodeId": 12
+            },
+            {
+              "returnedOrder": 155,
+              "actualOrder": 155,
+              "nodeId": 13
+            },
+            {
+              "returnedOrder": 204,
+              "actualOrder": 204,
+              "nodeId": 14
+            },
+            {
+              "returnedOrder": 253,
+              "actualOrder": 253,
+              "nodeId": 15
+            },
+            {
+              "returnedOrder": 302,
+              "actualOrder": 302,
+              "nodeId": 16
+            },
+            {
+              "returnedOrder": 351,
+              "actualOrder": 351,
+              "nodeId": 17
+            },
+            {
+              "returnedOrder": 400,
+              "actualOrder": 400,
+              "nodeId": 18
+            },
+            {
+              "returnedOrder": 449,
+              "actualOrder": 449,
+              "nodeId": 19
+            },
+            {
+              "returnedOrder": 498,
+              "actualOrder": 498,
+              "nodeId": 20
+            },
+            {
+              "returnedOrder": 547,
+              "actualOrder": 547,
+              "nodeId": 21
+            },
+            {
+              "returnedOrder": 596,
+              "actualOrder": 596,
+              "nodeId": 22
+            },
+            {
+              "returnedOrder": 645,
+              "actualOrder": 645,
+              "nodeId": 23
+            },
+            {
+              "returnedOrder": 694,
+              "actualOrder": 694,
+              "nodeId": 24
+            },
+            {
+              "returnedOrder": 743,
+              "actualOrder": 743,
+              "nodeId": 25
+            },
+            {
+              "returnedOrder": 792,
+              "actualOrder": 792,
+              "nodeId": 26
+            },
+            {
+              "returnedOrder": 841,
+              "actualOrder": 841,
+              "nodeId": 27
+            },
+            {
+              "returnedOrder": 890,
+              "actualOrder": 890,
+              "nodeId": 28
+            },
+            {
+              "returnedOrder": 939,
+              "actualOrder": 939,
+              "nodeId": 29
+            },
+            {
+              "returnedOrder": 988,
+              "actualOrder": 988,
+              "nodeId": 30
+            },
+            {
+              "returnedOrder": 1037,
+              "actualOrder": 1037,
+              "nodeId": 31
+            },
+            {
+              "returnedOrder": 1086,
+              "actualOrder": 1086,
+              "nodeId": 32
+            },
+            {
+              "returnedOrder": 1135,
+              "actualOrder": 1135,
+              "nodeId": 33
+            },
+            {
+              "returnedOrder": 1184,
+              "actualOrder": 1184,
+              "nodeId": 34
+            },
+            {
+              "returnedOrder": 1233,
+              "actualOrder": 1233,
+              "nodeId": 35
+            },
+            {
+              "returnedOrder": 1282,
+              "actualOrder": 1282,
+              "nodeId": 36
+            },
+            {
+              "returnedOrder": 1331,
+              "actualOrder": 1331,
+              "nodeId": 37
+            },
+            {
+              "returnedOrder": 1380,
+              "actualOrder": 1380,
+              "nodeId": 38
+            },
+            {
+              "returnedOrder": 1429,
+              "actualOrder": 1429,
+              "nodeId": 39
+            },
+            {
+              "returnedOrder": 1478,
+              "actualOrder": 1478,
+              "nodeId": 40
+            },
+            {
+              "returnedOrder": 1527,
+              "actualOrder": 1527,
+              "nodeId": 41
+            },
+            {
+              "returnedOrder": 1576,
+              "actualOrder": 1576,
+              "nodeId": 42
+            },
+            {
+              "returnedOrder": 1625,
+              "actualOrder": 1625,
+              "nodeId": 43
+            },
+            {
+              "returnedOrder": 1674,
+              "actualOrder": 1674,
+              "nodeId": 44
+            },
+            {
+              "returnedOrder": 1723,
+              "actualOrder": 1723,
+              "nodeId": 45
+            },
+            {
+              "returnedOrder": 1772,
+              "actualOrder": 1772,
+              "nodeId": 46
+            },
+            {
+              "returnedOrder": 1821,
+              "actualOrder": 1821,
+              "nodeId": 47
+            },
+            {
+              "returnedOrder": 1870,
+              "actualOrder": 1870,
+              "nodeId": 48
+            },
+            {
+              "returnedOrder": 1919,
+              "actualOrder": 1919,
+              "nodeId": 49
+            },
+            {
+              "returnedOrder": 1968,
+              "actualOrder": 1968,
+              "nodeId": 50
+            },
+            {
+              "returnedOrder": 2017,
+              "actualOrder": 2017,
+              "nodeId": 51
+            },
+            {
+              "returnedOrder": 2066,
+              "actualOrder": 2066,
+              "nodeId": 52
+            },
+            {
+              "returnedOrder": 2115,
+              "actualOrder": 2115,
+              "nodeId": 53
+            },
+            {
+              "returnedOrder": 2164,
+              "actualOrder": 2164,
+              "nodeId": 54
+            },
+            {
+              "returnedOrder": 2213,
+              "actualOrder": 2213,
+              "nodeId": 55
+            },
+            {
+              "returnedOrder": 2262,
+              "actualOrder": 2262,
+              "nodeId": 56
+            },
+            {
+              "returnedOrder": 2311,
+              "actualOrder": 2311,
+              "nodeId": 57
+            },
+            {
+              "returnedOrder": 2360,
+              "actualOrder": 2360,
+              "nodeId": 58
+            },
+            {
+              "returnedOrder": 2409,
+              "actualOrder": 2409,
+              "nodeId": 59
+            },
+            {
+              "returnedOrder": 2458,
+              "actualOrder": 2458,
+              "nodeId": 60
+            },
+            {
+              "returnedOrder": 2507,
+              "actualOrder": 2507,
+              "nodeId": 61
+            },
+            {
+              "returnedOrder": 2556,
+              "actualOrder": 2556,
+              "nodeId": 62
+            },
+            {
+              "returnedOrder": 2605,
+              "actualOrder": 2605,
+              "nodeId": 63
+            },
+            {
+              "returnedOrder": 2654,
+              "actualOrder": 2654,
+              "nodeId": 64
+            },
+            {
+              "returnedOrder": 2703,
+              "actualOrder": 2703,
+              "nodeId": 65
+            },
+            {
+              "returnedOrder": 2752,
+              "actualOrder": 2752,
+              "nodeId": 66
+            },
+            {
+              "returnedOrder": 2801,
+              "actualOrder": 2801,
+              "nodeId": 67
+            },
+            {
+              "returnedOrder": 2850,
+              "actualOrder": 2850,
+              "nodeId": 68
+            },
+            {
+              "returnedOrder": 2899,
+              "actualOrder": 2899,
+              "nodeId": 69
+            },
+            {
+              "returnedOrder": 2948,
+              "actualOrder": 2948,
+              "nodeId": 70
+            },
+            {
+              "returnedOrder": 2997,
+              "actualOrder": 2997,
+              "nodeId": 71
+            },
+            {
+              "returnedOrder": 3046,
+              "actualOrder": 3046,
+              "nodeId": 72
+            },
+            {
+              "returnedOrder": 3095,
+              "actualOrder": 3095,
+              "nodeId": 73
+            },
+            {
+              "returnedOrder": 3144,
+              "actualOrder": 3144,
+              "nodeId": 74
+            },
+            {
+              "returnedOrder": 3193,
+              "actualOrder": 3193,
+              "nodeId": 75
+            },
+            {
+              "returnedOrder": 3242,
+              "actualOrder": 3242,
+              "nodeId": 76
+            },
+            {
+              "returnedOrder": 3291,
+              "actualOrder": 3291,
+              "nodeId": 77
+            },
+            {
+              "returnedOrder": 3340,
+              "actualOrder": 3340,
+              "nodeId": 78
+            },
+            {
+              "returnedOrder": 3389,
+              "actualOrder": 3389,
+              "nodeId": 79
+            },
+            {
+              "returnedOrder": 3438,
+              "actualOrder": 3438,
+              "nodeId": 80
+            },
+            {
+              "returnedOrder": 3487,
+              "actualOrder": 3487,
+              "nodeId": 81
+            },
+            {
+              "returnedOrder": 3536,
+              "actualOrder": 3536,
+              "nodeId": 82
+            },
+            {
+              "returnedOrder": 3585,
+              "actualOrder": 3585,
+              "nodeId": 83
+            },
+            {
+              "returnedOrder": 3634,
+              "actualOrder": 3634,
+              "nodeId": 84
+            },
+            {
+              "returnedOrder": 3683,
+              "actualOrder": 3683,
+              "nodeId": 85
+            },
+            {
+              "returnedOrder": 3732,
+              "actualOrder": 3732,
+              "nodeId": 86
+            },
+            {
+              "returnedOrder": 3781,
+              "actualOrder": 3781,
+              "nodeId": 87
+            },
+            {
+              "returnedOrder": 3830,
+              "actualOrder": 3830,
+              "nodeId": 88
+            },
+            {
+              "returnedOrder": 3879,
+              "actualOrder": 3879,
+              "nodeId": 89
+            },
+            {
+              "returnedOrder": 3928,
+              "actualOrder": 3928,
+              "nodeId": 90
+            },
+            {
+              "returnedOrder": 3977,
+              "actualOrder": 3977,
+              "nodeId": 91
+            },
+            {
+              "returnedOrder": 4026,
+              "actualOrder": 4026,
+              "nodeId": 92
+            },
+            {
+              "returnedOrder": 4075,
+              "actualOrder": 4075,
+              "nodeId": 93
+            },
+            {
+              "returnedOrder": 4124,
+              "actualOrder": 4124,
+              "nodeId": 94
+            },
+            {
+              "returnedOrder": 4173,
+              "actualOrder": 4173,
+              "nodeId": 95
+            },
+            {
+              "returnedOrder": 4222,
+              "actualOrder": 4222,
+              "nodeId": 96
+            },
+            {
+              "returnedOrder": 4271,
+              "actualOrder": 4271,
+              "nodeId": 97
+            },
+            {
+              "returnedOrder": 4320,
+              "actualOrder": 4320,
+              "nodeId": 98
+            },
+            {
+              "returnedOrder": 4369,
+              "actualOrder": 4369,
+              "nodeId": 99
+            },
+            {
+              "returnedOrder": 4418,
+              "actualOrder": 4418,
+              "nodeId": 100
+            },
+            {
+              "returnedOrder": 4467,
+              "actualOrder": 4467,
+              "nodeId": 101
+            },
+            {
+              "returnedOrder": 4516,
+              "actualOrder": 4516,
+              "nodeId": 102
+            },
+            {
+              "returnedOrder": 4565,
+              "actualOrder": 4565,
+              "nodeId": 103
+            },
+            {
+              "returnedOrder": 4614,
+              "actualOrder": 4614,
+              "nodeId": 104
+            },
+            {
+              "returnedOrder": 4663,
+              "actualOrder": 4663,
+              "nodeId": 105
+            },
+            {
+              "returnedOrder": 4712,
+              "actualOrder": 4712,
+              "nodeId": 106
+            },
+            {
+              "returnedOrder": 4761,
+              "actualOrder": 4761,
+              "nodeId": 107
+            },
+            {
+              "returnedOrder": 4810,
+              "actualOrder": 4810,
+              "nodeId": 108
+            },
+            {
+              "returnedOrder": 4859,
+              "actualOrder": 4859,
+              "nodeId": 109
+            },
+            {
+              "returnedOrder": 4908,
+              "actualOrder": 4908,
+              "nodeId": 110
+            },
+            {
+              "returnedOrder": 4957,
+              "actualOrder": 4957,
+              "nodeId": 111
+            },
+            {
+              "returnedOrder": 5006,
+              "actualOrder": 5006,
+              "nodeId": 112
+            },
+            {
+              "returnedOrder": 5055,
+              "actualOrder": 5055,
+              "nodeId": 113
+            },
+            {
+              "returnedOrder": 5104,
+              "actualOrder": 5104,
+              "nodeId": 114
+            },
+            {
+              "returnedOrder": 5153,
+              "actualOrder": 5153,
+              "nodeId": 115
+            },
+            {
+              "returnedOrder": 5202,
+              "actualOrder": 5202,
+              "nodeId": 116
+            },
+            {
+              "returnedOrder": 5251,
+              "actualOrder": 5251,
+              "nodeId": 117
+            },
+            {
+              "returnedOrder": 5300,
+              "actualOrder": 5300,
+              "nodeId": 118
+            },
+            {
+              "returnedOrder": 5349,
+              "actualOrder": 5349,
+              "nodeId": 119
+            },
+            {
+              "returnedOrder": 5398,
+              "actualOrder": 5398,
+              "nodeId": 120
+            },
+            {
+              "returnedOrder": 5447,
+              "actualOrder": 5447,
+              "nodeId": 121
+            },
+            {
+              "returnedOrder": 5496,
+              "actualOrder": 5496,
+              "nodeId": 122
+            },
+            {
+              "returnedOrder": 5545,
+              "actualOrder": 5545,
+              "nodeId": 123
+            },
+            {
+              "returnedOrder": 5594,
+              "actualOrder": 5594,
+              "nodeId": 124
+            },
+            {
+              "returnedOrder": 5643,
+              "actualOrder": 5643,
+              "nodeId": 125
+            },
+            {
+              "returnedOrder": 5692,
+              "actualOrder": 5692,
+              "nodeId": 126
+            },
+            {
+              "returnedOrder": 5741,
+              "actualOrder": 5741,
+              "nodeId": 127
+            },
+            {
+              "returnedOrder": 5790,
+              "actualOrder": 5790,
+              "nodeId": 128
+            },
+            {
+              "returnedOrder": 5839,
+              "actualOrder": 5839,
+              "nodeId": 129
+            },
+            {
+              "returnedOrder": 5888,
+              "actualOrder": 5888,
+              "nodeId": 130
+            },
+            {
+              "returnedOrder": 5937,
+              "actualOrder": 5937,
+              "nodeId": 131
+            },
+            {
+              "returnedOrder": 5986,
+              "actualOrder": 5986,
+              "nodeId": 132
+            },
+            {
+              "returnedOrder": 6035,
+              "actualOrder": 6035,
+              "nodeId": 133
+            },
+            {
+              "returnedOrder": 6084,
+              "actualOrder": 6084,
+              "nodeId": 134
+            },
+            {
+              "returnedOrder": 6133,
+              "actualOrder": 6133,
+              "nodeId": 135
+            },
+            {
+              "returnedOrder": 6182,
+              "actualOrder": 6182,
+              "nodeId": 136
+            },
+            {
+              "returnedOrder": 6231,
+              "actualOrder": 6231,
+              "nodeId": 137
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        },
+        {
+          "name": "collision-throw",
+          "spec": {
+            "firstPosition": 1,
+            "row": 1,
+            "drainCursor": true,
+            "lastPosition": 1,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 1
+          },
+          "callbackAction": "throw",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "outcome": "FAILED",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherBudgetExceededException",
+          "message": "Cypher work budget exceeded after 777 graph work units; add a selective label/filter or use a metadata-backed query",
+          "sameAsCallbackCause": true,
+          "stack": [
+            "MappedCursorOracle$Work.<init>(MappedCursorOracle.java:19)",
+            "MappedCursorOracle.op(MappedCursorOracle.java:40)",
+            "MappedCursorOracle.range(MappedCursorOracle.java:46)",
+            "MappedCursorOracle.main(MappedCursorOracle.java:70)"
+          ],
+          "callbacks": [
+            1
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 8,
+              "actualOrder": 8,
+              "nodeId": 10
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        },
+        {
+          "name": "original-still-cached",
+          "spec": {
+            "firstPosition": 0,
+            "row": 0,
+            "drainCursor": false,
+            "lastPosition": 127,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "yields": [],
+            "cursorFinalPosition": 0,
+            "initialHasCurrent": true
+          },
+          "callbacks": [],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 8,
+              "actualOrder": 8,
+              "nodeId": 10
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        },
+        {
+          "name": "completed-invalid-collision-publishes",
+          "spec": {
+            "firstPosition": 1,
+            "row": 1,
+            "drainCursor": true,
+            "lastPosition": 1,
+            "nodeOrderMode": "negative",
+            "method": "validatedPostingCursor",
+            "faultNode": 10,
+            "property": 1
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "outcome": "SUCCESS",
+          "value": null,
+          "callbacks": [
+            1
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": -1,
+              "actualOrder": 8,
+              "nodeId": 10
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "4294967297",
+                "slot": 0,
+                "state": 2
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        }
+      ]
+    },
+    {
+      "name": "C10-binary-interrupt-continues-nonpoll-range",
+      "fixture": "large",
+      "operations": [
+        {
+          "name": "binary-then-range",
+          "spec": {
+            "lastPosition": 1023,
+            "method": "binarySearch then validatedPostingCursor",
+            "firstPosition": 1023
+          },
+          "callbackAction": "interrupt",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "nodeId": 1033,
+            "order": 50135,
+            "binaryReturn": 0
+          },
+          "callbacks": [
+            1,
+            1
+          ],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 50135,
+              "actualOrder": 50135,
+              "nodeId": 1033
+            }
+          ],
+          "interruptedAfterMethod": true,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": true
+        }
+      ]
+    },
+    {
+      "name": "C11-empty-range-constructor-after-publication",
+      "fixture": "large",
+      "operations": [
+        {
+          "name": "cold-empty",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 0,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 0,
+            "entries": []
+          },
+          "outcome": "FAILED",
+          "errorClass": "java.lang.ArrayIndexOutOfBoundsException",
+          "message": "Index 0 out of bounds for length 0",
+          "sameAsCallbackCause": false,
+          "stack": [
+            "io.johnsonlee.graphite.webgraph.MappedPostingCursor.orderAt(MappedCallSiteStringIndexView.kt:659)",
+            "io.johnsonlee.graphite.webgraph.MappedPostingCursor.<init>(MappedCallSiteStringIndexView.kt:647)",
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.validatedPostingCursor(MappedCallSiteStringIndexView.kt:190)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)",
+            "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.base/java.lang.reflect.Method.invoke(Method.java:569)",
+            "MappedCursorOracle.call(MappedCursorOracle.java:17)",
+            "MappedCursorOracle.lambda$range$2(MappedCursorOracle.java:47)",
+            "MappedCursorOracle.op(MappedCursorOracle.java:41)",
+            "MappedCursorOracle.range(MappedCursorOracle.java:46)",
+            "MappedCursorOracle.main(MappedCursorOracle.java:76)"
+          ],
+          "callbacks": [],
+          "nodeOrderReads": [],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        },
+        {
+          "name": "warm-empty",
+          "spec": {
+            "firstPosition": 1,
+            "row": 0,
+            "drainCursor": true,
+            "lastPosition": 0,
+            "nodeOrderMode": "normal",
+            "method": "validatedPostingCursor",
+            "faultNode": -1,
+            "property": 0
+          },
+          "callbackAction": "none",
+          "preInterrupted": false,
+          "beforeCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "outcome": "SUCCESS",
+          "value": {
+            "cursorReturned": true,
+            "yields": [],
+            "cursorFinalPosition": 1,
+            "initialHasCurrent": false
+          },
+          "callbacks": [],
+          "nodeOrderReads": [
+            {
+              "returnedOrder": 57,
+              "actualOrder": 57,
+              "nodeId": 11
+            }
+          ],
+          "interruptedAfterMethod": false,
+          "afterCache": {
+            "closed": false,
+            "count": 1,
+            "entries": [
+              {
+                "key": "0",
+                "slot": 0,
+                "state": 1
+              }
+            ]
+          },
+          "clearedForNextOperation": false
+        }
+      ]
+    }
+  ],
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "scope": "actual-main storage-method contract; not public query execution"
+}

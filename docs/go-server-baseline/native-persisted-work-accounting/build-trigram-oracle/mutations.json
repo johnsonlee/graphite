@@ -1,0 +1,11 @@
+{
+  "sourceArchive": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/fixtures.tar.gz",
+  "sourceArchiveSHA256": "1a5564b5c08c837cda14455f38ad2e7154782dc50ef1c41774ac83b020979052",
+  "sourceMainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mutations": [],
+  "reusedVariants": [
+    "bad-magic",
+    "empty"
+  ],
+  "performanceMeasurements": 0
+}

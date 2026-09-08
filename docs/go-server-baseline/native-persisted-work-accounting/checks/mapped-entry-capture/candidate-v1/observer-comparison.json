@@ -1,0 +1,21 @@
+{
+  "plainCases": 7,
+  "instrumentedCases": 10,
+  "unchangedNoActionCases": [
+    "E01-cold-view-entry-interrupt",
+    "E02-warm-view-empty-entry-interrupt",
+    "E03-warm-view-hit-entry-interrupt",
+    "E06-warm-view-hit-budget1",
+    "E07-retained-empty-entry-interrupt",
+    "E08-retained-hit-entry-interrupt",
+    "E09-warm-mapped-range-entry-interrupt"
+  ],
+  "changedNoActionCases": [],
+  "excludedComparisonFields": [
+    "actual callback events and their callback-failure identity (unavailable uninstrumented)",
+    "temporary fixture path",
+    "derived JVM differences"
+  ],
+  "plainMainDifferences": 0,
+  "instrumentedMainDifferences": 0
+}

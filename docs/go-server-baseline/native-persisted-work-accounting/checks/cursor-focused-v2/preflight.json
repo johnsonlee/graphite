@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "-count=1",
+    "-v",
+    "-run",
+    "^TestMainMapped",
+    "./internal/store",
+    "./internal/query"
+  ],
+  "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-cursor-focused-v2/module",
+  "goSha256": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4",
+  "runnerSha256": "9bc96e774e32587ae3c7b79e1aa33e27190b868e40a540484ae386750c79d39a",
+  "moduleFiles": 2563,
+  "sourceArchiveSha256": "88b00d3b98000f3e29728488126ba1ed308fae7b917a168a42c6e6739b770da2",
+  "fixtureSha256": "1a5564b5c08c837cda14455f38ad2e7154782dc50ef1c41774ac83b020979052",
+  "performanceMeasurements": 0
+}

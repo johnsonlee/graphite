@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/source-before.json",
+      "sourceSHA256": "56706a4adbdb3fc398010fedd2be31d4e19dfe257adada0dbb87b8c57c2c545d",
+      "archive": "source-before.json",
+      "archiveSHA256": "56706a4adbdb3fc398010fedd2be31d4e19dfe257adada0dbb87b8c57c2c545d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/inputs.json",
+      "sourceSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "archive": "inputs.json",
+      "archiveSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/input.json",
+      "sourceSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "archive": "input.json",
+      "archiveSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/compiled-source.json",
+      "sourceSHA256": "368a1309474a1181bd38aa06f576bd3272ff429567233aa52322d72104f4287d",
+      "archive": "compiled-source.json",
+      "archiveSHA256": "368a1309474a1181bd38aa06f576bd3272ff429567233aa52322d72104f4287d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/source.tar.gz",
+      "sourceSHA256": "41fb5e0b68bcb5173b167bab3ea6040f2bd02dddbba6cf8568836e9a09d42c55",
+      "archive": "source.tar.gz",
+      "archiveSHA256": "41fb5e0b68bcb5173b167bab3ea6040f2bd02dddbba6cf8568836e9a09d42c55",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/compile.stdout",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "compile.stdout",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/compile.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "compile.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/capture.stdout",
+      "sourceSHA256": "56c35162f67dcb95e6077fcc03ce2ac70cb5e9ce5306c2270d221d3b68e33a97",
+      "archive": "capture.stdout",
+      "archiveSHA256": "56c35162f67dcb95e6077fcc03ce2ac70cb5e9ce5306c2270d221d3b68e33a97",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/capture.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "capture.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/commands.json",
+      "sourceSHA256": "3a9598510ddc3f44e65aaa5b5082e9ab275a4f7de4927327b295b833d1f59b06",
+      "archive": "commands.json",
+      "archiveSHA256": "3a9598510ddc3f44e65aaa5b5082e9ab275a4f7de4927327b295b833d1f59b06",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/go.json",
+      "sourceSHA256": "9d5dd92c1bb8e606cca66a69ab641a798a11f4aff5942012497a8ee5941a78ec",
+      "archive": "go.json",
+      "archiveSHA256": "9d5dd92c1bb8e606cca66a69ab641a798a11f4aff5942012497a8ee5941a78ec",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/source-after.json",
+      "sourceSHA256": "368a1309474a1181bd38aa06f576bd3272ff429567233aa52322d72104f4287d",
+      "archive": "source-after.json",
+      "archiveSHA256": "368a1309474a1181bd38aa06f576bd3272ff429567233aa52322d72104f4287d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/comparison.json",
+      "sourceSHA256": "4acbe47ec83a2804f3e67a9e6e4ae84448c8008f98bc6894a86d2c3e1bea00f2",
+      "archive": "comparison.json",
+      "archiveSHA256": "4acbe47ec83a2804f3e67a9e6e4ae84448c8008f98bc6894a86d2c3e1bea00f2",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/artifact-manifest.json",
+      "sourceSHA256": "95b3e907e19a63d91e453db8add6a3372c0e1b7312f8138d1b5a5bfc18bed433",
+      "archive": "artifact-manifest.json",
+      "archiveSHA256": "95b3e907e19a63d91e453db8add6a3372c0e1b7312f8138d1b5a5bfc18bed433",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/fixtures-before.json",
+      "sourceSHA256": "678613037c05bf4070b36839058c0b0a3fcbb0d11b4ca5b90332b70f9d4b824d",
+      "archive": "fixtures-before.json.gz",
+      "archiveSHA256": "2f8fdc84008f5e92e5c4a94b58c96a82687452c49ba77799ce94430a37f450ed",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/fixtures-after.json",
+      "sourceSHA256": "0f4fcc9793ac0d6cfa5c65f604532132c9230db91e5e242340d69b0e81b89b1e",
+      "archive": "fixtures-after.json.gz",
+      "archiveSHA256": "cd75a514c3462c68692628cd8edd41bd5c1e627365085af37ad463aff7044f92",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-enum-matrix201-v1/diagnostic.test",
+      "sourceSHA256": "900c987d24ad9ca17385b6769597f5b43887e0dc84b2878314f433b3c19c3965",
+      "archive": "diagnostic.test.gz",
+      "archiveSHA256": "3c21a60d695175c7c73f886b7417ab5f53858d735ff91e283212ef4b24cf2a6a",
+      "decompressedBytesEqual": true
+    }
+  ],
+  "inferredControllerExitCode": 1,
+  "previousComparedOutputDifferences": [
+    "enum-bad-tail-hit"
+  ],
+  "cases": 201,
+  "performanceMeasurements": 0,
+  "diagnosticsScope": "The legacy adapter does not pass the new ExecutionContext or compare its diagnostics; full route accounting remains incomplete. Its original comparison wording is retained verbatim."
+}

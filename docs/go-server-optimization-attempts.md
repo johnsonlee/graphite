@@ -1585,3 +1585,559 @@ sampling, existing semantic gaps and required benchmark gates remain unfinished.
 Earlier n=1 timings do not describe this changed module. Full function fidelity
 and at least 200 valid observations per case/runtime/state proving 10x P95 remain
 the acceptance criteria, not claims made by this correctness follow-up.
+
+
+### Functional work in progress — persisted index work and mapped cursor protocol
+
+Baseline Go remains `f0838dda4f0d67628d028826d0577a8151765288`; actual main remains
+`4e328b0109e13c896b74004823fb049fcb19251a`. This is an unfinished functional
+correction, not a performance experiment or an accepted replacement for the
+previous real64-correct baseline. No latency, CPU, allocation or P95 measurements
+were made for these changes.
+
+The current work adds actual persisted-reader, mapped-reader, two-pass build and
+trigram preparation accounting, including callback failure identity, retries,
+cache publication and Close coordination. Four independent actual-main public
+oracle groups cover 111 scenarios and 482 ordered operations. Their full outcomes,
+request diagnostics and supported live cache state match; all fixture bytes and
+30 actual sidecar rewrites are checked against the original captures. Unsupported
+JVM private/resource observers remain explicit.
+
+The first full64 cold replay and an identical-source repeat both preserved all
+1,267 public query outcomes but differed on 15,162 mappedRangeCount observations.
+A fresh actual-main replay exactly reproduced the original 1,267 outcomes and
+162,304 graph-state observations. These differences therefore remain failures;
+the comparator and reference were not relaxed or replaced.
+
+A source audit then found excess Go local cancellation checks and eager warm
+posting reads. Main-only mapped span/cursor accessors now use actual absolute
+1,024-position checks, binary-search and range-finally work, cold owned orders,
+and lazy warm cursor advancement. Duplicate heap entries consume work, yielding
+flushes it, and retained fallback uses the retained matcher. A new actual-main
+storage-method oracle repeats all fields across 11 controls / 19 operations.
+These controls are not public-query cases, and not all 11 yet have equivalent Go
+runtime controls; `checks/cursor-protocol-audit` records the coverage boundary.
+
+| Current evidence | Result |
+| --- | --- |
+| Public persisted/mapped/build/trigram oracles | All 111 scenarios / 482 operations pass again |
+| Mapped cursor/string focused race controls | Pass, including 28 Unicode cases and 8 real pipeline cancellation controls |
+| Full module context / race / vet after test migrations | Pass; 3,300 recorded inputs unchanged |
+| Latest real64 cold after cursor correction | All 1,267 outcomes agree, but the same 15,162 mappedRangeCount differences remain |
+| Latest real64 warm / startup-prepared | Not executed after the cold comparison failed |
+| Latest complete 201-case matrix | Not rerun for this source |
+| New P95 / 10x acceptance evidence | None |
+| Keep/revert decision | Work remains unaccepted and under investigation; do not claim real64 parity |
+
+The latest cold difference still begins at `replay/3/after`, graph
+`fixture-android-02`, main count 7 versus Go 0. All 1,152 original persisted graph
+files remain unchanged. Original case 821 and its all-success gate failure remain
+in the full workload. The native workload is byte-identical to both full main
+exports; the fresh main replay's case-array output also matches all definitions.
+
+Failed focused and full checks are retained alongside corrected runs. Two new
+fixture tests initially manipulated the wrong backing data or selected the wrong
+index representation. A separate old test observed the no-longer-used generic
+order accessor, so its prescribed cancellation never occurred. Corrections are
+test-only and independently audited; production was not changed to restore those
+incorrect assumptions. Evidence and exact source bindings are under
+`docs/go-server-baseline/native-persisted-work-accounting/checks/`.
+
+The mapped protocol correction has not resolved the full64 state regression.
+Next diagnosis separates each affected graph's mapped candidate behavior from
+multi-source task cancellation, using new real-data copies. Optional captured
+index publication, resource reservations, other query/server functionality,
+known semantic gaps and required benchmark gates also remain unfinished. The
+full objective stays 100% functionality and per-case/per-state P95 at most one
+tenth of main, with at least 200 valid samples; this entry does not redefine it.
+
+
+A subsequent private-iterator diagnostic completed on fresh reflink copies of
+`fixture-android-02` through `fixture-android-07`. All seven observed index fields
+matched their full64 case-3 starting state. With sourceCount 64 and the same
+CONTAINS/java predicate, but no multi-source cancellation, all six iterators
+completed and created mappedRangeCount values 7, 6, 7, 1, 5 and 5, matching main's
+observed counts. Complete returned IDs/node digests and selected fixture hashes
+are recorded under `checks/cursor-real64-diagnostic/`. This narrows the next
+investigation to the multi-source execution path; it does not reproduce full
+query history or prove the cause. Fixed-worker scheduling and cancellation are
+being compared next. No acceptance or performance claim changes.
+
+### Functional follow-up — prepared fixed-worker scheduling
+
+The baseline pins remain Go `f0838dda4f0d67628d028826d0577a8151765288`
+and main `4e328b0109e13c896b74004823fb049fcb19251a`. On the same immutable
+64-graph / 1,152-file real dataset, the candidate now selects fixed workers only
+after the leading source is insufficient and every source meets main's prepared
+wide-scan gate. Workers are reused across suffix sources, replenish tasks after
+ordered consumption, and preserve distinct normal-completion and cancellation
+behavior. A review found queued canceled futures retained closures and worker
+references; both references are now released under the future's lifecycle lock.
+The separate mapped-entry cancellation gaps have not been changed in this run.
+
+The frozen candidate contains 2,568 module files. Focused race controls, all
+111 public oracle scenarios / 482 operations, and full module context / race /
+vet checks pass; the latter verify 3,388 recorded inputs remain unchanged.
+The subsequent real64-v3 controller terminates with exit 0 and all three
+comparison verifiers exit 0. Public differences and supported graph-state
+differences are empty in every executed phase, resolving the previously retained
+15,162 mappedRangeCount differences. Cold and startup-prepared each cover 1,267
+replay cases and 162,304 graph-state observations. Warm covers only the 1,267-case
+warmup and 162,240 observations: the original case-821 error prevents preparation
+and no formal warm replay executes. All 1,152 original graph files remain
+unchanged for each runtime.
+
+These successful comparisons do not mean the all-success gate passes. Main and
+Go retain the original case-821 IllegalStateException and runtime exit 1. Go's
+unavailable JVM fully-qualified errorClass observer is still reported separately.
+The comparator and original references are unchanged. Exact evidence is retained
+under `native-persisted-work-accounting/checks/scheduler-real64/`.
+
+A fresh 201-case supplementary replay also completes. It matches 166/181 public
+cases and 19/20 private-provider controls against both actual-main captures;
+all 16 existing differences remain and no compared outcome differs from the
+previous candidate. Source and original fixture files are unchanged. The failing
+comparison, complete outputs and source archive are retained under
+`native-persisted-work-accounting/checks/matrix201/`.
+
+This remains an unfinished functional correction. Retain the scheduling change
+for continued verification; do not report full functional acceptance. There are
+no latency, CPU, memory or allocation measurements for this candidate, and no
+new P95 evidence. The target remains per-case/per-state Go P95 at most main/10,
+with at least 200 valid observations and all required functional and benchmark
+gates; changing implementation language alone does not establish that result.
+
+### Functional follow-up — main storage entry and cancellation
+
+The revision pins remain Go `f0838dda4f0d67628d028826d0577a8151765288`
+and main `4e328b0109e13c896b74004823fb049fcb19251a`. This correction changes
+14 production files relative to the preceding frozen fixed-worker candidate;
+the fixed-worker implementation and its ordinary dispatcher are unchanged.
+It is unfinished functional work, with no latency/CPU/memory/allocation or P95
+measurement and no acceptance claim.
+
+Actual-main storage-entry captures E01–E10 revealed that Go polled worker
+cancellation before cached metadata and before the cold persisted identity
+charge. The frozen Go baseline matched only E05/E06, retaining 70 differences.
+Seven no-action controls were identical with and without a test-only work
+observer. The observer records real tracker calls, never adds work, preserves
+the thrown object, and can be removed to restore the original tracker file
+byte-for-byte. Its initial overlay-vet failure remains archived. This is a
+storage-node adapter; full Java node shape, private lookup counters, JVM stacks
+and other unavailable observers remain explicit rather than synthesized.
+
+The main entry now uses lifetime-checked metadata/cache/decoder primitives while
+retaining the worker context at actual loader and scan checkpoints. Cold mapped
+entry reads the real identity before the loader's first worker check; legacy
+semantic identity retains its real work/cache before raw identity scanning.
+Current regular-file admission precedes a cached mapped-view return. Retained
+Split entry first checks every predicate's eligibility, then consults actual
+matching-string caches in predicate order; an all-empty match skips the node
+cache's minimum charge while preserving other generic node-type children.
+Cached-node iteration, periodic retained heap checks, mapped interruption
+class/message and canonical-order reads are aligned with their main paths.
+Generic/strict Store wrappers keep their existing context-bearing checks.
+
+| Evidence for entry correction | Result |
+| --- | --- |
+| Actual-main storage entry E01–E10 | Both candidate captures have zero compared differences; seven plain controls also match |
+| Public persisted/mapped/build/trigram oracles | All 111 scenarios / 482 operations pass |
+| Focused entry/lifetime/cancellation race checks | Pass on the current 2,575-file module |
+| Full context / module race / vet | Pass; all 3,395 recorded inputs unchanged |
+| Current real64 cold, v4 | 1,267 public outcomes agree; 15,162 mappedRangeCount differences remain |
+| Current real64 warm / startup-prepared | Not executed after cold comparison failed |
+| Current 201-case matrix | Not rerun for this source; previous candidate's 16 differences are not a new-source result |
+| P95 / 10x evidence | None |
+| Keep/revert decision | Keep under investigation; the entry fix is not an accepted full64 replacement |
+
+The new real64 difference starts at `replay/3/after`, `fixture-android-03`, main
+range count 6 versus Go 0. Differences are confined to Android graphs 03–08;
+all their mapped views already existed before this query. Case-3 after counts
+for graphs 01–08 are main/previous candidate `[4,7,6,7,1,5,5,4]`, current entry
+candidate `[4,7,0,0,0,0,0,0]`. This is a range-validation publication difference,
+not evidence that the mapped views failed to initialize. Every original one of
+the 1,152 real graph files remains unchanged. Case 821, its original error and
+the original all-success gate failure remain preserved.
+
+A new cold run on a fresh copy of the preceding 2,568-file frozen source again
+matches all 1,267 outcomes and 162,304 graph-state observations. It does not use
+the changed workspace source. Thus the current failure is not dismissed as a
+bad reference or a generally failing previous candidate. The existing Go
+executor prestarts its full goroutine capacity, whereas main's executor creates
+core workers as first tasks are submitted; other main paths also share the
+executor. These are verified source differences, but there is no observation
+yet proving whether the pool is cold at case 3 or that this explains the cache
+difference. No task-start barrier, forced cache completion or comparison
+relaxation has been introduced.
+
+Failed focused and full checks are retained. The first focused failure included
+one nil-versus-empty test assertion and earlier every-yield cancellation
+assumptions; the same production source passed E01–E10 before those tests were
+corrected. The first full check found two more tests locating old function names
+after a shared-reader extraction. Only those two names changed, preserving
+cancellation and worker-join assertions. The subsequent focused and complete
+checks pass. Exact source bindings, test-only deltas, complete raw entry
+captures, failed v4 cold capture and successful old-source repeat are recorded
+under `native-persisted-work-accounting/checks/`, including
+`entry-source-audit.json` and `entry-scheduling-review.md`.
+
+Next work must distinguish actual executor admission/start, storage entry and
+worker-interruption timing before choosing a scheduling correction. Public
+semantic gaps, remaining query/server/resource functionality and all required
+performance gates remain open. The full goal remains 100% functionality and
+per-case/per-state Go P95 at most main/10, using at least 200 valid observations.
+
+### Functional follow-up — lazy executor core creation
+
+The Go base remains `f0838dda4f0d67628d028826d0577a8151765288` and the main
+reference remains `4e328b0109e13c896b74004823fb049fcb19251a`. Relative to the
+preceding frozen entry candidate, only `main_fixed_workers.go` and its test
+file change. The complete module still contains 2,575 files. This is a
+source-contract correction, not a measured performance optimization.
+
+The executor now starts with zero cores. Each submission below core capacity
+creates one persistent worker with that future as its first task, even when a
+previous core is available; submissions after capacity enter the existing FIFO.
+The worker releases its first future and then consumes queued futures. This
+matches the inspected JDK17 `ThreadPoolExecutor.execute`/`runWorker` mechanism.
+No startup barrier, delay, forced range publication, extra cancellation poll,
+or comparator change is introduced. Other native runners still use their
+separate goroutines; cross-path executor sharing remains unfinished.
+
+The initial focused build failed because the new capacity/core fields were
+missing from the struct. That exact source and log remain archived; adding the
+fields changed no test assertion. The corrected 14 worker tests pass three
+times under race detection. The broader frozen entry, cancellation, prepared
+scan and lifetime checks pass, as do full context, module race and vet checks
+over 3,395 unchanged inputs. Independent review finds no new correctness or
+lifetime blocker; its small close-test observation boundary is recorded rather
+than treated as proof of an intermediate scheduling state.
+
+| Evidence for lazy executor correction | Result |
+| --- | --- |
+| Current real64 cold, fresh clone | 1,267 public outcomes agree; 2,527 mappedRangeCount differences |
+| Compared graph-state observations | 162,304; original 1,152 graph files unchanged |
+| First remaining state difference | `replay/3/after`, android-08, main 4 / Go 0 |
+| Warm / startup-prepared | Not executed after cold comparison failed |
+| Fresh supplementary matrix | 166/181 public and 19/20 provider controls match; all 16 earlier differences remain |
+| Matrix change from previous capture | No compared outcome changes across all 201 controls |
+| P95 / latency / CPU / memory / allocations | Not measured |
+| Keep/revert decision | Retain source-faithful correction for continued work; full functional acceptance remains unproven |
+
+Case-3 range counts on android01–08 are now `[4,7,6,7,1,5,5,0]`, compared with
+main/old frozen scheduler `[4,7,6,7,1,5,5,4]` and the preceding entry revision
+`[4,7,0,0,0,0,0,0]`. Thus this capture has fewer state differences, but still
+fails the original comparator. The actual replay runtime preserves case821's
+original error and exit1. Do not infer that pool creation is the cause merely
+from these counts, or that the unobserved suffix has equivalent scheduling.
+
+The exact source archives, original failed build, successful focused/full
+checks, complete failed cold replay and 201-case capture are retained under
+`native-persisted-work-accounting/checks/lazy-core-*`. The source-binding audit
+checks the complete frozen module against the executed tests and cold replay;
+it explicitly preserves failed and unexecuted gates. The next diagnostic must
+record actual executor history and source/checkpoint events through case3.
+There is still no evidence establishing the requested per-case/per-state
+10x P95 improvement or complete server/query/resource parity.
+
+A subsequent read-only review of `six-empty-1` and `six-empty-2` corrects the
+earlier assumption that their mismatch proves a coalesce/UTF16-value bug. Each
+has six rows. The original main capture and its own repeat already disagree
+on row-array order; main, repeat and the current Go capture have identical full
+`rowsUTF16` multisets, including nulls and provenance. Main and repeat differ
+only in their `rows`/`rowsUTF16` arrays for these records. One deterministic Go
+array cannot equal both reference arrays. The original 16 strict comparison
+differences remain archived unchanged; no sort, hardcoded node-type order or
+comparator exception has been added. Reference order instability needs separate
+classification before selecting a production correction for these two cases.
+
+### Diagnostic follow-up — executor history through real64 case 3
+
+Two serialized diagnostic captures run on new copies of the exact old v3 and
+entry-v4 frozen modules. Neither uses the new lazy-core candidate. Both retain
+the original 1,267-case workload bytes and execute the explicitly labeled
+prefix0–3 through the public replay CLI. Eight copied files receive additive
+hooks and one bounded in-memory logger is added; the exact edits mechanically
+reverse to the original text. The original modules, both instrumented copies,
+and all 1,152 reference/copied graph files pass their respective postflight
+checks. Both builds, prefix runtimes and controllers exit0; no trace events
+are dropped or left unpublished. The event log is a diagnostic observation,
+not a timing instrument or a full correctness/performance gate.
+
+Both traced processes create their capacity-eight executor and start all eight
+cores during query0. They reuse it in query1 and query3; no legacy runner event
+is observed in this prefix. In v3 query3, one worker future processes all eight
+admitted source indices before the coordinator consumes the first result; the
+remaining seven futures are canceled before their bodies start. In v4 query3,
+eight futures start and every source finishes before the first source-ordered
+merge reaches LIMIT. Neither trace observes a rejected mapped anchor/range poll
+in query3. Future identity must not be treated as graph identity: one future
+can process several source tasks.
+
+Both traced query3 after-states have android01–08 range counts
+`[4,7,6,7,1,5,5,4]`. The v4 trace therefore does **not** reproduce the original
+uninstrumented v4 missing-range failure. Its event calls, atomic buffer writes
+and hooks inside existing locks perturb scheduling. The traces establish their
+own warm-pool histories and source ownership; they do not establish the cause
+of the uninstrumented failure, equivalent scheduling distributions, current
+lazy-core cache parity, or any P95 improvement. Preserve the earlier failed
+captures and comparator unchanged. A next diagnostic should reduce hot-path
+event volume before trying to identify where the failing source is canceled.
+
+### Diagnostic follow-up — sparse events on the frozen lazy-core source
+
+The new sparse runner executes only the original real64 prefix0–3 on a fresh
+copy of the frozen lazy-core candidate. Successful range, cache, publication
+and posting/poll events are removed; existing cancellation checks still execute
+exactly once, with only actual rejection recorded. The complete source edits,
+original workload bytes, original fixture hashes and all failed/successful
+observations remain separately identifiable from the earlier full traces.
+
+The build, prefix runtime and controller exit0. Its 1,100 events have no dropped
+or unpublished slots. Query0 creates all eight cores. At query3, one future
+processes all eight admitted sources before the first source-ordered prefix
+merge; seven other futures are canceled before starting. No recorded mapped
+check rejects cancellation. All eight range counts again match main, so this
+sparse run still does not reproduce the uninstrumented lazy-core android08
+failure. It is not a replacement passing capture or proof of the failure's
+cause. The untouched analyzer records the sole difference from the plain
+lazy-core prefix: android08 has four ranges instead of zero. Actual artifacts
+and analysis are in `checks/entry-scheduling-sparse-evidence/` and
+`checks/entry-scheduling-sparse-audit/`.
+
+### Functional follow-up — Enum argument-count consumption
+
+Go base `f0838dda4f0d67628d028826d0577a8151765288` and main reference
+`4e328b0109e13c896b74004823fb049fcb19251a` are unchanged. This candidate changes
+one production file, `projection_node.go`, relative to the frozen lazy-core
+source, adds its focused test and re-enables one existing public regression.
+The complete module contains 2,576 files. No timing optimization is claimed.
+
+Main's top-level Enum reader consumes `(0 until argCount)` sequentially. The
+native projection reader previously used the strict decoder's early
+count-versus-remaining validation, so `enum-bad-tail-hit` returned the wrong
+error before reading the actual values. The projection path now reads the Enum
+header and actual argument values in order until the first read error; negative
+counts leave the tail unread. It does not allocate an array from an untrusted
+count. Strict `Store.Node` and nested value/list decoding remain unchanged.
+
+The original-source overlay reproduces the old count-guard failure. The
+candidate's focused Store tests pass under race detection three times, including
+both candidate APIs, actual Java-written variants, owned nested values after
+Close, and zero/negative-count source-derived controls. The three public Enum
+hit/miss/global-miss controls match the actual main captures; the hit returns
+the real SID37/list21 `IndexOutOfBoundsException`. The regular generic oracle
+selection increases from83 to84 without changing expected reference data.
+Independent review finds no blocking defect in this scoped correction.
+
+| Evidence for Enum correction | Result |
+| --- | --- |
+| Full context / module race / vet | All pass; 3,396 recorded inputs unchanged |
+| Complete 201-case matrix | 167/181 public and 19/20 provider controls match; 15 strict differences remain |
+| Change from preceding 201-case capture | Only `enum-bad-tail-hit` changes; its reference mismatch is removed |
+| Real64 cold / startup-prepared | Each matches all 1,267 replay outcomes and 162,304 state observations |
+| Real64 warm | Matches the 1,267-case warmup and 162,240 state observations; formal warm preparation still fails at the original gate |
+| Original graph integrity | All 1,152 original files unchanged in each runtime |
+| Original gate | Case821 and runtime exit1 preserved; all three comparison verifiers exit0 |
+| Keep/revert decision | Retain the verified scoped correction; full functional parity remains unfinished |
+
+The fresh state comparisons pass, but an Enum decoder correction does not by
+itself establish the cause or elimination of the earlier scheduling-dependent
+range observation. Previous failed cold captures and both non-reproducing
+diagnostics remain intact. Two of the fifteen strict matrix differences retain
+the separately documented unstable reference row order. Remaining query,
+server/resource behavior and required benchmark gates are not declared complete.
+Exact focused failures, source and full checks, changed-case comparisons and
+complete real64 captures are archived under `checks/enum-*`.
+
+### Measurement setup — manifested Enum candidate, 200 paired trials per state
+
+The original committed-source measurement builder remains unchanged. A separate
+`native64-p95-sampling/prepare-frozen.py` accepts an explicit frozen module and
+the complete manifest from its correctness checks. It preserves the original
+manifest bytes, binds both manifest hashes before compilation, checks the
+original/copy afterwards, and identifies the engine by its complete source hash
+rather than claiming the dirty candidate equals HEAD. Independent review found
+an initial manifest-read/hash timing window; the implementation was corrected
+to use the first-read bytes and saved hashes, with the review/fix retained.
+Changed-hash, missing-path and extra-path controls all reject before building.
+
+The actual build completes and preserves the existing main launcher, dependency,
+compiler/JVM and timer checks. It binds all 2,576 module files and 1,427 build
+inputs. The frozen source identity is
+`7e9f6b88fa28a505270117472c340e4ccd171bcf27c82127186f5cc7ecf8cfd0`;
+the measured native binary SHA256 is
+`f65002ba89f6d8c3c6e73c679186a8570b3244e94b0acf02d8d627f952e42734`.
+The workspace revision is recorded separately. Build output is
+`/Users/johnsonlee/.codex/benchmarks/graphite/p95-enum-f0838dda-build-v1`.
+
+After correctness runtimes and builds finish, the original serial sampling
+controller starts a new 200-pairs-per-state campaign at
+`/Users/johnsonlee/.codex/benchmarks/graphite/p95-enum-f0838dda-200-v1`.
+It retains the original complete 1,267-case workload, alternates paired runtimes,
+rotates state order and holds its host measurement lock. States are cold,
+startup-prepared, and the explicitly diagnostic `warm-after-failed-prewarm`;
+the latter is not a passing formal warm benchmark. Failed-query times, original
+gate failures and all trials remain visible. No failed or partial trial is
+silently replaced. The first cold main child is observed live at launch.
+
+This is a running measurement campaign, not a completed P95 table or a 10x
+claim. `measurementAcceptanceEligible=false` remains unchanged while original
+gate failures and functional/server/resource gaps remain. The final per-case
+report must still establish at least 200 valid observations and the specified
+main-P95/Go-P95 threshold; required PR benchmark gates remain separate.
+
+### Functional — Annotation top-level pair-count correction (prepared, untested)
+
+On 2026-09-09, source and archived-oracle review isolates the three remaining
+`annotation-bad-tail-*` differences. Main reads the signed top-level pair count
+and consumes actual keys and values sequentially, failing at StringTable SID 28
+of 21. The checked Go candidate instead rejects `2147483647` against the 104
+remaining bytes before reading that key. Annotation is fully decoded before
+filtering, so hit, miss and global-miss must all preserve the actual read error.
+
+The workspace projection reader now has a separate Annotation branch with
+sequential key/value consumption and insertion order. It leaves the strict
+Store decoder and nested value contract unchanged. New Store test code covers
+the original Java fixture variants and explicitly source-derived boundary
+controls; the public regression selection expands from 84 to 87 original cases,
+including the before/after retained-index difference of global-miss. All tests
+remain unexecuted at this stage. The last verified 201-case result still has
+15 strict differences; neither three resolved gaps nor full parity is claimed.
+
+The serial 200-pair-per-state measurement campaign remains live. Its input map
+contains no workspace Go module paths, and its native module/binary are the
+independent frozen Enum build above. Those inputs are unchanged. Source edits
+and small-file review/formatting proceed without starting another compiler,
+test or replay; runtime verification is deferred until the campaign is
+terminal. Any current P95 observations belong to the Enum candidate and must
+not be attributed to this untested Annotation change. No new latency, CPU,
+memory or 10x evidence is available for this correction. The pending validation
+scope is recorded in `native-persisted-work-accounting/checks/annotation-pending.md`.
+
+### Diagnostic measurement outcome — early stop for missing exact prefilter
+
+The first nine completed pairs provide three observations per case and state.
+An unchanged summarizer preserves all 1,267 cases and reports insufficient
+samples, original case 821 failures and no acceptance. Its per-case medians
+identify substantial slow cases: startup-prepared case 874 is main 0.4505 ms
+versus Go 275.875 ms; case 875 is 1.224917 ms versus 291.762333 ms; ordered-skip
+case 830 is 753.395 ms versus 4626.915959 ms. These are diagnostic medians,
+not P95 acceptance or a causal profile. Full records, failure provenance and
+the fixed nine-pair snapshot are retained under
+`/Users/johnsonlee/.codex/benchmarks/graphite/p95-enum-f0838dda-diagnostic-prefix-v1`.
+Independent read-only review verifies the record hashes, all 144 selected raw
+timings and 24 state/case median calculations. The complete unfiltered report
+remains available; no across-case aggregate substitutes for acceptance.
+
+Source review confirms that the Go wide-catalog `ParallelRaw` DISTINCT branch
+scans complete property-string directories before detecting an empty match,
+where main first uses retained/mapped exact matching string IDs and avoids
+CallSite projection when all sets are empty. This is a concrete omitted branch
+to repair, although no profile yet establishes its share of total time. The
+repair must preserve main's reader validation, transformed-string semantics,
+cache/work/cancellation boundaries, generic supplementation and source order.
+Ordered-skip separately incurs complete UTF-16 conversions during string
+comparison; its actual cost remains a profiling hypothesis.
+
+To prioritize repairing this candidate, the diagnostic sampling controller is
+deliberately sent SIGINT after recording the decision. Session 68471 terminates
+with exit 130 and controller `stopped`; all 25 owned runtime receipts are
+terminal. Twelve complete pairs (four per state) and the unpaired fifth
+startup-prepared Go run are preserved. That final Go child also exits 1 for the
+original gate; no trial is deleted, overwritten or silently replaced. A final
+partial summary exits 1, retains insufficient samples and no acceptance. The
+decision, controller snapshots and terminal audit are under
+`/Users/johnsonlee/.codex/benchmarks/graphite/p95-enum-f0838dda-stop-decision-v1`.
+
+This candidate has no completed 200-sample P95 result and no 10x claim. The
+real64 fixture, baseline revision, frozen source identity, failed evidence and
+full objective are unchanged. Correctness verification resumes after the
+terminal audit; a later optimized candidate still requires independently
+checked functionality, required benchmark gates and at least 200 valid
+observations per case/runtime/state for final P95 acceptance.
+
+### Functional verification — Annotation count correction
+
+After the diagnostic campaign's terminal boundary, the old production decoder
+is run through a Go overlay and reproduces the original bad-tail failure in
+both candidate APIs, along with its negative-count failures. The corrected
+candidate passes 30 race-enabled top-level Store executions (ten tests repeated
+three times) and all three original public Annotation cases, including exact
+error/empty-result and before/after retained/mapped state. No production changes
+are made in response to these checks. The original failures remain archived.
+
+Full context, module race and vet checks pass with 3,397 unchanged recorded
+inputs. A complete 2,577-file checked source is frozen externally as
+`persisted-work-f0838dda-annotation-source-v1/module`; the only differences from
+the checked Enum source are `projection_node.go`, new
+`projection_annotation_test.go`, and `generic_disjunction_test.go`.
+
+The full 201-case replay compiles/captures successfully and retains comparison
+exit 1. Both main references now match 170/181 public cases and 19/20 provider
+controls: 12 strict differences remain. Exactly three projected case records
+change from the prior Enum capture, all the intended Annotation bad-tail cases;
+they now reach the actual SID 28/list 21 failure. Original fixture files and
+the reference comparator are unchanged, with the same 22 generated sidecars
+preserved. The declared provider-wrapper and diagnostics limitations remain.
+
+Evidence is retained under `checks/annotation-focused-evidence`,
+`checks/annotation-fullchecks` and `checks/annotation-matrix201`. A new real64
+cold/warm/startup correctness replay has started from the checked source;
+three-state completion is not yet claimed. This correction has no measured
+P95, CPU/memory improvement or 10x evidence; the prior diagnostic campaign
+measured a different, pre-Annotation source.
+
+The subsequent real64 cold replay is terminal with all 1,267 declared public
+results matching and the original 821 failure retained, but it fails state
+comparison: 2,527 mapped-range-count differences start at case 3 after, on
+fixture-android-08 (main 4, Go 0). This is the previously observed lazy-core
+failure pattern; it does not establish an Annotation-induced scheduling cause.
+All 1,152 original files and 2,577 frozen source files remain unchanged. The
+driver stops on cold, so warm and startup-prepared are unexecuted. All twelve
+terminal capture artifacts, including the failed verifier, are preserved under
+`checks/annotation-real64-cold`. The failed state comparison remains a failed
+comparison; no acceptance claim, comparator relaxation or retry-until-pass is
+made. The three corrected Annotation matrix cases do not establish full server
+or real64 state parity.
+
+### WIP archive — Split DISTINCT exact prefilter integration (2026-09-09)
+
+The user requested a commit and remote-branch archive while the next repair was
+being integrated. This snapshot preserves the preceding work-accounting,
+reader/cache, executor and decoder changes and their successful and failed
+verification records. It is an archive checkpoint, not an accepted performance
+candidate or a claim of whole-server parity.
+
+The current DISTINCT repair adds explicit Split load-only selection, retained
+versus mapped exact matching, early empty-result handling, raw fallback without
+an extra optional reader, and the final retained load/build entry. Raw workers
+now use invocation-local shared matching states, four-field reads with storage
+work boundaries, and storage tuple keys. Selected tuple preflight uses cached
+string-ID lookup and property membership without materializing node postings.
+Generic supplementation remains after the CallSite path.
+
+At this archive boundary, `go test ./internal/query ./internal/store -run
+'^TestDistinctSplit' -count=1 -timeout=180s` with Go 1.22.0 passes; the Store
+package compiles but that exact pattern selects no Store tests. The independent
+Store race run covering MainDistinct, MainBuild, MainOrdinary, ProjectionContext
+and DistinctProjection also passes. These checks do not replace the complete
+module/context/race/vet checks or fresh full JVM/real64 comparison for this new
+integration. Worker-pool and parent-interruption semantics still require review.
+
+The last fully checked Annotation source retains the previously documented
+12/201 strict matrix differences and real64 cold cache-state failure despite
+all 1,267 declared public comparisons matching. The current integration has no
+new real64 latency, CPU or memory result. The stopped Enum measurements apply
+only to their original frozen source. Final acceptance remains complete
+functional reproduction and at least 200 samples per case/runtime/state showing
+Go P95 no more than one tenth of pinned main; no gate or failure is waived.
+
+Before committing, the independent query raw-worker race run also finishes
+successfully on an unchanged 2,582-file frozen module, including raw tuple keys
+under duplicate aliases. The two Store focused runs and query raw-worker run
+are archived with byte hashes under `checks/distinct-split-wip`. None is a new
+public JVM oracle or performance result. Read-only review additionally confirms
+that shared segment-pool ownership, join-interruption precedence and configured
+Split consumer selection remain unfinished; this WIP explicitly retains those
+gaps for the next implementation and verification step.

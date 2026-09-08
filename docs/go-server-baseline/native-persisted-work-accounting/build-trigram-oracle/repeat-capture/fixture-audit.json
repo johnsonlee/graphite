@@ -1,0 +1,15 @@
+{
+  "originalFiles": 5128,
+  "changed": [
+    "BT-bad-magic-budget258/store0/graph.callsite-string-index",
+    "BT-bad-magic-budget259/store0/graph.callsite-string-index",
+    "BT-bad-magic-budget387/store0/graph.callsite-string-index",
+    "BT-bad-magic-budget388/store0/graph.callsite-string-index",
+    "BT-bad-magic-budget516/store0/graph.callsite-string-index",
+    "BT-bad-magic-budget517/store0/graph.callsite-string-index",
+    "BT-bad-magic-budget518/store0/graph.callsite-string-index",
+    "BT-bad-magic-budget519/store0/graph.callsite-string-index"
+  ],
+  "added": [],
+  "missing": []
+}

@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "./internal/store",
+    "-run",
+    "Test(MainDistinctSplit|MainDistinctProjectionStringIDs|MainOrdinary|ProjectionContext|DistinctProjection)",
+    "-count=1",
+    "-timeout=180s",
+    "-v"
+  ],
+  "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-split-store-entry-v1/module",
+  "exitCode": 0,
+  "elapsedSeconds": 2.7922589778900146,
+  "logSha256": "159929f6c5e12932730a5594d9171de7f7d25e5e22616b43c3eab2b599fe06e8"
+}

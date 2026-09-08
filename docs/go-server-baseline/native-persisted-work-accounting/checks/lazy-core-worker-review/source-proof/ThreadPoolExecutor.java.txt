@@ -1,0 +1,85 @@
+627:         Worker(Runnable firstTask) {
+628:             setState(-1); // inhibit interrupts until runWorker
+629:             this.firstTask = firstTask;
+630:             this.thread = getThreadFactory().newThread(this);
+631:         }
+632: 
+633:         /** Delegates main run loop to outer runWorker. */
+634:         public void run() {
+635:             runWorker(this);
+
+1115:     final void runWorker(Worker w) {
+1116:         Thread wt = Thread.currentThread();
+1117:         Runnable task = w.firstTask;
+1118:         w.firstTask = null;
+1119:         w.unlock(); // allow interrupts
+1120:         boolean completedAbruptly = true;
+1121:         try {
+1122:             while (task != null || (task = getTask()) != null) {
+1123:                 w.lock();
+1124:                 // If pool is stopping, ensure thread is interrupted;
+1125:                 // if not, ensure thread is not interrupted.  This
+1126:                 // requires a recheck in second case to deal with
+1127:                 // shutdownNow race while clearing interrupt
+1128:                 if ((runStateAtLeast(ctl.get(), STOP) ||
+1129:                      (Thread.interrupted() &&
+1130:                       runStateAtLeast(ctl.get(), STOP))) &&
+1131:                     !wt.isInterrupted())
+1132:                     wt.interrupt();
+1133:                 try {
+1134:                     beforeExecute(wt, task);
+1135:                     try {
+1136:                         task.run();
+1137:                         afterExecute(task, null);
+1138:                     } catch (Throwable ex) {
+1139:                         afterExecute(task, ex);
+1140:                         throw ex;
+1141:                     }
+1142:                 } finally {
+1143:                     task = null;
+1144:                     w.completedTasks++;
+1145:                     w.unlock();
+1146:                 }
+1147:             }
+1148:             completedAbruptly = false;
+1149:         } finally {
+1150:             processWorkerExit(w, completedAbruptly);
+1151:         }
+
+1330:             throw new NullPointerException();
+1331:         /*
+1332:          * Proceed in 3 steps:
+1333:          *
+1334:          * 1. If fewer than corePoolSize threads are running, try to
+1335:          * start a new thread with the given command as its first
+1336:          * task.  The call to addWorker atomically checks runState and
+1337:          * workerCount, and so prevents false alarms that would add
+1338:          * threads when it shouldn't, by returning false.
+1339:          *
+1340:          * 2. If a task can be successfully queued, then we still need
+1341:          * to double-check whether we should have added a thread
+1342:          * (because existing ones died since last checking) or that
+1343:          * the pool shut down since entry into this method. So we
+1344:          * recheck state and if necessary roll back the enqueuing if
+1345:          * stopped, or start a new thread if there are none.
+1346:          *
+1347:          * 3. If we cannot queue task, then we try to add a new
+1348:          * thread.  If it fails, we know we are shut down or saturated
+1349:          * and so reject the task.
+1350:          */
+1351:         int c = ctl.get();
+1352:         if (workerCountOf(c) < corePoolSize) {
+1353:             if (addWorker(command, true))
+1354:                 return;
+1355:             c = ctl.get();
+1356:         }
+1357:         if (isRunning(c) && workQueue.offer(command)) {
+1358:             int recheck = ctl.get();
+1359:             if (! isRunning(recheck) && remove(command))
+1360:                 reject(command);
+1361:             else if (workerCountOf(recheck) == 0)
+1362:                 addWorker(null, false);
+1363:         }
+1364:         else if (!addWorker(command, false))
+1365:             reject(command);
+1366:     }

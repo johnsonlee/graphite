@@ -1,0 +1,132 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/source-before.json",
+      "sourceSHA256": "1cafc6903e86f347d3e974e34bfd418dc33800fa9d0115d736b5723f3029cf20",
+      "archive": "source-before.json",
+      "archiveSHA256": "1cafc6903e86f347d3e974e34bfd418dc33800fa9d0115d736b5723f3029cf20",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/inputs.json",
+      "sourceSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "archive": "inputs.json",
+      "archiveSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/input.json",
+      "sourceSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "archive": "input.json",
+      "archiveSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/compiled-source.json",
+      "sourceSHA256": "4f7461332651b1e6f0f18075227c0f7db6536be4145f54d30e6c71b2f5824643",
+      "archive": "compiled-source.json",
+      "archiveSHA256": "4f7461332651b1e6f0f18075227c0f7db6536be4145f54d30e6c71b2f5824643",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/source.tar.gz",
+      "sourceSHA256": "34d9f3c24bc53bb28260a310e30a2654ac127654759ed62f85b5f7318076a9fd",
+      "archive": "source.tar.gz",
+      "archiveSHA256": "34d9f3c24bc53bb28260a310e30a2654ac127654759ed62f85b5f7318076a9fd",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/compile.stdout",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "compile.stdout",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/compile.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "compile.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/capture.stdout",
+      "sourceSHA256": "ead48582b06274a4acfb0b2aa386d16c38ace3203062dce4d06ef3ebbfc1382e",
+      "archive": "capture.stdout",
+      "archiveSHA256": "ead48582b06274a4acfb0b2aa386d16c38ace3203062dce4d06ef3ebbfc1382e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/capture.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "capture.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/commands.json",
+      "sourceSHA256": "40d3a1ddae972cd383cc20d65beb9b364607acf1b33fee9e603153d7c89ba47a",
+      "archive": "commands.json",
+      "archiveSHA256": "40d3a1ddae972cd383cc20d65beb9b364607acf1b33fee9e603153d7c89ba47a",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/go.json",
+      "sourceSHA256": "05fac02bae18eaf5a5153c35383521ad73d597188b3373bbc236650b2260446e",
+      "archive": "go.json",
+      "archiveSHA256": "05fac02bae18eaf5a5153c35383521ad73d597188b3373bbc236650b2260446e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/source-after.json",
+      "sourceSHA256": "4f7461332651b1e6f0f18075227c0f7db6536be4145f54d30e6c71b2f5824643",
+      "archive": "source-after.json",
+      "archiveSHA256": "4f7461332651b1e6f0f18075227c0f7db6536be4145f54d30e6c71b2f5824643",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/comparison.json",
+      "sourceSHA256": "81f6be095f1b023c64375965a2a9f59ff9c100004039292a569f4226eab8df2b",
+      "archive": "comparison.json",
+      "archiveSHA256": "81f6be095f1b023c64375965a2a9f59ff9c100004039292a569f4226eab8df2b",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/artifact-manifest.json",
+      "sourceSHA256": "cf10503744424969e22fc3bed3307a514b3f1b8097039cf5cb9090851cebccc8",
+      "archive": "artifact-manifest.json",
+      "archiveSHA256": "cf10503744424969e22fc3bed3307a514b3f1b8097039cf5cb9090851cebccc8",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/fixtures-before.json",
+      "sourceSHA256": "678613037c05bf4070b36839058c0b0a3fcbb0d11b4ca5b90332b70f9d4b824d",
+      "archive": "fixtures-before.json.gz",
+      "archiveSHA256": "2f8fdc84008f5e92e5c4a94b58c96a82687452c49ba77799ce94430a37f450ed",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/fixtures-after.json",
+      "sourceSHA256": "0f4fcc9793ac0d6cfa5c65f604532132c9230db91e5e242340d69b0e81b89b1e",
+      "archive": "fixtures-after.json.gz",
+      "archiveSHA256": "cd75a514c3462c68692628cd8edd41bd5c1e627365085af37ad463aff7044f92",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-matrix201-v1/diagnostic.test",
+      "sourceSHA256": "40f3c239e57da6c7b427eb6ad34560e70ab4974fea339d4f933f7fede8bc6adb",
+      "archive": "diagnostic.test.gz",
+      "archiveSHA256": "40c34c71f4148376b349e8c75dbb06dba700b8aa2247fac2bbbd17749754a2d0",
+      "decompressedBytesEqual": true
+    }
+  ],
+  "inferredControllerExitCode": 1,
+  "previousComparedOutputDifferences": [
+    "annotation-bad-tail-hit",
+    "annotation-bad-tail-miss",
+    "annotation-bad-tail-global-miss"
+  ],
+  "cases": 201,
+  "performanceMeasurements": 0,
+  "diagnosticsScope": "The legacy adapter does not pass the new ExecutionContext or compare its diagnostics; full route accounting remains incomplete. Its original comparison wording is retained verbatim."
+}

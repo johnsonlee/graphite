@@ -1,0 +1,40 @@
+{
+  "timeUTC": "2026-09-08T14:35:34.486193+00:00",
+  "sourceFiles": [
+    {
+      "path": "graphite-server/internal/store/projection_node.go",
+      "sha256": "a560857181ec6b8b029005a715e4cd847330fa5ea6a43ea98c0aafcc23da244d"
+    },
+    {
+      "path": "graphite-server/internal/store/projection_enum_test.go",
+      "sha256": "51b6b4843d5312c302a2008165f856ba27da40292f3fd6998269ec7d167292f8"
+    }
+  ],
+  "sourcesUnchangedAcrossTests": true,
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "scope": "Main projection Enum top-level argument iteration only; strict Node/count, nested List, other nodes, query dispatch unchanged",
+  "baseline": {
+    "session": 16011,
+    "exit": 1,
+    "overlay": "exact pre-change production + new tests",
+    "log": "baseline-test.log"
+  },
+  "candidate": {
+    "session": 69263,
+    "exit": 0,
+    "command": "go test -race ./internal/store -run '^Test(ProjectionEnum|ProjectionContext|IntegrationProjectionCandidateCloseAndOwnedValues)' -count=3 -v",
+    "topLevelPassExecutions": 21
+  },
+  "public": {
+    "session": 7035,
+    "exit": 0,
+    "cases": 3,
+    "overlay": "existing frozen main test adds wanted enum-bad-tail-hit and changes selection denominator 83 to84; only named three subtests run; original on-disk query test unchanged",
+    "command": "go test -race -overlay /tmp/graphite-enum-count-f0838dda-v1/query-overlay.json ./internal/query -run '^TestGenericDisjunctionMainReadSemantics/enum-bad-tail' -count=1 -v"
+  },
+  "limits": [
+    "No new JVM capture; original and repeat actual main agree for these three cases.",
+    "No full module, full 201 replay, or real64 run in this focused task.",
+    "Nested collection deserialization retains pre-existing contracts; this is not a claim of all malformed decoding parity."
+  ]
+}

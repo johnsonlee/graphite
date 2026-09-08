@@ -1,0 +1,32 @@
+[
+  {
+    "bytes": 5192,
+    "path": "README.md",
+    "sha256": "25cc10da6971cb99322a6d58fe5d951f0006ca12e160529a9d54385d36ec21ba"
+  },
+  {
+    "bytes": 9983,
+    "path": "instrument.py",
+    "sha256": "ad7897f8dbe957791c41d5798ce83ba8723b608a56fb1f018597fa7a492f8164"
+  },
+  {
+    "bytes": 2911,
+    "path": "preparation-check.json",
+    "sha256": "1c1576c123ec8ef443d27941f81a526ae0f06f696814e97f1cc708ab5dddcf82"
+  },
+  {
+    "bytes": 11497,
+    "path": "run.py",
+    "sha256": "12db5120452bff803cdffdc7cc4919b44aa7fe08365f48a19ba8bacbea90168f"
+  },
+  {
+    "bytes": 1821,
+    "path": "supported-sources.json",
+    "sha256": "2b3e83642ac16d5dd71f5a8848b9ac92d61e625712db955d2cba278f22c8e46d"
+  },
+  {
+    "bytes": 2165,
+    "path": "trace.go.txt",
+    "sha256": "0866c39cb4cf1017a86b7af8b7f69a64eb956101c62ecd98e9d41475fbea5d7d"
+  }
+]

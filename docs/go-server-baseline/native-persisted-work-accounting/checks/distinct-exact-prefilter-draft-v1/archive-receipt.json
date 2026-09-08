@@ -1,0 +1,22 @@
+{
+  "source": "/tmp/graphite-distinct-exact-prefilter-draft-v1",
+  "status": "unapplied-unexecuted-draft",
+  "completeMainReaderWorkProtocol": false,
+  "files": [
+    {
+      "path": "candidate-matching.patch",
+      "sha256": "26857284cb6aece533a2d7c972be9d599f554b8121a1169c71253b66473f2b77",
+      "bytes": 6887
+    },
+    {
+      "path": "README.md",
+      "sha256": "da0e6e3f5af47c33a84b50f72979bd561257178d334084a354da56b37f7dbec5",
+      "bytes": 10165
+    },
+    {
+      "path": "input-identities.json",
+      "sha256": "dfa3d5cb71ee13fcdeb63f3a85f5f40916fe32408fad051c7f9db2ed7269764c",
+      "bytes": 2658
+    }
+  ]
+}

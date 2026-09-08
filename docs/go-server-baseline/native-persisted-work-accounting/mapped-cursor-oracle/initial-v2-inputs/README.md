@@ -1,0 +1,1 @@
+The first ten-control actual-main capture succeeded. Its original harness and run inputs are preserved here; final captures add C11 empty-range and expose initialHasCurrent, plus the actual BufferedGraphWorkConsumer source identity in MappedWebGraphBackedGraph.kt. Raw v2 output will be retained as initial-capture.

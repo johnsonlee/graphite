@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/prepare.py", line 42, in <module>
+    p=argparse.ArgumentParser();p.add_argument('output',type=Path);a=p.parse_args();dump(a.output.parent/'mutations.json',prepare(a.output))
+  File "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/prepare.py", line 36, in prepare
+    b=(out/name/idx).read_bytes();S,N=struct.unpack_from('>ii',b,8);U=struct.unpack_from('>4i',b,48);T=struct.unpack_from('>i',b,64)[0];assert struct.unpack_from('>q',b,len(b)-8)[0]==zlib.crc32(b[:-8])
+AssertionError

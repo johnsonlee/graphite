@@ -1,0 +1,26 @@
+{
+  "terminal": true,
+  "exitCode": 0,
+  "inputsUnchanged": true,
+  "fixtureFiles": 136,
+  "fixtureVariantFiles": 17,
+  "fixturesUnchanged": true,
+  "classes": [
+    {
+      "file": "MappedEntryOracle$Action.class",
+      "bytes": 289,
+      "sha256": "33b788634588a865c53284ae8bccfd6bc8c20af5dfa6ad0d20d2c891ca2c2976"
+    },
+    {
+      "file": "MappedEntryOracle$Request.class",
+      "bytes": 5376,
+      "sha256": "c2acfd78d1a613c8d128b23c97f92be6b04d764c9272310fb32172d32948f259"
+    },
+    {
+      "file": "MappedEntryOracle.class",
+      "bytes": 15010,
+      "sha256": "201830fc39ee1c938732f6a0f0eacdc48d78e3f14fd9896bd4b8fb9dbb6cb9df"
+    }
+  ],
+  "performanceMeasurements": 0
+}

@@ -58,14 +58,21 @@ func copyProjectionRows(rows [][]string) [][]string {
 	return out
 }
 func (i *DistinctStringIndex) ProjectionCachedIDs(ctx context.Context, kind ProjectionCacheKind, key string) ([]int32, bool, error) {
+	return i.projectionCachedIDs(ctx, kind, key)
+}
+
+// A nil worker context skips polling, while preserving locking and copying.
+func (i *DistinctStringIndex) projectionCachedIDs(ctx context.Context, kind ProjectionCacheKind, key string) ([]int32, bool, error) {
 	s := i.owner
 	s.callSiteIndex.mu.Lock()
 	defer s.callSiteIndex.mu.Unlock()
 	if s.callSiteIndex.closed {
 		return nil, false, ErrStoreClosed
 	}
-	if err := ctx.Err(); err != nil {
-		return nil, false, err
+	if ctx != nil {
+		if err := ctx.Err(); err != nil {
+			return nil, false, err
+		}
 	}
 	if kind > ProjectionNodeMatches {
 		return nil, false, fmt.Errorf("not an ID cache")
@@ -77,14 +84,21 @@ func (i *DistinctStringIndex) ProjectionCachedIDs(ctx context.Context, kind Proj
 	return append([]int32(nil), entry.ids...), ok, nil
 }
 func (i *DistinctStringIndex) CacheProjectionIDs(ctx context.Context, kind ProjectionCacheKind, key string, ids []int32, bytes int64) error {
+	return i.cacheProjectionIDs(ctx, kind, key, ids, bytes)
+}
+
+// A nil worker context skips polling, while preserving locking and copying.
+func (i *DistinctStringIndex) cacheProjectionIDs(ctx context.Context, kind ProjectionCacheKind, key string, ids []int32, bytes int64) error {
 	s := i.owner
 	s.callSiteIndex.mu.Lock()
 	defer s.callSiteIndex.mu.Unlock()
 	if s.callSiteIndex.closed {
 		return ErrStoreClosed
 	}
-	if err := ctx.Err(); err != nil {
-		return err
+	if ctx != nil {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 	}
 	if kind > ProjectionNodeMatches {
 		return fmt.Errorf("not an ID cache")
@@ -143,6 +157,13 @@ func (i *DistinctStringIndex) ProjectionPlannerBytes(ctx context.Context) (int64
 	if err := ctx.Err(); err != nil {
 		return 0, err
 	}
+	return i.projectionPlannerBytesLocked(), nil
+}
+
+// Caller holds the Store lifetime lock. Main's strategy metadata getters do
+// not themselves poll request interruption or initialize any index state.
+func (i *DistinctStringIndex) projectionPlannerBytesLocked() int64 {
+	s := i.owner
 	bytes := int64(464 + 16*len(s.byKind["CallSiteNode"]) + 8*len(s.Strings))
 	if i.view != nil {
 		bytes = i.view.info.RetainedBytes
@@ -162,5 +183,5 @@ func (i *DistinctStringIndex) ProjectionPlannerBytes(ctx context.Context) (int64
 			bytes += cache.bytes
 		}
 	}
-	return bytes, nil
+	return bytes
 }

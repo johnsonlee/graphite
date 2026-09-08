@@ -219,7 +219,7 @@ func (c *lazySlotCancelContext) Err() error            { c.observe(); return c.C
 func TestLazySlotRealCancellationAndIndependentRequests(t *testing.T) {
 	g := candidateGraph(t, "clean")
 	for _, registry := range []bool{false, true} {
-		for _, phase := range []string{".lazyProject", ".ProjectionCandidateNode.func1"} {
+		for _, phase := range []string{".lazyProject", ".projectionCandidateNode.func1"} {
 			base, cancel := context.WithCancel(context.Background())
 			ctx := &lazySlotCancelContext{Context: base, phase: phase, cancel: cancel}
 			e := evaluator{ctx: ctx, cross: true, graphs: []Graph{{"a", g}, {"b", g}}}

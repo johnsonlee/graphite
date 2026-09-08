@@ -1,0 +1,128 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/source-before.json",
+      "sourceSHA256": "62e5e8c0b105841d6cc348a719f3fff0e767269e37fdcb8a7a473f8aa5ee3a44",
+      "archive": "source-before.json",
+      "archiveSHA256": "62e5e8c0b105841d6cc348a719f3fff0e767269e37fdcb8a7a473f8aa5ee3a44",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/inputs.json",
+      "sourceSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "archive": "inputs.json",
+      "archiveSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/input.json",
+      "sourceSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "archive": "input.json",
+      "archiveSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/compiled-source.json",
+      "sourceSHA256": "3b85dce77e912e478eaaa2f025ba5f69bb7c79c8989f043dfa2f516575948bf4",
+      "archive": "compiled-source.json",
+      "archiveSHA256": "3b85dce77e912e478eaaa2f025ba5f69bb7c79c8989f043dfa2f516575948bf4",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/source.tar.gz",
+      "sourceSHA256": "4f852e77651f6c687b94281b1d793e1650f228e3f9b3fed4531b95e59a68d965",
+      "archive": "source.tar.gz",
+      "archiveSHA256": "4f852e77651f6c687b94281b1d793e1650f228e3f9b3fed4531b95e59a68d965",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/compile.stdout",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "compile.stdout",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/compile.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "compile.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/capture.stdout",
+      "sourceSHA256": "0ef346f536b8a92ddf499a35fa9a4f90c42572ccea59db8e6c36ecbbaf0dff5e",
+      "archive": "capture.stdout",
+      "archiveSHA256": "0ef346f536b8a92ddf499a35fa9a4f90c42572ccea59db8e6c36ecbbaf0dff5e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/capture.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "capture.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/commands.json",
+      "sourceSHA256": "820df558d445a08c79bc33babdf8cda07c9378c306254e1f2d6f0952613e3673",
+      "archive": "commands.json",
+      "archiveSHA256": "820df558d445a08c79bc33babdf8cda07c9378c306254e1f2d6f0952613e3673",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/go.json",
+      "sourceSHA256": "019d2686f30dc022e98f8d47dbb4c92b06d622962c9f8c7c26acaf3f6f8b6203",
+      "archive": "go.json",
+      "archiveSHA256": "019d2686f30dc022e98f8d47dbb4c92b06d622962c9f8c7c26acaf3f6f8b6203",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/source-after.json",
+      "sourceSHA256": "3b85dce77e912e478eaaa2f025ba5f69bb7c79c8989f043dfa2f516575948bf4",
+      "archive": "source-after.json",
+      "archiveSHA256": "3b85dce77e912e478eaaa2f025ba5f69bb7c79c8989f043dfa2f516575948bf4",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/comparison.json",
+      "sourceSHA256": "2fb4cdf2617384d4ee1fbf821a296ca061f0c3bcc1422fa8906dd500034f714d",
+      "archive": "comparison.json",
+      "archiveSHA256": "2fb4cdf2617384d4ee1fbf821a296ca061f0c3bcc1422fa8906dd500034f714d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/artifact-manifest.json",
+      "sourceSHA256": "456eff58b3d34c5f07b746096d1226adeb47fac14552c81b0fadf3903fb87316",
+      "archive": "artifact-manifest.json",
+      "archiveSHA256": "456eff58b3d34c5f07b746096d1226adeb47fac14552c81b0fadf3903fb87316",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/fixtures-before.json",
+      "sourceSHA256": "678613037c05bf4070b36839058c0b0a3fcbb0d11b4ca5b90332b70f9d4b824d",
+      "archive": "fixtures-before.json.gz",
+      "archiveSHA256": "2f8fdc84008f5e92e5c4a94b58c96a82687452c49ba77799ce94430a37f450ed",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/fixtures-after.json",
+      "sourceSHA256": "0f4fcc9793ac0d6cfa5c65f604532132c9230db91e5e242340d69b0e81b89b1e",
+      "archive": "fixtures-after.json.gz",
+      "archiveSHA256": "cd75a514c3462c68692628cd8edd41bd5c1e627365085af37ad463aff7044f92",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-lazy-core-matrix201-v1/diagnostic.test",
+      "sourceSHA256": "29b811bee027c1d1ab31fd74386dd791802bfb15c5291c304a5a88512ff49f08",
+      "archive": "diagnostic.test.gz",
+      "archiveSHA256": "5b03e51224e31e1d302ff3b7bde1d3d0c7d217e80478fd5f49bdcd2e32b8afaa",
+      "decompressedBytesEqual": true
+    }
+  ],
+  "controllerExitCode": 1,
+  "previousComparedOutputDifferences": [],
+  "cases": 201,
+  "performanceMeasurements": 0,
+  "diagnosticsScope": "The legacy adapter does not pass the new ExecutionContext or compare its diagnostics; full route accounting remains incomplete. Its original comparison wording is retained verbatim."
+}

@@ -1,0 +1,256 @@
+{
+  "main": {
+    "id": "single-contains-unlabeled-dense",
+    "before": [
+      {
+        "id": "fixture-android-02",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 0,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-03",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 0,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-04",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 0,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-05",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 0,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-06",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 0,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-07",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 0,
+        "retained": false,
+        "loadedFromPersistence": false
+      }
+    ],
+    "after": [
+      {
+        "id": "fixture-android-02",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 7,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-03",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 6,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-04",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 7,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-05",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 1,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-06",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 5,
+        "retained": false,
+        "loadedFromPersistence": false
+      },
+      {
+        "id": "fixture-android-07",
+        "trigrams": false,
+        "rawProjectionCount": 0,
+        "rawMatchCount": 0,
+        "mappedView": true,
+        "mappedRangeCount": 5,
+        "retained": false,
+        "loadedFromPersistence": false
+      }
+    ]
+  },
+  "native": {
+    "id": "single-contains-unlabeled-dense",
+    "before": [
+      {
+        "id": "fixture-android-02",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-03",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-04",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-05",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-06",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-07",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      }
+    ],
+    "after": [
+      {
+        "id": "fixture-android-02",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-03",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-04",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-05",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-06",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "id": "fixture-android-07",
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "rawMatchCount": 0,
+        "rawProjectionCount": 0,
+        "retained": false,
+        "trigrams": false
+      }
+    ]
+  }
+}

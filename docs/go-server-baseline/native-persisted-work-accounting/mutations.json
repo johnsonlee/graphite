@@ -1,0 +1,227 @@
+{
+  "sourceArchive": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/prepared-main-capture/fixtures.tar.gz",
+  "sourceArchiveSHA256": "c8bf1bee3e559356ac763cd4e2179363cc5db3ffdea2b8c7d4b5b202fd7577ca",
+  "sourceMainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "sourceWriterSHA256": "ebed9440f2e79e895ed612920130ea6e9b0fa045c26e7b8d14dc87165a683312",
+  "mutations": [
+    {
+      "fixture": "bad-magic",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "bad-magic",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 10524,
+      "afterSHA256": "6185fe7d4b407d639f30ebf7a119de058e107d9d1f3ec13ea12cf46a9bbdc768"
+    },
+    {
+      "fixture": "bad-version",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "bad-version",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 10524,
+      "afterSHA256": "0929a2add494f6f7961db5e462dab79d918f597810b4d43c3074559fe7e597cc"
+    },
+    {
+      "fixture": "truncated-int",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "truncated-int",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 2,
+      "afterSHA256": "dca9c14f74cccef65743c5cee8d709ef0fb00ccba9e87c1be6c410feaca32e71"
+    },
+    {
+      "fixture": "truncated-identity",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "truncated-identity",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 47,
+      "afterSHA256": "087bfc3f93ce038e453532516d2397ad7bbe2796eb7234ab81bd789ea4a1337b"
+    },
+    {
+      "fixture": "bad-identity",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "bad-identity",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 10524,
+      "afterSHA256": "bd618c9b582826c478a6e05debb8e7329e2ef8084750909d2ffbe6de264d7854"
+    },
+    {
+      "fixture": "bad-unique-id",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "bad-unique-id",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 10524,
+      "afterSHA256": "a5fd4260b47c3041a63ac7bee5b2052e2e9ba9aa1d1e4b10b5d9610e7b1f6dac"
+    },
+    {
+      "fixture": "bad-posting-end",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "bad-posting-end",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 10524,
+      "afterSHA256": "e2ae30681c30a52a1802cb79e6eae715c04e44c834d900a0d20b40691711aa62"
+    },
+    {
+      "fixture": "bad-node-order",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "bad-node-order",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 10524,
+      "afterSHA256": "3cae49de8bf6f198565c2e31bdd12f160173ce498dac9ae104bfdeddebefa8a9"
+    },
+    {
+      "fixture": "bad-checksum",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "bad-checksum",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 10524,
+      "afterSHA256": "91e100f0175c80d7cbe0462518f66c82f8a04dd83376d57a039b077f82b85394"
+    },
+    {
+      "fixture": "trailing-byte",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "action": "trailing-byte",
+      "beforeBytes": 10524,
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterBytes": 10525,
+      "afterSHA256": "a417cbedd1328d679351094ad2783234021d794199208c7e00b1ba970b27684f"
+    },
+    {
+      "fixture": "no-graph-identity",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-content.identity",
+      "action": "remove",
+      "beforeBytes": 32,
+      "beforeSHA256": "10c7a837e495657a8e576a8d353882ee7aa9559a4b0f7c6d0fe589b6b4ac1a09",
+      "afterBytes": null,
+      "afterSHA256": null
+    },
+    {
+      "fixture": "no-identities",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-content.identity",
+      "action": "remove",
+      "beforeBytes": 32,
+      "beforeSHA256": "10c7a837e495657a8e576a8d353882ee7aa9559a4b0f7c6d0fe589b6b4ac1a09",
+      "afterBytes": null,
+      "afterSHA256": null
+    },
+    {
+      "fixture": "no-identities",
+      "sourceFixture": "hit64",
+      "file": "graph.strings.identity",
+      "action": "remove",
+      "beforeBytes": 32,
+      "beforeSHA256": "b15196bb2b6c43da48e0660a4235b47d303b14409ab63bd3973e5a6876edc8db",
+      "afterBytes": null,
+      "afterSHA256": null
+    },
+    {
+      "fixture": "short-graph-identity",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-content.identity",
+      "action": "truncate31",
+      "beforeBytes": 32,
+      "beforeSHA256": "10c7a837e495657a8e576a8d353882ee7aa9559a4b0f7c6d0fe589b6b4ac1a09",
+      "afterBytes": 31,
+      "afterSHA256": "a53c02af1ff81fddfedf13fe3c8baddaa518adb4f7933b59beba7e6b1583ac83"
+    },
+    {
+      "fixture": "wrong-graph-identity",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-content.identity",
+      "action": "flip-first-byte",
+      "beforeBytes": 32,
+      "beforeSHA256": "10c7a837e495657a8e576a8d353882ee7aa9559a4b0f7c6d0fe589b6b4ac1a09",
+      "afterBytes": 32,
+      "afterSHA256": "aed6e28cda74d780a3f354f83bbab3feca499c7bbb9baae1fb7a3eaf30bd81e2"
+    },
+    {
+      "fixture": "hit64-bad-caller_name",
+      "sourceFixture": "hit64",
+      "file": "graph.nodedata",
+      "action": "invalid-caller_name-SID-at-node74",
+      "beforeBytes": 6280,
+      "beforeSHA256": "c63d18f81c6209cb21350a0edca8f994fb9eb8d306cd54dcfb6cf60eba6ebf7e",
+      "afterBytes": 6280,
+      "afterSHA256": "c9d1555b45343719d51820fe5e1368d2331dc46bc36f9c7a8993e2c0480b82a6",
+      "nodeID": 74,
+      "recordOffset": 3144,
+      "byteOffset": 3153,
+      "oldSID": 1,
+      "newSID": 2147483647
+    },
+    {
+      "fixture": "hit64-bad-callee_name",
+      "sourceFixture": "hit64",
+      "file": "graph.nodedata",
+      "action": "invalid-callee_name-SID-at-node74",
+      "beforeBytes": 6280,
+      "beforeSHA256": "c63d18f81c6209cb21350a0edca8f994fb9eb8d306cd54dcfb6cf60eba6ebf7e",
+      "afterBytes": 6280,
+      "afterSHA256": "b3519a2be44c82b8b939a4b773d0116923d5287e400cdfd4f2105572180ae57f",
+      "nodeID": 74,
+      "recordOffset": 3144,
+      "byteOffset": 3169,
+      "oldSID": 1,
+      "newSID": 2147483647
+    }
+  ],
+  "layouts": [
+    {
+      "fixture": "hit64",
+      "bytes": 10524,
+      "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "strings": 129,
+      "nodes": 128,
+      "uniqueCounts": [
+        1,
+        128,
+        1,
+        128
+      ],
+      "trigramPostings": 662,
+      "readerUnits": 1862,
+      "loaderWithPersistedIdentityAndEOF": 1864,
+      "cold64ProbeAndLoader": 1928,
+      "crcVerified": true
+    },
+    {
+      "fixture": "hit1024",
+      "bytes": 96860,
+      "sha256": "5c0e2b72625c6ad4c1a7dc96336ca6e84caa2698956250f243b66f8a50fa8680",
+      "strings": 1101,
+      "nodes": 1100,
+      "uniqueCounts": [
+        1,
+        1100,
+        1,
+        1100
+      ],
+      "trigramPostings": 6594,
+      "readerUnits": 16542,
+      "loaderWithPersistedIdentityAndEOF": 16544,
+      "cold64ProbeAndLoader": 16608,
+      "crcVerified": true
+    }
+  ],
+  "performanceMeasurements": 0
+}

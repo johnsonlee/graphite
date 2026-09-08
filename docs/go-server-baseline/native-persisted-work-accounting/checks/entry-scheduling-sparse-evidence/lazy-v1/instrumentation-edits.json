@@ -1,0 +1,248 @@
+[
+  {
+    "after": "import (\n\t\"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace\"\n",
+    "before": "import (\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\tc.err = err\n\t\tentrytrace.Emit(\"worker_interrupt\", c, nil, \"\", 0, 0, 0)\n",
+    "before": "\t\tc.err = err\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\tf.run = nil\n\tf.worker = nil\n\tentrytrace.Emit(\"future_finish\", f, nil, \"\", 0, 0, 0)\n",
+    "before": "\tf.run = nil\n\tf.worker = nil\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\tf.canceled = true\n\tentrytrace.Emit(\"future_cancel\", f, f.worker, \"\", entrytrace.Flag(f.started), 0, 0)\n",
+    "before": "\tf.canceled = true\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\tf.started = true\n\tentrytrace.Emit(\"future_start\", f, f.worker, \"\", 0, 0, 0)\n",
+    "before": "\tf.started = true\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\te := &mainFixedExecutor{capacity: max(1, capacity)}\n\tentrytrace.Emit(\"executor_create\", e, nil, \"\", int64(capacity), 0, 0)\n",
+    "before": "\te := &mainFixedExecutor{capacity: max(1, capacity)}\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\te.cores++\n\t\tentrytrace.Emit(\"executor_submit_first\", e, future, \"\", int64(e.cores), 0, 0)\n",
+    "before": "\t\te.cores++\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "func (e *mainFixedExecutor) runWorker(firstTask *mainFixedFuture) {\n\tentrytrace.Emit(\"executor_core_start\", e, firstTask, \"\", 0, 0, 0)\n\tdefer entrytrace.Emit(\"executor_core_exit\", e, nil, \"\", 0, 0, 0)\n",
+    "before": "func (e *mainFixedExecutor) runWorker(firstTask *mainFixedFuture) {\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\te.queue = append(e.queue, future)\n\tentrytrace.Emit(\"executor_submit\", e, future, \"\", int64(len(e.queue)), 0, 0)\n",
+    "before": "\te.queue = append(e.queue, future)\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\tworkerCount := min(count, max(1, parallel))\n\tentrytrace.Emit(\"fixed_runner_enter\", ctx, executor, \"\", int64(count), int64(workerCount), 0)\n",
+    "before": "\tworkerCount := min(count, max(1, parallel))\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\tfutures[i] = &mainFixedFuture{worker: worker, done: make(chan struct{})}\n\t\tentrytrace.Emit(\"future_create\", futures[i], worker, \"\", int64(i), 0, 0)\n",
+    "before": "\t\tfutures[i] = &mainFixedFuture{worker: worker, done: make(chan struct{})}\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\tdefer func() { out.failure = recover(); entrytrace.Emit(\"source_outcome\", worker, nil, \"\", int64(index), entrytrace.Flag(out.failure != nil), 0) }()",
+    "before": "\t\tdefer func() { out.failure = recover() }()",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\tfuture.setRun(func() {\n\t\t\tdefer entrytrace.Emit(\"worker_exit\", worker, future, \"\", 0, 0, 0)\n",
+    "before": "\t\tfuture.setRun(func() {\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\t\t\tcase index = <-indexes:\n\t\t\t\t\tentrytrace.Emit(\"source_dequeue\", worker, future, \"\", int64(index), 0, 0)\n",
+    "before": "\t\t\t\tcase index = <-indexes:\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\t\t\toutcomes <- out\n\t\t\t\tentrytrace.Emit(\"outcome_sent\", worker, future, \"\", int64(index), 0, 0)\n",
+    "before": "\t\t\t\toutcomes <- out\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\t\t<-future.done\n\t\t\tentrytrace.Emit(\"future_joined\", future, nil, \"\", 0, 0, 0)\n",
+    "before": "\t\t\t<-future.done\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\tindexes <- nextTask\n\t\tentrytrace.Emit(\"source_enqueued\", ctx, executor, \"\", int64(nextTask), 0, 0)\n",
+    "before": "\t\tindexes <- nextTask\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\t\t\tindexes <- nextTask\n\t\t\t\tentrytrace.Emit(\"source_enqueued\", ctx, executor, \"\", int64(nextTask), 0, 0)\n",
+    "before": "\t\t\t\tindexes <- nextTask\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\tcase out = <-outcomes:\n\t\t\tentrytrace.Emit(\"outcome_received\", ctx, executor, \"\", int64(out.index), entrytrace.Flag(out.failure != nil), 0)\n",
+    "before": "\t\tcase out = <-outcomes:\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "\t\t\tif consume(nextResult, ordered.value) {\n\t\t\t\tentrytrace.Emit(\"fixed_limit_stop\", ctx, executor, \"\", int64(nextResult), 0, 0)\n",
+    "before": "\t\t\tif consume(nextResult, ordered.value) {\n",
+    "occurrences": 1,
+    "path": "internal/query/main_fixed_workers.go"
+  },
+  {
+    "after": "import (\n\t\"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace\"\n",
+    "before": "import (\n",
+    "occurrences": 1,
+    "path": "internal/query/indexed_distinct.go"
+  },
+  {
+    "after": "func runDistinctTasks[T any](ctx context.Context, count, parallel int, orderedStop bool, task func(context.Context, int) T, consume func(int, T) bool) {\n\tentrytrace.Emit(\"legacy_runner_enter\", ctx, nil, \"\", int64(count), int64(parallel), entrytrace.Flag(orderedStop))\n\tdefer entrytrace.Emit(\"legacy_runner_exit\", ctx, nil, \"\", 0, 0, 0)\n",
+    "before": "func runDistinctTasks[T any](ctx context.Context, count, parallel int, orderedStop bool, task func(context.Context, int) T, consume func(int, T) bool) {\n",
+    "occurrences": 1,
+    "path": "internal/query/indexed_distinct.go"
+  },
+  {
+    "after": "\tlaunch := func(i int) {\n\t\tentrytrace.Emit(\"legacy_launch\", local, nil, \"\", int64(i), 0, 0)\n",
+    "before": "\tlaunch := func(i int) {\n",
+    "occurrences": 1,
+    "path": "internal/query/indexed_distinct.go"
+  },
+  {
+    "after": "\t\t\tout := outcome{index: i}\n\t\t\tentrytrace.Emit(\"legacy_task_start\", local, nil, \"\", int64(i), 0, 0)\n",
+    "before": "\t\t\tout := outcome{index: i}\n",
+    "occurrences": 1,
+    "path": "internal/query/indexed_distinct.go"
+  },
+  {
+    "after": "\t\t\tdefer func() { out.failure = recover(); entrytrace.Emit(\"legacy_outcome\", local, nil, \"\", int64(i), entrytrace.Flag(out.failure != nil), 0); done <- out }()",
+    "before": "\t\t\tdefer func() { out.failure = recover(); done <- out }()",
+    "occurrences": 1,
+    "path": "internal/query/indexed_distinct.go"
+  },
+  {
+    "after": "\tdefer func() {\n\t\tcancel()\n\t\tentrytrace.Emit(\"legacy_cancel\", local, nil, \"\", 0, 0, 0)\n",
+    "before": "\tdefer func() {\n\t\tcancel()\n",
+    "occurrences": 1,
+    "path": "internal/query/indexed_distinct.go"
+  },
+  {
+    "after": "import (\n\t\"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace\"\n",
+    "before": "import (\n",
+    "occurrences": 1,
+    "path": "internal/query/ordinary_projection.go"
+  },
+  {
+    "after": "\t\t\t\tentrytrace.Emit(\"ordinary_suffix_source\", ctx, sources[i+1].Store, sources[i+1].ID, int64(i+1), int64(plan.limit), 0)\n\t\t\t\treturn local.ordinarySourceRows(sources[i+1], &taskPlan, plan.limit)",
+    "before": "\t\t\t\treturn local.ordinarySourceRows(sources[i+1], &taskPlan, plan.limit)",
+    "occurrences": 1,
+    "path": "internal/query/ordinary_projection.go"
+  },
+  {
+    "after": "\t\t\tconsume := func(i int, rows []map[string]any) bool {\n\t\t\t\tremaining := plan.limit - len(result.Rows)\n\t\t\t\tresult.Rows = append(result.Rows, rows[:min(remaining, len(rows))]...)\n\t\t\t\tentrytrace.Emit(\"ordinary_prefix_consume\", e.ctx, nil, sources[i+1].ID, int64(i+1), int64(len(result.Rows)), int64(plan.limit))\n",
+    "before": "\t\t\tconsume := func(i int, rows []map[string]any) bool {\n\t\t\t\tremaining := plan.limit - len(result.Rows)\n\t\t\t\tresult.Rows = append(result.Rows, rows[:min(remaining, len(rows))]...)\n",
+    "occurrences": 1,
+    "path": "internal/query/ordinary_projection.go"
+  },
+  {
+    "after": "import (\n\t\"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace\"\n",
+    "before": "import (\n",
+    "occurrences": 1,
+    "path": "internal/query/main_string_mapped.go"
+  },
+  {
+    "after": "\t\t\t\tfailMainMappedRead(entrytrace.Error(ctx.Err(), \"mapped_sequence_poll_rejected\", ctx, source.Store, source.ID, int64(visited)))",
+    "before": "\t\t\t\tfailMainMappedRead(ctx.Err())",
+    "occurrences": 1,
+    "path": "internal/query/main_string_mapped.go"
+  },
+  {
+    "after": "import (\n\t\"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace\"\n",
+    "before": "import (\n",
+    "occurrences": 1,
+    "path": "internal/query/ordinary_parallel.go"
+  },
+  {
+    "after": "\t\t\tfailMainMappedRead(entrytrace.Error(e.ctx.Err(), \"mapped_anchor_poll_rejected\", e.ctx, source.Store, source.ID, int64(position)))",
+    "before": "\t\t\tfailMainMappedRead(e.ctx.Err())",
+    "occurrences": 1,
+    "path": "internal/query/ordinary_parallel.go"
+  },
+  {
+    "after": "import (\n\t\"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace\"\n",
+    "before": "import (\n",
+    "occurrences": 1,
+    "path": "internal/store/main_mapped_cursor.go"
+  },
+  {
+    "after": "\t\t\tif err = ctx.Err(); err != nil {\n\t\t\t\tentrytrace.Emit(\"range_poll_rejected\", ctx, v.owner, v.owner.dir, int64(position), int64(p), 0)\n",
+    "before": "\t\t\tif err = ctx.Err(); err != nil {\n",
+    "occurrences": 1,
+    "path": "internal/store/main_mapped_cursor.go"
+  },
+  {
+    "after": "import (\n\t\"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace\"\n",
+    "before": "import (\n",
+    "occurrences": 1,
+    "path": "cmd/graphite-benchmark-replay/main.go"
+  },
+  {
+    "after": "func run() error {\n\tentrytrace.Init()\n\tdefer func() { if err := entrytrace.Dump(); err != nil { fmt.Fprintln(os.Stderr, \"diagnostic trace dump:\", err) } }()\n",
+    "before": "func run() error {\n",
+    "occurrences": 1,
+    "path": "cmd/graphite-benchmark-replay/main.go"
+  },
+  {
+    "after": "\t\tqctx, cancel := context.WithTimeout(ctx, time.Duration(input.TimeoutMillis)*time.Millisecond)\n\t\tentrytrace.Begin(i)\n",
+    "before": "\t\tqctx, cancel := context.WithTimeout(ctx, time.Duration(input.TimeoutMillis)*time.Millisecond)\n",
+    "occurrences": 1,
+    "path": "cmd/graphite-benchmark-replay/main.go"
+  },
+  {
+    "after": "\t\tcancel() // ExecuteCross joins all source tasks before it returns.\n\t\tentrytrace.End()\n",
+    "before": "\t\tcancel() // ExecuteCross joins all source tasks before it returns.\n",
+    "occurrences": 1,
+    "path": "cmd/graphite-benchmark-replay/main.go"
+  },
+  {
+    "after": "\t\tif validation, ok := record[\"validationError\"]; ok {\n\t\t\treturn fmt.Errorf(\"%s: %s\", c.ID, validation)\n\t\t}\n\t\tif i == 3 { break } // Diagnostic prefix; full workload input is unchanged.\n",
+    "before": "\t\tif validation, ok := record[\"validationError\"]; ok {\n\t\t\treturn fmt.Errorf(\"%s: %s\", c.ID, validation)\n\t\t}\n",
+    "occurrences": 1,
+    "path": "cmd/graphite-benchmark-replay/main.go"
+  },
+  {
+    "after": "\tresponses := 4 // Diagnostic prefix response count.\n",
+    "before": "\tresponses := 1267\n",
+    "occurrences": 1,
+    "path": "cmd/graphite-benchmark-replay/main.go"
+  }
+]

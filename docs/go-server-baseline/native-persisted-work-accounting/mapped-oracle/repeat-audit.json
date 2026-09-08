@@ -1,0 +1,8 @@
+{
+  "cases": 44,
+  "operations": 220,
+  "fullRawRepeatEqual": true,
+  "differingPaths": [],
+  "defaultPublicJVMConfiguration": true,
+  "performanceMeasurements": 0
+}

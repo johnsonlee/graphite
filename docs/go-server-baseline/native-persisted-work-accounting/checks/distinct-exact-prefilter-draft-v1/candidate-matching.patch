@@ -1,0 +1,166 @@
+--- a/graphite-server/internal/query/indexed_distinct.go
++++ b/graphite-server/internal/query/indexed_distinct.go
+@@ -380,7 +380,7 @@
+ // A previously initialized mapped view can prove an empty split lookup before
+ // a retained reader examines unrelated node offsets. Keep generic node handling
+ // in the caller: a CallSite miss does not rule out matching annotations.
+-func (e evaluator) prepareDistinctSourceIndex(source Graph, plan *indexedDistinctPlan) (*store.DistinctStringIndex, bool) {
++func (e evaluator) prepareDistinctSourceIndex(source Graph, plan *indexedDistinctPlan) (*store.DistinctStringIndex, bool, map[int]map[int32]bool) {
+ 	defer ordinarySourceFailure()
+ 	if plan.preferMappedView && plan.sourceCount >= 40 {
+ 		_, retained, err := source.Store.RetainedProjectionIndex(e.ctx)
+@@ -397,30 +397,53 @@
+ 				}
+ 				if len(atoms) > 0 {
+ 					sets, supported := e.mainExactMatches(source, view, &mainStringSourceSpec{atoms: atoms})
+-					if supported && !ordinaryAnyExact(sets) {
+-						return view, true
+-					}
+-				}
+-			}
+-		}
+-	}
+-	index, available, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: plan.sourceCount, Limit: plan.limit, PreferMappedView: plan.preferMappedView, CannotMatch: func() bool { return e.distinctCannotMatch(source, plan) }})
++					if supported {
++						exact := distinctExactByProperty(atoms, sets)
++						if !ordinaryAnyExact(sets) {
++							return view, true, exact
++						}
++						// Main forwards the mapped preflight directly into a qualifying
++						// raw projection. Do not repeat it through a retained reader.
++						count := len(source.Store.NodesOfKind("CallSiteNode"))
++						if count >= 4096 && plan.limit < count {
++							copy := *view
++							copy.ParallelRaw = true
++							return &copy, false, exact
++						}
++					}
++				}
++			}
++		}
++	}
++	preflightEmpty := false
++	index, available, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: plan.sourceCount, Limit: plan.limit, PreferMappedView: plan.preferMappedView, CannotMatch: func() bool { preflightEmpty = e.distinctCannotMatch(source, plan); return preflightEmpty }})
+ 	failProjectionRead(err)
+ 	if !available {
+-		return nil, false
+-	}
+-	return index, false
++		return nil, false, nil
++	}
++	if preflightEmpty {
++		return index, true, nil
++	}
++	exact, supported := e.distinctSplitExactMatches(source, index, plan)
++	if supported {
++		anyMatch := false
++		for _, ids := range exact {
++			anyMatch = anyMatch || len(ids) != 0
++		}
++		return index, !anyMatch, exact
++	}
++	return index, false, nil
+ }
+ func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan) distinctSourceResult {
+ 	e.check()
+-	index, empty := e.prepareDistinctSourceIndex(source, plan)
++	index, empty, exact := e.prepareDistinctSourceIndex(source, plan)
+ 	if index == nil {
+ 		functionError("IllegalStateException", "Distinct projection capability became unavailable")
+ 	}
+ 	rows := []distinctProjectedRow{}
+ 	seenIDs := map[string]bool{}
+ 	if !empty && (index.Raw || index.ParallelRaw) {
+-		rows = e.distinctRawRows(source, index, plan, nil, nil)
++		rows = e.distinctRawRows(source, index, plan, nil, nil, exact)
+ 	} else if !empty {
+ 		for _, id := range e.distinctMatchingIDs(source, index, plan) {
+ 			sids, row := e.distinctRawValues(source, id, plan)
+@@ -561,7 +584,7 @@
+ 		return hits
+ 	}
+ 	selectedRows = rawTargets
+-	index, empty := e.prepareDistinctSourceIndex(source, plan)
++	index, empty, exact := e.prepareDistinctSourceIndex(source, plan)
+ 	// Main accepts an unavailable storage capability during provenance probing,
+ 	// then still consumes generic candidates for the selected rows.
+ 	if empty || index == nil {
+@@ -569,7 +592,7 @@
+ 		return hits
+ 	}
+ 	if index.Raw || index.ParallelRaw {
+-		for _, row := range e.distinctRawRows(source, index, plan, selectedKeys, selectedRows) {
++		for _, row := range e.distinctRawRows(source, index, plan, selectedKeys, selectedRows, exact) {
+ 			hits[distinctVisibleKey(row.row)] = true
+ 		}
+ 	} else if exact, handled := e.distinctExactTupleHits(source, index, plan, selectedRows); handled {
+@@ -776,13 +799,12 @@
+ 	return true
+ }
+ 
+-func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringIndex, plan *indexedDistinctPlan, selected map[string]bool, targets []map[string]any) []distinctProjectedRow {
++func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringIndex, plan *indexedDistinctPlan, selected map[string]bool, targets []map[string]any, exact map[int]map[int32]bool) []distinctProjectedRow {
+ 	ids := source.Store.NodesOfKind("CallSiteNode")
+ 	if !index.ParallelRaw {
+ 		return e.distinctRawRange(source, plan, selected, ids, nil, nil)
+ 	}
+-	var exact map[int]map[int32]bool
+-	if !index.Raw {
++	if exact == nil && !index.Raw {
+ 		exact = map[int]map[int32]bool{}
+ 		for p := store.CallerClass; p <= store.CalleeName; p++ {
+ 			set := map[int32]bool{}
+--- /dev/null
++++ b/graphite-server/internal/query/distinct_split_exact.go
+@@ -0,0 +1,51 @@
++package query
++
++import "github.com/johnsonlee/graphite/graphite-server/internal/store"
++
++// A nil map means unsupported, never a proven miss. Exact-string sets belong to
++// this storage invocation; do not memoize them on a reusable query plan or Store.
++func (e evaluator) distinctSplitExactMatches(source Graph, index *store.DistinctStringIndex, plan *indexedDistinctPlan) (map[int]map[int32]bool, bool) {
++	if plan.sourceCount < 40 || index == nil || index.Raw {
++		return nil, false
++	}
++	atoms := make([]distinctStringAtom, 0, len(plan.atoms))
++	for _, atom := range plan.atoms {
++		if _, callsite := distinctCallSiteProperties[atom.property]; callsite {
++			atoms = append(atoms, atom)
++		}
++	}
++	if len(atoms) == 0 {
++		return nil, false
++	}
++	spec := &mainStringSourceSpec{atoms: atoms, sourceCount: plan.sourceCount, lazyMain: true}
++	var sets []map[int32]bool
++	var supported bool
++	if index.MainMappedCapability() {
++		sets, supported = e.mainExactMatches(source, index, spec)
++	} else {
++		sets, supported = e.mainRetainedExactMatches(source, index, spec)
++	}
++	if !supported {
++		return nil, false
++	}
++	return distinctExactByProperty(atoms, sets), true
++}
++
++// The raw projection needs the OR union for each property, not one global set.
++// Never deduplicate predicates by term before their ordered matcher calls above:
++// retained storage has its own LRU, mapped storage uses request-local sharing.
++func distinctExactByProperty(atoms []distinctStringAtom, sets []map[int32]bool) map[int]map[int32]bool {
++	exact := make(map[int]map[int32]bool)
++	for i, atom := range atoms {
++		property := distinctCallSiteProperties[atom.property]
++		ids := exact[property]
++		if ids == nil {
++			ids = make(map[int32]bool)
++			exact[property] = ids
++		}
++		for sid := range sets[i] {
++			ids[sid] = true
++		}
++	}
++	return exact
++}

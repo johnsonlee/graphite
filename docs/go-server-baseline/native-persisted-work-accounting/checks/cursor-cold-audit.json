@@ -1,0 +1,26 @@
+{
+  "moduleFiles": 2563,
+  "moduleIdentityEqualsFocusedV3": true,
+  "publicDifferences": [],
+  "graphStateObservations": 162304,
+  "stateDifferenceCounts": {
+    "mappedRangeCount": 15162
+  },
+  "firstStateDifferences": {
+    "mappedRangeCount": {
+      "observation": "replay/3/after",
+      "graph": "fixture-android-02",
+      "main": 7,
+      "native": 0
+    }
+  },
+  "sameDifferenceCountsAsBeforeCursorCorrection": true,
+  "sameFirstDifferenceAsBeforeCursorCorrection": true,
+  "caseDefinitionsExactlyEqual": true,
+  "acceptancePassed": false,
+  "unexecutedStates": [
+    "warm",
+    "startup-prepared"
+  ],
+  "performanceMeasurements": 0
+}

@@ -1,0 +1,235 @@
+{
+  "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1",
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/artifact-manifest.json",
+      "sourceBytes": 3888,
+      "sourceSHA256": "95bf5375225ebfbe7ae021e5a2a49f37c5f2f2477cbc340747246d9923c2a894",
+      "archive": "artifact-manifest.json",
+      "archiveSHA256": "95bf5375225ebfbe7ae021e5a2a49f37c5f2f2477cbc340747246d9923c2a894",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/build.stderr",
+      "sourceBytes": 0,
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "build.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/build.stdout",
+      "sourceBytes": 0,
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "build.stdout",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/diagnostic-replay",
+      "sourceBytes": 11306802,
+      "sourceSHA256": "be5def9d7c7ff8426ab23bb15c66b06aedcffc54e164317916ae10dad9f39f70",
+      "archive": "diagnostic-replay.gz",
+      "archiveSHA256": "8abac594226138e1f5ae601b168935476256c2e16dcf1d30e1ae58ce5213eb53",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/event-counts.json",
+      "sourceBytes": 1420,
+      "sourceSHA256": "b8bfd0c24e654e97b5e9422c9213bbec7e741370f44f6f9904014f0aab54e6a4",
+      "archive": "event-counts.json",
+      "archiveSHA256": "b8bfd0c24e654e97b5e9422c9213bbec7e741370f44f6f9904014f0aab54e6a4",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/fixture-after.json",
+      "sourceBytes": 204,
+      "sourceSHA256": "0d27f871aa2a50ce2eb369f56646c25cc8ce8993a7353bdc5b9b36d474384beb",
+      "archive": "fixture-after.json",
+      "archiveSHA256": "0d27f871aa2a50ce2eb369f56646c25cc8ce8993a7353bdc5b9b36d474384beb",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/fixture-audit.py",
+      "sourceBytes": 2386,
+      "sourceSHA256": "aea6f5c8f59a51f4e71deb3ab59c7af7f014d1f2dba6c24b556e08dbfafc7194",
+      "archive": "fixture-audit.py",
+      "archiveSHA256": "aea6f5c8f59a51f4e71deb3ab59c7af7f014d1f2dba6c24b556e08dbfafc7194",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/fixture-before.json",
+      "sourceBytes": 204,
+      "sourceSHA256": "0d27f871aa2a50ce2eb369f56646c25cc8ce8993a7353bdc5b9b36d474384beb",
+      "archive": "fixture-before.json",
+      "archiveSHA256": "0d27f871aa2a50ce2eb369f56646c25cc8ce8993a7353bdc5b9b36d474384beb",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/fixture-files.json",
+      "sourceBytes": 211149,
+      "sourceSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+      "archive": "fixture-files.json",
+      "archiveSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/graphs-relocated.tsv",
+      "sourceBytes": 28360,
+      "sourceSHA256": "60c6649192cb1d80c3b6a047687ee164ced572948ad0506a2e4aecb8afbeb361",
+      "archive": "graphs-relocated.tsv",
+      "archiveSHA256": "60c6649192cb1d80c3b6a047687ee164ced572948ad0506a2e4aecb8afbeb361",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/instrumentation-edits.json",
+      "sourceBytes": 11929,
+      "sourceSHA256": "395e2779afb9983ee600d20702322f52e4285cf5dd10037d43886bdaa51226e1",
+      "archive": "instrumentation-edits.json",
+      "archiveSHA256": "395e2779afb9983ee600d20702322f52e4285cf5dd10037d43886bdaa51226e1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/instrumentation.patch",
+      "sourceBytes": 13261,
+      "sourceSHA256": "5b4212474b464262187cd1baef0742a00f31aeb296c8fc00523e0000b45cebc8",
+      "archive": "instrumentation.patch",
+      "archiveSHA256": "5b4212474b464262187cd1baef0742a00f31aeb296c8fc00523e0000b45cebc8",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/instrumented-after.json",
+      "sourceBytes": 495036,
+      "sourceSHA256": "3c000b9b2e6941fee8ca70ffb936ec11515dff3a9c52cab0d026faada02944c1",
+      "archive": "instrumented-after.json",
+      "archiveSHA256": "3c000b9b2e6941fee8ca70ffb936ec11515dff3a9c52cab0d026faada02944c1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/prefix-case-identities.json",
+      "sourceBytes": 6837,
+      "sourceSHA256": "d7acc2ba060b2ed801468d1ff818b5be0421d50307a385b411eb221072e33995",
+      "archive": "prefix-case-identities.json",
+      "archiveSHA256": "d7acc2ba060b2ed801468d1ff818b5be0421d50307a385b411eb221072e33995",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/receipt.json",
+      "sourceBytes": 3189,
+      "sourceSHA256": "ebe27c6a8792cf1c52e86ef48523da2e2d28563f0da66de1eaac9d21130b2be5",
+      "archive": "receipt.json",
+      "archiveSHA256": "ebe27c6a8792cf1c52e86ef48523da2e2d28563f0da66de1eaac9d21130b2be5",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/reference-after.json",
+      "sourceBytes": 173,
+      "sourceSHA256": "1cfa349a7a54d41fd01b1884961fc91c6c4d328adabe2664ab361ac11f172b3e",
+      "archive": "reference-after.json",
+      "archiveSHA256": "1cfa349a7a54d41fd01b1884961fc91c6c4d328adabe2664ab361ac11f172b3e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/reference-before.json",
+      "sourceBytes": 173,
+      "sourceSHA256": "1cfa349a7a54d41fd01b1884961fc91c6c4d328adabe2664ab361ac11f172b3e",
+      "archive": "reference-before.json",
+      "archiveSHA256": "1cfa349a7a54d41fd01b1884961fc91c6c4d328adabe2664ab361ac11f172b3e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/replay.stderr",
+      "sourceBytes": 2361,
+      "sourceSHA256": "93644a161cd15e5960d4f1a69b7404d6f9b23038cc5b86a659a8d7cfade5a5b7",
+      "archive": "replay.stderr",
+      "archiveSHA256": "93644a161cd15e5960d4f1a69b7404d6f9b23038cc5b86a659a8d7cfade5a5b7",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/replay.stdout",
+      "sourceBytes": 0,
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "replay.stdout",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/responses.jsonl",
+      "sourceBytes": 243814,
+      "sourceSHA256": "c7816844a51044241c5fb987413df6482fea2a9a7d6b37d7ce44d7a04d68cf33",
+      "archive": "responses.jsonl.gz",
+      "archiveSHA256": "53181cb54a3b534e541c278eea4c99ed3c558bd6ab9f588d050d897fddbc0fdd",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/runner-inputs.json",
+      "sourceBytes": 979,
+      "sourceSHA256": "d526004bb179206f3c39d741cca92ffb823de0fca7ba5ba33d0278a8d61889b5",
+      "archive": "runner-inputs.json",
+      "archiveSHA256": "d526004bb179206f3c39d741cca92ffb823de0fca7ba5ba33d0278a8d61889b5",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/runner-source.tar.gz",
+      "sourceBytes": 10475,
+      "sourceSHA256": "f503f1fa8ed12618734f41d1ccd960b07d3d114d2851e40c0986c2237d3ef0fd",
+      "archive": "runner-source.tar.gz",
+      "archiveSHA256": "f503f1fa8ed12618734f41d1ccd960b07d3d114d2851e40c0986c2237d3ef0fd",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/source-after.json",
+      "sourceBytes": 494883,
+      "sourceSHA256": "89be602ea7100eb0a5318929690b39e2ef65ad5ac1dc0aaaf26bc46f29d785f9",
+      "archive": "source-after.json",
+      "archiveSHA256": "89be602ea7100eb0a5318929690b39e2ef65ad5ac1dc0aaaf26bc46f29d785f9",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/source-before.json",
+      "sourceBytes": 494883,
+      "sourceSHA256": "89be602ea7100eb0a5318929690b39e2ef65ad5ac1dc0aaaf26bc46f29d785f9",
+      "archive": "source-before.json",
+      "archiveSHA256": "89be602ea7100eb0a5318929690b39e2ef65ad5ac1dc0aaaf26bc46f29d785f9",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/source-instrumented.json",
+      "sourceBytes": 495036,
+      "sourceSHA256": "3c000b9b2e6941fee8ca70ffb936ec11515dff3a9c52cab0d026faada02944c1",
+      "archive": "source-instrumented.json",
+      "archiveSHA256": "3c000b9b2e6941fee8ca70ffb936ec11515dff3a9c52cab0d026faada02944c1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/source-instrumented.tar.gz",
+      "sourceBytes": 9212079,
+      "sourceSHA256": "73a42bc519809bd7922170d5c2c5ef13ee945519b897a230094fb425c30d5323",
+      "archive": "source-instrumented.tar.gz",
+      "archiveSHA256": "73a42bc519809bd7922170d5c2c5ef13ee945519b897a230094fb425c30d5323",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/source-original.tar.gz",
+      "sourceBytes": 9208726,
+      "sourceSHA256": "18be2c1c9db0889ab851462e91d97ac9f7e4ebe8b51462d233bfda0d0e14027d",
+      "archive": "source-original.tar.gz",
+      "archiveSHA256": "18be2c1c9db0889ab851462e91d97ac9f7e4ebe8b51462d233bfda0d0e14027d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/trace.jsonl",
+      "sourceBytes": 149778,
+      "sourceSHA256": "e3fe70825b0b6e4216f9527cfed44414e2044f9705c63cabb7bfaf1a01d85d19",
+      "archive": "trace.jsonl.gz",
+      "archiveSHA256": "218d185112322424663fbd96262e15cd42ea54a8f544cb73fe738786aee65337",
+      "decompressedBytesEqual": true
+    }
+  ],
+  "diagnosticOnly": true,
+  "performanceMeasurements": 0,
+  "excludedDirectories": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/fixture",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-entry-scheduling-sparse-lazy-v1/module"
+  ]
+}

@@ -1,0 +1,1194 @@
+[
+  {
+    "name": "BT-bad-magic-budget258",
+    "operations": [
+      {
+        "operation": 0,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "FAILED",
+        "error": "CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 258 graph work units; add a selective label/filter or use a metadata-backed query",
+        "workDelta": 258,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 258
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": false,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": null,
+            "postingsReady": null,
+            "metadataArraysPresent": null
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": null,
+            "matchingNodeIdsCount": null,
+            "projectedRowsCount": null
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      },
+      {
+        "operation": 2,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 518,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 518
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 2,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 0
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "99482"
+      },
+      {
+        "operation": 4,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 2,
+          "callSiteStringIndexLookupCount": 1,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      }
+    ]
+  },
+  {
+    "name": "BT-bad-magic-budget259",
+    "operations": [
+      {
+        "operation": 0,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "FAILED",
+        "error": "CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 259 graph work units; add a selective label/filter or use a metadata-backed query",
+        "workDelta": 259,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 259
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": false,
+            "postingsReady": false,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 0,
+            "matchingNodeIdsCount": 0,
+            "projectedRowsCount": 0
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      },
+      {
+        "operation": 2,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 260,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 260
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 1,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "99740"
+      },
+      {
+        "operation": 4,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 2,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      }
+    ]
+  },
+  {
+    "name": "BT-bad-magic-budget387",
+    "operations": [
+      {
+        "operation": 0,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "FAILED",
+        "error": "CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 387 graph work units; add a selective label/filter or use a metadata-backed query",
+        "workDelta": 387,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 387
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": false,
+            "postingsReady": false,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 0,
+            "matchingNodeIdsCount": 0,
+            "projectedRowsCount": 0
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      },
+      {
+        "operation": 2,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 260,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 260
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 1,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "99740"
+      },
+      {
+        "operation": 4,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 2,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      }
+    ]
+  },
+  {
+    "name": "BT-bad-magic-budget388",
+    "operations": [
+      {
+        "operation": 0,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "FAILED",
+        "error": "CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 388 graph work units; add a selective label/filter or use a metadata-backed query",
+        "workDelta": 388,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 388
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": false,
+            "metadataArraysPresent": true
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 0,
+            "matchingNodeIdsCount": 0,
+            "projectedRowsCount": 0
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      },
+      {
+        "operation": 2,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 131,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 131
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 1,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "99869"
+      },
+      {
+        "operation": 4,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 2,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      }
+    ]
+  },
+  {
+    "name": "BT-bad-magic-budget516",
+    "operations": [
+      {
+        "operation": 0,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "FAILED",
+        "error": "CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 516 graph work units; add a selective label/filter or use a metadata-backed query",
+        "workDelta": 516,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 516
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": false,
+            "metadataArraysPresent": true
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 0,
+            "matchingNodeIdsCount": 0,
+            "projectedRowsCount": 0
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      },
+      {
+        "operation": 2,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 131,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 131
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 1,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "99869"
+      },
+      {
+        "operation": 4,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 2,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      }
+    ]
+  },
+  {
+    "name": "BT-bad-magic-budget517",
+    "operations": [
+      {
+        "operation": 0,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "FAILED",
+        "error": "CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 517 graph work units; add a selective label/filter or use a metadata-backed query",
+        "workDelta": 517,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 517
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 0,
+            "matchingNodeIdsCount": 0,
+            "projectedRowsCount": 0
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      },
+      {
+        "operation": 2,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 2,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 2
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 1,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "99998"
+      },
+      {
+        "operation": 4,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 2,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      }
+    ]
+  },
+  {
+    "name": "BT-bad-magic-budget518",
+    "operations": [
+      {
+        "operation": 0,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "FAILED",
+        "error": "CypherBudgetExceededException",
+        "message": "Cypher work budget exceeded after 518 graph work units; add a selective label/filter or use a metadata-backed query",
+        "workDelta": 518,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 518
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 0,
+            "matchingNodeIdsCount": 0,
+            "projectedRowsCount": 0
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      },
+      {
+        "operation": 2,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 2,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 2
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 1,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "99998"
+      },
+      {
+        "operation": 4,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 2,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      }
+    ]
+  },
+  {
+    "name": "BT-bad-magic-budget519",
+    "operations": [
+      {
+        "operation": 0,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 519,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 519
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 0,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 0
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      },
+      {
+        "operation": 2,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 1,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "99999"
+      },
+      {
+        "operation": 4,
+        "spec": {
+          "op": "execute",
+          "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'absentzz' RETURN n.caller_name AS name LIMIT 1",
+          "parameters": {}
+        },
+        "outcome": "SUCCESS",
+        "error": null,
+        "message": null,
+        "workDelta": 1,
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 1
+        },
+        "source0": {
+          "graphId": "source0",
+          "isCallSiteStringIndexInitialized": true,
+          "isMappedCallSiteStringIndexViewInitialized": false,
+          "rawStringMatchStateCount": 0,
+          "rawProjectionMatchCount": 0,
+          "callSiteParallelScanCount": 0,
+          "callSiteStringLookupEntryCount": 1,
+          "callSiteStringIndexLookupCount": 2,
+          "buildTrigram": {
+            "metadataReady": true,
+            "postingsReady": true,
+            "metadataArraysPresent": false
+          },
+          "persisted": {
+            "retainPreference": false,
+            "loadedFromPersistence": false,
+            "persistenceBudgetDenied": false,
+            "stringIdentityCached": true,
+            "matchingStringIdsCount": 1,
+            "matchingNodeIdsCount": 1,
+            "projectedRowsCount": 1
+          },
+          "mappedViewUnavailable": true
+        },
+        "remaining": "0"
+      }
+    ]
+  }
+]

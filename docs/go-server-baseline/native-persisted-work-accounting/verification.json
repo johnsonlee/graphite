@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "ownedManifestFiles": 78,
+  "externalCopiedArtifacts": 42,
+  "distinctFrozenRuntimeInputs": 24,
+  "cases": 52,
+  "operations": 187,
+  "sourcesPerCase": 40,
+  "fixtureVariants": 21,
+  "fixtureRegularFiles": 352,
+  "caseFixtureFilesPerCapture": [
+    33335,
+    33335
+  ],
+  "fullRawRepeatEqual": true,
+  "originalPreparedBridgeCommonRecordsEqual": 6,
+  "failedPreparationPreserved": true,
+  "failedGeneratedFixtureBytesEqualSuccessful": true,
+  "defaultJVMConfiguration": true,
+  "performanceMeasurements": 0,
+  "scope": "Archive/input/public-output verification only. No build, runtime, native test or benchmark was launched by this verifier."
+}

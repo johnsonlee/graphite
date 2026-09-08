@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "test",
+    "-race",
+    "./internal/store",
+    "-run",
+    "Test(MainDistinct|MainBuild|MainOrdinary|ProjectionContext|DistinctProjection)",
+    "-count=1",
+    "-timeout=180s",
+    "-v"
+  ],
+  "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/module",
+  "exitCode": 0,
+  "elapsedSeconds": 2.679577112197876,
+  "logSha256": "7f57b82d89a86c5131efa000b97f420de1545c75d6b9c77aec93201db8f3c3d7"
+}

@@ -1,0 +1,20 @@
+{
+  "lazy-core-v1": {
+    "cmd/graphite-benchmark-replay/main.go": "c9eb693f5ace00963804baa3f9e4502b057edcc1d6427e6401f025ef0bec8d95",
+    "internal/query/indexed_distinct.go": "e890e0d64cb6334af0e4c60cc37a89dd37765679842118a86a7a9d251a9a8405",
+    "internal/query/main_fixed_workers.go": "18748857606af60bc785f0051004dc7be87c137eae30629581d1d0501efbface",
+    "internal/query/main_string_mapped.go": "012fe699aa0944b9bfffbb9e76aee10932313b61d2f841ec2a4e82d827ea82d9",
+    "internal/query/ordinary_parallel.go": "eca83c4a7159d9b1b5c0ea9315c61d9ee538cab7c154df230bf75665cef1ee17",
+    "internal/query/ordinary_projection.go": "972d36b5844e9f6debeeea0719cc497ce2f9826050eaec7c57f620d8614cb559",
+    "internal/store/main_mapped_cursor.go": "ec52f75a1ad2c5f798c2e744dd407cdc6de11e5ea58fab825aeb56e2c470db34"
+  },
+  "v4": {
+    "cmd/graphite-benchmark-replay/main.go": "c9eb693f5ace00963804baa3f9e4502b057edcc1d6427e6401f025ef0bec8d95",
+    "internal/query/indexed_distinct.go": "e890e0d64cb6334af0e4c60cc37a89dd37765679842118a86a7a9d251a9a8405",
+    "internal/query/main_fixed_workers.go": "dfc418d602fbe17261c4565155cf1061fb2f84bc2172d29e7a497ce48fd31e87",
+    "internal/query/main_string_mapped.go": "012fe699aa0944b9bfffbb9e76aee10932313b61d2f841ec2a4e82d827ea82d9",
+    "internal/query/ordinary_parallel.go": "eca83c4a7159d9b1b5c0ea9315c61d9ee538cab7c154df230bf75665cef1ee17",
+    "internal/query/ordinary_projection.go": "972d36b5844e9f6debeeea0719cc497ce2f9826050eaec7c57f620d8614cb559",
+    "internal/store/main_mapped_cursor.go": "ec52f75a1ad2c5f798c2e744dd407cdc6de11e5ea58fab825aeb56e2c470db34"
+  }
+}

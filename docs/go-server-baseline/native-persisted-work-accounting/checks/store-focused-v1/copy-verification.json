@@ -1,0 +1,72 @@
+{
+  "source": "/tmp/persisted-work-f0838dda-store-checks-v1",
+  "files": [
+    {
+      "file": "command.json",
+      "sha256": "16c7dd6e43d352e212c5b2d49fb40f143fad8a89db81241dc10f995b348daee4",
+      "bytes": 287
+    },
+    {
+      "file": "receipt.json",
+      "sha256": "e78ba8a0a5b19efd8d8f0fdcccb59284e6b545b4a40dbcfdfe23101228232d6b",
+      "bytes": 338
+    },
+    {
+      "file": "run.py",
+      "sha256": "743a98b0718bb519147c94e602e5769705593522766b28dc8ca70937dbb306d8",
+      "bytes": 632
+    },
+    {
+      "file": "source/callsite_index.go",
+      "sha256": "24b3a3c7861bc73f9daadafc3e28a9534e49589769b842195557b3e4666af807",
+      "bytes": 15079
+    },
+    {
+      "file": "source/distinct_projection.go",
+      "sha256": "06a6e93f4044897e15727145ade6e6c16f0982e883e13969a733274144da4435",
+      "bytes": 15245
+    },
+    {
+      "file": "source/main_callsite_index.go",
+      "sha256": "14e90dedc246d255140193f904116e84469fb129526270e3a1f900b161d953a4",
+      "bytes": 3074
+    },
+    {
+      "file": "source/main_persistent_identity.go",
+      "sha256": "3f85fea733316092b0bafc160659ea6142b492fd30aba6caee2c2ae45237135f",
+      "bytes": 3611
+    },
+    {
+      "file": "source/main_persistent_reader.go",
+      "sha256": "496897e51589c1c5c2a165649b6311ce2170601bca1690de275f43cfcfde463d",
+      "bytes": 8089
+    },
+    {
+      "file": "source/main_persistent_work_test.go",
+      "sha256": "e8ed45bf4ce359cb59193667d6093cd17148ef1c1f1556d1d25b14ff9287614a",
+      "bytes": 10055
+    },
+    {
+      "file": "source/persistent_index_snapshot.go",
+      "sha256": "c02987ac1e613a0ea6d77c29013c805d8a9c90fa27708895d2518e4c0299c0f5",
+      "bytes": 1685
+    },
+    {
+      "file": "source/store.go",
+      "sha256": "3a16356a7a6c050ed8612cac55df95207b87cb6bb5e59e16789f1fab2decf913",
+      "bytes": 8988
+    },
+    {
+      "file": "source-sha256.json",
+      "sha256": "409a731e5bf75109f6e339743921bb2446d795be85700195a91ad8455783e4c2",
+      "bytes": 772
+    },
+    {
+      "file": "test.log",
+      "sha256": "ef2ee6b028d3b967a338fa43caa2a0204ac7c12f3134c2520b9dd1aa625de9e6",
+      "bytes": 2245
+    }
+  ],
+  "allBytesEqual": true,
+  "performanceMeasurements": 0
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-split-store-entry-v1/README.md",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-initial/README.md",
+    "bytes": 2198,
+    "sha256": "f5241bf7faf007454b4c34a00a58b84e414e184b8b153c7aca8ef3853b80c80c"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-split-store-entry-v1/receipt.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-initial/receipt.json",
+    "bytes": 530,
+    "sha256": "7594223d361c3c35a07170899d1f457e78f67895db859d2836d71acd6acedb9f"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-split-store-entry-v1/run.py",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-initial/run.py",
+    "bytes": 822,
+    "sha256": "267826f3889d077558e2514f956a558f45fc76b48b6554dbeacdd689f440b05a"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-split-store-entry-v1/source-before.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-initial/source-before.json",
+    "bytes": 359,
+    "sha256": "f326842c9c624c5269d726c2d4ab60617061be5c71152aa95fbb6586f4d793ac"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-split-store-entry-v1/source-inputs.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-initial/source-inputs.json",
+    "bytes": 495545,
+    "sha256": "68f7ad220026d5e8ba301fd3cbb7e6c87e1f6f0e600862755c98728ad9da6c17"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-split-store-entry-v1/store-race.log",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-initial/store-race.log",
+    "bytes": 6977,
+    "sha256": "159929f6c5e12932730a5594d9171de7f7d25e5e22616b43c3eab2b599fe06e8"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-split-store-entry-v1/verification.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-initial/verification.json",
+    "bytes": 982,
+    "sha256": "c379ea49369aa74842c00c43551e5b3b0c043550d302d597baf28948e0be5e64"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/README.md",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/README.md",
+    "bytes": 2735,
+    "sha256": "cdbab178b3404deb7adca2658a8b8c8f7a833546cb7bf5204ad8ee168e2fb665"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/main_distinct_entry.go",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/main_distinct_entry.go",
+    "bytes": 4450,
+    "sha256": "052b6bff65af2e774480e9e7f911e1602b014ae3807cf51f79404eef878c6228"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/main_distinct_entry_test.go",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/main_distinct_entry_test.go",
+    "bytes": 13249,
+    "sha256": "6175b94a743ad9dab79777c99cc6ab1a2a4fd075c001f5d21345a5ea2140ab90"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/receipt.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/receipt.json",
+    "bytes": 505,
+    "sha256": "87e403e11b63b72b0cbf93c0756f8e38a644fe8ccf2aaf92fd09f0d611a7bf91"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/run.py",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/run.py",
+    "bytes": 795,
+    "sha256": "82237cacca058832104c25086e971ea64d022f758a0468656f147cd76016f634"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/source-before.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/source-before.json",
+    "bytes": 365,
+    "sha256": "349f1ab27ff5a6c7b0252ed0fae8b7edf03553445a18740acf527a52ff144614"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/source-inputs.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/source-inputs.json",
+    "bytes": 496036,
+    "sha256": "d4c1e55c8676ea4496dd497b368a2f3d949165ce37242c2a23719eebb45c2544"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/store-race.log",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/store-race.log",
+    "bytes": 9897,
+    "sha256": "7f57b82d89a86c5131efa000b97f420de1545c75d6b9c77aec93201db8f3c3d7"
+  },
+  {
+    "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-fallback-store-entry-v1/verification.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/store-fallback/verification.json",
+    "bytes": 594,
+    "sha256": "6e4a3466498dd982f5b5b7217cae9f19d4e29cf9c8b03fe188a5ced99ea7ae65"
+  },
+  {
+    "source": "/tmp/graphite-distinct-split-raw-focused-v1/inputs.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/query-raw/inputs.json",
+    "bytes": 1113554,
+    "sha256": "3cfa14bb93633cabd6f7bcc79d50fae5e706d325fd1a21ecf52070ffbf50e0f1"
+  },
+  {
+    "source": "/tmp/graphite-distinct-split-raw-focused-v1/run.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/query-raw/run.json",
+    "bytes": 357,
+    "sha256": "00d96cc0c5318a73950342d6724f7ebe556d17a9420bbbccb91b1a4c0f17db3a"
+  },
+  {
+    "source": "/tmp/graphite-distinct-split-raw-focused-v1/stderr.log",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/query-raw/stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "/tmp/graphite-distinct-split-raw-focused-v1/stdout.log",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/query-raw/stdout.log",
+    "bytes": 2343,
+    "sha256": "e4e2c4249eff3c33aaf1af26dc272ef8d002bf25ef8a465ee71a86fb0e97ce4b"
+  },
+  {
+    "source": "/tmp/graphite-distinct-split-raw-focused-v1/verification.json",
+    "archive": "docs/go-server-baseline/native-persisted-work-accounting/checks/distinct-split-wip/query-raw/verification.json",
+    "bytes": 557,
+    "sha256": "5d5ea9785c7250f24e39eaa292887a081484b3973037f9d2c754eace86a857c8"
+  }
+]

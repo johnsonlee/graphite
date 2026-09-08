@@ -27,67 +27,14 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 		return nil, false
 	}
 	if raw {
-		if plan.limit <= 0 {
-			return []map[string]any{}, true
-		}
-		cacheKey := ordinaryNodeKey(plan, plan.limit)
-		cached, hit, err := source.Store.RawProjectionMatches(e.ctx, cacheKey)
-		failProjectionRead(err)
-		if hit {
-			// Main charges cached IDs before rereading the requested projection,
-			// including one unit for a cached empty result.
-			e.consume(int64(max(len(cached), 1)))
-			rows := []map[string]any{}
-			for _, id := range cached {
-				e.check()
-				sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
-				failProjectionRead(err)
-				rows = append(rows, e.ordinaryRawRow(source, plan, sids))
-			}
+		if rows, complete := e.ordinaryRawLeadingRows(source, plan); complete {
 			return rows, true
 		}
-		matchedIDs := []int32{}
-		matchers := sharedStringMatchers(plan.atoms, len(source.Store.Strings), rawProjectionMatcherCapacity)
-		readString := func(sid int32) (string, error) { return source.Store.ProjectionString(e.ctx, sid) }
-		ids := source.Store.NodesOfKind("CallSiteNode")
-		maximum := min(1024, max(64, plan.limit*4))
-		rows := []map[string]any{}
-		inspected := 0
-		accounting := bufferedGraphWork{work: e.work}
-		// The probe returns a list, so publication precedes this final flush.
-		// A budget failure must not undo a completed probe's cached IDs.
-		defer accounting.flush()
-		for inspected < len(ids) && inspected < maximum {
-			e.check()
-			id := ids[inspected]
-			inspected++
-			accounting.consume()
-			sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
-			failProjectionRead(err)
-			matched := false
-			for i, atom := range plan.atoms {
-				if matchers[i].matches(e, sids[distinctCallSiteProperties[atom.property]], readString) {
-					matched = true
-					break
-				}
-			}
-			if !matched {
-				continue
-			}
-			rows = append(rows, e.ordinaryRawRow(source, plan, sids))
-			matchedIDs = append(matchedIDs, id)
-			if len(rows) >= plan.limit {
-				failProjectionRead(source.Store.CacheRawProjectionMatches(e.ctx, cacheKey, matchedIDs))
-				return rows, true
-			}
-		}
-		if inspected < len(ids) {
-			return nil, false
-		}
-		failProjectionRead(source.Store.CacheRawProjectionMatches(e.ctx, cacheKey, matchedIDs))
-		return rows, true
+		// Main settles the incomplete raw probe before trying an already
+		// retained index. It does not load an index through projectRows.
 	}
-	if ordinarySharedMatcher(plan) {
+
+	if !raw && ordinarySharedMatcher(plan) {
 		view, ok, err := source.Store.InitializedProjectionView(e.ctx)
 		failProjectionRead(err)
 		var exact []map[int32]bool
@@ -123,6 +70,68 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 	}
 	return e.ordinaryIndexedRows(source, index, plan, plan.limit), true
 }
+func (e evaluator) ordinaryRawLeadingRows(source Graph, plan *ordinaryProjectionPlan) ([]map[string]any, bool) {
+	if plan.limit <= 0 {
+		return []map[string]any{}, true
+	}
+	cacheKey := ordinaryNodeKey(plan, plan.limit)
+	cached, hit, err := source.Store.RawProjectionMatches(e.ctx, cacheKey)
+	failProjectionRead(err)
+	if hit {
+		// Main charges cached IDs before rereading the requested projection,
+		// including one unit for a cached empty result.
+		e.consume(int64(max(len(cached), 1)))
+		rows := []map[string]any{}
+		for _, id := range cached {
+			e.check()
+			sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
+			failProjectionRead(err)
+			rows = append(rows, e.ordinaryRawRow(source, plan, sids))
+		}
+		return rows, true
+	}
+	matchedIDs := []int32{}
+	matchers := sharedStringMatchers(plan.atoms, len(source.Store.Strings), rawProjectionMatcherCapacity)
+	readString := func(sid int32) (string, error) { return source.Store.ProjectionString(e.ctx, sid) }
+	ids := source.Store.NodesOfKind("CallSiteNode")
+	maximum := min(1024, max(64, plan.limit*4))
+	rows := []map[string]any{}
+	inspected := 0
+	accounting := bufferedGraphWork{work: e.work}
+	// The probe returns a list, so publication precedes this final flush.
+	// A budget failure must not undo a completed probe's cached IDs.
+	defer accounting.flush()
+	for inspected < len(ids) && inspected < maximum {
+		e.check()
+		id := ids[inspected]
+		inspected++
+		accounting.consume()
+		sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
+		failProjectionRead(err)
+		matched := false
+		for i, atom := range plan.atoms {
+			if matchers[i].matches(e, sids[distinctCallSiteProperties[atom.property]], readString) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			continue
+		}
+		rows = append(rows, e.ordinaryRawRow(source, plan, sids))
+		matchedIDs = append(matchedIDs, id)
+		if len(rows) >= plan.limit {
+			failProjectionRead(source.Store.CacheRawProjectionMatches(e.ctx, cacheKey, matchedIDs))
+			return rows, true
+		}
+	}
+	if inspected < len(ids) {
+		return nil, false
+	}
+	failProjectionRead(source.Store.CacheRawProjectionMatches(e.ctx, cacheKey, matchedIDs))
+	return rows, true
+}
+
 func (e evaluator) ordinaryRawRow(source Graph, plan *ordinaryProjectionPlan, sids [4]int32) map[string]any {
 	row := map[string]any{}
 	for i, property := range plan.properties {

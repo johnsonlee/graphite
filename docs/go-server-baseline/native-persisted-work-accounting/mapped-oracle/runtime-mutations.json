@@ -1,0 +1,281 @@
+{
+  "captures": [
+    {
+      "capture": "main-capture",
+      "files": [
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-checksum-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-checksum-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-checksum-1861/store0/graph.callsite-string-index",
+          "file": "M02-bad-checksum-1861/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-identity-1/store0/graph.callsite-string-index",
+          "file": "M02-bad-identity-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-identity-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-identity-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-magic-1/store0/graph.callsite-string-index",
+          "file": "M02-bad-magic-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-magic-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-magic-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-node-order-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-node-order-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-node-order-1861/store0/graph.callsite-string-index",
+          "file": "M02-bad-node-order-1861/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-posting-end-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-posting-end-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-posting-end-44/store0/graph.callsite-string-index",
+          "file": "M02-bad-posting-end-44/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-unique-id-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-unique-id-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-unique-id-43/store0/graph.callsite-string-index",
+          "file": "M02-bad-unique-id-43/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-version-1/store0/graph.callsite-string-index",
+          "file": "M02-bad-version-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-bad-version-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-version-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-trailing-byte-1/store0/graph.callsite-string-index",
+          "file": "M02-trailing-byte-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-trailing-byte-100000/store0/graph.callsite-string-index",
+          "file": "M02-trailing-byte-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-truncated-identity-1/store0/graph.callsite-string-index",
+          "file": "M02-truncated-identity-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-truncated-identity-100000/store0/graph.callsite-string-index",
+          "file": "M02-truncated-identity-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-truncated-int-1/store0/graph.callsite-string-index",
+          "file": "M02-truncated-int-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M02-truncated-int-100000/store0/graph.callsite-string-index",
+          "file": "M02-truncated-int-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M05-truncated-layout-1/store0/graph.callsite-string-index",
+          "file": "M05-truncated-layout-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v1/fixtures/M05-truncated-layout-100000/store0/graph.callsite-string-index",
+          "file": "M05-truncated-layout-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        }
+      ],
+      "archiveSHA256": "7b3261fb300af26d675097c7e19f7d200afab2cf4781973b19913a837eecbe56"
+    },
+    {
+      "capture": "repeat-capture",
+      "files": [
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-checksum-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-checksum-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-checksum-1861/store0/graph.callsite-string-index",
+          "file": "M02-bad-checksum-1861/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-identity-1/store0/graph.callsite-string-index",
+          "file": "M02-bad-identity-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-identity-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-identity-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-magic-1/store0/graph.callsite-string-index",
+          "file": "M02-bad-magic-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-magic-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-magic-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-node-order-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-node-order-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-node-order-1861/store0/graph.callsite-string-index",
+          "file": "M02-bad-node-order-1861/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-posting-end-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-posting-end-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-posting-end-44/store0/graph.callsite-string-index",
+          "file": "M02-bad-posting-end-44/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-unique-id-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-unique-id-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-unique-id-43/store0/graph.callsite-string-index",
+          "file": "M02-bad-unique-id-43/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-version-1/store0/graph.callsite-string-index",
+          "file": "M02-bad-version-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-bad-version-100000/store0/graph.callsite-string-index",
+          "file": "M02-bad-version-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-trailing-byte-1/store0/graph.callsite-string-index",
+          "file": "M02-trailing-byte-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-trailing-byte-100000/store0/graph.callsite-string-index",
+          "file": "M02-trailing-byte-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-truncated-identity-1/store0/graph.callsite-string-index",
+          "file": "M02-truncated-identity-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-truncated-identity-100000/store0/graph.callsite-string-index",
+          "file": "M02-truncated-identity-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-truncated-int-1/store0/graph.callsite-string-index",
+          "file": "M02-truncated-int-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M02-truncated-int-100000/store0/graph.callsite-string-index",
+          "file": "M02-truncated-int-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M05-truncated-layout-1/store0/graph.callsite-string-index",
+          "file": "M05-truncated-layout-1/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures/M05-truncated-layout-100000/store0/graph.callsite-string-index",
+          "file": "M05-truncated-layout-100000/store0/graph.callsite-string-index",
+          "bytes": 10524,
+          "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1"
+        }
+      ],
+      "archiveSHA256": "7b3261fb300af26d675097c7e19f7d200afab2cf4781973b19913a837eecbe56"
+    }
+  ],
+  "scope": "Actual post-execution sidecar bytes corresponding to original raw fixture-after manifests; not new fixture inputs."
+}

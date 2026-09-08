@@ -1,0 +1,21 @@
+{
+  "generatedVariantFiles": 352,
+  "generatedVariantBytesExactlyEqualSuccessfulCapture": true,
+  "phase": "prepare",
+  "failurePrecededAnyPublicOracleExecution": true,
+  "correction": "Only the preparation CRC cross-check changes: per-primitive byte order follows main updateInt/updateLong; no fixture byte mutation changes.",
+  "classes": [
+    {
+      "file": "LeadingWorkFixture.class",
+      "sha256": "c9e957d09ea6f398c47f61fcbd793f87b86dea22f860c9d999a92b3432385869"
+    },
+    {
+      "file": "PersistedWorkOracle$State.class",
+      "sha256": "928fa12f66f37a03b6dc3fc29f7114cc329c9f07e667ee01a032f0e3d533bd2f"
+    },
+    {
+      "file": "PersistedWorkOracle.class",
+      "sha256": "8c1cd9d4d471aa28b419db8a789827044bd04d2187e674e14f0fd2782e554b86"
+    }
+  ]
+}

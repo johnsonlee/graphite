@@ -309,56 +309,10 @@ func (e evaluator) filteredCountStorage(source Graph, atoms []distinctStringAtom
 		if e.distinctCannotMatch(source, &indexedDistinctPlan{atoms: preflightAtoms}) {
 			return 0, nil
 		}
-		index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: true, SourceCount: 1, Limit: math.MaxInt32, SkipPreparedPreference: true})
+		index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{ConsumeWork: e.storeWorkConsumer(), MainSource: true, SourceCount: 1, Limit: math.MaxInt32, SkipPreparedPreference: true})
 		failMainStringRead(err)
 	}
-	ranges := [][]int32{}
-	sharedStates := map[string]*boundedStringMatcher{}
-	for _, atom := range atoms {
-		propertyIndex := store.CallSiteStringProperty(distinctCallSiteProperties[atom.property])
-		matches, known := e.stringIndexMatches(source, index, atom, failMainStringRead)
-		appendRange := func(sid int32) {
-			ids, err := index.Postings(e.ctx, propertyIndex, sid)
-			failMainStringRead(err)
-			if len(ids) > 0 {
-				ranges = append(ranges, ids)
-			}
-		}
-		if atom.op == "=" && !atom.lower {
-			if sid := e.distinctStringTableID(source.Store.Strings, atom.term); sid >= 0 {
-				appendRange(sid)
-			}
-			continue
-		}
-		// Known matching IDs are ordered. Main intersects them with the property
-		// directory without evaluating or decoding the other dictionary strings.
-		if known {
-			for _, sid := range matches {
-				e.check()
-				appendRange(sid)
-			}
-			continue
-		}
-		cacheKey := ordinaryStringKey(atom)
-		matcher := sharedStates[cacheKey]
-		if matcher == nil {
-			matcher = &boundedStringMatcher{atom: atom, dense: make([]byte, len(source.Store.Strings))}
-			sharedStates[cacheKey] = matcher
-		}
-		readString := func(sid int32) (string, error) {
-			value, err := source.Store.ProjectionString(e.ctx, sid)
-			failMainStringRead(err)
-			return value, nil
-		}
-		directory, err := index.Directory(e.ctx, propertyIndex)
-		failMainStringRead(err)
-		for _, entry := range directory {
-			e.check()
-			if matcher.matches(e, entry.StringID, readString) {
-				appendRange(entry.StringID)
-			}
-		}
-	}
+	ranges := e.mainIndexMatchingRanges(source, index, atoms)
 	count, values, err := index.AggregateProjectionRanges(e.ctx, ranges, property)
 	failMainStringRead(err)
 	return count, values

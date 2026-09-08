@@ -1,0 +1,10 @@
+=== RUN   TestGenericDisjunctionMainReadSemantics
+=== RUN   TestGenericDisjunctionMainReadSemantics/annotation-bad-tail-hit
+=== RUN   TestGenericDisjunctionMainReadSemantics/annotation-bad-tail-miss
+=== RUN   TestGenericDisjunctionMainReadSemantics/annotation-bad-tail-global-miss
+--- PASS: TestGenericDisjunctionMainReadSemantics (0.17s)
+    --- PASS: TestGenericDisjunctionMainReadSemantics/annotation-bad-tail-hit (0.01s)
+    --- PASS: TestGenericDisjunctionMainReadSemantics/annotation-bad-tail-miss (0.00s)
+    --- PASS: TestGenericDisjunctionMainReadSemantics/annotation-bad-tail-global-miss (0.01s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.489s

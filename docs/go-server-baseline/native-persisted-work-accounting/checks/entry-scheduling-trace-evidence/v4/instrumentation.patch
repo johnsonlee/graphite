@@ -1,0 +1,452 @@
+--- original/internal/query/main_fixed_workers.go
++++ instrumented/internal/query/main_fixed_workers.go
+@@ -1,6 +1,7 @@
+ package query
+ 
+ import (
++	"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace"
+ 	"context"
+ 	"runtime"
+ 	"sync"
+@@ -32,6 +33,7 @@
+ 	defer c.mu.Unlock()
+ 	if c.err == nil {
+ 		c.err = err
++		entrytrace.Emit("worker_interrupt", c, nil, "", 0, 0, 0)
+ 		close(c.done)
+ 	}
+ }
+@@ -67,6 +69,7 @@
+ 	defer f.mu.Unlock()
+ 	f.run = nil
+ 	f.worker = nil
++	entrytrace.Emit("future_finish", f, nil, "", 0, 0, 0)
+ 	if !f.complete {
+ 		f.complete = true
+ 		close(f.done)
+@@ -80,6 +83,7 @@
+ 		return
+ 	}
+ 	f.canceled = true
++	entrytrace.Emit("future_cancel", f, f.worker, "", entrytrace.Flag(f.started), 0, 0)
+ 	f.worker.interrupt(err)
+ 	if !f.started {
+ 		f.run = nil
+@@ -95,6 +99,7 @@
+ 		return
+ 	}
+ 	f.started = true
++	entrytrace.Emit("future_start", f, f.worker, "", 0, 0, 0)
+ 	run := f.run
+ 	f.mu.Unlock()
+ 	defer f.finish()
+@@ -102,10 +107,13 @@
+ }
+ func newMainFixedExecutor(capacity int) *mainFixedExecutor {
+ 	e := &mainFixedExecutor{}
++	entrytrace.Emit("executor_create", e, nil, "", int64(capacity), 0, 0)
+ 	e.ready = sync.NewCond(&e.mu)
+ 	for range max(1, capacity) {
+ 		e.exited.Add(1)
+ 		go func() {
++			entrytrace.Emit("executor_core_start", e, nil, "", 0, 0, 0)
++			defer entrytrace.Emit("executor_core_exit", e, nil, "", 0, 0, 0)
+ 			defer e.exited.Done()
+ 			for {
+ 				e.mu.Lock()
+@@ -119,6 +127,7 @@
+ 				future := e.queue[0]
+ 				e.queue[0] = nil
+ 				e.queue = e.queue[1:]
++				entrytrace.Emit("executor_dequeue", e, future, "", int64(len(e.queue)), 0, 0)
+ 				e.mu.Unlock()
+ 				future.execute()
+ 			}
+@@ -133,6 +142,7 @@
+ 		panic("submit to closed main fixed executor")
+ 	}
+ 	e.queue = append(e.queue, future)
++	entrytrace.Emit("executor_submit", e, future, "", int64(len(e.queue)), 0, 0)
+ 	e.ready.Signal()
+ }
+ 
+@@ -170,6 +180,7 @@
+ 		failure any
+ 	}
+ 	workerCount := min(count, max(1, parallel))
++	entrytrace.Emit("fixed_runner_enter", ctx, executor, "", int64(count), int64(workerCount), 0)
+ 	indexes := make(chan int, workerCount)
+ 	// Main publishes to an unbounded queue even if the worker is interrupted.
+ 	// At most count outcomes exist, so this capacity provides the same guarantee.
+@@ -181,6 +192,7 @@
+ 	futures := make([]*mainFixedFuture, workerCount)
+ 	for i, worker := range workers {
+ 		futures[i] = &mainFixedFuture{worker: worker, done: make(chan struct{})}
++		entrytrace.Emit("future_create", futures[i], worker, "", int64(i), 0, 0)
+ 	}
+ 	interruptWorkers := func(err error) {
+ 		for _, future := range futures {
+@@ -189,13 +201,14 @@
+ 	}
+ 	invoke := func(worker context.Context, index int) (out outcome) {
+ 		out.index = index
+-		defer func() { out.failure = recover() }()
++		defer func() { out.failure = recover(); entrytrace.Emit("source_outcome", worker, nil, "", int64(index), entrytrace.Flag(out.failure != nil), 0) }()
+ 		out.value = task(worker, index)
+ 		return
+ 	}
+ 	for _, future := range futures {
+ 		worker := future.worker
+ 		future.setRun(func() {
++			defer entrytrace.Emit("worker_exit", worker, future, "", 0, 0, 0)
+ 			for {
+ 				// LinkedBlockingQueue.take is interruptible, including on an already
+ 				// interrupted worker. Do not consume another queued task in that state.
+@@ -209,12 +222,14 @@
+ 				case <-worker.Done():
+ 					return
+ 				case index = <-indexes:
++					entrytrace.Emit("source_dequeue", worker, future, "", int64(index), 0, 0)
+ 				}
+ 				if index < 0 {
+ 					return
+ 				}
+ 				out := invoke(worker, index)
+ 				outcomes <- out
++				entrytrace.Emit("outcome_sent", worker, future, "", int64(index), 0, 0)
+ 				if out.failure != nil {
+ 					return
+ 				}
+@@ -234,6 +249,7 @@
+ 		}
+ 		for _, future := range futures {
+ 			<-future.done
++			entrytrace.Emit("future_joined", future, nil, "", 0, 0, 0)
+ 		}
+ 		// AfterFunc stop does not wait for a callback that has already started.
+ 		if !stopBridge() {
+@@ -246,6 +262,7 @@
+ 	nextTask := 0
+ 	for nextTask < workerCount {
+ 		indexes <- nextTask
++		entrytrace.Emit("source_enqueued", ctx, executor, "", int64(nextTask), 0, 0)
+ 		nextTask++
+ 	}
+ 	completed := make([]*outcome, count)
+@@ -263,6 +280,7 @@
+ 		case <-ctx.Done():
+ 			panic(ctx.Err())
+ 		case out = <-outcomes:
++			entrytrace.Emit("outcome_received", ctx, executor, "", int64(out.index), entrytrace.Flag(out.failure != nil), 0)
+ 		}
+ 		completed[out.index] = &out
+ 		for nextResult < count && completed[nextResult] != nil {
+@@ -271,11 +289,13 @@
+ 				panic(ordered.failure)
+ 			}
+ 			if consume(nextResult, ordered.value) {
++				entrytrace.Emit("fixed_limit_stop", ctx, executor, "", int64(nextResult), 0, 0)
+ 				return
+ 			}
+ 			nextResult++
+ 			if nextTask < count {
+ 				indexes <- nextTask
++				entrytrace.Emit("source_enqueued", ctx, executor, "", int64(nextTask), 0, 0)
+ 				nextTask++
+ 			}
+ 		}
+--- original/internal/query/indexed_distinct.go
++++ instrumented/internal/query/indexed_distinct.go
+@@ -1,6 +1,7 @@
+ package query
+ 
+ import (
++	"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace"
+ 	"context"
+ 	"errors"
+ 	"fmt"
+@@ -215,6 +216,8 @@
+ // checks failures in contiguous source order, stops at LIMIT, and cancels/joins
+ // the speculative suffix. Replenishment follows that same consumed prefix.
+ func runDistinctTasks[T any](ctx context.Context, count, parallel int, orderedStop bool, task func(context.Context, int) T, consume func(int, T) bool) {
++	entrytrace.Emit("legacy_runner_enter", ctx, nil, "", int64(count), int64(parallel), entrytrace.Flag(orderedStop))
++	defer entrytrace.Emit("legacy_runner_exit", ctx, nil, "", 0, 0, 0)
+ 	if count == 0 {
+ 		return
+ 	}
+@@ -231,15 +234,18 @@
+ 	done := make(chan outcome, count)
+ 	active, nextTask := 0, 0
+ 	launch := func(i int) {
++		entrytrace.Emit("legacy_launch", local, nil, "", int64(i), 0, 0)
+ 		active++
+ 		go func() {
+ 			out := outcome{index: i}
+-			defer func() { out.failure = recover(); done <- out }()
++			entrytrace.Emit("legacy_task_start", local, nil, "", int64(i), 0, 0)
++			defer func() { out.failure = recover(); entrytrace.Emit("legacy_outcome", local, nil, "", int64(i), entrytrace.Flag(out.failure != nil), 0); done <- out }()
+ 			out.value = task(local, i)
+ 		}()
+ 	}
+ 	defer func() {
+ 		cancel()
++		entrytrace.Emit("legacy_cancel", local, nil, "", 0, 0, 0)
+ 		for active > 0 {
+ 			<-done
+ 			active--
+--- original/internal/query/ordinary_projection.go
++++ instrumented/internal/query/ordinary_projection.go
+@@ -1,6 +1,7 @@
+ package query
+ 
+ import (
++	"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace"
+ 	"context"
+ 	"runtime"
+ 
+@@ -202,11 +203,13 @@
+ 				local.rowOrders = nil
+ 				taskPlan := *plan
+ 				taskPlan.parallelProjection = true
++				entrytrace.Emit("ordinary_suffix_source", ctx, sources[i+1].Store, sources[i+1].ID, int64(i+1), int64(plan.limit), 0)
+ 				return local.ordinarySourceRows(sources[i+1], &taskPlan, plan.limit)
+ 			}
+ 			consume := func(i int, rows []map[string]any) bool {
+ 				remaining := plan.limit - len(result.Rows)
+ 				result.Rows = append(result.Rows, rows[:min(remaining, len(rows))]...)
++				entrytrace.Emit("ordinary_prefix_consume", e.ctx, nil, sources[i+1].ID, int64(i+1), int64(len(result.Rows)), int64(plan.limit))
+ 				return len(result.Rows) >= plan.limit
+ 			}
+ 			workers := max(1, runtime.NumCPU()/2)
+--- original/internal/query/main_string_source.go
++++ instrumented/internal/query/main_string_source.go
+@@ -1,6 +1,7 @@
+ package query
+ 
+ import (
++	"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace"
+ 	"context"
+ 	"errors"
+ 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+@@ -25,6 +26,8 @@
+ }
+ 
+ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpec, limit int) mainNodeNext {
++	entrytrace.Emit("candidate_entry", e.ctx, source.Store, source.ID, int64(plan.sourceCount), int64(limit), 0)
++	defer entrytrace.Emit("candidate_construction_return", e.ctx, source.Store, source.ID, 0, 0, 0)
+ 	if limit <= 0 {
+ 		return func(context.Context) (store.Node, bool) { return store.Node{}, false }
+ 	}
+--- original/internal/query/main_string_mapped.go
++++ instrumented/internal/query/main_string_mapped.go
+@@ -1,6 +1,7 @@
+ package query
+ 
+ import (
++	"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace"
+ 	"container/heap"
+ 	"context"
+ 
+@@ -74,7 +75,8 @@
+ 				return 0, false
+ 			}
+ 			if visited&1023 == 0 {
+-				failMainMappedRead(ctx.Err())
++				entrytrace.Emit("mapped_sequence_poll", ctx, source.Store, source.ID, int64(visited), int64(yielded), 0)
++				failMainMappedRead(entrytrace.Error(ctx.Err(), "mapped_sequence_poll_rejected", ctx, source.Store, source.ID, int64(visited)))
+ 			}
+ 			visited++
+ 			cursor := heap.Pop(&pending).(*store.MainMappedCursor)
+--- original/internal/query/ordinary_parallel.go
++++ instrumented/internal/query/ordinary_parallel.go
+@@ -1,6 +1,7 @@
+ package query
+ 
+ import (
++	"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace"
+ 	"context"
+ 	"errors"
+ 	"runtime"
+@@ -82,11 +83,13 @@
+ 			anchorStart, anchorEnd = start, end
+ 		}
+ 	}
++	entrytrace.Emit("mapped_anchor", e.ctx, source.Store, source.ID, int64(anchorStart), int64(anchorEnd), 0)
+ 	for position := anchorStart; position < anchorEnd; position++ {
+ 		// main polls the absolute posting position, not every candidate or
+ 		// binary-search read. Work callbacks retain their own cancellation.
+ 		if position&1023 == 0 {
+-			failMainMappedRead(e.ctx.Err())
++			entrytrace.Emit("mapped_anchor_poll", e.ctx, source.Store, source.ID, int64(position), 0, 0)
++			failMainMappedRead(entrytrace.Error(e.ctx.Err(), "mapped_anchor_poll_rejected", e.ctx, source.Store, source.ID, int64(position)))
+ 		}
+ 		accounting.consume()
+ 		sid, err := index.MainMappedTrigramStringIDAt(position)
+--- original/internal/store/main_mapped_cursor.go
++++ instrumented/internal/store/main_mapped_cursor.go
+@@ -1,6 +1,7 @@
+ package store
+ 
+ import (
++	"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace"
+ 	"context"
+ 	"encoding/binary"
+ 	"fmt"
+@@ -293,6 +294,7 @@
+ 		return nil, false, nil
+ 	}
+ 	row, start, end, found, err := i.mainMappedPostingRangeWithWork(p, sid, consume)
++	entrytrace.Emit("range_lookup", ctx, v.owner, v.owner.dir, int64(p), int64(sid), entrytrace.Flag(found))
+ 	if err != nil {
+ 		return nil, false, err
+ 	}
+@@ -311,12 +313,15 @@
+ 	}
+ 	v.owner.callSiteIndex.mu.RUnlock()
+ 	if state == 2 {
++		entrytrace.Emit("range_cached_invalid", ctx, v.owner, v.owner.dir, int64(p), int64(row), 0)
+ 		return nil, false, nil
+ 	}
+ 	var orders []int64
++	entrytrace.Emit("range_cache_observed", ctx, v.owner, v.owner.dir, int64(p), int64(row), int64(state))
+ 	if state == 0 {
+ 		var valid bool
+ 		orders, valid, err = i.validateMainMappedRange(ctx, p, start, end, consume)
++		entrytrace.Emit("range_validation_return", ctx, v.owner, v.owner.dir, int64(start), int64(end), entrytrace.Flag(err != nil))
+ 		if err != nil {
+ 			return nil, false, err
+ 		}
+@@ -334,6 +339,7 @@
+ 			if valid {
+ 				v.mainRanges.states[slot] = 1
+ 			}
++			entrytrace.Emit("range_publication", ctx, v.owner, v.owner.dir, int64(p), int64(row), int64(v.mainRanges.states[slot]))
+ 		}
+ 		v.owner.callSiteIndex.mu.Unlock()
+ 		if !valid {
+@@ -365,9 +371,12 @@
+ 	}()
+ 	previous := int64(math.MinInt64)
+ 	v := i.view
++	entrytrace.Emit("range_validation_enter", ctx, v.owner, v.owner.dir, int64(start), int64(end), 0)
+ 	for position := start; position < end; position++ {
+ 		if position&1023 == 0 {
++			entrytrace.Emit("range_poll", ctx, v.owner, v.owner.dir, int64(position), int64(p), 0)
+ 			if err = ctx.Err(); err != nil {
++				entrytrace.Emit("range_poll_rejected", ctx, v.owner, v.owner.dir, int64(position), int64(p), 0)
+ 				return nil, false, err
+ 			}
+ 		}
+--- original/cmd/graphite-benchmark-replay/main.go
++++ instrumented/cmd/graphite-benchmark-replay/main.go
+@@ -2,6 +2,7 @@
+ package main
+ 
+ import (
++	"github.com/johnsonlee/graphite/graphite-server/internal/entrytrace"
+ 	"bufio"
+ 	"context"
+ 	"crypto/sha256"
+@@ -112,9 +113,11 @@
+ 			return err
+ 		}
+ 		qctx, cancel := context.WithTimeout(ctx, time.Duration(input.TimeoutMillis)*time.Millisecond)
++		entrytrace.Begin(i)
+ 		result, queryErr := query.ExecuteCrossWithOptions(qctx, sources, input.Query, input.Parameters, -1, query.ExecutionOptions{SourceScopeApplied: input.SourceScopeApplied, WorkTrackingEnabled: true})
+ 		timedOut := errors.Is(qctx.Err(), context.DeadlineExceeded)
+ 		cancel() // ExecuteCross joins all source tasks before it returns.
++		entrytrace.End()
+ 		after, err := r.states()
+ 		if err != nil {
+ 			return err
+@@ -158,6 +161,7 @@
+ 		if validation, ok := record["validationError"]; ok {
+ 			return fmt.Errorf("%s: %s", c.ID, validation)
+ 		}
++		if i == 3 { break } // Diagnostic prefix; full workload input is unchanged.
+ 	}
+ 	if failures != 0 {
+ 		return fmt.Errorf("%s had %d failed cases", phase, failures)
+@@ -166,6 +170,8 @@
+ }
+ 
+ func run() error {
++	entrytrace.Init()
++	defer func() { if err := entrytrace.Dump(); err != nil { fmt.Fprintln(os.Stderr, "diagnostic trace dump:", err) } }()
+ 	manifest := flag.String("workload", "internal/benchmarkcase/testdata/main64.json", "exact pinned-main workload export")
+ 	graphs := flag.String("graphs", "", "six-column graph manifest for a fresh writable real64 clone")
+ 	state := flag.String("state", "cold", "cold, warm, or startup-prepared")
+@@ -258,7 +264,7 @@
+ 	if err := r.run(ctx, "replay"); err != nil {
+ 		return err
+ 	}
+-	responses := 1267
++	responses := 4 // Diagnostic prefix response count.
+ 	if *state == "warm" {
+ 		responses *= 2
+ 	}
+--- original/internal/entrytrace/trace.go
++++ instrumented/internal/entrytrace/trace.go
+@@ -0,0 +1,62 @@
++// Diagnostic copy only. No waits, callbacks, context wrappers, or hot-path I/O.
++package entrytrace
++
++import (
++	"encoding/json"
++	"os"
++	"reflect"
++	"sync/atomic"
++)
++
++const capacity = 262144
++type Event struct {
++	Sequence uint64 `json:"sequence"`
++	Query int64 `json:"queryIndex"`
++	Kind string `json:"kind"`
++	Object uintptr `json:"object"`
++	Related uintptr `json:"related"`
++	Graph string `json:"graph"`
++	A int64 `json:"a"`
++	B int64 `json:"b"`
++	C int64 `json:"c"`
++}
++type slot struct { ready atomic.Bool; event Event }
++var slots []slot
++var position atomic.Uint64
++var current atomic.Int64
++
++func Init() { slots = make([]slot, capacity) }
++func pointer(value any) uintptr {
++	if value == nil { return 0 }
++	v := reflect.ValueOf(value)
++	if v.Kind() == reflect.Pointer { return v.Pointer() }
++	return 0
++}
++func Flag(value bool) int64 { if value { return 1 }; return 0 }
++func Emit(kind string, object, related any, graph string, a, b, c int64) {
++	query := current.Load()
++	if len(slots) == 0 { return }
++	i := position.Add(1)-1
++	if i >= capacity { return }
++	s := &slots[i]
++	s.event = Event{i, query-1, kind, pointer(object), pointer(related), graph, a, b, c}
++	s.ready.Store(true)
++}
++// Existing Err() is evaluated once by the caller; preserve that exact error.
++func Error(err error, kind string, object, related any, graph string, a int64) error {
++	if err != nil { Emit(kind, object, related, graph, a, 0, 0) }
++	return err
++}
++func Begin(query int) { current.Store(int64(query)+1); Emit("query_begin", nil, nil, "", 0, 0, 0) }
++func End() { Emit("query_end", nil, nil, "", 0, 0, 0); current.Store(0) }
++func Dump() error {
++	f, err := os.Create(os.Getenv("GRAPHITE_ENTRY_TRACE")); if err != nil { return err }; defer f.Close()
++	enc := json.NewEncoder(f)
++	n := position.Load(); missing := uint64(0)
++	for i := uint64(0); i < min(n, capacity); i++ {
++		if !slots[i].ready.Load() { missing++; continue }
++		if err := enc.Encode(slots[i].event); err != nil { return err }
++	}
++	dropped := uint64(0); if n > capacity { dropped = n-capacity }
++	return enc.Encode(map[string]any{"kind":"trace_summary", "reserved":n, "capacity":capacity, "dropped":dropped, "unpublished":missing, "diagnosticOnly":true})
++}

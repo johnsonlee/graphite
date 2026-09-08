@@ -1,0 +1,15 @@
+{
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/projection_node.go": "c6ed6b622e9933e62b489981eaeb16cda156da609aa1eee749f99dfd326646fc",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/projection_annotation_test.go": "09761b8f8a7e95ddb9eaf4fa275346c9863cb2294de90a635116cfcdbe233f59",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/projection_enum_test.go": "51b6b4843d5312c302a2008165f856ba27da40292f3fd6998269ec7d167292f8",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/decode.go": "e52319eb020f907667a10ba718943f2a850c1aa211e8a13e83009e98e367c3a1",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/main_ordinary_entry.go": "022190f421442de825656f5c0a8264f47b8f0b579a5c97da2cb9e7f0f8c8fa27",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/generic_disjunction_test.go": "fa0c60c78af3cf3885c2df56809a239df4de8e038f75b4a6fa5557b36994b7ca",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/go.mod": "f6e6d88bd6fd905ebf229be49fa18c72371e30b1cfb80c2d7e3d194160bdf0b0",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/go.sum": "4a99dfa3f7e66bbdcdd49652f52bac26ad71c5ebcd4c66df6509a6f6bd9d8152",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/main.json": "3c45fe10bb660fd11f96211a85c7188ac6b429ba7147def746368c39f38cf91f",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/repeat-main.json.gz": "891bf0c101e67ca5540eb327d2356b7051f0fd290a16abcb3ab71f59deca8f31",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/fixtures.tar.gz": "b78a6587a7d881c3941500e2fcb6687b60f16a5cb5669b4b25e39109f13c6650",
+  "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4",
+  "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-pending-v1/before/internal/store/projection_node.go": "a560857181ec6b8b029005a715e4cd847330fa5ea6a43ea98c0aafcc23da244d"
+}

@@ -1,0 +1,8 @@
+153:      */
+154:     public static ExecutorService newFixedThreadPool(int nThreads, ThreadFactory threadFactory) {
+155:         return new ThreadPoolExecutor(nThreads, nThreads,
+156:                                       0L, TimeUnit.MILLISECONDS,
+157:                                       new LinkedBlockingQueue<Runnable>(),
+158:                                       threadFactory);
+159:     }
+160: 

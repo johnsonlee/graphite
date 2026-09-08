@@ -1,0 +1,17 @@
+{
+  "source": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-query-probe-v2",
+  "terminatedExitCode": 1,
+  "moduleSnapshotFilesVerified": 2555,
+  "externalFullModuleSnapshot": {
+    "path": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-query-probe-v2/source.tar.gz",
+    "sha256": "3ddb9cc49a4b8cc3163903373b1e82c5e3fe1fba22eca5dfc6daf1bdc73a469b"
+  },
+  "rawLogSHA256": "9ed2b06892721bdcd223ff6a2f3312de16ace49a08b589149a7c05e3e117fe0f",
+  "copiedFiles": {
+    "artifacts.json": "d204f2cf8c373ccfefdbd5e0f8f47566a591ac6ae3115c5daeb676fe3d48e1ca",
+    "inputs.json": "93fd5ee57b4c28bd6eaef421d4f0594c0f1b320a39be685666ae20ede84840de",
+    "query.log.gz": "eba10b4196ce95adbd4cf3c2da2fc22bf59510fd44eb9fd0161884c0105fd36b",
+    "receipt.json": "b9fd75d66c47fbd31e93429974ade8db6a290648b4ff8cca61005eb3e16b16c8"
+  },
+  "performanceMeasurements": 0
+}

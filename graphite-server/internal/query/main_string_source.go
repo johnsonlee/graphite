@@ -28,8 +28,18 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 	if limit <= 0 {
 		return func(context.Context) (store.Node, bool) { return store.Node{}, false }
 	}
-	index, retained, err := source.Store.RetainedProjectionIndex(e.ctx)
+	prepare := source.Store.PrepareDistinctStringIndex
+	var index *store.DistinctStringIndex
+	var retained bool
+	var err error
+	if plan.lazyMain {
+		index, retained, err = source.Store.MainRetainedProjectionIndex()
+		prepare = source.Store.PrepareMainOrdinaryStringIndex
+	} else {
+		index, retained, err = source.Store.RetainedProjectionIndex(e.ctx)
+	}
 	failMainStringRead(err)
+	retainedSplitPreflight := retained
 	raw := false
 	var ids []int32
 	var mappedNext func(context.Context) (int32, bool)
@@ -37,10 +47,15 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 	if !retained {
 		forcePersisted := plan.forcePersisted
 		if forcePersisted {
-			prepared, err := source.Store.PreparedProjectionFile(e.ctx)
+			var prepared bool
+			if plan.lazyMain {
+				prepared, err = source.Store.MainPreparedProjectionFile()
+			} else {
+				prepared, err = source.Store.PreparedProjectionFile(e.ctx)
+			}
 			failMainStringRead(err)
 			if prepared {
-				index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 1, Limit: limit, RetainPersisted: true})
+				index, _, err = prepare(e.ctx, store.DistinctProjectionOptions{ConsumeWork: e.storeWorkConsumer(), MainSource: plan.lazyMain, SourceCount: 1, Limit: limit, RetainPersisted: true})
 				failMainStringRead(err)
 				raw = index != nil && index.Raw
 			} else {
@@ -50,12 +65,17 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			// The streaming consumer passes the whole concrete node count. Main's raw
 			// bounded parallel shortcut is therefore ineligible; preserve retained-index
 			// loading/building and cannot-match preflight without initializing a view.
-			index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: plan.sourceCount, Limit: limit, SkipPreparedPreference: true, CannotMatch: func() bool { return e.distinctCannotMatch(source, &indexedDistinctPlan{atoms: plan.atoms}) }})
+			index, _, err = prepare(e.ctx, store.DistinctProjectionOptions{ConsumeWork: e.storeWorkConsumer(), MainSource: plan.lazyMain, SourceCount: plan.sourceCount, Limit: limit, SkipPreparedPreference: true, CannotMatch: func() bool { return e.distinctCannotMatch(source, &indexedDistinctPlan{atoms: plan.atoms}) }})
 			failMainStringRead(err)
 			raw = index != nil && index.Raw
+			retainedSplitPreflight = index != nil && !raw
 		} else if plan.sourceCount >= 40 {
-			view, ok, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 40, Limit: limit, InitializeMappedView: true})
-			failMainStringRead(err)
+			view, ok, err := prepare(e.ctx, store.DistinctProjectionOptions{ConsumeWork: e.storeWorkConsumer(), MainSource: plan.lazyMain, SourceCount: 40, Limit: limit, InitializeMappedView: true})
+			if plan.lazyMain {
+				failMainMappedRead(err)
+			} else {
+				failMainStringRead(err)
+			}
 			var exact []map[int32]bool
 			mappedExact := false
 			if ok {
@@ -71,7 +91,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 				waves := mappedExact && e.mainExactCanFill(view, plan, exact, limit)
 				ids, candidatesPrepared = e.mainParallelCandidates(source, plan, limit, exact, waves)
 				if !candidatesPrepared {
-					index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 40, Limit: limit, SkipPreparedPreference: true})
+					index, _, err = prepare(e.ctx, store.DistinctProjectionOptions{ConsumeWork: e.storeWorkConsumer(), MainSource: plan.lazyMain, SourceCount: 40, Limit: limit, SkipPreparedPreference: true})
 					failMainStringRead(err)
 					raw = index != nil && index.Raw
 				}
@@ -81,10 +101,22 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 		} else {
 			ids, candidatesPrepared = e.mainParallelCandidates(source, plan, limit, nil, false)
 			if !candidatesPrepared {
-				index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 1, Limit: limit, SkipPreparedPreference: true, CannotMatch: func() bool { return e.distinctCannotMatch(source, &indexedDistinctPlan{atoms: plan.atoms}) }})
+				index, _, err = prepare(e.ctx, store.DistinctProjectionOptions{ConsumeWork: e.storeWorkConsumer(), MainSource: plan.lazyMain, SourceCount: 1, Limit: limit, SkipPreparedPreference: true, CannotMatch: func() bool { return e.distinctCannotMatch(source, &indexedDistinctPlan{atoms: plan.atoms}) }})
 				failMainStringRead(err)
 				raw = index != nil && index.Raw
 			}
+		}
+	}
+	// Split consumers inspect retained exact-string matches before consulting
+	// the node-match cache. In particular, a cached exact miss is free and must
+	// not become the node cache's minimum one-unit charge. A retained index
+	// loaded only after the raw fallback does not repeat this earlier stage.
+	if plan.lazyMain && retainedSplitPreflight && plan.sourceCount >= 40 && !plan.forcePersisted {
+		exact, supported := e.mainRetainedExactMatches(source, index, plan)
+		if supported && !ordinaryAnyExact(exact) {
+			ids, candidatesPrepared = []int32{}, true
+		} else if supported {
+			ids, candidatesPrepared = e.mainParallelCandidates(source, plan, limit, exact, false)
 		}
 	}
 	if !candidatesPrepared {
@@ -133,7 +165,9 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			if !ok {
 				return store.Node{}, false
 			}
-			e.check()
+			if raw || !plan.lazyMain {
+				e.check()
+			}
 			if raw {
 				accounting.consume()
 				sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
@@ -165,7 +199,14 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 					continue
 				}
 			}
-			node, present, err := source.Store.ProjectionCandidateNode(e.ctx, id)
+			var node store.Node
+			var present bool
+			var err error
+			if plan.lazyMain && !raw {
+				node, present, err = source.Store.MainProjectionCandidateNode(id)
+			} else {
+				node, present, err = source.Store.ProjectionCandidateNode(e.ctx, id)
+			}
 			failMainStringRead(err)
 			if !present {
 				continue
@@ -178,7 +219,11 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			}
 			accounting.flush()
 			if plan.generic {
-				_, err := source.Store.ProjectionNodeOrder(e.ctx, node.ID)
+				if plan.lazyMain && !raw {
+					_, err = source.Store.MainProjectionNodeOrder(node.ID)
+				} else {
+					_, err = source.Store.ProjectionNodeOrder(e.ctx, node.ID)
+				}
 				failMainStringRead(err)
 			}
 			yielded++
@@ -216,4 +261,15 @@ func failMainStringRead(err error) {
 		panic(err)
 	}
 	failProjectionRead(err)
+}
+
+// Thread interruption at main's mapped-view checkpoints has its own storage
+// exception. Keep its message and retain the native cancellation cause so a
+// worker coordinator can still recognize local cancellation. Callback failures
+// are passed through unchanged, including their original request error object.
+func failMainMappedRead(err error) {
+	if err == context.Canceled || err == context.DeadlineExceeded {
+		panic(&Error{Class: "CancellationException", Message: "Mapped CallSite string index view interrupted", cause: err})
+	}
+	failMainStringRead(err)
 }

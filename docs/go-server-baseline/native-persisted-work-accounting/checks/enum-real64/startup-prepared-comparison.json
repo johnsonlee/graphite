@@ -1,0 +1,65 @@
+{
+  "state": "startup-prepared",
+  "caseDefinitionsExactlyEqual": true,
+  "loadedGraphCapabilityCounts": {
+    "main": {
+      "retained": 64,
+      "mappedView": 0,
+      "trigrams": 64,
+      "loadedFromPersistence": 64
+    },
+    "native": {
+      "retained": 64,
+      "mappedView": 0,
+      "trigrams": 64,
+      "loadedFromPersistence": 64
+    }
+  },
+  "phaseCaseCounts": {
+    "replay": 1267
+  },
+  "mainPhaseOutcomes": {
+    "replay": {
+      "success": 1266,
+      "error": 1
+    }
+  },
+  "publicDifferences": [],
+  "stateDifferenceCounts": {},
+  "firstStateDifferences": {},
+  "graphStateObservations": 162304,
+  "errors": [
+    {
+      "phase": "replay",
+      "index": 821,
+      "id": "four-or-graph-id-targeted",
+      "error": "IllegalStateException",
+      "message": "Unsafe expression reached parallel string projection"
+    }
+  ],
+  "observerFieldDifferences": [
+    {
+      "phase": "replay",
+      "index": 821,
+      "field": "errorClass",
+      "main": "java.lang.IllegalStateException",
+      "native": null
+    }
+  ],
+  "nativeUnavailableStateCounters": [],
+  "mainRawCacheNonzeroObservationCounts": {
+    "rawMatchCount": 0,
+    "rawProjectionCount": 2515
+  },
+  "mainRawCacheMaximumCounts": {
+    "rawMatchCount": 0,
+    "rawProjectionCount": 4
+  },
+  "mainManifestSuccessfulDigestsVerified": 1266,
+  "invocationPrepared": true,
+  "replayPhaseCovered": true,
+  "originalAllSuccessGatePassed": false,
+  "runtimeExitCode": 1,
+  "originalGraphFilesUnchangedPerRuntime": 1152,
+  "performanceMeasurement": false
+}

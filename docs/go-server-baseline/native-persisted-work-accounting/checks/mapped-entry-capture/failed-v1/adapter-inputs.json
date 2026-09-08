@@ -1,0 +1,5 @@
+{
+  "mapped_entry_observer_instrumented_test.go": "bdbf6140d37850998d11f99d96694e3919b001405a08d26d74be92b7ddf659e9",
+  "mapped_entry_observer_plain_test.go": "63dfb2e5dba237874ebd2a4abf4478745cee634e3d77253c6a1aa8eaefb5751d",
+  "mapped_entry_oracle_test.go": "7366d9a387aa2d57c1420cd8db7dfbd5e2d63f07cd3c92418a748ed5a2f90e72"
+}

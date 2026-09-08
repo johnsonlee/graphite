@@ -1,0 +1,105 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "commands": [
+    {
+      "phase": "javap",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+        "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+        "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+        "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+        "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:37:31.163596+00:00",
+      "endUTC": "2026-09-08T11:37:31.301507+00:00"
+    },
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/MappedWorkOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:37:31.301851+00:00",
+      "endUTC": "2026-09-08T11:37:31.699159+00:00"
+    },
+    {
+      "phase": "prepare",
+      "command": [
+        "/usr/bin/python3",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/prepare.py",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/variants"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:37:31.699517+00:00",
+      "endUTC": "2026-09-08T11:37:31.775601+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "MappedWorkOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/mapped-oracle/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/mapped-work-accounting-v2/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T11:37:35.916710+00:00",
+      "endUTC": "2026-09-08T11:37:38.061626+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "MappedWorkOracle$State.class",
+      "bytes": 6580,
+      "sha256": "1731c8fc49198e2bef585d5246c940643f72749484ee39cdcf3cb35e3d156f73"
+    },
+    {
+      "file": "MappedWorkOracle.class",
+      "bytes": 17214,
+      "sha256": "b3e07ac59b0f19e027b0a12dcedfdccf3692a37eb7f2830c0241a9ca443d4a60"
+    }
+  ],
+  "fixtureAudit": {
+    "originalFiles": 28196,
+    "changed": [
+      "M02-bad-checksum-100000/store0/graph.callsite-string-index",
+      "M02-bad-checksum-1861/store0/graph.callsite-string-index",
+      "M02-bad-identity-1/store0/graph.callsite-string-index",
+      "M02-bad-identity-100000/store0/graph.callsite-string-index",
+      "M02-bad-magic-1/store0/graph.callsite-string-index",
+      "M02-bad-magic-100000/store0/graph.callsite-string-index",
+      "M02-bad-node-order-100000/store0/graph.callsite-string-index",
+      "M02-bad-node-order-1861/store0/graph.callsite-string-index",
+      "M02-bad-posting-end-100000/store0/graph.callsite-string-index",
+      "M02-bad-posting-end-44/store0/graph.callsite-string-index",
+      "M02-bad-unique-id-100000/store0/graph.callsite-string-index",
+      "M02-bad-unique-id-43/store0/graph.callsite-string-index",
+      "M02-bad-version-1/store0/graph.callsite-string-index",
+      "M02-bad-version-100000/store0/graph.callsite-string-index",
+      "M02-trailing-byte-1/store0/graph.callsite-string-index",
+      "M02-trailing-byte-100000/store0/graph.callsite-string-index",
+      "M02-truncated-identity-1/store0/graph.callsite-string-index",
+      "M02-truncated-identity-100000/store0/graph.callsite-string-index",
+      "M02-truncated-int-1/store0/graph.callsite-string-index",
+      "M02-truncated-int-100000/store0/graph.callsite-string-index",
+      "M05-truncated-layout-1/store0/graph.callsite-string-index",
+      "M05-truncated-layout-100000/store0/graph.callsite-string-index"
+    ],
+    "added": [],
+    "missing": []
+  },
+  "performanceMeasurements": 0
+}

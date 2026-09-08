@@ -1,0 +1,10 @@
+{
+  "original": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-focused-v1",
+  "exactManifestFilesCopied": 15,
+  "manifestSHA256": "cb962f266c8eb2a665f962319c3e17a3926b811d50389000a6798d0bcccb53f4",
+  "baselineProductionSource": "/Users/johnsonlee/.codex/benchmarks/graphite/persisted-work-f0838dda-annotation-pending-v1/before/internal/store/projection_node.go",
+  "baselineProductionSHA256": "a560857181ec6b8b029005a715e4cd847330fa5ea6a43ea98c0aafcc23da244d",
+  "baselineFailurePreserved": true,
+  "runtimeExecutedByArchive": false,
+  "scope": "Focused test evidence, not full module/201/real64 validation or performance acceptance."
+}

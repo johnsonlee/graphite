@@ -1,0 +1,26 @@
+{
+  "sourceArchive": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-persisted-work-accounting/fixtures.tar.gz",
+  "sourceArchiveSHA256": "1a5564b5c08c837cda14455f38ad2e7154782dc50ef1c41774ac83b020979052",
+  "sourceMainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mutations": [
+    {
+      "fixture": "truncated-layout",
+      "sourceFixture": "hit64",
+      "file": "graph.callsite-string-index",
+      "beforeSHA256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+      "afterSHA256": "8e3ae546991715a4ee0c99e1f27e7a3e53aafbfb3f1f2a9ee0e8eb330008433f",
+      "beforeBytes": 10524,
+      "afterBytes": 84
+    },
+    {
+      "fixture": "bad-node-order-valid-crc",
+      "sourceFixture": "bad-node-order",
+      "file": "graph.callsite-string-index",
+      "beforeSHA256": "3cae49de8bf6f198565c2e31bdd12f160173ce498dac9ae104bfdeddebefa8a9",
+      "afterSHA256": "61378a8260dcff5145c01ecc55dfbdcae56900ff35006e67b07443697478cd21",
+      "beforeBytes": 10524,
+      "afterBytes": 10524
+    }
+  ],
+  "performanceMeasurements": 0
+}

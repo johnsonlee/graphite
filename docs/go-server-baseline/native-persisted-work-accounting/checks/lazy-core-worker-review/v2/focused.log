@@ -1,0 +1,98 @@
+=== RUN   TestMainFixedWorkersReuseAndNormalContextLifetime
+--- PASS: TestMainFixedWorkersReuseAndNormalContextLifetime (0.00s)
+=== RUN   TestMainFixedWorkersReplenishOnlyMergedPrefix
+--- PASS: TestMainFixedWorkersReplenishOnlyMergedPrefix (0.00s)
+=== RUN   TestMainFixedWorkersLimitDiscardsSuffixError
+--- PASS: TestMainFixedWorkersLimitDiscardsSuffixError (0.00s)
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/consumer
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/producer
+--- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure (0.00s)
+    --- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/consumer (0.00s)
+    --- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/producer (0.00s)
+=== RUN   TestMainFixedWorkersParentCancellationPublishesAndJoins
+--- PASS: TestMainFixedWorkersParentCancellationPublishesAndJoins (0.00s)
+=== RUN   TestMainFixedExecutorQueuedFutureCancellationDoesNotWaitForCapacity
+--- PASS: TestMainFixedExecutorQueuedFutureCancellationDoesNotWaitForCapacity (0.00s)
+=== RUN   TestMainFixedWorkersLimitCancelsAndJoinsActiveSuffix
+--- PASS: TestMainFixedWorkersLimitCancelsAndJoinsActiveSuffix (0.00s)
+=== RUN   TestMainFixedExecutorFIFOUsesDistinctFutureContexts
+--- PASS: TestMainFixedExecutorFIFOUsesDistinctFutureContexts (0.00s)
+=== RUN   TestMainFixedFutureCannotRestoreCanceledClosure
+--- PASS: TestMainFixedFutureCannotRestoreCanceledClosure (0.00s)
+=== RUN   TestMainFixedFutureCompletionClearsRunningClosure
+--- PASS: TestMainFixedFutureCompletionClearsRunningClosure (0.00s)
+=== RUN   TestMainFixedExecutorLazyCoreGrowthPerSubmission
+--- PASS: TestMainFixedExecutorLazyCoreGrowthPerSubmission (0.00s)
+=== RUN   TestMainFixedExecutorFirstTaskBypassesQueueAndCanceledCoreIsReusable
+--- PASS: TestMainFixedExecutorFirstTaskBypassesQueueAndCanceledCoreIsReusable (0.00s)
+=== RUN   TestMainFixedExecutorCloseDrainsAcceptedQueueAndRejectsNewWork
+--- PASS: TestMainFixedExecutorCloseDrainsAcceptedQueueAndRejectsNewWork (0.00s)
+=== RUN   TestMainFixedExecutorCloseBeforeAnySubmission
+--- PASS: TestMainFixedExecutorCloseBeforeAnySubmission (0.00s)
+=== RUN   TestMainFixedWorkersReuseAndNormalContextLifetime
+--- PASS: TestMainFixedWorkersReuseAndNormalContextLifetime (0.00s)
+=== RUN   TestMainFixedWorkersReplenishOnlyMergedPrefix
+--- PASS: TestMainFixedWorkersReplenishOnlyMergedPrefix (0.00s)
+=== RUN   TestMainFixedWorkersLimitDiscardsSuffixError
+--- PASS: TestMainFixedWorkersLimitDiscardsSuffixError (0.00s)
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/consumer
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/producer
+--- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure (0.00s)
+    --- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/consumer (0.00s)
+    --- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/producer (0.00s)
+=== RUN   TestMainFixedWorkersParentCancellationPublishesAndJoins
+--- PASS: TestMainFixedWorkersParentCancellationPublishesAndJoins (0.00s)
+=== RUN   TestMainFixedExecutorQueuedFutureCancellationDoesNotWaitForCapacity
+--- PASS: TestMainFixedExecutorQueuedFutureCancellationDoesNotWaitForCapacity (0.00s)
+=== RUN   TestMainFixedWorkersLimitCancelsAndJoinsActiveSuffix
+--- PASS: TestMainFixedWorkersLimitCancelsAndJoinsActiveSuffix (0.00s)
+=== RUN   TestMainFixedExecutorFIFOUsesDistinctFutureContexts
+--- PASS: TestMainFixedExecutorFIFOUsesDistinctFutureContexts (0.00s)
+=== RUN   TestMainFixedFutureCannotRestoreCanceledClosure
+--- PASS: TestMainFixedFutureCannotRestoreCanceledClosure (0.00s)
+=== RUN   TestMainFixedFutureCompletionClearsRunningClosure
+--- PASS: TestMainFixedFutureCompletionClearsRunningClosure (0.00s)
+=== RUN   TestMainFixedExecutorLazyCoreGrowthPerSubmission
+--- PASS: TestMainFixedExecutorLazyCoreGrowthPerSubmission (0.00s)
+=== RUN   TestMainFixedExecutorFirstTaskBypassesQueueAndCanceledCoreIsReusable
+--- PASS: TestMainFixedExecutorFirstTaskBypassesQueueAndCanceledCoreIsReusable (0.00s)
+=== RUN   TestMainFixedExecutorCloseDrainsAcceptedQueueAndRejectsNewWork
+--- PASS: TestMainFixedExecutorCloseDrainsAcceptedQueueAndRejectsNewWork (0.00s)
+=== RUN   TestMainFixedExecutorCloseBeforeAnySubmission
+--- PASS: TestMainFixedExecutorCloseBeforeAnySubmission (0.00s)
+=== RUN   TestMainFixedWorkersReuseAndNormalContextLifetime
+--- PASS: TestMainFixedWorkersReuseAndNormalContextLifetime (0.00s)
+=== RUN   TestMainFixedWorkersReplenishOnlyMergedPrefix
+--- PASS: TestMainFixedWorkersReplenishOnlyMergedPrefix (0.00s)
+=== RUN   TestMainFixedWorkersLimitDiscardsSuffixError
+--- PASS: TestMainFixedWorkersLimitDiscardsSuffixError (0.00s)
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/consumer
+=== RUN   TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/producer
+--- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure (0.00s)
+    --- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/consumer (0.00s)
+    --- PASS: TestMainFixedWorkersCancelAndJoinOnConsumerOrProducerFailure/producer (0.00s)
+=== RUN   TestMainFixedWorkersParentCancellationPublishesAndJoins
+--- PASS: TestMainFixedWorkersParentCancellationPublishesAndJoins (0.00s)
+=== RUN   TestMainFixedExecutorQueuedFutureCancellationDoesNotWaitForCapacity
+--- PASS: TestMainFixedExecutorQueuedFutureCancellationDoesNotWaitForCapacity (0.00s)
+=== RUN   TestMainFixedWorkersLimitCancelsAndJoinsActiveSuffix
+--- PASS: TestMainFixedWorkersLimitCancelsAndJoinsActiveSuffix (0.00s)
+=== RUN   TestMainFixedExecutorFIFOUsesDistinctFutureContexts
+--- PASS: TestMainFixedExecutorFIFOUsesDistinctFutureContexts (0.00s)
+=== RUN   TestMainFixedFutureCannotRestoreCanceledClosure
+--- PASS: TestMainFixedFutureCannotRestoreCanceledClosure (0.00s)
+=== RUN   TestMainFixedFutureCompletionClearsRunningClosure
+--- PASS: TestMainFixedFutureCompletionClearsRunningClosure (0.00s)
+=== RUN   TestMainFixedExecutorLazyCoreGrowthPerSubmission
+--- PASS: TestMainFixedExecutorLazyCoreGrowthPerSubmission (0.00s)
+=== RUN   TestMainFixedExecutorFirstTaskBypassesQueueAndCanceledCoreIsReusable
+--- PASS: TestMainFixedExecutorFirstTaskBypassesQueueAndCanceledCoreIsReusable (0.00s)
+=== RUN   TestMainFixedExecutorCloseDrainsAcceptedQueueAndRejectsNewWork
+--- PASS: TestMainFixedExecutorCloseDrainsAcceptedQueueAndRejectsNewWork (0.00s)
+=== RUN   TestMainFixedExecutorCloseBeforeAnySubmission
+--- PASS: TestMainFixedExecutorCloseBeforeAnySubmission (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.463s
