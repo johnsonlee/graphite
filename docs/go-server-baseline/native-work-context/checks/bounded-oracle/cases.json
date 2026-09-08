@@ -1,0 +1,268 @@
+[
+  {
+    "name": "scan-0",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 0
+      }
+    ]
+  },
+  {
+    "name": "with-0",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 0
+      }
+    ]
+  },
+  {
+    "name": "union-all-0",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name UNION ALL MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 0
+      }
+    ]
+  },
+  {
+    "name": "union-distinct-0",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name UNION MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 0
+      }
+    ]
+  },
+  {
+    "name": "scan-1",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 1
+      }
+    ]
+  },
+  {
+    "name": "with-1",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 1
+      }
+    ]
+  },
+  {
+    "name": "union-all-1",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name UNION ALL MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 1
+      }
+    ]
+  },
+  {
+    "name": "union-distinct-1",
+    "mode": "context",
+    "budget": "2",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name UNION MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 1
+      }
+    ]
+  },
+  {
+    "name": "scan-2",
+    "mode": "context",
+    "budget": "2",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  },
+  {
+    "name": "with-2",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  },
+  {
+    "name": "union-all-2",
+    "mode": "context",
+    "budget": "2",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name UNION ALL MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  },
+  {
+    "name": "union-distinct-2",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name UNION MATCH (n:LocalVariable) RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  },
+  {
+    "name": "union-all-with-zero",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name UNION ALL MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 0
+      }
+    ]
+  },
+  {
+    "name": "union-distinct-with-zero",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name UNION MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 0
+      }
+    ]
+  },
+  {
+    "name": "existing-limit-smaller",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name LIMIT 1",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  },
+  {
+    "name": "existing-limit-larger",
+    "mode": "context",
+    "budget": "2",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name LIMIT 4",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  },
+  {
+    "name": "skip-then-maxrows",
+    "mode": "context",
+    "budget": "3",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name SKIP 1",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  },
+  {
+    "name": "ordered-maxrows",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  },
+  {
+    "name": "nonliteral-limit",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name LIMIT toInteger(3)",
+        "parameters": {},
+        "maxRows": 2
+      }
+    ]
+  }
+]

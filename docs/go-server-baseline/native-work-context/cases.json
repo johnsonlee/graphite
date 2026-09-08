@@ -1,0 +1,989 @@
+[
+  {
+    "name": "construct-0",
+    "mode": "constructor",
+    "budget": "0",
+    "fixture": "locals",
+    "operations": []
+  },
+  {
+    "name": "construct--1",
+    "mode": "constructor",
+    "budget": "-1",
+    "fixture": "locals",
+    "operations": []
+  },
+  {
+    "name": "construct-1",
+    "mode": "constructor",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": []
+  },
+  {
+    "name": "construct-9223372036854775807",
+    "mode": "constructor",
+    "budget": "9223372036854775807",
+    "fixture": "locals",
+    "operations": []
+  },
+  {
+    "name": "negative-before-any-work",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "-1"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      }
+    ]
+  },
+  {
+    "name": "zero-does-not-consume",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "0"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      }
+    ]
+  },
+  {
+    "name": "exact-then-zero-and-positive",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "4"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      }
+    ]
+  },
+  {
+    "name": "oversized-clamps-to-zero",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "5"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      }
+    ]
+  },
+  {
+    "name": "sequential-exact-consumption",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "consume",
+        "units": "2"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      }
+    ]
+  },
+  {
+    "name": "maximum-long-exact",
+    "mode": "tracker",
+    "budget": "9223372036854775807",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "9223372036854775807"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      }
+    ]
+  },
+  {
+    "name": "default-cancellation",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "check"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      }
+    ]
+  },
+  {
+    "name": "timeout-first-reason",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "timeout",
+        "timeoutMillis": "25"
+      },
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "cancel",
+        "kind": "custom",
+        "message": "later"
+      },
+      {
+        "op": "reason"
+      },
+      {
+        "op": "check"
+      }
+    ]
+  },
+  {
+    "name": "custom-first-reason",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "custom",
+        "message": "\u81ea\u5b9a\u4e49 stop"
+      },
+      {
+        "op": "cancel",
+        "kind": "timeout",
+        "timeoutMillis": "25"
+      },
+      {
+        "op": "reason"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      }
+    ]
+  },
+  {
+    "name": "default-first-reason",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "cancel",
+        "kind": "timeout",
+        "timeoutMillis": "25"
+      },
+      {
+        "op": "reason"
+      },
+      {
+        "op": "check"
+      }
+    ]
+  },
+  {
+    "name": "uncancelled-reason-is-not-cancellation",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "reason"
+      },
+      {
+        "op": "check"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      }
+    ]
+  },
+  {
+    "name": "negative-validation-before-cancellation",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "consume",
+        "units": "-1"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      }
+    ]
+  },
+  {
+    "name": "negative-validation-before-timeout",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "timeout",
+        "timeoutMillis": "0"
+      },
+      {
+        "op": "consume",
+        "units": "-1"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      }
+    ]
+  },
+  {
+    "name": "cancelled-oversized-checks-cancel-first",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "timeout",
+        "timeoutMillis": "25"
+      },
+      {
+        "op": "consume",
+        "units": "100"
+      }
+    ]
+  },
+  {
+    "name": "exhausted-then-cancelled-zero",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "4"
+      },
+      {
+        "op": "cancel",
+        "kind": "custom",
+        "message": "after exhaustion"
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      },
+      {
+        "op": "consume",
+        "units": "-1"
+      }
+    ]
+  },
+  {
+    "name": "diagnostic-counters",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "selection",
+        "initial": 1,
+        "selected": 1,
+        "conflicting": false
+      },
+      {
+        "op": "selection",
+        "initial": 5,
+        "selected": 2,
+        "conflicting": false
+      },
+      {
+        "op": "selection",
+        "initial": 2,
+        "selected": 0,
+        "conflicting": true
+      },
+      {
+        "op": "fast"
+      },
+      {
+        "op": "filtered"
+      },
+      {
+        "op": "fallback"
+      },
+      {
+        "op": "consume",
+        "units": "2"
+      }
+    ]
+  },
+  {
+    "name": "invalid-source-counts",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "selection",
+        "initial": -1,
+        "selected": 0,
+        "conflicting": false
+      },
+      {
+        "op": "selection",
+        "initial": 2,
+        "selected": -1,
+        "conflicting": false
+      },
+      {
+        "op": "selection",
+        "initial": 2,
+        "selected": 3,
+        "conflicting": false
+      },
+      {
+        "op": "selection",
+        "initial": 0,
+        "selected": 0,
+        "conflicting": true
+      }
+    ]
+  },
+  {
+    "name": "diagnostics-after-cancellation",
+    "mode": "tracker",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "fast"
+      },
+      {
+        "op": "filtered"
+      },
+      {
+        "op": "fallback"
+      },
+      {
+        "op": "selection",
+        "initial": 3,
+        "selected": 1,
+        "conflicting": true
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      }
+    ]
+  },
+  {
+    "name": "concurrent-tracker-exact-total",
+    "mode": "tracker",
+    "budget": "100",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "concurrentConsume",
+        "workers": 4
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      },
+      {
+        "op": "consume",
+        "units": "1"
+      }
+    ]
+  },
+  {
+    "name": "context-sequential-same-executor",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "context-sequential-fresh-executors",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "freshExecutor": true
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "freshExecutor": true
+      }
+    ]
+  },
+  {
+    "name": "context-two-exact-scans",
+    "mode": "context",
+    "budget": "8",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "context-failed-scan-then-graph-free",
+    "mode": "context",
+    "budget": "3",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "RETURN 7 AS value",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "context-graph-free-zero-work",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "RETURN 7 AS value",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "UNWIND range(1, 25) AS x RETURN x LIMIT 2",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "RETURN [1,2,3] AS values",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "budget-only-reset-success",
+    "mode": "budget-only",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "budget-only-reset-after-failure",
+    "mode": "budget-only",
+    "budget": "3",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "budget-only-repeated-failure",
+    "mode": "budget-only",
+    "budget": "3",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "unbudgeted-scan-control",
+    "mode": "unbudgeted",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "context-union-shared-failure",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name UNION ALL MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "RETURN 9 AS value",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "context-union-shared-exact",
+    "mode": "context",
+    "budget": "8",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name UNION ALL MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "budget-only-union-shared-failure",
+    "mode": "budget-only",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name UNION ALL MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "cancelled-valid-query",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "cancelled-invalid-syntax",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "cancelled-negative-maxrows",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": -1
+      }
+    ]
+  },
+  {
+    "name": "cancelled-negative-maxrows-and-syntax",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (",
+        "parameters": {},
+        "maxRows": -1
+      }
+    ]
+  },
+  {
+    "name": "cancelled-zero-maxrows",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "timeout",
+        "timeoutMillis": "12"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 0
+      }
+    ]
+  },
+  {
+    "name": "cancelled-missing-parameter",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "execute",
+        "query": "RETURN $missing AS value",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "syntax-error-does-not-consume",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "cancellation-across-new-executor",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "RETURN 1 AS value",
+        "parameters": {}
+      },
+      {
+        "op": "cancel",
+        "kind": "custom",
+        "message": "request stopped"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "freshExecutor": true
+      },
+      {
+        "op": "execute",
+        "query": "RETURN 2 AS value",
+        "parameters": {},
+        "freshExecutor": true
+      }
+    ]
+  },
+  {
+    "name": "cancelled-graph-free-query",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "cancel",
+        "kind": "default"
+      },
+      {
+        "op": "execute",
+        "query": "UNWIND range(1,25) AS x RETURN x LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "uncancelled-zero-maxrows",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {},
+        "maxRows": 0
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-bad-first-decoding",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "bad-first",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "4"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-missing-first-then-bad",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "missing-first-bad-second",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "4"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-missing-first-skips",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "missing-first",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "4"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-all-missing-empty",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "missing-all",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "4"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "missing-first-counts-three",
+    "mode": "context",
+    "budget": "3",
+    "fixture": "missing-first",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "with-then-limit-one-consumption",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  }
+]

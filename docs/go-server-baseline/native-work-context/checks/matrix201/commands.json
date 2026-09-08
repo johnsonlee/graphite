@@ -1,0 +1,24 @@
+[
+  {
+    "name": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "test",
+      "-c",
+      "-o",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-2547ef3-matrix-v2/diagnostic.test",
+      "./internal/query"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "capture",
+    "command": [
+      "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-2547ef3-matrix-v2/diagnostic.test",
+      "-test.run=^TestGenericDisjunctionDiagnosticCapture$",
+      "-test.count=1",
+      "-test.v"
+    ],
+    "exitCode": 0
+  }
+]

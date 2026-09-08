@@ -1,0 +1,353 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "javaVersion": "17.0.18",
+  "performanceMeasurements": 0,
+  "cases": [
+    {
+      "spec": {
+        "name": "single-null--1",
+        "mode": "single-null",
+        "maxRows": -1,
+        "query": "MATCH ("
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "NullPointerException",
+      "errorClass": "java.lang.NullPointerException",
+      "message": "Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherExecutor.<init>, parameter graph",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherExecutor.<init>(CypherExecutor.kt)",
+        "ConstructorOracle.main(ConstructorOracle.java:35)"
+      ],
+      "phase": "constructor",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "single-null-0",
+        "mode": "single-null",
+        "maxRows": 0,
+        "query": "MATCH ("
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "NullPointerException",
+      "errorClass": "java.lang.NullPointerException",
+      "message": "Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherExecutor.<init>, parameter graph",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherExecutor.<init>(CypherExecutor.kt)",
+        "ConstructorOracle.main(ConstructorOracle.java:35)"
+      ],
+      "phase": "constructor",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "cross-null--1",
+        "mode": "cross-null",
+        "maxRows": -1,
+        "query": "MATCH ("
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "NullPointerException",
+      "errorClass": "java.lang.NullPointerException",
+      "message": "Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherGraph.<init>(CrossGraphValues.kt)",
+        "ConstructorOracle.main(ConstructorOracle.java:42)"
+      ],
+      "phase": "source-constructor",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "cross-null-0",
+        "mode": "cross-null",
+        "maxRows": 0,
+        "query": "MATCH ("
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "NullPointerException",
+      "errorClass": "java.lang.NullPointerException",
+      "message": "Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherGraph.<init>(CrossGraphValues.kt)",
+        "ConstructorOracle.main(ConstructorOracle.java:42)"
+      ],
+      "phase": "source-constructor",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "cross-duplicate--1",
+        "mode": "cross-duplicate",
+        "maxRows": -1,
+        "query": "MATCH ("
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "IllegalArgumentException",
+      "errorClass": "java.lang.IllegalArgumentException",
+      "message": "Graph ids must be unique",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.QueryPipeline.<init>(QueryPipeline.kt:319)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.<init>(QueryPipeline.kt:315)",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.<init>(CypherExecutor.kt:502)",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.<init>(CypherExecutor.kt:492)",
+        "ConstructorOracle.main(ConstructorOracle.java:50)"
+      ],
+      "phase": "constructor",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "cross-duplicate-0",
+        "mode": "cross-duplicate",
+        "maxRows": 0,
+        "query": "MATCH ("
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "IllegalArgumentException",
+      "errorClass": "java.lang.IllegalArgumentException",
+      "message": "Graph ids must be unique",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.QueryPipeline.<init>(QueryPipeline.kt:319)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.<init>(QueryPipeline.kt:315)",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.<init>(CypherExecutor.kt:502)",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.<init>(CypherExecutor.kt:492)",
+        "ConstructorOracle.main(ConstructorOracle.java:50)"
+      ],
+      "phase": "constructor",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "cross-empty--1",
+        "mode": "cross-empty",
+        "maxRows": -1,
+        "query": "MATCH ("
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "IllegalArgumentException",
+      "errorClass": "java.lang.IllegalArgumentException",
+      "message": "maxRows must be non-negative",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:80)",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:516)",
+        "ConstructorOracle.main(ConstructorOracle.java:52)"
+      ],
+      "phase": "execute",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "cross-empty-0",
+        "mode": "cross-empty",
+        "maxRows": 0,
+        "query": "MATCH ("
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "CypherParseException",
+      "errorClass": "io.johnsonlee.graphite.cypher.CypherParseException",
+      "message": "Syntax error at position 7: mismatched input '<EOF>' expecting {')', '{', ':', 'CALL', 'YIELD', 'FILTER', 'EXTRACT', 'COUNT', 'ANY', 'NONE', 'SINGLE', 'ALL', 'ASC', 'ASCENDING', 'BY', 'CREATE', 'DELETE', 'DESC', 'DESCENDING', 'DETACH', 'EXISTS', 'LIMIT', 'MATCH', 'MERGE', 'ON', 'OPTIONAL', 'ORDER', 'REMOVE', 'RETURN', 'SET', 'SKIP', 'WHERE', 'WITH', 'UNION', 'UNWIND', 'AND', 'AS', 'CONTAINS', 'DISTINCT', 'ENDS', 'IN', 'IS', 'NOT', 'OR', 'STARTS', 'XOR', 'FALSE', 'TRUE', 'NULL', 'CONSTRAINT', 'DO', 'FOR', 'REQUIRE', 'UNIQUE', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'MANDATORY', 'SCALAR', 'OF', 'ADD', 'DROP', ID, ESC_LITERAL}",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.ThrowingErrorListener.syntaxError(CypherDslAdapter.kt:151)",
+        "org.antlr.v4.runtime.ProxyErrorListener.syntaxError(ProxyErrorListener.java:41)",
+        "org.antlr.v4.runtime.Parser.notifyErrorListeners(Parser.java:544)",
+        "org.antlr.v4.runtime.DefaultErrorStrategy.reportInputMismatch(DefaultErrorStrategy.java:327)",
+        "org.antlr.v4.runtime.DefaultErrorStrategy.reportError(DefaultErrorStrategy.java:139)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.nodePattern(CypherParser.java:2370)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.patternElement(CypherParser.java:2263)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.patternPart(CypherParser.java:2208)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.patternList(CypherParser.java:2130)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.matchSt(CypherParser.java:709)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.clause(CypherParser.java:585)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.singleQuery(CypherParser.java:505)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.regularQuery(CypherParser.java:379)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.query(CypherParser.java:324)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.statement(CypherParser.java:279)",
+        "io.johnsonlee.graphite.cypher.parser.CypherParser.script(CypherParser.java:204)",
+        "io.johnsonlee.graphite.cypher.CypherDslAdapter.buildAst$cypher(CypherDslAdapter.kt:105)",
+        "io.johnsonlee.graphite.cypher.CypherDslAdapter.parse(CypherDslAdapter.kt:64)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:81)",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:516)",
+        "ConstructorOracle.main(ConstructorOracle.java:52)"
+      ],
+      "phase": "execute",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "cross-empty-valid--1",
+        "mode": "cross-empty",
+        "maxRows": -1,
+        "query": "RETURN 1 AS value"
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "IllegalArgumentException",
+      "errorClass": "java.lang.IllegalArgumentException",
+      "message": "maxRows must be non-negative",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:80)",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:516)",
+        "ConstructorOracle.main(ConstructorOracle.java:52)"
+      ],
+      "phase": "execute",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    },
+    {
+      "spec": {
+        "name": "cross-empty-valid-0",
+        "mode": "cross-empty",
+        "maxRows": 0,
+        "query": "RETURN 1 AS value"
+      },
+      "cancelAccepted": true,
+      "columns": null,
+      "rows": null,
+      "outcome": "FAILED",
+      "error": "CypherQueryCancelledException",
+      "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+      "message": "constructor oracle cancellation",
+      "stack": [
+        "ConstructorOracle.main(ConstructorOracle.java:23)"
+      ],
+      "phase": "execute",
+      "diagnostics": {
+        "graphIdSourceSelections": 0,
+        "graphIdSourcePruningExecutions": 0,
+        "graphIdSourcesPruned": 0,
+        "graphIdSourceConflicts": 0,
+        "fastPathExecutions": 0,
+        "filteredNodeLimitFastPathExecutions": 0,
+        "generalFallbackExecutions": 0,
+        "workUnitsConsumed": 0
+      },
+      "cancelled": true,
+      "reasonPreserved": true
+    }
+  ]
+}

@@ -203,6 +203,9 @@ func (e evaluator) walkNodeCandidatesUntil(graph *store.Store, pattern cypher.No
 			if !present {
 				continue
 			}
+			// Main's mapped sequence decodes/skips absent offsets in hasNext
+			// before its work-tracking next charges the accepted candidate.
+			e.consume(1)
 			if slot != nil {
 				slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
 				slot.isMethod, slot.node = false, node

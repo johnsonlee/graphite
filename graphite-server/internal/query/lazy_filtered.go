@@ -312,12 +312,14 @@ func (e evaluator) lazyGenericNodes(source Graph, pattern cypher.NodePattern) ma
 				if !present {
 					continue
 				}
+				local.consume(1)
 				return node, true
 			}
 			node, err := source.Store.CandidateNode(ctx, id)
 			if err != nil {
 				failProjectionRead(err)
 			}
+			local.consume(1)
 			return node, true
 		}
 		return store.Node{}, false

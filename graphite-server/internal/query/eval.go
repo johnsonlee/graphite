@@ -20,6 +20,12 @@ type Error struct {
 
 func (e *Error) Unwrap() error { return e.cause }
 
+// Main's cancellation and timeout exceptions are cancellation exceptions even
+// when their supplied reason has no Go cause. Preserve that reason's identity.
+func (e *Error) Is(target error) bool {
+	return target == context.Canceled && (e.Class == "CypherQueryCancelledException" || e.Class == "CypherQueryTimeoutException")
+}
+
 // Public cancellation preserves the JVM exception contract while internal
 // iterators and callers can still recognize the Go context sentinel.
 func publicCancellationError(ctx context.Context, cause error) *Error {
@@ -50,6 +56,7 @@ type evaluator struct {
 	workTrackingEnabled bool
 	indexFirst          bool
 	ctx                 context.Context
+	work                *ExecutionContext
 	parameters          map[string]any
 	graphs              []Graph
 	cross               bool
@@ -58,12 +65,23 @@ type evaluator struct {
 }
 
 func (e evaluator) check() {
+	if e.work != nil {
+		e.work.checkCancelled()
+	}
 	select {
 	case <-e.ctx.Done():
 		if err := e.ctx.Err(); err != nil {
 			panic(err)
 		}
 	default:
+	}
+}
+
+// consume charges graph work only at the pipeline's actual consumption point.
+// Cancellation polls and expression evaluation never consume graph work.
+func (e evaluator) consume(units int64) {
+	if e.work != nil {
+		e.work.consume(units)
 	}
 }
 func clone(row map[string]any) map[string]any {

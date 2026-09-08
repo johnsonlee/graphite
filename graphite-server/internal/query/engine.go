@@ -22,7 +22,26 @@ type Result struct {
 // Execute evaluates a single-store query. A negative limit means unlimited;
 // limit zero returns no rows. It does not truncate before ORDER/aggregation.
 func Execute(ctx context.Context, graph *store.Store, source string, parameters map[string]any, limit int) (result Result, err error) {
-	return executeSources(ctx, graph, nil, false, source, parameters, limit, ExecutionOptions{})
+	return ExecuteWithOptions(ctx, graph, source, parameters, limit, ExecutionOptions{})
+}
+
+// ExecuteWithOptions evaluates one graph with an optional request context.
+func ExecuteWithOptions(ctx context.Context, graph *store.Store, source string, parameters map[string]any, limit int, options ExecutionOptions) (Result, error) {
+	return executeSources(ctx, graph, nil, false, source, parameters, limit, options)
+}
+
+// ExecuteWithMaxRows preserves main's explicit maxRows overload, which rejects
+// negative bounds before parsing or consulting cancellation. ExecuteWithOptions
+// retains the existing negative-limit sentinel for the unbounded overload.
+func ExecuteWithMaxRows(ctx context.Context, graph *store.Store, source string, parameters map[string]any, maxRows int, options ExecutionOptions) (Result, error) {
+	if graph == nil {
+		return Result{}, &Error{Class: "NullPointerException", Message: "Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherExecutor.<init>, parameter graph"}
+	}
+	if maxRows < 0 {
+		return Result{}, &Error{Class: "IllegalArgumentException", Message: "maxRows must be non-negative"}
+	}
+	options.maxRows = &maxRows
+	return executeSources(ctx, graph, nil, false, source, parameters, -1, options)
 }
 
 // ExecutionOptions preserves the distinction between main's plain executor and
@@ -31,30 +50,57 @@ func Execute(ctx context.Context, graph *store.Store, source string, parameters 
 type ExecutionOptions struct {
 	SourceScopeApplied  bool
 	WorkTrackingEnabled bool
+	// ExecutionContext shares cancellation and work across sequential calls.
+	// WorkBudget creates a fresh context per call when nonzero and no explicit
+	// context is supplied. Zero preserves the plain executor's untracked path.
+	// Accounting integration currently covers generic scans and literal ID seeks;
+	// optimized storage and traversal routes still need their own work consumers.
+	ExecutionContext *ExecutionContext
+	WorkBudget       int64
+	maxRows          *int
 }
 
 func ExecuteCross(ctx context.Context, graphs []Graph, source string, parameters map[string]any, limit int) (Result, error) {
 	return ExecuteCrossWithOptions(ctx, graphs, source, parameters, limit, ExecutionOptions{})
 }
 
+// ExecuteCrossWithMaxRows is the explicit nonnegative row-bound overload.
+func ExecuteCrossWithMaxRows(ctx context.Context, graphs []Graph, source string, parameters map[string]any, maxRows int, options ExecutionOptions) (Result, error) {
+	if err := validateCrossGraphs(graphs); err != nil {
+		return Result{}, err
+	}
+	if maxRows < 0 {
+		return Result{}, &Error{Class: "IllegalArgumentException", Message: "maxRows must be non-negative"}
+	}
+	options.maxRows = &maxRows
+	return executeSources(ctx, nil, graphs, true, source, parameters, -1, options)
+}
+
 // ExecuteCrossWithOptions keeps source order and qualification unchanged. A
 // preselected list, even if it contains all graphs, must carry its scope marker.
 func ExecuteCrossWithOptions(ctx context.Context, graphs []Graph, source string, parameters map[string]any, limit int, options ExecutionOptions) (Result, error) {
+	if err := validateCrossGraphs(graphs); err != nil {
+		return Result{}, err
+	}
+	return executeSources(ctx, nil, graphs, true, source, parameters, limit, options)
+}
+
+func validateCrossGraphs(graphs []Graph) error {
 	// Main constructs each non-null CypherGraph before the pipeline checks the
 	// complete namespace. An empty string is a valid graph ID.
 	for _, g := range graphs {
 		if g.Store == nil {
-			return Result{}, &Error{Class: "NullPointerException", Message: "Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"}
+			return &Error{Class: "NullPointerException", Message: "Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"}
 		}
 	}
 	seen := map[string]bool{}
 	for _, g := range graphs {
 		if seen[g.ID] {
-			return Result{}, &Error{Class: "IllegalArgumentException", Message: "Graph ids must be unique"}
+			return &Error{Class: "IllegalArgumentException", Message: "Graph ids must be unique"}
 		}
 		seen[g.ID] = true
 	}
-	return executeSources(ctx, nil, graphs, true, source, parameters, limit, options)
+	return nil
 }
 
 func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cross bool, source string, parameters map[string]any, limit int, options ExecutionOptions) (result Result, err error) {
@@ -79,6 +125,13 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 			}
 		}
 	}()
+	work := options.ExecutionContext
+	if work == nil && options.WorkBudget != 0 {
+		work, err = NewExecutionContext(options.WorkBudget)
+		if err != nil {
+			return Result{}, err
+		}
+	}
 	// The original executor finishes DSL parsing before consulting the query
 	// cancellation signal. ParseContext remains available to parser API callers.
 	ast, err := cypher.Parse(source)
@@ -95,23 +148,32 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 
 		return Result{}, err
 	}
-	e := evaluator{ctx: ctx, parameters: parameters, graphs: graphs, cross: cross, sourceScopeApplied: options.SourceScopeApplied, workTrackingEnabled: options.WorkTrackingEnabled, regexes: &regexLRU{entries: map[string]compiledRegex{}}}
+	if work != nil {
+		var release func()
+		ctx, release = work.bind(ctx)
+		defer release()
+	}
+	e := evaluator{ctx: ctx, work: work, parameters: parameters, graphs: graphs, cross: cross, sourceScopeApplied: options.SourceScopeApplied, workTrackingEnabled: options.WorkTrackingEnabled || work != nil, regexes: &regexLRU{entries: map[string]compiledRegex{}}}
 	e.check()
 	validate(ast)
 	javaSource := !utf8.ValidString(source) || (strings.Contains(source, `\u`) && needsJavaOutputOrder(ast))
 	if needsRowOrder(ast) || javaSource {
 		e.rowOrders = map[string]rowOrder{}
 	}
-	result = Result{Columns: []string{}, Rows: []map[string]any{}}
-	for i, branch := range ast.Branches {
-		e.check()
-		r := e.branch(graph, branch)
-		if i == 0 {
-			result.Columns = r.Columns
-		}
-		result.Rows = append(result.Rows, r.Rows...)
-		if i > 0 && !ast.UnionAll[i-1] {
-			result.Rows = distinctRows(result.Rows, result.Columns)
+	if options.maxRows != nil {
+		result = e.executeBounded(graph, ast, *options.maxRows)
+	} else {
+		result = Result{Columns: []string{}, Rows: []map[string]any{}}
+		for i, branch := range ast.Branches {
+			e.check()
+			r := e.branch(graph, branch)
+			if i == 0 {
+				result.Columns = r.Columns
+			}
+			result.Rows = append(result.Rows, r.Rows...)
+			if i > 0 && !ast.UnionAll[i-1] {
+				result.Rows = distinctRows(result.Rows, result.Columns)
+			}
 		}
 	}
 	if limit >= 0 && len(result.Rows) > limit {
@@ -121,6 +183,9 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 		result.rawColumns = append([]string(nil), result.Columns...)
 	}
 	for index, row := range result.Rows {
+		if e.work != nil && index&1023 == 0 {
+			e.check()
+		}
 		ids := provenance(row)
 		delete(row, provenanceKey)
 		var keys []string
@@ -168,8 +233,127 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 	for i, column := range result.Columns {
 		result.Columns[i] = javaWireString(column)
 	}
+	// Main's zero-bound UNION DISTINCT returns column discovery directly;
+	// all materialized tracked results perform a final cancellation check.
+	directEmptyUnion := options.maxRows != nil && *options.maxRows == 0 && len(ast.Branches) > 1 && !ast.UnionAll[len(ast.UnionAll)-1]
+	if e.work != nil && !directEmptyUnion {
+		e.check()
+	}
 	return result, nil
 }
+
+// executeBounded mirrors the explicit maxRows overload. In main the last UNION
+// token selects the policy for the complete chain. UNION ALL stops at the global
+// bound; DISTINCT still executes later bounded segments for retained provenance.
+// The legacy entry points keep their existing post-execution truncation above.
+func (e evaluator) executeBounded(graph *store.Store, ast *cypher.Query, maxRows int) Result {
+	if len(ast.Branches) == 1 {
+		return e.boundedBranch(graph, ast.Branches[0], maxRows)
+	}
+	result := Result{Columns: []string{}, Rows: []map[string]any{}}
+	unionAll := len(ast.UnionAll) > 0 && ast.UnionAll[len(ast.UnionAll)-1]
+	if !unionAll && maxRows == 0 {
+		if len(ast.Branches) > 0 {
+			result.Columns = e.boundedBranch(graph, ast.Branches[0], 0).Columns
+		}
+		return result
+	}
+	retained := map[string]map[string]any{}
+	for _, branch := range ast.Branches {
+		e.check()
+		bound := maxRows
+		if unionAll {
+			bound -= len(result.Rows)
+			if bound <= 0 {
+				if len(result.Columns) == 0 {
+					result.Columns = e.boundedBranch(graph, branch, 0).Columns
+				}
+				break
+			}
+		}
+		rows := e.boundedBranch(graph, branch, bound)
+		if len(result.Columns) == 0 {
+			result.Columns = rows.Columns
+		}
+		if unionAll {
+			result.Rows = append(result.Rows, rows.Rows[:min(bound, len(rows.Rows))]...)
+			continue
+		}
+		for _, row := range rows.Rows {
+			e.check()
+			visible := e.cloneRow(row)
+			delete(visible, provenanceKey)
+			delete(visible, "$metadata")
+			identity := key(visible)
+			if previous := retained[identity]; previous != nil {
+				mergeProvenance(previous, row)
+			} else if len(result.Rows) < maxRows {
+				mergeProvenance(visible, row)
+				retained[identity] = visible
+				result.Rows = append(result.Rows, visible)
+			}
+		}
+	}
+	return result
+}
+
+// boundedBranch replaces the last literal LIMIT or appends one to the final
+// projection. An existing nonliteral LIMIT remains a second, separate operation:
+// main inserts a literal LIMIT immediately before it, rather than evaluating min.
+func (e evaluator) boundedBranch(graph *store.Store, branch cypher.SingleQuery, maxRows int) Result {
+	clauses := append([]cypher.Clause(nil), branch.Clauses...)
+	lastLimit, lastProjection := -1, -1
+	for index, clause := range clauses {
+		if projection, ok := clause.(cypher.ProjectionClause); ok {
+			lastProjection = index
+			if projection.Limit != nil {
+				lastLimit = index
+			}
+		}
+	}
+	index := lastLimit
+	if index < 0 {
+		index = lastProjection
+	}
+	if index < 0 || (lastLimit < 0 && index != len(clauses)-1) {
+		// Clause-only inputs have no folded projection to carry the appended
+		// LIMIT. Preserve their existing bindings and columns while bounding MATCH.
+		return e.generalBranchWithBound(graph, branch, -1, &maxRows, true)
+	}
+	projection := clauses[index].(cypher.ProjectionClause)
+	if lastLimit >= 0 {
+		if count, literal := boundedLiteralLimit(projection.Limit); literal {
+			if int64(count) <= int64(maxRows) {
+				return e.branch(graph, branch)
+			}
+		} else {
+			// Two consecutive LIMIT clauses match no optimized main admission.
+			// The generic evaluator applies the inserted bound before evaluating
+			// the original expression in the already bounded row set.
+			return e.generalBranchWithBound(graph, branch, index, &maxRows, false)
+		}
+	}
+	projection.Limit = cypher.Literal{Value: int64(maxRows)}
+	clauses[index] = projection
+	return e.branch(graph, cypher.SingleQuery{Clauses: clauses})
+}
+
+func boundedLiteralLimit(expression cypher.Expr) (int32, bool) {
+	literal, ok := expression.(cypher.Literal)
+	if !ok {
+		return 0, false
+	}
+	if _, numeric := number(literal.Value); numeric {
+		return cypherCountValue(literal.Value), true
+	}
+	if text, ok := literal.Value.(string); ok {
+		if _, err := parseJavaLong(text); err == nil {
+			return cypherCountValue(text), true
+		}
+	}
+	return 0, false
+}
+
 func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result {
 	e.check()
 	if hasUnknownNodeLabel(branch) {
@@ -196,16 +380,45 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 		return result
 	}
 	if result, ok := e.streamingPagination(graph, branch); ok {
+		// This is the node-only admission of tryStreamingFilteredMatchLimit.
+		// Main records the fast result after its iterator and ranking succeed.
+		if e.work != nil {
+			e.work.recordFastPath()
+		}
+		return result
+	}
+	if result, ok := e.orderedPropertyLimit(graph, branch); ok {
+		if e.work != nil {
+			e.work.recordFastPath()
+		}
 		return result
 	}
 	return e.generalBranch(graph, branch)
 }
 
 func (e evaluator) generalBranch(graph *store.Store, branch cypher.SingleQuery) Result {
-	earlyLimit := e.computeEarlyLimit(branch)
+	return e.generalBranchWithBound(graph, branch, -1, nil, false)
+}
+
+func (e evaluator) generalBranchWithBound(graph *store.Store, branch cypher.SingleQuery, projectionIndex int, maxRows *int, trailing bool) Result {
+	if e.work != nil {
+		e.work.recordGeneralFallback()
+	}
+	earlyBranch := branch
+	if maxRows != nil {
+		earlyBranch.Clauses = append([]cypher.Clause(nil), branch.Clauses...)
+		if trailing {
+			earlyBranch.Clauses = append(earlyBranch.Clauses, cypher.ProjectionClause{Limit: cypher.Literal{Value: int64(*maxRows)}})
+		} else {
+			projection := earlyBranch.Clauses[projectionIndex].(cypher.ProjectionClause)
+			projection.Limit = cypher.Literal{Value: int64(*maxRows)}
+			earlyBranch.Clauses[projectionIndex] = projection
+		}
+	}
+	earlyLimit := e.computeEarlyLimit(earlyBranch)
 	rows := []map[string]any{{}}
 	columns := []string{}
-	for _, clause := range branch.Clauses {
+	for index, clause := range branch.Clauses {
 		e.check()
 		switch c := clause.(type) {
 		case cypher.MatchClause:
@@ -236,8 +449,15 @@ func (e evaluator) generalBranch(graph *store.Store, branch cypher.SingleQuery) 
 			}
 			rows = next
 		case cypher.ProjectionClause:
-			rows, columns = e.project(rows, c)
+			if index == projectionIndex && maxRows != nil {
+				rows, columns = e.projectWithBound(rows, c, maxRows)
+			} else {
+				rows, columns = e.project(rows, c)
+			}
 		}
+	}
+	if trailing && maxRows != nil && len(rows) > *maxRows {
+		rows = rows[:*maxRows]
 	}
 	return Result{Columns: columns, Rows: rows}
 }
@@ -309,6 +529,10 @@ func methodProperty(m store.MethodDescriptor, key string) any {
 	return nil
 }
 func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]map[string]any, []string) {
+	return e.projectWithBound(rows, c, nil)
+}
+
+func (e evaluator) projectWithBound(rows []map[string]any, c cypher.ProjectionClause, maxRows *int) ([]map[string]any, []string) {
 	columns := []string{}
 	if c.All {
 		if len(rows) > 0 {
@@ -471,8 +695,15 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 	if c.Skip != nil {
 		start = min(end, e.count(c.Skip, bindingsAt(0)))
 	}
+	if maxRows != nil {
+		end = start + min(end-start, *maxRows)
+	}
 	if c.Limit != nil {
-		end = start + min(end-start, e.count(c.Limit, bindingsAt(start)))
+		bindings := bindingsAt(start)
+		if maxRows != nil && start == end {
+			bindings = map[string]any{}
+		}
+		end = start + min(end-start, e.count(c.Limit, bindings))
 	}
 	result := make([]map[string]any, 0, end-start)
 	for _, r := range out[start:end] {

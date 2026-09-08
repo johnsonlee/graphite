@@ -1,0 +1,212 @@
+[
+  {
+    "name": "seek-10",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '10' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-seek-10",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '10' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "seek-11",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '11' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-seek-11",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '11' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "seek--1",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '-1' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-seek--1",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '-1' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "seek-2147483648",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '2147483648' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-seek-2147483648",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '2147483648' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "seek-not-an-id",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = 'not-an-id' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "exhausted-seek-not-an-id",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = 'not-an-id' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "bad-first-positive",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "bad-first",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '10' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "bad-first-exhausted",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "bad-first",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '10' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "missing-first-positive",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "missing-first",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '10' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "missing-first-exhausted",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "missing-first",
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE elementId(n) = '10' WITH n RETURN n.name AS name",
+        "parameters": {}
+      }
+    ]
+  }
+]

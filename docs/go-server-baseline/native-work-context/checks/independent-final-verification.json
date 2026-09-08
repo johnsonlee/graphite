@@ -1,0 +1,340 @@
+{
+  "auditUTC": "2026-09-08T09:50:51.595701+00:00",
+  "method": "Independent read-only SHA-256, archive-member and raw-record verification; no JVM, Go build, test, benchmark or runtime invocation. Only this audit JSON is written.",
+  "sourceVerificationSHA256": "e61332af2a1c6df23d43112b25cfc93f9db721135fb40af66d0848b465a3a2cd",
+  "nativeReadmeSHA256": "ddc6dc693ff26903ad11bdf0da1181689aa0568b79d727a7614f783672512493",
+  "runtimeExecutions": 0,
+  "performanceMeasurements": 0,
+  "sourceBinding": {
+    "currentModuleFiles": 2542,
+    "checkInputFiles": 2583,
+    "frozenModuleFiles": 2542,
+    "runtimeInputFiles": {
+      "cold": 311,
+      "warm": 311,
+      "startup-prepared": 311
+    },
+    "matrixBeforeFiles": 2542,
+    "matrixCompiledArchiveFiles": 2543,
+    "onlyMatrixHelperAdded": "internal/query/generic_disjunction_diagnostic_test.go",
+    "allComparedFileIdentitiesEqual": true,
+    "workloadSHA256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+  },
+  "archives": [
+    {
+      "manifest": "real64/archive-manifest.json",
+      "manifestSHA256": "ce79a4f17e3efb268143bade9b731ecbf445b0fb2aa4cbb9a1997d9eaa90816c",
+      "files": 26,
+      "compressedOriginals": 3,
+      "archiveBytes": 10730899,
+      "archivedBytesAndOriginalBytesVerified": true,
+      "externalSourceFilesAlsoVerified": true
+    },
+    {
+      "manifest": "checks/matrix201/copy-verification.json",
+      "manifestSHA256": "0f741fdaaed60be0abaff07f406e6070d4e05603c933d0d0cd72f057284aebf2",
+      "files": 17,
+      "compressedOriginals": 3,
+      "archiveBytes": 17759187,
+      "archivedBytesAndOriginalBytesVerified": true,
+      "externalSourceFilesAlsoVerified": true
+    },
+    {
+      "manifest": "oracle-manifest.json",
+      "manifestSHA256": "68fee296dc0d4f93a33d4e8ca42b13e9f13277fe5a849a3d62385e8064827fa5",
+      "files": 59,
+      "archivedBytesVerified": true
+    },
+    {
+      "manifest": "checks/seek-oracle/archive-manifest.json",
+      "manifestSHA256": "50a4fa6083b48071f6918aed8a310d8a8442d8dc99a058ffa1ef7795e01cb744",
+      "files": 55,
+      "archivedBytesVerified": true
+    },
+    {
+      "manifest": "checks/bounded-oracle/archive-manifest.json",
+      "manifestSHA256": "a5b62c235529fefea5955d3df69020abfaed18eb6bd7b5c04726274ac24fbbe5",
+      "files": 55,
+      "archivedBytesVerified": true
+    },
+    {
+      "manifest": "checks/ordered-oracle/archive-manifest.json",
+      "manifestSHA256": "4094a6975843dcb0edf82c7b5e7f6b0e4e2ea510d8824c7475d71a2bf100634d",
+      "files": 58,
+      "archivedBytesVerified": true
+    },
+    {
+      "manifest": "checks/constructor-oracle/archive-manifest.json",
+      "manifestSHA256": "8cd7267f3f1ffd2029bf4197be2649c5a9acd76ebe9d6c42ea841818b1caf1a2",
+      "files": 22,
+      "archivedBytesVerified": true
+    },
+    {
+      "manifest": "checks/evidence/artifacts.json",
+      "manifestSHA256": "033720af087ee8e7844eae8d9ea130389aa69d26b67848cc10a0713a4125f69a",
+      "files": 5,
+      "archivedBytesVerified": true
+    }
+  ],
+  "matrixExternalArtifactManifestFilesVerified": 3662,
+  "real64": [
+    {
+      "state": "cold",
+      "rawMainSHA256": "ec5a289455443d1c09a8c33abf4ebda9acadf958532c17e3fbf373e970a0777f",
+      "rawNativeSHA256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97",
+      "records": 1269,
+      "phaseCases": {
+        "replay": 1267
+      },
+      "outcomes": {
+        "success": 1266,
+        "error": 1
+      },
+      "publicDifferences": 0,
+      "graphStateObservations": 162304,
+      "stateDifferences": 0,
+      "stateFields": [
+        "id",
+        "retained",
+        "mappedView",
+        "trigrams",
+        "loadedFromPersistence",
+        "mappedRangeCount",
+        "rawMatchCount",
+        "rawProjectionCount"
+      ],
+      "qualifiedErrorClassObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ],
+      "originalError": {
+        "phase": "replay",
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection"
+      },
+      "formalInvocationPrepared": true,
+      "runtimeExitCode": 1,
+      "nativeOriginalFixtureCountFromUnchangedRuntimeReceipt": 1152,
+      "nativeBinarySHA256Verified": true
+    },
+    {
+      "state": "warm",
+      "rawMainSHA256": "b5facadfc1bde64b5b97f7cfcd32ecfc818236579b60f3131f53978a8681dea1",
+      "rawNativeSHA256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7",
+      "records": 1268,
+      "phaseCases": {
+        "warmup": 1267
+      },
+      "outcomes": {
+        "success": 1266,
+        "error": 1
+      },
+      "publicDifferences": 0,
+      "graphStateObservations": 162240,
+      "stateDifferences": 0,
+      "stateFields": [
+        "id",
+        "retained",
+        "mappedView",
+        "trigrams",
+        "loadedFromPersistence",
+        "mappedRangeCount",
+        "rawMatchCount",
+        "rawProjectionCount"
+      ],
+      "qualifiedErrorClassObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ],
+      "originalError": {
+        "phase": "warmup",
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection"
+      },
+      "formalInvocationPrepared": false,
+      "runtimeExitCode": 1,
+      "nativeOriginalFixtureCountFromUnchangedRuntimeReceipt": 1152,
+      "nativeBinarySHA256Verified": true
+    },
+    {
+      "state": "startup-prepared",
+      "rawMainSHA256": "a0c4159689383a4096f0fe33eb05a2ee839dc3c5811b495febced33722deac65",
+      "rawNativeSHA256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2",
+      "records": 1269,
+      "phaseCases": {
+        "replay": 1267
+      },
+      "outcomes": {
+        "success": 1266,
+        "error": 1
+      },
+      "publicDifferences": 0,
+      "graphStateObservations": 162304,
+      "stateDifferences": 0,
+      "stateFields": [
+        "id",
+        "retained",
+        "mappedView",
+        "trigrams",
+        "loadedFromPersistence",
+        "mappedRangeCount",
+        "rawMatchCount",
+        "rawProjectionCount"
+      ],
+      "qualifiedErrorClassObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ],
+      "originalError": {
+        "phase": "replay",
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection"
+      },
+      "formalInvocationPrepared": true,
+      "runtimeExitCode": 1,
+      "nativeOriginalFixtureCountFromUnchangedRuntimeReceipt": 1152,
+      "nativeBinarySHA256Verified": true
+    }
+  ],
+  "matrix201": {
+    "cases": 201,
+    "previousFile": "docs/go-server-baseline/native-distinct-capability-boundary/checks/matrix201/go.json",
+    "previousSHA256": "e44d4816916ccae924df33d530ac879fa102309bad2b4ea29acb7ddd55dd8c71",
+    "currentSHA256": "94828a8fa5b055fa29d8295127c31b488499c92ad5639f61672cb84bfced5385",
+    "previousComparedResultErrorStateDifferences": 0,
+    "mainComparisons": [
+      {
+        "reference": "main",
+        "matches": {
+          "public": 166,
+          "providerWrapper": 19
+        },
+        "differences": [
+          "six-empty-1",
+          "six-empty-2",
+          "enum-bad-tail-hit",
+          "field-bad-tail-hit",
+          "field-bad-tail-miss",
+          "field-bad-tail-global-miss",
+          "annotation-bad-tail-hit",
+          "annotation-bad-tail-miss",
+          "annotation-bad-tail-global-miss",
+          "unicode-4-EnumConstant",
+          "unicode-4-LocalVariable",
+          "unicode-4-Field",
+          "unicode-5-EnumConstant",
+          "unicode-5-LocalVariable",
+          "unicode-5-Field",
+          "provider-field-payload-id-example"
+        ]
+      },
+      {
+        "reference": "repeat",
+        "matches": {
+          "public": 166,
+          "providerWrapper": 19
+        },
+        "differences": [
+          "six-empty-1",
+          "six-empty-2",
+          "enum-bad-tail-hit",
+          "field-bad-tail-hit",
+          "field-bad-tail-miss",
+          "field-bad-tail-global-miss",
+          "annotation-bad-tail-hit",
+          "annotation-bad-tail-miss",
+          "annotation-bad-tail-global-miss",
+          "unicode-4-EnumConstant",
+          "unicode-4-LocalVariable",
+          "unicode-4-Field",
+          "unicode-5-EnumConstant",
+          "unicode-5-LocalVariable",
+          "unicode-5-Field",
+          "provider-field-payload-id-example"
+        ]
+      }
+    ],
+    "diagnosticsScope": "Historical adapter does not pass the new context or compare its diagnostics; provider wrapper scope is bounded payload evidence. No claim of full diagnostics or provider API fidelity."
+  },
+  "correctnessEvidence": {
+    "actualJVMScenarios": [
+      {
+        "group": ".",
+        "scenarios": 51,
+        "completeRecordRepeatDifferences": [
+          "concurrent-tracker-exact-total"
+        ]
+      },
+      {
+        "group": "checks/seek-oracle",
+        "scenarios": 14,
+        "completeRecordRepeatDifferences": []
+      },
+      {
+        "group": "checks/bounded-oracle",
+        "scenarios": 19,
+        "completeRecordRepeatDifferences": []
+      },
+      {
+        "group": "checks/ordered-oracle",
+        "scenarios": 25,
+        "completeRecordRepeatDifferences": []
+      },
+      {
+        "group": "checks/constructor-oracle",
+        "scenarios": 10,
+        "completeRecordRepeatDifferences": []
+      }
+    ],
+    "scenarioTotal": 119,
+    "fullModuleCheckInputCount": 2583,
+    "terminalChecks": [
+      {
+        "name": "context",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      },
+      {
+        "name": "race",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      },
+      {
+        "name": "vet",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      }
+    ],
+    "checkLogsMatchedArtifactHashes": true,
+    "baseRepeatDifferenceScope": "Only worker-share allocation in the bounded private concurrent tracker case differs. Aggregate total and errors are covered by original oracle audit; no external concurrent context reuse is claimed."
+  },
+  "readmeReview": {
+    "blockingOverclaimsFound": false,
+    "scopeQualificationsPresent": [
+      "Full work accounting remains incomplete, including raw/indexed work, several optimized diagnostics producers, relationship/path work and server integration.",
+      "Legacy maxRows sentinel API and request server are not silently claimed migrated.",
+      "Qualified observer exception class differs; schedule invariance and full diagnostic parity are not claimed.",
+      "Original case 821 failure and non-prepared warm phase remain explicit.",
+      "201 legacy adapter does not measure new context diagnostics; 16 historical gaps remain.",
+      "This round contains no performance measurement and does not establish per-case P95 acceptance."
+    ],
+    "performanceAcceptanceProven": false,
+    "fullWorkAccountingComplete": false
+  },
+  "status": "passed_with_explicit_scope_limitations"
+}

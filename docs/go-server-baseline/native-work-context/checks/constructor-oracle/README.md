@@ -1,0 +1,9 @@
+This is a correctness-only capture of pinned main `4e328b0109e13c896b74004823fb049fcb19251a` using Java 17. It contains no performance measurements.
+
+The ten cases use an already cancelled request context. Eight cross single-null graph, null `CypherGraph`, duplicate graph IDs, and an empty graph list with `maxRows` −1/0 and invalid syntax. Two additional empty-list cases use valid syntax to expose the final cancellation boundary. All ten cases fail with no assigned result and zero diagnostic counters.
+
+Both actual JVM runs are retained in full, including qualified exception classes, messages, stacks, phase, cancellation identity, diagnostics, stdout and stderr. Their complete records are equal. The ordering observed is graph/source construction, nonnegative bound validation, parsing, then cancellation. The single-null message is the actual `CypherExecutor.<init>` non-null graph parameter error, not an inferred expected value.
+
+`run.py` copies the existing persisted four-LocalVariable fixture from `work-context-seek-main-v1/variants/locals`, freezes the JAR and Java/source inputs, and runs against independent fixture copies. `inputs.json` records SHA-256 hashes for the original and frozen JAR, Java executables/runtime, Kotlin sources, oracle sources and fixture files. `input-sources.tar.gz` retains the exact source snapshot. `fixtures.tar.gz` retains all 16 fixture files; both before/after manifests match, and the original fixture is unchanged. The external frozen JAR is retained at the path recorded in `inputs.json`.
+
+`receipt.json` and `commands.json` record terminal exits for compilation and both runs. The Go test reads these actual class/message observations, compares all eight diagnostics and cancellation identity, and requires a fully empty result on error. Qualified JVM class names, stacks and constructor/execute phase are preserved as JVM evidence rather than presented as additional Go API fields.

@@ -1,4 +1,18 @@
-# The 64-graph testcases have not been fully replicated
+# Historical audit: the original HTTP42 subset did not replicate real64
+
+This page preserves the initial HTTP42 audit below. Its incomplete-workload
+finding has since been superseded: the native
+[`main64.json`](../../../graphite-server/internal/benchmarkcase/testdata/main64.json)
+is byte-identical to both actual main exports in this directory (SHA256
+`378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023`).
+All 1,267 original definitions, parameters, source selections and order are now
+present. The [full replay at Go revision 2547ef3](../native-distinct-capability-boundary/native-readme.md)
+matches the compared public outcomes and graph-state fields in cold, warm
+prewarm, and startup-prepared captures. This does not establish complete
+execution-condition fidelity or P95 acceptance: the original failing testcase
+still blocks formal warm setup, and equivalent work/resource accounting remains
+unfinished. The following findings describe the earlier HTTP42 harness, not
+the current full native workload.
 
 The pinned main benchmark constructs **1,267 cases** for 64 graphs with
 `coverageFamily=all`. The existing native HTTP manifest contains 42 cases:
@@ -86,7 +100,7 @@ not reproduce that benchmark's original setup or expected distributions.
    their latency boundary with the original engine benchmark, substitute HTTP42
    for the full matrix, or hide errors/regressions in a pooled number.
 
-**Current status:** testcase replication is incomplete; full functional replay and
+**Status at the original HTTP42 audit:** testcase replication is incomplete; full functional replay and
 per-case P95 acceptance have not passed. No performance measurement was launched
 by this audit. Earlier successful HTTP42/63 checks and diagnostic optimizations
 remain valid only within their explicitly recorded scopes.

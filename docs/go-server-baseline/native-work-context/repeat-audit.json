@@ -1,0 +1,58 @@
+{
+  "caseCount": 51,
+  "operationCount": 129,
+  "completeOutputExactCases": 50,
+  "fullFieldDifferences": [
+    {
+      "path": ".cases[22].operations[0].value.workers[0].successfulConsumes",
+      "main": 39,
+      "repeat": 32
+    },
+    {
+      "path": ".cases[22].operations[0].value.workers[1].successfulConsumes",
+      "main": 15,
+      "repeat": 25
+    },
+    {
+      "path": ".cases[22].operations[0].value.workers[2].successfulConsumes",
+      "main": 5,
+      "repeat": 36
+    },
+    {
+      "path": ".cases[22].operations[0].value.workers[3].successfulConsumes",
+      "main": 41,
+      "repeat": 7
+    }
+  ],
+  "concurrentAggregateExact": true,
+  "fixtureFilesPerCapture": 80,
+  "byteIdenticalFixtureFiles": 75,
+  "writerTimestampOnlyDifferences": [
+    {
+      "file": "bad-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 18:10:21 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 18:11:05 KST 2026"
+    },
+    {
+      "file": "locals/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 18:10:21 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 18:11:05 KST 2026"
+    },
+    {
+      "file": "missing-all/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 18:10:21 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 18:11:05 KST 2026"
+    },
+    {
+      "file": "missing-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 18:10:21 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 18:11:05 KST 2026"
+    },
+    {
+      "file": "missing-first-bad-second/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 18:10:21 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 18:11:05 KST 2026"
+    }
+  ],
+  "performanceMeasurements": 0
+}

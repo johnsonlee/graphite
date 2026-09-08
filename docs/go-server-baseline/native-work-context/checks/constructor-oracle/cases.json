@@ -1,0 +1,62 @@
+[
+  {
+    "name": "single-null--1",
+    "mode": "single-null",
+    "maxRows": -1,
+    "query": "MATCH ("
+  },
+  {
+    "name": "single-null-0",
+    "mode": "single-null",
+    "maxRows": 0,
+    "query": "MATCH ("
+  },
+  {
+    "name": "cross-null--1",
+    "mode": "cross-null",
+    "maxRows": -1,
+    "query": "MATCH ("
+  },
+  {
+    "name": "cross-null-0",
+    "mode": "cross-null",
+    "maxRows": 0,
+    "query": "MATCH ("
+  },
+  {
+    "name": "cross-duplicate--1",
+    "mode": "cross-duplicate",
+    "maxRows": -1,
+    "query": "MATCH ("
+  },
+  {
+    "name": "cross-duplicate-0",
+    "mode": "cross-duplicate",
+    "maxRows": 0,
+    "query": "MATCH ("
+  },
+  {
+    "name": "cross-empty--1",
+    "mode": "cross-empty",
+    "maxRows": -1,
+    "query": "MATCH ("
+  },
+  {
+    "name": "cross-empty-0",
+    "mode": "cross-empty",
+    "maxRows": 0,
+    "query": "MATCH ("
+  },
+  {
+    "name": "cross-empty-valid--1",
+    "mode": "cross-empty",
+    "maxRows": -1,
+    "query": "RETURN 1 AS value"
+  },
+  {
+    "name": "cross-empty-valid-0",
+    "mode": "cross-empty",
+    "maxRows": 0,
+    "query": "RETURN 1 AS value"
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/checks/ordered-oracle/run.py": "1ccfc6f7a1238631382f00654421497763ad2c52b39d32586aca16358259e437",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/checks/ordered-oracle/prepare.py": "1903a98dc9b04abdb35ee020e1bb49a5ca940f2da5c4220d37415b10059e9c9f",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/checks/ordered-oracle/WorkFixture.java": "ead04296a34e563754bfec63748b83f4348a791cfca5ba75fa3d7aec2e9a67ce",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/checks/ordered-oracle/WorkOracle.java": "f528563274d7bec21209aea2808f1ac3e315ab7943976dd954ce2a572de87da9",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/checks/ordered-oracle/cases.json": "75d251a3031a939cdc8652e28e4c6753ca824f338cf8e261c45b16fc2c68a4c4",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/checks/ordered-oracle/fixture-specs.json": "57a6e30e13c02c9abf0b17a5472b84e7db94c011f8e5046b3c7a8bc3c46149fb",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java": "9400f622fd1e220aa1a0cbd578aff060d837468b64227db40d099791b717729f",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac": "954b31239fbf59e5b7c16e2af639a8a7ec36f6b602afd970e64054eabad0ac54",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap": "b4b765c6649edbfea654787cc79b5c2a77eb62a5e01888afded6194b2aeb1354",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/modules": "0473441a67b3287836922b4ad05a140029f9fcc5e688fd3cf1ac3a21d15afcf9",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/release": "d940b2ac1d3f585fd23451d205bed9c91ad6f3f07d14b6765eb33029911aadc9",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/server/libjvm.dylib": "51d9529a35eed323d31f38813cc295e072248701bf51360bbcd1431198e52f99",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutionBudget.kt": "3fdfd1588e92c63a682bfcdbd3e9b79c7b67142a36d3b04700f49c4397ad18a3",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutor.kt": "2de0ff1f84fc67fd76f3d4c3335c406ed440c625e29f3911aa73d2aa04cf2586",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt": "56b438a5ec4495e547903bb906c19ff31085574b250ef4f70a611ffdddd41699",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeOffsetIndex.kt": "b0be23221c4b6736f53cd72da6b325d40cce93042af8c63beb3831806c4d69a3",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeTypeIndex.kt": "476ffd5884114dc18beb37e03cf1da9e2a5fcb64092a244564d09b688a46ab2e"
+}

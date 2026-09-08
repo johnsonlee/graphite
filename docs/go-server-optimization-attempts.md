@@ -1366,3 +1366,83 @@ source identities, complete outputs and retained differences are under
 `docs/go-server-baseline/native-distinct-capability-boundary/`. Full server
 fidelity, resource/work accounting, required benchmark gates and 10x per-case
 P95 remain unproven.
+
+
+### 2026-09-08 — Functional follow-up: request work context and explicit row bounds
+
+Baseline Go is `2547ef3d8c2c003ec8b66d3d00b7039e4a0bdd1e`; actual main remains
+`4e328b0109e13c896b74004823fb049fcb19251a`. Matching all original real64 case
+definitions and public outcomes did not establish equivalent execution conditions.
+This follow-up adds the original request-scoped work tracker and cancellation
+contract, then wires the verified generic scan and literal-ID seek boundaries.
+It does not claim complete finite-budget coverage or a performance improvement.
+
+One context shares its atomic remaining budget and first cancellation reason
+across sequential calls and UNION branches. Budget-only calls reset on every
+execution. Negative units fail before cancellation, exact consumption succeeds,
+and an overlarge batch saturates remaining work at zero before failing. Ordinary
+mapped iteration decodes/skips absent offsets before charging; literal seeks
+charge before lookup. Graph-free evaluation and cancellation checks consume no
+work. Child cancellation reaches storage but does not poison a subsequent call.
+
+Actual-JVM controls exposed why a public row bound cannot just truncate returned
+rows: it changes scan work and UNION continuation. Explicit maxRows APIs now
+preserve constructor, bound-validation, parsing and cancellation order, append
+or tighten the last LIMIT, and insert an independent bound before a dynamic
+LIMIT. UNION ALL stops by remaining capacity; UNION DISTINCT continues later
+bounded branches for retained provenance. Existing legacy native limit callers
+retain their previous behavior and have not yet been migrated in the server.
+
+An ordered-property route uses main's admission and stable bounded heap, rather
+than recording a generic sort as a fast path. Successful node-only streaming
+pagination now records its fast completion. A first complete context check
+retained one omitted streaming-fast diagnostic; the corrected frozen rerun
+includes the same scenario. The prior HTTP42 audit now has a dated-state
+qualification: its missing-testcase conclusion no longer describes the exact
+1,267-case native manifest, while its execution-condition warnings remain valid.
+
+| Evidence | Result |
+| --- | --- |
+| Main context/tracker oracle | 51 scenarios, 129 ordered operations match |
+| Main literal-ID seek oracle | 14 scenarios, 21 operations match |
+| Main bounded-execution oracle | 19 scenarios, 19 operations match |
+| Main ordered-property oracle | 25 scenarios, 25 operations match |
+| Main constructor/error-priority oracle | 10 observations match |
+| Full module race / vet | Passed; 2,583 recorded inputs unchanged |
+| Existing complete 201-case matrix | No new compared differences; 16 remain |
+| Real64 cold | 1,267 cases; 162,304 graph-state observations align |
+| Real64 warm prewarm | 1,267 cases; 162,240 graph-state observations align |
+| Real64 startup-prepared | 1,267 cases; 162,304 graph-state observations align |
+| New latency / CPU / allocation measurements | None; functional correction only |
+| Per-case P95 / 10x acceptance | Unproven |
+| Keep/revert | Keep the verified context and execution-boundary implementation |
+
+Each JVM supplement was captured twice. All deterministic records repeat exactly;
+the original four-worker private-tracker control retains differing per-worker
+shares with the same total 100 consumes and four budget failures. Go tests compare
+public rows, atomic failures, exact simple exception classes/nullable messages,
+all eight available counters, remaining budget and cancellation state/identity.
+JVM-specific stack/class/getter fields remain in the raw oracle without invented
+Go values. Source and control-flow review independently checked the new paths.
+
+The complete 201-case replay still matches 166/181 public cases and 19/20 scoped
+provider controls. Its adapter does not pass the new ExecutionContext or measure
+its diagnostics; raw legacy wording about the missing API is retained with that
+qualification. The first matrix preparation selected a PATH `cp` lacking `-c`;
+the dependent helper-copy failure occurred before any query ran. That attempt is
+retained, and fresh v2 paths with `/bin/cp` produced the terminal complete replay.
+
+All real64 runtimes run serially on independent audited clones after module and
+JVM checks end, preserving all 1,152 original files. The original failed testcase
+and all-success gate exit 1 remain; warm stops at its failed prewarm boundary.
+The combined 486,848 graph-state comparisons agree. Prior contended cache-state
+observations remain historical evidence, not a claim of schedule invariance.
+
+Complete source identity checks bind all 2,542 module files to the module checks,
+frozen real64 module and 201-case module before its diagnostic helper. Evidence
+is under `docs/go-server-baseline/native-work-context/`. Remaining work includes
+raw/indexed storage batch consumers and their error priority, other planner and
+path counters, server request context/explicit-bound integration, resource
+sampling, existing semantic differences and required benchmark gates. Earlier
+n=1 timings do not describe this changed engine. Full server fidelity and 10x
+per-case P95 acceptance remain open.

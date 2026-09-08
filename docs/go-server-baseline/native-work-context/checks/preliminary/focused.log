@@ -1,0 +1,364 @@
+=== RUN   TestExecutionContextMainOracle
+=== RUN   TestExecutionContextMainOracle/construct-0
+=== RUN   TestExecutionContextMainOracle/construct--1
+=== RUN   TestExecutionContextMainOracle/construct-1
+=== RUN   TestExecutionContextMainOracle/construct-9223372036854775807
+=== RUN   TestExecutionContextMainOracle/negative-before-any-work
+=== RUN   TestExecutionContextMainOracle/negative-before-any-work/00-consume
+=== RUN   TestExecutionContextMainOracle/negative-before-any-work/01-consume
+=== RUN   TestExecutionContextMainOracle/zero-does-not-consume
+=== RUN   TestExecutionContextMainOracle/zero-does-not-consume/00-consume
+=== RUN   TestExecutionContextMainOracle/zero-does-not-consume/01-consume
+=== RUN   TestExecutionContextMainOracle/exact-then-zero-and-positive
+=== RUN   TestExecutionContextMainOracle/exact-then-zero-and-positive/00-consume
+=== RUN   TestExecutionContextMainOracle/exact-then-zero-and-positive/01-consume
+=== RUN   TestExecutionContextMainOracle/exact-then-zero-and-positive/02-consume
+=== RUN   TestExecutionContextMainOracle/oversized-clamps-to-zero
+=== RUN   TestExecutionContextMainOracle/oversized-clamps-to-zero/00-consume
+=== RUN   TestExecutionContextMainOracle/oversized-clamps-to-zero/01-consume
+=== RUN   TestExecutionContextMainOracle/oversized-clamps-to-zero/02-consume
+=== RUN   TestExecutionContextMainOracle/sequential-exact-consumption
+=== RUN   TestExecutionContextMainOracle/sequential-exact-consumption/00-consume
+=== RUN   TestExecutionContextMainOracle/sequential-exact-consumption/01-consume
+=== RUN   TestExecutionContextMainOracle/sequential-exact-consumption/02-consume
+=== RUN   TestExecutionContextMainOracle/sequential-exact-consumption/03-consume
+=== RUN   TestExecutionContextMainOracle/sequential-exact-consumption/04-consume
+=== RUN   TestExecutionContextMainOracle/maximum-long-exact
+=== RUN   TestExecutionContextMainOracle/maximum-long-exact/00-consume
+=== RUN   TestExecutionContextMainOracle/maximum-long-exact/01-consume
+=== RUN   TestExecutionContextMainOracle/maximum-long-exact/02-consume
+=== RUN   TestExecutionContextMainOracle/default-cancellation
+=== RUN   TestExecutionContextMainOracle/default-cancellation/00-cancel
+=== RUN   TestExecutionContextMainOracle/default-cancellation/01-check
+=== RUN   TestExecutionContextMainOracle/default-cancellation/02-consume
+=== RUN   TestExecutionContextMainOracle/default-cancellation/03-consume
+=== RUN   TestExecutionContextMainOracle/timeout-first-reason
+=== RUN   TestExecutionContextMainOracle/timeout-first-reason/00-cancel
+=== RUN   TestExecutionContextMainOracle/timeout-first-reason/01-cancel
+=== RUN   TestExecutionContextMainOracle/timeout-first-reason/02-cancel
+=== RUN   TestExecutionContextMainOracle/timeout-first-reason/03-reason
+=== RUN   TestExecutionContextMainOracle/timeout-first-reason/04-check
+=== RUN   TestExecutionContextMainOracle/custom-first-reason
+=== RUN   TestExecutionContextMainOracle/custom-first-reason/00-cancel
+=== RUN   TestExecutionContextMainOracle/custom-first-reason/01-cancel
+=== RUN   TestExecutionContextMainOracle/custom-first-reason/02-reason
+=== RUN   TestExecutionContextMainOracle/custom-first-reason/03-consume
+=== RUN   TestExecutionContextMainOracle/default-first-reason
+=== RUN   TestExecutionContextMainOracle/default-first-reason/00-cancel
+=== RUN   TestExecutionContextMainOracle/default-first-reason/01-cancel
+=== RUN   TestExecutionContextMainOracle/default-first-reason/02-reason
+=== RUN   TestExecutionContextMainOracle/default-first-reason/03-check
+=== RUN   TestExecutionContextMainOracle/uncancelled-reason-is-not-cancellation
+=== RUN   TestExecutionContextMainOracle/uncancelled-reason-is-not-cancellation/00-reason
+=== RUN   TestExecutionContextMainOracle/uncancelled-reason-is-not-cancellation/01-check
+=== RUN   TestExecutionContextMainOracle/uncancelled-reason-is-not-cancellation/02-consume
+=== RUN   TestExecutionContextMainOracle/negative-validation-before-cancellation
+=== RUN   TestExecutionContextMainOracle/negative-validation-before-cancellation/00-cancel
+=== RUN   TestExecutionContextMainOracle/negative-validation-before-cancellation/01-consume
+=== RUN   TestExecutionContextMainOracle/negative-validation-before-cancellation/02-consume
+=== RUN   TestExecutionContextMainOracle/negative-validation-before-timeout
+=== RUN   TestExecutionContextMainOracle/negative-validation-before-timeout/00-cancel
+=== RUN   TestExecutionContextMainOracle/negative-validation-before-timeout/01-consume
+=== RUN   TestExecutionContextMainOracle/negative-validation-before-timeout/02-consume
+=== RUN   TestExecutionContextMainOracle/cancelled-oversized-checks-cancel-first
+=== RUN   TestExecutionContextMainOracle/cancelled-oversized-checks-cancel-first/00-cancel
+=== RUN   TestExecutionContextMainOracle/cancelled-oversized-checks-cancel-first/01-consume
+=== RUN   TestExecutionContextMainOracle/exhausted-then-cancelled-zero
+=== RUN   TestExecutionContextMainOracle/exhausted-then-cancelled-zero/00-consume
+=== RUN   TestExecutionContextMainOracle/exhausted-then-cancelled-zero/01-cancel
+=== RUN   TestExecutionContextMainOracle/exhausted-then-cancelled-zero/02-consume
+=== RUN   TestExecutionContextMainOracle/exhausted-then-cancelled-zero/03-consume
+=== RUN   TestExecutionContextMainOracle/diagnostic-counters
+=== RUN   TestExecutionContextMainOracle/diagnostic-counters/00-selection
+=== RUN   TestExecutionContextMainOracle/diagnostic-counters/01-selection
+=== RUN   TestExecutionContextMainOracle/diagnostic-counters/02-selection
+=== RUN   TestExecutionContextMainOracle/diagnostic-counters/03-fast
+=== RUN   TestExecutionContextMainOracle/diagnostic-counters/04-filtered
+=== RUN   TestExecutionContextMainOracle/diagnostic-counters/05-fallback
+=== RUN   TestExecutionContextMainOracle/diagnostic-counters/06-consume
+=== RUN   TestExecutionContextMainOracle/invalid-source-counts
+=== RUN   TestExecutionContextMainOracle/invalid-source-counts/00-selection
+=== RUN   TestExecutionContextMainOracle/invalid-source-counts/01-selection
+=== RUN   TestExecutionContextMainOracle/invalid-source-counts/02-selection
+=== RUN   TestExecutionContextMainOracle/invalid-source-counts/03-selection
+=== RUN   TestExecutionContextMainOracle/diagnostics-after-cancellation
+=== RUN   TestExecutionContextMainOracle/diagnostics-after-cancellation/00-cancel
+=== RUN   TestExecutionContextMainOracle/diagnostics-after-cancellation/01-fast
+=== RUN   TestExecutionContextMainOracle/diagnostics-after-cancellation/02-filtered
+=== RUN   TestExecutionContextMainOracle/diagnostics-after-cancellation/03-fallback
+=== RUN   TestExecutionContextMainOracle/diagnostics-after-cancellation/04-selection
+=== RUN   TestExecutionContextMainOracle/diagnostics-after-cancellation/05-consume
+=== RUN   TestExecutionContextMainOracle/concurrent-tracker-exact-total
+=== RUN   TestExecutionContextMainOracle/concurrent-tracker-exact-total/00-concurrentConsume
+=== RUN   TestExecutionContextMainOracle/concurrent-tracker-exact-total/01-consume
+=== RUN   TestExecutionContextMainOracle/concurrent-tracker-exact-total/02-consume
+=== RUN   TestExecutionContextMainOracle/context-sequential-same-executor
+=== RUN   TestExecutionContextMainOracle/context-sequential-same-executor/00-execute
+=== RUN   TestExecutionContextMainOracle/context-sequential-same-executor/01-execute
+=== RUN   TestExecutionContextMainOracle/context-sequential-fresh-executors
+=== RUN   TestExecutionContextMainOracle/context-sequential-fresh-executors/00-execute
+=== RUN   TestExecutionContextMainOracle/context-sequential-fresh-executors/01-execute
+=== RUN   TestExecutionContextMainOracle/context-two-exact-scans
+=== RUN   TestExecutionContextMainOracle/context-two-exact-scans/00-execute
+=== RUN   TestExecutionContextMainOracle/context-two-exact-scans/01-execute
+=== RUN   TestExecutionContextMainOracle/context-two-exact-scans/02-execute
+=== RUN   TestExecutionContextMainOracle/context-failed-scan-then-graph-free
+=== RUN   TestExecutionContextMainOracle/context-failed-scan-then-graph-free/00-execute
+=== RUN   TestExecutionContextMainOracle/context-failed-scan-then-graph-free/01-execute
+=== RUN   TestExecutionContextMainOracle/context-failed-scan-then-graph-free/02-execute
+=== RUN   TestExecutionContextMainOracle/context-graph-free-zero-work
+=== RUN   TestExecutionContextMainOracle/context-graph-free-zero-work/00-execute
+=== RUN   TestExecutionContextMainOracle/context-graph-free-zero-work/01-execute
+=== RUN   TestExecutionContextMainOracle/context-graph-free-zero-work/02-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-reset-success
+=== RUN   TestExecutionContextMainOracle/budget-only-reset-success/00-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-reset-success/01-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-reset-after-failure
+=== RUN   TestExecutionContextMainOracle/budget-only-reset-after-failure/00-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-reset-after-failure/01-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-reset-after-failure/02-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-repeated-failure
+=== RUN   TestExecutionContextMainOracle/budget-only-repeated-failure/00-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-repeated-failure/01-execute
+=== RUN   TestExecutionContextMainOracle/unbudgeted-scan-control
+=== RUN   TestExecutionContextMainOracle/unbudgeted-scan-control/00-execute
+=== RUN   TestExecutionContextMainOracle/context-union-shared-failure
+=== RUN   TestExecutionContextMainOracle/context-union-shared-failure/00-execute
+=== RUN   TestExecutionContextMainOracle/context-union-shared-failure/01-execute
+=== RUN   TestExecutionContextMainOracle/context-union-shared-exact
+=== RUN   TestExecutionContextMainOracle/context-union-shared-exact/00-execute
+=== RUN   TestExecutionContextMainOracle/context-union-shared-exact/01-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-union-shared-failure
+=== RUN   TestExecutionContextMainOracle/budget-only-union-shared-failure/00-execute
+=== RUN   TestExecutionContextMainOracle/budget-only-union-shared-failure/01-execute
+=== RUN   TestExecutionContextMainOracle/cancelled-valid-query
+=== RUN   TestExecutionContextMainOracle/cancelled-valid-query/00-cancel
+=== RUN   TestExecutionContextMainOracle/cancelled-valid-query/01-execute
+=== RUN   TestExecutionContextMainOracle/cancelled-invalid-syntax
+=== RUN   TestExecutionContextMainOracle/cancelled-invalid-syntax/00-cancel
+=== RUN   TestExecutionContextMainOracle/cancelled-invalid-syntax/01-execute
+=== RUN   TestExecutionContextMainOracle/cancelled-negative-maxrows
+=== RUN   TestExecutionContextMainOracle/cancelled-negative-maxrows/00-cancel
+=== RUN   TestExecutionContextMainOracle/cancelled-negative-maxrows/01-execute
+=== RUN   TestExecutionContextMainOracle/cancelled-negative-maxrows-and-syntax
+=== RUN   TestExecutionContextMainOracle/cancelled-negative-maxrows-and-syntax/00-cancel
+=== RUN   TestExecutionContextMainOracle/cancelled-negative-maxrows-and-syntax/01-execute
+=== RUN   TestExecutionContextMainOracle/cancelled-zero-maxrows
+=== RUN   TestExecutionContextMainOracle/cancelled-zero-maxrows/00-cancel
+=== RUN   TestExecutionContextMainOracle/cancelled-zero-maxrows/01-execute
+=== RUN   TestExecutionContextMainOracle/cancelled-missing-parameter
+=== RUN   TestExecutionContextMainOracle/cancelled-missing-parameter/00-cancel
+=== RUN   TestExecutionContextMainOracle/cancelled-missing-parameter/01-execute
+=== RUN   TestExecutionContextMainOracle/syntax-error-does-not-consume
+=== RUN   TestExecutionContextMainOracle/syntax-error-does-not-consume/00-execute
+=== RUN   TestExecutionContextMainOracle/syntax-error-does-not-consume/01-execute
+=== RUN   TestExecutionContextMainOracle/cancellation-across-new-executor
+=== RUN   TestExecutionContextMainOracle/cancellation-across-new-executor/00-execute
+=== RUN   TestExecutionContextMainOracle/cancellation-across-new-executor/01-cancel
+=== RUN   TestExecutionContextMainOracle/cancellation-across-new-executor/02-execute
+=== RUN   TestExecutionContextMainOracle/cancellation-across-new-executor/03-execute
+=== RUN   TestExecutionContextMainOracle/cancelled-graph-free-query
+=== RUN   TestExecutionContextMainOracle/cancelled-graph-free-query/00-cancel
+=== RUN   TestExecutionContextMainOracle/cancelled-graph-free-query/01-execute
+=== RUN   TestExecutionContextMainOracle/uncancelled-zero-maxrows
+=== RUN   TestExecutionContextMainOracle/uncancelled-zero-maxrows/00-execute
+=== RUN   TestExecutionContextMainOracle/uncancelled-zero-maxrows/01-execute
+=== RUN   TestExecutionContextMainOracle/exhausted-bad-first-decoding
+=== RUN   TestExecutionContextMainOracle/exhausted-bad-first-decoding/00-consume
+=== RUN   TestExecutionContextMainOracle/exhausted-bad-first-decoding/01-execute
+=== RUN   TestExecutionContextMainOracle/exhausted-missing-first-then-bad
+=== RUN   TestExecutionContextMainOracle/exhausted-missing-first-then-bad/00-consume
+=== RUN   TestExecutionContextMainOracle/exhausted-missing-first-then-bad/01-execute
+=== RUN   TestExecutionContextMainOracle/exhausted-missing-first-skips
+=== RUN   TestExecutionContextMainOracle/exhausted-missing-first-skips/00-consume
+=== RUN   TestExecutionContextMainOracle/exhausted-missing-first-skips/01-execute
+=== RUN   TestExecutionContextMainOracle/exhausted-all-missing-empty
+=== RUN   TestExecutionContextMainOracle/exhausted-all-missing-empty/00-consume
+=== RUN   TestExecutionContextMainOracle/exhausted-all-missing-empty/01-execute
+=== RUN   TestExecutionContextMainOracle/missing-first-counts-three
+=== RUN   TestExecutionContextMainOracle/missing-first-counts-three/00-execute
+=== RUN   TestExecutionContextMainOracle/with-then-limit-one-consumption
+=== RUN   TestExecutionContextMainOracle/with-then-limit-one-consumption/00-execute
+--- PASS: TestExecutionContextMainOracle (0.07s)
+    --- PASS: TestExecutionContextMainOracle/construct-0 (0.00s)
+    --- PASS: TestExecutionContextMainOracle/construct--1 (0.00s)
+    --- PASS: TestExecutionContextMainOracle/construct-1 (0.00s)
+    --- PASS: TestExecutionContextMainOracle/construct-9223372036854775807 (0.00s)
+    --- PASS: TestExecutionContextMainOracle/negative-before-any-work (0.00s)
+        --- PASS: TestExecutionContextMainOracle/negative-before-any-work/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/negative-before-any-work/01-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/zero-does-not-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/zero-does-not-consume/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/zero-does-not-consume/01-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/exact-then-zero-and-positive (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exact-then-zero-and-positive/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exact-then-zero-and-positive/01-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exact-then-zero-and-positive/02-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/oversized-clamps-to-zero (0.00s)
+        --- PASS: TestExecutionContextMainOracle/oversized-clamps-to-zero/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/oversized-clamps-to-zero/01-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/oversized-clamps-to-zero/02-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/sequential-exact-consumption (0.00s)
+        --- PASS: TestExecutionContextMainOracle/sequential-exact-consumption/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/sequential-exact-consumption/01-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/sequential-exact-consumption/02-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/sequential-exact-consumption/03-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/sequential-exact-consumption/04-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/maximum-long-exact (0.00s)
+        --- PASS: TestExecutionContextMainOracle/maximum-long-exact/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/maximum-long-exact/01-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/maximum-long-exact/02-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/default-cancellation (0.00s)
+        --- PASS: TestExecutionContextMainOracle/default-cancellation/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/default-cancellation/01-check (0.00s)
+        --- PASS: TestExecutionContextMainOracle/default-cancellation/02-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/default-cancellation/03-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/timeout-first-reason (0.00s)
+        --- PASS: TestExecutionContextMainOracle/timeout-first-reason/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/timeout-first-reason/01-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/timeout-first-reason/02-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/timeout-first-reason/03-reason (0.00s)
+        --- PASS: TestExecutionContextMainOracle/timeout-first-reason/04-check (0.00s)
+    --- PASS: TestExecutionContextMainOracle/custom-first-reason (0.00s)
+        --- PASS: TestExecutionContextMainOracle/custom-first-reason/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/custom-first-reason/01-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/custom-first-reason/02-reason (0.00s)
+        --- PASS: TestExecutionContextMainOracle/custom-first-reason/03-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/default-first-reason (0.00s)
+        --- PASS: TestExecutionContextMainOracle/default-first-reason/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/default-first-reason/01-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/default-first-reason/02-reason (0.00s)
+        --- PASS: TestExecutionContextMainOracle/default-first-reason/03-check (0.00s)
+    --- PASS: TestExecutionContextMainOracle/uncancelled-reason-is-not-cancellation (0.00s)
+        --- PASS: TestExecutionContextMainOracle/uncancelled-reason-is-not-cancellation/00-reason (0.00s)
+        --- PASS: TestExecutionContextMainOracle/uncancelled-reason-is-not-cancellation/01-check (0.00s)
+        --- PASS: TestExecutionContextMainOracle/uncancelled-reason-is-not-cancellation/02-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/negative-validation-before-cancellation (0.00s)
+        --- PASS: TestExecutionContextMainOracle/negative-validation-before-cancellation/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/negative-validation-before-cancellation/01-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/negative-validation-before-cancellation/02-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/negative-validation-before-timeout (0.00s)
+        --- PASS: TestExecutionContextMainOracle/negative-validation-before-timeout/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/negative-validation-before-timeout/01-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/negative-validation-before-timeout/02-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancelled-oversized-checks-cancel-first (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-oversized-checks-cancel-first/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-oversized-checks-cancel-first/01-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/exhausted-then-cancelled-zero (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-then-cancelled-zero/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-then-cancelled-zero/01-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-then-cancelled-zero/02-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-then-cancelled-zero/03-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/diagnostic-counters (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostic-counters/00-selection (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostic-counters/01-selection (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostic-counters/02-selection (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostic-counters/03-fast (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostic-counters/04-filtered (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostic-counters/05-fallback (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostic-counters/06-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/invalid-source-counts (0.00s)
+        --- PASS: TestExecutionContextMainOracle/invalid-source-counts/00-selection (0.00s)
+        --- PASS: TestExecutionContextMainOracle/invalid-source-counts/01-selection (0.00s)
+        --- PASS: TestExecutionContextMainOracle/invalid-source-counts/02-selection (0.00s)
+        --- PASS: TestExecutionContextMainOracle/invalid-source-counts/03-selection (0.00s)
+    --- PASS: TestExecutionContextMainOracle/diagnostics-after-cancellation (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostics-after-cancellation/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostics-after-cancellation/01-fast (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostics-after-cancellation/02-filtered (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostics-after-cancellation/03-fallback (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostics-after-cancellation/04-selection (0.00s)
+        --- PASS: TestExecutionContextMainOracle/diagnostics-after-cancellation/05-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/concurrent-tracker-exact-total (0.00s)
+        --- PASS: TestExecutionContextMainOracle/concurrent-tracker-exact-total/00-concurrentConsume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/concurrent-tracker-exact-total/01-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/concurrent-tracker-exact-total/02-consume (0.00s)
+    --- PASS: TestExecutionContextMainOracle/context-sequential-same-executor (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-sequential-same-executor/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-sequential-same-executor/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/context-sequential-fresh-executors (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-sequential-fresh-executors/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-sequential-fresh-executors/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/context-two-exact-scans (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-two-exact-scans/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-two-exact-scans/01-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-two-exact-scans/02-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/context-failed-scan-then-graph-free (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-failed-scan-then-graph-free/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-failed-scan-then-graph-free/01-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-failed-scan-then-graph-free/02-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/context-graph-free-zero-work (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-graph-free-zero-work/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-graph-free-zero-work/01-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-graph-free-zero-work/02-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/budget-only-reset-success (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-reset-success/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-reset-success/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/budget-only-reset-after-failure (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-reset-after-failure/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-reset-after-failure/01-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-reset-after-failure/02-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/budget-only-repeated-failure (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-repeated-failure/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-repeated-failure/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/unbudgeted-scan-control (0.00s)
+        --- PASS: TestExecutionContextMainOracle/unbudgeted-scan-control/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/context-union-shared-failure (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-union-shared-failure/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-union-shared-failure/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/context-union-shared-exact (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-union-shared-exact/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/context-union-shared-exact/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/budget-only-union-shared-failure (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-union-shared-failure/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/budget-only-union-shared-failure/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancelled-valid-query (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-valid-query/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-valid-query/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancelled-invalid-syntax (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-invalid-syntax/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-invalid-syntax/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancelled-negative-maxrows (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-negative-maxrows/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-negative-maxrows/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancelled-negative-maxrows-and-syntax (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-negative-maxrows-and-syntax/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-negative-maxrows-and-syntax/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancelled-zero-maxrows (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-zero-maxrows/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-zero-maxrows/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancelled-missing-parameter (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-missing-parameter/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-missing-parameter/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/syntax-error-does-not-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/syntax-error-does-not-consume/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/syntax-error-does-not-consume/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancellation-across-new-executor (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancellation-across-new-executor/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancellation-across-new-executor/01-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancellation-across-new-executor/02-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancellation-across-new-executor/03-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/cancelled-graph-free-query (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-graph-free-query/00-cancel (0.00s)
+        --- PASS: TestExecutionContextMainOracle/cancelled-graph-free-query/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/uncancelled-zero-maxrows (0.00s)
+        --- PASS: TestExecutionContextMainOracle/uncancelled-zero-maxrows/00-execute (0.00s)
+        --- PASS: TestExecutionContextMainOracle/uncancelled-zero-maxrows/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/exhausted-bad-first-decoding (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-bad-first-decoding/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-bad-first-decoding/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/exhausted-missing-first-then-bad (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-missing-first-then-bad/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-missing-first-then-bad/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/exhausted-missing-first-skips (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-missing-first-skips/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-missing-first-skips/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/exhausted-all-missing-empty (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-all-missing-empty/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainOracle/exhausted-all-missing-empty/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/missing-first-counts-three (0.00s)
+        --- PASS: TestExecutionContextMainOracle/missing-first-counts-three/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainOracle/with-then-limit-one-consumption (0.00s)
+        --- PASS: TestExecutionContextMainOracle/with-then-limit-one-consumption/00-execute (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.432s

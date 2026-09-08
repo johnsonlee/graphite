@@ -1,0 +1,329 @@
+[
+  {
+    "name": "ordered-limit-zero",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-one",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-two",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-max-admitted",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 10000",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-beyond-max",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 10001",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-negative",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT -1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-numeric-string",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT '2'",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-bad-string",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 'bad'",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-parameter",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT $limit",
+        "parameters": {
+          "limit": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "ordered-limit-expression",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 1 + 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-descending",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name DESC LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-multiple-tie-columns",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.class AS kind, n.name AS name ORDER BY kind DESC, name DESC LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-equal-key-encounter",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.class AS kind, n.name AS name ORDER BY kind ASC LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-duplicate-alias",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS x, n.id AS x ORDER BY x LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-where",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.id >= 0 RETURN n.name AS name ORDER BY name LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-with",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WITH n RETURN n.name AS name ORDER BY name LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-skip-zero",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC SKIP 0 LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-missing-first",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "missing-first",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-bad-first",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "bad-first",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-budget-three",
+    "mode": "context",
+    "budget": "3",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-all-missing",
+    "mode": "context",
+    "budget": "1",
+    "fixture": "missing-all",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-bad-first-zero",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "bad-first",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-property-expression",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY n.name LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-float-limit",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT 1.9",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "ordered-boolean-limit",
+    "mode": "context",
+    "budget": "4",
+    "fixture": "locals",
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) RETURN n.name AS name ORDER BY name ASC LIMIT true",
+        "parameters": {}
+      }
+    ]
+  }
+]

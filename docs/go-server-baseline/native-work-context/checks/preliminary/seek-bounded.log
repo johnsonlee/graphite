@@ -1,0 +1,152 @@
+=== RUN   TestExecutionContextMainSeekOracle
+=== RUN   TestExecutionContextMainSeekOracle/seek-10
+=== RUN   TestExecutionContextMainSeekOracle/seek-10/00-execute
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-10
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-10/00-consume
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-10/01-execute
+=== RUN   TestExecutionContextMainSeekOracle/seek-11
+=== RUN   TestExecutionContextMainSeekOracle/seek-11/00-execute
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-11
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-11/00-consume
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-11/01-execute
+=== RUN   TestExecutionContextMainSeekOracle/seek--1
+=== RUN   TestExecutionContextMainSeekOracle/seek--1/00-execute
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek--1
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek--1/00-consume
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek--1/01-execute
+=== RUN   TestExecutionContextMainSeekOracle/seek-2147483648
+=== RUN   TestExecutionContextMainSeekOracle/seek-2147483648/00-execute
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-2147483648
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-2147483648/00-consume
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-2147483648/01-execute
+=== RUN   TestExecutionContextMainSeekOracle/seek-not-an-id
+=== RUN   TestExecutionContextMainSeekOracle/seek-not-an-id/00-execute
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-not-an-id
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-not-an-id/00-consume
+=== RUN   TestExecutionContextMainSeekOracle/exhausted-seek-not-an-id/01-execute
+=== RUN   TestExecutionContextMainSeekOracle/bad-first-positive
+=== RUN   TestExecutionContextMainSeekOracle/bad-first-positive/00-execute
+=== RUN   TestExecutionContextMainSeekOracle/bad-first-exhausted
+=== RUN   TestExecutionContextMainSeekOracle/bad-first-exhausted/00-consume
+=== RUN   TestExecutionContextMainSeekOracle/bad-first-exhausted/01-execute
+=== RUN   TestExecutionContextMainSeekOracle/missing-first-positive
+=== RUN   TestExecutionContextMainSeekOracle/missing-first-positive/00-execute
+=== RUN   TestExecutionContextMainSeekOracle/missing-first-exhausted
+=== RUN   TestExecutionContextMainSeekOracle/missing-first-exhausted/00-consume
+=== RUN   TestExecutionContextMainSeekOracle/missing-first-exhausted/01-execute
+--- PASS: TestExecutionContextMainSeekOracle (0.04s)
+    --- PASS: TestExecutionContextMainSeekOracle/seek-10 (0.01s)
+        --- PASS: TestExecutionContextMainSeekOracle/seek-10/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-10 (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-10/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-10/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/seek-11 (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/seek-11/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-11 (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-11/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-11/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/seek--1 (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/seek--1/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek--1 (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek--1/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek--1/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/seek-2147483648 (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/seek-2147483648/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-2147483648 (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-2147483648/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-2147483648/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/seek-not-an-id (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/seek-not-an-id/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-not-an-id (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-not-an-id/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/exhausted-seek-not-an-id/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/bad-first-positive (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/bad-first-positive/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/bad-first-exhausted (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/bad-first-exhausted/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/bad-first-exhausted/01-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/missing-first-positive (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/missing-first-positive/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainSeekOracle/missing-first-exhausted (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/missing-first-exhausted/00-consume (0.00s)
+        --- PASS: TestExecutionContextMainSeekOracle/missing-first-exhausted/01-execute (0.00s)
+=== RUN   TestExecutionContextMainBoundedOracle
+=== RUN   TestExecutionContextMainBoundedOracle/scan-0
+=== RUN   TestExecutionContextMainBoundedOracle/scan-0/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/with-0
+=== RUN   TestExecutionContextMainBoundedOracle/with-0/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/union-all-0
+=== RUN   TestExecutionContextMainBoundedOracle/union-all-0/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/union-distinct-0
+=== RUN   TestExecutionContextMainBoundedOracle/union-distinct-0/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/scan-1
+=== RUN   TestExecutionContextMainBoundedOracle/scan-1/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/with-1
+=== RUN   TestExecutionContextMainBoundedOracle/with-1/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/union-all-1
+=== RUN   TestExecutionContextMainBoundedOracle/union-all-1/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/union-distinct-1
+=== RUN   TestExecutionContextMainBoundedOracle/union-distinct-1/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/scan-2
+=== RUN   TestExecutionContextMainBoundedOracle/scan-2/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/with-2
+=== RUN   TestExecutionContextMainBoundedOracle/with-2/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/union-all-2
+=== RUN   TestExecutionContextMainBoundedOracle/union-all-2/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/union-distinct-2
+=== RUN   TestExecutionContextMainBoundedOracle/union-distinct-2/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/union-all-with-zero
+=== RUN   TestExecutionContextMainBoundedOracle/union-all-with-zero/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/union-distinct-with-zero
+=== RUN   TestExecutionContextMainBoundedOracle/union-distinct-with-zero/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/existing-limit-smaller
+=== RUN   TestExecutionContextMainBoundedOracle/existing-limit-smaller/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/existing-limit-larger
+=== RUN   TestExecutionContextMainBoundedOracle/existing-limit-larger/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/skip-then-maxrows
+=== RUN   TestExecutionContextMainBoundedOracle/skip-then-maxrows/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/ordered-maxrows
+=== RUN   TestExecutionContextMainBoundedOracle/ordered-maxrows/00-execute
+=== RUN   TestExecutionContextMainBoundedOracle/nonliteral-limit
+=== RUN   TestExecutionContextMainBoundedOracle/nonliteral-limit/00-execute
+--- PASS: TestExecutionContextMainBoundedOracle (0.05s)
+    --- PASS: TestExecutionContextMainBoundedOracle/scan-0 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/scan-0/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/with-0 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/with-0/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/union-all-0 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/union-all-0/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/union-distinct-0 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/union-distinct-0/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/scan-1 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/scan-1/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/with-1 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/with-1/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/union-all-1 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/union-all-1/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/union-distinct-1 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/union-distinct-1/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/scan-2 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/scan-2/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/with-2 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/with-2/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/union-all-2 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/union-all-2/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/union-distinct-2 (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/union-distinct-2/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/union-all-with-zero (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/union-all-with-zero/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/union-distinct-with-zero (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/union-distinct-with-zero/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/existing-limit-smaller (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/existing-limit-smaller/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/existing-limit-larger (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/existing-limit-larger/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/skip-then-maxrows (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/skip-then-maxrows/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/ordered-maxrows (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/ordered-maxrows/00-execute (0.00s)
+    --- PASS: TestExecutionContextMainBoundedOracle/nonliteral-limit (0.00s)
+        --- PASS: TestExecutionContextMainBoundedOracle/nonliteral-limit/00-execute (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.296s

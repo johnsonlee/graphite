@@ -1,0 +1,68 @@
+"""Declare request context, cancellation, and exact tracker correctness sequences."""
+from pathlib import Path
+import json
+HERE=Path(__file__).resolve().parent
+cases=[]
+MAX='9223372036854775807'
+SCAN='MATCH (n:LocalVariable) WITH n RETURN n.name AS name'
+ONE='MATCH (n:LocalVariable) RETURN n.name AS name LIMIT 1'
+UNION=SCAN+' UNION ALL '+SCAN
+def op(name,**kw):return dict(op=name,**kw)
+def consume(n):return op('consume',units=str(n))
+def cancel(kind='default',**kw):return op('cancel',kind=kind,**kw)
+def execute(query=SCAN,**kw):return op('execute',query=query,parameters={},**kw)
+def add(name,*operations,budget='4',mode='tracker',fixture='locals'):
+ cases.append(dict(name=name,mode=mode,budget=str(budget),fixture=fixture,operations=list(operations)))
+for value in ['0','-1','1',MAX]:add('construct-'+value,budget=value,mode='constructor')
+add('negative-before-any-work',consume(-1),consume(0))
+add('zero-does-not-consume',consume(0),consume(0))
+add('exact-then-zero-and-positive',consume(4),consume(0),consume(1))
+add('oversized-clamps-to-zero',consume(5),consume(0),consume(1))
+add('sequential-exact-consumption',consume(1),consume(2),consume(1),consume(0),consume(1))
+add('maximum-long-exact',consume(MAX),consume(0),consume(1),budget=MAX)
+add('default-cancellation',cancel(),op('check'),consume(1),consume(0))
+add('timeout-first-reason',cancel('timeout',timeoutMillis='25'),cancel(),cancel('custom',message='later'),op('reason'),op('check'))
+add('custom-first-reason',cancel('custom',message='自定义 stop'),cancel('timeout',timeoutMillis='25'),op('reason'),consume(1))
+add('default-first-reason',cancel(),cancel('timeout',timeoutMillis='25'),op('reason'),op('check'))
+add('uncancelled-reason-is-not-cancellation',op('reason'),op('check'),consume(1))
+add('negative-validation-before-cancellation',cancel(),consume(-1),consume(0))
+add('negative-validation-before-timeout',cancel('timeout',timeoutMillis='0'),consume(-1),consume(0))
+add('cancelled-oversized-checks-cancel-first',cancel('timeout',timeoutMillis='25'),consume(100))
+add('exhausted-then-cancelled-zero',consume(4),cancel('custom',message='after exhaustion'),consume(0),consume(-1))
+add('diagnostic-counters',op('selection',initial=1,selected=1,conflicting=False),op('selection',initial=5,selected=2,conflicting=False),op('selection',initial=2,selected=0,conflicting=True),op('fast'),op('filtered'),op('fallback'),consume(2))
+add('invalid-source-counts',op('selection',initial=-1,selected=0,conflicting=False),op('selection',initial=2,selected=-1,conflicting=False),op('selection',initial=2,selected=3,conflicting=False),op('selection',initial=0,selected=0,conflicting=True))
+add('diagnostics-after-cancellation',cancel(),op('fast'),op('filtered'),op('fallback'),op('selection',initial=3,selected=1,conflicting=True),consume(0))
+add('concurrent-tracker-exact-total',op('concurrentConsume',workers=4),consume(0),consume(1),budget='100')
+add('context-sequential-same-executor',execute(),execute(),budget='4',mode='context')
+add('context-sequential-fresh-executors',execute(freshExecutor=True),execute(freshExecutor=True),budget='4',mode='context')
+add('context-two-exact-scans',execute(),execute(),execute(),budget='8',mode='context')
+add('context-failed-scan-then-graph-free',execute(),execute('RETURN 7 AS value'),execute(),budget='3',mode='context')
+add('context-graph-free-zero-work',execute('RETURN 7 AS value'),execute('UNWIND range(1, 25) AS x RETURN x LIMIT 2'),execute('RETURN [1,2,3] AS values'),budget='1',mode='context')
+add('budget-only-reset-success',execute(),execute(),budget='4',mode='budget-only')
+add('budget-only-reset-after-failure',execute(),execute(ONE),execute(ONE),budget='3',mode='budget-only')
+add('budget-only-repeated-failure',execute(),execute(),budget='3',mode='budget-only')
+add('unbudgeted-scan-control',execute(),mode='unbudgeted')
+add('context-union-shared-failure',execute(UNION),execute('RETURN 9 AS value'),budget='4',mode='context')
+add('context-union-shared-exact',execute(UNION),execute(ONE),budget='8',mode='context')
+add('budget-only-union-shared-failure',execute(UNION),execute(ONE),budget='4',mode='budget-only')
+add('cancelled-valid-query',cancel(),execute(),mode='context')
+add('cancelled-invalid-syntax',cancel(),execute('MATCH ('),mode='context')
+add('cancelled-negative-maxrows',cancel(),execute(maxRows=-1),mode='context')
+add('cancelled-negative-maxrows-and-syntax',cancel(),execute('MATCH (',maxRows=-1),mode='context')
+add('cancelled-zero-maxrows',cancel('timeout',timeoutMillis='12'),execute(maxRows=0),mode='context')
+add('cancelled-missing-parameter',cancel(),execute('RETURN $missing AS value'),mode='context')
+add('syntax-error-does-not-consume',execute('MATCH ('),execute(),budget='4',mode='context')
+add('cancellation-across-new-executor',execute('RETURN 1 AS value'),cancel('custom',message='request stopped'),execute(freshExecutor=True),execute('RETURN 2 AS value',freshExecutor=True),mode='context')
+add('cancelled-graph-free-query',cancel(),execute('UNWIND range(1,25) AS x RETURN x LIMIT 1'),mode='context')
+add('uncancelled-zero-maxrows',execute(maxRows=0),execute(),budget='4',mode='context')
+add('exhausted-bad-first-decoding',consume(4),execute(),mode='context',fixture='bad-first')
+add('exhausted-missing-first-then-bad',consume(4),execute(),mode='context',fixture='missing-first-bad-second')
+add('exhausted-missing-first-skips',consume(4),execute(),mode='context',fixture='missing-first')
+add('exhausted-all-missing-empty',consume(4),execute(),mode='context',fixture='missing-all')
+add('missing-first-counts-three',execute(),budget='3',mode='context',fixture='missing-first')
+add('with-then-limit-one-consumption',execute(SCAN+' LIMIT 1'),budget='4',mode='context')
+base=dict(call=False,locals=['alpha','beta','gamma','delta'])
+fixtures={'locals':base,'bad-first':dict(base,badIndex=0),'missing-first-bad-second':dict(base,badIndex=1,missingOffsets=[10]),'missing-first':dict(base,missingOffsets=[10]),'missing-all':dict(base,missingOffsets=[10,20,30,40])}
+for name,value in [('cases.json',cases),('fixture-specs.json',fixtures)]:
+ (HERE/name).write_text(json.dumps(value,indent=2,ensure_ascii=True)+'\n')
+print(len(cases),'cases')

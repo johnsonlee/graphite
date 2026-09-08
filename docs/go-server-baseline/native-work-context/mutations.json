@@ -1,0 +1,66 @@
+[
+  {
+    "nodeID": 10,
+    "offset": 13,
+    "file": "graph.nodedata",
+    "fixture": "bad-first",
+    "after": 2147483647,
+    "before": 1
+  },
+  {
+    "nodeID": 10,
+    "offset": 88,
+    "file": "graph.nodeoffsets",
+    "fixture": "missing-first-bad-second",
+    "after": 0,
+    "before": 9
+  },
+  {
+    "nodeID": 20,
+    "offset": 42,
+    "file": "graph.nodedata",
+    "fixture": "missing-first-bad-second",
+    "after": 2147483647,
+    "before": 2
+  },
+  {
+    "nodeID": 10,
+    "offset": 88,
+    "file": "graph.nodeoffsets",
+    "fixture": "missing-first",
+    "after": 0,
+    "before": 9
+  },
+  {
+    "nodeID": 10,
+    "offset": 88,
+    "file": "graph.nodeoffsets",
+    "fixture": "missing-all",
+    "after": 0,
+    "before": 9
+  },
+  {
+    "nodeID": 20,
+    "offset": 168,
+    "file": "graph.nodeoffsets",
+    "fixture": "missing-all",
+    "after": 0,
+    "before": 38
+  },
+  {
+    "nodeID": 30,
+    "offset": 248,
+    "file": "graph.nodeoffsets",
+    "fixture": "missing-all",
+    "after": 0,
+    "before": 67
+  },
+  {
+    "nodeID": 40,
+    "offset": 328,
+    "file": "graph.nodeoffsets",
+    "fixture": "missing-all",
+    "after": 0,
+    "before": 96
+  }
+]

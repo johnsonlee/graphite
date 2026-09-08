@@ -1,0 +1,33 @@
+Compiled from "CypherExecutionBudget.kt"
+public final class io.johnsonlee.graphite.cypher.CypherExecutionContext {
+  public io.johnsonlee.graphite.cypher.CypherExecutionContext(io.johnsonlee.graphite.cypher.CypherExecutionBudget, io.johnsonlee.graphite.cypher.CypherCancellationSignal);
+  public final io.johnsonlee.graphite.cypher.CypherExecutionBudget getExecutionBudget();
+  public final io.johnsonlee.graphite.cypher.CypherCancellationSignal getCancellationSignal();
+  public io.johnsonlee.graphite.cypher.CypherExecutionContext(io.johnsonlee.graphite.cypher.CypherExecutionBudget);
+  public final io.johnsonlee.graphite.cypher.CypherWorkTracker getWorkTracker$cypher();
+  public final io.johnsonlee.graphite.cypher.CypherExecutionDiagnostics getDiagnostics();
+}
+Compiled from "CypherExecutionBudget.kt"
+public final class io.johnsonlee.graphite.cypher.CypherWorkTracker implements io.johnsonlee.graphite.graph.GraphWorkBatchConsumer {
+  public io.johnsonlee.graphite.cypher.CypherWorkTracker(io.johnsonlee.graphite.cypher.CypherExecutionBudget, io.johnsonlee.graphite.cypher.CypherCancellationSignal);
+  public io.johnsonlee.graphite.cypher.CypherWorkTracker(io.johnsonlee.graphite.cypher.CypherExecutionBudget, io.johnsonlee.graphite.cypher.CypherCancellationSignal, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public void consume();
+  public final void checkCancelled();
+  public void consume(long);
+  public final void recordGraphIdSourceSelection(int, int, boolean);
+  public final void recordFastPath();
+  public final void recordFilteredNodeLimitFastPath();
+  public final void recordGeneralFallback();
+  public final io.johnsonlee.graphite.cypher.CypherExecutionDiagnostics diagnostics();
+}
+Compiled from "CypherExecutionBudget.kt"
+public final class io.johnsonlee.graphite.cypher.CypherCancellationSignal {
+  public io.johnsonlee.graphite.cypher.CypherCancellationSignal(kotlin.jvm.functions.Function0<kotlin.Unit>);
+  public io.johnsonlee.graphite.cypher.CypherCancellationSignal(kotlin.jvm.functions.Function0, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final boolean isCancelled();
+  public final boolean cancel();
+  public final boolean cancel(io.johnsonlee.graphite.cypher.CypherQueryCancelledException);
+  public final io.johnsonlee.graphite.cypher.CypherQueryCancelledException cancellationException();
+  public final void throwIfCancelled();
+  public io.johnsonlee.graphite.cypher.CypherCancellationSignal();
+}

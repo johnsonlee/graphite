@@ -141,6 +141,9 @@ func (e evaluator) tryGeneralElementIDSeek(graph *store.Store, rows []map[string
 		return result, true
 	}
 	e.check()
+	// Unlike a scan's decoded sequence, main's trackedNode seek charges before
+	// lookup, including valid IDs whose persisted node is absent.
+	e.consume(1)
 	node, present, err := source.Store.GeneralCandidateNode(e.ctx, int32(number))
 	if err != nil {
 		failProjectionRead(err)

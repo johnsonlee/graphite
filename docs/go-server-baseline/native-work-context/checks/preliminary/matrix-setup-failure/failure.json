@@ -1,0 +1,10 @@
+{
+  "copyCommand": "cp -cRp graphite-server /Users/johnsonlee/.codex/benchmarks/graphite/work-context-2547ef3-matrix-source-v1",
+  "copyExitCode": 1,
+  "copyError": "cp: invalid option -- 'c'",
+  "dependentControllerExitCode": 1,
+  "controllerError": "FileNotFoundError while copying diagnostic helper into missing module directory",
+  "queryExecutionStarted": false,
+  "performanceMeasurements": 0,
+  "resolution": "Use /bin/cp with a fresh v2 source and output; preserve v1 evidence"
+}

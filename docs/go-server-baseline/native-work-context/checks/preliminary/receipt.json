@@ -1,0 +1,39 @@
+{
+  "performanceMeasurements": 0,
+  "scope": "Preliminary development checks; these were not frozen full-module acceptance runs. The separate final check receipt binds all tested module and oracle inputs.",
+  "runs": [
+    {
+      "log": "focused.log",
+      "scope": "original 51 scenarios",
+      "exitCode": 0
+    },
+    {
+      "log": "supplement.log",
+      "scope": "selector matched only original 51 scenarios; not supplement evidence",
+      "exitCode": 0
+    },
+    {
+      "log": "seek-bounded.log",
+      "scope": "14 seek and 19 bounded scenarios",
+      "exitCode": 0
+    },
+    {
+      "log": "all-context-v1.log",
+      "scope": "109 JVM scenarios plus Go cancellation bridge checks",
+      "exitCode": 1,
+      "remainingDifference": "ordered-where returned correct public rows and work but omitted one completed streaming fast-path diagnostic"
+    },
+    {
+      "log": "all-context-v2.log",
+      "scope": "same 109 scenarios and bridge checks after recording completed streaming fast path",
+      "exitCode": 0
+    }
+  ],
+  "artifacts": {
+    "seek-bounded.log": "7f83f80c36e0261ea156fbc3582a74d2777313263c97ee7241319ce19ccd47ab",
+    "all-context-v2.log": "5ecc9bb9c13a1041ac9aec1681ca0adb645ce56c9a3e71b4bf1bc1a114f84ca8",
+    "supplement.log": "543f581464977313182d81e98052eb0480f602002dfb71151a143349cd043433",
+    "focused.log": "e61087c400ddbb38ac2e2b774011789981bc0ff6ac1b3219a5aba447f48b26e8",
+    "all-context-v1.log": "e2a36ac7295b676386e3453ef3602875cf412489646b4db732c51d81d165647f"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "locals": {
+    "call": false,
+    "locals": [
+      "alpha",
+      "beta",
+      "gamma",
+      "delta"
+    ]
+  },
+  "bad-first": {
+    "call": false,
+    "locals": [
+      "alpha",
+      "beta",
+      "gamma",
+      "delta"
+    ],
+    "badIndex": 0
+  },
+  "missing-first-bad-second": {
+    "call": false,
+    "locals": [
+      "alpha",
+      "beta",
+      "gamma",
+      "delta"
+    ],
+    "badIndex": 1,
+    "missingOffsets": [
+      10
+    ]
+  },
+  "missing-first": {
+    "call": false,
+    "locals": [
+      "alpha",
+      "beta",
+      "gamma",
+      "delta"
+    ],
+    "missingOffsets": [
+      10
+    ]
+  },
+  "missing-all": {
+    "call": false,
+    "locals": [
+      "alpha",
+      "beta",
+      "gamma",
+      "delta"
+    ],
+    "missingOffsets": [
+      10,
+      20,
+      30,
+      40
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python3",
+    "docs/go-server-baseline/native-work-context/checks/ordered-oracle/verify.py"
+  ],
+  "exitCode": 0,
+  "stdout": "{\"verifiedArtifacts\": 58, \"scenarios\": 25, \"operations\": 25, \"fullRecordsEqual\": true, \"fixtureFilesPerCapture\": 80, \"unchangedCaseFixtureFilesPerCapture\": 400, \"performanceMeasurements\": 0}\n",
+  "stderr": "",
+  "manifestSha256": "4094a6975843dcb0edf82c7b5e7f6b0e4e2ea510d8824c7475d71a2bf100634d"
+}

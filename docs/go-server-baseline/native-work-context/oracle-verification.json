@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "docs/go-server-baseline/native-work-context/verify.py"
+  ],
+  "exitCode": 0,
+  "stdout": "{\"verifiedArtifacts\": 59, \"variantFilesPerCapture\": 80, \"scenarios\": 51, \"orderedOperations\": 129, \"completeOutputExactCases\": 50, \"concurrentAggregateExact\": true, \"performanceMeasurements\": 0}\n",
+  "stderr": "",
+  "manifestSha256": "68fee296dc0d4f93a33d4e8ca42b13e9f13277fe5a849a3d62385e8064827fa5",
+  "verifiedUTC": "2026-09-08T09:15:09.748418+00:00"
+}

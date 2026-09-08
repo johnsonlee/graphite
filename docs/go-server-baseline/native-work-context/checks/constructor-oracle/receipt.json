@@ -1,0 +1,56 @@
+{
+  "inputsUnchanged": true,
+  "originalFixtureUnchanged": true,
+  "fixturesUnchanged": true,
+  "fullRecordsEqual": true,
+  "cases": 10,
+  "commands": [
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/classes",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/ConstructorOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T09:32:33.487237+00:00",
+      "endUTC": "2026-09-08T09:32:33.821074+00:00"
+    },
+    {
+      "phase": "main-capture",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/classes:/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/graphite-explore.jar",
+        "ConstructorOracle",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/main-capture/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/main-capture/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T09:32:33.824195+00:00",
+      "endUTC": "2026-09-08T09:32:33.958346+00:00"
+    },
+    {
+      "phase": "repeat-capture",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/classes:/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/graphite-explore.jar",
+        "ConstructorOracle",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/frozen/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/repeat-capture/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-constructor-main-v1/repeat-capture/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T09:32:33.961787+00:00",
+      "endUTC": "2026-09-08T09:32:34.096689+00:00"
+    }
+  ],
+  "performanceMeasurements": 0
+}

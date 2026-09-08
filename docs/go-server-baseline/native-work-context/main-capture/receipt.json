@@ -1,0 +1,91 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "commands": [
+    {
+      "phase": "javap",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+        "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+        "io.johnsonlee.graphite.cypher.CypherCancellationSignal"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T09:10:21.088794+00:00",
+      "endUTC": "2026-09-08T09:10:21.227566+00:00"
+    },
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-main-v1/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/WorkFixture.java",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/WorkOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T09:10:21.227888+00:00",
+      "endUTC": "2026-09-08T09:10:21.640857+00:00"
+    },
+    {
+      "phase": "generate",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-main-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "WorkFixture",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/fixture-specs.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-main-v1/variants",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-main-v1/mutations.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T09:10:21.641197+00:00",
+      "endUTC": "2026-09-08T09:10:21.830009+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-main-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "WorkOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-work-context/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-main-v1/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/work-context-main-v1/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T09:10:21.951244+00:00",
+      "endUTC": "2026-09-08T09:10:22.184976+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "WorkFixture.class",
+      "bytes": 8065,
+      "sha256": "ac22aaff5386b718384cae734e951f5560cc7709c0330afa732244ea4cf27341"
+    },
+    {
+      "file": "WorkOracle$State.class",
+      "bytes": 2790,
+      "sha256": "1a986ea1aee98e70205e565309eb455ac4706f84de284898b0e9979f3444ad00"
+    },
+    {
+      "file": "WorkOracle.class",
+      "bytes": 13967,
+      "sha256": "29b7a0c5f96c716e9e3d1efd7ded8e943d4d92578b57dbae1441b82e3331b9cd"
+    }
+  ],
+  "fixtureAudit": {
+    "originalFiles": 816,
+    "changed": [],
+    "added": [],
+    "missing": []
+  },
+  "performanceMeasurements": 0
+}
