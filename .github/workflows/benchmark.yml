@@ -608,6 +608,9 @@ jobs:
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
         METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
           -p "graphCount=${GRAPH_COUNT}" -p "scenario=${SCENARIOS}")
+        # The request-serving CPU accounting contract runs in a JVM of its own, on this runner and
+        # JVM, before any measured fork; it must never run inside a benchmark trial.
+        java -cp "${CANDIDATE_JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract
         java -jar "${BASE_JAR}" \
           'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
           -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt" \

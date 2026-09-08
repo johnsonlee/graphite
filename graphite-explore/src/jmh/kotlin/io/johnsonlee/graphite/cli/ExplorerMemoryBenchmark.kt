@@ -431,7 +431,9 @@ open class MethodDiscoveryCompatibilityBenchmark {
         legacyMethodsRoute = rawRequest(legacyPath(services.first().fixture.className, 0)).code == HTTP_OK
         writeCompatibilityManifest()
         quiesceBeforeMeasurement()
-        verifyCpuAccounting()
+        // The accounting contract runs in a JVM of its own (MethodCompatibilityCpuAccountingContract);
+        // here only its availability is required, without touching the heap the trial measures.
+        RequestCpuAccounting.requireAvailable()
     }
 
     @TearDown
@@ -786,36 +788,20 @@ open class MethodDiscoveryCompatibilityBenchmark {
     }
 
     private fun measure(counters: MethodCompatibilityCounters, action: () -> Long): Long {
-        // The subtracted internal interval is nested inside the process interval: the process
-        // figure is read first before the action and last after it, so any internal CPU spent in
-        // the snapshot gaps is charged to the request rather than subtracted from it.
         val beforeRss = residentSetBytes()
         val beforeGcTime = gcTimeMillis()
         val beforeJit = jitTimeMillis()
-        val beforeCpu = processCpuTimeNanos()
-        val beforeInternal = internalThreadCpuNanos()
-        val bytes = action()
-        val afterInternal = internalThreadCpuNanos()
-        val afterCpu = processCpuTimeNanos()
+        // Request-serving CPU: the process figure minus the JVM's own threads, with the internal
+        // interval nested inside the process interval; see RequestCpuAccounting.
+        val (bytes, cpu) = RequestCpuAccounting.measure(action)
         val afterRss = residentSetBytes()
         counters.requestsSucceeded++
         counters.responseBytes += bytes
-        counters.processCpuNanos = (afterCpu - beforeCpu).coerceAtLeast(0L)
-        // The process figure counts every thread that ran in the window, including one that was
-        // created and joined inside it. The CPU of the JVM's own threads (collectors, compilers,
-        // the VM and service threads) is read per native thread from /proc and subtracted, so the
-        // remainder is the CPU of the Java threads that served the request, whatever their
-        // lifetime. An internal thread that appears inside the window counts in full; one that
-        // disappears inside it was idle before the JVM retired it, so its unread share is bounded
-        // by the retirement idle time and is reported as a count rather than dropped silently.
-        val internalCpu = afterInternal.entries.sumOf { (tid, cpu) -> cpu - (beforeInternal[tid] ?: 0L) }
-        counters.jvmInternalCpuNanos = internalCpu.coerceAtLeast(0L)
-        counters.jvmInternalThreadsEnded = beforeInternal.keys.count { it !in afterInternal }.toLong()
-        // With the nesting above the remainder can only fall below zero by the process clock's
-        // tick resolution; the shortfall is published instead of being hidden by the clamp.
-        val remainder = counters.processCpuNanos - counters.jvmInternalCpuNanos
-        counters.cpuAccountingUnderflowNanos = (-remainder).coerceAtLeast(0L)
-        counters.javaThreadCpuNanos = remainder.coerceAtLeast(0L)
+        counters.processCpuNanos = cpu.processCpuNanos
+        counters.jvmInternalCpuNanos = cpu.jvmInternalCpuNanos
+        counters.jvmInternalThreadsEnded = cpu.jvmInternalThreadsEnded
+        counters.cpuAccountingUnderflowNanos = cpu.underflowNanos
+        counters.javaThreadCpuNanos = cpu.javaThreadCpuNanos
         counters.gcTimeMillis = (gcTimeMillis() - beforeGcTime).coerceAtLeast(0L)
         counters.jitTimeMillis = (jitTimeMillis() - beforeJit).coerceAtLeast(0L)
         counters.residentSetBeforeBytes = beforeRss
@@ -823,93 +809,6 @@ open class MethodDiscoveryCompatibilityBenchmark {
         counters.residentSetDeltaBytes = (afterRss - beforeRss).coerceAtLeast(0L)
         counters.graphCount = graphCount.toLong()
         return bytes
-    }
-
-    /**
-     * CPU time of the JVM's internal native threads, keyed by native thread id, from the kernel's
-     * per-thread scheduler accounting. Fails closed when the accounting is unavailable, since the
-     * request-serving CPU row cannot be derived without it.
-     */
-    private fun internalThreadCpuNanos(): Map<Long, Long> {
-        val tasks = Path.of("/proc/self/task")
-        check(Files.isDirectory(tasks)) { "Per-thread CPU accounting is unavailable: $tasks is missing" }
-        val result = HashMap<Long, Long>()
-        Files.newDirectoryStream(tasks).use { entries ->
-            for (task in entries) {
-                val tid = task.fileName.toString().toLongOrNull() ?: continue
-                val name = runCatching { Files.readString(task.resolve("comm")).trim() }.getOrNull() ?: continue
-                if (!isJvmInternalThread(name)) continue
-                val schedstat = runCatching { Files.readString(task.resolve("schedstat")) }.getOrNull() ?: continue
-                val onCpuNanos = schedstat.trim().split(' ').firstOrNull()?.toLongOrNull()
-                    ?: error("Unreadable scheduler accounting for thread $tid ($name): $schedstat")
-                result[tid] = onCpuNanos
-            }
-        }
-        check(result.isNotEmpty()) { "No JVM-internal thread found under $tasks; the accounting contract does not hold" }
-        return result
-    }
-
-    private fun isJvmInternalThread(name: String): Boolean =
-        JVM_INTERNAL_THREAD_NAMES.any { prefix -> name.startsWith(prefix) }
-
-    /**
-     * Runtime contract check for the CPU accounting, run once in trial setup: an action that
-     * creates, runs and joins a CPU-bound worker entirely inside the measured window must be
-     * charged that worker's CPU. Fails closed so a JVM or kernel on which the accounting does not
-     * hold cannot publish a request-serving CPU row.
-     */
-    private fun verifyCpuAccounting() {
-        val counters = MethodCompatibilityCounters()
-        val workerCpu = java.util.concurrent.atomic.AtomicLong()
-        measure(counters) {
-            val worker = Thread {
-                val threads = java.lang.management.ManagementFactory.getThreadMXBean()
-                val start = System.nanoTime()
-                var sink = 0L
-                while (System.nanoTime() - start < CPU_ACCOUNTING_WORKER_NANOS) sink += sink xor System.nanoTime()
-                workerCpu.set(threads.currentThreadCpuTime)
-                if (sink == Long.MIN_VALUE) println(sink)
-            }
-            worker.start()
-            worker.join()
-            0L
-        }
-        val expected = workerCpu.get()
-        check(expected > 0L) { "The accounting check worker recorded no CPU time" }
-        check(counters.javaThreadCpuNanos >= expected * CPU_ACCOUNTING_MIN_SHARE_PERCENT / PERCENT) {
-            "Request-serving CPU accounting missed a worker that lived inside the window: " +
-                "worker ${expected} ns, accounted ${counters.javaThreadCpuNanos} ns, " +
-                "process ${counters.processCpuNanos} ns, internal ${counters.jvmInternalCpuNanos} ns"
-        }
-        verifySnapshotNesting("idle action") { 0L }
-        verifySnapshotNesting("collector-loaded action") {
-            // Enough short-lived garbage to run the collector's threads inside the window, so the
-            // internal share is non-trivial while the interval containment is checked.
-            val retained = ArrayList<ByteArray>(CPU_ACCOUNTING_GARBAGE_CHUNKS)
-            repeat(CPU_ACCOUNTING_GARBAGE_CHUNKS) { index ->
-                val chunk = ByteArray(CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES)
-                chunk[index % chunk.size] = index.toByte()
-                if (retained.size >= CPU_ACCOUNTING_GARBAGE_RETAINED) retained.removeAt(0)
-                retained.add(chunk)
-            }
-            retained.size.toLong()
-        }
-    }
-
-    /**
-     * Contract check for the snapshot gaps: because the internal interval is read inside the
-     * process interval, the subtracted internal CPU can exceed the process figure only by the
-     * process clock's tick, whatever the JVM's threads did around the action. A larger shortfall
-     * means the intervals are no longer nested and the row would under-report, so it fails.
-     */
-    private fun verifySnapshotNesting(label: String, action: () -> Long) {
-        val counters = MethodCompatibilityCounters()
-        measure(counters, action)
-        check(counters.cpuAccountingUnderflowNanos <= CPU_ACCOUNTING_MAX_UNDERFLOW_NANOS) {
-            "Internal CPU exceeded the process interval on the $label: " +
-                "process ${counters.processCpuNanos} ns, internal ${counters.jvmInternalCpuNanos} ns, " +
-                "shortfall ${counters.cpuAccountingUnderflowNanos} ns"
-        }
     }
 
     private fun writeCompatibilityManifest() {
@@ -949,10 +848,6 @@ open class MethodDiscoveryCompatibilityBenchmark {
             java.nio.file.StandardOpenOption.APPEND
         )
     }
-
-    private fun processCpuTimeNanos(): Long =
-        (java.lang.management.ManagementFactory.getOperatingSystemMXBean()
-            as? com.sun.management.OperatingSystemMXBean)?.processCpuTime ?: 0L
 
     /**
      * One quiescence step after the graphs and the server are up and before the measured request
@@ -2021,33 +1916,4 @@ private const val EXPLICIT_GC_CONCURRENT_OPTION = "ExplicitGCInvokesConcurrent"
 private const val EXPLICIT_GC_CAUSE = "System.gc()"
 private const val END_OF_MAJOR_GC = "end of major GC"
 private const val END_OF_MINOR_GC = "end of minor GC"
-private const val CPU_ACCOUNTING_WORKER_NANOS = 200_000_000L
-private const val CPU_ACCOUNTING_GARBAGE_CHUNKS = 512
-private const val CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES = 1 shl 20
-private const val CPU_ACCOUNTING_GARBAGE_RETAINED = 64
-/** Two ticks of the process CPU clock (10 ms on Linux), the only slack the nesting leaves. */
-private const val CPU_ACCOUNTING_MAX_UNDERFLOW_NANOS = 20_000_000L
-private const val CPU_ACCOUNTING_MIN_SHARE_PERCENT = 90L
-private const val PERCENT = 100L
 
-/** Native names of HotSpot's own threads: collectors, compilers, the VM thread and its services. */
-private val JVM_INTERNAL_THREAD_NAMES = listOf(
-    "VM Thread",
-    "VM Periodic Tas",
-    "Service Thread",
-    "Monitor Deflati",
-    "Sweeper thread",
-    "Attach Listener",
-    "C1 CompilerThre",
-    "C2 CompilerThre",
-    "GC Thread#",
-    "G1 ",
-    "ZWorker",
-    "ZDirector",
-    "ZDriver",
-    "ZStat",
-    "ZUncommitter",
-    "Shenandoah",
-    "Parallel GC",
-    "Concurrent Mark"
-)

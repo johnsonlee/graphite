@@ -3297,3 +3297,15 @@ test("historical known-bad latency proof runs only in the scheduled workflow", (
     assert.ok(cacheHashInputs.length >= 2);
     for (const hashInput of cacheHashInputs) assert.match(hashInput, /'current\//);
 });
+
+test("method-compatibility shards run the CPU accounting contract in its own JVM before any fork", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const contract = workflow.indexOf(
+        'java -cp "${CANDIDATE_JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract'
+    );
+    const firstFork = workflow.indexOf(
+        "'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate'"
+    );
+    assert.ok(contract > 0, "the contract must run in its own JVM");
+    assert.ok(contract < firstFork, "the contract must run before the first measured fork");
+});
