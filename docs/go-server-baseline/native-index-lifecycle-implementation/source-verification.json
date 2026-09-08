@@ -1,0 +1,12 @@
+{
+  "nativeBase": "3e98497be83b072c28adb8f0a1076427478be1bd",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "nativeSourceSHA256": {
+    "graphite-server/internal/store/index_lifecycle.go": "f3141b1b82ccd205173b54b7ed130be8e141b664cb1ce04fd02458a2f3515a92",
+    "graphite-server/internal/store/index_lifecycle_test.go": "11216bb1cdffbd3bae74da1ca806509cca22ecb467e3da458a63f66629342e1c",
+    "graphite-server/internal/query/index_lifecycle_test.go": "a1e07788c98b5aa4ab38b78e17f5a56d86854290ba6e857bafe34035d1cb5a7b"
+  },
+  "mainHelperClassSHA256": "cc6df2dd90e4a2a4290c68f355963d15dbccaf3d18f456cd48ee8aadd18b67c2",
+  "performanceMeasured": false
+}

@@ -1,0 +1,70 @@
+[
+  {
+    "fixture": "empty",
+    "loaded": {
+      "mappedRangeCount": 0,
+      "rawMatchCount": 0,
+      "mappedView": false,
+      "rawProjectionCount": 0,
+      "retained": false,
+      "loadedFromPersistence": false,
+      "trigrams": false,
+      "indexFile": null
+    },
+    "prepared": false,
+    "afterPrepare": {
+      "mappedRangeCount": 0,
+      "rawMatchCount": 0,
+      "mappedView": false,
+      "rawProjectionCount": 0,
+      "retained": false,
+      "loadedFromPersistence": false,
+      "trigrams": false,
+      "indexFile": null
+    },
+    "afterClear": {
+      "mappedRangeCount": 0,
+      "rawMatchCount": 0,
+      "mappedView": false,
+      "rawProjectionCount": 0,
+      "retained": false,
+      "loadedFromPersistence": false,
+      "trigrams": false,
+      "indexFile": null
+    }
+  },
+  {
+    "fixture": "short",
+    "loaded": {
+      "mappedRangeCount": 0,
+      "rawMatchCount": 0,
+      "mappedView": false,
+      "rawProjectionCount": 0,
+      "retained": false,
+      "loadedFromPersistence": false,
+      "trigrams": false,
+      "indexFile": null
+    },
+    "prepared": false,
+    "afterPrepare": {
+      "mappedRangeCount": 0,
+      "rawMatchCount": 0,
+      "mappedView": false,
+      "rawProjectionCount": 0,
+      "retained": true,
+      "loadedFromPersistence": false,
+      "trigrams": false,
+      "indexFile": null
+    },
+    "afterClear": {
+      "mappedRangeCount": 0,
+      "rawMatchCount": 0,
+      "mappedView": false,
+      "rawProjectionCount": 0,
+      "retained": false,
+      "loadedFromPersistence": false,
+      "trigrams": false,
+      "indexFile": null
+    }
+  }
+]

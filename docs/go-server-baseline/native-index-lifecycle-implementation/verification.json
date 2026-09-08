@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "scenarios": 10,
+  "lifecycleOperations": 70,
+  "publicQueryResponsesEqualMain": 30,
+  "structuralAndIndexFileStateComparisons": 150,
+  "stateFields": [
+    "retained",
+    "mappedView",
+    "trigrams",
+    "loadedFromPersistence",
+    "mappedRangeCount",
+    "indexFile"
+  ],
+  "unsupportedNativeStateCounters": [
+    "rawMatchCount",
+    "rawProjectionCount"
+  ],
+  "unsupportedMainCountersWereAlwaysZero": true,
+  "actualMainBoundaryControls": 2,
+  "mainSHA256": "8895109a7f305010d7a79458c0162df7c559ed4f97fbf35b2964c2c22f218943",
+  "candidateSHA256": "f40242906cd9756421be11546688247105eff117ebb03fad1574b91256100ffd",
+  "real64ReplayExecuted": false,
+  "performanceMeasured": false
+}

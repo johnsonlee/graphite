@@ -1,0 +1,265 @@
+{
+  "fileCount": 52,
+  "files": [
+    {
+      "path": "IndexBoundaryOracle.java",
+      "bytes": 1719,
+      "sha256": "db27f848d1622afe4b43d99d51b03fe8c01d8ac29f30bdc6abd7a8e921ac70df"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3976,
+      "sha256": "4ceca45d4b4bb888c785fa0b48c45d5d9a2fe7ecee8d3528608096f32be38f62"
+    },
+    {
+      "path": "boundary-command-0.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "boundary-command-1.log",
+      "bytes": 58,
+      "sha256": "504bce687051679b968b844642362c2cbae7c3b9ec1964c8d796e57330836335"
+    },
+    {
+      "path": "boundary-commands.json",
+      "bytes": 1524,
+      "sha256": "9c010d31c653db7256a45d6d594db6ee24b93f77bccf5318a8d8b745b52fdf4b"
+    },
+    {
+      "path": "boundary-fixtures/empty/forward.graph",
+      "bytes": 1,
+      "sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71"
+    },
+    {
+      "path": "boundary-fixtures/empty/forward.offsets",
+      "bytes": 1,
+      "sha256": "c19a797fa1fd590cd2e5b42d1cf5f246e29b91684e2f87404b81dc345c7a56a0"
+    },
+    {
+      "path": "boundary-fixtures/empty/forward.properties",
+      "bytes": 618,
+      "sha256": "66989510363ecd52e258f876bd242e86a969345ed6b0d941d4d3ac37084981f5"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "2ad1fb768d6fadc2e57335b3fc96d20987052a03d326c45028f25758ff3cdbf8"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.classoverview",
+      "bytes": 16,
+      "sha256": "a0b3a40ac88969c64df5eedbb341337b49f7f5936acfce30cfe6515cb0b5ca2b"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.labelprefix",
+      "bytes": 8,
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.nodedata",
+      "bytes": 8,
+      "sha256": "8089d99fd836b3884b4bf387916fe7d28a37df2f881082aeed2957faf2e9ca18"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.nodeindex",
+      "bytes": 8,
+      "sha256": "21afed4a0f83ee078c47d720801a0f83ce78d0dfb279833f500e83f43443e2b5"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.nodeoffsets",
+      "bytes": 16,
+      "sha256": "5cdd3aaaffd438f177ef65c11cc0476fb9a02e5be4c6c43245873a39097787a2"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.strings",
+      "bytes": 348,
+      "sha256": "ed577cf9d22c6ceee17380974508514193646d8c0a96f5e7c1dda4e027300e5e"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "8cb9012517c817fead650287d61bdd9c68803b6bf9c64133dcab3e65b5a50cb9"
+    },
+    {
+      "path": "boundary-fixtures/empty/graph.typeindex",
+      "bytes": 216,
+      "sha256": "b795f67f5d1772f01e2ba52df9bcdabaa59724877e48e47c8a9883fbaddd01bf"
+    },
+    {
+      "path": "boundary-fixtures/short/forward.graph",
+      "bytes": 1,
+      "sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71"
+    },
+    {
+      "path": "boundary-fixtures/short/forward.offsets",
+      "bytes": 1,
+      "sha256": "c19a797fa1fd590cd2e5b42d1cf5f246e29b91684e2f87404b81dc345c7a56a0"
+    },
+    {
+      "path": "boundary-fixtures/short/forward.properties",
+      "bytes": 618,
+      "sha256": "66989510363ecd52e258f876bd242e86a969345ed6b0d941d4d3ac37084981f5"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "4b3ea7c12cdf955759f91cb20b5567be5746e39bb25256f17403afc822b34b82"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.classoverview",
+      "bytes": 44,
+      "sha256": "7aacc3446429ce7c0a5a43d8d106cbace34bcb6b8e486418ebebefa1af75cc2e"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.labelprefix",
+      "bytes": 8,
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.nodedata",
+      "bytes": 57,
+      "sha256": "b16a2360fffc3e14dc0a666330bdfb765326acda4058e0256fa19ffc59c1a24a"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.nodeindex",
+      "bytes": 21,
+      "sha256": "676d27940698e3c397f170b7c31b4ba915da9d782fb5bc5fd78c0342918dad7b"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.nodeoffsets",
+      "bytes": 16,
+      "sha256": "3b8748c3bb3b95accffa622ff9af30cbc5fb23bff4e0fe2d39a5043385d2fd83"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.strings",
+      "bytes": 405,
+      "sha256": "70b55d256a08fe8601b6d7bb144bc5cebf269d42daa6dc0dc3f3b12b7bc35f7c"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "af1f2c473bbb744fdfb08ff43c25e81c0fd1736b88e3fb50519b9cf6c1cf9372"
+    },
+    {
+      "path": "boundary-fixtures/short/graph.typeindex",
+      "bytes": 220,
+      "sha256": "4b60d8c021a18990096605c426480f34cd7d2c1ed2ff9b4288b1636312267c79"
+    },
+    {
+      "path": "boundary-initial.log",
+      "bytes": 1212,
+      "sha256": "a46e817fb53b9c122db690ca58241767c31a3d5ed3effc65f4032ececf7e8650"
+    },
+    {
+      "path": "boundary-main.json",
+      "bytes": 1620,
+      "sha256": "362ba423933e913cb30125b710cbe64b1ff96d253db427954e72a554e6ce6e7e"
+    },
+    {
+      "path": "candidate-final.json",
+      "bytes": 61104,
+      "sha256": "f40242906cd9756421be11546688247105eff117ebb03fad1574b91256100ffd"
+    },
+    {
+      "path": "candidate-initial.json",
+      "bytes": 61104,
+      "sha256": "f40242906cd9756421be11546688247105eff117ebb03fad1574b91256100ffd"
+    },
+    {
+      "path": "candidate-initial.log",
+      "bytes": 74,
+      "sha256": "b8a12a9dd99d184a55658a26f52f44e3a379b9e6c5f0f6d4a9e06bc507f1145d"
+    },
+    {
+      "path": "classes/IndexBoundaryOracle.class",
+      "bytes": 4553,
+      "sha256": "8a860644c81bc130b3afb60c10555ca647ba52dc1342d9b6d606688daad966e4"
+    },
+    {
+      "path": "full-race.log",
+      "bytes": 1309,
+      "sha256": "c612d5c222e549b688dfb74d44a8892415e907ace498a675596d4927e8dd62e8"
+    },
+    {
+      "path": "initial-index-lifecycle.go.txt",
+      "bytes": 4407,
+      "sha256": "2c2b8971f49317e73e30ebd82dc25db6bed894986b9ace5a1f4ea70d395fdb20"
+    },
+    {
+      "path": "initial-projection-persistence.go.txt",
+      "bytes": 6020,
+      "sha256": "485249114c817010e9b370748b325c363a75a8a41de7912fb887ba8f662a84c9"
+    },
+    {
+      "path": "lifecycle-race.log",
+      "bytes": 148,
+      "sha256": "4d7d19b1d24dea08b36bfd9b20bc036a2aa14acfbc92f59c709ed22ee23b3c6e"
+    },
+    {
+      "path": "source-verification.json",
+      "bytes": 754,
+      "sha256": "ac4b8baa82afe6f7f24db0af46ec9fbfbbde41e42dc4843c017d073f70fd4b56"
+    },
+    {
+      "path": "test-commands.json",
+      "bytes": 681,
+      "sha256": "feb240a00afc9cf323a18443dc7764f006a10d1fc870216934457dfa9d25cc5c"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 711,
+      "sha256": "ca621e592cdd32202af2eeadbae2d24a6085a59c04e7695c71387418da7b9423"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 3114,
+      "sha256": "19a0e2abc2077b6c05d49aee6c1f785557433653d3f377bb75a3102268eb5e64"
+    },
+    {
+      "path": "vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

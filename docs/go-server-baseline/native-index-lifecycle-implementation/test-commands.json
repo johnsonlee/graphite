@@ -1,0 +1,40 @@
+{
+  "cwd": "graphite-server",
+  "commands": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/query",
+        "./internal/store",
+        "-run",
+        "Test(IndexLifecycle|ClearStringIndexes)",
+        "-count=1"
+      ],
+      "sessionId": 93150,
+      "exitCode": 0,
+      "output": "lifecycle-race.log"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "sessionId": 58696,
+      "exitCode": 0,
+      "output": "full-race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "output": "vet.log"
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+package store
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/binary"
+	"math"
+	"os"
+	"path/filepath"
+	"sort"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
+)
+
+// All fields share Store.callSiteIndex.mu, including handles retained by active
+// queries after the Store publishes/releases a different index generation.
+type ordinaryIndexState struct {
+	exactTuple    *exactProjectionTupleIndex
+	caches        [3]projectionLRU
+	trigramsReady bool
+	signatures    []uint64
+	trigrams      []int64
+}
+
+func (i *DistinctStringIndex) PrepareProjectionTrigrams(ctx context.Context) error {
+	s := i.owner
+	s.callSiteIndex.mu.Lock()
+	defer s.callSiteIndex.mu.Unlock()
+	if s.callSiteIndex.closed {
+		return ErrStoreClosed
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if i.view != nil || i.ordinary == nil || i.ordinary.trigramsReady {
+		return nil
+	}
+	used := map[int32]bool{}
+	for _, entries := range i.entries {
+		for sid := range entries {
+			used[sid] = true
+		}
+	}
+	signatures := make([]uint64, len(s.Strings))
+	postings := []int64{}
+	for sid := range used {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		var canceled error
+		value := javastring.Case(s.Strings[sid], false, func() { canceled = ctx.Err() })
+		if canceled != nil {
+			return canceled
+		}
+		units := javastring.UTF16(value)
+		seen := map[int32]bool{}
+		for at := 0; at+2 < len(units); at++ {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			hash := (int32(units[at])*31+int32(units[at+1]))*31 + int32(units[at+2])
+			mixed := uint32(hash) ^ (uint32(hash) >> 11) ^ (uint32(hash) << 7)
+			signatures[sid] |= uint64(1)<<(uint32(hash)&63) | uint64(1)<<(mixed&63)
+			if !seen[hash] {
+				seen[hash] = true
+				postings = append(postings, int64(hash)<<32|int64(uint32(sid)))
+			}
+		}
+	}
+	sort.Slice(postings, func(a, b int) bool { return postings[a] < postings[b] })
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	i.ordinary.signatures = signatures
+	i.ordinary.trigrams = postings
+	i.ordinary.trigramsReady = true
+	return nil
+}
+
+// The builder's content identity comes from its consumed raw representation,
+// never a possibly stale persisted CallSite identity file.
+func (s *Store) projectionBuiltIdentityLocked(i *DistinctStringIndex) ([32]byte, error) {
+	stringsID, ok := readIdentity(filepath.Join(s.dir, "graph.strings.identity"))
+	var word [8]byte
+	if !ok {
+		h := sha256.New()
+		binary.BigEndian.PutUint32(word[:4], uint32(len(s.Strings)))
+		h.Write(word[:4])
+		for _, text := range s.Strings {
+			wire := []byte(javastring.WireString(text))
+			binary.BigEndian.PutUint32(word[:4], uint32(len(wire)))
+			h.Write(word[:4])
+			h.Write(wire)
+		}
+		copy(stringsID[:], h.Sum(nil))
+	}
+	records := map[int32][4]int32{}
+	for p, entries := range i.entries {
+		for sid, ids := range entries {
+			for _, id := range ids {
+				record := records[id]
+				record[p] = sid
+				records[id] = record
+			}
+		}
+	}
+	h := sha256.New()
+	h.Write(stringsID[:])
+	binary.BigEndian.PutUint32(word[:4], uint32(len(s.byKind["CallSiteNode"])))
+	h.Write(word[:4])
+	for _, id := range s.byKind["CallSiteNode"] {
+		offset, err := s.projectionOffsetLocked(id)
+		if err != nil {
+			return [32]byte{}, err
+		}
+		binary.BigEndian.PutUint32(word[:4], uint32(id))
+		h.Write(word[:4])
+		binary.BigEndian.PutUint64(word[:], uint64(offset))
+		h.Write(word[:])
+		for _, sid := range records[id] {
+			binary.BigEndian.PutUint32(word[:4], uint32(sid))
+			h.Write(word[:4])
+		}
+	}
+	var result [32]byte
+	copy(result[:], h.Sum(nil))
+	return result, nil
+}
+
+// Close owns the exclusive Store lock. Persistence is a best-effort atomic
+// handoff of an actually prepared index, before node buffers are unmapped.
+func (s *Store) persistProjectionOnCloseLocked() {
+	i := s.distinctProjection.index
+	if i == nil || i.view != nil || i.ordinary == nil || !i.ordinary.trigramsReady {
+		return
+	}
+	identity, err := s.projectionBuiltIdentityLocked(i)
+	if err != nil {
+		return
+	}
+	info := CallSiteStringIndexInfo{Version: 2, StringCount: int32(len(s.Strings)), CallSiteCount: int32(len(s.byKind["CallSiteNode"])), ContentIdentity: identity, TrigramPostingCount: int32(len(i.ordinary.trigrams))}
+	var unique int64
+	for p, entries := range i.entries {
+		info.UniqueStringCounts[p] = int32(len(entries))
+		unique += int64(len(entries))
+	}
+	payload := 8*unique + 16*int64(info.CallSiteCount) + 8*int64(info.StringCount) + 8*int64(info.TrigramPostingCount)
+	if payload > math.MaxInt32-84 {
+		return
+	}
+	info.RetainedBytes = payload + 480
+	data := make([]byte, 0, int(payload)+84)
+	word32 := func(v int32) { data = binary.BigEndian.AppendUint32(data, uint32(v)) }
+	word64 := func(v uint64) { data = binary.BigEndian.AppendUint64(data, v) }
+	word32(0x47524353)
+	word32(2)
+	word32(info.StringCount)
+	word32(info.CallSiteCount)
+	data = append(data, identity[:]...)
+	for _, n := range info.UniqueStringCounts {
+		word32(n)
+	}
+	word32(info.TrigramPostingCount)
+	word64(uint64(info.RetainedBytes))
+	for _, entries := range i.entries {
+		keys := make([]int32, 0, len(entries))
+		for sid := range entries {
+			keys = append(keys, sid)
+		}
+		sort.Slice(keys, func(a, b int) bool { return keys[a] < keys[b] })
+		for _, sid := range keys {
+			word32(sid)
+		}
+		end := 0
+		for _, sid := range keys {
+			end += len(entries[sid])
+			word32(int32(end))
+		}
+		for _, sid := range keys {
+			for _, id := range entries[sid] {
+				word32(id)
+			}
+		}
+	}
+	for _, signature := range i.ordinary.signatures {
+		word64(signature)
+	}
+	for _, posting := range i.ordinary.trigrams {
+		word64(uint64(posting))
+	}
+	word64(0)
+	crc, err := callSiteIndexCRC(context.Background(), nil, data, info)
+	if err != nil {
+		return
+	}
+	binary.BigEndian.PutUint64(data[len(data)-8:], uint64(crc))
+	file, err := os.CreateTemp(s.dir, callSiteIndexFile+".*.tmp")
+	if err != nil {
+		return
+	}
+	temporary := file.Name()
+	defer os.Remove(temporary)
+	_, err = file.Write(data)
+	closeErr := file.Close()
+	if err != nil || closeErr != nil {
+		return
+	}
+	_ = os.Rename(temporary, filepath.Join(s.dir, callSiteIndexFile))
+}

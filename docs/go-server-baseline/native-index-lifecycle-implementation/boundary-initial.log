@@ -1,0 +1,6 @@
+--- FAIL: TestIndexLifecycleBoundariesMain (0.01s)
+    --- FAIL: TestIndexLifecycleBoundariesMain/short (0.00s)
+        index_lifecycle_test.go:238: native {"afterClear":{"indexFile":{"bytes":172,"sha256":"58eb41ac528992c9b220425ff80ff948486fd915cfc1d04b75ba78a1d724d99c"},"loadedFromPersistence":false,"mappedRangeCount":0,"mappedView":false,"retained":false,"trigrams":false},"afterPrepare":{"indexFile":null,"loadedFromPersistence":false,"mappedRangeCount":0,"mappedView":false,"retained":true,"trigrams":true},"fixture":"short","loaded":{"indexFile":null,"loadedFromPersistence":false,"mappedRangeCount":0,"mappedView":false,"retained":false,"trigrams":false},"prepared":true} main {"afterClear":{"indexFile":null,"loadedFromPersistence":false,"mappedRangeCount":0,"mappedView":false,"retained":false,"trigrams":false},"afterPrepare":{"indexFile":null,"loadedFromPersistence":false,"mappedRangeCount":0,"mappedView":false,"retained":true,"trigrams":false},"fixture":"short","loaded":{"indexFile":null,"loadedFromPersistence":false,"mappedRangeCount":0,"mappedView":false,"retained":false,"trigrams":false},"prepared":false}
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.396s
+FAIL

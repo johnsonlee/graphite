@@ -777,3 +777,27 @@ files with all other fixture bytes unchanged. Captures, original file hashes,
 post-run fixtures, exact source/JAR hashes and verifier are retained in
 `docs/go-server-baseline/native-index-lifecycle/`. Native lifecycle APIs and
 full1,267-case real64 state replay remain unfinished; no performance was run.
+
+
+### 2026-09-08 — Functional follow-up: native index preparation and clear
+
+Added optional startup preparation before graph publication, explicit complete
+preparation, and invocation-boundary index clearing without closing graph/node
+ownership. Clear preserves main's persistence-before-release behavior, resets
+query indexes/caches and cold certificates, and waits for a first index loader.
+The owner must join queries and release their index handles before this boundary.
+
+All30 actual-main public responses/errors,70 operations and150 structural/file
+states match across the prior10 scenarios. Two raw-cache counters are explicitly
+unavailable in the native observer; the corpus has zero values and does not
+prove their broader parity. New actual-main empty/short-string fixtures reject
+the initial assumption that zero trigram postings count as prepared: both
+preparations return false, short-string structural postings remain retained,
+and no index is persisted. The initial failing candidate/log is preserved;
+the final code keeps the existing persistence guard unchanged.
+
+Full-module race and vet pass, with repeated-clear graph readability, cache
+rebuild, cancellation and first-loader joining checks. Evidence is in
+`docs/go-server-baseline/native-index-lifecycle-implementation/`. These are
+functional prerequisites only: full1,267 real64 state replay and per-case P95
+acceptance remain unfinished; no performance measurement was run.
