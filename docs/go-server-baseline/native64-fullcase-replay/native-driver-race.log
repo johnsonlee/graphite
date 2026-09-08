@@ -1,0 +1,6 @@
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/benchmarkcase	6.241s
+--- FAIL: TestGraphManifestPreserves64DistinctSources (0.01s)
+    main_test.go:40: source 0 changed: {ID:g0 Path:/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestGraphManifestPreserves64DistinctSources2163550336/001/g0}
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/cmd/graphite-benchmark-replay	0.627s
+FAIL

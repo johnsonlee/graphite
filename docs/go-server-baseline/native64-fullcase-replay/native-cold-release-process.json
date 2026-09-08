@@ -1,0 +1,33 @@
+{
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/go64-cold-release-run1/graphite-benchmark-replay",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/go64-cold-release-run1/fixture/graphs-relocated.tsv",
+    "--state",
+    "cold",
+    "--workload",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-fullcase-replay/native-cold-release/responses.jsonl"
+  ],
+  "buildCommand": [
+    "go",
+    "build",
+    "-o",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/go64-cold-release-run1/graphite-benchmark-replay",
+    "./cmd/graphite-benchmark-replay"
+  ],
+  "binarySHA256": "5e5111a6e3557fbdfd0c6ac0fa03022847c850702940826579547bfcecbb79e4",
+  "performanceMeasurement": false,
+  "status": "exited",
+  "goEnvironment": [
+    "go1.22.0",
+    "/opt/homebrew/Cellar/go/1.22.0/libexec",
+    "darwin",
+    "arm64"
+  ],
+  "pid": 43380,
+  "exitCode": 1,
+  "binaryUnchanged": true,
+  "sourcesUnchanged": true
+}

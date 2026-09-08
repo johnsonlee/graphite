@@ -1,0 +1,30 @@
+[
+  {
+    "capture": "main-cold",
+    "rawSHA256": "a09caf496f914e7599d8745f86aa216c215822c8b5eedc8f7381973650094088",
+    "rawBytes": 97903377,
+    "archiveSHA256": "397a273945749586fdbcffbde0c94dcbe8240a9bf316a68b4447718495ddb48c",
+    "archiveBytes": 3267656
+  },
+  {
+    "capture": "main-cold-complete",
+    "rawSHA256": "ef09c986815621c190f05221f8083fe2c8b437cfbbb0dcfd4f391867d10a1a13",
+    "rawBytes": 97903377,
+    "archiveSHA256": "ec5a289455443d1c09a8c33abf4ebda9acadf958532c17e3fbf373e970a0777f",
+    "archiveBytes": 3268680
+  },
+  {
+    "capture": "native-cold",
+    "rawSHA256": "5ef8c95dc35dc7c4a8fd4bc89a1bf288f7ab6ea6eac04d545149130e1c39c459",
+    "rawBytes": 91307503,
+    "archiveSHA256": "2305b40dcfa71946abc0eecbcbd33a074be45306e932fa1f96c11d13c55aeaf7",
+    "archiveBytes": 3203015
+  },
+  {
+    "capture": "native-cold-release",
+    "rawSHA256": "d5c09d840f7c1e9873ee9c92654e00e2bb6bd45cad45c9417f82ca58ba553efb",
+    "rawBytes": 91241429,
+    "archiveSHA256": "1fead89343154ca7392c7cc87f97f2699253da7431668efbd865fb9d5967fdc0",
+    "archiveBytes": 3199264
+  }
+]

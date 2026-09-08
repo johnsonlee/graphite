@@ -1,0 +1,11 @@
+{
+  "reference": "/Users/johnsonlee/.codex/fixtures/graphite-real64-1152-20260908",
+  "clone": "/Users/johnsonlee/.codex/benchmarks/graphite/main64-cold-8bbd8835-run1/fixture",
+  "graphsManifest": "/Users/johnsonlee/.codex/benchmarks/graphite/main64-cold-8bbd8835-run1/fixture/graphs-relocated.tsv",
+  "originalFilesVerified": 1152,
+  "cloneFilesVerified": 1152,
+  "graphCount": 64,
+  "graphBytes": 10338207518,
+  "graphsManifestSHA256": "e9b60faea6371697a31cc65bd1036a3681bd6621b1079340a0ee0a33282462c9",
+  "performanceMeasurement": false
+}

@@ -1,0 +1,26 @@
+{
+  "reference": {
+    "root": "/Users/johnsonlee/.codex/fixtures/graphite-real64-1152-20260908",
+    "originalFiles": 1152,
+    "matched": 1152,
+    "changed": [],
+    "missing": [],
+    "added": []
+  },
+  "main-cold": {
+    "root": "/Users/johnsonlee/.codex/benchmarks/graphite/main64-cold-8bbd8835-run1/fixture",
+    "originalFiles": 1152,
+    "matched": 1152,
+    "changed": [],
+    "missing": [],
+    "added": []
+  },
+  "native-cold": {
+    "root": "/Users/johnsonlee/.codex/benchmarks/graphite/go64-cold-8bbd8835-run1/fixture",
+    "originalFiles": 1152,
+    "matched": 1152,
+    "changed": [],
+    "missing": [],
+    "added": []
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "scope": "One complete real64 cold correctness replay per runtime; no latency evidence",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "workloadSHA256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+  "caseDefinitionsExactlyEqual": true,
+  "caseCount": 1267,
+  "executionOrderExactlyEqual": true,
+  "successfulMainCases": 1266,
+  "successfulNativeCases": 1266,
+  "comparedPublicFields": [
+    "columns",
+    "rows",
+    "canonical",
+    "error",
+    "message"
+  ],
+  "publicDifferences": [],
+  "errors": [
+    {
+      "kind": "case",
+      "phase": "replay",
+      "index": 821,
+      "id": "four-or-graph-id-targeted",
+      "error": "IllegalStateException",
+      "errorClass": "java.lang.IllegalStateException",
+      "message": "Unsafe expression reached parallel string projection"
+    }
+  ],
+  "observerFieldDifferences": [
+    {
+      "index": 821,
+      "id": "four-or-graph-id-targeted",
+      "field": "errorClass",
+      "main": "java.lang.IllegalStateException",
+      "native": null
+    }
+  ],
+  "stateDifferenceUnit": "Per graph, field, and before/after case observation; not unique cases",
+  "stateDifferenceCounts": {
+    "mappedRangeCount": 22777,
+    "retained": 22002,
+    "trigrams": 22002,
+    "loadedFromPersistence": 22002
+  },
+  "firstStateDifferences": {
+    "mappedRangeCount": {
+      "index": 2,
+      "id": "single-contains-unlabeled-targeted",
+      "boundary": "after",
+      "graph": "fixture-android-00",
+      "main": 1024,
+      "native": 0
+    },
+    "retained": {
+      "index": 4,
+      "id": "class-contains-or-unlabeled-zero",
+      "boundary": "after",
+      "graph": "fixture-android-00",
+      "main": true,
+      "native": false
+    },
+    "trigrams": {
+      "index": 4,
+      "id": "class-contains-or-unlabeled-zero",
+      "boundary": "after",
+      "graph": "fixture-android-00",
+      "main": true,
+      "native": false
+    },
+    "loadedFromPersistence": {
+      "index": 4,
+      "id": "class-contains-or-unlabeled-zero",
+      "boundary": "after",
+      "graph": "fixture-android-00",
+      "main": true,
+      "native": false
+    }
+  },
+  "nativeUnavailableStateCounters": [
+    "rawMatchCount",
+    "rawProjectionCount"
+  ],
+  "processReceipts": {
+    "main-cold": 1,
+    "native-cold": 1
+  },
+  "limitations": [
+    "The initial main capture could not write its correctness manifest because of a missing classpath entry; the corrected repeat is recorded separately.",
+    "Both runtimes recorded one query error; an all-success correctness gate cannot pass.",
+    "Index/cache state differs; complete benchmark lifecycle parity is not established.",
+    "Warm and startup-prepared full replays remain unverified.",
+    "This observed replay is not a timing run; no per-case P95 or speedup is established."
+  ],
+  "captureSHA256": {
+    "main-cold": "a09caf496f914e7599d8745f86aa216c215822c8b5eedc8f7381973650094088",
+    "native-cold": "5ef8c95dc35dc7c4a8fd4bc89a1bf288f7ab6ea6eac04d545149130e1c39c459"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "initialCount": 1267,
+  "completeClasspathCount": 1267,
+  "allCaptureRecordsExactlyEqual": true,
+  "publicDifferences": [],
+  "stateDifferenceCounts": {},
+  "originalManifestDigestsVerified": 1266,
+  "originalManifestFailures": 1,
+  "classpathUnchanged": true,
+  "originalAllSuccessGatePassed": false,
+  "performanceMeasurement": false
+}

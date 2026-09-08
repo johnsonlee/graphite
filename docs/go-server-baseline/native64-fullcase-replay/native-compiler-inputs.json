@@ -1,0 +1,418 @@
+[
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javastring/char.go",
+    "sha256": "ba061de047626885734ab40dbf9159b62c490ad177951e166c1d1cc2f7dd0e5f"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javastring/char_generated.go",
+    "sha256": "467e19df5828c6f6df165fbc4947edc88d8e56fe3770ef0631e98d15ab381f6f"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javastring/unicode.go",
+    "sha256": "56aa5e18232264f35aabea2cf0f22958acf8402344c4cd9f357b206f1e22d07b"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javastring/unicode_generated.go",
+    "sha256": "58dee198f80fb337e2cb82839a8374a1f7bca32abc42725a08ace08667fee19d"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javastring/utf16.go",
+    "sha256": "acafb0dc4fae8955117f49b96bfb63034b5dc53f6400f82a9b370e7f520c5981"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/generated/cypher_lexer.go",
+    "sha256": "4e88ac836d40e3bf1cdf76bd7abefbdcb52f83e6df6658b2ed4e79b7780ca17c"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/generated/cypher_parser.go",
+    "sha256": "f2fb5b7dc99d4981b3671df48959d8ddda88d798a0b184977b20e60f61be2e19"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/generated/cypherparser_base_visitor.go",
+    "sha256": "b1e2e0c6cb062612f4e91be7e2d31363cfb7f257dd96a9f8120a95eaf83e03a2"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/generated/cypherparser_visitor.go",
+    "sha256": "811339a54d13b8694bfea0f6e9c7a1fd2c2044c9622d4e2a854be448512c5c0c"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/antlr.go",
+    "sha256": "fcf081a4325a5910ec7d0576acd8921e7467f5793b8a98ce6a82d0ce6dbf694e"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/ast.go",
+    "sha256": "5190ce32842975638038412ad573f4288757c14b6ad4f9261fe52a2c17d2c9ef"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/context.go",
+    "sha256": "aa8b30b6259cdfd52a2b0fad5db635fe07433351e8a212faf9421ce7b9d036fa"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/java_input.go",
+    "sha256": "bcbaa46890568b9c5c4903e6d288166a07cf9b701f98420cb2a0b8a7c12675b6"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/number_literal.go",
+    "sha256": "564ac166502a9ef72a4aed737ccc5d905052f301c50448cdfb832ffd31c08b79"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/cypher/string_literal.go",
+    "sha256": "796cbf344726e2ff6184778e69e0c0accf9045187646ff89af4b4411d5071190"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javamath/fdlibm.go",
+    "sha256": "a84afd0919cb2a1a58f247e956104fe3d9e34e43b312d6ca422f10cfcfaf0945"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javamath/reduction.go",
+    "sha256": "6ef8099ecb57d9bcf73cef7c69ae79688f4634c1ebb809ddcc492a80bce7f38b"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javamath/sincos.go",
+    "sha256": "b56c4d357ca5c74dbd53330fb3e77b122457a4e13491d02391f769c44413e9d4"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javamath/tan.go",
+    "sha256": "535cbd4134f75f05b611fd218d8e55573b51b3403fedb9c1555be195146d1622"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javaregex/advanced.go",
+    "sha256": "e80ddc525d398f2993923d6847669733c9f8639cfed4d770539bf7cbdd6347e6"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javaregex/match.go",
+    "sha256": "3a9f7a36b31b3c4b1c417f86802f7dde9b33d7a5c9709a02f9a76f8df5f4f7ac"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javaregex/parse.go",
+    "sha256": "aaaa16381b837a364f7d33a6a0f5516fbf10351d5e9df34f60a70dd9567ea3f5"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javaregex/regex.go",
+    "sha256": "3e87294e867c0bafafbcffa5977af69c4ec611de790887c5f174ec16db724ff3"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javaregex/unicode.go",
+    "sha256": "f026bd8303907723a5acac161c3bc00ab20203400b6313f42408436fcafc77b1"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javaregex/java17_advanced.json",
+    "sha256": "cb01db0c7fd6998a5c3ccc56849f78936913e5473734fc0545c1ee34ce65167a"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javaregex/java17_names.json.gz",
+    "sha256": "ce3a06669d9af7f75fc95d58956fb125faaefd341c2f0a0f33c0d12785ed95d8"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/javaregex/java17_unicode.json",
+    "sha256": "f4b80b142388de42cf63d0c8c03cb22e510775e38f4ceef969085981b956c36b"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/bvgraph.go",
+    "sha256": "50117b8cc6e3c7ef0589ce2881ff806b69c2186c886a1b21a11cfd1ac9554d91"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/bvgraph_coding.go",
+    "sha256": "41f9f3d2487e8fca3fdc8b2b1afb51013ffada41d0925aed78177e5b990a1205"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/callsite_index.go",
+    "sha256": "e7c10e5f10de7eb7fa9a3ccf020c2065f46ac680c0fed33e471898903d128856"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/callsite_strings.go",
+    "sha256": "8532bd1f0e6fbc7dad98c41db36221955ef986f7a780c7cc3233728bc45c86c8"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/callsite_trigrams.go",
+    "sha256": "8a8e6bb7e129e40c180e8465cef3c93df27ffebbed52a0d9a6503d4f61d35e2f"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/candidate_certificate.go",
+    "sha256": "49bf7397cca779b3cb576fa3f03dcbe329f373945fc4f3582e98a9e5582e7290"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/decode.go",
+    "sha256": "e52319eb020f907667a10ba718943f2a850c1aa211e8a13e83009e98e367c3a1"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/distinct_projection.go",
+    "sha256": "fc874544826c50972643f312dbcb3e0fe15987e7dc84ef40ad05d6785cac7c85"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/edges.go",
+    "sha256": "72b711add5f9902a3607bb14852bafc1ee6984a41971c3ec4b2eb41baaed5161"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/index_lifecycle.go",
+    "sha256": "f3141b1b82ccd205173b54b7ed130be8e141b664cb1ce04fd02458a2f3515a92"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/java_serialization.go",
+    "sha256": "55d05fe638ffa3d15b3195b28f25d1460fbca5816ddacaa16a79bfb39355d919"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/main_callsite_index.go",
+    "sha256": "ced412b61eabc63d46fc689a35e2c2868173e01a5be6aa00572994b834490e33"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/main_posting_range.go",
+    "sha256": "ed74265b2c7873dc238bbbaab1eb67090200616825052da480805dcb49adda61"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/mmap_unix.go",
+    "sha256": "167e0b9510b857e72da094151c51095593f6d3bfd0153c103f6198d25223c0f7"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/node_error.go",
+    "sha256": "6d696d33b1138cb3e265274869b45bc0687782d0e3a20b77867f7f7a47e80091"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/ordinary_projection.go",
+    "sha256": "a337a47ad844f18974bdc56a133ec3c27e7fb7a739c00393fefdb48e3830963f"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/overview.go",
+    "sha256": "d58d0245e3851a1798476c24725fa4aade99cfb2d74df833bd4e81755d46eb06"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/projection_cache.go",
+    "sha256": "471854e1e62fb5b84bbacced302c409d19fafa717c2711de116f708bbc2d7164"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/projection_node.go",
+    "sha256": "fa1b8a55a6da9783823884f8f0418d722808cd9ef0fd2f650271e5bd0a1edc02"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/projection_persistence.go",
+    "sha256": "38237f08a74ba5001008ea9e82de070a7d65b11299c092940898db394cd523db"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/projection_property.go",
+    "sha256": "c71f0126ecb61d48703fe40c312b65a58965f86b1a17f94b5e23e733d2b130ee"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/projection_tuple.go",
+    "sha256": "774c58e036fbd32d44c677de7ade623252ad8acd0aa32d7a65c790ac74b699ce"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/query_order.go",
+    "sha256": "3b315e521f7239f373354a8a7fc97ea862ac33555204c5669829ff0d936ac7c8"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/resources.go",
+    "sha256": "5b00d4751c0c12f1ccad2e749c4514b13d5a941389984250f7d070827ddc027d"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/store.go",
+    "sha256": "7922d69906c1fd01bf2f6337abedc5272957d4536337cd9b133d78ec5cbaf935"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/string_encoding.go",
+    "sha256": "2669e879b371187381377ae69b34ad9346989db134954f1e41aa663f87c03de7"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/string_reference_error.go",
+    "sha256": "7104e1e458334d692147c6d4e609842ae0da59cb4f186cdf25ac230ee0cb830c"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/strings.go",
+    "sha256": "350c5197a45f4b9f71a333f3b2cf60dc21b4814ff3fe4ecc8d4d2b52b4755e36"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/trigram_certificate.go",
+    "sha256": "5868a1a37ad31a9b3f8f6441fc12fdd91327f85960f0307bbfa28d33330b3bac"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/aggregation.go",
+    "sha256": "5200db487be93bb137de761c49bdb3091084d796b0897b695840eff33f7f9710"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/candidate.go",
+    "sha256": "720fc6fb90126d30388f123aaf53d75207be640f8d7ea07ef47a9ea7858e6fd1"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/columns.go",
+    "sha256": "3aad9203b91a106cf357a7e81e58699240bc6666c14e54905d0ecd671982acc3"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/count.go",
+    "sha256": "5d2b576845e05acccccb5913beefe210b972114c19b2a2c53d8a3b8681e13aed"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/cross.go",
+    "sha256": "c815b99ea24c66b65ffd4a8ed3fa77dfaf36c85263d163096b3e2df9ac676492"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/distinct_string_id.go",
+    "sha256": "27480147a00d731c9d5452e9a6113a93eeefc4c8c729b3c0f50e0e74f47b17b4"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/early_match.go",
+    "sha256": "298c3629ddae98b9333db3dd0688ca4d53b99960f6d272282ee216cabcc3721c"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/engine.go",
+    "sha256": "27c909277436990340cbbdbe1e1c2c9d210db4ff8e294caea2e4633435b13f04"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/eval.go",
+    "sha256": "57a18c4b5d299e2af43f834424c602d226c205d9cc82729eeb0eaaf709d6b830"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/function_properties.go",
+    "sha256": "1195addcabde70d13a6fcc358897be1a1fcfb874286b84e5fa5a367ef275bbea"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/functions.go",
+    "sha256": "796fe8140b5f5c8b64f1d240c39120ef07fb0240c217f627cd0e18c658107096"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/generic_distinct.go",
+    "sha256": "2827c1baaad96a832ca2502c6d9e7bcceb4fb20a39ed50d9c8deb4d699b117f1"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/generic_distinct_values.go",
+    "sha256": "247a2b466edee9beedcfc33967c4a683cdb275be3e1c9006460c3f6bb3398854"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/indexed_distinct.go",
+    "sha256": "e135b22abf4089556db5387568cb3f7df1f809635c630898899ab7e18e57283c"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/indexed_distinct_plan.go",
+    "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/indexed_tuple.go",
+    "sha256": "879942530889a66c2626cdf8a335a28c4c57894382f63ac1d43deb52d0269736"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/java_string.go",
+    "sha256": "317e2cff94ee476958d9f12d837a6235b2abec46acf8b7f88c1c89375f70c4f3"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/jvm_float.go",
+    "sha256": "8e652d32a31155dffed21e727be7728161cf0a8845b2e8fed53474400950d394"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/lazy_filtered.go",
+    "sha256": "a628a97a2a68052118ad2476e1dd9483a3bfcc9fdb5d554795fd6b93729da602"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/lazy_filtered_candidates.go",
+    "sha256": "92a59413e9aad61cde308ff6dd09b72d6b729e51237341140b14e5513a516de7"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/lazy_filtered_plan.go",
+    "sha256": "d7890f4753c04b6a5af8bd3efdfd57060a4ad6d5507bab51223ee5e0ff159f2b"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/limit_zero.go",
+    "sha256": "0dfe7393f03624c63a3d05eabf72484735b6e3602750af1a62446ffe0433cb8d"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/main_string_candidates.go",
+    "sha256": "89179a31a43c2c0e501204a640312e8be1e80500d2c83877e4566a8fc2ce8f0c"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/main_string_mapped.go",
+    "sha256": "df18006eae436fc0ec48d15e4a76062c5a3b8e89907606e0a59f2ecbd61b5754"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/main_string_postings.go",
+    "sha256": "6efb793fd745168525167112fa507c97e75c7bab8acd85dba2a8e4c825e4ddc7"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/main_string_source.go",
+    "sha256": "02036e8b4a43c77dd96e0a04db7cca2a2c0001b637e123701643fb02794d2671"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/materialize.go",
+    "sha256": "340d69524aa325b1fedc7a021ca24f2752a4e03572816a6b9cfe481d7a87a1f3"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/node_error.go",
+    "sha256": "4aa92a4a2052140c4ff631504db7692a4181d3cfb75d6d62973356a4007541bf"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/object_string.go",
+    "sha256": "fccde562ba016561d37845d499351664736e154e67965194006bc331f0c2fc7c"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/ordinary_cache.go",
+    "sha256": "7a86a1db1f249424480372279cf923ab27940fdd9e50a670c307cd0a14d556df"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/ordinary_leading.go",
+    "sha256": "51abb0813d057f43b4e1ec9a0cd767fbc5f0918d8e220b2ffef2213759c9dace"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/ordinary_parallel.go",
+    "sha256": "03960ead465a52e5aa5fe226c133e6dedd7a456c34708e66da1b87d080e1c18e"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/ordinary_projection.go",
+    "sha256": "c083b69f191479f9bf9e6207746b0a2fafd27e3418b2efd30944ce57f9513d07"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/output_object.go",
+    "sha256": "e1a9cc04e0c91d3355cd874d2df87682578986cf7a283cb6ba1c3851ebb4c994"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/properties.go",
+    "sha256": "30d2e50b6767c5cc219c85f2edf19b650199432974007dae44ad4a178d68dfc6"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/regex.go",
+    "sha256": "4ec60a52f63822cb5350b07330ee2c7235276ca02c4b7356a648a167978b6df4"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/relationships.go",
+    "sha256": "62bd9d60a9ca5deff48c18bc515e77d6d43f6492c86708f8dd270b3e59991220"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/row_order.go",
+    "sha256": "d67935abc7f8777b512c2a0aaf534cd82451e39582c490460a4cd275847cecc6"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/scan.go",
+    "sha256": "bd4edd9fed796e474e2f9155d423f549bf44283444d34483448da2271dfc5962"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/streaming_order.go",
+    "sha256": "5607d249612ecf571e7508b03a8a31b1d65dc6c67e64f24a52473dfbbaa7b4ab"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/streaming_pagination.go",
+    "sha256": "fcb111db339b0623f1aa6f73bd2e3bb64b75c8be8c752dd89320107e7a8ca3dc"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/string_candidates.go",
+    "sha256": "63344549fe967273de844afa738c312809e422e8ed653bae7fc29f8fd8deaf8a"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/string_predicate.go",
+    "sha256": "7e31b11bea71987eda5329d1e51f1e44b79d3dc393a44ccc0d647eb48fc0a3fe"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/traversal.go",
+    "sha256": "c83f3122a4ab61a9433323c3466c64612e2df7e1db703b989df8f5c98f9f0a33"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/values.go",
+    "sha256": "c77ed3536aa23d44a54cd0e7450d1e251794abfb0cb78fee6146ad39c19f9bd4"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/canonical.go",
+    "sha256": "2413f3b5df195b62b3e04aac9fdf8d48b3e6e072cf73b43bf27f03a21daa02b2"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/workload.go",
+    "sha256": "790dbe96ca856d4acef98ec7a80473be86617729b0fad3121bdb1223b576b8bd"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/cmd/graphite-benchmark-replay/main.go",
+    "sha256": "2e963922dd833302fa613400e5f854cf1ac6f2773469352599989c1f43c595f6"
+  }
+]

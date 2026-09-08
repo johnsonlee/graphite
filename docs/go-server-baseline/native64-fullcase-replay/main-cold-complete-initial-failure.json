@@ -1,0 +1,6 @@
+{
+  "stage": "relocate manifest",
+  "error": "AssertionError len(fields) == 6",
+  "reason": "Original graphs.tsv has a comment header; JVM never launched",
+  "clone": "/Users/johnsonlee/.codex/benchmarks/graphite/main64-cold-8bbd8835-run2/fixture"
+}

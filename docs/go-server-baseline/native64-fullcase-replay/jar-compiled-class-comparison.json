@@ -1,0 +1,32 @@
+[
+  {
+    "class": "io/johnsonlee/graphite/cypher/QueryPipeline.class",
+    "jarSHA256": "7a581ca9cee4b766c2d364402230ec2101f3d2b171aa93a4a6db842832dad2c8",
+    "compiledSHA256": "7a581ca9cee4b766c2d364402230ec2101f3d2b171aa93a4a6db842832dad2c8",
+    "byteEqual": true
+  },
+  {
+    "class": "io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor.class",
+    "jarSHA256": "5a874e7abcc51a62ac5ecea7484e7dc1701437f68a59733cf37e79aab7a0e9a5",
+    "compiledSHA256": "5a874e7abcc51a62ac5ecea7484e7dc1701437f68a59733cf37e79aab7a0e9a5",
+    "byteEqual": true
+  },
+  {
+    "class": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.class",
+    "jarSHA256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+    "compiledSHA256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+    "byteEqual": true
+  },
+  {
+    "class": "io/johnsonlee/graphite/webgraph/GraphStore.class",
+    "jarSHA256": "e34dac4ebab937530fe9d83bc22e403e779ee286da8c7bb3bc0292ccf9074fc1",
+    "compiledSHA256": "e34dac4ebab937530fe9d83bc22e403e779ee286da8c7bb3bc0292ccf9074fc1",
+    "byteEqual": true
+  },
+  {
+    "class": "io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.class",
+    "jarSHA256": null,
+    "compiledSHA256": "96591ac8caee1ba207bde00eaa319051490355a7f78e13566e5ab58e55bbbafa",
+    "byteEqual": false
+  }
+]
