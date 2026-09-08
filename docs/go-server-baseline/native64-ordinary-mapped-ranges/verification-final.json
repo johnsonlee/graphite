@@ -1,0 +1,21 @@
+{
+  "cases": 1267,
+  "successfulCanonicalResultsEqual": 1266,
+  "matchingQueryErrors": 1,
+  "graphStateObservationsEqual": 162304,
+  "stateFields": [
+    "retained",
+    "mappedView",
+    "trigrams",
+    "loadedFromPersistence",
+    "mappedRangeCount"
+  ],
+  "stateDifferences": 0,
+  "rawCacheCountersAvailableInNative": false,
+  "originalAllSuccessGatePassed": false,
+  "performanceMeasurement": false,
+  "warmVerified": false,
+  "startupPreparedVerified": false,
+  "binaryAndSourcesUnchanged": true,
+  "originalFixtureFilesUnchanged": 1152
+}

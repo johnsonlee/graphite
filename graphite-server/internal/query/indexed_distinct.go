@@ -370,18 +370,49 @@ func (e evaluator) distinctRawValues(source Graph, id int32, plan *indexedDistin
 	addProvenance(row, source.ID)
 	return sids, row
 }
-func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan) distinctSourceResult {
-	e.check()
+
+// A previously initialized mapped view can prove an empty split lookup before
+// a retained reader examines unrelated node offsets. Keep generic node handling
+// in the caller: a CallSite miss does not rule out matching annotations.
+func (e evaluator) prepareDistinctSourceIndex(source Graph, plan *indexedDistinctPlan) (*store.DistinctStringIndex, bool) {
+	defer ordinarySourceFailure()
+	if plan.preferMappedView && plan.sourceCount >= 40 {
+		_, retained, err := source.Store.RetainedProjectionIndex(e.ctx)
+		failProjectionRead(err)
+		if !retained {
+			view, present, err := source.Store.InitializedProjectionView(e.ctx)
+			failProjectionRead(err)
+			if present {
+				atoms := []distinctStringAtom{}
+				for _, atom := range plan.atoms {
+					if _, callsite := distinctCallSiteProperties[atom.property]; callsite {
+						atoms = append(atoms, atom)
+					}
+				}
+				if len(atoms) > 0 {
+					sets, supported := e.mainExactMatches(source, view, &mainStringSourceSpec{atoms: atoms})
+					if supported && !ordinaryAnyExact(sets) {
+						return view, true
+					}
+				}
+			}
+		}
+	}
 	index, available, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: plan.sourceCount, Limit: plan.limit, PreferMappedView: plan.preferMappedView, CannotMatch: func() bool { return e.distinctCannotMatch(source, plan) }})
 	failProjectionRead(err)
 	if !available {
 		fail("Distinct projection capability became unavailable")
 	}
+	return index, false
+}
+func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan) distinctSourceResult {
+	e.check()
+	index, empty := e.prepareDistinctSourceIndex(source, plan)
 	rows := []distinctProjectedRow{}
 	seenIDs := map[string]bool{}
-	if index.Raw || index.ParallelRaw {
+	if !empty && (index.Raw || index.ParallelRaw) {
 		rows = e.distinctRawRows(source, index, plan, nil, nil)
-	} else {
+	} else if !empty {
 		for _, id := range e.distinctMatchingIDs(source, index, plan) {
 			sids, row := e.distinctRawValues(source, id, plan)
 			values := make([]any, len(sids))
@@ -529,10 +560,12 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
 		return hits
 	}
 	selectedRows = rawTargets
-	index, available, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: plan.sourceCount, Limit: plan.limit, PreferMappedView: plan.preferMappedView, CannotMatch: func() bool { return e.distinctCannotMatch(source, plan) }})
-	failProjectionRead(err)
-	if !available {
-		fail("Distinct projection capability became unavailable")
+	index, empty := e.prepareDistinctSourceIndex(source, plan)
+	if empty {
+		for _, generic := range e.distinctGenericRows(source, plan, selectedKeys) {
+			hits[distinctVisibleKey(generic.row)] = true
+		}
+		return hits
 	}
 	if index.Raw || index.ParallelRaw {
 		for _, row := range e.distinctRawRows(source, index, plan, selectedKeys, selectedRows) {

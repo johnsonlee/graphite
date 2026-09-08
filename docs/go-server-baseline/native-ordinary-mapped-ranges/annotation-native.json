@@ -1,0 +1,191 @@
+[
+  {
+    "after": [
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      }
+    ],
+    "before": [
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": false,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": false,
+        "retained": false,
+        "trigrams": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN n.caller_name AS x LIMIT 1",
+    "rows": []
+  },
+  {
+    "after": [
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      }
+    ],
+    "before": [
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      }
+    ],
+    "columns": [
+      "x",
+      "y"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' OR n.name CONTAINS 'Audit' RETURN DISTINCT n.caller_class AS x, n.caller_name AS y LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g63"
+          ]
+        },
+        "x": "example.Other",
+        "y": null
+      }
+    ]
+  },
+  {
+    "after": [
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      }
+    ],
+    "before": [
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      },
+      {
+        "indexFile": {
+          "bytes": 724,
+          "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8"
+        },
+        "loadedFromPersistence": false,
+        "mappedRangeCount": 0,
+        "mappedView": true,
+        "retained": false,
+        "trigrams": false
+      }
+    ],
+    "columns": [
+      "x",
+      "y"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' OR n.name CONTAINS 'Audit' RETURN DISTINCT n.caller_class AS x, n.caller_name AS y LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g63"
+          ]
+        },
+        "x": "example.Other",
+        "y": null
+      }
+    ]
+  }
+]

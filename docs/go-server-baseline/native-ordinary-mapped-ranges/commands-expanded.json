@@ -1,0 +1,26 @@
+[
+  {
+    "command": [
+      "javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-ordinary-mapped-ranges/expanded-main-run/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-index-lifecycle/IndexLifecycleOracle.java",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-ordinary-mapped-ranges/OrdinaryMappedRangeOracle.java"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-ordinary-mapped-ranges/expanded-main-run/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "OrdinaryMappedRangeOracle",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-ordinary-mapped-ranges/expanded-main-run/fixtures",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-ordinary-mapped-ranges/expanded-main-run/main.json"
+    ],
+    "exitCode": 0
+  }
+]

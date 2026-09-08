@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"runtime"
-	"sort"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
 )
@@ -245,37 +244,6 @@ func (e evaluator) ordinaryMatchingIDs(source Graph, index *store.DistinctString
 	return e.distinctMatchingIDs(source, index, plan.indexedDistinctPlan)
 }
 
-func (e evaluator) mainMappedIDs(source Graph, index *store.DistinctStringIndex, plan *mainStringSourceSpec, exact []map[int32]bool) []int32 {
-	selected := map[int32]bool{}
-	for i, atom := range plan.atoms {
-		for sid := range exact[i] {
-			ids, err := index.Postings(e.ctx, store.CallSiteStringProperty(distinctCallSiteProperties[atom.property]), sid)
-			failMainStringRead(err)
-			for _, id := range ids {
-				e.check()
-				selected[id] = true
-			}
-		}
-	}
-	positions := []candidateNodePosition{}
-	for id := range selected {
-		offset, err := source.Store.ProjectionNodeOrder(e.ctx, id)
-		failMainStringRead(err)
-		positions = append(positions, candidateNodePosition{id, offset})
-	}
-	sort.Slice(positions, func(i, j int) bool {
-		if positions[i].offset == positions[j].offset {
-			return positions[i].id < positions[j].id
-		}
-		return positions[i].offset < positions[j].offset
-	})
-	ids := make([]int32, len(positions))
-	for i, p := range positions {
-		ids[i] = p.id
-	}
-	return ids
-}
-
 func (e evaluator) ordinaryExactMatches(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan) ([]map[int32]bool, bool) {
 	defer ordinarySourceFailure()
 	return e.mainExactMatches(source, index, plan.mainSourceSpec())
@@ -287,8 +255,4 @@ func (e evaluator) ordinaryExactCanFill(index *store.DistinctStringIndex, plan *
 func (e evaluator) ordinaryParallelCandidates(source Graph, plan *ordinaryProjectionPlan, limit int, exact []map[int32]bool, orderedWaves bool) ([]int32, bool) {
 	defer ordinarySourceFailure()
 	return e.mainParallelCandidates(source, plan.mainSourceSpec(), limit, exact, orderedWaves)
-}
-func (e evaluator) ordinaryMappedIDs(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, exact []map[int32]bool) []int32 {
-	defer ordinarySourceFailure()
-	return e.mainMappedIDs(source, index, plan.mainSourceSpec(), exact)
 }

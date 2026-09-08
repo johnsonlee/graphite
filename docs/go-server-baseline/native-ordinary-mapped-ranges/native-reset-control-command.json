@@ -1,0 +1,14 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./internal/query",
+    "-run",
+    "^TestOrdinaryMappedRangeMain$",
+    "-count=1"
+  ],
+  "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-mapped-view-reset-control-z76h03b3/graphite-server",
+  "resetFileFromHead": "internal/store/distinct_projection.go",
+  "head": "3b51b1f26187c34fb6dfa5216b741eb23c709907",
+  "exitCode": 1
+}

@@ -1,0 +1,22 @@
+{
+  "fixtures": {
+    "originalFilesUnchanged": 6528,
+    "changed": [],
+    "added": []
+  },
+  "expanded-main-run/fixtures": {
+    "originalFilesUnchanged": 6528,
+    "changed": [],
+    "added": []
+  },
+  "annotation-fixtures": {
+    "originalFilesUnchanged": 1088,
+    "changed": [],
+    "added": []
+  },
+  "annotation-positive-fixtures": {
+    "originalFilesUnchanged": 1088,
+    "changed": [],
+    "added": []
+  }
+}

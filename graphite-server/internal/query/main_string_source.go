@@ -21,7 +21,7 @@ type mainStringSourceSpec struct {
 
 func (p *ordinaryProjectionPlan) mainSourceSpec() *mainStringSourceSpec {
 	return &mainStringSourceSpec{atoms: p.atoms, sourceCount: p.sourceCount,
-		forcePersisted: p.forcePersisted || p.scoped && p.sourceCount < 40, generic: p.generic}
+		forcePersisted: p.forcePersisted || p.scoped && p.sourceCount < 40, generic: p.generic, lazyMain: true}
 }
 
 func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpec, limit int) mainNodeNext {
@@ -65,12 +65,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 				ids = []int32{}
 				candidatesPrepared = true
 			} else if mappedExact && mainSharedMatcher(plan) {
-				if plan.lazyMain {
-					mappedNext, candidatesPrepared = e.mainSelectedMappedIDs(source, view, plan, exact, limit)
-				} else {
-					ids = e.mainMappedIDs(source, view, plan, exact)
-					candidatesPrepared = true
-				}
+				mappedNext, candidatesPrepared = e.mainSelectedMappedIDs(source, view, plan, exact, limit)
 			}
 			if !candidatesPrepared {
 				waves := mappedExact && e.mainExactCanFill(view, plan, exact, limit)

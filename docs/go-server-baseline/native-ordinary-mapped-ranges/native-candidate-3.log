@@ -1,0 +1,9 @@
+--- FAIL: TestOrdinaryMappedRangeMain (0.94s)
+    --- FAIL: TestOrdinaryMappedRangeMain/offset-negative-90 (0.15s)
+        ordinary_mapped_range_test.go:72: main public response or first-source structural state differs; full capture in ORDINARY_MAPPED_RANGE_OUTPUT
+    --- FAIL: TestOrdinaryMappedRangeMain/offset-negative-2 (0.15s)
+        ordinary_mapped_range_test.go:72: main public response or first-source structural state differs; full capture in ORDINARY_MAPPED_RANGE_OUTPUT
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	1.680s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.680s [no tests to run]
+FAIL

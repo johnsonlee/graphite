@@ -1,0 +1,11 @@
+{
+  "graphite-server/internal/query/main_string_source.go": "cce80cf1e9b48f2aea557115c025305eda79c048a71a28441097e59c5719cc94",
+  "graphite-server/internal/query/ordinary_leading.go": "45d6d61f0371cbf4cf09ef0e9b3cdaee90e57670eaa6d9ef26b4a4504106c954",
+  "graphite-server/internal/query/ordinary_parallel.go": "60a1960ce7d353f6d0e816c0b427f08f4deec148e9a585fad484f289d98c09d3",
+  "graphite-server/internal/query/indexed_distinct.go": "9b9c43f6b5e767131b5feb863649db2569e3680b8d56b8289fd40fde8d1773cc",
+  "graphite-server/internal/store/callsite_index.go": "576d6b2cc174776ef06e1f5c9177e02d9767adc3f798f7d05b8043915a5c9fc1",
+  "graphite-server/internal/store/distinct_projection.go": "31213325f4bc9fec08b6d6e34e1d4dbf9e8aa3e00f85f1a64ad4e07604e25a4a",
+  "graphite-server/internal/query/ordinary_mapped_range_test.go": "77d490e4b77d779eb51ae100a442213e6cb307150972ac84af2d063e04b12ad9",
+  "docs/go-server-baseline/native-index-lifecycle/IndexLifecycleOracle.java": "27b4ce42d4c3c208b5d361c1f5355c12fd7cc29852fc3f8b533f2e5d4ae97ead",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d"
+}

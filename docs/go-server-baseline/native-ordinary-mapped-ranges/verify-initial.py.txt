@@ -1,0 +1,48 @@
+import hashlib
+import json
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
+main = json.loads((BASE / 'main.json').read_text())
+baseline = json.loads((BASE / 'native-baseline.json').read_text())
+candidate = json.loads((BASE / 'native-candidate-2.json').read_text())
+assert len(main) == len(baseline) == len(candidate) == 6
+public_differences = []
+queries = successes = failures = observations = 0
+for m, n in zip(main, baseline):
+    assert len(m['steps']) == len(n['steps']) == 7
+    states = [m['loaded']] + [s[k] for s in m['steps'] for k in ['before', 'after']]
+    observations += len(states)
+    for state in states:
+        for field in ['rawMatchCount', 'rawProjectionCount']:
+            assert state[field] == 0, 'Raw cache activity requires a corresponding native observer'
+            del state[field]
+    for i, (ms, ns) in enumerate(zip(m['steps'], n['steps'])):
+        if ms['query'] == 'clear':
+            continue
+        queries += 1
+        successes += 'rows' in ms
+        failures += 'error' in ms
+        fields = [k for k in ['columns', 'rows', 'error', 'message']
+                  if (k in ms, ms.get(k)) != (k in ns, ns.get(k))]
+        if fields:
+            public_differences.append({'fixture': m['fixture'], 'step': i, 'fields': fields})
+assert main == candidate, 'Full response or observed first-source state differs'
+assert len(public_differences) == 7
+before = json.loads((BASE / 'fixture-before.json').read_text())
+post = None
+if (BASE / 'fixtures').exists():
+    changed = [name for name, digest in before.items()
+               if hashlib.sha256((BASE / 'fixtures' / name).read_bytes()).hexdigest() != digest]
+    added = [str(p.relative_to(BASE / 'fixtures')) for p in (BASE / 'fixtures').rglob('*')
+             if p.is_file() and str(p.relative_to(BASE / 'fixtures')) not in before]
+    assert not changed and not added
+    post = {'originalFilesUnchanged': len(before), 'added': added, 'changed': changed}
+    (BASE / 'fixture-postrun.json').write_text(json.dumps(post, indent=2) + '\n')
+report = {'histories': 6, 'operations': 42, 'publicQueries': queries, 'successes': successes,
+          'expectedErrors': failures, 'firstSourceStructuralAndFileObservations': observations,
+          'baselinePublicDifferences': public_differences, 'candidateExactlyEqualsMain': True,
+          'performanceMeasurement': False,
+          'scope': 'All public values and first-source structural/file state; other source state not compared'}
+(BASE / 'verification.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps(report, indent=2))

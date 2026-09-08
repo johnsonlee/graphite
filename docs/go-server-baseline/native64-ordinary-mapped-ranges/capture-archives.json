@@ -1,0 +1,16 @@
+[
+  {
+    "capture": "native-cold",
+    "rawSHA256": "33841bf57bad0c5a7995d0cf6cf157528fbd21bbd644851bd0687e4cfc481da8",
+    "rawBytes": 91249016,
+    "archiveSHA256": "5a4996d2b3323ab9ede64c8d39aa9b316fa13cf216463a124e5a16517e201e15",
+    "archiveBytes": 3202474
+  },
+  {
+    "capture": "native-cold-final",
+    "rawSHA256": "ce31b1108cbc2ff5c32dd22a16349510ceee4471918397171c0ce4b7ab6b5d0f",
+    "rawBytes": 91249016,
+    "archiveSHA256": "69f8eb2ab4a4346a78aafa949ba6999481e516a8eb74c932edbd03c50a133f38",
+    "archiveBytes": 3209376
+  }
+]

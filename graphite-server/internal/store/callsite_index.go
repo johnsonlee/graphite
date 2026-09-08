@@ -220,7 +220,11 @@ func (s *Store) loadCallSiteStringIndexWithPolicy(ctx context.Context, closing <
 		return fail("index CRC32 mismatch")
 	}
 	v := &CallSiteStringIndex{owner: s, data: data, info: info}
-	if policy == mainMappedIndex {
+	// DISTINCT can publish a strict reader as the initialized mapped view.
+	// Ordinary consumers must still validate selected posting ranges and retain
+	// those results on that same mapping, including after a DISTINCT warmup.
+	// Allocate before publication so concurrent readers never race cache setup.
+	if policy == mainMappedIndex || policy == strictCandidateIndex {
 		v.mainRanges = &mainPostingRangeCache{}
 	}
 	offset := callSiteIndexHeaderBytes

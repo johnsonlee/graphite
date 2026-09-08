@@ -1,0 +1,4 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/ordinary_parallel.go:7:2: "sort" imported and not used
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

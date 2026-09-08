@@ -271,6 +271,7 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	}
 	s.callSiteIndex.mu.Lock()
 	existing := s.distinctProjection.index
+	mappedExisting := s.distinctProjection.mappedView
 	closed := s.callSiteIndex.closed
 	if !closed && ctx.Err() == nil && options.RetainPersisted {
 		s.distinctProjection.retainPersisted = true
@@ -291,6 +292,9 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	rawFallback := options.SourceCount > 1 && options.SourceCount < 40 || parallelRaw
 	if existing != nil {
 		return adapt(existing), true, nil
+	}
+	if options.InitializeMappedView && mappedExisting != nil {
+		return adapt(mappedExisting), true, nil
 	}
 	if len(s.byKind["CallSiteNode"]) == 0 {
 		return &DistinctStringIndex{owner: s}, true, nil
@@ -383,8 +387,10 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 		if err := ctx.Err(); err != nil {
 			return nil, false, err
 		}
-		s.distinctProjection.mappedView = index
-		return adapt(index), true, nil
+		if s.distinctProjection.mappedView == nil {
+			s.distinctProjection.mappedView = index
+		}
+		return adapt(s.distinctProjection.mappedView), true, nil
 	}
 	// Preferred mapped views support split projection without making the retained
 	// index capability visible to subsequent ordinary projection requests.
@@ -398,7 +404,11 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 			s.callSiteIndex.mu.Unlock()
 			return nil, false, err
 		}
-		s.distinctProjection.mappedView = index
+		// Query preparation may load a separate retained reader, but it must not
+		// replace the initialized mapped view or erase its range certificates.
+		if s.distinctProjection.mappedView == nil {
+			s.distinctProjection.mappedView = index
+		}
 		s.callSiteIndex.mu.Unlock()
 		if parallelRaw {
 			return adapt(index), true, nil

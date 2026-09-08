@@ -1,0 +1,87 @@
+{
+  "histories": 6,
+  "operations": 48,
+  "publicQueries": 42,
+  "successes": 28,
+  "expectedErrors": 14,
+  "firstSourceStructuralAndFileObservations": 102,
+  "baselinePublicDifferences": [
+    {
+      "fixture": "offset-negative-90",
+      "step": 0,
+      "fields": [
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "fixture": "offset-negative-90",
+      "step": 1,
+      "fields": [
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "fixture": "offset-negative-90",
+      "step": 2,
+      "fields": [
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "fixture": "offset-negative-90",
+      "step": 3,
+      "fields": [
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "fixture": "offset-negative-90",
+      "step": 4,
+      "fields": [
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "fixture": "offset-negative-90",
+      "step": 6,
+      "fields": [
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "fixture": "offset-negative-2",
+      "step": 0,
+      "fields": [
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    }
+  ],
+  "candidateExactlyEqualsMain": true,
+  "annotationHistoryQueries": 3,
+  "annotationEndpointStateObservations": 12,
+  "annotationProvenanceExactlyEqualsMain": true,
+  "mappedViewResetNegativeControlFailed": true,
+  "performanceMeasurement": false,
+  "scope": "All public values and first-source structural/file state; other source state not compared"
+}

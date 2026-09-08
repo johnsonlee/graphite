@@ -1,0 +1,1590 @@
+[
+  {
+    "fixture": "clean",
+    "loaded": {
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      },
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "steps": [
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x",
+          "mark"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "mark": "checked",
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x",
+          "mark"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "mark": "checked",
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "query": "clear"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x",
+          "mark"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "mark": "checked",
+            "x": "other"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "fixture": "bad-matched",
+    "loaded": {
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      },
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "steps": [
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "query": "clear"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      }
+    ]
+  },
+  {
+    "fixture": "valid-tag",
+    "loaded": {
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      },
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "steps": [
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "ClassCastException",
+        "message": "Cannot cast io.johnsonlee.graphite.core.IntConstant to io.johnsonlee.graphite.core.CallSiteNode",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "ClassCastException",
+        "message": "Cannot cast io.johnsonlee.graphite.core.IntConstant to io.johnsonlee.graphite.core.CallSiteNode",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "query": "clear"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "ClassCastException",
+        "message": "Cannot cast io.johnsonlee.graphite.core.IntConstant to io.johnsonlee.graphite.core.CallSiteNode",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      }
+    ]
+  },
+  {
+    "fixture": "unknown-tag",
+    "loaded": {
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      },
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "steps": [
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: 127",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: 127",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "query": "clear"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: 127",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      }
+    ]
+  },
+  {
+    "fixture": "offset-negative-90",
+    "loaded": {
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      },
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "steps": [
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x",
+          "mark"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "mark": "checked",
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x",
+          "mark"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "mark": "checked",
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "query": "clear"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x",
+          "mark"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g00"
+              ]
+            },
+            "mark": "checked",
+            "x": "other"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "fixture": "offset-negative-2",
+    "loaded": {
+      "indexFile": {
+        "bytes": 676,
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+      },
+      "loadedFromPersistence": false,
+      "mappedRangeCount": 0,
+      "mappedView": false,
+      "retained": false,
+      "trigrams": false
+    },
+    "steps": [
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "columns": [
+          "x"
+        ],
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN n.caller_name AS x LIMIT 1",
+        "rows": []
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "query": "clear"
+      },
+      {
+        "after": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 1,
+          "mappedView": true,
+          "retained": false,
+          "trigrams": false
+        },
+        "before": {
+          "indexFile": {
+            "bytes": 676,
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+          },
+          "loadedFromPersistence": false,
+          "mappedRangeCount": 0,
+          "mappedView": false,
+          "retained": false,
+          "trigrams": false
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1"
+      }
+    ]
+  }
+]

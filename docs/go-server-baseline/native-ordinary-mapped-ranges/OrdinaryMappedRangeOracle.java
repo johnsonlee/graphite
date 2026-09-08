@@ -1,0 +1,44 @@
+import com.google.gson.*;
+import io.johnsonlee.graphite.cypher.*;
+import io.johnsonlee.graphite.graph.*;
+import io.johnsonlee.graphite.webgraph.*;
+import java.nio.file.*;
+import java.util.*;
+
+/** Synthetic correctness histories exercise first-source mapped range consumption. */
+public final class OrdinaryMappedRangeOracle {
+ public static void main(String[]args)throws Throwable {
+  System.setProperty("graphite.webgraph.prepareCallSiteStringIndexOnLoad","lazy");
+  var output=new ArrayList<Object>();
+  String plain="MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1";
+  String checked="MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x, 'checked' AS mark LIMIT 1";
+  String zero="MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN n.caller_name AS x LIMIT 1";
+  String zeroDistinct="MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentStringRangeControl' RETURN DISTINCT n.caller_name AS x LIMIT 1";
+  for(String fixture:List.of("clean","bad-matched","valid-tag","unknown-tag","offset-negative-90","offset-negative-2")) {
+   var sources=new ArrayList<CypherGraph>();
+   Path root=Path.of(args[0],fixture);
+   try {
+    for(int i=0;i<64;i++)sources.add(new CypherGraph(String.format("g%02d",i),GraphStore.INSTANCE.loadMapped(root.resolve(String.format("g%02d",i)))));
+    var record=new LinkedHashMap<String,Object>();record.put("fixture",fixture);
+    record.put("loaded",IndexLifecycleOracle.state(sources.get(0).getGraph(),root.resolve("g00")));
+    var steps=new ArrayList<Object>();record.put("steps",steps);
+    for(String query:List.of(zero,plain,plain,zeroDistinct,checked,checked,"clear",checked)) {
+     var step=new LinkedHashMap<String,Object>();step.put("query",query);
+     step.put("before",IndexLifecycleOracle.state(sources.get(0).getGraph(),root.resolve("g00")));
+     try {
+      if(query.equals("clear"))for(CypherGraph source:sources)IndexLifecycleOracle.invoke(source.getGraph(),"clearStringPropertyIndexes");
+      else {
+       var context=new CypherExecutionContext(new CypherExecutionBudget(Long.MAX_VALUE),new CypherCancellationSignal());
+       var result=new CrossGraphCypherExecutor(sources,context,false).execute(query,Map.of());
+       step.put("columns",result.getColumns());step.put("rows",result.getRows());
+      }
+     }catch(Throwable error){IndexLifecycleOracle.error(step,error);}
+     step.put("after",IndexLifecycleOracle.state(sources.get(0).getGraph(),root.resolve("g00")));
+     steps.add(step);
+    }
+    output.add(record);
+   }finally {for(CypherGraph source:sources)((java.io.Closeable)source.getGraph()).close();}
+  }
+  Files.writeString(Path.of(args[1]),new GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(output)+"\n",StandardOpenOption.CREATE_NEW);
+ }
+}

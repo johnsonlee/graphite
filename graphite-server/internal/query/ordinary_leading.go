@@ -22,6 +22,7 @@ func ordinaryRawLeading(plan *ordinaryProjectionPlan) bool {
 	return true
 }
 func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPlan, raw bool) ([]map[string]any, bool) {
+	defer ordinarySourceFailure()
 	if !plan.leading || plan.generic && len(source.Store.NodesOfKind("AnnotationNode")) != 0 {
 		return nil, false
 	}
@@ -66,8 +67,16 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 			exact, ok = e.ordinaryExactMatches(source, view, plan)
 		}
 		if ok {
+			next, valid := e.mainSelectedMappedIDs(source, view, plan.mainSourceSpec(), exact, plan.limit)
+			if !valid {
+				return nil, false
+			}
 			rows := []map[string]any{}
-			for _, id := range e.ordinaryMappedIDs(source, view, plan, exact) {
+			for {
+				id, present := next(e.ctx)
+				if !present {
+					break
+				}
 				e.check()
 				sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
 				failProjectionRead(err)

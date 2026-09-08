@@ -1,0 +1,5 @@
+--- FAIL: TestMappedEmptyCallSitesPreserveAnnotationProvenance (0.16s)
+    ordinary_mapped_range_test.go:145: selected annotation provenance=[]
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.492s
+FAIL
