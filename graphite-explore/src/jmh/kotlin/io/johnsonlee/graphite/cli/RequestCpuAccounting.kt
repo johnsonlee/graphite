@@ -1,9 +1,7 @@
 package io.johnsonlee.graphite.cli
 
 import java.lang.management.ManagementFactory
-import java.nio.file.Files
-import java.nio.file.Path
-import java.util.concurrent.atomic.AtomicLong
+import java.lang.management.ThreadMXBean
 import kotlin.system.exitProcess
 
 /** One measured window of the request-serving CPU accounting. */
@@ -16,43 +14,79 @@ internal data class RequestCpuSample(
 )
 
 /**
- * CPU accounting for a measured request window: the process figure counts every thread that ran
- * in the window, including one created and joined inside it, and the CPU of the JVM's own native
- * threads (collectors, compilers, the VM and service threads), read per thread from the kernel's
- * scheduler accounting, is subtracted. The remainder is the CPU of the Java threads that served
- * the request, whatever their lifetime.
+ * CPU accounting for a measured request window, by Java-thread identity rather than by native
+ * thread name.
  *
- * The subtracted internal interval is nested inside the process interval: the process figure is
- * read first before the action and last after it, so internal CPU spent in the snapshot gaps is
- * charged to the request rather than removed. The remainder can then fall below zero only by the
- * process clock's tick, and that shortfall is reported rather than hidden.
+ * `javaThreadCpuNanos` is the sum of each Java thread's own on-CPU time over the window, read from
+ * the JVM's own [ThreadMXBean.getThreadCpuTime] keyed by [java.lang.Thread.getId]. The JVM's
+ * internal native threads (collectors, compilers, the VM and service threads) have no `Thread`
+ * object and no thread id, so they are never in the sum -- no name matching, and a request worker
+ * that happens to share a HotSpot thread's name (`/proc/<tid>/comm` is mutable and truncated to
+ * 15 bytes) cannot be mistaken for one and dropped.
+ *
+ * A thread present at both ends of the window contributes its after-minus-before delta; one born
+ * inside the window and still alive at the end contributes its whole lifetime CPU (its start value
+ * is zero). The two cases the two snapshots cannot see are handled by failing closed rather than
+ * under-reporting:
+ * - a Java thread present at the start that is gone at the end took its in-window CPU with it;
+ * - a Java thread created and finished entirely inside the window is in neither snapshot, but the
+ *   JVM's [ThreadMXBean.getTotalStartedThreadCount] still counted its start, so more starts than
+ *   newly-present threads means such a worker existed.
+ *
+ * `processCpuNanos` is kept as an advisory figure (the whole process, read innermost so its
+ * interval is contained in the thread snapshots); `jvmInternalCpuNanos` is the residual
+ * `process - java`, the share spent on the JVM's native threads.
  */
 internal object RequestCpuAccounting {
-    /** Fails closed, without touching the heap or starting threads, when the accounting is unavailable. */
+    /** Fails closed, without allocating or starting threads, when the accounting is unavailable. */
     fun requireAvailable() {
-        internalThreadCpuNanos()
+        processCpuTimeNanos()
+        val threads = ManagementFactory.getThreadMXBean()
+        check(threads.isThreadCpuTimeSupported) { "Per-thread CPU time is unsupported on this JVM" }
+        if (!threads.isThreadCpuTimeEnabled) threads.isThreadCpuTimeEnabled = true
+        check(threads.currentThreadCpuTime >= 0L) { "Per-thread CPU time is disabled on this JVM" }
     }
 
     fun <T> measure(action: () -> T): Pair<T, RequestCpuSample> {
-        val beforeCpu = processCpuTimeNanos()
-        val beforeInternal = internalThreadCpuNanos()
+        val threads = ManagementFactory.getThreadMXBean()
+        val beforeStarted = threads.totalStartedThreadCount
+        val beforeIds = threads.allThreadIds
+        val beforeCpu = threadCpuSnapshot(threads, beforeIds)
+        // The process figure is read innermost so its interval is contained in the thread
+        // snapshots; the request-serving Java sum can then exceed it only by snapshot overhead.
+        val beforeProcess = processCpuTimeNanos()
         val result = action()
-        val afterInternal = internalThreadCpuNanos()
-        val afterCpu = processCpuTimeNanos()
-        val processCpu = (afterCpu - beforeCpu).coerceAtLeast(0L)
-        // An internal thread that appears inside the window counts in full; one that disappears
-        // inside it was idle before the JVM retired it, so its unread share is bounded by the
-        // retirement idle time and is reported as a count rather than dropped silently.
-        val internalCpu = afterInternal.entries.sumOf { (tid, cpu) -> cpu - (beforeInternal[tid] ?: 0L) }
-            .coerceAtLeast(0L)
-        val ended = beforeInternal.keys.count { it !in afterInternal }.toLong()
-        val remainder = processCpu - internalCpu
+        val afterProcess = processCpuTimeNanos()
+        val afterIds = threads.allThreadIds
+        val afterCpu = threadCpuSnapshot(threads, afterIds)
+        val afterStarted = threads.totalStartedThreadCount
+
+        val beforeIdSet = beforeIds.toHashSet()
+        val afterIdSet = afterIds.toHashSet()
+        val vanished = beforeIdSet.count { it !in afterIdSet }
+        check(vanished == 0) {
+            "$vanished Java thread(s) present at the start of the window were gone at the end; " +
+                "their in-window CPU cannot be accounted"
+        }
+        val appeared = afterIdSet.count { it !in beforeIdSet }
+        val transientWorkers = (afterStarted - beforeStarted) - appeared
+        check(transientWorkers <= 0L) {
+            "$transientWorkers Java worker(s) were created and finished inside the measured window; " +
+                "their CPU cannot be accounted by thread identity"
+        }
+
+        var javaCpu = 0L
+        for ((id, after) in afterCpu) {
+            val delta = after - (beforeCpu[id] ?: 0L)
+            if (delta > 0L) javaCpu += delta
+        }
+        val processCpu = (afterProcess - beforeProcess).coerceAtLeast(0L)
         return result to RequestCpuSample(
             processCpuNanos = processCpu,
-            jvmInternalCpuNanos = internalCpu,
-            jvmInternalThreadsEnded = ended,
-            javaThreadCpuNanos = remainder.coerceAtLeast(0L),
-            underflowNanos = (-remainder).coerceAtLeast(0L)
+            jvmInternalCpuNanos = (processCpu - javaCpu).coerceAtLeast(0L),
+            jvmInternalThreadsEnded = 0L,
+            javaThreadCpuNanos = javaCpu,
+            underflowNanos = (javaCpu - processCpu).coerceAtLeast(0L)
         )
     }
 
@@ -60,31 +94,15 @@ internal object RequestCpuAccounting {
         (ManagementFactory.getOperatingSystemMXBean() as? com.sun.management.OperatingSystemMXBean)
             ?.processCpuTime ?: error("Process CPU time is unavailable on this JVM")
 
-    /**
-     * CPU time of the JVM's internal native threads, keyed by native thread id. Fails closed when
-     * the accounting is unavailable, since the request-serving CPU row cannot be derived without it.
-     */
-    private fun internalThreadCpuNanos(): Map<Long, Long> {
-        val tasks = Path.of("/proc/self/task")
-        check(Files.isDirectory(tasks)) { "Per-thread CPU accounting is unavailable: $tasks is missing" }
-        val result = HashMap<Long, Long>()
-        Files.newDirectoryStream(tasks).use { entries ->
-            for (task in entries) {
-                val tid = task.fileName.toString().toLongOrNull() ?: continue
-                val name = runCatching { Files.readString(task.resolve("comm")).trim() }.getOrNull() ?: continue
-                if (!isJvmInternalThread(name)) continue
-                val schedstat = runCatching { Files.readString(task.resolve("schedstat")) }.getOrNull() ?: continue
-                val onCpuNanos = schedstat.trim().split(' ').firstOrNull()?.toLongOrNull()
-                    ?: error("Unreadable scheduler accounting for thread $tid ($name): $schedstat")
-                result[tid] = onCpuNanos
-            }
+    /** Per-thread on-CPU time keyed by Java thread id; a thread that just died reads -1 and is skipped. */
+    private fun threadCpuSnapshot(threads: ThreadMXBean, ids: LongArray): Map<Long, Long> {
+        val snapshot = HashMap<Long, Long>(ids.size * 2)
+        for (id in ids) {
+            val cpu = threads.getThreadCpuTime(id)
+            if (cpu >= 0L) snapshot[id] = cpu
         }
-        check(result.isNotEmpty()) { "No JVM-internal thread found under $tasks; the accounting contract does not hold" }
-        return result
+        return snapshot
     }
-
-    private fun isJvmInternalThread(name: String): Boolean =
-        JVM_INTERNAL_THREAD_NAMES.any { prefix -> name.startsWith(prefix) }
 }
 
 /**
@@ -99,9 +117,10 @@ object MethodCompatibilityCpuAccountingContract {
         val failures = ArrayList<String>()
         try {
             RequestCpuAccounting.requireAvailable()
-            checkShortLivedWorker(failures)
-            checkSnapshotNesting("idle action", failures) { 0L }
-            checkSnapshotNesting("collector-loaded action", failures) { collectorLoad() }
+            checkCollidingNameWorkerIsCharged(failures)
+            checkTransientWorkerFailsClosed(failures)
+            checkProcessBound("idle action", failures) { 0L }
+            checkProcessBound("collector-loaded action", failures) { collectorLoad() }
         } catch (@Suppress("TooGenericExceptionCaught") failure: RuntimeException) {
             failures.add(failure.message ?: failure.toString())
         }
@@ -112,41 +131,78 @@ object MethodCompatibilityCpuAccountingContract {
         println("cpu-accounting-contract: PASS")
     }
 
-    /** A worker created, run and joined inside the window must be charged to the row. */
-    private fun checkShortLivedWorker(failures: MutableList<String>) {
-        val workerCpu = AtomicLong()
-        val (_, sample) = RequestCpuAccounting.measure {
-            val worker = Thread {
-                val start = System.nanoTime()
+    /**
+     * A persistent request worker whose native name collides with a HotSpot thread must be charged
+     * in full, not mistaken for a JVM-internal thread and subtracted. This is the negative contract
+     * for the name-based accounting this replaces, where such a worker hid ~96% of its own CPU.
+     */
+    private fun checkCollidingNameWorkerIsCharged(failures: MutableList<String>) {
+        val go = java.util.concurrent.SynchronousQueue<Unit>()
+        val done = java.util.concurrent.SynchronousQueue<Long>()
+        val collidingWorker = Runnable {
+            while (true) {
+                go.take()
+                val start = ManagementFactory.getThreadMXBean().currentThreadCpuTime
+                val until = System.nanoTime() + CPU_ACCOUNTING_WORKER_NANOS
                 var sink = 0L
-                while (System.nanoTime() - start < CPU_ACCOUNTING_WORKER_NANOS) sink += sink xor System.nanoTime()
-                workerCpu.set(ManagementFactory.getThreadMXBean().currentThreadCpuTime)
+                while (System.nanoTime() < until) sink += sink xor System.nanoTime()
                 if (sink == Long.MIN_VALUE) println(sink)
+                done.put(ManagementFactory.getThreadMXBean().currentThreadCpuTime - start)
             }
-            worker.start()
-            worker.join()
+        }
+        Thread(collidingWorker, COLLIDING_INTERNAL_THREAD_NAME).apply { isDaemon = true; start() }
+
+        val workerCpu = java.util.concurrent.atomic.AtomicLong()
+        val (_, sample) = RequestCpuAccounting.measure {
+            go.put(Unit)
+            workerCpu.set(done.take())
         }
         val expected = workerCpu.get()
-        println("cpu-accounting-contract: short-lived worker ${expected} ns, accounted ${sample.javaThreadCpuNanos} ns, " +
-            "process ${sample.processCpuNanos} ns, internal ${sample.jvmInternalCpuNanos} ns")
-        if (expected <= 0L) failures.add("the short-lived worker recorded no CPU time")
+        println("cpu-accounting-contract: colliding-name worker '$COLLIDING_INTERNAL_THREAD_NAME' " +
+            "$expected ns, accounted ${sample.javaThreadCpuNanos} ns, process ${sample.processCpuNanos} ns")
+        if (expected <= 0L) failures.add("the colliding-name worker recorded no CPU time")
         if (sample.javaThreadCpuNanos < expected * CPU_ACCOUNTING_MIN_SHARE_PERCENT / PERCENT) {
-            failures.add("a worker that lived inside the window was not charged: worker ${expected} ns, " +
-                "accounted ${sample.javaThreadCpuNanos} ns")
+            failures.add("a persistent worker named '$COLLIDING_INTERNAL_THREAD_NAME' was not charged: " +
+                "worker $expected ns, accounted ${sample.javaThreadCpuNanos} ns")
         }
     }
 
     /**
-     * Because the internal interval is read inside the process interval, the subtracted internal
-     * CPU can exceed the process figure only by the process clock's tick, whatever the JVM's
-     * threads did around the action; a larger shortfall means the intervals are not nested.
+     * A worker created and joined entirely inside the window is in neither thread snapshot; the
+     * accounting must fail closed rather than silently omit its CPU and let a candidate look cheaper.
      */
-    private fun checkSnapshotNesting(label: String, failures: MutableList<String>, action: () -> Long) {
+    private fun checkTransientWorkerFailsClosed(failures: MutableList<String>) {
+        val failedClosed = runCatching {
+            RequestCpuAccounting.measure {
+                val worker = Thread {
+                    val until = System.nanoTime() + CPU_ACCOUNTING_WORKER_NANOS
+                    var sink = 0L
+                    while (System.nanoTime() < until) sink += sink xor System.nanoTime()
+                    if (sink == Long.MIN_VALUE) println(sink)
+                }
+                worker.start()
+                worker.join()
+            }
+        }.isFailure
+        println("cpu-accounting-contract: transient worker failed closed = $failedClosed")
+        if (!failedClosed) {
+            failures.add("a worker created and joined inside the window was not caught; the row " +
+                "would under-report its CPU")
+        }
+    }
+
+    /**
+     * The request-serving Java sum is per-thread on-CPU time over an interval the process figure
+     * contains, so it can exceed the process figure only by snapshot overhead, whatever the JVM's
+     * own threads did around the action. A larger overshoot means the intervals are not nested.
+     */
+    private fun checkProcessBound(label: String, failures: MutableList<String>, action: () -> Long) {
         val (_, sample) = RequestCpuAccounting.measure(action)
         println("cpu-accounting-contract: $label process ${sample.processCpuNanos} ns, " +
-            "internal ${sample.jvmInternalCpuNanos} ns, shortfall ${sample.underflowNanos} ns")
-        if (sample.underflowNanos > CPU_ACCOUNTING_MAX_UNDERFLOW_NANOS) {
-            failures.add("internal CPU exceeded the process interval on the $label by ${sample.underflowNanos} ns")
+            "java ${sample.javaThreadCpuNanos} ns, overshoot ${sample.underflowNanos} ns")
+        if (sample.underflowNanos > CPU_ACCOUNTING_MAX_OVERSHOOT_NANOS) {
+            failures.add("request-serving Java CPU exceeded the process interval on the $label by " +
+                "${sample.underflowNanos} ns")
         }
     }
 
@@ -169,28 +225,9 @@ private const val CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES = 1 shl 20
 private const val CPU_ACCOUNTING_GARBAGE_RETAINED = 64
 
 /** Two ticks of the process CPU clock (10 ms on Linux), the only slack the nesting leaves. */
-private const val CPU_ACCOUNTING_MAX_UNDERFLOW_NANOS = 20_000_000L
+private const val CPU_ACCOUNTING_MAX_OVERSHOOT_NANOS = 20_000_000L
 private const val CPU_ACCOUNTING_MIN_SHARE_PERCENT = 90L
 private const val PERCENT = 100L
 
-/** Native names of HotSpot's own threads: collectors, compilers, the VM thread and its services. */
-private val JVM_INTERNAL_THREAD_NAMES = listOf(
-    "VM Thread",
-    "VM Periodic Tas",
-    "Service Thread",
-    "Monitor Deflati",
-    "Sweeper thread",
-    "Attach Listener",
-    "C1 CompilerThre",
-    "C2 CompilerThre",
-    "GC Thread#",
-    "G1 ",
-    "ZWorker",
-    "ZDirector",
-    "ZDriver",
-    "ZStat",
-    "ZUncommitter",
-    "Shenandoah",
-    "Parallel GC",
-    "Concurrent Mark"
-)
+/** A HotSpot native thread name, truncated to 15 bytes, that an application worker can collide with. */
+private const val COLLIDING_INTERNAL_THREAD_NAME = "Service Thread"

@@ -791,8 +791,8 @@ open class MethodDiscoveryCompatibilityBenchmark {
         val beforeRss = residentSetBytes()
         val beforeGcTime = gcTimeMillis()
         val beforeJit = jitTimeMillis()
-        // Request-serving CPU: the process figure minus the JVM's own threads, with the internal
-        // interval nested inside the process interval; see RequestCpuAccounting.
+        // Request-serving CPU: the sum of each Java thread's own on-CPU time over the window,
+        // by thread identity rather than by native name; see RequestCpuAccounting.
         val (bytes, cpu) = RequestCpuAccounting.measure(action)
         val afterRss = residentSetBytes()
         counters.requestsSucceeded++
