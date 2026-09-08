@@ -1,0 +1,70 @@
+{
+  "warm": [
+    {
+      "phase": "warmup",
+      "index": 9,
+      "id": "name-contains-or-unlabeled-dense",
+      "graph": "fixture-android-00",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "phase": "warmup",
+      "index": 15,
+      "id": "four-contains-or-labeled-dense",
+      "graph": "fixture-android-00",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "phase": "warmup",
+      "index": 849,
+      "id": "global-wide-four-properties-dense",
+      "graph": "fixture-android-00",
+      "before": 2,
+      "after": 3
+    },
+    {
+      "phase": "warmup",
+      "index": 873,
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "graph": "fixture-android-00",
+      "before": 3,
+      "after": 4
+    }
+  ],
+  "startup-prepared": [
+    {
+      "phase": "replay",
+      "index": 9,
+      "id": "name-contains-or-unlabeled-dense",
+      "graph": "fixture-android-00",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "phase": "replay",
+      "index": 15,
+      "id": "four-contains-or-labeled-dense",
+      "graph": "fixture-android-00",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "phase": "replay",
+      "index": 849,
+      "id": "global-wide-four-properties-dense",
+      "graph": "fixture-android-00",
+      "before": 2,
+      "after": 3
+    },
+    {
+      "phase": "replay",
+      "index": 873,
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "graph": "fixture-android-00",
+      "before": 3,
+      "after": 4
+    }
+  ]
+}

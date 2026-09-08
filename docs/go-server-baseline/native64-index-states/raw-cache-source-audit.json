@@ -1,0 +1,37 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "source": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+  "sourceSHA256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+  "rawMatchStateReferences": [
+    {
+      "line": 201,
+      "text": "private val rawStringMatchStates = RawStringMatchStates()"
+    },
+    {
+      "line": 2000,
+      "text": "rawStringMatchStates.clear()"
+    },
+    {
+      "line": 2063,
+      "text": "internal fun rawStringMatchStateBytes(): Long = rawStringMatchStates.retainedBytes()"
+    },
+    {
+      "line": 2065,
+      "text": "internal fun rawStringMatchStateCount(): Int = rawStringMatchStates.size()"
+    },
+    {
+      "line": 2729,
+      "text": "fun stateFor(key: RawStringMatchKey, stringCount: Int): ByteArray? {"
+    }
+  ],
+  "rawProjectionCache": {
+    "maximumEntries": 16,
+    "key": "Ordered StringPropertyPredicate list plus limit; projection columns excluded",
+    "value": "Matching node IDs, projected again on cache hits",
+    "getPromotesLRU": true,
+    "putDoesNotReplaceExisting": true,
+    "clearBoundary": "clearStringPropertyIndexes and graph close",
+    "publication": "Successful bounded raw projection, including an exhausted empty result; not an incomplete probe"
+  },
+  "nativeStatus": "Raw projection result cache and both state counters are not yet implemented; no parity claim for those counters"
+}

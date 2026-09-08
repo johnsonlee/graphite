@@ -1,0 +1,5 @@
+{
+  "nativeSourcesExactlyEqualAcrossColdWarmStartup": true,
+  "frozenGoModuleInputFiles": 274,
+  "mainClasspathExactlyEqualAcrossColdWarmStartup": true
+}
