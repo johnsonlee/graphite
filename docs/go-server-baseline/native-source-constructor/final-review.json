@@ -1,0 +1,25 @@
+{
+  "review": "Independent read-only review of final production diff by count_review",
+  "sourceHashes": {
+    "internal/query/cross.go": "b94285ba0983bebd0954ab966249930e41c94c1045911a8fc7ea9769d3447c2c",
+    "internal/query/function_properties.go": "098ef9ca789ea1014d9a5b76c4add2aa9cc11ef75c2c53d5906d53c4eb8d9268",
+    "internal/query/traversal.go": "ec91db74d320948b471ca59d92655be9dc466edb20665bc25042103969a258d6",
+    "internal/query/scan.go": "d0b87a3cd1f594e7971fead8adb5a8a599a1d6a0ed9b6fe28e1600bb7c6b5abf",
+    "internal/query/early_match.go": "e584ee09520728bfd0be8ec87c3b11909cacf35c4118b95a8312e5434f0b64db",
+    "internal/query/engine.go": "d67a3756094f574b41082a47e36e2ad1e69a7e723cb413aeb71f8ae5a473d0d9",
+    "internal/query/eval.go": "eb86a761fce2eb8d743e6ad7796f24f3a78568da189bad2f24a789e2f36b8ae8"
+  },
+  "findings": [],
+  "confirmed": [
+    "nil stores before duplicate ID validation",
+    "empty ID qualification without changing unqualified paths",
+    "public parse before cancellation before validate",
+    "typed cancellation cause preserved without mutation",
+    "DeadlineExceeded remains distinct",
+    "duplicate source oracle exceptions removed"
+  ],
+  "limits": [
+    "No broad unknown-label or raw typed parameter parity claim",
+    "Review is source evidence, separate from test and real64 execution"
+  ]
+}

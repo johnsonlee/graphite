@@ -139,7 +139,7 @@ func TestCrossEmptyCatalogExplicitMetadata(t *testing.T) {
 }
 func TestCrossRejectsAmbiguousSourceNamespaces(t *testing.T) {
 	graphs := crossFixtureSources(t)
-	for _, invalid := range [][]Graph{{{ID: "", Store: graphs[0].Store}}, {{ID: "orders"}}, {{ID: "orders", Store: graphs[0].Store}, {ID: "orders", Store: graphs[1].Store}}} {
+	for _, invalid := range [][]Graph{{{ID: "orders"}}, {{ID: "orders", Store: graphs[0].Store}, {ID: "orders", Store: graphs[1].Store}}, {{ID: "", Store: graphs[0].Store}, {ID: "", Store: graphs[1].Store}}} {
 		if _, err := ExecuteCross(context.Background(), invalid, "RETURN 1", nil, -1); err == nil {
 			t.Fatalf("accepted invalid sources %#v", invalid)
 		}

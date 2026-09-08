@@ -1,0 +1,20 @@
+{
+  "scenarios": 298,
+  "publicExecutionsIncludingFreshRepeat": 596,
+  "initial264PrefixUnchanged": true,
+  "repeatPublicAndStateDifferences": 0,
+  "phasesAndOutcomes": {
+    "constructor:IllegalArgumentException": 62,
+    "execute:SUCCESS": 90,
+    "execute:CypherParseException": 36,
+    "execute:CypherQueryCancelledException": 27,
+    "execute:CypherQueryTimeoutException": 24,
+    "sources:NullPointerException": 54,
+    "execute:NumberFormatException": 2,
+    "execute:CypherException": 2,
+    "execute:ClassCastException": 1
+  },
+  "unchangedOriginalFixtureFilesPerRun": 5836,
+  "generatedSidecarsPerRun": 152,
+  "performanceMeasurements": 0
+}

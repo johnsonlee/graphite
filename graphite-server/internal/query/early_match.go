@@ -110,7 +110,7 @@ func (e evaluator) matchPatternUntil(graph *store.Store, pattern cypher.Pattern,
 		if pattern.PathVariable != "" {
 			path := e.makePath(state.nodes, state.edges)
 			e.bind(state.row, pattern.PathVariable, path)
-			if id := valueGraphID(path); id != "" {
+			if id, qualified := valueGraphID(path); qualified {
 				addProvenance(state.row, id)
 			}
 		}
@@ -124,7 +124,7 @@ func (e evaluator) matchPatternUntil(graph *store.Store, pattern cypher.Pattern,
 		bound := e.cloneRow(initial.row)
 		if name := pattern.Nodes[0].Variable; name != "" {
 			e.bind(bound, name, value)
-			if id := valueGraphID(value); id != "" {
+			if id, qualified := valueGraphID(value); qualified {
 				addProvenance(bound, id)
 			}
 		}

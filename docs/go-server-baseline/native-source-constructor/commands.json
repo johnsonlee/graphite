@@ -1,0 +1,34 @@
+{
+  "compile": [
+    "javac",
+    "-cp",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "-d",
+    "/tmp/graphite-source-constructor-main-4e328b0-run2/classes",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-source-constructor/SourceConstructorOracle.java"
+  ],
+  "main": [
+    "java",
+    "-Xmx512m",
+    "-cp",
+    "/tmp/graphite-source-constructor-main-4e328b0-run2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "SourceConstructorOracle",
+    "/tmp/graphite-source-constructor-main-4e328b0-run5/fixtures",
+    "/tmp/graphite-source-constructor-main-4e328b0-run5/cases.json",
+    "/tmp/graphite-source-constructor-main-4e328b0-run5/main.json"
+  ],
+  "repeat": [
+    "java",
+    "-Xmx512m",
+    "-cp",
+    "/tmp/graphite-source-constructor-main-4e328b0-run2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "SourceConstructorOracle",
+    "/tmp/graphite-source-constructor-main-4e328b0-final-repeat/fixtures",
+    "/tmp/graphite-source-constructor-main-4e328b0-final-repeat/cases.json",
+    "/tmp/graphite-source-constructor-main-4e328b0-final-repeat/main.json"
+  ],
+  "verify": [
+    "python3",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-source-constructor/verify.py"
+  ]
+}

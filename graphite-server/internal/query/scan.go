@@ -44,7 +44,7 @@ func (e evaluator) matchSingleNode(graph *store.Store, rows []map[string]any, cl
 				} else {
 					delete(bound, provenanceKey)
 				}
-				if id := valueGraphID(value); id != "" {
+				if id, qualified := valueGraphID(value); qualified {
 					addProvenance(bound, id)
 				}
 			}

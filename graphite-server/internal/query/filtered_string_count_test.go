@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
@@ -169,10 +168,9 @@ func TestFilteredStringCountMain(t *testing.T) {
 			result, err = ExecuteCrossWithOptions(context.Background(), sources, spec["query"].(string), params, -1, ExecutionOptions{SourceScopeApplied: scoped, WorkTrackingEnabled: true})
 		}
 		got := distinctOracleResult(map[string]any{"name": want["name"], "repetition": want["repetition"]}, result, err)
-		// These public-constructor/general-scan differences predate this count
-		// consumer. Retain their observations and report them separately; they are
-		// not assertions of count-path equivalence or omitted fixture cases.
-		knownGap := strings.HasPrefix(want["name"].(string), "duplicate-source-ids-") || want["name"] == "malformed-unknown-label-1"
+		// The generic unknown-label difference remains outside this consumer.
+		// Constructor errors are now part of the strict public comparisons.
+		knownGap := want["name"] == "malformed-unknown-label-1"
 		if knownGap {
 			got["knownParityGap"] = true
 			t.Logf("outside filtered-count path: %s main error=%v rows=%v; Go error=%v rows=%v", want["name"], want["error"], want["rows"], got["error"], got["rows"])

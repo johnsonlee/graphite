@@ -1,0 +1,4450 @@
+[
+  {
+    "name": "duplicate-False-live-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-False-live-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-False-live-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-False-cancelled-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-False-cancelled-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-False-cancelled-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-False-timeout-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-False-timeout-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-False-timeout-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-live-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-live-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-live-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-cancelled-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-cancelled-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-cancelled-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-timeout-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-timeout-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-True-timeout-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-live-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-live-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-live-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-cancelled-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-cancelled-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-cancelled-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-timeout-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-timeout-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-False-timeout-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-live-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-live-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-live-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-cancelled-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-cancelled-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-cancelled-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-timeout-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-timeout-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-same-store-True-timeout-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-live-return",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-live-count",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-live-invalid",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-cancelled-return",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-cancelled-count",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-cancelled-invalid",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-timeout-return",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-timeout-count",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-False-timeout-invalid",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-live-return",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-live-count",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-live-invalid",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-cancelled-return",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-cancelled-count",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-cancelled-invalid",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-timeout-return",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-timeout-count",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "one-empty-True-timeout-invalid",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-live-return",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-live-count",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-live-invalid",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-cancelled-return",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-cancelled-count",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-cancelled-invalid",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-timeout-return",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-timeout-count",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-False-timeout-invalid",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-live-return",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-live-count",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-live-invalid",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-cancelled-return",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-cancelled-count",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-cancelled-invalid",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-timeout-return",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-timeout-count",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "two-empty-True-timeout-invalid",
+    "graphIDs": [
+      "",
+      ""
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-live-return",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-live-count",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-live-invalid",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-cancelled-return",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-cancelled-count",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-cancelled-invalid",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-timeout-return",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-timeout-count",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-False-timeout-invalid",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-live-return",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-live-count",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-live-invalid",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-cancelled-return",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-cancelled-count",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-cancelled-invalid",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-timeout-return",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-timeout-count",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-and-valid-True-timeout-invalid",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-live-return",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-live-count",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-live-invalid",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-cancelled-return",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-cancelled-count",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-cancelled-invalid",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-timeout-return",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-timeout-count",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-False-timeout-invalid",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-live-return",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-live-count",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-live-invalid",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-cancelled-return",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-cancelled-count",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-cancelled-invalid",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-timeout-return",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-timeout-count",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "no-sources-True-timeout-invalid",
+    "graphIDs": [],
+    "storeIndexes": [],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-live-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-live-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-live-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-cancelled-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-cancelled-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-cancelled-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-timeout-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-timeout-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-False-timeout-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-live-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-live-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-live-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-cancelled-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-cancelled-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-cancelled-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-timeout-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-timeout-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "same-store-unique-True-timeout-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-live-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-live-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-live-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-cancelled-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-cancelled-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-cancelled-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-timeout-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-timeout-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-False-timeout-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-live-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-live-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-live-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-cancelled-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-cancelled-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-cancelled-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-timeout-return",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-timeout-count",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "valid-unique-True-timeout-invalid",
+    "graphIDs": [
+      "b",
+      "a"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-live-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-live-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-live-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-cancelled-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-cancelled-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-cancelled-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-timeout-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-timeout-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-False-timeout-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-live-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-live-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-live-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-cancelled-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-cancelled-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-cancelled-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-timeout-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-timeout-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "single-valid-True-timeout-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-live-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-live-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-live-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-cancelled-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-cancelled-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-cancelled-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-timeout-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-timeout-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-False-timeout-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-live-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-live-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-live-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-cancelled-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-cancelled-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-cancelled-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-timeout-return",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-timeout-count",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "null-graph-True-timeout-invalid",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      -1
+    ],
+    "physicalStores": 0,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-live-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-live-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-live-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-cancelled-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-cancelled-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-cancelled-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-timeout-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-timeout-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-False-timeout-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-live-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-live-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-live-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-cancelled-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-cancelled-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-cancelled-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-timeout-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-timeout-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-first-True-timeout-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      -1,
+      0
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-live-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-live-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-live-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-cancelled-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-cancelled-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-cancelled-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-timeout-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-timeout-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-False-timeout-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": false,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-live-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-live-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-live-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-cancelled-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-cancelled-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-cancelled-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-timeout-return",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-timeout-count",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "duplicate-null-second-True-timeout-invalid",
+    "graphIDs": [
+      "same",
+      "same"
+    ],
+    "storeIndexes": [
+      0,
+      -1
+    ],
+    "physicalStores": 1,
+    "query": "NOT A VALID CYPHER QUERY",
+    "scoped": true,
+    "cancellation": "timeout",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-False-node",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN graphId(n) AS graph,elementId(n) AS element,n LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-valid-False-node",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN graphId(n) AS graph,elementId(n) AS element,n LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-mixed-False-node",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN graphId(n) AS graph,elementId(n) AS element,n LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-False-method",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (m:Method) RETURN graphId(m) AS graph,properties(m) AS props,keys(m) AS keys,m LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-valid-False-method",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (m:Method) RETURN graphId(m) AS graph,properties(m) AS props,keys(m) AS keys,m LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-mixed-False-method",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (m:Method) RETURN graphId(m) AS graph,properties(m) AS props,keys(m) AS keys,m LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-empty-False-node-empty-guard",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE graphId(n) = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-valid-False-node-empty-guard",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE graphId(n) = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-mixed-False-node-empty-guard",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE graphId(n) = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-False-node-property-empty-guard",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.graphId = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-valid-False-node-property-empty-guard",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.graphId = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-mixed-False-node-property-empty-guard",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.graphId = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-False-method-empty-guard",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (m:Method) WHERE graphId(m) = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-valid-False-method-empty-guard",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (m:Method) WHERE graphId(m) = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-mixed-False-method-empty-guard",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (m:Method) WHERE graphId(m) = '' RETURN count(*) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-empty-False-union",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN count(*) AS x UNION RETURN 42 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-valid-False-union",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN count(*) AS x UNION RETURN 42 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-mixed-False-union",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN count(*) AS x UNION RETURN 42 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-False-relationship-path",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH p=(a)-[r]->(b) RETURN graphId(r) AS edgeGraph,graphId(p) AS pathGraph,r,p LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-False-relationship-path",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH p=(a)-[r]->(b) RETURN graphId(r) AS edgeGraph,graphId(p) AS pathGraph,r,p LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-False-relationship-path",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH p=(a)-[r]->(b) RETURN graphId(r) AS edgeGraph,graphId(p) AS pathGraph,r,p LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-False-relationship",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (a)-[r]->(b) RETURN graphId(r) AS graph,elementId(r) AS element,r LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-False-relationship",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (a)-[r]->(b) RETURN graphId(r) AS graph,elementId(r) AS element,r LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-False-relationship",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (a)-[r]->(b) RETURN graphId(r) AS graph,elementId(r) AS element,r LIMIT 1",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-True-node",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN graphId(n) AS graph,elementId(n) AS element,n LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-valid-True-node",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN graphId(n) AS graph,elementId(n) AS element,n LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-mixed-True-node",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN graphId(n) AS graph,elementId(n) AS element,n LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-True-method",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (m:Method) RETURN graphId(m) AS graph,properties(m) AS props,keys(m) AS keys,m LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-valid-True-method",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (m:Method) RETURN graphId(m) AS graph,properties(m) AS props,keys(m) AS keys,m LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-mixed-True-method",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (m:Method) RETURN graphId(m) AS graph,properties(m) AS props,keys(m) AS keys,m LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-empty-True-node-empty-guard",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE graphId(n) = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-valid-True-node-empty-guard",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE graphId(n) = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-mixed-True-node-empty-guard",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE graphId(n) = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-True-node-property-empty-guard",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.graphId = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-valid-True-node-property-empty-guard",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.graphId = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-mixed-True-node-property-empty-guard",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.graphId = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-True-method-empty-guard",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (m:Method) WHERE graphId(m) = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-valid-True-method-empty-guard",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (m:Method) WHERE graphId(m) = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-mixed-True-method-empty-guard",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (m:Method) WHERE graphId(m) = '' RETURN count(*) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "all-types"
+  },
+  {
+    "name": "qualification-empty-True-union",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN count(*) AS x UNION RETURN 42 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-valid-True-union",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN count(*) AS x UNION RETURN 42 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-mixed-True-union",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN count(*) AS x UNION RETURN 42 AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "qualification-empty-True-relationship-path",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH p=(a)-[r]->(b) RETURN graphId(r) AS edgeGraph,graphId(p) AS pathGraph,r,p LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-True-relationship-path",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH p=(a)-[r]->(b) RETURN graphId(r) AS edgeGraph,graphId(p) AS pathGraph,r,p LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-True-relationship-path",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH p=(a)-[r]->(b) RETURN graphId(r) AS edgeGraph,graphId(p) AS pathGraph,r,p LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-True-relationship",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (a)-[r]->(b) RETURN graphId(r) AS graph,elementId(r) AS element,r LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-True-relationship",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (a)-[r]->(b) RETURN graphId(r) AS graph,elementId(r) AS element,r LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-True-relationship",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (a)-[r]->(b) RETURN graphId(r) AS graph,elementId(r) AS element,r LIMIT 1",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-False-empty-element-lookup",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE elementId(n) = ':0' RETURN graphId(n) AS graph,n",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-False-empty-element-lookup",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE elementId(n) = ':0' RETURN graphId(n) AS graph,n",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-False-empty-element-lookup",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE elementId(n) = ':0' RETURN graphId(n) AS graph,n",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-False-bound-relationship",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (a)-[r]->(b) WITH r MATCH (c)-[r]->(d) RETURN count(DISTINCT r) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-False-bound-relationship",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (a)-[r]->(b) WITH r MATCH (c)-[r]->(d) RETURN count(DISTINCT r) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-False-bound-relationship",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (a)-[r]->(b) WITH r MATCH (c)-[r]->(d) RETURN count(DISTINCT r) AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-False-zero-hop-path",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH p=(a)-[*0..0]->(b) WHERE id(a)=0 RETURN graphId(p) AS graph,p ORDER BY graph",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-False-zero-hop-path",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH p=(a)-[*0..0]->(b) WHERE id(a)=0 RETURN graphId(p) AS graph,p ORDER BY graph",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-False-zero-hop-path",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH p=(a)-[*0..0]->(b) WHERE id(a)=0 RETURN graphId(p) AS graph,p ORDER BY graph",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-True-empty-element-lookup",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE elementId(n) = ':0' RETURN graphId(n) AS graph,n",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-True-empty-element-lookup",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (n) WHERE elementId(n) = ':0' RETURN graphId(n) AS graph,n",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-True-empty-element-lookup",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (n) WHERE elementId(n) = ':0' RETURN graphId(n) AS graph,n",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-True-bound-relationship",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (a)-[r]->(b) WITH r MATCH (c)-[r]->(d) RETURN count(DISTINCT r) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-True-bound-relationship",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH (a)-[r]->(b) WITH r MATCH (c)-[r]->(d) RETURN count(DISTINCT r) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-True-bound-relationship",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH (a)-[r]->(b) WITH r MATCH (c)-[r]->(d) RETURN count(DISTINCT r) AS x",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-empty-True-zero-hop-path",
+    "graphIDs": [
+      ""
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH p=(a)-[*0..0]->(b) WHERE id(a)=0 RETURN graphId(p) AS graph,p ORDER BY graph",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-valid-True-zero-hop-path",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "MATCH p=(a)-[*0..0]->(b) WHERE id(a)=0 RETURN graphId(p) AS graph,p ORDER BY graph",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "qualification-mixed-True-zero-hop-path",
+    "graphIDs": [
+      "",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "MATCH p=(a)-[*0..0]->(b) WHERE id(a)=0 RETURN graphId(p) AS graph,p ORDER BY graph",
+    "scoped": true,
+    "cancellation": "live",
+    "fixture": "traversal"
+  },
+  {
+    "name": "precedence-valid-live-literal-overflow",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 9223372036854775808 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-valid-live-unknown-function",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN sourceConstructorUnknownFunction() AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-valid-live-arithmetic",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 / 0 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-valid-live-function-argument",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN substring('x', 'bad') AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-valid-cancelled-literal-overflow",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 9223372036854775808 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-valid-cancelled-unknown-function",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN sourceConstructorUnknownFunction() AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-valid-cancelled-arithmetic",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN 1 / 0 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-valid-cancelled-function-argument",
+    "graphIDs": [
+      "g"
+    ],
+    "storeIndexes": [
+      0
+    ],
+    "physicalStores": 1,
+    "query": "RETURN substring('x', 'bad') AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-duplicate-live-literal-overflow",
+    "graphIDs": [
+      "g",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 9223372036854775808 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-duplicate-live-unknown-function",
+    "graphIDs": [
+      "g",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN sourceConstructorUnknownFunction() AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-duplicate-live-arithmetic",
+    "graphIDs": [
+      "g",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 / 0 AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-duplicate-live-function-argument",
+    "graphIDs": [
+      "g",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN substring('x', 'bad') AS x",
+    "scoped": false,
+    "cancellation": "live",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-duplicate-cancelled-literal-overflow",
+    "graphIDs": [
+      "g",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 9223372036854775808 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-duplicate-cancelled-unknown-function",
+    "graphIDs": [
+      "g",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN sourceConstructorUnknownFunction() AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-duplicate-cancelled-arithmetic",
+    "graphIDs": [
+      "g",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN 1 / 0 AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  },
+  {
+    "name": "precedence-duplicate-cancelled-function-argument",
+    "graphIDs": [
+      "g",
+      "g"
+    ],
+    "storeIndexes": [
+      0,
+      1
+    ],
+    "physicalStores": 2,
+    "query": "RETURN substring('x', 'bad') AS x",
+    "scoped": false,
+    "cancellation": "cancelled",
+    "fixture": "clean"
+  }
+]

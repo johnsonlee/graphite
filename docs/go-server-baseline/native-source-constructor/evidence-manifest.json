@@ -1,0 +1,541 @@
+{
+  "baseRevision": "f5b05027dfcb0883fcfd1f8545123bbaa91af071",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "files": [
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/.gitignore",
+      "bytes": 32,
+      "sha256": "37b1697763227a66ffbaaad45b3238e0166835d930711535d121f05751c4a9fe"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/README-final.md",
+      "bytes": 6164,
+      "sha256": "ed708f231a62235c68b9f0a0dfffbc9ced07b3c022163dbf366e815951852c20"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/SourceConstructorOracle.java",
+      "bytes": 5365,
+      "sha256": "e34e8d89c1c176c85b84e2b8481bfd60bf1400308f319191232409668cc67a53"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/archive-real64.log",
+      "bytes": 77,
+      "sha256": "a456ea26c209accd272aa48c95d61bf1a11eb29463a26a01048374faf55cf2a4"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/archive-real64.py",
+      "bytes": 1753,
+      "sha256": "bc702b5ee0e3d6535be8c0542236e545fbcd277cef44d3b7dcccee798542a3a6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/audit-final.py",
+      "bytes": 3831,
+      "sha256": "2fcd7aa0ba20f4b7a03948f4c53d9a1d11e53bfa45dd2b2fed745ac95b8d8caf"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/capture-archives.json",
+      "bytes": 1170,
+      "sha256": "af183bdcb80becbd6e822716f4ebe913a0828e4310bfdf070c9598db78d4764f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/cases.json",
+      "bytes": 90367,
+      "sha256": "9b1a684c7822816a175c69a42f078dc2e95effba3c1cd61795bb77a3555cf1b8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/commands.json",
+      "bytes": 1497,
+      "sha256": "97fdc97005c774b91f9f2373d060e7f2a925490633821f3e29ebb43755a484ee"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/final-audit.json",
+      "bytes": 458,
+      "sha256": "e95c3a7d1d3c027ec13fc30a9ff76d6108d96d5df0cda144c1bfc9fd079339a6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/final-audit.log",
+      "bytes": 458,
+      "sha256": "e95c3a7d1d3c027ec13fc30a9ff76d6108d96d5df0cda144c1bfc9fd079339a6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/final-repeat.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/final-repeat.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/final-review.json",
+      "bytes": 1345,
+      "sha256": "0a8dc18df6f3122d0cd95c669b4bb0de465191953818853fb9717aef8e8dd0d8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/fixture-0-after.json.gz",
+      "bytes": 27351,
+      "sha256": "7a6775b8028d3449249427351920f74058fd3cb955ab87e9bc25a2e91b17343a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/fixture-0-before.json.gz",
+      "bytes": 25580,
+      "sha256": "265195464ae4309112cb44ab49ace4dd9899da6a6f4497f03d8371c5ea498268"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/fixture-1-after.json.gz",
+      "bytes": 27351,
+      "sha256": "7a6775b8028d3449249427351920f74058fd3cb955ab87e9bc25a2e91b17343a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/fixture-1-before.json.gz",
+      "bytes": 25580,
+      "sha256": "265195464ae4309112cb44ab49ace4dd9899da6a6f4497f03d8371c5ea498268"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/fixture-audit.json",
+      "bytes": 25727,
+      "sha256": "9acb1961701617a6c573fa4f4d2fb071f7e55db603292831b855ff4585379f7e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial-cases.json.gz",
+      "bytes": 2435,
+      "sha256": "2a6f142ebbfffd7c8d725d91735fad755491b7d9ec2f57ed9d987315ba7de813"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial-fixture-precondition-main.json.gz",
+      "bytes": 8355,
+      "sha256": "a650e575d9bcd9c736e211258ff746925f21f5519a4a1a7ffdc6e2544da35e09"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial264-cases.json.gz",
+      "bytes": 2458,
+      "sha256": "224e7b8a16cb2023473b6543446ee29b66494cc6abbdc0b55d07b017cb11cf80"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial264-fixture-0-after.json.gz",
+      "bytes": 24883,
+      "sha256": "d4dfe7525c97309b4347e84bfc4b4a4a7dd6a8656ade7888d2624af81d3dc97e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial264-fixture-0-before.json.gz",
+      "bytes": 23721,
+      "sha256": "9ad22e02bb472eea6151f1efc01eb8745ab0bea8aea413be1f3c09ed6e4a03ea"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial264-fixture-1-after.json.gz",
+      "bytes": 24883,
+      "sha256": "d4dfe7525c97309b4347e84bfc4b4a4a7dd6a8656ade7888d2624af81d3dc97e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial264-fixture-1-before.json.gz",
+      "bytes": 23721,
+      "sha256": "9ad22e02bb472eea6151f1efc01eb8745ab0bea8aea413be1f3c09ed6e4a03ea"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial264-fixture-audit.json",
+      "bytes": 13457,
+      "sha256": "e0c6ebfa2d325ac9cd10225bca91768d38ff9322b1fabcf09c552f71384eb788"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial264-main.json.gz",
+      "bytes": 8889,
+      "sha256": "2e1cbe6c0038658154131bd4f0225cc99deffdbe0a47555f1feb71c8f251099f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/initial264-repeat-main.json.gz",
+      "bytes": 8897,
+      "sha256": "f54136f7ea479c4e90cd39c6591c19eec448c4cd6ccf31644767674dc54dc9ca"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/java-version.stderr",
+      "bytes": 165,
+      "sha256": "3da1aeb6805f4a2afa33b81896052d034dc4d28ddea19f580db76c803beaaf2e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/java-version.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/main.json",
+      "bytes": 458375,
+      "sha256": "cf20af3c60d8acd379284e358b4b5debbfb9559c5a4e97aa520d4b76d41c3b58"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/module-source.json",
+      "bytes": 363991,
+      "sha256": "50893259edad549d3a4ee25212945dd7bece8fe72949e831477b694b3a0ceaab"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-after-build-failed.log",
+      "bytes": 303,
+      "sha256": "8cb08601d820b09a327fbc03afdc232e90b76172e26415ea744d2a8b2cb11326"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-after.json",
+      "bytes": 366283,
+      "sha256": "6f3648db231846ba28b11df21a6ed7aabe1db6c2634db02b24670823f18c6746"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-after.log",
+      "bytes": 50525,
+      "sha256": "0f9ad1365fc26382bd836cc2abadb8e9b4cdc7da1a9d8930e4851cb16d314c9d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-before-receipt.json",
+      "bytes": 32325,
+      "sha256": "330b2a5b42aa5649091b9a33dcf4bc565415a5b604f2e7f1be851059207bf99e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-before.json",
+      "bytes": 292283,
+      "sha256": "aee239882129a2a5cf0c3a84581d6f9d6d38098c8f84ee56a428a31a53a886ee"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-before.log",
+      "bytes": 126722,
+      "sha256": "01bf91c213fa95b2a33183c5fcb43e6273b6b27119e14384036703b16f02a376"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-final-before-build-failed.log",
+      "bytes": 305,
+      "sha256": "faad7c01fba885da2b31c4fcc1e10d113e305ff19d887ba2c84cce1991f95d7f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-final-before-overlay.json",
+      "bytes": 53021,
+      "sha256": "a1dfa9615656ebb072f73a2f05f75231893b5f4f0757e521e127eca676c584c0"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-final-before.json",
+      "bytes": 330425,
+      "sha256": "5fffe7244765a242cfe905f0b285ce7f7ef4ecbaf6a357429104b053be085044"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-final-before.log",
+      "bytes": 143857,
+      "sha256": "ac9e29a5e6981f6f97cd88e56092bb00ff272cf37ad70da7472438608b237496"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/native-verification.json",
+      "bytes": 42137,
+      "sha256": "0f0c176817582b644e96f2f915b69c0f60218f04abcb589aafa7bb6c856f619a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/oracle-inputs.json",
+      "bytes": 2043,
+      "sha256": "98a5792533fbf07bf318c0ad957cc21e694ab3c854d302f700d49e11d845a684"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/oracle-manifest.json",
+      "bytes": 6235,
+      "sha256": "4f325a8e79693f5912175076765ca55d9a2c7a63b5ff642d8e3cca4d9dc04d25"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/oracle-readme.md",
+      "bytes": 8400,
+      "sha256": "dc88e5db39db9ad341bde373230e63b8380af7b50b57586a6bad4e265c91181b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/oracle-receipt.json",
+      "bytes": 1180,
+      "sha256": "09a39c76c000de01af0672d74680440bdce3fa9b00c623b7c2c6219dbacee93c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/prepare.py",
+      "bytes": 4499,
+      "sha256": "03e1427c9dbe3e9f2801d98c1284ebe299c3d81c0d79dd59ce1e9f822cbeb27d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/cold-comparison.json",
+      "bytes": 1518,
+      "sha256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/controller.json",
+      "bytes": 1623,
+      "sha256": "3f988e0a025ba77d2fa90d082ee57e759701f24f589dc5464cb11d5842b4a29e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-cold-inputs.json",
+      "bytes": 56071,
+      "sha256": "d021e261168a4f0edca990de5b953b96c19a01dceb61b6928defa2b147c507d9"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-cold-postrun-fixtures.json",
+      "bytes": 226,
+      "sha256": "6a27699c72988259ba65cf9196d6e0ef8ca35e1ce6a9afc5348f0763b5f62650"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-cold-preflight.json",
+      "bytes": 226,
+      "sha256": "6a27699c72988259ba65cf9196d6e0ef8ca35e1ce6a9afc5348f0763b5f62650"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-cold-process.json",
+      "bytes": 1423,
+      "sha256": "5866bde8048c6fbe262736daba944f687a07de27349f14aebbadb90fb7a99bd2"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-cold-process.log",
+      "bytes": 113440,
+      "sha256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-cold/responses.jsonl.gz",
+      "bytes": 3278413,
+      "sha256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-startup-prepared-inputs.json",
+      "bytes": 56071,
+      "sha256": "d021e261168a4f0edca990de5b953b96c19a01dceb61b6928defa2b147c507d9"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-startup-prepared-postrun-fixtures.json",
+      "bytes": 238,
+      "sha256": "59ecc4544f997865dacde40e28406601386838e66c029c64ca48a558b3da7715"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-startup-prepared-preflight.json",
+      "bytes": 238,
+      "sha256": "59ecc4544f997865dacde40e28406601386838e66c029c64ca48a558b3da7715"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-startup-prepared-process.json",
+      "bytes": 1495,
+      "sha256": "afc8067356018bdded4b7ada9ec8aad26a0e229995021693d7da4e57c13158b7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-startup-prepared-process.log",
+      "bytes": 113440,
+      "sha256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-startup-prepared/responses.jsonl.gz",
+      "bytes": 3271162,
+      "sha256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-warm-inputs.json",
+      "bytes": 56071,
+      "sha256": "d021e261168a4f0edca990de5b953b96c19a01dceb61b6928defa2b147c507d9"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-warm-postrun-fixtures.json",
+      "bytes": 226,
+      "sha256": "8dd7cabaee11e94fd348a75c3bf6458d8c117970c045cdd3aa1569a1a6fa342a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-warm-preflight.json",
+      "bytes": 226,
+      "sha256": "8dd7cabaee11e94fd348a75c3bf6458d8c117970c045cdd3aa1569a1a6fa342a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-warm-process.json",
+      "bytes": 1423,
+      "sha256": "f070e37902f7b2afffe5b8a56b411bf709aae4524dd85b5fb8338720111f301f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-warm-process.log",
+      "bytes": 113440,
+      "sha256": "d5f7c883aed183cdd870e8c2ee532893529b3b68ef728e82c2fa5fd4da8caf68"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/native-warm/responses.jsonl.gz",
+      "bytes": 3278959,
+      "sha256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/startup-prepared-comparison.json",
+      "bytes": 1536,
+      "sha256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/verify-cold.log",
+      "bytes": 1518,
+      "sha256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/verify-startup-prepared.log",
+      "bytes": 1536,
+      "sha256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/verify-warm.log",
+      "bytes": 1517,
+      "sha256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/real64/warm-comparison.json",
+      "bytes": 1517,
+      "sha256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/repeat-main.json.gz",
+      "bytes": 10950,
+      "sha256": "70f9353269679b43ea7eaebc7b043676363a4c6a58cae05c6c4a4782b2adc06d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/repeat.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/repeat.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/run-real64.py",
+      "bytes": 2415,
+      "sha256": "2f034ae99783e8dce178b914e75df082704dccdeea617d599947da6a9d02d287"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/run4.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/run4.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/run5.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/run5.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/tests/filtered-count-differences.json",
+      "bytes": 313,
+      "sha256": "33d31525756df4bfe12e042ed3a42025aed0c6ac42455b1119217bbab5335bc6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/tests/filtered-count.json",
+      "bytes": 358475,
+      "sha256": "d2b7ce45ad73dca78dbbd81584d0225e19c2436f0424826ecdfe519a41cd73da"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/tests/inputs.json",
+      "bytes": 603541,
+      "sha256": "893d4ac44e682c153a0bbf03df6ecbd341dc8d953e813984aa04dbeadc40463c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/tests/race.log",
+      "bytes": 1478,
+      "sha256": "81ffe062f471e9a55dabd5cc32d4d72ca556f471850c47d3a171e38fbfbde41b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/tests/receipt.json",
+      "bytes": 888,
+      "sha256": "f5c7e16f7608b7fb2bef8ed5e2a1060953a9aa6e1de2702f1fb7cd4857a41244"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/tests/source-constructor.json",
+      "bytes": 366283,
+      "sha256": "6f3648db231846ba28b11df21a6ed7aabe1db6c2634db02b24670823f18c6746"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/tests/vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/verification.json",
+      "bytes": 651,
+      "sha256": "6d0713b7fa840127b42a3a6de612586c9d45459669d9e3167e98569ef9f31b9f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-source-constructor/verify.py",
+      "bytes": 4560,
+      "sha256": "7fa1361775a1c345ead1e28f1667533b2a1dcc57380f0f386c7f8134c7b133c8"
+    },
+    {
+      "file": "docs/go-server-optimization-attempts.md",
+      "bytes": 84704,
+      "sha256": "c2d6f101e3cf6734f51b86dba38ce27878b5b60e9a937e958797f74134ab448b"
+    },
+    {
+      "file": "graphite-server/internal/query/cross.go",
+      "bytes": 1975,
+      "sha256": "b94285ba0983bebd0954ab966249930e41c94c1045911a8fc7ea9769d3447c2c"
+    },
+    {
+      "file": "graphite-server/internal/query/cross_test.go",
+      "bytes": 12077,
+      "sha256": "5a8500a5d6ef0e5e9024ca22052a55a007284eb22afbe12d857086677796a3cb"
+    },
+    {
+      "file": "graphite-server/internal/query/early_match.go",
+      "bytes": 4442,
+      "sha256": "e584ee09520728bfd0be8ec87c3b11909cacf35c4118b95a8312e5434f0b64db"
+    },
+    {
+      "file": "graphite-server/internal/query/engine.go",
+      "bytes": 16105,
+      "sha256": "d67a3756094f574b41082a47e36e2ad1e69a7e723cb413aeb71f8ae5a473d0d9"
+    },
+    {
+      "file": "graphite-server/internal/query/eval.go",
+      "bytes": 14022,
+      "sha256": "eb86a761fce2eb8d743e6ad7796f24f3a78568da189bad2f24a789e2f36b8ae8"
+    },
+    {
+      "file": "graphite-server/internal/query/filtered_string_count_test.go",
+      "bytes": 8546,
+      "sha256": "ad788ea6e21ec93c8d20a2f2f8362ef3c32309a20d4412185362ba93c3546825"
+    },
+    {
+      "file": "graphite-server/internal/query/function_properties.go",
+      "bytes": 2893,
+      "sha256": "098ef9ca789ea1014d9a5b76c4add2aa9cc11ef75c2c53d5906d53c4eb8d9268"
+    },
+    {
+      "file": "graphite-server/internal/query/public_context_test.go",
+      "bytes": 1829,
+      "sha256": "5d224745d962281bec1f6ebdc51f4579be49baa122c5dc2f1110102871afe6c6"
+    },
+    {
+      "file": "graphite-server/internal/query/scan.go",
+      "bytes": 2274,
+      "sha256": "d0b87a3cd1f594e7971fead8adb5a8a599a1d6a0ed9b6fe28e1600bb7c6b5abf"
+    },
+    {
+      "file": "graphite-server/internal/query/source_constructor_test.go",
+      "bytes": 8261,
+      "sha256": "23b61b62e85d380e8d9e674d0a739b37995794452925c5ff47b6026fdb8422bf"
+    },
+    {
+      "file": "graphite-server/internal/query/traversal.go",
+      "bytes": 12913,
+      "sha256": "ec91db74d320948b471ca59d92655be9dc466edb20665bc25042103969a258d6"
+    }
+  ]
+}

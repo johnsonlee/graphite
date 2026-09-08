@@ -1,0 +1,22 @@
+[
+  {
+    "name": "malformed-unknown-label-1",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ]
+  },
+  {
+    "name": "malformed-unknown-label-1",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ]
+  }
+]

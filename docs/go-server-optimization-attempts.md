@@ -829,3 +829,44 @@ with actual-main contract/oracles in `native-filtered-string-aggregation/` and
 baseline CPU attribution in `native64-filtered-count-profile/` alongside it.
 Initial failed captures and strict-state test failures remain archived. This
 attempt does not change the pinned main reference or remove its failing case.
+
+
+### 2026-09-08 — Functional follow-up: public source construction and empty IDs
+
+Aligned public entry order with actual main: all source objects must have non-null
+graphs before duplicate IDs are checked; one empty ID is valid; complete parsing
+precedes query cancellation and execution. Duplicate IDs now report the original
+IllegalArgumentException class/message. Qualified nodes, methods, relationships
+and paths preserve empty graphId and metadata through a separate qualification
+flag/type rather than treating an empty string as missing. Public cancellation
+preserves main's class/message and explicitly supplied typed reasons while keeping
+Go errors.Is(context.Canceled); ordinary DeadlineExceeded is not relabeled with
+an invented timeout duration. The standalone ParseContext API remains unchanged.
+
+Native base f5b05027; main reference remains 4e328b0109e13c896b74004823fb049fcb19251a.
+The final actual-main corpus has 298 scenarios, repeated in a fresh run for 596
+calls: constructor/error ordering, empty/shared namespaces, Method properties,
+node/relationship/path qualification, bound relationships, zero-hop paths and
+elementId seeks. Full public/state observations repeat exactly; each run preserves
+5,836 original fixture files with 152 explicitly audited generated sidecars.
+The old Go source overlay has 248 differing cases; the candidate has zero public,
+state, scalar-type or container-kind differences. Initial 264-case controls,
+12 fixture-precondition failures and two pre-test unused-import failures remain.
+
+Full-module go test -race -count=1 ./... and go vet ./... pass; 2,521 module/oracle
+inputs are unchanged. Six duplicate-ID exceptions were removed from the previous
+filtered COUNT corpus, now 386/388 public observations exact; only the two repeated
+unknown-label differences remain. Independent source review found no new defect.
+
+Final real64 cold replay, warm prewarm and startup-prepared replay each preserve
+all 1,267 ordered cases, 1,266 successful results and the one original error.
+Seven state fields match across 486,848 graph observations; 1,152 original graph
+files remain unchanged in every runtime. Runtime exit 1 preserves the original
+all-success gate failure; comparator exit 0 confirms parity. Warm formal replay
+remains unavailable. The 2,519-file frozen module matches the final tested source.
+
+Keep the functional correction. Evidence is in
+`docs/go-server-baseline/native-source-constructor/`. No performance measurement
+was made in this follow-up; prior latency samples are not reattributed to this
+candidate. Full server/engine parity, unknown-label routing, work/metrics policy,
+the original reference failure, per-case P95/10x and required PR gates remain open.

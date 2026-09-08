@@ -90,7 +90,7 @@ func (e evaluator) matchPattern(graph *store.Store, pattern cypher.Pattern, init
 		bound := e.cloneRow(initial.row)
 		if name := pattern.Nodes[0].Variable; name != "" {
 			e.bind(bound, name, value)
-			if id := valueGraphID(value); id != "" {
+			if id, qualified := valueGraphID(value); qualified {
 				addProvenance(bound, id)
 			}
 		}
@@ -107,7 +107,7 @@ func (e evaluator) matchPattern(graph *store.Store, pattern cypher.Pattern, init
 		if pattern.PathVariable != "" {
 			path := e.makePath(states[i].nodes, states[i].edges)
 			e.bind(states[i].row, pattern.PathVariable, path)
-			if id := valueGraphID(path); id != "" {
+			if id, qualified := valueGraphID(path); qualified {
 				addProvenance(states[i].row, id)
 			}
 		}
@@ -240,7 +240,7 @@ func (e evaluator) targetNode(pattern cypher.NodePattern, value any, row map[str
 	bound := e.cloneRow(row)
 	if name := pattern.Variable; name != "" {
 		e.bind(bound, name, value)
-		if id := valueGraphID(value); id != "" {
+		if id, qualified := valueGraphID(value); qualified {
 			addProvenance(bound, id)
 		}
 	}
@@ -336,7 +336,7 @@ func (e evaluator) matchRelationshipUntil(graph *store.Store, state matchState, 
 			}
 			e.bind(bound, rel.Variable, relationship)
 			for edge := range e.relationshipBindings(relationship) {
-				if edge.GraphID != "" {
+				if e.cross {
 					addProvenance(bound, edge.GraphID)
 				}
 			}

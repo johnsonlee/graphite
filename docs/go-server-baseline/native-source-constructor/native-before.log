@@ -1,0 +1,1128 @@
+=== RUN   TestSourceConstructorActualMain
+=== RUN   TestSourceConstructorActualMain/duplicate-False-live-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-False-live-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-False-live-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-False-cancelled-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-False-cancelled-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-False-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-False-timeout-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-False-timeout-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-False-timeout-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-live-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-live-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-live-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-cancelled-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-cancelled-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-timeout-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-timeout-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-True-timeout-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-live-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-live-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-live-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-timeout-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-timeout-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-timeout-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-live-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-live-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-live-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-timeout-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-timeout-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-timeout-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/one-empty-False-live-return
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{}}, "x":1}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/one-empty-False-live-count
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":2}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}}
+=== RUN   TestSourceConstructorActualMain/one-empty-False-live-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/one-empty-False-cancelled-return
+    source_constructor_test.go:214: error got="" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query cancelled"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/one-empty-False-cancelled-count
+    source_constructor_test.go:214: error got="" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query cancelled"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/one-empty-False-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/one-empty-False-timeout-return
+    source_constructor_test.go:214: error got="" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query timed out after 17 ms"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/one-empty-False-timeout-count
+    source_constructor_test.go:214: error got="" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query timed out after 17 ms"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/one-empty-False-timeout-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/one-empty-True-live-return
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{}}, "x":1}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/one-empty-True-live-count
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":2}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}}
+=== RUN   TestSourceConstructorActualMain/one-empty-True-live-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/one-empty-True-cancelled-return
+    source_constructor_test.go:214: error got="" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query cancelled"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/one-empty-True-cancelled-count
+    source_constructor_test.go:214: error got="" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query cancelled"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/one-empty-True-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/one-empty-True-timeout-return
+    source_constructor_test.go:214: error got="" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query timed out after 17 ms"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/one-empty-True-timeout-count
+    source_constructor_test.go:214: error got="" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query timed out after 17 ms"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/one-empty-True-timeout-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-live-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-live-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-live-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-cancelled-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-cancelled-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-timeout-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-timeout-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-False-timeout-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-live-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-live-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-live-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-cancelled-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-cancelled-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-timeout-return
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-timeout-count
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/two-empty-True-timeout-invalid
+    source_constructor_test.go:214: error got="" want="IllegalArgumentException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Graph ids must be unique"
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-live-return
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{}}, "x":1}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-live-count
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{"", "g"}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}, map[string]interface {}{"mappedView":false, "retained":false, "store":1}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}, map[string]interface {}{"mappedView":false, "retained":true, "store":1}}
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-live-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-cancelled-return
+    source_constructor_test.go:214: error got="" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query cancelled"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-cancelled-count
+    source_constructor_test.go:214: error got="" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query cancelled"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-timeout-return
+    source_constructor_test.go:214: error got="" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query timed out after 17 ms"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-timeout-count
+    source_constructor_test.go:214: error got="" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query timed out after 17 ms"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-timeout-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-live-return
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{}}, "x":1}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-live-count
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{"", "g"}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}, map[string]interface {}{"mappedView":false, "retained":false, "store":1}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}, map[string]interface {}{"mappedView":false, "retained":true, "store":1}}
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-live-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-cancelled-return
+    source_constructor_test.go:214: error got="" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query cancelled"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-cancelled-count
+    source_constructor_test.go:214: error got="" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query cancelled"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-timeout-return
+    source_constructor_test.go:214: error got="" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query timed out after 17 ms"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-timeout-count
+    source_constructor_test.go:214: error got="" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Cypher query timed out after 17 ms"
+    source_constructor_test.go:232: public cancellation must preserve errors.Is(context.Canceled), got=*query.Error Cross-graph sources require unique nonempty ids and loaded stores
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-timeout-invalid
+    source_constructor_test.go:214: error got="" want="CypherParseException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/no-sources-False-live-return
+=== RUN   TestSourceConstructorActualMain/no-sources-False-live-count
+=== RUN   TestSourceConstructorActualMain/no-sources-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/no-sources-False-cancelled-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/no-sources-False-cancelled-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/no-sources-False-cancelled-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/no-sources-False-timeout-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/no-sources-False-timeout-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/no-sources-False-timeout-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/no-sources-True-live-return
+=== RUN   TestSourceConstructorActualMain/no-sources-True-live-count
+=== RUN   TestSourceConstructorActualMain/no-sources-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/no-sources-True-cancelled-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/no-sources-True-cancelled-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/no-sources-True-cancelled-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/no-sources-True-timeout-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/no-sources-True-timeout-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/no-sources-True-timeout-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-live-return
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-live-count
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-cancelled-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-cancelled-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-cancelled-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-timeout-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-timeout-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-timeout-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-live-return
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-live-count
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-cancelled-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-cancelled-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-cancelled-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-timeout-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-timeout-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-timeout-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-live-return
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-live-count
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-cancelled-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-cancelled-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-cancelled-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-timeout-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-timeout-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-timeout-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-live-return
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-live-count
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-cancelled-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-cancelled-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-cancelled-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-timeout-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-timeout-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-timeout-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/single-valid-False-live-return
+=== RUN   TestSourceConstructorActualMain/single-valid-False-live-count
+=== RUN   TestSourceConstructorActualMain/single-valid-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/single-valid-False-cancelled-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/single-valid-False-cancelled-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/single-valid-False-cancelled-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/single-valid-False-timeout-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/single-valid-False-timeout-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/single-valid-False-timeout-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/single-valid-True-live-return
+=== RUN   TestSourceConstructorActualMain/single-valid-True-live-count
+=== RUN   TestSourceConstructorActualMain/single-valid-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/single-valid-True-cancelled-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/single-valid-True-cancelled-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryCancelledException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query cancelled"
+=== RUN   TestSourceConstructorActualMain/single-valid-True-cancelled-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/single-valid-True-timeout-return
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/single-valid-True-timeout-count
+    source_constructor_test.go:214: error got="GoError" want="CypherQueryTimeoutException"
+    source_constructor_test.go:214: message got="context canceled" want="Cypher query timed out after 17 ms"
+=== RUN   TestSourceConstructorActualMain/single-valid-True-timeout-invalid
+    source_constructor_test.go:214: error got="GoError" want="CypherParseException"
+    source_constructor_test.go:214: message got="context canceled" want="Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-live-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-live-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-live-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-cancelled-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-cancelled-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-timeout-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-timeout-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-False-timeout-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-live-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-live-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-live-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-cancelled-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-cancelled-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-timeout-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-timeout-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/null-graph-True-timeout-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-live-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-live-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-live-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-timeout-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-timeout-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-timeout-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-live-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-live-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-live-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-timeout-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-timeout-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-timeout-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-live-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-live-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-live-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-timeout-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-timeout-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-timeout-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-live-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-live-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-live-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-timeout-return
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-timeout-count
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-timeout-invalid
+    source_constructor_test.go:214: error got="" want="NullPointerException"
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want="Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-node
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "element", "n"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "element":":2", "graph":"", "n":map[string]interface {}{"callee_class":"example.Target", "callee_name":"other", "caller_class":"example.Other", "caller_name":"other", "elementId":":2", "graphId":"", "id":2, "line":2, "qualifiedId":":2", "type":"CallSiteNode"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}}
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-node
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-node
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "element", "n"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "element":":2", "graph":"", "n":map[string]interface {}{"callee_class":"example.Target", "callee_name":"other", "caller_class":"example.Other", "caller_name":"other", "elementId":":2", "graphId":"", "id":2, "line":2, "qualifiedId":":2", "type":"CallSiteNode"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-method
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "props", "keys", "m"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "graph":"", "keys":[]interface {}{"signature", "class", "name", "parameter_types", "return_type", "graphId"}, "m":map[string]interface {}{"class":"Example", "graphId":"", "name":"run", "parameter_types":[]interface {}{"int"}, "return_type":"void", "signature":"Example.run(int)"}, "props":map[string]interface {}{"class":"Example", "graphId":"", "name":"run", "parameter_types":[]interface {}{"int"}, "return_type":"void", "signature":"Example.run(int)"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-method
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-method
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "props", "keys", "m"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "graph":"", "keys":[]interface {}{"signature", "class", "name", "parameter_types", "return_type", "graphId"}, "m":map[string]interface {}{"class":"Example", "graphId":"", "name":"run", "parameter_types":[]interface {}{"int"}, "return_type":"void", "signature":"Example.run(int)"}, "props":map[string]interface {}{"class":"Example", "graphId":"", "name":"run", "parameter_types":[]interface {}{"int"}, "return_type":"void", "signature":"Example.run(int)"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-node-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-node-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-node-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-node-property-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-node-property-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-node-property-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-method-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":1}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-method-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-method-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":1}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-union
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":2}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{}}, "x":42}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}}
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-union
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-union
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{"", "g"}}, "x":4}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{}}, "x":42}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}, map[string]interface {}{"mappedView":false, "retained":false, "store":1}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}, map[string]interface {}{"mappedView":false, "retained":true, "store":1}}
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-relationship-path
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"edgeGraph", "pathGraph", "r", "p"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "edgeGraph":"", "p":map[string]interface {}{"graphId":"", "length":1, "nodes":[]interface {}{map[string]interface {}{"elementId":":0", "graphId":"", "id":0, "qualifiedId":":0", "type":"IntConstant", "value":100}, map[string]interface {}{"elementId":":0", "graphId":"", "id":0, "qualifiedId":":0", "type":"IntConstant", "value":100}}, "relationships":[]interface {}{map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}, "pathGraph":"", "r":map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-relationship-path
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-relationship-path
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"edgeGraph", "pathGraph", "r", "p"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "edgeGraph":"", "p":map[string]interface {}{"graphId":"", "length":1, "nodes":[]interface {}{map[string]interface {}{"elementId":":0", "graphId":"", "id":0, "qualifiedId":":0", "type":"IntConstant", "value":100}, map[string]interface {}{"elementId":":0", "graphId":"", "id":0, "qualifiedId":":0", "type":"IntConstant", "value":100}}, "relationships":[]interface {}{map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}, "pathGraph":"", "r":map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-relationship
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "element", "r"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "element":interface {}(nil), "graph":"", "r":map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-relationship
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "element", "r"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "element":interface {}(nil), "graph":"", "r":map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-node
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "element", "n"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "element":":2", "graph":"", "n":map[string]interface {}{"callee_class":"example.Target", "callee_name":"other", "caller_class":"example.Other", "caller_name":"other", "elementId":":2", "graphId":"", "id":2, "line":2, "qualifiedId":":2", "type":"CallSiteNode"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}}
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-node
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-node
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "element", "n"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "element":":2", "graph":"", "n":map[string]interface {}{"callee_class":"example.Target", "callee_name":"other", "caller_class":"example.Other", "caller_name":"other", "elementId":":2", "graphId":"", "id":2, "line":2, "qualifiedId":":2", "type":"CallSiteNode"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}, map[string]interface {}{"mappedView":false, "retained":false, "store":1}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}, map[string]interface {}{"mappedView":false, "retained":false, "store":1}}
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-method
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "props", "keys", "m"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "graph":"", "keys":[]interface {}{"signature", "class", "name", "parameter_types", "return_type", "graphId"}, "m":map[string]interface {}{"class":"Example", "graphId":"", "name":"run", "parameter_types":[]interface {}{"int"}, "return_type":"void", "signature":"Example.run(int)"}, "props":map[string]interface {}{"class":"Example", "graphId":"", "name":"run", "parameter_types":[]interface {}{"int"}, "return_type":"void", "signature":"Example.run(int)"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-method
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-method
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "props", "keys", "m"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "graph":"", "keys":[]interface {}{"signature", "class", "name", "parameter_types", "return_type", "graphId"}, "m":map[string]interface {}{"class":"Example", "graphId":"", "name":"run", "parameter_types":[]interface {}{"int"}, "return_type":"void", "signature":"Example.run(int)"}, "props":map[string]interface {}{"class":"Example", "graphId":"", "name":"run", "parameter_types":[]interface {}{"int"}, "return_type":"void", "signature":"Example.run(int)"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-node-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-node-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-node-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-node-property-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-node-property-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-node-property-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":4}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-method-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":1}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-method-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-method-empty-guard
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":1}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-union
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "x":2}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{}}, "x":42}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}}
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-union
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-union
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"x"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{"", "g"}}, "x":4}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{}}, "x":42}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+    source_constructor_test.go:214: after got=[]interface {}{map[string]interface {}{"mappedView":false, "retained":false, "store":0}, map[string]interface {}{"mappedView":false, "retained":false, "store":1}} want=[]interface {}{map[string]interface {}{"mappedView":false, "retained":true, "store":0}, map[string]interface {}{"mappedView":false, "retained":true, "store":1}}
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-relationship-path
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"edgeGraph", "pathGraph", "r", "p"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "edgeGraph":"", "p":map[string]interface {}{"graphId":"", "length":1, "nodes":[]interface {}{map[string]interface {}{"elementId":":0", "graphId":"", "id":0, "qualifiedId":":0", "type":"IntConstant", "value":100}, map[string]interface {}{"elementId":":0", "graphId":"", "id":0, "qualifiedId":":0", "type":"IntConstant", "value":100}}, "relationships":[]interface {}{map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}, "pathGraph":"", "r":map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-relationship-path
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-relationship-path
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"edgeGraph", "pathGraph", "r", "p"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "edgeGraph":"", "p":map[string]interface {}{"graphId":"", "length":1, "nodes":[]interface {}{map[string]interface {}{"elementId":":0", "graphId":"", "id":0, "qualifiedId":":0", "type":"IntConstant", "value":100}, map[string]interface {}{"elementId":":0", "graphId":"", "id":0, "qualifiedId":":0", "type":"IntConstant", "value":100}}, "relationships":[]interface {}{map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}, "pathGraph":"", "r":map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-relationship
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "element", "r"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "element":interface {}(nil), "graph":"", "r":map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-relationship
+    source_constructor_test.go:214: outcome got="FAILED" want="SUCCESS"
+    source_constructor_test.go:214: columns got=<nil> want=[]interface {}{"graph", "element", "r"}
+    source_constructor_test.go:214: rows got=<nil> want=[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{""}}, "element":interface {}(nil), "graph":"", "r":map[string]interface {}{"from":0, "fromElementId":":0", "graphId":"", "kind":"ASSIGN", "to":0, "toElementId":":0", "type":"DATAFLOW"}}}
+    source_constructor_test.go:214: error got="" want=<nil>
+    source_constructor_test.go:214: message got="Cross-graph sources require unique nonempty ids and loaded stores" want=<nil>
+--- FAIL: TestSourceConstructorActualMain (0.58s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-False-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-True-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-False-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-same-store-True-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-False-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/one-empty-True-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-False-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/two-empty-True-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-False-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/empty-and-valid-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/no-sources-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/same-store-unique-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/valid-unique-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/single-valid-True-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-False-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/null-graph-True-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-False-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-first-True-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-False-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-live-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-live-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-live-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-timeout-return (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-timeout-count (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/duplicate-null-second-True-timeout-invalid (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-False-node (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-node (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-False-node (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-False-method (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-method (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-False-method (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-False-node-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-node-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-False-node-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-False-node-property-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-node-property-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-False-node-property-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-False-method-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-method-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-False-method-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-False-union (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-union (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-False-union (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-False-relationship-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-relationship-path (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-False-relationship-path (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-False-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-relationship (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-False-relationship (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-True-node (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-node (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-True-node (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-True-method (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-method (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-True-method (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-True-node-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-node-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-True-node-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-True-node-property-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-node-property-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-True-node-property-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-True-method-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-method-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-True-method-empty-guard (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-True-union (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-union (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-True-union (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-True-relationship-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-relationship-path (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-True-relationship-path (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-empty-True-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-relationship (0.00s)
+    --- FAIL: TestSourceConstructorActualMain/qualification-mixed-True-relationship (0.00s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	1.004s
+FAIL

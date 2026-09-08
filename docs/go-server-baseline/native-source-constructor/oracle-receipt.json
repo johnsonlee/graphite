@@ -1,0 +1,25 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "compileExitCode": 0,
+  "finalMainExitCode": 0,
+  "finalRepeatExitCode": 0,
+  "finalMainFixtureRoot": "/tmp/graphite-source-constructor-main-4e328b0-run5",
+  "finalRepeatFixtureRoot": "/tmp/graphite-source-constructor-main-4e328b0-final-repeat",
+  "helperClasses": "/tmp/graphite-source-constructor-main-4e328b0-run2/classes",
+  "mainHeap": "512m",
+  "cancellationAPI": [
+    "new CypherCancellationSignal()",
+    "signal.cancel()",
+    "signal.cancel(new CypherQueryTimeoutException(17L))"
+  ],
+  "initialRun": {
+    "root": "/tmp/graphite-source-constructor-main-4e328b0-run2",
+    "exitCode": 0,
+    "observations": 264,
+    "fixturePreconditionFailures": 12,
+    "reason": "Traversal fixture lacked graph.nodeindex; helper now calls original GraphStore.ensureNodeIndex on disposable copies before mapped load. Original failures preserved in initial-fixture-precondition-main.json.gz. Method qualification now uses existing all-types fixture containing one Method instead of clean fixture with zero Methods."
+  },
+  "initial264BeforePreserved": true,
+  "appendedScenarios": 34,
+  "performanceMeasurements": 0
+}

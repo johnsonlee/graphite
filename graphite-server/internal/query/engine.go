@@ -40,10 +40,17 @@ func ExecuteCross(ctx context.Context, graphs []Graph, source string, parameters
 // ExecuteCrossWithOptions keeps source order and qualification unchanged. A
 // preselected list, even if it contains all graphs, must carry its scope marker.
 func ExecuteCrossWithOptions(ctx context.Context, graphs []Graph, source string, parameters map[string]any, limit int, options ExecutionOptions) (Result, error) {
+	// Main constructs each non-null CypherGraph before the pipeline checks the
+	// complete namespace. An empty string is a valid graph ID.
+	for _, g := range graphs {
+		if g.Store == nil {
+			return Result{}, &Error{Class: "NullPointerException", Message: "Parameter specified as non-null is null: method io.johnsonlee.graphite.cypher.CypherGraph.<init>, parameter graph"}
+		}
+	}
 	seen := map[string]bool{}
 	for _, g := range graphs {
-		if g.ID == "" || g.Store == nil || seen[g.ID] {
-			return Result{}, &Error{Message: "Cross-graph sources require unique nonempty ids and loaded stores"}
+		if seen[g.ID] {
+			return Result{}, &Error{Class: "IllegalArgumentException", Message: "Graph ids must be unique"}
 		}
 		seen[g.ID] = true
 	}
@@ -58,7 +65,10 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 				result = Result{}
 				err = x
 			case error:
-				if errors.Is(x, context.Canceled) || errors.Is(x, context.DeadlineExceeded) {
+				if errors.Is(x, context.Canceled) {
+					result = Result{}
+					err = publicCancellationError(ctx, x)
+				} else if errors.Is(x, context.DeadlineExceeded) {
 					result = Result{}
 					err = x
 				} else {
@@ -69,7 +79,9 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 			}
 		}
 	}()
-	ast, err := cypher.ParseContext(ctx, source)
+	// The original executor finishes DSL parsing before consulting the query
+	// cancellation signal. ParseContext remains available to parser API callers.
+	ast, err := cypher.Parse(source)
 	if err != nil {
 		var literalError *cypher.ParseError
 		if errors.As(err, &literalError) {
@@ -83,8 +95,9 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 
 		return Result{}, err
 	}
-	validate(ast)
 	e := evaluator{ctx: ctx, parameters: parameters, graphs: graphs, cross: cross, sourceScopeApplied: options.SourceScopeApplied, workTrackingEnabled: options.WorkTrackingEnabled, regexes: &regexLRU{entries: map[string]compiledRegex{}}}
+	e.check()
+	validate(ast)
 	javaSource := !utf8.ValidString(source) || (strings.Contains(source, `\u`) && needsJavaOutputOrder(ast))
 	if needsRowOrder(ast) || javaSource {
 		e.rowOrders = map[string]rowOrder{}

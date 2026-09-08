@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "bytes": 26940017,
+    "sha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+    "bytes": 241874,
+    "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutor.kt",
+    "bytes": 25235,
+    "sha256": "2de0ff1f84fc67fd76f3d4c3335c406ed440c625e29f3911aa73d2aa04cf2586"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutionBudget.kt",
+    "bytes": 6273,
+    "sha256": "3fdfd1588e92c63a682bfcdbd3e9b79c7b67142a36d3b04700f49c4397ad18a3"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CrossGraphValues.kt",
+    "bytes": 3478,
+    "sha256": "090eb113da33baa4083e77b8a45847ebd33211cfbf5a6c992ca1cb7c083dc5ba"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-source-constructor/SourceConstructorOracle.java",
+    "bytes": 5365,
+    "sha256": "e34e8d89c1c176c85b84e2b8481bfd60bf1400308f319191232409668cc67a53"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-source-constructor/prepare.py",
+    "bytes": 4499,
+    "sha256": "03e1427c9dbe3e9f2801d98c1284ebe299c3d81c0d79dd59ce1e9f822cbeb27d"
+  },
+  {
+    "path": "/private/tmp/graphite-source-constructor-main-4e328b0-run2/classes/SourceConstructorOracle.class",
+    "bytes": 8950,
+    "sha256": "6c9a6fd22d6ad256ab73490048b6bbe50ad98bb5fc1ee92817075a7b95a9ce00"
+  }
+]

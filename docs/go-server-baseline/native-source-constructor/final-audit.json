@@ -1,0 +1,14 @@
+{
+  "frozenModuleFilesVerified": 2519,
+  "testInputFilesVerified": 2521,
+  "actualMainOracleArtifactsVerified": 40,
+  "baselineGoOverlayFilesVerified": 284,
+  "strictPublicAndStateOracleObservationsVerified": 298,
+  "real64StatesVerified": 3,
+  "originalCasesPerState": 1267,
+  "graphStateObservationsVerified": 486848,
+  "originalFailureRetained": true,
+  "formalWarmReplayAvailable": false,
+  "performanceMeasurement": false,
+  "fullGoalComplete": false
+}

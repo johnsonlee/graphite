@@ -1,0 +1,600 @@
+=== RUN   TestSourceConstructorActualMain
+=== RUN   TestSourceConstructorActualMain/duplicate-False-live-return
+=== RUN   TestSourceConstructorActualMain/duplicate-False-live-count
+=== RUN   TestSourceConstructorActualMain/duplicate-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/duplicate-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/duplicate-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/duplicate-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/duplicate-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-True-live-return
+=== RUN   TestSourceConstructorActualMain/duplicate-True-live-count
+=== RUN   TestSourceConstructorActualMain/duplicate-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/duplicate-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/duplicate-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/duplicate-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/duplicate-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-live-return
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-live-count
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-live-return
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-live-count
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/duplicate-same-store-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/one-empty-False-live-return
+=== RUN   TestSourceConstructorActualMain/one-empty-False-live-count
+=== RUN   TestSourceConstructorActualMain/one-empty-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/one-empty-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/one-empty-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/one-empty-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/one-empty-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/one-empty-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/one-empty-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/one-empty-True-live-return
+=== RUN   TestSourceConstructorActualMain/one-empty-True-live-count
+=== RUN   TestSourceConstructorActualMain/one-empty-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/one-empty-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/one-empty-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/one-empty-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/one-empty-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/one-empty-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/one-empty-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/two-empty-False-live-return
+=== RUN   TestSourceConstructorActualMain/two-empty-False-live-count
+=== RUN   TestSourceConstructorActualMain/two-empty-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/two-empty-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/two-empty-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/two-empty-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/two-empty-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/two-empty-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/two-empty-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/two-empty-True-live-return
+=== RUN   TestSourceConstructorActualMain/two-empty-True-live-count
+=== RUN   TestSourceConstructorActualMain/two-empty-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/two-empty-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/two-empty-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/two-empty-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/two-empty-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/two-empty-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/two-empty-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-live-return
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-live-count
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-live-return
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-live-count
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/empty-and-valid-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/no-sources-False-live-return
+=== RUN   TestSourceConstructorActualMain/no-sources-False-live-count
+=== RUN   TestSourceConstructorActualMain/no-sources-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/no-sources-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/no-sources-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/no-sources-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/no-sources-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/no-sources-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/no-sources-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/no-sources-True-live-return
+=== RUN   TestSourceConstructorActualMain/no-sources-True-live-count
+=== RUN   TestSourceConstructorActualMain/no-sources-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/no-sources-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/no-sources-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/no-sources-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/no-sources-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/no-sources-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/no-sources-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-live-return
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-live-count
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/same-store-unique-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-live-return
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-live-count
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/same-store-unique-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-live-return
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-live-count
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/valid-unique-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-live-return
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-live-count
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/valid-unique-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/single-valid-False-live-return
+=== RUN   TestSourceConstructorActualMain/single-valid-False-live-count
+=== RUN   TestSourceConstructorActualMain/single-valid-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/single-valid-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/single-valid-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/single-valid-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/single-valid-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/single-valid-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/single-valid-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/single-valid-True-live-return
+=== RUN   TestSourceConstructorActualMain/single-valid-True-live-count
+=== RUN   TestSourceConstructorActualMain/single-valid-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/single-valid-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/single-valid-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/single-valid-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/single-valid-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/single-valid-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/single-valid-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/null-graph-False-live-return
+=== RUN   TestSourceConstructorActualMain/null-graph-False-live-count
+=== RUN   TestSourceConstructorActualMain/null-graph-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/null-graph-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/null-graph-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/null-graph-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/null-graph-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/null-graph-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/null-graph-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/null-graph-True-live-return
+=== RUN   TestSourceConstructorActualMain/null-graph-True-live-count
+=== RUN   TestSourceConstructorActualMain/null-graph-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/null-graph-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/null-graph-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/null-graph-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/null-graph-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/null-graph-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/null-graph-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-live-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-live-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-live-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-live-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-first-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-live-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-live-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-live-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-timeout-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-timeout-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-False-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-live-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-live-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-live-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-invalid
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-timeout-return
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-timeout-count
+=== RUN   TestSourceConstructorActualMain/duplicate-null-second-True-timeout-invalid
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-node
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-node
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-node
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-method
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-method
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-method
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-node-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-node-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-node-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-node-property-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-node-property-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-node-property-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-method-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-method-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-method-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-union
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-union
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-union
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-relationship-path
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-relationship-path
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-relationship-path
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-node
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-node
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-node
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-method
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-method
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-method
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-node-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-node-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-node-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-node-property-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-node-property-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-node-property-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-method-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-method-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-method-empty-guard
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-union
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-union
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-union
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-relationship-path
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-relationship-path
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-relationship-path
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-empty-element-lookup
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-empty-element-lookup
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-empty-element-lookup
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-bound-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-bound-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-bound-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-empty-False-zero-hop-path
+=== RUN   TestSourceConstructorActualMain/qualification-valid-False-zero-hop-path
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-False-zero-hop-path
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-empty-element-lookup
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-empty-element-lookup
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-empty-element-lookup
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-bound-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-bound-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-bound-relationship
+=== RUN   TestSourceConstructorActualMain/qualification-empty-True-zero-hop-path
+=== RUN   TestSourceConstructorActualMain/qualification-valid-True-zero-hop-path
+=== RUN   TestSourceConstructorActualMain/qualification-mixed-True-zero-hop-path
+=== RUN   TestSourceConstructorActualMain/precedence-valid-live-literal-overflow
+=== RUN   TestSourceConstructorActualMain/precedence-valid-live-unknown-function
+=== RUN   TestSourceConstructorActualMain/precedence-valid-live-arithmetic
+=== RUN   TestSourceConstructorActualMain/precedence-valid-live-function-argument
+=== RUN   TestSourceConstructorActualMain/precedence-valid-cancelled-literal-overflow
+=== RUN   TestSourceConstructorActualMain/precedence-valid-cancelled-unknown-function
+=== RUN   TestSourceConstructorActualMain/precedence-valid-cancelled-arithmetic
+=== RUN   TestSourceConstructorActualMain/precedence-valid-cancelled-function-argument
+=== RUN   TestSourceConstructorActualMain/precedence-duplicate-live-literal-overflow
+=== RUN   TestSourceConstructorActualMain/precedence-duplicate-live-unknown-function
+=== RUN   TestSourceConstructorActualMain/precedence-duplicate-live-arithmetic
+=== RUN   TestSourceConstructorActualMain/precedence-duplicate-live-function-argument
+=== RUN   TestSourceConstructorActualMain/precedence-duplicate-cancelled-literal-overflow
+=== RUN   TestSourceConstructorActualMain/precedence-duplicate-cancelled-unknown-function
+=== RUN   TestSourceConstructorActualMain/precedence-duplicate-cancelled-arithmetic
+=== RUN   TestSourceConstructorActualMain/precedence-duplicate-cancelled-function-argument
+--- PASS: TestSourceConstructorActualMain (0.75s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-cancelled-return (0.01s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-timeout-return (0.01s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-same-store-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-live-invalid (0.01s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-cancelled-return (0.01s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/one-empty-True-timeout-invalid (0.01s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-live-return (0.01s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-live-count (0.01s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-cancelled-count (0.01s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/two-empty-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/empty-and-valid-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/no-sources-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/same-store-unique-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/valid-unique-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/single-valid-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/null-graph-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-first-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-False-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-live-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-live-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-live-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-cancelled-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-timeout-return (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-timeout-count (0.00s)
+    --- PASS: TestSourceConstructorActualMain/duplicate-null-second-True-timeout-invalid (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-node (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-node (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-node (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-method (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-method (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-method (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-node-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-node-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-node-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-node-property-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-node-property-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-node-property-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-method-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-method-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-method-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-union (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-union (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-union (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-relationship-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-relationship-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-relationship-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-node (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-node (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-node (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-method (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-method (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-method (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-node-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-node-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-node-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-node-property-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-node-property-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-node-property-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-method-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-method-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-method-empty-guard (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-union (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-union (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-union (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-relationship-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-relationship-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-relationship-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-empty-element-lookup (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-empty-element-lookup (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-empty-element-lookup (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-bound-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-bound-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-bound-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-False-zero-hop-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-False-zero-hop-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-False-zero-hop-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-empty-element-lookup (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-empty-element-lookup (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-empty-element-lookup (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-bound-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-bound-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-bound-relationship (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-empty-True-zero-hop-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-valid-True-zero-hop-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/qualification-mixed-True-zero-hop-path (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-valid-live-literal-overflow (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-valid-live-unknown-function (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-valid-live-arithmetic (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-valid-live-function-argument (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-valid-cancelled-literal-overflow (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-valid-cancelled-unknown-function (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-valid-cancelled-arithmetic (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-valid-cancelled-function-argument (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-duplicate-live-literal-overflow (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-duplicate-live-unknown-function (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-duplicate-live-arithmetic (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-duplicate-live-function-argument (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-duplicate-cancelled-literal-overflow (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-duplicate-cancelled-unknown-function (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-duplicate-cancelled-arithmetic (0.00s)
+    --- PASS: TestSourceConstructorActualMain/precedence-duplicate-cancelled-function-argument (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.982s

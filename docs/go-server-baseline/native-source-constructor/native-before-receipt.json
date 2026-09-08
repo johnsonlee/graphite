@@ -1,0 +1,1731 @@
+{
+  "recordedAt": "2026-09-08T04:19:28.701552+00:00",
+  "baselineRevision": "f5b05027dfcb0883fcfd1f8545123bbaa91af071",
+  "command": "SOURCE_CONSTRUCTOR_OUTPUT=\"$PWD/docs/go-server-baseline/native-source-constructor/native-before.json\" /opt/homebrew/Cellar/go/1.22.0/libexec/bin/go -C graphite-server test ./internal/query -run '^TestSourceConstructorActualMain$' -count=1 -v > docs/go-server-baseline/native-source-constructor/native-before.log 2>&1",
+  "sessionId": 87944,
+  "exitCode": 1,
+  "observations": 264,
+  "differentCases": 224,
+  "differences": [
+    {
+      "name": "duplicate-False-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-False-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-False-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-same-store-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-False-live-return",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-False-live-count",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "one-empty-False-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-True-live-return",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-True-live-count",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "one-empty-True-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "one-empty-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "two-empty-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-live-return",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-live-count",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-live-return",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-live-count",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "empty-and-valid-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "no-sources-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "same-store-unique-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "valid-unique-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "single-valid-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "null-graph-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-first-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-False-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-live-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-live-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-live-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-cancelled-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-cancelled-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-cancelled-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-timeout-return",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-timeout-count",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "duplicate-null-second-True-timeout-invalid",
+      "fields": [
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-False-node",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "qualification-mixed-False-node",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-False-method",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-False-method",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-False-node-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-False-node-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-False-node-property-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-False-node-property-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-False-method-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-False-method-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-False-union",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "qualification-mixed-False-union",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "qualification-empty-False-relationship-path",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-False-relationship-path",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-False-relationship",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-False-relationship",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-True-node",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "qualification-mixed-True-node",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "qualification-empty-True-method",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-True-method",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-True-node-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-True-node-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-True-node-property-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-True-node-property-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-True-method-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-True-method-empty-guard",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-True-union",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "qualification-mixed-True-union",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message",
+        "after"
+      ]
+    },
+    {
+      "name": "qualification-empty-True-relationship-path",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-True-relationship-path",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-empty-True-relationship",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "qualification-mixed-True-relationship",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    }
+  ],
+  "originalInputHashes": {
+    "main.json": "97c1b8b860ed4d4e3499192e0f268c52fc579124f682ef9cab2d70b74caedee5",
+    "cases.json": "ac0e1a0cf4901a1073f02307d8c211760fcaf6c9bc51f36c6ebd0ab925f1629e"
+  },
+  "outputs": [
+    {
+      "file": "native-before.json",
+      "sha256": "aee239882129a2a5cf0c3a84581d6f9d6d38098c8f84ee56a428a31a53a886ee",
+      "bytes": 292283
+    },
+    {
+      "file": "native-before.log",
+      "sha256": "01bf91c213fa95b2a33183c5fcb43e6273b6b27119e14384036703b16f02a376",
+      "bytes": 126722
+    }
+  ],
+  "notes": [
+    "Production was held at baseline until session 87944 terminal; root began changes afterward.",
+    "Original 264 inputs retained in initial264-main.json.gz and initial264-cases.json.gz. Test inventory later expanded to 298; this receipt describes the original 264 run.",
+    "Container runtime implementation classes normalized to map/list only; scalar JVM classes remain distinct. Cancellation errors are compared without output remapping."
+  ]
+}

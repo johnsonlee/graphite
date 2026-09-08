@@ -25,23 +25,22 @@ type qualifiedMethod struct {
 
 const provenanceKey = "\x00graphite.graphIds"
 
-func valueGraphID(value any) string {
+// The namespace can be empty. Qualification is a property of the value type,
+// independent of the characters in its graph ID.
+func valueGraphID(value any) (string, bool) {
 	switch v := value.(type) {
 	case *candidateSlot:
-		if v.qualified {
-			return v.graphID
-		}
-		return ""
+		return v.graphID, v.qualified
 	case qualifiedEdge:
-		return v.GraphID
+		return v.GraphID, true
 	case pathValue:
-		return v.GraphID
+		return v.GraphID, v.Qualified
 	case qualifiedNode:
-		return v.GraphID
+		return v.GraphID, true
 	case qualifiedMethod:
-		return v.GraphID
+		return v.GraphID, true
 	}
-	return ""
+	return "", false
 }
 func qualifiedProperty(value any, key string) any {
 	switch v := value.(type) {

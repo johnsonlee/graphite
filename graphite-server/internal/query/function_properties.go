@@ -34,10 +34,8 @@ func (e evaluator) propertyFunction(value any, keysOnly bool) any {
 		if !ok {
 			m := v.(qualifiedMethod)
 			method = m.Method
-			if m.GraphID != "" {
-				keys = append(keys, "graphId")
-				values["graphId"] = m.GraphID
-			}
+			keys = append(keys, "graphId")
+			values["graphId"] = m.GraphID
 		}
 		for _, k := range keys {
 			if k != "graphId" {

@@ -1,0 +1,4 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/filtered_string_count_test.go:11:2: "strings" imported and not used
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

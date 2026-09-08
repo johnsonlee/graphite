@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
@@ -14,6 +15,20 @@ type Error struct {
 	Message     string
 	Class       string
 	NullMessage bool
+	cause       error
+}
+
+func (e *Error) Unwrap() error { return e.cause }
+
+// Public cancellation preserves the JVM exception contract while internal
+// iterators and callers can still recognize the Go context sentinel.
+func publicCancellationError(ctx context.Context, cause error) *Error {
+	if reason, ok := context.Cause(ctx).(*Error); ok && (reason.Class == "CypherQueryCancelledException" || reason.Class == "CypherQueryTimeoutException") {
+		copy := *reason
+		copy.cause = errors.Join(cause, reason)
+		return &copy
+	}
+	return &Error{Class: "CypherQueryCancelledException", Message: "Cypher query cancelled", cause: cause}
 }
 
 func (e *Error) Error() string {
@@ -491,7 +506,7 @@ func (e evaluator) callLegacy(name string, args []any) any {
 	}
 	v := freezeCandidate(argument(args, 0))
 	if name == "graphid" {
-		if id := valueGraphID(v); id != "" {
+		if id, qualified := valueGraphID(v); qualified {
 			return id
 		}
 		return nil
