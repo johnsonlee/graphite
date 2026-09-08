@@ -1,0 +1,91 @@
+{
+  "state": "startup-prepared",
+  "protocol": "real64-dispatch-inclusive-pilot-v1",
+  "diagnosticOnly": true,
+  "performanceMeasurement": true,
+  "perCaseP95Available": false,
+  "tenfoldP95AcceptanceProven": false,
+  "samplesPerCasePerRuntime": 1,
+  "caseDefinitionsExactlyEqual": true,
+  "caseCount": 1267,
+  "successCount": 1266,
+  "failureCount": 1,
+  "timeoutCount": 0,
+  "originalAllSuccessGatePassed": false,
+  "successfulCanonicalDigestsVerified": 1266,
+  "originalFilesUnchangedPerRuntime": 1152,
+  "currentInputHashesVerified": {
+    "main": 554,
+    "native": 311
+  },
+  "benchmarkRuntimesOverlap": false,
+  "runtimeExitCodes": {
+    "main": 1,
+    "native": 1
+  },
+  "singleSampleSuccessfulCaseRatios": {
+    "min": 0.00014024546911142296,
+    "median": 0.11000665494447853,
+    "max": 168.62894154258444,
+    "belowOne": 1187,
+    "atLeastTen": 66,
+    "interpretation": "Distribution across different cases of one main/Go latency ratio each; not a latency percentile or acceptance gate"
+  },
+  "failure": {
+    "index": 821,
+    "id": "four-or-graph-id-targeted",
+    "family": "projection",
+    "shape": "four-or-graph-id",
+    "outcome": "failed",
+    "samplesPerRuntime": 1,
+    "measurementKind": "time-to-failure",
+    "mainLatencyNanos": 93233417,
+    "goLatencyNanos": 1954250,
+    "mainOverGoSingleSampleRatio": 47.70802967890495,
+    "rowCount": 0,
+    "responseBytes": 0,
+    "digest": "java.lang.IllegalStateException",
+    "mainErrorClass": "java.lang.IllegalStateException",
+    "mainReferenceErrorMessage": "Unsafe expression reached parallel string projection",
+    "goErrorClass": "IllegalStateException",
+    "goErrorMessage": "Unsafe expression reached parallel string projection"
+  },
+  "unavailableGoParity": [
+    "finite work accounting",
+    "main resource sampler and execution metrics"
+  ],
+  "caveats": [
+    "n=1 per case; no P95 estimate",
+    "The original main all-success gate remains failed",
+    "Failure latency is time-to-failure and excluded from successful-case ratio summaries",
+    "Main per-query error message is from the archived full canonical capture; this observer-free trial reports its class only",
+    "Main resource sampling and work/diagnostic accounting do not yet have full Go parity"
+  ],
+  "mainDirectory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1",
+  "nativeDirectory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1",
+  "referenceArchive": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-index-states/main-startup-prepared/responses.jsonl.gz",
+  "evidenceSHA256": {
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-index-states/main-startup-prepared/responses.jsonl.gz": "a0c4159689383a4096f0fe33eb05a2ee839dc3c5811b495febced33722deac65",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/capture/actual-cases.json": "7489cfe1b94840792f880e7ab20f32f694db748159c3d919ebe1a40edae1242e",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/capture/completion.json": "daaaac8a090058e7175f71787e4489fea74630f6b21ed1a6db7dbafaf96e5484",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/capture/header.json": "b226cae0855a5501ac1a6fbad7c8df69677862e88be4ab1941f5437358778d0b",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/capture/main-correctness.tsv": "f375c6fa6f44734545923e0ab28628aca175fd05d56087e0d0a6c62fbeb7eb45",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/capture/main-observations.tsv": "3006baee040583862dac9555b1ebceebf4ed090946401d1c538b44f3029b47bd",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/clone-preflight.json": "1eecdbd3d6c2152b0e20356b534658d86a177b16c8e6f444f27770f974915600",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/inputs.json": "0b9bc2ffcca56d8b7397eb803959d13f9c15fa884ece9cf2d1d0cc5106937010",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/postrun-fixtures.json": "1eecdbd3d6c2152b0e20356b534658d86a177b16c8e6f444f27770f974915600",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/process.json": "8eedbe03ca9fce25bf4b99dacdcad4c36a40ae93d1566f16464027ef6f4a7860",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/process.log": "d751297fca02f8f179966cc815073a533d48d881d72dae105c1deffea3e04799",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1/reference-preflight.json": "a621c90abb7b5c65e2e3b33f9b598c8c2da49851e115a9953336323c81f2a0b1",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/capture/observations.jsonl": "43e65d9de2c0421ce4d11c8e93230856888eafedaebc1ea943c9bf93c57e2786",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/clone-preflight.json": "6e498eef10d3c79d62c830775f87bc7ab5716d7c90847d018cd306cbf057018d",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/inputs.json": "4138e396092226822e261e928eb655c1a5d994c7c6a7e75374e41a49c05b3087",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/postrun-fixtures.json": "6e498eef10d3c79d62c830775f87bc7ab5716d7c90847d018cd306cbf057018d",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/process.json": "dbb187ccc79f0c6bf91ea66f39b860b8b2549c9d5adf209980fe86e58c219445",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/process.log": "ab8437852a278506efcc18a717f0e034daa6995c4246a1d289a72ad7978153eb",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/reference-preflight.json": "a621c90abb7b5c65e2e3b33f9b598c8c2da49851e115a9953336323c81f2a0b1",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/verify-pilot.py": "4f7b0d0bbd44edc58d13ccdefce038af7d30a1716b7329a16b083f89b8676f3f",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+  }
+}

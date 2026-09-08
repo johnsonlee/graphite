@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "command": "go test -race ./...",
+      "exitCode": 1,
+      "log": "full-module-race.log",
+      "reason": "Initial physical-alias test setup used noncanonical /var path against /private/var; corrected by setting manifest path field explicitly."
+    },
+    {
+      "command": "go test -race -count=1 ./...",
+      "exitCode": 0,
+      "sessionId": 7653,
+      "log": "full-module-race-final.log"
+    },
+    {
+      "command": "go vet ./...",
+      "exitCode": 0,
+      "log": "vet.log"
+    },
+    {
+      "command": "python3 verify-pilot.py --self-test",
+      "exitCode": 0,
+      "log": "verifier-self-test.json"
+    }
+  ],
+  "sha256": {
+    "full-module-race.log": "f329186914e9259d58db3afd1f84a52f928dce60270635ddf09e9a629eb6cba2",
+    "full-module-race-final.log": "dab7251f3c62ec5b184954937ad5c6f2baaa57cda4a9356343d8411b33245b0e",
+    "vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "verifier-self-test.json": "42bc88b07bf22828fba33568fdbf6a4d3435790a54da749d6432f49af7fc90f1"
+  }
+}

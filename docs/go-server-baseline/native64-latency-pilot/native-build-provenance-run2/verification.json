@@ -1,0 +1,170 @@
+{
+  "performanceMeasurement": false,
+  "measuredStates": [
+    "cold",
+    "startup-prepared"
+  ],
+  "provenanceMethod": "post-run forced reproducible-build byte identity",
+  "historicalEmbeddedPrePostHashesAvailable": false,
+  "conclusion": "Both measured binaries are byte-identical to a forced rebuild from the enumerated, pre/post hashed transitive build inputs",
+  "limitations": [
+    "This retrospective audit does not claim original timing runs recorded embedded-file pre/post hashes",
+    "No cgo/SWIG host compiler or SDK closure is supported; such a dependency fails this audit"
+  ],
+  "binarySHA256": "2ad9652b7814de4833a96f67dde064af266b5fbda452ce7b9eb06ababffe68cf",
+  "binaryBytes": 10832610,
+  "rebuiltBinary": "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-build-audit-run2/graphite-benchmark-latency",
+  "originalBinaries": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-cold-run1/graphite-benchmark-latency",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-startup-prepared-run1/graphite-benchmark-latency"
+  ],
+  "packages": 90,
+  "buildInputs": 1007,
+  "buildInputBytes": 174234974,
+  "stdlibPackages": 78,
+  "embeddedInputs": {
+    "github.com/johnsonlee/graphite/graphite-server/internal/javaregex": [
+      "java17_advanced.json",
+      "java17_names.json.gz",
+      "java17_unicode.json"
+    ]
+  },
+  "environmentNormalization": "Only Go-generated GOGCCFLAGS temporary build directory",
+  "buildInputsUnchanged": true,
+  "originalRuntimeInputsUnchanged": true,
+  "projectSnapshot": {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/project-build-inputs.tar.gz",
+    "sha256": "b890413f8e06a17e6a2677dff83a4668278904e0d58832e33730d1ddee3aacb8",
+    "bytes": 1053279,
+    "fileCount": 286,
+    "extractedBytesVerified": true
+  },
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "env",
+        "-json"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "stdout": "go-env-before.stdout",
+      "stderr": "go-env-before.stderr"
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "list",
+        "-deps",
+        "-json",
+        "./cmd/graphite-benchmark-latency"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "stdout": "go-list-before.stdout",
+      "stderr": "go-list-before.stderr"
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "build",
+        "-a",
+        "-o",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-build-audit-run2/graphite-benchmark-latency",
+        "./cmd/graphite-benchmark-latency"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "stdout": "forced-rebuild.stdout",
+      "stderr": "forced-rebuild.stderr"
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "list",
+        "-deps",
+        "-json",
+        "./cmd/graphite-benchmark-latency"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "stdout": "go-list-after.stdout",
+      "stderr": "go-list-after.stderr"
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "env",
+        "-json"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "stdout": "go-env-after.stdout",
+      "stderr": "go-env-after.stderr"
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "version",
+        "-m",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-build-audit-run2/graphite-benchmark-latency"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "stdout": "binary-build-info-rebuilt.stdout",
+      "stderr": "binary-build-info-rebuilt.stderr"
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "version",
+        "-m",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-cold-run1/graphite-benchmark-latency"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "stdout": "binary-build-info-cold.stdout",
+      "stderr": "binary-build-info-cold.stderr"
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "version",
+        "-m",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-startup-prepared-run1/graphite-benchmark-latency"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "stdout": "binary-build-info-startup-prepared.stdout",
+      "stderr": "binary-build-info-startup-prepared.stderr"
+    }
+  ],
+  "evidenceSHA256": {
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/binary-build-info-cold.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/binary-build-info-cold.stdout": "b7d948214564889cfb6aa8ac71ec87a8d0e5646aada469ab32d139034a9be2d6",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/binary-build-info-rebuilt.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/binary-build-info-rebuilt.stdout": "64aa77ee00eed091dcee6aadf289edbd30f8fe1786b22a2f13eb7c584b04680a",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/binary-build-info-startup-prepared.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/binary-build-info-startup-prepared.stdout": "8ee4be3cc8bdb62893d84731a2a1ffb180a490433a3753f57638915420e4a3a8",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/build-inputs-after.json": "25ebbbc5c4513ac462d9408e914f4049197840c0198e9f68af7431a08a65654c",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/build-inputs-before.json": "25ebbbc5c4513ac462d9408e914f4049197840c0198e9f68af7431a08a65654c",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/commands.json": "150b9c5c1e89a43213571d43bd56b0c9faca37098adbe0fb661684083ac07d1c",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/forced-rebuild.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/forced-rebuild.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/go-env-after.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/go-env-after.stdout": "42a037c06fd93261833f8ae6c7f309a4508f61c694ad2111356463bfede8137b",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/go-env-before.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/go-env-before.stdout": "e0eed118352f950c2f5a439a559462737b80112c57b0bfaf9141fbe0ce6c468b",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/go-list-after.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/go-list-after.stdout": "a9c9b2e930ec8e02f73487ac765d6490aae8238674fe15ce0ae0bd56b85a11bb",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/go-list-before.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/go-list-before.stdout": "a9c9b2e930ec8e02f73487ac765d6490aae8238674fe15ce0ae0bd56b85a11bb",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/project-build-inputs.json": "558029a4598e4e9ecde2545c467432baa3ffca4e05734373807d6e4f3b8e4e3e",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-build-provenance-run2/project-build-inputs.tar.gz": "b890413f8e06a17e6a2677dff83a4668278904e0d58832e33730d1ddee3aacb8",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/verify-native-build.py": "045c96fdf30fceb2e87bdc8aa82bcf32d89f7b3eefc8a7ab4ac9f0165f168e05",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-cold-run1/process.json": "cdc55e46abcff2629f23c9854c3bafbe02ae591271cd9bec60a579ed2c45113f",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-cold-run1/inputs.json": "fb8a56de7eaef5ee2eb41d0a9eeac68c1f7fbd59bdf045b7a309bf8db78edd84",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/process.json": "dbb187ccc79f0c6bf91ea66f39b860b8b2549c9d5adf209980fe86e58c219445",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1/inputs.json": "4138e396092226822e261e928eb655c1a5d994c7c6a7e75374e41a49c05b3087"
+  }
+}

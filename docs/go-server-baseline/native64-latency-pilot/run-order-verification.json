@@ -1,0 +1,50 @@
+{
+  "allFourRuntimesTerminal": true,
+  "originalAllSuccessGatePassed": false,
+  "actualOrder": [
+    "main-cold-run2",
+    "native-cold-run1",
+    "native-startup-prepared-run1",
+    "main-startup-prepared-run1"
+  ],
+  "allRuntimeIntervalsDisjoint": true,
+  "nativeModuleInputCount": 283,
+  "nativeModuleInputsIdenticalAcrossStatesAndCurrent": true,
+  "nativeBinariesIdentical": true,
+  "nativeBinarySHA256": "2ad9652b7814de4833a96f67dde064af266b5fbda452ce7b9eb06ababffe68cf",
+  "pidCheckOutput": "",
+  "intervals": [
+    {
+      "runtime": "main",
+      "state": "cold",
+      "pid": 57131,
+      "startedAt": "2026-09-08T03:00:06.391178+00:00",
+      "finishedAt": "2026-09-08T03:00:42.845865+00:00",
+      "exitCode": 1
+    },
+    {
+      "runtime": "native",
+      "state": "cold",
+      "pid": 59243,
+      "startedAt": "2026-09-08T03:06:07.646802+00:00",
+      "finishedAt": "2026-09-08T03:08:00.934181+00:00",
+      "exitCode": 1
+    },
+    {
+      "runtime": "native",
+      "state": "startup-prepared",
+      "pid": 59483,
+      "startedAt": "2026-09-08T03:08:36.874990+00:00",
+      "finishedAt": "2026-09-08T03:10:30.749449+00:00",
+      "exitCode": 1
+    },
+    {
+      "runtime": "main",
+      "state": "startup-prepared",
+      "pid": 59761,
+      "startedAt": "2026-09-08T03:11:10.881667+00:00",
+      "finishedAt": "2026-09-08T03:11:49.171314+00:00",
+      "exitCode": 1
+    }
+  ]
+}

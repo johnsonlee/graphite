@@ -1,0 +1,67 @@
+{
+  "state": "startup-prepared",
+  "protocol": "real64-dispatch-inclusive-pilot-v1",
+  "diagnosticOnly": true,
+  "performanceMeasurement": true,
+  "perCaseP95Available": false,
+  "tenfoldP95AcceptanceProven": false,
+  "samplesPerCasePerRuntime": 1,
+  "caseDefinitionsExactlyEqual": true,
+  "caseCount": 1267,
+  "successCount": 1266,
+  "failureCount": 1,
+  "timeoutCount": 0,
+  "originalAllSuccessGatePassed": false,
+  "successfulCanonicalDigestsVerified": 1266,
+  "originalFilesUnchangedPerRuntime": 1152,
+  "currentInputHashesVerified": {
+    "main": 554,
+    "native": 311
+  },
+  "benchmarkRuntimesOverlap": false,
+  "runtimeExitCodes": {
+    "main": 1,
+    "native": 1
+  },
+  "singleSampleSuccessfulCaseRatios": {
+    "min": 0.00014024546911142296,
+    "median": 0.11000665494447853,
+    "max": 168.62894154258444,
+    "belowOne": 1187,
+    "atLeastTen": 66,
+    "interpretation": "Distribution across different cases of one main/Go latency ratio each; not a latency percentile or acceptance gate"
+  },
+  "failure": {
+    "index": 821,
+    "id": "four-or-graph-id-targeted",
+    "family": "projection",
+    "shape": "four-or-graph-id",
+    "outcome": "failed",
+    "samplesPerRuntime": 1,
+    "measurementKind": "time-to-failure",
+    "mainLatencyNanos": 93233417,
+    "goLatencyNanos": 1954250,
+    "mainOverGoSingleSampleRatio": 47.70802967890495,
+    "rowCount": 0,
+    "responseBytes": 0,
+    "digest": "java.lang.IllegalStateException",
+    "mainErrorClass": "java.lang.IllegalStateException",
+    "mainReferenceErrorMessage": "Unsafe expression reached parallel string projection",
+    "goErrorClass": "IllegalStateException",
+    "goErrorMessage": "Unsafe expression reached parallel string projection"
+  },
+  "unavailableGoParity": [
+    "finite work accounting",
+    "main resource sampler and execution metrics"
+  ],
+  "caveats": [
+    "n=1 per case; no P95 estimate",
+    "The original main all-success gate remains failed",
+    "Failure latency is time-to-failure and excluded from successful-case ratio summaries",
+    "Main per-query error message is from the archived full canonical capture; this observer-free trial reports its class only",
+    "Main resource sampling and work/diagnostic accounting do not yet have full Go parity"
+  ],
+  "mainDirectory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-startup-prepared-run1",
+  "nativeDirectory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/native-startup-prepared-run1",
+  "referenceArchive": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-index-states/main-startup-prepared/responses.jsonl.gz"
+}

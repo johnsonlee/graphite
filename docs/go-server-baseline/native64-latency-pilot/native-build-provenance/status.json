@@ -1,0 +1,8 @@
+{
+  "status": "failed",
+  "performanceMeasurement": false,
+  "startedAt": "2026-09-08T03:14:08.477560+00:00",
+  "errorClass": "ValueError",
+  "error": "Go environment changed during audit",
+  "finishedAt": "2026-09-08T03:14:12.554826+00:00"
+}

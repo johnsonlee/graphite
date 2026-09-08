@@ -1,0 +1,2111 @@
+{
+  "graphite-server/cmd/graphite-benchmark-cases/main.go": {
+    "sha256": "cd4c67c23168c1be66f2d116a86c215de1697b387a30fa6f4342a6b23cbca1c1",
+    "bytes": 4232,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-benchmark-latency/main.go": {
+    "sha256": "2ebc9e1db1c1008e8ffe801f76a5417b1274764a0234f234629096d65124718a",
+    "bytes": 11788,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/cmd/graphite-benchmark-latency:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-benchmark-latency/main_test.go": {
+    "sha256": "53f03e954808bf6c924ea7a5903661ed42d5f35a6b8a3c4a5cc33ed8417fc5fc",
+    "bytes": 8927,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-benchmark-latency/manifest.go": {
+    "sha256": "b87a5b753face06602f74e2870c028338fcd528046a4133c3fdd07817fefdad1",
+    "bytes": 1429,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/cmd/graphite-benchmark-latency:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-benchmark-replay/main.go": {
+    "sha256": "c9eb693f5ace00963804baa3f9e4502b057edcc1d6427e6401f025ef0bec8d95",
+    "bytes": 8485,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-benchmark-replay/main_test.go": {
+    "sha256": "bf5c795103c682d54fad33986f930709b7e00888195d05d56b88460354167ba2",
+    "bytes": 2020,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/argfiles.go": {
+    "sha256": "d23a7a39de1019559294312bf3f6a17028df8c0fea0d27b21ae8881f8999c435",
+    "bytes": 3242,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/cli.go": {
+    "sha256": "a6448d7eb8e54b111d288f6f8b606bb7ed49be31325cb2f12e31252119ce48e9",
+    "bytes": 7888,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/cli_test.go": {
+    "sha256": "21f330cbef5eb7dc4b6d0a2749806528729bd5a089ecf9ec7ab006fc7dbd1e13",
+    "bytes": 2291,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/main.go": {
+    "sha256": "b950573428f1d6c641d0e22796326b2717c6c3e96815074fe096393c5052290c",
+    "bytes": 5015,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/main_test.go": {
+    "sha256": "d82b36e54742d13c0170e4284bf29d5cffa27488c30c01cc1a39701777a78a15",
+    "bytes": 1645,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/profiling.go": {
+    "sha256": "a98075632a3112171694ee7a263ddc14a83dc946606b75096a370a58d5218487",
+    "bytes": 846,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/profiling_test.go": {
+    "sha256": "ca99894ddcb6c4d6886dd51b6199cacd7de723ddf244d1a05b1ffecd9e622fd9",
+    "bytes": 1717,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/signals.go": {
+    "sha256": "6726650c03ac95da4ff58f3fc4c3d03a3047a7fe347dfdb1441d51738374debe",
+    "bytes": 1765,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/cmd/graphite-server/signals_test.go": {
+    "sha256": "cdba9de123d05c33e26b9f97fbdbed64cf3741792f54303cca686bf606ceae50",
+    "bytes": 1805,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/go.mod": {
+    "sha256": "f6e6d88bd6fd905ebf229be49fa18c72371e30b1cfb80c2d7e3d194160bdf0b0",
+    "bytes": 248,
+    "reasons": [
+      "main module metadata",
+      "module metadata:github.com/johnsonlee/graphite/graphite-server",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/go.sum": {
+    "sha256": "4a99dfa3f7e66bbdcdd49652f52bac26ad71c5ebcd4c66df6509a6f6bd9d8152",
+    "bytes": 607,
+    "reasons": [
+      "main module metadata",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/boundary.go": {
+    "sha256": "99eb6c44897cef8d9f333ae216ec6cd8c23b1eec319ccc2463eb54b74ee1f865",
+    "bytes": 5295,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/component.go": {
+    "sha256": "2c759e2520a637d2e6a61cecca94df15cef656199a415134588228f1d988917f",
+    "bytes": 8693,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/container.go": {
+    "sha256": "a256bc70b1c9fbbb8a74c330bb36b6729a55097fcf0152a8c4dc466d59811f36",
+    "bytes": 14093,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/diagram.go": {
+    "sha256": "bad46fe387c0365b3de233beda6b10ffe46bdb6ba280f7561845f991a7db7917",
+    "bytes": 14447,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/dsl.go": {
+    "sha256": "9e0f4c683e906f8e7ee8a73df61f97d8fd8c6da60637d4092cf6cf6132c45f00",
+    "bytes": 3306,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/external.go": {
+    "sha256": "137e26d8bb82759bbfd1d4a85023418a33a8d7dd501559493dac6a8e16a860de",
+    "bytes": 6726,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/inference_test.go": {
+    "sha256": "8953a95d3d6faef0f9bee68defffc0a01e891fd3ddbd1aca1aec58901344b374",
+    "bytes": 10102,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/model.go": {
+    "sha256": "271a4b5077cf7477d26e22fb0c2b942582ac12215a3b3f141134ed6fabe26c8f",
+    "bytes": 12666,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/model_test.go": {
+    "sha256": "05ad3835f821894eb11b8d81ca6bd3491011e49ecd829bceb08c74c0c8d869fa",
+    "bytes": 5876,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/reachability.go": {
+    "sha256": "fc0766e35ed6dee510322b07b39a94d3119eecd803620ebbc689b120d52c6a97",
+    "bytes": 2683,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/reduction.go": {
+    "sha256": "d8aadb76affa0819ebfb82fd75004ca251ab9004a36ccea71a862a028f8a63b3",
+    "bytes": 2991,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/subject.go": {
+    "sha256": "c897a15ad60a1725d60d93f3b62224aab34e38e06ce26f990141fd60e22c284b",
+    "bytes": 5781,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/support.go": {
+    "sha256": "c268e89a78a3ed571017657a5a6aa14be87773a95a9867501c8a56c28b935ee6",
+    "bytes": 3136,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/types.go": {
+    "sha256": "b2fe69c4884db292bd4457adbcf8064284642731980d06c8ea236e8d2de1de41",
+    "bytes": 7934,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/unicode_test.go": {
+    "sha256": "0c22a886835dd6747609b6a23a5db55ae25512d68ca4297d6abf9f182dc17ed7",
+    "bytes": 5650,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/workspace.go": {
+    "sha256": "39c8b7f6292d4c20b0d37c2585ede7b57ce11c453d19ab09bf7e4d161cbc5816",
+    "bytes": 15932,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/c4/workspace_strings.go": {
+    "sha256": "f9ae6e7a2f123c46f8856f88dcc2632e2877ff2eaade867c69246d3ba3db4d9f",
+    "bytes": 5078,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/endpoints.go": {
+    "sha256": "7ba0b2694dae2c64a166e94f6dc1836e70e474d318363ddb9d3b17a33388423d",
+    "bytes": 4297,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/analysis/endpoints_test.go": {
+    "sha256": "2789442fb5eb33aa7b6dbdbc457aae81c67404238a808ec4ba341c3af1fe22a7",
+    "bytes": 6269,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/benchmarkcase/canonical.go": {
+    "sha256": "2413f3b5df195b62b3e04aac9fdf8d48b3e6e072cf73b43bf27f03a21daa02b2",
+    "bytes": 3756,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/benchmarkcase:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/benchmarkcase/canonical_test.go": {
+    "sha256": "3fee8fda3fef2cbf9b235bd5e950e8eeabeb7096eb9d5b02764f906ae0068451",
+    "bytes": 1962,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/benchmarkcase/testdata/main64.json": {
+    "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+    "bytes": 1555088,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/benchmarkcase/workload.go": {
+    "sha256": "790dbe96ca856d4acef98ec7a80473be86617729b0fad3121bdb1223b576b8bd",
+    "bytes": 4739,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/benchmarkcase:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/benchmarkcase/workload_test.go": {
+    "sha256": "8fae777f65f2ed298c83dc1424eaf031968380c6f09bbcc0e7d7c1868235e005",
+    "bytes": 6937,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/antlr.go": {
+    "sha256": "fcf081a4325a5910ec7d0576acd8921e7467f5793b8a98ce6a82d0ce6dbf694e",
+    "bytes": 18585,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/antlr_test.go": {
+    "sha256": "f422263a5ad766a835ea9b3b61e25cbf55e76393efa232609bff10da080abfb1",
+    "bytes": 3198,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/ast.go": {
+    "sha256": "5190ce32842975638038412ad573f4288757c14b6ad4f9261fe52a2c17d2c9ef",
+    "bytes": 3821,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/cmd/normalize/main.go": {
+    "sha256": "5cfcfbc1e567789941b0abfa726bc467da1779aed4e135ea372cf4378124b574",
+    "bytes": 1242,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/context.go": {
+    "sha256": "aa8b30b6259cdfd52a2b0fad5db635fe07433351e8a212faf9421ce7b9d036fa",
+    "bytes": 1307,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/engine_contract_test.go": {
+    "sha256": "12ba65b25ecdfe8e95c42e759014577c3d4530edc9531c193f62afd0bc2f2e14",
+    "bytes": 1556,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/generated/cypher_lexer.go": {
+    "sha256": "4e88ac836d40e3bf1cdf76bd7abefbdcb52f83e6df6658b2ed4e79b7780ca17c",
+    "bytes": 33797,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/generated/cypher_parser.go": {
+    "sha256": "f2fb5b7dc99d4981b3671df48959d8ddda88d798a0b184977b20e60f61be2e19",
+    "bytes": 366915,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/generated/cypherparser_base_visitor.go": {
+    "sha256": "b1e2e0c6cb062612f4e91be7e2d31363cfb7f257dd96a9f8120a95eaf83e03a2",
+    "bytes": 13848,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/generated/cypherparser_visitor.go": {
+    "sha256": "811339a54d13b8694bfea0f6e9c7a1fd2c2044c9622d4e2a854be448512c5c0c",
+    "bytes": 13449,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/java_input.go": {
+    "sha256": "bcbaa46890568b9c5c4903e6d288166a07cf9b701f98420cb2a0b8a7c12675b6",
+    "bytes": 2294,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/literal_boundary_test.go": {
+    "sha256": "f80e94635fc4c0c9212ca132d8fd14b777f267db3dab3c465e52c32139ad8f51",
+    "bytes": 789,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/number_literal.go": {
+    "sha256": "564ac166502a9ef72a4aed737ccc5d905052f301c50448cdfb832ffd31c08b79",
+    "bytes": 912,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/parser_test.go": {
+    "sha256": "d0c62dab1a84b7f7f64d63f64616491cc068799006e1b94fa31f577596f91a66",
+    "bytes": 7227,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/statement_test.go": {
+    "sha256": "cdcb5adf0f3189e889a7f4692394bc50cca58d7e7d10a0c701de12361840cc6c",
+    "bytes": 6458,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/cypher/string_literal.go": {
+    "sha256": "796cbf344726e2ff6184778e69e0c0accf9045187646ff89af4b4411d5071190",
+    "bytes": 1734,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/cypher:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javamath/fdlibm.go": {
+    "sha256": "a84afd0919cb2a1a58f247e956104fe3d9e34e43b312d6ca422f10cfcfaf0945",
+    "bytes": 9194,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javamath:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javamath/fdlibm_test.go": {
+    "sha256": "dc5f5635c5dd189dd31a6331aac46ef522729f88c18b8508ad54b6595e81ce48",
+    "bytes": 1787,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javamath/reduction.go": {
+    "sha256": "6ef8099ecb57d9bcf73cef7c69ae79688f4634c1ebb809ddcc492a80bce7f38b",
+    "bytes": 6440,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javamath:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javamath/sincos.go": {
+    "sha256": "b56c4d357ca5c74dbd53330fb3e77b122457a4e13491d02391f769c44413e9d4",
+    "bytes": 2767,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javamath:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javamath/tan.go": {
+    "sha256": "535cbd4134f75f05b611fd218d8e55573b51b3403fedb9c1555be195146d1622",
+    "bytes": 1967,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javamath:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javaregex/advanced.go": {
+    "sha256": "e80ddc525d398f2993923d6847669733c9f8639cfed4d770539bf7cbdd6347e6",
+    "bytes": 5093,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javaregex:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javaregex/java17_advanced.json": {
+    "sha256": "cb01db0c7fd6998a5c3ccc56849f78936913e5473734fc0545c1ee34ce65167a",
+    "bytes": 517086,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javaregex:EmbedFiles"
+    ]
+  },
+  "graphite-server/internal/javaregex/java17_names.json.gz": {
+    "sha256": "ce3a06669d9af7f75fc95d58956fb125faaefd341c2f0a0f33c0d12785ed95d8",
+    "bytes": 1472124,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javaregex:EmbedFiles"
+    ]
+  },
+  "graphite-server/internal/javaregex/java17_unicode.json": {
+    "sha256": "f4b80b142388de42cf63d0c8c03cb22e510775e38f4ceef969085981b956c36b",
+    "bytes": 224193,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javaregex:EmbedFiles"
+    ]
+  },
+  "graphite-server/internal/javaregex/match.go": {
+    "sha256": "3a9f7a36b31b3c4b1c417f86802f7dde9b33d7a5c9709a02f9a76f8df5f4f7ac",
+    "bytes": 6245,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javaregex:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javaregex/parse.go": {
+    "sha256": "aaaa16381b837a364f7d33a6a0f5516fbf10351d5e9df34f60a70dd9567ea3f5",
+    "bytes": 16254,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javaregex:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javaregex/regex.go": {
+    "sha256": "3e87294e867c0bafafbcffa5977af69c4ec611de790887c5f174ec16db724ff3",
+    "bytes": 4365,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javaregex:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javaregex/regex_test.go": {
+    "sha256": "ce98567eb5c4f52059bc43b83193506b21c007260077998583d8ee8f6335ac6b",
+    "bytes": 4708,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javaregex/unicode.go": {
+    "sha256": "f026bd8303907723a5acac161c3bc00ab20203400b6313f42408436fcafc77b1",
+    "bytes": 10404,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javaregex:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javaregex/wtf8_test.go": {
+    "sha256": "edc52b478e39b368d0424c63d22197573ddbf05fad0bf9121eb9bc025d41e0ca",
+    "bytes": 1277,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/ascii_lower_test.go": {
+    "sha256": "881635d9d22d8de6f8b1f45ad26747eaeeabcc1741dbf0329d984940941f25bc",
+    "bytes": 2036,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/char.go": {
+    "sha256": "ba061de047626885734ab40dbf9159b62c490ad177951e166c1d1cc2f7dd0e5f",
+    "bytes": 2154,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javastring:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/char_generated.go": {
+    "sha256": "467e19df5828c6f6df165fbc4947edc88d8e56fe3770ef0631e98d15ab381f6f",
+    "bytes": 39729,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javastring:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/char_test.go": {
+    "sha256": "aa8686447d258825624273ef6cc153ab6d69ed68ebb59493517cc095a445ad71",
+    "bytes": 1745,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/unicode.go": {
+    "sha256": "56aa5e18232264f35aabea2cf0f22958acf8402344c4cd9f357b206f1e22d07b",
+    "bytes": 3794,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javastring:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/unicode_generated.go": {
+    "sha256": "58dee198f80fb337e2cb82839a8374a1f7bca32abc42725a08ace08667fee19d",
+    "bytes": 181863,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javastring:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/unicode_test.go": {
+    "sha256": "290322f7fbee805acf1b504906f58212b3236c28c2fd012be1e34f0b40c1a0ac",
+    "bytes": 1916,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/utf16.go": {
+    "sha256": "acafb0dc4fae8955117f49b96bfb63034b5dc53f6400f82a9b370e7f520c5981",
+    "bytes": 2119,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/javastring:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/javastring/utf16_test.go": {
+    "sha256": "992a4b146d959ed11140d262d5f444e41cfb13f5a676b84132f3f1954ba7b6f3",
+    "bytes": 1204,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/profiling/report.go": {
+    "sha256": "56d8733c08cbc7973d053285c9d8db7677fca4e265f36ccc99312a9a8a1cfed2",
+    "bytes": 4144,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/profiling/report_test.go": {
+    "sha256": "49c363f41f2b4701a60b5c04687bd1b06d7cc97741fabb144a6d9b76805572b1",
+    "bytes": 8858,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/profiling/session.go": {
+    "sha256": "93515c63b31395cb38c43cb7c2bdcbb348774b21baf974d6eb4ecbcaf91a9179",
+    "bytes": 1989,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/profiling/session_test.go": {
+    "sha256": "907bef8f5d9c513856c11ba5f0f3acbd53ff443d8111f080fba08d7395cf08eb",
+    "bytes": 2561,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/aggregation.go": {
+    "sha256": "5200db487be93bb137de761c49bdb3091084d796b0897b695840eff33f7f9710",
+    "bytes": 4049,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/bounded_string_matcher.go": {
+    "sha256": "85d5617f6d65d96a976eafadd6970b109aefb89dadff928418b84b0420d154f0",
+    "bytes": 2626,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/bounded_string_matcher_test.go": {
+    "sha256": "6388a634ba95fbd2a21fd2dad7d58924e70b4651587ebbbf779d1c3e19825f64",
+    "bytes": 8601,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/candidate.go": {
+    "sha256": "720fc6fb90126d30388f123aaf53d75207be640f8d7ea07ef47a9ea7858e6fd1",
+    "bytes": 1512,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/candidate_node_error_test.go": {
+    "sha256": "0439437fd18967e2dd56c9514f4ef947d735279600b72ca5d15204cda2de3cce",
+    "bytes": 2297,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/candidate_slot_test.go": {
+    "sha256": "56a5dd91d2b91a5d911a87c33f61ced9ea01b3f7ca69c3607e55a3c3f30c7472",
+    "bytes": 6774,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/columns.go": {
+    "sha256": "3aad9203b91a106cf357a7e81e58699240bc6666c14e54905d0ecd671982acc3",
+    "bytes": 2604,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/constant_membership_test.go": {
+    "sha256": "f484954e708ec8563960c0f386c1cbb2968c7fef2b2793219033526db542fdbb",
+    "bytes": 1106,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/context_check_independent_review_test.go": {
+    "sha256": "10f0e5bcd472cdbc3f2908d346c637a44a199bf16d8d785700b3fc8e28757310",
+    "bytes": 2052,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/context_check_test.go": {
+    "sha256": "ab4b47fd5e44a57b87f91b351aa4efb54907161b252beab8649d6a97c847db9a",
+    "bytes": 6118,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/count.go": {
+    "sha256": "5d2b576845e05acccccb5913beefe210b972114c19b2a2c53d8a3b8681e13aed",
+    "bytes": 581,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/count_test.go": {
+    "sha256": "adaa793cdcc7504383bf9305e4ca92bf43f74142bd4f47933996c9ef18b7bc7d",
+    "bytes": 2056,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/cross.go": {
+    "sha256": "c815b99ea24c66b65ffd4a8ed3fa77dfaf36c85263d163096b3e2df9ac676492",
+    "bytes": 1824,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/cross_test.go": {
+    "sha256": "4f4f84e9fc6509169917ca797bf321f71e9d7d230ecefa8f098e2f2a92796aa7",
+    "bytes": 12043,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/distinct_atom_predicate_test.go": {
+    "sha256": "db561964fe5e2b1d7b7fca4d332d70a5ecdd0315cc82081ccda7390962d08c0b",
+    "bytes": 5381,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/distinct_integration_test.go": {
+    "sha256": "af57d7a754b1f6295b22482b24b888da7c2a089b4ff9261a115e33da2ae48377",
+    "bytes": 625,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/distinct_string_id.go": {
+    "sha256": "27480147a00d731c9d5452e9a6113a93eeefc4c8c729b3c0f50e0e74f47b17b4",
+    "bytes": 898,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/distinct_string_id_integration_test.go": {
+    "sha256": "4f29144bd80b75674e7d9f3392496c9a9ac6457da3bfa878f03d0002de2fe848",
+    "bytes": 5603,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/distinct_tasks_integration_test.go": {
+    "sha256": "e305d586ebdc93168b79554f881d6e912669eecf5971c9f354a01d8657512196",
+    "bytes": 1520,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/early_match.go": {
+    "sha256": "298c3629ddae98b9333db3dd0688ca4d53b99960f6d272282ee216cabcc3721c",
+    "bytes": 4418,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/early_match_corrupt_test.go": {
+    "sha256": "5d402e18504adfe952eff7aa5e071b6e69988bf438f838883e13d428378e08ba",
+    "bytes": 2910,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/early_match_test.go": {
+    "sha256": "42a0923a3fdcbcc01acedcb5220089d6b69273ee28147de8f18412a99d61549f",
+    "bytes": 2180,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/early_match_trace_test.go": {
+    "sha256": "62f38c1ede019b152a1e0d0abb16fa12cf6cf4e6907582bd478966f6cbf4f72f",
+    "bytes": 3829,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/engine.go": {
+    "sha256": "27c909277436990340cbbdbe1e1c2c9d210db4ff8e294caea2e4633435b13f04",
+    "bytes": 15452,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/engine_test.go": {
+    "sha256": "5eaae3687092b2210e979436c67f39e34d96dd4e21011a09b2970db1b39e221e",
+    "bytes": 6833,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/enum_key_test.go": {
+    "sha256": "9051918e748c1aa33ab0a9852c8f73c2ad05eddadcf94405fb4ce696c423c2ee",
+    "bytes": 1201,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/eval.go": {
+    "sha256": "57a18c4b5d299e2af43f834424c602d226c205d9cc82729eeb0eaaf709d6b830",
+    "bytes": 13374,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/function_properties.go": {
+    "sha256": "1195addcabde70d13a6fcc358897be1a1fcfb874286b84e5fa5a367ef275bbea",
+    "bytes": 2924,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/functions.go": {
+    "sha256": "796fe8140b5f5c8b64f1d240c39120ef07fb0240c217f627cd0e18c658107096",
+    "bytes": 8698,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/functions_test.go": {
+    "sha256": "6de31c37efcbd8ec0c896517a5c7a4037e3fb04328b32f7715babcffe25bf43d",
+    "bytes": 7369,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/generic_distinct.go": {
+    "sha256": "2827c1baaad96a832ca2502c6d9e7bcceb4fb20a39ed50d9c8deb4d699b117f1",
+    "bytes": 14034,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/generic_distinct_binding_test.go": {
+    "sha256": "d53b68498c1229ff01fa348c9fd31aa763966ebe943708e76c4227b31c8db431",
+    "bytes": 5753,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/generic_distinct_cursor_test.go": {
+    "sha256": "e13c255e65886de5e1eab42469cd19cd7c97b7ebde4382c4d8ad8fc32eaddc99",
+    "bytes": 2050,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/generic_distinct_edges_test.go": {
+    "sha256": "71d05324674e7d44c3233dbda5649495533dd07b0821c0c05acb5e6b9ad19bc7",
+    "bytes": 4606,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/generic_distinct_equality_integration_test.go": {
+    "sha256": "b0f9624ee750e879a2d27b27261d545f9afab122a1bbff8a742c00df6dabc285",
+    "bytes": 568,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/generic_distinct_sync_test.go": {
+    "sha256": "983b8ca2ff4c0f059b1649f75fe9ed2ab626aa1dc599b436e55091c030781b11",
+    "bytes": 11267,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/generic_distinct_test.go": {
+    "sha256": "6505239a5eb91cb8c9c5b664de505324c98be08f9c4b87d6f01fe3523455c861",
+    "bytes": 4328,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/generic_distinct_values.go": {
+    "sha256": "247a2b466edee9beedcfc33967c4a683cdb275be3e1c9006460c3f6bb3398854",
+    "bytes": 5589,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/index_lifecycle_test.go": {
+    "sha256": "bd6f31b2bc6c3c92cd535b28174517d3cd5e325d2b7683160e9cd260f73a5620",
+    "bytes": 6368,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/index_release_test.go": {
+    "sha256": "f32d904ce58696997bf10fd0f8a9c998dbbfac5a462c9bc3466753f2ed552a66",
+    "bytes": 3003,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/indexed_distinct.go": {
+    "sha256": "9b9c43f6b5e767131b5feb863649db2569e3680b8d56b8289fd40fde8d1773cc",
+    "bytes": 26434,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/indexed_distinct_plan.go": {
+    "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155",
+    "bytes": 9120,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/indexed_distinct_test.go": {
+    "sha256": "1c1f9b90ab0bc8fcd2cbcdebb783e85c52f0a680134025f4a492fe08ebc7637c",
+    "bytes": 14533,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/indexed_tuple.go": {
+    "sha256": "879942530889a66c2626cdf8a335a28c4c57894382f63ac1d43deb52d0269736",
+    "bytes": 2212,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/indexed_tuple_test.go": {
+    "sha256": "9c074084d30a80c8090d90aea5f14bb523525c9463d8d9c5b61691c10e18bc7a",
+    "bytes": 4737,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/java_string.go": {
+    "sha256": "317e2cff94ee476958d9f12d837a6235b2abec46acf8b7f88c1c89375f70c4f3",
+    "bytes": 2963,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/jvm_float.go": {
+    "sha256": "8e652d32a31155dffed21e727be7728161cf0a8845b2e8fed53474400950d394",
+    "bytes": 7266,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/label_alias_test.go": {
+    "sha256": "5c14c193256e9f7da5d9b9a3172eefdf94078c01fc11016fc8d13373be712d98",
+    "bytes": 3462,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/lazy_filtered.go": {
+    "sha256": "a628a97a2a68052118ad2476e1dd9483a3bfcc9fdb5d554795fd6b93729da602",
+    "bytes": 9375,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/lazy_filtered_candidates.go": {
+    "sha256": "92a59413e9aad61cde308ff6dd09b72d6b729e51237341140b14e5513a516de7",
+    "bytes": 6128,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/lazy_filtered_plan.go": {
+    "sha256": "d7890f4753c04b6a5af8bd3efdfd57060a4ad6d5507bab51223ee5e0ff159f2b",
+    "bytes": 5444,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/lazy_filtered_protocol_test.go": {
+    "sha256": "c70a647235cbf3de05180e43dd87d5e67293977b25a9507da81d132ec7fdeb7f",
+    "bytes": 4002,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/lazy_filtered_slot_test.go": {
+    "sha256": "e747b12b863c02127e5b999fdcce36abc0f77ecc6c2692f52d6121e892abc6e4",
+    "bytes": 11395,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/lazy_filtered_test.go": {
+    "sha256": "07b764a8089bd589383d4ad870a81e9ef7396f1185f8306d9f8e700b390107c7",
+    "bytes": 6803,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/limit_zero.go": {
+    "sha256": "0dfe7393f03624c63a3d05eabf72484735b6e3602750af1a62446ffe0433cb8d",
+    "bytes": 2027,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/limit_zero_test.go": {
+    "sha256": "4eb6e900cd0324a2d1705f2bd089e04a64bd4bb85edcd1b189338fcd60dc2272",
+    "bytes": 2378,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/main_string_candidates.go": {
+    "sha256": "89179a31a43c2c0e501204a640312e8be1e80500d2c83877e4566a8fc2ce8f0c",
+    "bytes": 7081,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/main_string_mapped.go": {
+    "sha256": "df18006eae436fc0ec48d15e4a76062c5a3b8e89907606e0a59f2ecbd61b5754",
+    "bytes": 2959,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/main_string_postings.go": {
+    "sha256": "6efb793fd745168525167112fa507c97e75c7bab8acd85dba2a8e4c825e4ddc7",
+    "bytes": 3957,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/main_string_source.go": {
+    "sha256": "46715bc94a1222c33019f922365faecabea32e17887f0b0cb83ba0b1bfe41a04",
+    "bytes": 7359,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/main_string_source_test.go": {
+    "sha256": "4e6a47faa7a0017aec38ca583d7b6c0da0b93a6670609ff5abf3ad17a41631ce",
+    "bytes": 15499,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/materialize.go": {
+    "sha256": "340d69524aa325b1fedc7a021ca24f2752a4e03572816a6b9cfe481d7a87a1f3",
+    "bytes": 3974,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/node_error.go": {
+    "sha256": "4aa92a4a2052140c4ff631504db7692a4181d3cfb75d6d62973356a4007541bf",
+    "bytes": 839,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/node_error_test.go": {
+    "sha256": "c0fe4d150650dd63a1d39e2562350beb4ca1d98c5b9459b8bf15958d78cbfb93",
+    "bytes": 5026,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/numeric_test.go": {
+    "sha256": "3bbb8d3d915c4426c2b12cff3673d1d8a5285b655bf0d7a08abfe09b3c0794a2",
+    "bytes": 4065,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/object_string.go": {
+    "sha256": "fccde562ba016561d37845d499351664736e154e67965194006bc331f0c2fc7c",
+    "bytes": 5316,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_cache.go": {
+    "sha256": "7a86a1db1f249424480372279cf923ab27940fdd9e50a670c307cd0a14d556df",
+    "bytes": 5080,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_cache_integration_test.go": {
+    "sha256": "4e3209c3224025d5c5858fc65db3e22048e7ae13be38a2e2f1a03f72f5ec73ea",
+    "bytes": 2016,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_leading.go": {
+    "sha256": "f739163f5d25affbe55054cce4648f4667d0781795a47136a731909332e5df40",
+    "bytes": 4017,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_mapped_range_test.go": {
+    "sha256": "9cd0255ad95c4ea31d050a926273af465977523b7a746570846d6ea51f36b9a2",
+    "bytes": 4592,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_parallel.go": {
+    "sha256": "60a1960ce7d353f6d0e816c0b427f08f4deec148e9a585fad484f289d98c09d3",
+    "bytes": 7220,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_projection.go": {
+    "sha256": "c083b69f191479f9bf9e6207746b0a2fafd27e3418b2efd30944ce57f9513d07",
+    "bytes": 10744,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_projection_annotation_test.go": {
+    "sha256": "7310f4d88246fa0a035ffb7c773e68fbedecd7ddb5e3063305ba5b4362a0514a",
+    "bytes": 2698,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_projection_cache_test.go": {
+    "sha256": "146a711d77096f5a9ead3c45cd0f6bfa5b48c3b2bef94b7cb1322ac8c52b5104",
+    "bytes": 2217,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_projection_dense_test.go": {
+    "sha256": "55a2b93934ec9de791e6aeba5124aed129bc97d31b1cc8da7a81207af45f3c56",
+    "bytes": 3806,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_projection_history_test.go": {
+    "sha256": "4597c6103e91cfb7279800e6f83b0c2141cf68fa3afd9401fce8a3e4fe63d63d",
+    "bytes": 5038,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_projection_required_test.go": {
+    "sha256": "7ccf43cba62907e49ccadc80679268c10a5203c9484b54819a201f78fc307ad4",
+    "bytes": 2661,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_projection_rolling_test.go": {
+    "sha256": "45262fc9bf36bee1303b918d72f0d25bbbef884f2c79d7f5d848481033087092",
+    "bytes": 4006,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/ordinary_projection_valid_tag_test.go": {
+    "sha256": "268c4b4bfa2efe5eee4450d421ef7e6e75f32a911c395e82b9a4041547da2eb1",
+    "bytes": 1401,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/output_object.go": {
+    "sha256": "e1a9cc04e0c91d3355cd874d2df87682578986cf7a283cb6ba1c3851ebb4c994",
+    "bytes": 2824,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/output_object_test.go": {
+    "sha256": "e5efe4861095516a0d11a01372cce1b913f6ef56f6a611fe03da6c3bdc03ed94",
+    "bytes": 1744,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/projection_context_test.go": {
+    "sha256": "fca4d4da6340e6dbe30796232de0dd40c6a5a881e182c3677288a4f3e44c7e55",
+    "bytes": 2603,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/properties.go": {
+    "sha256": "30d2e50b6767c5cc219c85f2edf19b650199432974007dae44ad4a178d68dfc6",
+    "bytes": 3317,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/query_order_test.go": {
+    "sha256": "226ead90aef2b41e05bdf2423506dc6e3cd4c5593917556c826ee3a37af18e48",
+    "bytes": 2802,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/raw_projection_cache_test.go": {
+    "sha256": "e3220f78967c531a7d909d6d45553d6ed0d230e3d64ca2136218916c2a3c82ae",
+    "bytes": 5417,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/regex.go": {
+    "sha256": "4ec60a52f63822cb5350b07330ee2c7235276ca02c4b7356a648a167978b6df4",
+    "bytes": 4053,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/relationships.go": {
+    "sha256": "62bd9d60a9ca5deff48c18bc515e77d6d43f6492c86708f8dd270b3e59991220",
+    "bytes": 5406,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/request_source_schedule_test.go": {
+    "sha256": "24f429ccd997f9269fff847853cd4b4142019110f1452684f7b557ed277072de",
+    "bytes": 4102,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/request_source_scope_test.go": {
+    "sha256": "7dff5946c2cd5867b67d717e8a573014d94fed438d3a6fefa396e13a3bb0451d",
+    "bytes": 7883,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/row_order.go": {
+    "sha256": "d67935abc7f8777b512c2a0aaf534cd82451e39582c490460a4cd275847cecc6",
+    "bytes": 2892,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/scan.go": {
+    "sha256": "bd4edd9fed796e474e2f9155d423f549bf44283444d34483448da2271dfc5962",
+    "bytes": 2262,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/scan_test.go": {
+    "sha256": "9a4b8504a9f99c98d4c902d5186c62893f6db8de9d145dd896357065717070a4",
+    "bytes": 2081,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/streaming_lifecycle_test.go": {
+    "sha256": "f3741d3ff0caed255295780736d024b346aead6c81513d5617d0110455c3675f",
+    "bytes": 11351,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/streaming_order.go": {
+    "sha256": "5607d249612ecf571e7508b03a8a31b1d65dc6c67e64f24a52473dfbbaa7b4ab",
+    "bytes": 7817,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/streaming_pagination.go": {
+    "sha256": "fcb111db339b0623f1aa6f73bd2e3bb64b75c8be8c752dd89320107e7a8ca3dc",
+    "bytes": 7844,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/streaming_pagination_test.go": {
+    "sha256": "cc3dba95f56c3285a29788406a0fc20cfb69e1b84408b4fac11cd36bb8dc8ca3",
+    "bytes": 9373,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/streaming_sources_test.go": {
+    "sha256": "b8dd7ef236a91405a26551d6e251373c2eeb8314c759c07e8ee8f0c4dbd4b830",
+    "bytes": 1963,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/string_candidates.go": {
+    "sha256": "63344549fe967273de844afa738c312809e422e8ed653bae7fc29f8fd8deaf8a",
+    "bytes": 11024,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/string_candidates_test.go": {
+    "sha256": "4f4a4480b60500618033c55a95ad967768255b84d346fd3f5767467b52bf33b0",
+    "bytes": 21316,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/string_predicate.go": {
+    "sha256": "7e31b11bea71987eda5329d1e51f1e44b79d3dc393a44ccc0d647eb48fc0a3fe",
+    "bytes": 1211,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/string_predicate_test.go": {
+    "sha256": "ffab2121a004d920b0c4d7199c16ad8135eac18d9c211ad5998f9361bb0a4252",
+    "bytes": 4461,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/testdata/count-conversion/native_capture_test.go": {
+    "sha256": "111fb0f8d803c2faa055b1a34808f05015884b1bfe5691b5afe9f9621487878a",
+    "bytes": 1317,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/testdata/early-match/native_capture_test.go": {
+    "sha256": "2f738f121956e8dea46887298e565e1de81239cb13df2da56511248e5ddea93e",
+    "bytes": 1358,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/testdata/limit-zero/native_capture_test.go": {
+    "sha256": "111fb0f8d803c2faa055b1a34808f05015884b1bfe5691b5afe9f9621487878a",
+    "bytes": 1317,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/traversal.go": {
+    "sha256": "c83f3122a4ab61a9433323c3466c64612e2df7e1db703b989df8f5c98f9f0a33",
+    "bytes": 12888,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/traversal_test.go": {
+    "sha256": "60bd72f1ab2a305bf7a63143740eaad9cfa8dc7782f7ce6282f1df2d17229ef5",
+    "bytes": 3963,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/trigram_candidates_test.go": {
+    "sha256": "44d9e47e3610919c14b14c2db54c44cc8a7f4fa1fe0b9a831c66f6bcfc29a140",
+    "bytes": 5969,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/query/values.go": {
+    "sha256": "c77ed3536aa23d44a54cd0e7450d1e251794abfb0cb78fee6146ad39c19f9bd4",
+    "bytes": 9868,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/query:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/architecture.go": {
+    "sha256": "e196382bebcad89741d697426e961a7013f81a3064004f7b35e7ec3911b7f62f",
+    "bytes": 3735,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/architecture_test.go": {
+    "sha256": "dad41baf5397e6676ba198743ec8bcff6e0d09a0bad52abcb8e4c97ff755131b",
+    "bytes": 3545,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/connection.go": {
+    "sha256": "8888bf292041d6e04ff8ab5c98c1a9fc717262fecd887b2fe392a24b611c46fc",
+    "bytes": 1585,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/connection_test.go": {
+    "sha256": "835a6557a2c876cda6d2df38667e63028adb76f45422552eb94fef61797f535b",
+    "bytes": 2575,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/cross.go": {
+    "sha256": "325ac466b9ec55519c7058bf75760c931305460004710688d297b980545f2fcd",
+    "bytes": 7517,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/cypher.go": {
+    "sha256": "7b7e1f9db87eb310070063c2c7cb29fdcc7e139f787d56240c5b76d86ffb1ef4",
+    "bytes": 2918,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/distinct_error_integration_test.go": {
+    "sha256": "d7d103ede4891641cd922d590b2b40b2d95b1492096aeacfc21537ddaad8f9a6",
+    "bytes": 946,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/gson_json.go": {
+    "sha256": "c5209928475228b87f7f4e5b97ebbd8bb3463a73eb608693d1758b3d195e2c19",
+    "bytes": 12846,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/gson_json_test.go": {
+    "sha256": "91cf55c3e903b04a5a67c43d876dcd2ff0402ecc5484d0628d0f9bf98157b01b",
+    "bytes": 4659,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/gson_json_wire.go": {
+    "sha256": "4d5b3ce3dff7cedc70d9cc5abc0124915446a83c4767df8a27ae3ecc298ab55f",
+    "bytes": 3133,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/gson_mapkeys_test.go": {
+    "sha256": "1115307789f63f8c049e361af5d226ba540e9efd9cf16244b55ebafa4b6f1e2c",
+    "bytes": 3763,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/guard.go": {
+    "sha256": "eff7dc8861931bf72fc08da3c6f517854eb87138f0f8e4f9db7db14304e28ee0",
+    "bytes": 3819,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/guard_metrics_test.go": {
+    "sha256": "2589695ea77134188488b5701de29c546194fcb51ee9312e6f318c7c851dbf56",
+    "bytes": 2785,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/guard_test.go": {
+    "sha256": "1b4b096407ad03ca80eb4d557d8f0acc724367cfd9705fd8fc0fb8bad2955784",
+    "bytes": 3131,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/http.go": {
+    "sha256": "5a84f9413a31ee04be4d96604127459657224ccb173e8400a99f4c8b2b8f2647",
+    "bytes": 10448,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/http_metrics.go": {
+    "sha256": "5d6c3d9ea4355e632c649b0f19e4a6c9648508071d034464bda0f17accfd9d7e",
+    "bytes": 1398,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/http_metrics_test.go": {
+    "sha256": "59b114d007743f3835f08f3e2b3d3bcf232c0d12c13375b913a4796ae02586cc",
+    "bytes": 1488,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/http_test.go": {
+    "sha256": "4ca96b4731c305593d4857b7fa28244e0750835787a187a996524e0fe13fec24",
+    "bytes": 4459,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/json_input.go": {
+    "sha256": "19f235da658ca19bf71d4c4fd304106face6feff056ebe3a1ee76d8dad268692",
+    "bytes": 2183,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/json_input_test.go": {
+    "sha256": "3cace0171c9b1edb76e25598917b9f72bbf094e198f316e0ca6da2a84e196c4f",
+    "bytes": 1777,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/metrics.go": {
+    "sha256": "59758ecb3f4992d4bc2d290852c0e18670e6de8d90a80a5647b341f89d9d0935",
+    "bytes": 10285,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/metrics_test.go": {
+    "sha256": "54cfb74c1a3bc8d24ed8c1a1402dc6c1ce0e50cb9eca0ef05b2692bf113f277f",
+    "bytes": 7546,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/native.go": {
+    "sha256": "a6601f40b39be4d4594d1c67fa5faf6df3618832292021d0d61176d28adb7d3d",
+    "bytes": 3838,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/node_error.go": {
+    "sha256": "edc403e5f97e020acd7470179a841b35dc0ccd80afab9ebbc1841519d0951783",
+    "bytes": 699,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/node_error_test.go": {
+    "sha256": "53f2f2fe8199f1b47cc2c797929a76f1ec465e3ee6e664c73d46fe44ddfe4a12",
+    "bytes": 4368,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/registry.go": {
+    "sha256": "6ed7bdc6914f087f7569d3100ac25e71b33d018f1e9ae24379ebd194f44c04b0",
+    "bytes": 7140,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/registry_test.go": {
+    "sha256": "30bdb7507e7e4761e22ff1faa2684c3cf35b07c60800be9cad02243f334787b7",
+    "bytes": 5949,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/request_source_scope_test.go": {
+    "sha256": "e3086770ccc7ecd130d401d1dbe982d63ece2aa2bf533f41409a7e7732528f3d",
+    "bytes": 3284,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/resources.go": {
+    "sha256": "1dca2cb4985dc57a50863958d741cedfa96ecb329c2b148b4cac9eb7c918dc4b",
+    "bytes": 4967,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/resources_test.go": {
+    "sha256": "365cfabf4a325aeff9c34010c23776761184a361fe49b320043a108dae86ca51",
+    "bytes": 3371,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/spec.go": {
+    "sha256": "98216788b0c38cef2f588707938c498e358628373b75d6794bc717ff6caed4e1",
+    "bytes": 714,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/spec_test.go": {
+    "sha256": "47c503e9be5a7e916abf3445a3d12fbe27aa01ac46a89fb82b3e6549b414df6e",
+    "bytes": 2521,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/topology.go": {
+    "sha256": "e8c92d9649ad07165e450bc78a5d944e82184df3784da887962f029fb056e41b",
+    "bytes": 9841,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/topology_test.go": {
+    "sha256": "644385fa502d08d1f57f2cba2fa2102d5e135ef3bd93e0853d0413e1db40badf",
+    "bytes": 5717,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/traversal.go": {
+    "sha256": "ede89e7a3bcf9498b270b85d8b72973d1b35596b74a7744f2e4130f937ed6148",
+    "bytes": 4227,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/traversal_test.go": {
+    "sha256": "475d4fe2dd6de6b666ee55bf6e807ae0d987e42828a769ff72471fe51599136a",
+    "bytes": 3314,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/server/views.go": {
+    "sha256": "acf8b1bc7833d7ce28767e1cac3b2761ad3eaea0753bedb79b249472b45ad384",
+    "bytes": 1950,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/bvgraph.go": {
+    "sha256": "50117b8cc6e3c7ef0589ce2881ff806b69c2186c886a1b21a11cfd1ac9554d91",
+    "bytes": 7384,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/bvgraph_coding.go": {
+    "sha256": "41f9f3d2487e8fca3fdc8b2b1afb51013ffada41d0925aed78177e5b990a1205",
+    "bytes": 3805,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/bvgraph_coding_test.go": {
+    "sha256": "6c86affbfc77af21dccf78d8bb905af806a24f3b7c8f47aa3807b8e8b4c7780d",
+    "bytes": 2256,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/bvgraph_test.go": {
+    "sha256": "c27e546c7e07c9669713846280ce9ac2cab3c7aaadcbbf28d0cbbcf98eb863fb",
+    "bytes": 1819,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/callsite_index.go": {
+    "sha256": "1e67aab59e62a46881926cd9e9907d0d300ed76090dbeeeb73cce3b9c6885481",
+    "bytes": 14935,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/callsite_index_real_test.go": {
+    "sha256": "eb895ef5dca03f5c201403c3919294b9acfdeea5d00be0866b5c03f02c61a576",
+    "bytes": 2609,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/callsite_index_test.go": {
+    "sha256": "eef8fda9c611aa9ff4680d11b8a02cb98897b535dc35076a6e3b5d460828349b",
+    "bytes": 16319,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/callsite_strings.go": {
+    "sha256": "8532bd1f0e6fbc7dad98c41db36221955ef986f7a780c7cc3233728bc45c86c8",
+    "bytes": 5070,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/callsite_trigrams.go": {
+    "sha256": "8a8e6bb7e129e40c180e8465cef3c93df27ffebbed52a0d9a6503d4f61d35e2f",
+    "bytes": 2497,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/candidate_certificate.go": {
+    "sha256": "49bf7397cca779b3cb576fa3f03dcbe329f373945fc4f3582e98a9e5582e7290",
+    "bytes": 4179,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/candidate_certificate_test.go": {
+    "sha256": "57585d1cf7e6768b1d7477741eefa1978c8b103c8278e8c5740e0cc12a1c533d",
+    "bytes": 3407,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/decode.go": {
+    "sha256": "e52319eb020f907667a10ba718943f2a850c1aa211e8a13e83009e98e367c3a1",
+    "bytes": 11199,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/distinct_certificate_integration_test.go": {
+    "sha256": "189a3535327cfe976f8f56e2d7d07427943544284875992b88cbb4ec102761b4",
+    "bytes": 1377,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/distinct_projection.go": {
+    "sha256": "31213325f4bc9fec08b6d6e34e1d4dbf9e8aa3e00f85f1a64ad4e07604e25a4a",
+    "bytes": 14805,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/distinct_projection_test.go": {
+    "sha256": "8e33a6b44813557b5a8abb4e35902dc4a81981b59e3d8fdf30b653486f359bf0",
+    "bytes": 3804,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/edges.go": {
+    "sha256": "72b711add5f9902a3607bb14852bafc1ee6984a41971c3ec4b2eb41baaed5161",
+    "bytes": 2964,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/edges_test.go": {
+    "sha256": "8ad822860ae1945bd8d07b8a7328c1a733eda14321926e2721cd51b5f962ea35",
+    "bytes": 1816,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/index_lifecycle.go": {
+    "sha256": "574fd04e6e3ae6350d7409525a675a90ef5834f1acf7dd9ff30252f294e537a7",
+    "bytes": 4998,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/index_lifecycle_test.go": {
+    "sha256": "11216bb1cdffbd3bae74da1ca806509cca22ecb467e3da458a63f66629342e1c",
+    "bytes": 6146,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/java_serialization.go": {
+    "sha256": "55d05fe638ffa3d15b3195b28f25d1460fbca5816ddacaa16a79bfb39355d919",
+    "bytes": 3572,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/main_callsite_index.go": {
+    "sha256": "ced412b61eabc63d46fc689a35e2c2868173e01a5be6aa00572994b834490e33",
+    "bytes": 2337,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/main_callsite_index_test.go": {
+    "sha256": "0fe27ef2f6fe5b29438a71c7385264269a6868095056afe8425c5bb530875eae",
+    "bytes": 8563,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/main_posting_range.go": {
+    "sha256": "ed74265b2c7873dc238bbbaab1eb67090200616825052da480805dcb49adda61",
+    "bytes": 2804,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/mapped_cursor_test.go": {
+    "sha256": "514f9c6bcaf0a14a686b6e2ff4da5009b02ad44f2f7df8f952736028dd4e156e",
+    "bytes": 12285,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/mmap_other.go": {
+    "sha256": "3d651ae17b183d14a561edd749a672ba5f90ff4df05f0abe21729cf337b339fc",
+    "bytes": 273,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/mmap_unix.go": {
+    "sha256": "167e0b9510b857e72da094151c51095593f6d3bfd0153c103f6198d25223c0f7",
+    "bytes": 362,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/mode_test.go": {
+    "sha256": "934ad1f02622a1c3bb89247f66c3701ddd0806c2c423efe551106915fd12ea5d",
+    "bytes": 2248,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/node_error.go": {
+    "sha256": "6d696d33b1138cb3e265274869b45bc0687782d0e3a20b77867f7f7a47e80091",
+    "bytes": 413,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/node_error_test.go": {
+    "sha256": "d0544784524e2e35c26c4290d3722db911f6fbb6d3d92c5bfe46cad78a0d3cbf",
+    "bytes": 805,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/ordinary_projection.go": {
+    "sha256": "a337a47ad844f18974bdc56a133ec3c27e7fb7a739c00393fefdb48e3830963f",
+    "bytes": 5156,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/overview.go": {
+    "sha256": "d58d0245e3851a1798476c24725fa4aade99cfb2d74df833bd4e81755d46eb06",
+    "bytes": 6059,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/overview_test.go": {
+    "sha256": "9ffab2d4ada468a00caff42114be65f284ff92b9f92b96822608ff9ab679f1c5",
+    "bytes": 4103,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_cache.go": {
+    "sha256": "471854e1e62fb5b84bbacced302c409d19fafa717c2711de116f708bbc2d7164",
+    "bytes": 4541,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_context_test.go": {
+    "sha256": "77a2b9291dce99adee30e61fd0ae4683a2183c12b0e57772d3aafcaeeea92ae2",
+    "bytes": 8022,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_node.go": {
+    "sha256": "fa1b8a55a6da9783823884f8f0418d722808cd9ef0fd2f650271e5bd0a1edc02",
+    "bytes": 3079,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_node_integration_test.go": {
+    "sha256": "ef53931f338422cc8198ac6fb1ae31518cbcd09e233228e172a8b3d5ea84eb91",
+    "bytes": 1626,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_persistence.go": {
+    "sha256": "38237f08a74ba5001008ea9e82de070a7d65b11299c092940898db394cd523db",
+    "bytes": 6053,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_persistence_test.go": {
+    "sha256": "b5c0d61d5ac8238f0541920ce626a301001fe2fd81abec92df7e3d5b1c338fec",
+    "bytes": 7044,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_property.go": {
+    "sha256": "c71f0126ecb61d48703fe40c312b65a58965f86b1a17f94b5e23e733d2b130ee",
+    "bytes": 1340,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_property_test.go": {
+    "sha256": "d1a80ca2eea2303eeff8fb84bf01b3123d7c025596ceba2f8f1177f48362e7b8",
+    "bytes": 2555,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_tuple.go": {
+    "sha256": "774c58e036fbd32d44c677de7ade623252ad8acd0aa32d7a65c790ac74b699ce",
+    "bytes": 7665,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/projection_tuple_test.go": {
+    "sha256": "8f4d244f7caac43cd4520058d7b8bcb412efd7a547a01f65818079d7721d106d",
+    "bytes": 12310,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/query_order.go": {
+    "sha256": "3b315e521f7239f373354a8a7fc97ea862ac33555204c5669829ff0d936ac7c8",
+    "bytes": 889,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/raw_projection_cache.go": {
+    "sha256": "da336145e2c5c5627c47c3c4e9312ceccd6b5af033f2c747f4628690e785d62b",
+    "bytes": 1630,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/raw_projection_cache_test.go": {
+    "sha256": "358a7365f12f733e684e9ec137053f28461ac48391c3f0633452b117ba85a85b",
+    "bytes": 3007,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/resources.go": {
+    "sha256": "5b00d4751c0c12f1ccad2e749c4514b13d5a941389984250f7d070827ddc027d",
+    "bytes": 4679,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/resources_test.go": {
+    "sha256": "49d278e72614f53df0cba8cd49c8c459082af3fd5475fd18bc7a71035435b7cd",
+    "bytes": 3056,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/store.go": {
+    "sha256": "67ff1b727c47611fc98f47e2a349757349a26661d627afbc82a024a086c67508",
+    "bytes": 8724,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/store_test.go": {
+    "sha256": "2da97cf67ba3fd8e868dc4f9dc17196c97a18ff6979caf419ab88d5d59f7bc19",
+    "bytes": 8387,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/string_encoding.go": {
+    "sha256": "2669e879b371187381377ae69b34ad9346989db134954f1e41aa663f87c03de7",
+    "bytes": 2178,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/string_reference_error.go": {
+    "sha256": "7104e1e458334d692147c6d4e609842ae0da59cb4f186cdf25ac230ee0cb830c",
+    "bytes": 380,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/strings.go": {
+    "sha256": "350c5197a45f4b9f71a333f3b2cf60dc21b4814ff3fe4ecc8d4d2b52b4755e36",
+    "bytes": 4636,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/strings_test.go": {
+    "sha256": "0b8fee215bcd61472d7866143f6d02fd22db7b33445fbc9078cc1a1cee42b07f",
+    "bytes": 5255,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/trigram_certificate.go": {
+    "sha256": "5868a1a37ad31a9b3f8f6441fc12fdd91327f85960f0307bbfa28d33330b3bac",
+    "bytes": 3632,
+    "reasons": [
+      "github.com/johnsonlee/graphite/graphite-server/internal/store:GoFiles",
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/store/trigram_certificate_test.go": {
+    "sha256": "2398281b1eb6106947ee8a008975cd73abf8bc0e08adb0a60f7194d66a60edb0",
+    "bytes": 8598,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  },
+  "graphite-server/internal/web/assets.go": {
+    "sha256": "897726fb9b96e2dd9fdc8821b7c5ccbee49bd53a5e66e38f97a8600fd650492e",
+    "bytes": 287,
+    "reasons": [
+      "original runtime frozen input"
+    ]
+  }
+}

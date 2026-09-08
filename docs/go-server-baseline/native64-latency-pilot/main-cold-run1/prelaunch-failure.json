@@ -1,0 +1,8 @@
+{
+  "status": "failed-before-runtime-launch",
+  "controllerExitCode": 1,
+  "runtimeLaunched": false,
+  "error": "AssertionError: immutable reference has no provenance.tsv; incorrect runner metadata-path assumption",
+  "fixtureOriginalFilesVerified": 1152,
+  "nextAction": "Remove nonexistent metadata-path requirement; retain frozen graph file manifest and graphs.tsv hashes; use new run2 directory"
+}

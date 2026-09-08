@@ -1,0 +1,25 @@
+{
+  "correctnessOnly": true,
+  "performanceMeasurement": false,
+  "validArchivedCaseSignaturesAccepted": 1267,
+  "mutationsRejected": [
+    "dropped-case",
+    "duplicate-case",
+    "wrong-order",
+    "wrong-digest",
+    "wrong-row-count",
+    "wrong-byte-count",
+    "wrong-error-class",
+    "wrong-error-message",
+    "new-timeout",
+    "wrong-source-count",
+    "wrong-scope",
+    "wrong-timeout",
+    "zero-latency",
+    "validation-error",
+    "fixture-matched",
+    "fixture-changed",
+    "fixture-missing",
+    "fixture-added"
+  ]
+}

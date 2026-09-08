@@ -1,0 +1,18 @@
+{
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "swVers": "ProductName:\t\tmacOS\nProductVersion:\t\t14.3\nBuildVersion:\t\t23D56\n",
+  "logicalCPUs": 16,
+  "physicalMemoryBytes": 68719476736,
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "plannedOrder": [
+    "main-cold-run2",
+    "native-cold-run1",
+    "native-startup-prepared-run1",
+    "main-startup-prepared-run1"
+  ],
+  "processesPerRuntimeState": 1,
+  "orderedInvocationsPerProcess": 1,
+  "discardedWarmupProcesses": 0,
+  "coldOSPageCache": false,
+  "acceptanceEvidence": false
+}

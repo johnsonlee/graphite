@@ -1,0 +1,18 @@
+/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-cold-run1/graphite-benchmark-latency: go1.22.0
+	path	github.com/johnsonlee/graphite/graphite-server/cmd/graphite-benchmark-latency
+	mod	github.com/johnsonlee/graphite/graphite-server	(devel)	
+	dep	github.com/antlr4-go/antlr/v4	v4.13.1	h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
+	dep	golang.org/x/exp	v0.0.0-20240506185415-9bf2ced13842	h1:vr/HnozRka3pE4EsMEg1lgkXJkTFJCVUX+S/ZT6wYzM=
+	build	-buildmode=exe
+	build	-compiler=gc
+	build	CGO_ENABLED=1
+	build	CGO_CFLAGS=
+	build	CGO_CPPFLAGS=
+	build	CGO_CXXFLAGS=
+	build	CGO_LDFLAGS=
+	build	GOARCH=arm64
+	build	GOOS=darwin
+	build	vcs=git
+	build	vcs.revision=18708018c2b81ae4e712f9dcb0868ae279cceee4
+	build	vcs.time=2026-04-02T14:10:54Z
+	build	vcs.modified=true

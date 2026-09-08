@@ -1,0 +1,100 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "env",
+      "-json"
+    ],
+    "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+    "exitCode": 0,
+    "stdout": "go-env-before.stdout",
+    "stderr": "go-env-before.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "list",
+      "-deps",
+      "-json",
+      "./cmd/graphite-benchmark-latency"
+    ],
+    "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+    "exitCode": 0,
+    "stdout": "go-list-before.stdout",
+    "stderr": "go-list-before.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "build",
+      "-a",
+      "-o",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-build-audit-run2/graphite-benchmark-latency",
+      "./cmd/graphite-benchmark-latency"
+    ],
+    "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+    "exitCode": 0,
+    "stdout": "forced-rebuild.stdout",
+    "stderr": "forced-rebuild.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "list",
+      "-deps",
+      "-json",
+      "./cmd/graphite-benchmark-latency"
+    ],
+    "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+    "exitCode": 0,
+    "stdout": "go-list-after.stdout",
+    "stderr": "go-list-after.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "env",
+      "-json"
+    ],
+    "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+    "exitCode": 0,
+    "stdout": "go-env-after.stdout",
+    "stderr": "go-env-after.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "version",
+      "-m",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-build-audit-run2/graphite-benchmark-latency"
+    ],
+    "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+    "exitCode": 0,
+    "stdout": "binary-build-info-rebuilt.stdout",
+    "stderr": "binary-build-info-rebuilt.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "version",
+      "-m",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-cold-run1/graphite-benchmark-latency"
+    ],
+    "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+    "exitCode": 0,
+    "stdout": "binary-build-info-cold.stdout",
+    "stderr": "binary-build-info-cold.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "version",
+      "-m",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/latency-pilot-native-startup-prepared-run1/graphite-benchmark-latency"
+    ],
+    "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+    "exitCode": 0,
+    "stdout": "binary-build-info-startup-prepared.stdout",
+    "stderr": "binary-build-info-startup-prepared.stderr"
+  }
+]
