@@ -1,0 +1,106 @@
+File: graphite-benchmark-profile
+Type: alloc_space
+Time: Sep 8, 2026 at 3:24pm (KST)
+Showing nodes accounting for 16329.62MB, 99.94% of 16339.56MB total
+Showing top 100 nodes out of 143
+      flat  flat%   sum%        cum   cum%
+ 5135.77MB 31.43% 31.43%  8625.65MB 52.79%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctGenericRows
+         0     0% 31.43%  7216.13MB 44.16%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCrossWithOptions
+         0     0% 31.43%  7216.13MB 44.16%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 31.43%  7216.13MB 44.16%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 31.43%  7216.13MB 44.16%  main.newWorker.func1
+         0     0% 31.43%  7069.26MB 43.26%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyFiltered
+         0     0% 31.43%  6261.30MB 38.32%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+         0     0% 31.43%  6261.30MB 38.32%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+      97MB  0.59% 32.03%  6199.79MB 37.94%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*Pattern).MatchesContext
+         0     0% 32.03%  6199.79MB 37.94%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.regexMatch
+    3.51MB 0.021% 32.05%  6020.98MB 36.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits
+         0     0% 32.05%  6020.98MB 36.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func4
+         0     0% 32.05%  6020.98MB 36.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[string]bool].func1.1
+ 5441.17MB 33.30% 65.35%  5441.17MB 33.30%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*matcher).match
+         0     0% 65.35%  5308.66MB 32.49%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*matcher).sequence
+         0     0% 65.35%  5186.16MB 31.74%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*matcher).sequence.func1
+         0     0% 65.35%  5186.16MB 31.74%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*matcher).simpleRepeat
+         0     0% 65.35%  3138.10MB 19.21%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourcePrefix
+         0     0% 65.35%  2997.30MB 18.34%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func2
+         0     0% 65.35%  2997.30MB 18.34%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.struct { github.com/johnsonlee/graphite/graphite-server/internal/query.rows []map[string]interface {}; github.com/johnsonlee/graphite/graphite-server/internal/query.known map[string]bool; github.com/johnsonlee/graphite/graphite-server/internal/query.index *github.com/johnsonlee/graphite/graphite-server/internal/store.DistinctStringIndex }].func1.1
+    2.50MB 0.015% 65.36%  1924.11MB 11.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+ 1714.61MB 10.49% 75.86%  1830.11MB 11.20%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+         0     0% 75.86%  1575.10MB  9.64%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode
+         0     0% 75.86%  1575.10MB  9.64%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+ 1032.52MB  6.32% 82.18%  1032.52MB  6.32%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+         0     0% 82.18%   778.03MB  4.76%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyGenericNodes.func1
+      25MB  0.15% 82.33%   778.03MB  4.76%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+  661.63MB  4.05% 86.38%   661.63MB  4.05%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.decodeJavaString
+         0     0% 86.38%   612.58MB  3.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.distinctVisibleKey
+  345.54MB  2.11% 88.49%   520.55MB  3.19%  github.com/johnsonlee/graphite/graphite-server/internal/query.key
+   16.20MB 0.099% 88.59%   440.41MB  2.70%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows
+  360.06MB  2.20% 90.80%   360.06MB  2.20%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).NodesOfKind (inline)
+         0     0% 90.80%   346.52MB  2.12%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+         0     0% 90.80%   346.52MB  2.12%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches
+         0     0% 90.80%   346.52MB  2.12%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase (inline)
+         0     0% 90.80%   346.52MB  2.12%  strings.(*Builder).Grow
+  346.52MB  2.12% 92.92%   346.52MB  2.12%  strings.(*Builder).grow
+  250.01MB  1.53% 94.45%   250.01MB  1.53%  bytes.NewReader (inline)
+     207MB  1.27% 95.71%      207MB  1.27%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+         0     0% 95.71%      207MB  1.27%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).scalarBytes
+         0     0% 95.71%      182MB  1.11%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+  154.01MB  0.94% 96.66%   154.01MB  0.94%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+         0     0% 96.66%   142.30MB  0.87%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct
+         0     0% 96.66%      127MB  0.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+  119.53MB  0.73% 97.39%   119.53MB  0.73%  github.com/johnsonlee/graphite/graphite-server/internal/query.clone (inline)
+         0     0% 97.39%   110.51MB  0.68%  strconv.Quote (inline)
+  110.51MB  0.68% 98.06%   110.51MB  0.68%  strconv.quoteWith (inline)
+   89.51MB  0.55% 98.61%    89.51MB  0.55%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+         0     0% 98.61%    88.01MB  0.54%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctStringTableID
+         0     0% 98.61%    88.01MB  0.54%  github.com/johnsonlee/graphite/graphite-server/internal/query.javaUTF16 (inline)
+    9.01MB 0.055% 98.67%    77.51MB  0.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRange
+         0     0% 98.67%    77.51MB  0.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows.func1
+         0     0% 98.67%    70.01MB  0.43%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows.func2
+   68.84MB  0.42% 99.09%    68.84MB  0.42%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory
+         0     0% 99.09%    68.84MB  0.42%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).Directory
+         0     0% 99.09%    61.50MB  0.38%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*candidateSlot).property
+      54MB  0.33% 99.42%       54MB  0.33%  fmt.Sprintf
+         0     0% 99.42%    29.93MB  0.18%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyGenericNodes
+         0     0% 99.42%    29.93MB  0.18%  github.com/johnsonlee/graphite/graphite-server/internal/query.lazyGenericIDs
+   29.93MB  0.18% 99.60%    29.93MB  0.18%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).NodeIDs (inline)
+         0     0% 99.60%    29.93MB  0.18%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).QueryNodeIDs (inline)
+    0.55MB 0.0034% 99.60%    27.10MB  0.17%  main.(*replay).run
+         0     0% 99.60%    27.10MB  0.17%  main.main
+         0     0% 99.60%    27.10MB  0.17%  main.run
+         0     0% 99.60%    27.10MB  0.17%  runtime.main
+         0     0% 99.60%       27MB  0.17%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).count
+         0     0% 99.60%       25MB  0.15%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).u8 (inline)
+   17.50MB  0.11% 99.71%       18MB  0.11%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+         0     0% 99.71%    16.25MB 0.099%  main.(*replay).profileMeasure
+         0     0% 99.71%    15.09MB 0.092%  main.saveDiagnosticProfile
+         0     0% 99.71%    15.09MB 0.092%  runtime/pprof.(*Profile).WriteTo
+    2.40MB 0.015% 99.73%    15.09MB 0.092%  runtime/pprof.writeHeapInternal
+    2.50MB 0.015% 99.74%    12.69MB 0.078%  runtime/pprof.writeHeapProto
+    1.61MB 0.0099% 99.75%    10.30MB 0.063%  github.com/johnsonlee/graphite/graphite-server/internal/benchmarkcase.CanonicalResult
+         0     0% 99.75%     9.55MB 0.058%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.ordinarySourceRows
+         0     0% 99.75%     8.55MB 0.052%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator
+    0.50MB 0.0031% 99.75%     8.55MB 0.052%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs
+         0     0% 99.75%     8.55MB 0.052%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.ordinaryCandidateIterator
+         0     0% 99.75%     8.50MB 0.052%  math/big.(*Rat).SetString
+         0     0% 99.75%     8.30MB 0.051%  runtime/pprof.writeAlloc
+         0     0% 99.75%     8.05MB 0.049%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.ordinaryProjection.func1
+         0     0% 99.75%     8.05MB 0.049%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.[]map[string]interface {}].func1.1
+         0     0% 99.75%     7.22MB 0.044%  runtime/pprof.(*profileBuilder).appendLocsForStack
+         0     0% 99.75%     6.79MB 0.042%  runtime/pprof.writeHeap
+         0     0% 99.75%     6.69MB 0.041%  github.com/johnsonlee/graphite/graphite-server/internal/benchmarkcase.sequence
+       1MB 0.0061% 99.76%     6.02MB 0.037%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.stringIndexMatches
+    5.02MB 0.031% 99.79%     5.02MB 0.031%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).TrigramStringIDs
+         0     0% 99.79%     5.02MB 0.031%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).ProjectionTrigramStrings
+       5MB 0.031% 99.82%        5MB 0.031%  math/big.nat.make
+         0     0% 99.82%     4.57MB 0.028%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.ordinaryProjection
+    4.16MB 0.025% 99.85%     4.16MB 0.025%  strings.(*Builder).WriteString
+       4MB 0.024% 99.87%        4MB 0.024%  runtime/pprof.allFrames
+    3.50MB 0.021% 99.89%     3.50MB 0.021%  strings.NewReader
+    2.71MB 0.017% 99.91%     3.22MB  0.02%  runtime/pprof.(*profileBuilder).emitLocation
+    1.76MB 0.011% 99.92%     2.97MB 0.018%  compress/flate.NewWriter
+         0     0% 99.92%     2.97MB 0.018%  compress/gzip.(*Writer).Write
+         0     0% 99.92%     2.97MB 0.018%  runtime/pprof.(*profileBuilder).flush
+         0     0% 99.92%     2.97MB 0.018%  runtime/pprof.(*profileBuilder).pbSample
+    0.50MB 0.0031% 99.92%     2.57MB 0.016%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.ordinaryLeadingRows
+    2.52MB 0.015% 99.94%     2.52MB 0.015%  github.com/johnsonlee/graphite/graphite-server/internal/benchmarkcase.frame

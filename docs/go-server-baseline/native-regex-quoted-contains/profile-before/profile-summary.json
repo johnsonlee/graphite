@@ -1,0 +1,240 @@
+{
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false,
+  "allRunLatenciesProfileContaminated": true,
+  "perCaseP95Available": false,
+  "forcedGCAdded": false,
+  "fullOrderedCaseCount": 1267,
+  "observedSource": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-before-61828229-v1/source",
+  "binary": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-before-61828229-v1/graphite-benchmark-profile",
+  "profiles": [
+    {
+      "id": "regex-or-zero",
+      "index": 892,
+      "outcome": "SUCCESS",
+      "rowCount": 0,
+      "digest": "425b336aa734c4a1ffbfb58aeaf5489b33f919170492c4bff859504736492e7f",
+      "diagnosticMeasureNanos": 25578261000,
+      "totalAllocDelta": 21033952776,
+      "mallocsDelta": 728447358,
+      "freesDelta": 620786165,
+      "numGCDelta": 2,
+      "pauseTotalNsDelta": 266833,
+      "heapAllocBefore": 13074123376,
+      "heapAllocAfter": 16076289200,
+      "processCPUSecondsDelta": 34.54725,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 24630000000,
+        "totalCount": 2463,
+        "groups": {
+          "decodeJavaString": {
+            "value": 830000000,
+            "count": 83,
+            "fraction": 0.033698741372310194
+          },
+          "matcherMethodsUnion": {
+            "value": 9240000000,
+            "count": 924,
+            "fraction": 0.3751522533495737
+          },
+          "MatchesContext": {
+            "value": 10210000000,
+            "count": 1021,
+            "fraction": 0.414535119772635
+          },
+          "GCStacks": {
+            "value": 6010000000,
+            "count": 601,
+            "fraction": 0.2440113682501015
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 17133273573,
+        "totalCount": 353109595,
+        "groups": {
+          "decodeJavaString": {
+            "value": 693765817,
+            "count": 4147839,
+            "fraction": 0.040492309542835545
+          },
+          "matcherMethodsUnion": {
+            "value": 5705476129,
+            "count": 178296128,
+            "fraction": 0.3330056048361448
+          },
+          "MatchesContext": {
+            "value": 6500956146,
+            "count": 186682058,
+            "fraction": 0.37943456154489547
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    },
+    {
+      "id": "regex-or-targeted",
+      "index": 893,
+      "outcome": "SUCCESS",
+      "rowCount": 100,
+      "digest": "a7b9846908febb502abd47dcc7269165df8c94605a7dcdc63931103d82b581a2",
+      "diagnosticMeasureNanos": 7840787083,
+      "totalAllocDelta": 6058040768,
+      "mallocsDelta": 213349174,
+      "freesDelta": 310874953,
+      "numGCDelta": 1,
+      "pauseTotalNsDelta": 52833,
+      "heapAllocBefore": 16102616696,
+      "heapAllocAfter": 12722525936,
+      "processCPUSecondsDelta": 12.404417000000027,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 10140000000,
+        "totalCount": 1014,
+        "groups": {
+          "decodeJavaString": {
+            "value": 330000000,
+            "count": 33,
+            "fraction": 0.03254437869822485
+          },
+          "matcherMethodsUnion": {
+            "value": 3780000000,
+            "count": 378,
+            "fraction": 0.3727810650887574
+          },
+          "MatchesContext": {
+            "value": 4220000000,
+            "count": 422,
+            "fraction": 0.4161735700197239
+          },
+          "GCStacks": {
+            "value": 2940000000,
+            "count": 294,
+            "fraction": 0.28994082840236685
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 9429045648,
+        "totalCount": 277634737,
+        "groups": {
+          "decodeJavaString": {
+            "value": 908818500,
+            "count": 4201231,
+            "fraction": 0.09638499312947647
+          },
+          "matcherMethodsUnion": {
+            "value": 7403696786,
+            "count": 231365525,
+            "fraction": 0.7852010757388158
+          },
+          "MatchesContext": {
+            "value": 8416850986,
+            "count": 239914077,
+            "fraction": 0.8926514199011544
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": 0.0
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    },
+    {
+      "id": "regex-or-dense",
+      "index": 894,
+      "outcome": "SUCCESS",
+      "rowCount": 100,
+      "digest": "0740bcf1983553477a227138dc3b3ed095f06c984728dcc1bbffb3b71959a13b",
+      "diagnosticMeasureNanos": 687250,
+      "totalAllocDelta": 1879528,
+      "mallocsDelta": 13728,
+      "freesDelta": 2794,
+      "numGCDelta": 0,
+      "pauseTotalNsDelta": 0,
+      "heapAllocBefore": 12749131120,
+      "heapAllocAfter": 12751010648,
+      "processCPUSecondsDelta": 0.0013819999999711285,
+      "cpu": {
+        "valueType": "cpu/nanoseconds",
+        "countType": "samples/count",
+        "totalValue": 0,
+        "totalCount": 0,
+        "groups": {
+          "decodeJavaString": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "matcherMethodsUnion": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "MatchesContext": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      },
+      "sampledAllocationDelta": {
+        "valueType": "alloc_space/bytes",
+        "countType": "alloc_objects/count",
+        "totalValue": 0,
+        "totalCount": 0,
+        "groups": {
+          "decodeJavaString": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "matcherMethodsUnion": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "MatchesContext": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          },
+          "GCStacks": {
+            "value": 0,
+            "count": 0,
+            "fraction": null
+          }
+        },
+        "note": "Inclusive stack attribution; each group counts a sample once. Groups overlap and must not be summed. Memory snapshot deltas can include earlier-query allocations published by a later GC and omit recent allocations; these are not exact per-query allocation attribution."
+      }
+    }
+  ],
+  "limitations": [
+    "Profile covers all goroutines in this process, including GC and profiler bookkeeping.",
+    "May overlap other host correctness work; not controlled acceptance timing.",
+    "Default sampled alloc/heap profiles can lag GC; use exact MemStats counters for total allocation delta.",
+    "Before/after profile writes outside original measure still affect later history; no extra cases or forced GC added."
+  ]
+}

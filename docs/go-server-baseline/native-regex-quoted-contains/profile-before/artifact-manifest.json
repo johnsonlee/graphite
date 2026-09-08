@@ -1,0 +1,390 @@
+{
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false,
+  "allRunLatenciesProfileContaminated": true,
+  "sourceBuild": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-before-61828229-v1/source",
+  "frozenSource": "/Users/johnsonlee/.codex/benchmarks/graphite/ast-cache-61828229-build-v1/source",
+  "originalFrozenModuleFiles": 2529,
+  "unchangedInternalGoFiles": 279,
+  "changedFrozenFiles": [
+    "cmd/graphite-benchmark-latency/main.go"
+  ],
+  "addedCommandFile": "cmd/graphite-benchmark-latency/diagnostic_profile.go",
+  "sourceBuildInputsArchived": 303,
+  "nativeBinarySHA256": "63883d5a4fe94eb55af63691e72d7c390dae29672207439c1c5950bfb211c88c",
+  "controllerSession": 62710,
+  "controllerExitCode": 0,
+  "profileChildPID": 85153,
+  "profileChildExitCode": 1,
+  "analysisInitialExitCode": 1,
+  "analysisInitialFailure": "Postprocessing parser did not strip pprof [dflt] header marker; original log retained; no replay rerun.",
+  "analysisFinalExitCode": 0,
+  "frozenInputHashesVerified": 1031,
+  "forcedGCAdded": false,
+  "extraCasesAdded": false,
+  "fullOrderedCaseCount": 1267,
+  "realGraphCount": 64,
+  "auditedOriginalGraphFiles": 1152,
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 3891,
+      "sha256": "af2e6fb4b7a3c025c339e6354d2c4b8dc8f20ae4fab83c5969cc7d2aabeda083"
+    },
+    {
+      "file": "analysis-final.log",
+      "bytes": 7338,
+      "sha256": "b645b4db218a599d6b3f332b8d87056be0d8fa23ff7f5ccc3ffa1a42b69cfa55"
+    },
+    {
+      "file": "analysis-parser-initial-failure.log",
+      "bytes": 1823,
+      "sha256": "d5c93b86377e1d124c5b915c34a2404d4ae074248c1401dcd350f08ba0645d96"
+    },
+    {
+      "file": "analysis.log",
+      "bytes": 6618,
+      "sha256": "64338a6cc158fef0ce60b6bfe79dc49bb2f596c40f799ef7d542adab08c5b26d"
+    },
+    {
+      "file": "analyze-profile.py",
+      "bytes": 7148,
+      "sha256": "54e1f8820b9dab14c919756436cc6301e1e492e8f0f23699064756b2bc78341d"
+    },
+    {
+      "file": "build-source.tar.gz",
+      "bytes": 1079107,
+      "sha256": "ebc2c970fcf83dad3710bd62b5c982e16a9becefbd5459fae1eef3e1d84a6dc6"
+    },
+    {
+      "file": "build.json",
+      "bytes": 2427,
+      "sha256": "9141d0323fa80efbc530d75ef85f4e74cbe3c2978840573b41934afe983ca4c4"
+    },
+    {
+      "file": "build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "clone-preflight.json",
+      "bytes": 211,
+      "sha256": "c261a1ffff8358cd6b0212e95fc23ef8767c43ed3c452396a04941a9c0d5a524"
+    },
+    {
+      "file": "correctness.json",
+      "bytes": 1551,
+      "sha256": "ca20e873a7f4225521ee10b2b081e96e20fef2be36d2e9e4c54cfa27165ae0e6"
+    },
+    {
+      "file": "dependencies.jsonstream",
+      "bytes": 162109,
+      "sha256": "bae58d8c0b74f8db1383330d4dadb59097d27c225219bd51c26166f05c0fc8e0"
+    },
+    {
+      "file": "diagnostic_profile.go",
+      "bytes": 3611,
+      "sha256": "3647e8de4b65ea0d16146d76e44b7383bc8d68184e450a9f00d942dbf645f495"
+    },
+    {
+      "file": "frozen-source.json",
+      "bytes": 365039,
+      "sha256": "b787f2e4bebb6afd9dc2e9eb772aae02a792762cfc0970afcb26e4c56978c55a"
+    },
+    {
+      "file": "graphite-benchmark-profile.gz",
+      "bytes": 4623887,
+      "sha256": "81ff4eb281701bdf9ee219776b5f57fa6171411a658f46bbbad68a8a1e0190ac"
+    },
+    {
+      "file": "graphs-relocated.tsv",
+      "bytes": 28808,
+      "sha256": "6727b35997de472b91a6fb7f43d0c8aa2edc1fb695ea474d288a2ede58d4cecf"
+    },
+    {
+      "file": "helper-overlay.go",
+      "bytes": 3679,
+      "sha256": "f2667873d735050ad5382e194be57a860131c0667b474d46b0e06352cdac6e19"
+    },
+    {
+      "file": "host-after.txt",
+      "bytes": 80029,
+      "sha256": "c9fc85992653ec20718390f6c900ea33c026101136848fc0b001a951dd36f942"
+    },
+    {
+      "file": "host-before.txt",
+      "bytes": 81502,
+      "sha256": "81c0f58d604fc1b3f523b27f4a78b4357cef4fc9880ecf261a65acb1c865625c"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 165741,
+      "sha256": "a160cc04b597ec67ff8c32891c97ac5844a87c009b91dad6307705f60eff592c"
+    },
+    {
+      "file": "main-overlay.diff",
+      "bytes": 2241,
+      "sha256": "91e452a490f87c68abc564be05a75dca468fe61ccdbeba7371165351b0c239f9"
+    },
+    {
+      "file": "main-overlay.go",
+      "bytes": 13750,
+      "sha256": "be97e0d48c251291f419b12d1faaea0016fc6d47927061f2f6fccb30ed10a7b3"
+    },
+    {
+      "file": "observations.jsonl",
+      "bytes": 466667,
+      "sha256": "9bf070674a58d28fc6d8de756b1b602452f957fbc9fd97df351b647e7c8e2b07"
+    },
+    {
+      "file": "postrun-fixtures.json",
+      "bytes": 211,
+      "sha256": "c261a1ffff8358cd6b0212e95fc23ef8767c43ed3c452396a04941a9c0d5a524"
+    },
+    {
+      "file": "pprof-commands.json",
+      "bytes": 19700,
+      "sha256": "0c9f2f0ed26e0081e54a83d56a5002cea91f4f14dbe859edee9c9b05d20e8993"
+    },
+    {
+      "file": "process.json",
+      "bytes": 1869,
+      "sha256": "a8db17ec527fcfa52a2facd203e1dac5bd2c8c25ccd479d9469cfa619b2f72a0"
+    },
+    {
+      "file": "process.log",
+      "bytes": 2316,
+      "sha256": "79101f18b1a2b1cc68cb9e6cbbdac90ab33b0ecd0bdc0eb965976f2f7e890b40"
+    },
+    {
+      "file": "profile-summary.json",
+      "bytes": 8696,
+      "sha256": "0e566aad6b0b186f1f78f7e8e4bcfb1ff589cf6a105d306866a2bba3fe70c1e1"
+    },
+    {
+      "file": "profiles/regex-or-dense/after-allocs.pprof",
+      "bytes": 78472,
+      "sha256": "d68e258b163fe7d8b8e81a4ac0d6b5a38047cec5eca79ef6340b769c2d6e3c6f"
+    },
+    {
+      "file": "profiles/regex-or-dense/after-heap-top.txt",
+      "bytes": 5074,
+      "sha256": "4334e996d0526b5556ed96a8cc861c6127948a576c508568f21adacb1ee159f4"
+    },
+    {
+      "file": "profiles/regex-or-dense/after-heap.pprof",
+      "bytes": 78565,
+      "sha256": "e80f1bdb982d2cc15940a55392a08c241f7baccf06a1d5329b474fd7bbc4cce6"
+    },
+    {
+      "file": "profiles/regex-or-dense/alloc-delta-cum.txt",
+      "bytes": 174,
+      "sha256": "b57dc417d841801e7f60cc703ec1e63025fc7a2bce8dc238e7aa8a11a654154f"
+    },
+    {
+      "file": "profiles/regex-or-dense/alloc-delta-raw.txt",
+      "bytes": 350,
+      "sha256": "e4522325c439c9afd0455f4b90e111788ed98997219e2aafb1ac71a02f7e9b88"
+    },
+    {
+      "file": "profiles/regex-or-dense/alloc-delta-top.txt",
+      "bytes": 174,
+      "sha256": "b57dc417d841801e7f60cc703ec1e63025fc7a2bce8dc238e7aa8a11a654154f"
+    },
+    {
+      "file": "profiles/regex-or-dense/before-allocs.pprof",
+      "bytes": 78474,
+      "sha256": "9119d9cfedaac5ccd318fda9e3bdc9100f709f9e723274ce42ef55588b71bd9b"
+    },
+    {
+      "file": "profiles/regex-or-dense/before-heap-top.txt",
+      "bytes": 5074,
+      "sha256": "4334e996d0526b5556ed96a8cc861c6127948a576c508568f21adacb1ee159f4"
+    },
+    {
+      "file": "profiles/regex-or-dense/before-heap.pprof",
+      "bytes": 78484,
+      "sha256": "8dc3ea8c11a81f2c4b3e11c49b3e768224eccf0857a1af298983a9658478be9d"
+    },
+    {
+      "file": "profiles/regex-or-dense/counters.json",
+      "bytes": 28055,
+      "sha256": "398935abeec2f0ca25fe0d39ec77ecf456c91900e710e24aeecd0c25881ec0cd"
+    },
+    {
+      "file": "profiles/regex-or-dense/cpu-cum.txt",
+      "bytes": 205,
+      "sha256": "1130698ef8b60054cef14e8df7a2d8114db5198616b17b1a9c07c5bad4aef0f8"
+    },
+    {
+      "file": "profiles/regex-or-dense/cpu-raw.txt",
+      "bytes": 313,
+      "sha256": "43332e4aa523e5556abd8c4a497c6ca37742ff3dc9e9aeb731f628faf12c98f1"
+    },
+    {
+      "file": "profiles/regex-or-dense/cpu-top.txt",
+      "bytes": 205,
+      "sha256": "1130698ef8b60054cef14e8df7a2d8114db5198616b17b1a9c07c5bad4aef0f8"
+    },
+    {
+      "file": "profiles/regex-or-dense/cpu.pprof",
+      "bytes": 242,
+      "sha256": "010cf6ce04ec29b9f98425b4919b6777a95f719c6d01c8886f141e5274801202"
+    },
+    {
+      "file": "profiles/regex-or-targeted/after-allocs.pprof",
+      "bytes": 78305,
+      "sha256": "9e9858d2743e06781a3ea5b440ce8b86bcc1e6d46face2cf32fee3c3dde5a143"
+    },
+    {
+      "file": "profiles/regex-or-targeted/after-heap-top.txt",
+      "bytes": 5074,
+      "sha256": "4334e996d0526b5556ed96a8cc861c6127948a576c508568f21adacb1ee159f4"
+    },
+    {
+      "file": "profiles/regex-or-targeted/after-heap.pprof",
+      "bytes": 78462,
+      "sha256": "08a54ba2aefbc4ccc1be891b2da5609386ba4881c24eb2a7d5325fc29097e9d8"
+    },
+    {
+      "file": "profiles/regex-or-targeted/alloc-delta-cum.txt",
+      "bytes": 4560,
+      "sha256": "2d8080ddbc3e1047c510edc5f2510a7d47bfd75fcb8a5d8144b515c4b44d1d0f"
+    },
+    {
+      "file": "profiles/regex-or-targeted/alloc-delta-raw.txt",
+      "bytes": 33943,
+      "sha256": "6960841f45337df3a46f1d095572189aeaff8359d5ab8d79ee20e7368e6ab9c3"
+    },
+    {
+      "file": "profiles/regex-or-targeted/alloc-delta-top.txt",
+      "bytes": 4560,
+      "sha256": "72bc7bc4f30b776ff23cf9a04515051d6de94b40f4d4408fc176449d635d1cbf"
+    },
+    {
+      "file": "profiles/regex-or-targeted/before-allocs.pprof",
+      "bytes": 77705,
+      "sha256": "04a60a57c35b7d66f9d8c02ec4388e1e3e586676e686a69bda9e9620648181cd"
+    },
+    {
+      "file": "profiles/regex-or-targeted/before-heap-top.txt",
+      "bytes": 5075,
+      "sha256": "f56b9967b75df9c3ff78e567ef2658d5b1d83ab674ba46a69327a6b89e7daf44"
+    },
+    {
+      "file": "profiles/regex-or-targeted/before-heap.pprof",
+      "bytes": 77702,
+      "sha256": "548a3b8cf573a553a549d2cf1265ed4ad175a75118495c9bf0f2ca44fcaa0474"
+    },
+    {
+      "file": "profiles/regex-or-targeted/counters.json",
+      "bytes": 28055,
+      "sha256": "657e68b3e923298f1f54dbda272229f953477b9292536083da9f683c6dcf4d78"
+    },
+    {
+      "file": "profiles/regex-or-targeted/cpu-cum.txt",
+      "bytes": 8806,
+      "sha256": "18ffcc1b8b717ec8e0d331a10802276d6ef17da37d649dfda1d77ff8ea669f61"
+    },
+    {
+      "file": "profiles/regex-or-targeted/cpu-raw.txt",
+      "bytes": 99466,
+      "sha256": "17950873de2cc18e395f27746122797f07293a9ec27878e1d1c51a471531fdb8"
+    },
+    {
+      "file": "profiles/regex-or-targeted/cpu-top.txt",
+      "bytes": 9296,
+      "sha256": "8546455ab8f39c61f37983ba8c7d8868d4febd6d30a4692ae00a5bea01a41466"
+    },
+    {
+      "file": "profiles/regex-or-targeted/cpu.pprof",
+      "bytes": 13384,
+      "sha256": "d76bc65b999d994141fc699f57a84656cc117aebee6a0584e904f4276b721f0a"
+    },
+    {
+      "file": "profiles/regex-or-zero/after-allocs.pprof",
+      "bytes": 77636,
+      "sha256": "5fbe5699ee3bc83334fa06ab83509967f3b18ec2f8939117eae0359265571beb"
+    },
+    {
+      "file": "profiles/regex-or-zero/after-heap-top.txt",
+      "bytes": 5075,
+      "sha256": "f56b9967b75df9c3ff78e567ef2658d5b1d83ab674ba46a69327a6b89e7daf44"
+    },
+    {
+      "file": "profiles/regex-or-zero/after-heap.pprof",
+      "bytes": 77679,
+      "sha256": "52ad14cfb74e1d745ee971b9d92a7d8d34f571ebd574b0306de65403e3143365"
+    },
+    {
+      "file": "profiles/regex-or-zero/alloc-delta-cum.txt",
+      "bytes": 11962,
+      "sha256": "30465a163b7f3d81b0fc9b55d8af171557f7d72894a814c5f78098f0379c46cf"
+    },
+    {
+      "file": "profiles/regex-or-zero/alloc-delta-raw.txt",
+      "bytes": 143769,
+      "sha256": "0fbf5c42cae99caebc7f19481b51489e40020a9e48ed77e4f75f96578b6cb255"
+    },
+    {
+      "file": "profiles/regex-or-zero/alloc-delta-top.txt",
+      "bytes": 12554,
+      "sha256": "0b049f23412239871f4b28a09dfaf23c24493122edcc694be1fc6c9ce8cdd281"
+    },
+    {
+      "file": "profiles/regex-or-zero/before-allocs.pprof",
+      "bytes": 70364,
+      "sha256": "f1850128c846c3235551542b05427bc189c242e07b1bb41891bba2aeb6d324b6"
+    },
+    {
+      "file": "profiles/regex-or-zero/before-heap-top.txt",
+      "bytes": 4365,
+      "sha256": "50d2a044a896b01a9eba1849ff9a21aaa9df21a1f719b0dba2ed7fddd28760a8"
+    },
+    {
+      "file": "profiles/regex-or-zero/before-heap.pprof",
+      "bytes": 70984,
+      "sha256": "fa1605f0125eeb634cfa8250bfe5d0fbaa72551039a7bf0a1851f3c4ebc45eda"
+    },
+    {
+      "file": "profiles/regex-or-zero/counters.json",
+      "bytes": 27972,
+      "sha256": "130704770949a36adf9cb1fe4768feaf1b52827cea90335d98d532112b6e74a8"
+    },
+    {
+      "file": "profiles/regex-or-zero/cpu-cum.txt",
+      "bytes": 8930,
+      "sha256": "8f3ad1e446bee9ed26eb31942d97e00957f27760db77e994cd1facd3d7c953c4"
+    },
+    {
+      "file": "profiles/regex-or-zero/cpu-raw.txt",
+      "bytes": 215521,
+      "sha256": "3d68abbd368dd7462d2bba039002a59555a6bcfd66b4ef191d88e53b3982d923"
+    },
+    {
+      "file": "profiles/regex-or-zero/cpu-top.txt",
+      "bytes": 9062,
+      "sha256": "b0d23b8e76bfeaaec2e4f4ef1e152d7df5979e84acf1fbc2461f00b5475cac2b"
+    },
+    {
+      "file": "profiles/regex-or-zero/cpu.pprof",
+      "bytes": 24723,
+      "sha256": "99a215c643205aa2dadc4d38bda4317304523c9e4f676067f6f2c56bb5da2822"
+    },
+    {
+      "file": "reference-preflight.json",
+      "bytes": 173,
+      "sha256": "a621c90abb7b5c65e2e3b33f9b598c8c2da49851e115a9953336323c81f2a0b1"
+    },
+    {
+      "file": "run-profile.py",
+      "bytes": 7111,
+      "sha256": "be64fa0e27f9a2d2fde468dcdf570b4233ff8f6e793e21969de21f2927d8f7e5"
+    },
+    {
+      "file": "source-archive.json",
+      "bytes": 51739,
+      "sha256": "229f41994052b6db782061fb5504e02d5fd9b468ac86b22d5bb215b180483c58"
+    }
+  ]
+}

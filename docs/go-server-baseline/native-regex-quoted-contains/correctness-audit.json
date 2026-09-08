@@ -1,0 +1,11 @@
+{
+  "moduleFilesUnchanged": 2534,
+  "internalGoFilesEqualAcrossWorkspaceCorrectnessAndProfile": 284,
+  "allThreeComparatorsPassed": true,
+  "casesPerState": 1267,
+  "successfulCasesPerState": 1266,
+  "originalFailurePreserved": true,
+  "graphStateObservations": 486848,
+  "formalWarmPrepared": false,
+  "performanceMeasurement": false
+}

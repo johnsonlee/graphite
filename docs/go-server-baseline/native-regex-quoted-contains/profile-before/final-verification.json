@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "artifactManifestSHA256": "12094fc3b73ad516f0e216983f93ca0de1a06aa30072ba6341fb61ca83fd00e8",
+  "artifactsVerified": 72,
+  "frozenInputsReverified": 1031,
+  "sourceArchiveEntriesComparedWithExternalModule": 303,
+  "binaryGzipDecodedBytesMatchFrozenBinary": true,
+  "internalGoFilesUnchanged": 279,
+  "referenceCloneAndPostAudits1152Each": true,
+  "canonicalResults1267Verified": true,
+  "successes": 1266,
+  "originalFailures": 1,
+  "newErrorsOrTimeouts": 0,
+  "profileCPUSampleCountsAndCounterDifferencesIndependentlyRechecked": true,
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false,
+  "perCaseP95Available": false,
+  "graphCloneRetainedAt": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-before-61828229-v1/fixture",
+  "notes": [
+    "All query clocks in this run are profiling-contaminated.",
+    "Allocation/heap snapshot differences may include earlier queries due GC publication lag; not exact per-query allocation attribution.",
+    "No forced GC or extra query was added."
+  ]
+}

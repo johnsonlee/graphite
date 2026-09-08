@@ -83,9 +83,10 @@ type node struct {
 
 // Pattern is immutable after compilation and safe for concurrent matching.
 type Pattern struct {
-	source string
-	root   *node
-	groups int
+	source   string
+	root     *node
+	groups   int
+	contains *quotedContains
 }
 
 func Compile(pattern string) (*Pattern, error) { return CompileContext(context.Background(), pattern) }
@@ -109,7 +110,11 @@ func CompileContext(ctx context.Context, pattern string) (*Pattern, error) {
 	if p.pos < len(p.input) {
 		return nil, p.fail("Unmatched closing ')'", p.pos-1)
 	}
-	return &Pattern{source: pattern, root: root, groups: p.groups}, nil
+	contains, err := compileQuotedContains(ctx, pattern)
+	if err != nil {
+		return nil, err
+	}
+	return &Pattern{source: pattern, root: root, groups: p.groups, contains: contains}, nil
 }
 func MatchesContext(ctx context.Context, pattern, text string) (bool, error) {
 	p, err := CompileContext(ctx, pattern)
@@ -121,6 +126,12 @@ func MatchesContext(ctx context.Context, pattern, text string) (bool, error) {
 func (p *Pattern) MatchesContext(ctx context.Context, text string) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, err
+	}
+	if p.contains != nil {
+		matched, handled, err := p.contains.matches(ctx, text)
+		if handled || err != nil {
+			return matched, err
+		}
 	}
 	runes, err := decodeJavaString(ctx, text)
 	if err != nil {

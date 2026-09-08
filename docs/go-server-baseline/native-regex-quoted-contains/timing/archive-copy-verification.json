@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "copiedFilesVerified": 80,
+  "deduplicatedSourcesVerified": 2,
+  "identityOnlyFilesVerified": 11,
+  "generatedArtifactsVerified": 6,
+  "archiveManifestSHA256": "80d7da51c131d0480a50ea931e7007e3ef587fec0dc9ddc355f1939d145b7f39",
+  "verification": "Independent reread of each source and archive; exact decoded bytes and SHA256.",
+  "graphClonesReopened": false
+}

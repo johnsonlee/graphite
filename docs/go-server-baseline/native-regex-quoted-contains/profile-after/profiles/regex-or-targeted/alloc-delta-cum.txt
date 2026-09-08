@@ -1,0 +1,5 @@
+File: graphite-benchmark-profile
+Type: alloc_space
+Time: Sep 8, 2026 at 3:55pm (KST)
+Showing nodes accounting for 0, 0% of 0 total
+      flat  flat%   sum%        cum   cum%

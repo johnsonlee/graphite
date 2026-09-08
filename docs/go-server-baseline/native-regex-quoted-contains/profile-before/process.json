@@ -1,0 +1,37 @@
+{
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-before-61828229-v1/graphite-benchmark-profile",
+    "--graphs",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-before/graphs-relocated.tsv",
+    "--state",
+    "cold",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-before-61828229-v1/source/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-before/observations.jsonl"
+  ],
+  "status": "exited",
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false,
+  "allRunLatenciesProfileContaminated": true,
+  "clone": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-before-61828229-v1/fixture",
+  "inputsSHA256": "a160cc04b597ec67ff8c32891c97ac5844a87c009b91dad6307705f60eff592c",
+  "binarySHA256": "63883d5a4fe94eb55af63691e72d7c390dae29672207439c1c5950bfb211c88c",
+  "manifestSHA256": "6727b35997de472b91a6fb7f43d0c8aa2edc1fb695ea474d288a2ede58d4cecf",
+  "mayOverlapOtherCorrectnessWork": true,
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null,
+    "GRAPHITE_DIAGNOSTIC_PROFILE_DIR": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-before/profiles"
+  },
+  "pid": 85153,
+  "startedAtNanos": 1788848589510739000,
+  "startedAt": "2026-09-08T06:23:09.510753+00:00",
+  "exitCode": 1,
+  "finishedAtNanos": 1788848682420363000,
+  "finishedAt": "2026-09-08T06:24:42.420374+00:00",
+  "inputsUnchanged": true,
+  "fixtureAuditPassed": true
+}

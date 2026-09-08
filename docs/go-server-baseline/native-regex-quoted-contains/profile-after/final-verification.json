@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "artifactManifestSHA256": "8b0e48ebbe5f320e5605bb08b0e8fa6982f6c067474fe71ef730b3a89ff3faae",
+  "artifactsVerified": 70,
+  "frozenInputsReverified": 1036,
+  "sourceArchiveEntriesCompared": 308,
+  "binaryGzipDecodedBytesMatchFrozenBinary": true,
+  "referenceCloneAndPostAudits1152Each": true,
+  "canonicalResults1267Verified": true,
+  "successes": 1266,
+  "originalFailures": 1,
+  "newErrorsOrTimeouts": 0,
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false,
+  "perCaseP95Available": false
+}

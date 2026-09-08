@@ -1,0 +1,359 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-zero/after-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-targeted/after-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/cpu-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/cpu-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/cpu.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/cpu-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-raw",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/before-allocs.pprof",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/alloc-delta-raw.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/alloc-delta-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-sample_index=alloc_space",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/before-allocs.pprof",
+      "-nodefraction=0",
+      "-nodecount=100",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/after-allocs.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/alloc-delta-cum.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/before-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/before-heap-top.txt",
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=60",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/after-heap.pprof"
+    ],
+    "output": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/profile-after/profiles/regex-or-dense/after-heap-top.txt",
+    "exitCode": 0
+  }
+]

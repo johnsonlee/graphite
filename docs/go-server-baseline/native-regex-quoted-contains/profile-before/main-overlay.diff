@@ -1,0 +1,20 @@
+--- frozen/main.go
++++ diagnostic/main.go
+@@ -181,7 +181,7 @@
+ 			return records, err
+ 		}
+ 		c := r.w.Cases[i]
+-		response, elapsed, timedOut, err := r.measure(ctx, input)
++		response, elapsed, timedOut, err := r.profileMeasure(ctx, input, c.ID)
+ 		if err != nil {
+ 			return records, fmt.Errorf("%s: %w", c.ID, err)
+ 		}
+@@ -362,7 +362,7 @@
+ 	// the entire replay, including when the original all-success gate fails.
+ 	enc := json.NewEncoder(f)
+ 	enc.SetEscapeHTML(false)
+-	header := map[string]any{"kind": "header", "protocol": "real64-dispatch-inclusive-sampling-v1", "state": *state, "caseCount": len(w.Cases), "graphCount": len(r.graphs), "sourceOrder": w.SourceOrder, "workloadSHA256": main64SHA256, "mainRevision": w.MainRevision, "performanceMeasurement": true, "diagnosticOnly": true, "sampleCountPerCase": 1, "timingBoundary": "context-source-selection-worker-dispatch-parse-execute-materialize-reply", "workTrackingEnabled": true, "workBudget": "unlimited", "cancellationGraceMillis": cancellationGrace.Milliseconds(), "runtime": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "gomaxprocs": runtime.GOMAXPROCS(0), "unavailableParity": []string{"finite work accounting", "main resource sampler and execution metrics"}}
++	header := map[string]any{"kind": "header", "protocol": "real64-dispatch-inclusive-sampling-v1", "state": *state, "caseCount": len(w.Cases), "graphCount": len(r.graphs), "sourceOrder": w.SourceOrder, "workloadSHA256": main64SHA256, "mainRevision": w.MainRevision, "performanceMeasurement": false, "diagnosticProfiling": true, "allRunLatenciesProfileContaminated": true, "diagnosticOnly": true, "sampleCountPerCase": 1, "timingBoundary": "context-source-selection-worker-dispatch-parse-execute-materialize-reply", "workTrackingEnabled": true, "workBudget": "unlimited", "cancellationGraceMillis": cancellationGrace.Milliseconds(), "runtime": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "gomaxprocs": runtime.GOMAXPROCS(0), "unavailableParity": []string{"finite work accounting", "main resource sampler and execution metrics"}}
+ 	header["diagnosticWarmupContinued"] = *state == "warm-after-failed-prewarm"
+ 	header["formalWarmPrepared"] = false
+ 	if warmupErr != nil {

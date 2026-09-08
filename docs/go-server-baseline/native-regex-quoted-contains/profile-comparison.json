@@ -1,0 +1,46 @@
+{
+  "sameCommandAndProfilerHelperBytes": true,
+  "sameOrderedWorkloadCases": 1267,
+  "cases": [
+    {
+      "id": "regex-or-zero",
+      "beforeTotalAllocBytes": 21033952776,
+      "afterTotalAllocBytes": 2326225432,
+      "allocationReductionFraction": 0.8894061683615525,
+      "beforeProcessCPUSeconds": 34.54725,
+      "afterProcessCPUSeconds": 11.178630000000016,
+      "beforeDiagnosticSeconds": 25.578261,
+      "afterDiagnosticSeconds": 11.188200792
+    },
+    {
+      "id": "regex-or-targeted",
+      "beforeTotalAllocBytes": 6058040768,
+      "afterTotalAllocBytes": 743596368,
+      "allocationReductionFraction": 0.8772546444507519,
+      "beforeProcessCPUSeconds": 12.404417000000027,
+      "afterProcessCPUSeconds": 3.5271739999999845,
+      "beforeDiagnosticSeconds": 7.840787083,
+      "afterDiagnosticSeconds": 3.524406583
+    },
+    {
+      "id": "regex-or-dense",
+      "beforeTotalAllocBytes": 1879528,
+      "afterTotalAllocBytes": 1636208,
+      "allocationReductionFraction": 0.12945803414474277,
+      "beforeProcessCPUSeconds": 0.0013819999999711285,
+      "afterProcessCPUSeconds": 0.000936999999996857,
+      "beforeDiagnosticSeconds": 0.00068725,
+      "afterDiagnosticSeconds": 0.000461667
+    }
+  ],
+  "diagnosticProfiling": true,
+  "performanceMeasurement": false,
+  "perCaseP95Available": false,
+  "noForcedGCAdded": true,
+  "limitations": [
+    "Independent profiling invocations, not controlled acceptance latency trials.",
+    "Process CPU and MemStats brackets include profiler bookkeeping and all process goroutines.",
+    "Sampled alloc/heap profile deltas can lag GC; reported allocation counters use MemStats TotalAlloc.",
+    "Previous profile includes pre-correction engine; compatibility correction is independently validated and the exact module sources are retained."
+  ]
+}

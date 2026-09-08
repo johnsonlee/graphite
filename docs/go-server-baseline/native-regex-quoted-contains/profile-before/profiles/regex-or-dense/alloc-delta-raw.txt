@@ -1,0 +1,8 @@
+PeriodType: space bytes
+Period: 524288
+Time: 2026-09-08 15:24:40.784012 +0900 KST
+Samples:
+alloc_objects/count alloc_space/bytes[dflt] inuse_objects/count inuse_space/bytes
+Locations
+Mappings
+1: 0x100ad4000/0x100ddc000/0x0 /Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-before-61828229-v1/graphite-benchmark-profile  [FN]

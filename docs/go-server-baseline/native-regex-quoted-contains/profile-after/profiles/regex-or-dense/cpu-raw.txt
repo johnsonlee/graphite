@@ -1,0 +1,9 @@
+PeriodType: cpu nanoseconds
+Period: 10000000
+Time: 2026-09-08 15:55:06.441593 +0900 KST
+Duration: 209.
+Samples:
+samples/count cpu/nanoseconds
+Locations
+Mappings
+1: 0x1044ac000/0x1047b4000/0x0 /Users/johnsonlee/.codex/benchmarks/graphite/regex-quoted-contains-profile-after-bc708-v1/graphite-benchmark-profile  

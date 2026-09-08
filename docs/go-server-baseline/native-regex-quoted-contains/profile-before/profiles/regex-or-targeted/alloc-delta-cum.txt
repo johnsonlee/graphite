@@ -1,0 +1,41 @@
+File: graphite-benchmark-profile
+Type: alloc_space
+Time: Sep 8, 2026 at 3:24pm (KST)
+Showing nodes accounting for 8992.24MB, 100% of 8992.24MB total
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%  8991.72MB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCrossWithOptions
+         0     0%     0%  8991.72MB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0%     0%  8991.72MB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyFiltered
+         0     0%     0%  8991.72MB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0%     0%  8991.72MB   100%  main.newWorker.func1
+         0     0%     0%  8089.44MB 89.96%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+         0     0%     0%  8089.44MB 89.96%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+   99.50MB  1.11%  1.11%  8026.93MB 89.27%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*Pattern).MatchesContext
+         0     0%  1.11%  8026.93MB 89.27%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.regexMatch
+ 7060.72MB 78.52% 79.63%  7060.72MB 78.52%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*matcher).match
+         0     0% 79.63%  6930.21MB 77.07%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*matcher).sequence
+         0     0% 79.63%  6793.71MB 75.55%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*matcher).sequence.func1
+         0     0% 79.63%  6793.71MB 75.55%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.(*matcher).simpleRepeat
+         0     0% 79.63%   867.54MB  9.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyGenericNodes.func1
+   32.50MB  0.36% 79.99%   867.54MB  9.65%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+  866.72MB  9.64% 89.63%   866.72MB  9.64%  github.com/johnsonlee/graphite/graphite-server/internal/javaregex.decodeJavaString
+    0.50MB 0.0056% 89.63%   405.01MB  4.50%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+  160.01MB  1.78% 91.41%   310.51MB  3.45%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+  305.51MB  3.40% 94.81%   305.51MB  3.40%  bytes.NewReader (inline)
+  244.50MB  2.72% 97.53%   244.50MB  2.72%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+         0     0% 97.53%   244.50MB  2.72%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).scalarBytes
+         0     0% 97.53%      225MB  2.50%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+         0     0% 97.53%      157MB  1.75%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+  124.51MB  1.38% 98.91%   124.51MB  1.38%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+         0     0% 98.91%    62.50MB   0.7%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*candidateSlot).property
+   62.50MB   0.7% 99.61%    62.50MB   0.7%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+         0     0% 99.61%    34.75MB  0.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyGenericNodes
+         0     0% 99.61%    34.75MB  0.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.lazyGenericIDs
+   34.75MB  0.39%   100%    34.75MB  0.39%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).NodeIDs (inline)
+         0     0%   100%    34.75MB  0.39%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).QueryNodeIDs (inline)
+         0     0%   100%       32MB  0.36%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).count
+         0     0%   100%    19.50MB  0.22%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).u8 (inline)
+         0     0%   100%     2.50MB 0.028%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).optionalString
+    0.52MB 0.0058%   100%     0.52MB 0.0058%  runtime/pprof.(*profMap).lookup
+         0     0%   100%     0.52MB 0.0058%  runtime/pprof.(*profileBuilder).addCPUData
+         0     0%   100%     0.52MB 0.0058%  runtime/pprof.profileWriter

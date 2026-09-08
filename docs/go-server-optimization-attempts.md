@@ -1065,3 +1065,75 @@ failures and verified response archives are retained in
 `docs/go-server-baseline/native-regex-quoted-contains/quote-functional/`, with the
 actual-Java parent oracles alongside. Full server fidelity, required benchmark
 checks and the 10x per-case P95 target remain open.
+
+### 2026-09-08 — Attempt 23: compile strict quoted-contains matcher plans
+
+Hypothesis: the three original real64 quoted-literal regex cases spend substantial
+CPU and allocation in general matcher execution and input code-point decoding.
+After the separate Java quote semantic correction, baseline Go is `0d055463`;
+original main remains `4e328b0109e13c896b74004823fb049fcb19251a`.
+
+Preserve ordinary regex compilation and errors, then retain an immutable KMP
+prefix table for exactly `.*\Qliteral\E.*` with a nonempty ASCII literal, no CR/LF
+and no embedded quote terminator. ASCII input uses linear literal search with
+whole-input line checks; non-ASCII/WTF8 and every other pattern use the complete
+matcher. Context checks cover long input, prefix construction and fallback loops.
+Candidate scans, property reads, expression order, eager OR and error propagation
+are unchanged. This is one matcher hypothesis, separate from the functional fix.
+
+Full-module race tests and vet pass, with 2,542 recorded inputs unchanged. Tests
+cover actual-Java results/errors, whole-string line rules, all ASCII bytes,
+Unicode/WTF8 fallback, overlapping and long literals, cancellation, concurrency,
+public null/type/error ordering, parameter reuse and compile-cache eviction.
+New full real64 correctness captures use the same 64 physical graphs / 1,152
+original files and all 1,267 ordered cases in cold, warm prewarm and
+startup-prepared states; terminal comparison and archive evidence is retained.
+The original failed case and unprepared formal warm remain explicit.
+
+The before and after diagnostic profiles use identical command/helper bytes,
+the complete original workload and no additional forced GC. All 1,267 signatures
+are preserved. The earlier profile precedes the independent functional quote
+correction; exact source and executable archives preserve that difference.
+
+| Case | Before TotalAlloc (bytes) | Candidate TotalAlloc (bytes) | Before process CPU (s) | Candidate process CPU (s) |
+| --- | ---: | ---: | ---: | ---: |
+| regex-or-zero | 21,033,952,776 | 2,326,225,432 | 34.547250 | 11.178630 |
+| regex-or-targeted | 6,058,040,768 | 743,596,368 | 12.404417 | 3.527174 |
+| regex-or-dense | 1,879,528 | 1,636,208 | 0.001382 | 0.000937 |
+
+These process-counter brackets include profiler bookkeeping. All profiled clocks
+are contaminated diagnostics, not latency acceptance. Sampled allocation/heap
+differences can lag GC; exact TotalAlloc deltas are reported above. The dense case
+has no CPU samples. Afterward, ProjectionCandidateNode occupies 52.64% of the
+zero-result case's inclusive CPU samples, identifying candidate decoding as a
+future investigation rather than another change in this attempt.
+
+Three main/Go paired timing runs complete from frozen source commit
+`8677aff8f9b7a5e575879b698546c38d7af4a48c`; the incremental bundle preserves that
+measurement commit before the evidence amend. All six runtimes terminate with the
+original gate exit 1, and all three pair verifications pass. Every case, canonical
+success, original failure and both diagnostic prewarm ledgers are retained.
+Builds, tests and profiling do not overlap these timed invocations.
+
+| State | Previous Go success sum (s) | Candidate Go success sum (s) | Paired main success sum (s) | Candidate Go slower than main |
+| --- | ---: | ---: | ---: | ---: |
+| cold | 74.301 | 56.654 | 26.836 | 937 / 1266 |
+| startup-prepared | 73.715 | 56.084 | 24.659 | 926 / 1266 |
+| warm-after-failed-prewarm (diagnostic) | 67.763 | 50.492 | 19.443 | 1180 / 1266 |
+
+Candidate Go regex-or-zero is about 10.88–10.92 s, and regex-or-targeted about
+3.45–3.47 s across states. Paired main observations are 12.59–14.40 s and
+4.09–4.50 s respectively. These are n=1 point observations, not per-case P95 or
+statistical regression estimates. The prior Go campaign precedes the independent
+quote semantic correction; all old/new observations and exact source identities
+remain visible. Main's original resource counters are retained; Go diagnostic
+counter observations above are separate from formal sampled resource accounting.
+
+Keep the matcher plan: full observed correctness and graph-state parity are
+preserved, and each timing state shows lower slow-regex and aggregate query
+clock observations, consistent with removal of general matcher/decoder work.
+All 3,801 per-state/case summary rows remain insufficient; summary exit 1 preserves
+unproven acceptance. The full 10x target, required benchmark gates, formal warm,
+resource/work accounting and server fidelity remain open. Commands, environment,
+source hashes, complete captures and limitations are in
+`docs/go-server-baseline/native-regex-quoted-contains/`.

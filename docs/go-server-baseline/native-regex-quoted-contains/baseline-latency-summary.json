@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Frozen previous AST-cache campaign inputs for quoted-contains comparison; no new timing",
+  "baselineEngineRevision": "6182822983971ab1ec9dbee1023665a60c36e465",
+  "baselineFinalRevision": "bc708a810fce0d111988c72a3105820bfd1cf06e",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "workload": {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json",
+    "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+  },
+  "graphManifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "samplesPerCasePerRuntimePerState": 1,
+  "perCaseP95Available": false,
+  "tenfoldP95AcceptanceProven": false,
+  "states": [
+    {
+      "state": "cold",
+      "trialId": "cold-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-ast-cache/timing/cold-0001/records.json.gz",
+        "archiveSHA256": "da089a73749d8cbbe4cc351ad288570737864a041c88d01fdf23ee8dff5ea403",
+        "archiveBytes": 93372,
+        "uncompressedSHA256": "a5eb3224dc8f4a1f70a791636ed466e38a62514f41974f7bd676531575de9a07",
+        "uncompressedBytes": 1195471
+      }
+    },
+    {
+      "state": "startup-prepared",
+      "trialId": "startup-prepared-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-ast-cache/timing/startup-prepared-0001/records.json.gz",
+        "archiveSHA256": "bdd8ace084118d76c78f9f29881c9f74d72d027ff0a6eaa140c06a478fcb7721",
+        "archiveBytes": 93340,
+        "uncompressedSHA256": "2436b0dbcd5f8567c9250b5698ea27b199c3556bf3ca6cadce30a2abffb84079",
+        "uncompressedBytes": 1195315
+      }
+    },
+    {
+      "state": "warm-after-failed-prewarm",
+      "trialId": "warm-after-failed-prewarm-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-ast-cache/timing/warm-after-failed-prewarm-0001/records.json.gz",
+        "archiveSHA256": "6a6269d2771c9d3bb1800e5c8450b87d871bbe14bbdd1d42681470195e3ca4de",
+        "archiveBytes": 93147,
+        "uncompressedSHA256": "e7dff4d9eb09bb83f566b9fbbc0b3243c41b0aa4f482ab3fff5194f6cc2b6a65",
+        "uncompressedBytes": 1195039
+      }
+    }
+  ],
+  "limitations": [
+    "Baseline predates independent functional quote correction; no claim that every point change is caused only by KMP.",
+    "Independent single-sample campaigns, not per-case latency P95 or statistical regression evidence.",
+    "Full original failed case and diagnostic warm continuation retained."
+  ]
+}

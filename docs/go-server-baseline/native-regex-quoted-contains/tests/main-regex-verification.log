@@ -1,0 +1,24 @@
+{
+  "javaPatternCases": 609,
+  "originalPublicCases": 68,
+  "repeats": 2,
+  "completeRepeatDifferences": 0,
+  "strictEligiblePatternAndInputCases": 118,
+  "patternOutcomes": {
+    "SUCCESS": 541,
+    "FAILED": 68
+  },
+  "publicOutcomes": {
+    "SUCCESS": 56,
+    "FAILED": 12
+  },
+  "main64Indices": [
+    892,
+    893,
+    894
+  ],
+  "originalCopiedFilesUnchangedPerRun": 680,
+  "generatedMappedSidecarsPerRun": 136,
+  "fixtureMutations": 0,
+  "performanceMeasurements": 0
+}
