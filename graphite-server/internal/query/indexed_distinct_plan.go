@@ -190,7 +190,12 @@ func (e evaluator) compileDistinctDisjunction(expression cypher.Expr, variable s
 			return nil, false
 		}
 		z, ok := e.compileDistinctDisjunction(b.Right, variable)
-		return append(a, z...), ok
+		if !ok {
+			return nil, false
+		}
+		// Main's DirectStringDisjunction preserves the first occurrence of
+		// each complete filter. Cache keys must see that same predicate list.
+		return lazyUniqueAtoms(append(a, z...)), true
 	case "AND":
 		if atom, ok := e.compileDistinctAtom(b.Left, variable); ok && distinctExistsGuard(b.Right, variable, atom.property) {
 			return []distinctStringAtom{atom}, true
@@ -211,7 +216,7 @@ func (e evaluator) compileDistinctDisjunction(expression cypher.Expr, variable s
 			}
 			out = append(out, atom)
 		}
-		return out, len(out) > 0
+		return lazyUniqueAtoms(out), len(out) > 0
 	}
 	return nil, false
 }

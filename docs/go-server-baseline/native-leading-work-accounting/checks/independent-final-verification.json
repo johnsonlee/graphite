@@ -1,0 +1,384 @@
+{
+  "auditUTC": "2026-09-08T11:04:48.305942+00:00",
+  "method": "Independent read-only file/archive SHA-256, raw JSONL comparison, original public response digest checks, lifecycle log/source review, and historical matrix comparison. No JVM, Go build, test or benchmark invoked. Only this audit JSON is written.",
+  "runtimeExecutions": 0,
+  "performanceMeasurements": 0,
+  "sourceVerificationSHA256": "2a79b707fb9515b4264a02e443648168bee76177e0c6911544b25814b4749aba",
+  "nativeReadmeSHA256": "a409fca6d7e0b1c8f22f78d940e41754070ed643701b20434d30bea916857442",
+  "chronologicalLogSHA256": "aee076832302e1f59534bafeed363781aefe42ec4eaff79c6a91c257478b76a5",
+  "sourceBinding": {
+    "currentModuleFiles": 2546,
+    "checkInputs": 2913,
+    "frozenReal64SourceFiles": 2546,
+    "real64RuntimeInputs": {
+      "cold": 315,
+      "warm": 315,
+      "startup-prepared": 315
+    },
+    "matrixSourceBeforeFiles": 2546,
+    "matrixCompiledArchiveFiles": 2547,
+    "onlyMatrixHelperAdded": "internal/query/generic_disjunction_diagnostic_test.go",
+    "allIdentitiesEqual": true
+  },
+  "checkArchiveCopiedFilesVerified": 9,
+  "matrixExternalArtifactManifestFilesVerified": 3662,
+  "actualJVM": {
+    "captures": [
+      {
+        "capture": "prepared-main-capture",
+        "cases": 24,
+        "operations": 48,
+        "fixtureVariants": 219,
+        "unchangedFixtureFiles": 15432,
+        "rawSHA256": "0c08f05b4f33bf4ee545657ce008a81a55336d4770f94dafa96032d85125973e"
+      },
+      {
+        "capture": "prepared-repeat-capture",
+        "cases": 24,
+        "operations": 48,
+        "fixtureVariants": 219,
+        "unchangedFixtureFiles": 15432,
+        "rawSHA256": "3a69d06cc902f5da9b5247bba724b22e7156ad006bd49a1af68c11966380b075"
+      },
+      {
+        "capture": "main-capture",
+        "cases": 26,
+        "operations": 52,
+        "fixtureVariants": 208,
+        "unchangedFixtureFiles": 16672,
+        "rawSHA256": "4694cc29ab3f258b118d258ee615b7d67ef9d29eaab7b8f463b3511bbcb65173"
+      },
+      {
+        "capture": "repeat-capture",
+        "cases": 26,
+        "operations": 52,
+        "fixtureVariants": 208,
+        "unchangedFixtureFiles": 16672,
+        "rawSHA256": "314df5fa29dc6a6de30e17607a1b4607865c9212227fcc74621a67f4973a6cc4"
+      }
+    ],
+    "allExecutionRepeatRecordsEqual": true,
+    "targetOperationTypes": {
+      "execute": 37,
+      "newContext": 11,
+      "executePrelude": 4
+    },
+    "preparedDifferentCases": [
+      "L04-hit64-budget128",
+      "L04-hit64-budget129",
+      "L05-hit1024-budget1088",
+      "L05-hit1024-budget1089",
+      "L12-bad64-budget128",
+      "L12-bad64-budget129"
+    ],
+    "preparedNativeAccountingUnresolved": true,
+    "removedSidecarsWithVerifiedOriginalBytes": 11,
+    "postCloseStorageDiffersFromLastLiveInCases": [
+      "L01-cold-early-and-fresh-context-cache",
+      "L02-published-before-failed-flush",
+      "L03-hit63-budget63",
+      "L03-hit63-budget64",
+      "L07-callee_name-available",
+      "L07-callee_name-exhausted",
+      "L07-caller_class-available",
+      "L07-caller_class-exhausted",
+      "L07-callee_class-available",
+      "L07-callee_class-exhausted",
+      "L08-empty-cache-minimum-hit-charge",
+      "L09-or-hit",
+      "L09-or-zzz",
+      "L10-source-count-40",
+      "L11-projected-columns-independent-cache",
+      "L13-duplicate-or-reuses-canonical-key"
+    ],
+    "fixtureIdentityScope": "Case fixture identity manifests are retained; writer timestamp differences are distinct from execution records."
+  },
+  "real64": [
+    {
+      "state": "cold",
+      "rawMainSHA256": "ec5a289455443d1c09a8c33abf4ebda9acadf958532c17e3fbf373e970a0777f",
+      "rawNativeSHA256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97",
+      "phaseCases": {
+        "replay": 1267
+      },
+      "outcomes": {
+        "success": 1266,
+        "error": 1
+      },
+      "publicDifferences": 0,
+      "matchingGraphStateObservations": 162304,
+      "stateDifferences": 0,
+      "stateFields": [
+        "id",
+        "retained",
+        "mappedView",
+        "trigrams",
+        "loadedFromPersistence",
+        "mappedRangeCount",
+        "rawMatchCount",
+        "rawProjectionCount"
+      ],
+      "originalSuccessfulManifestDigestsVerified": 1266,
+      "qualifiedErrorClassObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ],
+      "originalError": {
+        "phase": "replay",
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection"
+      },
+      "formalInvocationPrepared": true,
+      "runtimeExitCode": 1,
+      "runtimeFixtureReceiptOriginalFiles": 1152,
+      "nativeBinarySHA256Verified": true
+    },
+    {
+      "state": "warm",
+      "rawMainSHA256": "b5facadfc1bde64b5b97f7cfcd32ecfc818236579b60f3131f53978a8681dea1",
+      "rawNativeSHA256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7",
+      "phaseCases": {
+        "warmup": 1267
+      },
+      "outcomes": {
+        "success": 1266,
+        "error": 1
+      },
+      "publicDifferences": 0,
+      "matchingGraphStateObservations": 162240,
+      "stateDifferences": 0,
+      "stateFields": [
+        "id",
+        "retained",
+        "mappedView",
+        "trigrams",
+        "loadedFromPersistence",
+        "mappedRangeCount",
+        "rawMatchCount",
+        "rawProjectionCount"
+      ],
+      "originalSuccessfulManifestDigestsVerified": 0,
+      "qualifiedErrorClassObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ],
+      "originalError": {
+        "phase": "warmup",
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection"
+      },
+      "formalInvocationPrepared": false,
+      "runtimeExitCode": 1,
+      "runtimeFixtureReceiptOriginalFiles": 1152,
+      "nativeBinarySHA256Verified": true
+    },
+    {
+      "state": "startup-prepared",
+      "rawMainSHA256": "a0c4159689383a4096f0fe33eb05a2ee839dc3c5811b495febced33722deac65",
+      "rawNativeSHA256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2",
+      "phaseCases": {
+        "replay": 1267
+      },
+      "outcomes": {
+        "success": 1266,
+        "error": 1
+      },
+      "publicDifferences": 0,
+      "matchingGraphStateObservations": 162304,
+      "stateDifferences": 0,
+      "stateFields": [
+        "id",
+        "retained",
+        "mappedView",
+        "trigrams",
+        "loadedFromPersistence",
+        "mappedRangeCount",
+        "rawMatchCount",
+        "rawProjectionCount"
+      ],
+      "originalSuccessfulManifestDigestsVerified": 1266,
+      "qualifiedErrorClassObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ],
+      "originalError": {
+        "phase": "replay",
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection"
+      },
+      "formalInvocationPrepared": true,
+      "runtimeExitCode": 1,
+      "runtimeFixtureReceiptOriginalFiles": 1152,
+      "nativeBinarySHA256Verified": true
+    }
+  ],
+  "real64FixtureAuditLimit": "Read-only audit verified archived pre/post fixture receipts and their external bytes; it did not rescan the approximately 10 GB physical real64 graph files or launch a runtime.",
+  "matrix201": {
+    "cases": 201,
+    "previousFile": "docs/go-server-baseline/native-raw-work-batches/checks/matrix201/go.json",
+    "previousSHA256": "b974b32d04f43c12f5494e0083cca71e37d20287cb861927079e2046c5ef4e05",
+    "currentSHA256": "97045ace87f1d3a84455cbe1b6b50c6a8b5633da91ab41a974a67043e08b0de0",
+    "newComparedDifferences": 0,
+    "mainComparisons": [
+      {
+        "reference": "main",
+        "matches": {
+          "public": 166,
+          "providerWrapper": 19
+        },
+        "differences": [
+          "six-empty-1",
+          "six-empty-2",
+          "enum-bad-tail-hit",
+          "field-bad-tail-hit",
+          "field-bad-tail-miss",
+          "field-bad-tail-global-miss",
+          "annotation-bad-tail-hit",
+          "annotation-bad-tail-miss",
+          "annotation-bad-tail-global-miss",
+          "unicode-4-EnumConstant",
+          "unicode-4-LocalVariable",
+          "unicode-4-Field",
+          "unicode-5-EnumConstant",
+          "unicode-5-LocalVariable",
+          "unicode-5-Field",
+          "provider-field-payload-id-example"
+        ]
+      },
+      {
+        "reference": "repeat",
+        "matches": {
+          "public": 166,
+          "providerWrapper": 19
+        },
+        "differences": [
+          "six-empty-1",
+          "six-empty-2",
+          "enum-bad-tail-hit",
+          "field-bad-tail-hit",
+          "field-bad-tail-miss",
+          "field-bad-tail-global-miss",
+          "annotation-bad-tail-hit",
+          "annotation-bad-tail-miss",
+          "annotation-bad-tail-global-miss",
+          "unicode-4-EnumConstant",
+          "unicode-4-LocalVariable",
+          "unicode-4-Field",
+          "unicode-5-EnumConstant",
+          "unicode-5-LocalVariable",
+          "unicode-5-Field",
+          "provider-field-payload-id-example"
+        ]
+      }
+    ],
+    "diagnosticsScope": "Historical adapter does not pass ExecutionContext or compare its diagnostics; provider controls establish bounded payload behavior, not exact provider API fidelity."
+  },
+  "lifecycleAndChecks": {
+    "finalSteps": [
+      {
+        "name": "context",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      },
+      {
+        "name": "race",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      },
+      {
+        "name": "vet",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      }
+    ],
+    "unchangedInputs": 2913,
+    "initialRunExitCode": 1,
+    "initialLeadingOperationsPassed": 52,
+    "initialParentFinalStateFailures": [
+      "L01-cold-early-and-fresh-context-cache",
+      "L02-published-before-failed-flush",
+      "L03-hit63-budget63",
+      "L03-hit63-budget64",
+      "L07-callee_name-available",
+      "L07-callee_name-exhausted",
+      "L07-caller_class-available",
+      "L07-caller_class-exhausted",
+      "L07-callee_class-available",
+      "L07-callee_class-exhausted",
+      "L08-empty-cache-minimum-hit-charge",
+      "L09-or-hit",
+      "L09-or-zzz",
+      "L10-source-count-40",
+      "L11-projected-columns-independent-cache",
+      "L13-duplicate-or-reuses-canonical-key"
+    ],
+    "restoredInitialTestSourceSHA256": "2f6fcc6b3f53c4ce2a6e25478399fedb0f35acd25a54fecb6d6aee96857c6acd",
+    "restoredInitialSourceMatchesOriginalInputs": true,
+    "auditedFinalTestSHA256": "07bf84c555b81da8bd6aa2bd32239a4ab5a610fa1fd29bc3d73a66bbf0329ebd",
+    "finalLeadingCasesPassed": 26,
+    "finalLeadingOperationsPassed": 52,
+    "lifecycleRationale": "The original JVM final snapshot follows Close. Final Go test closes stores and requires ErrStoreClosed from the public observer, compares still-public request/prelude state, and separately compares full JVM private closed-storage final records between captures. No invented Go zero-state substitution."
+  },
+  "archives": [
+    {
+      "manifest": "real64/archive-manifest.json",
+      "manifestSHA256": "2bcccdb2538281b6020bd37b0ffe70ede3301c2ad524c8222a7b9733c366496d",
+      "files": 26,
+      "compressedOriginals": 3,
+      "archiveBytes": 10734662,
+      "archiveOriginalAndExternalSourceBytesVerified": true
+    },
+    {
+      "manifest": "checks/matrix201/copy-verification.json",
+      "manifestSHA256": "4c521c607862c65b2a1d662e4737d8b564ef0f318fefd1fa7a0477a645d6b43a",
+      "files": 17,
+      "compressedOriginals": 3,
+      "archiveBytes": 17829941,
+      "archiveOriginalAndExternalSourceBytesVerified": true
+    },
+    {
+      "manifest": "checks/evidence/artifacts.json",
+      "manifestSHA256": "e3237e6512b253a8667a228ee917a1adfd89082657df12dc44546e327ac6612f",
+      "files": 5,
+      "archivedBytesVerified": true
+    },
+    {
+      "manifest": "oracle-manifest.json",
+      "manifestSHA256": "15eb8813b0e7231f9267033313ef56e222cd1806abc7c77bbca92c6b2b9a2b6f",
+      "files": 106,
+      "rawCopiedArtifacts": 84,
+      "archiveAndExternalSourceBytesVerified": true
+    }
+  ],
+  "claimsReview": {
+    "blockingOverclaimsFound": false,
+    "eightRequestDiagnosticsFullyComparedAtTargetOperationBoundaries": true,
+    "fourMappedStorageStatesComparedWhileLive": true,
+    "unmappedStorageEventCounters": 3,
+    "preparedConfigurationAccountingUnresolved": true,
+    "privatePostCloseObserverParityNotClaimed": true,
+    "sourceSelectionAndIndexedParallelAccountingIncomplete": true,
+    "cancellationLRUOrderingBoundaryUnresolved": true,
+    "serverIntegrationAndResourceSamplingIncomplete": true,
+    "formalWarmPreparationAndOriginalAllSuccessGatesOpen": true,
+    "performanceAcceptanceProven": false,
+    "fullServerFidelityProven": false,
+    "note": "The native README and chronological functional entry keep these restrictions explicit; no prior one-sample timing is attributed to this source."
+  },
+  "status": "passed_with_explicit_scope_limitations"
+}

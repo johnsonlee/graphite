@@ -1,0 +1,93 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "commands": [
+    {
+      "phase": "javap",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+        "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+        "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+        "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+        "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:38:07.657993+00:00",
+      "endUTC": "2026-09-08T10:38:07.795795+00:00"
+    },
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/LeadingWorkFixture.java",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/LeadingWorkOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:38:07.796138+00:00",
+      "endUTC": "2026-09-08T10:38:08.217401+00:00"
+    },
+    {
+      "phase": "generate",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "LeadingWorkFixture",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/fixture-specs.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/variants",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/mutations.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:38:08.217756+00:00",
+      "endUTC": "2026-09-08T10:38:08.480410+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "LeadingWorkOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:38:10.754110+00:00",
+      "endUTC": "2026-09-08T10:38:11.853030+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "LeadingWorkFixture.class",
+      "bytes": 8981,
+      "sha256": "c9e957d09ea6f398c47f61fcbd793f87b86dea22f860c9d999a92b3432385869"
+    },
+    {
+      "file": "LeadingWorkOracle$State.class",
+      "bytes": 4963,
+      "sha256": "9c50f1d50836096538f13dfa4a8dc1be78454f2de93173780deb9fd642299e91"
+    },
+    {
+      "file": "LeadingWorkOracle.class",
+      "bytes": 16899,
+      "sha256": "a6bf1f475226b37a9a6943bb1b925dc719f2d9f09bf26f4a373a69bdc3a07eb6"
+    }
+  ],
+  "fixtureAudit": {
+    "originalFiles": 15432,
+    "changed": [],
+    "added": [],
+    "missing": []
+  },
+  "performanceMeasurements": 0
+}

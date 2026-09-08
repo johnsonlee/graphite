@@ -1,0 +1,93 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "commands": [
+    {
+      "phase": "javap",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+        "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+        "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+        "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+        "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:38:59.969081+00:00",
+      "endUTC": "2026-09-08T10:39:00.112892+00:00"
+    },
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/UnpreparedLeadingWorkFixture.java",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/LeadingWorkOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:39:00.113288+00:00",
+      "endUTC": "2026-09-08T10:39:00.558371+00:00"
+    },
+    {
+      "phase": "generate",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "UnpreparedLeadingWorkFixture",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/fixture-specs.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/variants",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/mutations.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:39:00.559004+00:00",
+      "endUTC": "2026-09-08T10:39:00.833360+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "LeadingWorkOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/expanded-cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:39:03.343218+00:00",
+      "endUTC": "2026-09-08T10:39:04.526453+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "LeadingWorkOracle$State.class",
+      "bytes": 4963,
+      "sha256": "9c50f1d50836096538f13dfa4a8dc1be78454f2de93173780deb9fd642299e91"
+    },
+    {
+      "file": "LeadingWorkOracle.class",
+      "bytes": 16899,
+      "sha256": "a6bf1f475226b37a9a6943bb1b925dc719f2d9f09bf26f4a373a69bdc3a07eb6"
+    },
+    {
+      "file": "UnpreparedLeadingWorkFixture.class",
+      "bytes": 9846,
+      "sha256": "582e9675de98de4d2887920c49e62917fe0f89d6823f767bca594afc60746b67"
+    }
+  ],
+  "fixtureAudit": {
+    "originalFiles": 16672,
+    "changed": [],
+    "added": [],
+    "missing": []
+  },
+  "performanceMeasurements": 0
+}

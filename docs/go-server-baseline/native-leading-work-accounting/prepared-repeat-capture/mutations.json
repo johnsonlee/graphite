@@ -1,0 +1,42 @@
+[
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad1",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 11,
+    "offset": 66
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad64",
+    "after": 2147483647,
+    "before": 90,
+    "nodeID": 74,
+    "offset": 3153
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad-caller_class",
+    "after": 2147483647,
+    "before": 0,
+    "nodeID": 10,
+    "offset": 13
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad-callee_class",
+    "after": 2147483647,
+    "before": 0,
+    "nodeID": 10,
+    "offset": 29
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad-callee_name",
+    "after": 2147483647,
+    "before": 1,
+    "nodeID": 10,
+    "offset": 33
+  }
+]

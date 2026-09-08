@@ -1,0 +1,119 @@
+[
+  {
+    "sha256": "0d416cf8915e0fe00822e09300c4817e21a86124ba7eecb9029ea4f6f78b5d30",
+    "bytes": 10524,
+    "action": "remove-generated-sidecar",
+    "fixture": "hit0",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "sha256": "1607edaab8bd3e7da931e76549000a3f02a87d006e9760a5fbe5375f759071b8",
+    "bytes": 10524,
+    "action": "remove-generated-sidecar",
+    "fixture": "hit1",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "sha256": "3fed0cc59c61a0d9fd620e01bbcaa5817be08eb8aebf957db6291cfdd2e980de",
+    "bytes": 10524,
+    "action": "remove-generated-sidecar",
+    "fixture": "hit63",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "sha256": "818c4ca5fc4c2bf1f442554251f8c1e8cd26b78b103435e7e57e03e6d7a7e6e1",
+    "bytes": 10524,
+    "action": "remove-generated-sidecar",
+    "fixture": "hit64",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "sha256": "5c0e2b72625c6ad4c1a7dc96336ca6e84caa2698956250f243b66f8a50fa8680",
+    "bytes": 96860,
+    "action": "remove-generated-sidecar",
+    "fixture": "hit1024",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "sha256": "a5d1a1716891028c61b31271fed53eb9e5bd4c620b47e55d0123fe2c01902f0d",
+    "bytes": 10532,
+    "action": "remove-generated-sidecar",
+    "fixture": "bad1",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad1",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 11,
+    "offset": 66
+  },
+  {
+    "sha256": "a5d1a1716891028c61b31271fed53eb9e5bd4c620b47e55d0123fe2c01902f0d",
+    "bytes": 10532,
+    "action": "remove-generated-sidecar",
+    "fixture": "bad64",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad64",
+    "after": 2147483647,
+    "before": 90,
+    "nodeID": 74,
+    "offset": 3153
+  },
+  {
+    "sha256": "6149385891339f19c8d8b071bd471e1e917ef65e48cf9df2d55eb9a3fa043079",
+    "bytes": 292,
+    "action": "remove-generated-sidecar",
+    "fixture": "miss2",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "sha256": "0d416cf8915e0fe00822e09300c4817e21a86124ba7eecb9029ea4f6f78b5d30",
+    "bytes": 10524,
+    "action": "remove-generated-sidecar",
+    "fixture": "bad-caller_class",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad-caller_class",
+    "after": 2147483647,
+    "before": 0,
+    "nodeID": 10,
+    "offset": 13
+  },
+  {
+    "sha256": "0d416cf8915e0fe00822e09300c4817e21a86124ba7eecb9029ea4f6f78b5d30",
+    "bytes": 10524,
+    "action": "remove-generated-sidecar",
+    "fixture": "bad-callee_class",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad-callee_class",
+    "after": 2147483647,
+    "before": 0,
+    "nodeID": 10,
+    "offset": 29
+  },
+  {
+    "sha256": "0d416cf8915e0fe00822e09300c4817e21a86124ba7eecb9029ea4f6f78b5d30",
+    "bytes": 10524,
+    "action": "remove-generated-sidecar",
+    "fixture": "bad-callee_name",
+    "file": "graph.callsite-string-index"
+  },
+  {
+    "file": "graph.nodedata",
+    "fixture": "bad-callee_name",
+    "after": 2147483647,
+    "before": 1,
+    "nodeID": 10,
+    "offset": 33
+  }
+]

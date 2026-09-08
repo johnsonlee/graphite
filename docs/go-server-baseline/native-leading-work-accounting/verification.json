@@ -1,0 +1,25 @@
+{
+  "verifiedUTC": "2026-09-08T10:44:47.786360+00:00",
+  "command": [
+    "python3",
+    "docs/go-server-baseline/native-leading-work-accounting/verify.py"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "verified": true,
+    "manifestFiles": 106,
+    "rawCopiedArtifacts": 84,
+    "finalCases": 26,
+    "finalOperations": 52,
+    "fixtureRegularFiles": 208,
+    "preparedCases": 24,
+    "preparedOperations": 48,
+    "preparedDifferentCases": 6,
+    "sidecarsExplicitlyRemoved": 11,
+    "allExecutionRepeatRecordsEqual": true,
+    "performanceMeasurements": 0
+  },
+  "stderr": "",
+  "manifestSHA256": "15eb8813b0e7231f9267033313ef56e222cd1806abc7c77bbca92c6b2b9a2b6f",
+  "performanceMeasurements": 0
+}

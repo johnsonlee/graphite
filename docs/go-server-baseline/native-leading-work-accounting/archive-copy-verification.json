@@ -1,0 +1,509 @@
+{
+  "copied": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/classes/LeadingWorkFixture.class",
+      "file": "prepared-main-capture/classes/LeadingWorkFixture.class",
+      "bytes": 8981,
+      "sha256": "c9e957d09ea6f398c47f61fcbd793f87b86dea22f860c9d999a92b3432385869"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/classes/LeadingWorkOracle$State.class",
+      "file": "prepared-main-capture/classes/LeadingWorkOracle$State.class",
+      "bytes": 4963,
+      "sha256": "9c50f1d50836096538f13dfa4a8dc1be78454f2de93173780deb9fd642299e91"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/classes/LeadingWorkOracle.class",
+      "file": "prepared-main-capture/classes/LeadingWorkOracle.class",
+      "bytes": 16899,
+      "sha256": "a6bf1f475226b37a9a6943bb1b925dc719f2d9f09bf26f4a373a69bdc3a07eb6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/commands.json",
+      "file": "prepared-main-capture/commands.json",
+      "bytes": 3265,
+      "sha256": "d855cb096e6332a89eb3dcbc00f094298cf6fd29880db5bad3aab724b83d2335"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/compile.stderr",
+      "file": "prepared-main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/compile.stdout",
+      "file": "prepared-main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/fixture-after.json.gz",
+      "file": "prepared-main-capture/fixture-after.json.gz",
+      "bytes": 67167,
+      "sha256": "21c60f4769010d569f50fccf6d77da353fcc63c0097dfba8d8e96880c1238fb0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/fixture-audit.json",
+      "file": "prepared-main-capture/fixture-audit.json",
+      "bytes": 78,
+      "sha256": "247efcbc4c89b130ee58208c8e67832eb84d51771adf15bfbed48eea3dbda14d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/fixture-before.json.gz",
+      "file": "prepared-main-capture/fixture-before.json.gz",
+      "bytes": 67168,
+      "sha256": "c969c7986c6c3029069bfe23bf84c6c37c2b2afbd8cdf81f41ea6754bdad5297"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/fixture-variants.json",
+      "file": "prepared-main-capture/fixture-variants.json",
+      "bytes": 32846,
+      "sha256": "14082ff7d20a4eac0cb88b5a467328d87b4fa96beeb5c8be0e403b539d863715"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/fixtures.tar.gz",
+      "file": "prepared-main-capture/fixtures.tar.gz",
+      "bytes": 112323,
+      "sha256": "c8bf1bee3e559356ac763cd4e2179363cc5db3ffdea2b8c7d4b5b202fd7577ca"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/generate.stderr",
+      "file": "prepared-main-capture/generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/generate.stdout",
+      "file": "prepared-main-capture/generate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/inputs.json",
+      "file": "prepared-main-capture/inputs.json",
+      "bytes": 3859,
+      "sha256": "dd84c63e8d919c7674eed7204290efa4175d73db2dab48e0107ce2f24495fce3"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/javap.stderr",
+      "file": "prepared-main-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/javap.stdout",
+      "file": "prepared-main-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/main.json",
+      "file": "prepared-main-capture/main.json",
+      "bytes": 7874332,
+      "sha256": "0c08f05b4f33bf4ee545657ce008a81a55336d4770f94dafa96032d85125973e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/mutations.json",
+      "file": "prepared-main-capture/mutations.json",
+      "bytes": 737,
+      "sha256": "7760396c5f8b8609107ad02ed8bbea981861882aa360639c773994268737c671"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/receipt.json",
+      "file": "prepared-main-capture/receipt.json",
+      "bytes": 4140,
+      "sha256": "ac2edb0eb3fba32aca478fc6ae2b1d246771b44dbfa5e35efcb43bccad74b0f9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/run.stderr",
+      "file": "prepared-main-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v1/run.stdout",
+      "file": "prepared-main-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/classes/LeadingWorkFixture.class",
+      "file": "prepared-repeat-capture/classes/LeadingWorkFixture.class",
+      "bytes": 8981,
+      "sha256": "c9e957d09ea6f398c47f61fcbd793f87b86dea22f860c9d999a92b3432385869"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/classes/LeadingWorkOracle$State.class",
+      "file": "prepared-repeat-capture/classes/LeadingWorkOracle$State.class",
+      "bytes": 4963,
+      "sha256": "9c50f1d50836096538f13dfa4a8dc1be78454f2de93173780deb9fd642299e91"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/classes/LeadingWorkOracle.class",
+      "file": "prepared-repeat-capture/classes/LeadingWorkOracle.class",
+      "bytes": 16899,
+      "sha256": "a6bf1f475226b37a9a6943bb1b925dc719f2d9f09bf26f4a373a69bdc3a07eb6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/commands.json",
+      "file": "prepared-repeat-capture/commands.json",
+      "bytes": 3265,
+      "sha256": "77d732ef254f618ce746ae3935faa3d4fe8e11b7be217407765126d25a20eac9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/compile.stderr",
+      "file": "prepared-repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/compile.stdout",
+      "file": "prepared-repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/fixture-after.json.gz",
+      "file": "prepared-repeat-capture/fixture-after.json.gz",
+      "bytes": 67107,
+      "sha256": "ab2919d7c2645dea051d0f5229478afb9e2435bae73bc9884ce88f1089d7951a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/fixture-audit.json",
+      "file": "prepared-repeat-capture/fixture-audit.json",
+      "bytes": 78,
+      "sha256": "247efcbc4c89b130ee58208c8e67832eb84d51771adf15bfbed48eea3dbda14d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/fixture-before.json.gz",
+      "file": "prepared-repeat-capture/fixture-before.json.gz",
+      "bytes": 67108,
+      "sha256": "c92cc26b4121725e8fa8e7ffd0616c8d2e32bd1807ef86c65af27b65165c91a0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/fixture-variants.json",
+      "file": "prepared-repeat-capture/fixture-variants.json",
+      "bytes": 32846,
+      "sha256": "a0b6ba6abfb5376cceeea9d8b8c2033dbdfde64c81193666cab367263bff3d9e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/fixtures.tar.gz",
+      "file": "prepared-repeat-capture/fixtures.tar.gz",
+      "bytes": 112350,
+      "sha256": "2841728a4f4b27a494bf903d27fe79966d1dc4d1416e626183d21b3dd2e8dcd6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/generate.stderr",
+      "file": "prepared-repeat-capture/generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/generate.stdout",
+      "file": "prepared-repeat-capture/generate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/inputs.json",
+      "file": "prepared-repeat-capture/inputs.json",
+      "bytes": 3859,
+      "sha256": "dd84c63e8d919c7674eed7204290efa4175d73db2dab48e0107ce2f24495fce3"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/javap.stderr",
+      "file": "prepared-repeat-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/javap.stdout",
+      "file": "prepared-repeat-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/main.json",
+      "file": "prepared-repeat-capture/main.json",
+      "bytes": 7874332,
+      "sha256": "3a69d06cc902f5da9b5247bba724b22e7156ad006bd49a1af68c11966380b075"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/mutations.json",
+      "file": "prepared-repeat-capture/mutations.json",
+      "bytes": 737,
+      "sha256": "12382025c5665856c7ad3b20ef103149a3358b9525c9eb6f5b629488cd9e2349"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/receipt.json",
+      "file": "prepared-repeat-capture/receipt.json",
+      "bytes": 4140,
+      "sha256": "ff9b2518866fff864b8dbd41e66d2189d29d093dcb1bdf4b278d4d35180e7ec7"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/run.stderr",
+      "file": "prepared-repeat-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-main-v2/run.stdout",
+      "file": "prepared-repeat-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/classes/LeadingWorkOracle$State.class",
+      "file": "main-capture/classes/LeadingWorkOracle$State.class",
+      "bytes": 4963,
+      "sha256": "9c50f1d50836096538f13dfa4a8dc1be78454f2de93173780deb9fd642299e91"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/classes/LeadingWorkOracle.class",
+      "file": "main-capture/classes/LeadingWorkOracle.class",
+      "bytes": 16899,
+      "sha256": "a6bf1f475226b37a9a6943bb1b925dc719f2d9f09bf26f4a373a69bdc3a07eb6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/classes/UnpreparedLeadingWorkFixture.class",
+      "file": "main-capture/classes/UnpreparedLeadingWorkFixture.class",
+      "bytes": 9846,
+      "sha256": "582e9675de98de4d2887920c49e62917fe0f89d6823f767bca594afc60746b67"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/commands.json",
+      "file": "main-capture/commands.json",
+      "bytes": 3336,
+      "sha256": "4fe0167323da0c3f7cc21fd4de5568a0af899dfc1dbb073f09e02b0638f0142c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/fixture-after.json.gz",
+      "file": "main-capture/fixture-after.json.gz",
+      "bytes": 71251,
+      "sha256": "8269a6de0d7d6b7730d82cc0809cecafaa98fc12039b3b7dc386b24c2db43aac"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/fixture-audit.json",
+      "file": "main-capture/fixture-audit.json",
+      "bytes": 78,
+      "sha256": "667f8c49d9d40dac479f42602ae8fb75da12974fe072c03cb8ed293db6e2d4a9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/fixture-before.json.gz",
+      "file": "main-capture/fixture-before.json.gz",
+      "bytes": 71252,
+      "sha256": "fa4797787a144c0967cb788e08d6dff4ddc8b619591171eb7d1b151f49ee7a2c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/fixture-variants.json",
+      "file": "main-capture/fixture-variants.json",
+      "bytes": 31068,
+      "sha256": "87d69a01af21f2c4c93ec2b12ba4893dac8a7dc20072516c2d62207bacaaa268"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/fixtures.tar.gz",
+      "file": "main-capture/fixtures.tar.gz",
+      "bytes": 65156,
+      "sha256": "f15101d332dca2cb6ff567635130af146348385fb6752aa7de8b43ad640754a8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/generate.stderr",
+      "file": "main-capture/generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/generate.stdout",
+      "file": "main-capture/generate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/inputs.json",
+      "file": "main-capture/inputs.json",
+      "bytes": 4105,
+      "sha256": "15ac3facb69c70278ae7f208409787dc2c55b60bcb78dc543715ba38b1f6f18d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/javap.stderr",
+      "file": "main-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/javap.stdout",
+      "file": "main-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/main.json",
+      "file": "main-capture/main.json",
+      "bytes": 8497054,
+      "sha256": "4694cc29ab3f258b118d258ee615b7d67ef9d29eaab7b8f463b3511bbcb65173"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/mutations.json",
+      "file": "main-capture/mutations.json",
+      "bytes": 3175,
+      "sha256": "dbed5fadca1d7762056f9c7e613590fe68adff40404e9daf7af7c45e8e846d8a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/receipt.json",
+      "file": "main-capture/receipt.json",
+      "bytes": 4221,
+      "sha256": "893bbb1436e7f9b1038ccef536140423852d0b0e4aa79f6e124221181f1c5d7a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/run.stderr",
+      "file": "main-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v1/run.stdout",
+      "file": "main-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/classes/LeadingWorkOracle$State.class",
+      "file": "repeat-capture/classes/LeadingWorkOracle$State.class",
+      "bytes": 4963,
+      "sha256": "9c50f1d50836096538f13dfa4a8dc1be78454f2de93173780deb9fd642299e91"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/classes/LeadingWorkOracle.class",
+      "file": "repeat-capture/classes/LeadingWorkOracle.class",
+      "bytes": 16899,
+      "sha256": "a6bf1f475226b37a9a6943bb1b925dc719f2d9f09bf26f4a373a69bdc3a07eb6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/classes/UnpreparedLeadingWorkFixture.class",
+      "file": "repeat-capture/classes/UnpreparedLeadingWorkFixture.class",
+      "bytes": 9846,
+      "sha256": "582e9675de98de4d2887920c49e62917fe0f89d6823f767bca594afc60746b67"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/commands.json",
+      "file": "repeat-capture/commands.json",
+      "bytes": 3336,
+      "sha256": "3aaea67f0f3a4e3ef995ac88bf0e41d9de29e3fe0b13f7bfa777a61dd8508595"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/fixture-after.json.gz",
+      "file": "repeat-capture/fixture-after.json.gz",
+      "bytes": 71191,
+      "sha256": "93fce83f5368fa03111252dae68372d9c036d7287656d856bf57ebece4d8bed8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/fixture-audit.json",
+      "file": "repeat-capture/fixture-audit.json",
+      "bytes": 78,
+      "sha256": "667f8c49d9d40dac479f42602ae8fb75da12974fe072c03cb8ed293db6e2d4a9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/fixture-before.json.gz",
+      "file": "repeat-capture/fixture-before.json.gz",
+      "bytes": 71192,
+      "sha256": "d73c8ca857898d01895bd82ddaadb33b80ded2ecc3d0329ec0884ceb46af8f80"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/fixture-variants.json",
+      "file": "repeat-capture/fixture-variants.json",
+      "bytes": 31068,
+      "sha256": "a1bed31ea1c6bf9cb0f7e86de4909a24ba2d01e0e81a8b8411587f224405928a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/fixtures.tar.gz",
+      "file": "repeat-capture/fixtures.tar.gz",
+      "bytes": 65189,
+      "sha256": "f945f841e95fa1dda25ebe88d2a1c335269ca7ab5ebc04716bb36ad60dd69579"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/generate.stderr",
+      "file": "repeat-capture/generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/generate.stdout",
+      "file": "repeat-capture/generate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "bytes": 4105,
+      "sha256": "15ac3facb69c70278ae7f208409787dc2c55b60bcb78dc543715ba38b1f6f18d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/javap.stderr",
+      "file": "repeat-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/javap.stdout",
+      "file": "repeat-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/main.json",
+      "file": "repeat-capture/main.json",
+      "bytes": 8497054,
+      "sha256": "314df5fa29dc6a6de30e17607a1b4607865c9212227fcc74621a67f4973a6cc4"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/mutations.json",
+      "file": "repeat-capture/mutations.json",
+      "bytes": 3175,
+      "sha256": "5ec74a50ee304858e2f53a1146242f444f104dfce5b4cafa3d690fb2a5277ed1"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "bytes": 4221,
+      "sha256": "ca441641fd875518d92068508076b85b8f65be7975c50ca6c1a968fd02e0e8b2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/run.stderr",
+      "file": "repeat-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/run.stdout",
+      "file": "repeat-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "allCopiedBytesVerified": true
+}

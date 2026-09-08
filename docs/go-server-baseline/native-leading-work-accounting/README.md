@@ -1,0 +1,46 @@
+# Actual main ordinary leading-projection work accounting
+
+This correctness oracle uses pinned main `4e328b0109e13c896b74004823fb049fcb19251a` for the native follow-up from Go baseline `5cf282278c132c2bc987d217a9453ccfafc32b44`. It executes the twelve designs in `native-raw-work-batches/next-leading-accounting.md`, expands their budgets and histories, and adds duplicate-OR and duplicate-IN controls. It contains no performance measurements.
+
+The **final target matrix is 26 public cases / 52 ordered operations**, captured twice with the original JVM configuration. Two earlier captures contain the original 24 cases / 48 operations with generated persisted string-index sidecars. Those are retained as a separate prepared-fixture boundary: they are not silently replaced or claimed to have native accounting parity.
+
+## Stable public contract and fixture identity
+
+`expanded-cases.json` is the final input, and `main.json`, `main-capture/main.json`, and `repeat-capture/main.json` contain the complete actual records. Initial `cases.json` and `run.py` retain the original prepared-fixture input. `run-unprepared.py` selects the expanded input and the new `UnpreparedLeadingWorkFixture` writer. Each case has ordered `sources: [{fixture, graphId}]`, a decimal-string initial budget, and operations. Except the two explicit 39-source controls, each case opens **40 distinct mapped Store objects from 40 separate directories**, ordered `source0` through `source39`. The actual executor is `CrossGraphCypherExecutor(sources, context, false)`. No dispatcher override is installed; both runs observe 16 available processors and a null `graphite.cypher.directStringParallelism` property.
+
+The target `fixtures.tar.gz` has **208 regular files / 13 variants**. `fixture-variants.json` identifies every archive member's path, byte length and SHA-256. CallSite source-zero variants contain 128, 1,100 or two nodes; remaining sources are independent empty variants. Node IDs are `10 + encounterIndex`, and the actual-main writer supplies that order. All four raw CallSite string fields are valid except explicitly recorded name-SID corruptions. The three changed-projection controls corrupt caller_class, callee_class or callee_name at the first hit. `bad1` and `bad64` corrupt caller_name. The public prelude graph contains exactly one LocalVariable.
+
+The original writer's save/load sequence produced 11 `graph.callsite-string-index` sidecars. The new writer explicitly removes these newly generated sidecars before capturing the target graph variants. `mutations.json` preserves each removed file's byte count and SHA-256, plus exact SID mutation positions/values. The removed hashes independently match the sidecar bytes in `prepared-main-capture/fixtures.tar.gz`. The target runner asserts that no such sidecar is present before execution. All 16,672 target fixture files remain unchanged through each capture; case-level `fixtureBeforeLoad` and `fixtureAfterClose` manifests additionally bind each case before load and after all graphs close. The prepared runs similarly preserve 15,432 unchanged fixture files and their 219-file variant archives.
+
+Each operation retains full query/parameters, result rows and ordered columns/provenance, or actual error class, nullable message and stack. Before/after/final snapshots include all eight original diagnostics, remaining work, cancellation/reason and each source's original raw-cache/index/lookup counters. Additional `preludeLoaded` identifies whether the separate prelude graph was opened. Fixture identity manifests are retained separately from execution semantics; they are not used to discard execution differences.
+
+`newContext` replaces budget, cancellation signal and context while preserving the exact source Store objects and prelude graph. Its result reports the new maximum and preserved source stores. `executePrelude` creates an actual single-graph executor over the one-node prelude with the same current context, executing `MATCH (n:LocalVariable) WITH n RETURN n.name AS name`. It returns the public result, consumes one work unit and records the actual general-fallback diagnostic. **No private consume operation primes or exhausts the context in this matrix.** A subsequent zero remaining budget is noncancelled and was reached through that successful public query.
+
+## Actual target behavior
+
+| Design | Observed result |
+| --- | --- |
+| L01 | Cold first hit consumes 1 and publishes one raw cache entry. A new context on the same stores hits that cache for 1. |
+| L02 | Cold hit at position 1 publishes the cache, then fails the final flush with budget 1. New budget 1 on the same stores succeeds from that published cache. |
+| L03 | Position 63: budget 63 fails after publication; 64 succeeds. |
+| L04 | Probe miss followed by serial fallback to position 64: budget 128 fails; 129 succeeds. No raw projection cache is published. |
+| L05 | The 1,100-node fixture with first hit at position 1,024: budget 1,088 fails; 1,089 succeeds. This composes the 64-unit probe with a serial 1,024-unit batch and final yield. |
+| L06 | Bad caller_name at position 1: budget 1 produces the final-flush budget error; budget 2 preserves ArrayIndexOutOfBoundsException. No cache publication. |
+| L07 | A successful caller_name warmup caches a node with a different bad projected SID. With one available unit, the changed projection produces IndexOutOfBoundsException after charging 1. With the context exhausted by the public prelude, the cache charge fails first. All three other raw projection fields are covered. |
+| L08 | The two-miss fixture completes its probe and publishes an empty ID array. This fixture's complete warmup actually costs 2. After the public prelude exhausts a new budget 1, the cached empty result still charges the minimum 1 and fails before later sources. |
+| L09 | Equal and unequal OR matcher keys both enter cold raw projection and consume one inspected node. Neither requires every matcher key to be equal. |
+| L10 | 39 sources: work 1, raw projection cache count 0. 40 sources: work 1, raw projection cache count 1. |
+| L11 | Changing aliases, projected properties and adding projected graphId preserves the predicate/LIMIT cache key. The new three-column result costs one matched ID and retains provenance. |
+| L12 | Probe miss then bad caller_name at position 64: budget 128 replaces the raw error during serial final flush; 129 preserves ArrayIndexOutOfBoundsException. |
+| L13 | Warm single predicate at position 1 costs 2. After a new budget 1, repeating the identical predicate with OR succeeds from the same cache for 1. This observes main's ordered predicate deduplication. |
+| L14 | Repeated IN values on 39 sources succeed for work 2, cache count 0. IN compiles to equality and is a negative control for CONTAINS-only leading admission. |
+
+The actual stacks identify cold `rawCallSiteStringProjection`, the cached projection read, final-flush failures, and `serialRawCallSiteStringDisjunction` fallback. All source `callSiteParallelScanCount` observations remain zero. Cache publication and failure atomicity apply separately: failed public queries expose no partial result rows, while L02/L03 retain the already-published graph cache. A successful fast-dispatch counter is added only after execution succeeds.
+
+## Prepared-fixture boundary and repeat evidence
+
+`prepared-main-capture` and `prepared-repeat-capture` preserve both original 24-case captures, including all original successes and failures. `prepared-comparison.json` records every changed operation between the prepared and target matrix for their 24 common cases. Exactly six cases differ: the two budgets each for L04, L05 and L12. Their prepared-fixture fallback reaches `PreferredPersistedStringIndexGraphWorkConsumer` and `PersistentIndexReadWork`; all six fail with the corresponding budget ceiling. The retained/mapped-view flags remain false at failure because the index read did not complete. The target high-budget L04/L05 instead succeed via serial raw fallback, and target high-budget L12 preserves the raw SID error. Lower-budget public error types can coincide while their full stacks still distinguish the paths. This evidence does not establish native persistent-index-read accounting.
+
+Within each fixture configuration, the two actual captures match in **all execution records**, including complete errors and stacks, every diagnostic, remaining/cancellation state, storage observations and public results. There is no observed FastThrow error variability to admit in this matrix, and no diagnostic JVM flag was used. Fixture identity hashes may differ across independent writer runs solely because `forward.properties` records a writer timestamp. `repeat-audit.json` records both hashes and comment lines; every other byte of those files is compared, and full original case/file manifests remain unchanged in the raw captures.
+
+`oracle-manifest.json`, `archive-copy-verification.json` and `verification.json` bind source, commands, inputs, outputs and archive bytes. `verify.py` performs read-only verification and launches no JVM or Go process. These synthetic controls establish this bounded raw-leading behavior; they do not establish complete indexed or parallel work accounting, server integration, full fidelity, or per-case P95 acceptance.

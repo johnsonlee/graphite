@@ -1,0 +1,8 @@
+{
+  "originalInput": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/leading_work_accounting_test.go",
+  "recordedSHA256": "2f6fcc6b3f53c4ce2a6e25478399fedb0f35acd25a54fecb6d6aee96857c6acd",
+  "restoredSHA256": "2f6fcc6b3f53c4ce2a6e25478399fedb0f35acd25a54fecb6d6aee96857c6acd",
+  "source": "docs/go-server-baseline/native-leading-work-accounting/checks/preliminary-v1-test-source.go",
+  "method": "Reverse the post-close test correction, its comment and errors import; require exact equality with the independently recorded first-run input hash before writing. Initial reconstruction omitted the comment reversal, failed hash validation and wrote no file.",
+  "performanceMeasurements": 0
+}

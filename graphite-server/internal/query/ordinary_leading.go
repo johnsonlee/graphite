@@ -34,6 +34,9 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 		cached, hit, err := source.Store.RawProjectionMatches(e.ctx, cacheKey)
 		failProjectionRead(err)
 		if hit {
+			// Main charges cached IDs before rereading the requested projection,
+			// including one unit for a cached empty result.
+			e.consume(int64(max(len(cached), 1)))
 			rows := []map[string]any{}
 			for _, id := range cached {
 				e.check()
@@ -50,10 +53,15 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 		maximum := min(1024, max(64, plan.limit*4))
 		rows := []map[string]any{}
 		inspected := 0
+		accounting := bufferedGraphWork{work: e.work}
+		// The probe returns a list, so publication precedes this final flush.
+		// A budget failure must not undo a completed probe's cached IDs.
+		defer accounting.flush()
 		for inspected < len(ids) && inspected < maximum {
 			e.check()
 			id := ids[inspected]
 			inspected++
+			accounting.consume()
 			sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
 			failProjectionRead(err)
 			matched := false

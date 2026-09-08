@@ -1,0 +1,95 @@
+{
+  "empty": {
+    "kind": "call",
+    "count": 0,
+    "hits": []
+  },
+  "hit0": {
+    "kind": "call",
+    "count": 128,
+    "hits": [
+      0
+    ]
+  },
+  "hit1": {
+    "kind": "call",
+    "count": 128,
+    "hits": [
+      1
+    ]
+  },
+  "hit63": {
+    "kind": "call",
+    "count": 128,
+    "hits": [
+      63
+    ]
+  },
+  "hit64": {
+    "kind": "call",
+    "count": 128,
+    "hits": [
+      64
+    ]
+  },
+  "hit1024": {
+    "kind": "call",
+    "count": 1100,
+    "hits": [
+      1024
+    ]
+  },
+  "bad1": {
+    "kind": "call",
+    "count": 128,
+    "hits": [],
+    "badIndex": 1,
+    "badProperty": "caller_name"
+  },
+  "bad64": {
+    "kind": "call",
+    "count": 128,
+    "hits": [],
+    "badIndex": 64,
+    "badProperty": "caller_name"
+  },
+  "miss2": {
+    "kind": "call",
+    "count": 2,
+    "hits": []
+  },
+  "prelude-one": {
+    "kind": "local",
+    "count": 1,
+    "hits": [
+      0
+    ]
+  },
+  "bad-caller_class": {
+    "kind": "call",
+    "count": 128,
+    "hits": [
+      0
+    ],
+    "badIndex": 0,
+    "badProperty": "caller_class"
+  },
+  "bad-callee_class": {
+    "kind": "call",
+    "count": 128,
+    "hits": [
+      0
+    ],
+    "badIndex": 0,
+    "badProperty": "callee_class"
+  },
+  "bad-callee_name": {
+    "kind": "call",
+    "count": 128,
+    "hits": [
+      0
+    ],
+    "badIndex": 0,
+    "badProperty": "callee_name"
+  }
+}

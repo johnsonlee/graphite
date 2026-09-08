@@ -1,0 +1,65 @@
+[
+  {
+    "phase": "javap",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+      "-classpath",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+      "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+      "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+      "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+      "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T10:40:04.436327+00:00",
+    "endUTC": "2026-09-08T10:40:04.568093+00:00"
+  },
+  {
+    "phase": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/UnpreparedLeadingWorkFixture.java",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/LeadingWorkOracle.java"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T10:40:04.568445+00:00",
+    "endUTC": "2026-09-08T10:40:04.963434+00:00"
+  },
+  {
+    "phase": "generate",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "UnpreparedLeadingWorkFixture",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/fixture-specs.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/variants",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/mutations.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T10:40:04.963808+00:00",
+    "endUTC": "2026-09-08T10:40:05.243611+00:00"
+  },
+  {
+    "phase": "run",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "LeadingWorkOracle",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-leading-work-accounting/expanded-cases.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/fixtures",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-accounting-unprepared-v2/main.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T10:40:07.669010+00:00",
+    "endUTC": "2026-09-08T10:40:08.858668+00:00"
+  }
+]

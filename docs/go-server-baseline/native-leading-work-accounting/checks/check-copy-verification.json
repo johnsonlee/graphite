@@ -1,0 +1,128 @@
+{
+  "runs": [
+    {
+      "name": "preliminary-v1",
+      "steps": [
+        {
+          "name": "context",
+          "command": [
+            "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+            "test",
+            "-count=1",
+            "-v",
+            "-run",
+            "^Test(ExecutionContext|RawWork|BufferedGraphWork|LeadingWork)",
+            "./internal/query"
+          ],
+          "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+          "exitCode": 1,
+          "inputsUnchanged": true
+        }
+      ],
+      "files": [
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v1/context.log",
+          "archive": "preliminary-v1/context.log",
+          "bytes": 324422,
+          "sha256": "8f64e465d881f3aa825ab7bf95f8f9df4df1ce4be4df11cd0a9693539daa2800"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v1/inputs.json",
+          "archive": "preliminary-v1/inputs.json",
+          "bytes": 697408,
+          "sha256": "e4ccd868a0ccc779f3595f871b7641ebadaa94d64c5d1688a117d9b0323f0e7f"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v1/receipt.json",
+          "archive": "preliminary-v1/receipt.json",
+          "bytes": 593,
+          "sha256": "711ee5855c3712a0abbb6eaace08e7568be1c3b1e0afd57ccbe9eec3bdd56ed8"
+        }
+      ]
+    },
+    {
+      "name": "evidence",
+      "steps": [
+        {
+          "name": "context",
+          "command": [
+            "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+            "test",
+            "-count=1",
+            "-v",
+            "-run",
+            "^Test(ExecutionContext|RawWork|BufferedGraphWork|LeadingWork)",
+            "./internal/query"
+          ],
+          "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+          "exitCode": 0,
+          "inputsUnchanged": true
+        },
+        {
+          "name": "race",
+          "command": [
+            "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+            "test",
+            "-race",
+            "-count=1",
+            "./..."
+          ],
+          "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+          "exitCode": 0,
+          "inputsUnchanged": true
+        },
+        {
+          "name": "vet",
+          "command": [
+            "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+            "vet",
+            "./..."
+          ],
+          "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+          "exitCode": 0,
+          "inputsUnchanged": true
+        }
+      ],
+      "files": [
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v2/artifacts.json",
+          "archive": "evidence/artifacts.json",
+          "bytes": 422,
+          "sha256": "e3237e6512b253a8667a228ee917a1adfd89082657df12dc44546e327ac6612f"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v2/context.log",
+          "archive": "evidence/context.log",
+          "bytes": 89141,
+          "sha256": "a6f05fad6eb6e1335e6f6f8ebc7f1fad95b3cc71467fee3bb2b4b09a70188c3e"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v2/inputs.json",
+          "archive": "evidence/inputs.json",
+          "bytes": 697408,
+          "sha256": "9a7b10874c3acdb5eb3440d8df3435d661af8be28e9dc5c43c88f9a399a080e5"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v2/race.log",
+          "archive": "evidence/race.log",
+          "bytes": 1479,
+          "sha256": "5d8ae5a7feca6812ae7e85eb28b7616bad9fc109a7480012846b53ba1fb80167"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v2/receipt.json",
+          "archive": "evidence/receipt.json",
+          "bytes": 1260,
+          "sha256": "bf5e0fe60a3ea9144f05f47e53cb637e342f41088361da141d0411c7da7df5b4"
+        },
+        {
+          "source": "/Users/johnsonlee/.codex/benchmarks/graphite/leading-work-5cf28227-checks-v2/vet.log",
+          "archive": "evidence/vet.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "performanceMeasurements": 0,
+  "failedRunScope": "All 52 leading-work operation subtests passed; parent final snapshots compared live Go caches with closed JVM caches. The corrected test closes Go stores, checks ErrStoreClosed, and qualifies unavailable private post-close storage observers."
+}

@@ -1513,3 +1513,75 @@ Method/path work, source-selection diagnostics, request-wide server integration,
 resource sampling, known semantic gaps and required benchmark gates. Earlier
 single-sample timings are not attributed to this changed implementation. The
 full server fidelity and per-case 10x P95 goal remains open.
+
+
+### Functional follow-up — leading raw projection and cache work accounting
+
+Baseline Go is `5cf282278c132c2bc987d217a9453ccfafc32b44`; actual main remains
+`4e328b0109e13c896b74004823fb049fcb19251a`. This is a functional accounting
+correction, not a latency optimization experiment. The hypothesis is that raw
+leading probes and cache hits must charge the same work at the same read and
+publication boundaries as main, including failures that leave a completed cache.
+
+Cold probes now charge inspected CallSites before reading their string IDs and
+flush on return or error using the existing buffer. Completed probes publish
+their cached IDs before the final flush, so budget failure can preserve a cache
+that a later request reuses. Hits charge at least one unit before projecting
+cached IDs. Shared OR/IN compilation now deduplicates complete filters in first
+encounter order with Java UTF-16 equality, matching actual main cache identity.
+
+| Evidence | Result |
+| --- | --- |
+| New actual main raw-leading public oracle | 26 scenarios / 52 ordered operations match |
+| New compiler identity/order controls | All 8 pass |
+| Existing request-context and serial-raw oracles | Pass in focused and full module checks |
+| Full module race / vet | Pass; 2,913 recorded inputs unchanged |
+| Real64 cold | All 1,267 cases compared; 162,304 state observations agree |
+| Real64 warm prewarm | All 1,267 cases compared; 162,240 state observations agree |
+| Real64 startup-prepared | All 1,267 cases compared; 162,304 state observations agree |
+| Existing complete 201-case matrix | No new compared differences; original 16 remain |
+| New latency / CPU / allocation measurements | None |
+| Per-case P95 / 10x acceptance | Unproven |
+| Keep/revert | Keep the verified raw-leading accounting and filter identity correction |
+
+The actual JVM target uses 13 small persisted correctness variants, 208 files,
+and 39 or 40 independent mapped source stores per scenario. Context replacement
+preserves source objects; a one-node public prelude exhausts budgets through
+normal execution. The 26 cases contain 37 executions, 11 context replacements
+and four prelude executions. Both original JVM captures' execution records match
+completely, including nullable errors/stacks and execution observations. Fixture
+identity differences from writer timestamps remain recorded separately. These
+synthetic controls are not performance evidence.
+
+The writer initially generated 11 persisted string-index sidecars. Both original
+prepared captures (24 cases / 48 operations) remain intact. The target explicitly
+removes those sidecars with exact mutation hashes to exercise serial fallback.
+Six prepared cases instead enter PersistentIndexReadWork and have different
+outcomes/accounting; native parity for that configuration remains unresolved.
+The corrected target never substitutes for those prepared observations.
+
+The first native focused run failed only on 16 parent final-state comparisons:
+all 52 operation subtests passed, but the harness compared live Go caches with
+main's closed stores. The corrected harness actually closes every store, asserts
+successful Close and public observer ErrStoreClosed, compares post-close request
+state, and retains complete repeated JVM private final observations. It does not
+invent post-close Go cache values. Existing store tests independently verify
+cache clearing and concurrent Close. Both failed and corrected checks are kept.
+
+The full real64 regression uses the same immutable 64 graphs, 1,152 original
+persisted files and byte-identical 1,267-case workload. All three serial captures
+retain original case 821 and gate exit 1; formal warm remains unprepared. The
+486,848 graph-state observations agree. JVM fully qualified error-class parity
+and schedule invariance are not established. The 201-case adapter still matches
+166/181 public and 19/20 provider controls and does not pass the new request
+context or compare its diagnostics; its historical API-unavailable wording is
+qualified in the native README.
+
+Evidence is under `docs/go-server-baseline/native-leading-work-accounting/`.
+Source verification binds all 2,546 module files across checks, frozen real64 and
+the complete matrix before its helper. Persisted/indexed/parallel/Method/path
+work, cancellation-dependent cache history, server context integration, resource
+sampling, existing semantic gaps and required benchmark gates remain unfinished.
+Earlier n=1 timings do not describe this changed module. Full function fidelity
+and at least 200 valid observations per case/runtime/state proving 10x P95 remain
+the acceptance criteria, not claims made by this correctness follow-up.

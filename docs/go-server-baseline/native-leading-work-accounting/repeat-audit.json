@@ -1,0 +1,217 @@
+{
+  "pairs": [
+    {
+      "main": "prepared-main-capture",
+      "repeat": "prepared-repeat-capture",
+      "cases": 24,
+      "operations": 48,
+      "allExecutionRecordsEqual": true,
+      "errorClassMessageStackDifferences": [],
+      "fixtureFiles": 219,
+      "writerTimestampOnlyDifferences": [
+        {
+          "file": "bad-callee_class/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "bad-callee_name/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "bad-caller_class/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "bad1/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "bad64/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "empty/forward.properties",
+          "mainSHA256": "1bdee2e72b4f336d85d48bc46b24088996f1216911d2b954c3de9809e56d3d77",
+          "repeatSHA256": "fa0234b8c36c19c7c54e66077021913416577ef97a5b6f8e41797753cbca1145",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "hit0/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "hit1/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "hit1024/forward.properties",
+          "mainSHA256": "6728cefb4a4797dc8117e084eb2d10152555f0a6eb2b478a2f3a2cfff096ecca",
+          "repeatSHA256": "0b1362d89e4cc51a105d611f206cd8aafd1ffa86313741ce1a111d89b5db9007",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "hit63/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "hit64/forward.properties",
+          "mainSHA256": "5113a374fbeff9af539d5dec3467df2e44b6a5ba9a65bf41a921acdb5fe2f30d",
+          "repeatSHA256": "8c022bb1cdeb442c6b1323d903c87da41f1ece9c6cc70b2112b268535f3cec88",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "miss2/forward.properties",
+          "mainSHA256": "a43026570873de340bc0ecf7eb484192e459979937fd6368c794c23a22d5a8af",
+          "repeatSHA256": "a5b73ed8264625f19354398b1ad67603eb379311d18f5aead2184349864054b8",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        },
+        {
+          "file": "prelude-one/forward.properties",
+          "mainSHA256": "aa4de4e39ed1c091627268995c27aec74076cafe437d0a074e5d21d9d749b43b",
+          "repeatSHA256": "c220ce72700a14830ddca6b25a3fbce5854515e199b704cbca122bc498e1727d",
+          "mainComment": "#Tue Sep 08 19:36:08 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:38:08 KST 2026"
+        }
+      ],
+      "caseFixtureManifestsRetainedWithoutNormalization": true
+    },
+    {
+      "main": "main-capture",
+      "repeat": "repeat-capture",
+      "cases": 26,
+      "operations": 52,
+      "allExecutionRecordsEqual": true,
+      "errorClassMessageStackDifferences": [],
+      "fixtureFiles": 208,
+      "writerTimestampOnlyDifferences": [
+        {
+          "file": "bad-callee_class/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "bad-callee_name/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "bad-caller_class/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "bad1/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "bad64/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "empty/forward.properties",
+          "mainSHA256": "db15034a5239faff076467053be9827f6d4bd389cf51d038927453e5688dede5",
+          "repeatSHA256": "08eab44e06c08262383af412ea67a4538577034dbbf1d78e3a557e1d61802ed2",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "hit0/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "hit1/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "hit1024/forward.properties",
+          "mainSHA256": "8e9d90a7910247a2cf7ecc6648d33aa52dfcdf000e3470350cc587dd6c8d2831",
+          "repeatSHA256": "8ea2f920465f83d98be14c463e30bcd3b414c4d67f595158875f208955e88942",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "hit63/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "hit64/forward.properties",
+          "mainSHA256": "ccbedcaa249adce1c11ba9971be01b84f5299a0dbd8b12e808436a1cb6d50c09",
+          "repeatSHA256": "711340779242f485cfb3aa6bc0cbb61cbfff31b8433b9d1b9e7537c279a2d77a",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "miss2/forward.properties",
+          "mainSHA256": "0b9e30dd3f514b789bc18e506f6f25a72dfcf32b1ef721c153f4008941b6c4dd",
+          "repeatSHA256": "9cca7c2b7ce95c0ce77532260f85c6362390487451aad6578169e65f71d492f1",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        },
+        {
+          "file": "prelude-one/forward.properties",
+          "mainSHA256": "2f052061fdda785afd70ee6f13338532a976b10d2b55ff2a5a5fbcff8cfb02e2",
+          "repeatSHA256": "4a5e726a88f7b955c87d0f2ed2e351b74060e7980d2614a56740ac98036666e5",
+          "mainComment": "#Tue Sep 08 19:39:00 KST 2026",
+          "repeatComment": "#Tue Sep 08 19:40:05 KST 2026"
+        }
+      ],
+      "caseFixtureManifestsRetainedWithoutNormalization": true
+    }
+  ],
+  "finalCases": 26,
+  "finalOperations": 52,
+  "finalFixtureRegularFiles": 208,
+  "sidecarsExplicitlyRemoved": 11,
+  "removedSidecarSHAsMatchActualPreparedArchive": true,
+  "defaultJVMConfiguration": true,
+  "performanceMeasurements": 0
+}
