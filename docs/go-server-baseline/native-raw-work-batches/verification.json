@@ -1,0 +1,24 @@
+{
+  "verifiedUTC": "2026-09-08T10:03:36.863358+00:00",
+  "command": [
+    "python3",
+    "docs/go-server-baseline/native-raw-work-batches/verify.py"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "manifestFiles": 126,
+    "copiedRawArtifacts": 104,
+    "actualJVMCaptures": 4,
+    "publicCasesPerCapture": 43,
+    "publicOperationsPerCapture": 57,
+    "primitiveCasesPerCapture": 12,
+    "primitiveOperationsPerCapture": 39,
+    "fixtureFilesPerArchive": 329,
+    "rawErrorVariabilityPreserved": true,
+    "performanceMeasurements": 0,
+    "verified": true
+  },
+  "stderr": "",
+  "manifestSHA256": "75c873d6d0db86332e846cc48a623f4de6774220245ce44fee5d56476edc3e5e",
+  "performanceMeasurements": 0
+}

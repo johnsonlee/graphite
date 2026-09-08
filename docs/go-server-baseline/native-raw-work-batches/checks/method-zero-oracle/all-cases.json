@@ -1,0 +1,294 @@
+[
+  {
+    "name": "method-true",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method) WHERE true RETURN m.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-true-parameters",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method) WHERE true RETURN m.name AS name LIMIT 0",
+        "parameters": {
+          "unused": "value"
+        }
+      }
+    ]
+  },
+  {
+    "name": "method-unfiltered",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method) RETURN m.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-order",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method) WHERE true RETURN m.name AS name ORDER BY name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-skip",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP 0 LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-string",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method) WHERE m.name CONTAINS 'hit' RETURN m.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-relationship",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method)-[:CALLS]->(n:Method) WHERE true RETURN m.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-true",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-order",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name ORDER BY name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-skip",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name SKIP 0 LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-skip-one",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP 1 LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-skip-parameter",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP $s LIMIT 0",
+        "parameters": {
+          "s": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "method-property-name",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method {name: 'x'}) RETURN m.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-property-bogus",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method {bogus: 'x'}) RETURN m.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-property-parameter-types",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method {parameter_types: ['I']}) RETURN m.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "method-property-signature",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (m:Method {signature: 'bad'}) RETURN m.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  }
+]

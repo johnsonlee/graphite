@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/candidate-replay/run.py",
+    "size": 6051,
+    "sha256": "70a9e6ca3a5e6a1b0e0f7a16b6c483ce6a42d883ac1d70bea9432b54bdaa6a49"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/candidate-replay/replay_test.go",
+    "size": 6224,
+    "sha256": "8e788981cbcd8a3ef96edd5bf3257cfa9eb4ebdc7dc0c2d6c6bb8fca031d4594"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/cases.json",
+    "size": 124142,
+    "sha256": "d7bea6c61759fe2d24ffa9d1222eddcd506913e189854900dad628f93418fbc1"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/main.json",
+    "size": 588602,
+    "sha256": "3c45fe10bb660fd11f96211a85c7188ac6b429ba7147def746368c39f38cf91f"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/repeat-main.json.gz",
+    "size": 16038,
+    "sha256": "891bf0c101e67ca5540eb327d2356b7051f0fd290a16abcb3ab71f59deca8f31"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/fixtures.tar.gz",
+    "size": 12603,
+    "sha256": "b78a6587a7d881c3941500e2fcb6687b60f16a5cb5669b4b25e39109f13c6650"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-string-disjunction/fixture-variants.json",
+    "size": 101272,
+    "sha256": "bddda8ef80a1f1d81458661a29a3819c61aa2824df2d7d7dd050479d3f23a625"
+  },
+  {
+    "path": "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+    "size": 16467570,
+    "sha256": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4"
+  }
+]

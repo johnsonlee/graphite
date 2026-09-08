@@ -1,0 +1,928 @@
+[
+  {
+    "name": "local-zero-budget-exhausted",
+    "mode": "context",
+    "budget": "1",
+    "sources": [
+      {
+        "fixture": "local-bad0",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-miss-exact",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "local-miss",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-miss-short",
+    "mode": "context",
+    "budget": "1024",
+    "sources": [
+      {
+        "fixture": "local-miss",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      }
+    ]
+  },
+  {
+    "name": "local-miss-before-batch",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "local-miss",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-first-exact",
+    "mode": "context",
+    "budget": "1",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-boundary-exact",
+    "mode": "context",
+    "budget": "1024",
+    "sources": [
+      {
+        "fixture": "local-boundary",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-boundary-short",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "local-boundary",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-last-exact",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "local-last",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-first-last-limit2",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "local-firstlast",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-bad0-budget1",
+    "mode": "context",
+    "budget": "1",
+    "sources": [
+      {
+        "fixture": "local-bad0",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-bad0-budget0",
+    "mode": "context",
+    "budget": "1",
+    "sources": [
+      {
+        "fixture": "local-bad0",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-bad1022-budget1023",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "local-bad1022",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-bad1022-budget1022",
+    "mode": "context",
+    "budget": "1022",
+    "sources": [
+      {
+        "fixture": "local-bad1022",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-bad1023-budget1023",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "local-bad1023",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-bad1023-budget1024",
+    "mode": "context",
+    "budget": "1024",
+    "sources": [
+      {
+        "fixture": "local-bad1023",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-bad1024-budget1024",
+    "mode": "context",
+    "budget": "1024",
+    "sources": [
+      {
+        "fixture": "local-bad1024",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-bad1024-budget1025",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "local-bad1024",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-repeat-shared",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-miss",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' OR n.name CONTAINS 'zzz' RETURN n.name AS name LIMIT 1",
+        "parameters": {},
+        "freshExecutor": true
+      }
+    ]
+  },
+  {
+    "name": "call-zero-budget-exhausted",
+    "mode": "context",
+    "budget": "1",
+    "sources": [
+      {
+        "fixture": "call-bad0",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 0",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-miss-exact",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "call-miss",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-miss-short",
+    "mode": "context",
+    "budget": "1024",
+    "sources": [
+      {
+        "fixture": "call-miss",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "consume",
+        "units": "0"
+      }
+    ]
+  },
+  {
+    "name": "call-miss-before-batch",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "call-miss",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-first-exact",
+    "mode": "context",
+    "budget": "1",
+    "sources": [
+      {
+        "fixture": "call-first",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-boundary-exact",
+    "mode": "context",
+    "budget": "1024",
+    "sources": [
+      {
+        "fixture": "call-boundary",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-boundary-short",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "call-boundary",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-last-exact",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "call-last",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-first-last-limit2",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "call-firstlast",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-bad0-budget1",
+    "mode": "context",
+    "budget": "1",
+    "sources": [
+      {
+        "fixture": "call-bad0",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-bad0-budget0",
+    "mode": "context",
+    "budget": "1",
+    "sources": [
+      {
+        "fixture": "call-bad0",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "consume",
+        "units": "1"
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-bad1022-budget1023",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "call-bad1022",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-bad1022-budget1022",
+    "mode": "context",
+    "budget": "1022",
+    "sources": [
+      {
+        "fixture": "call-bad1022",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-bad1023-budget1023",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "call-bad1023",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-bad1023-budget1024",
+    "mode": "context",
+    "budget": "1024",
+    "sources": [
+      {
+        "fixture": "call-bad1023",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-bad1024-budget1024",
+    "mode": "context",
+    "budget": "1024",
+    "sources": [
+      {
+        "fixture": "call-bad1024",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-bad1024-budget1025",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "call-bad1024",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-repeat-shared",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "call-miss",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-empty",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {},
+        "freshExecutor": true
+      }
+    ]
+  },
+  {
+    "name": "local-single-miss",
+    "mode": "context",
+    "budget": "10000",
+    "sources": [
+      {
+        "fixture": "local-miss",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' RETURN n.name AS name LIMIT 1",
+        "parameters": {},
+        "freshExecutor": true
+      }
+    ]
+  },
+  {
+    "name": "local-single-first",
+    "mode": "context",
+    "budget": "3",
+    "sources": [
+      {
+        "fixture": "local-first",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      },
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' RETURN n.name AS name LIMIT 1",
+        "parameters": {},
+        "freshExecutor": true
+      }
+    ]
+  },
+  {
+    "name": "local-single-bad1023",
+    "mode": "context",
+    "budget": "1023",
+    "sources": [
+      {
+        "fixture": "local-bad1023",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "local-single-last",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "local-last",
+        "graphId": "source0"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'hit' RETURN n.name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-second-source-first",
+    "mode": "context",
+    "budget": "1026",
+    "sources": [
+      {
+        "fixture": "call-miss",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-first",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-second-source-short",
+    "mode": "context",
+    "budget": "1025",
+    "sources": [
+      {
+        "fixture": "call-miss",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-first",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 1",
+        "parameters": {}
+      }
+    ]
+  },
+  {
+    "name": "call-two-first-limit2",
+    "mode": "context",
+    "budget": "1026",
+    "sources": [
+      {
+        "fixture": "call-first",
+        "graphId": "source0"
+      },
+      {
+        "fixture": "call-first",
+        "graphId": "source1"
+      }
+    ],
+    "operations": [
+      {
+        "op": "execute",
+        "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'hit' OR n.callee_name CONTAINS 'zzz' RETURN n.caller_name AS name LIMIT 2",
+        "parameters": {}
+      }
+    ]
+  }
+]

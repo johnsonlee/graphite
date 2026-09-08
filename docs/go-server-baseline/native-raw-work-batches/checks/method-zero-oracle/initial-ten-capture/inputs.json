@@ -1,0 +1,16 @@
+{
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/checks/method-zero-oracle/run.py": "6e0fe099f5520145fe86f0b2bb6d369620bfa1a88b03831f8b8cf7962675ed79",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/checks/method-zero-oracle/RawWorkOracle.java": "2b1ec91518726d34bb719f1ca17779fa2c34a048845d264156872ccdfe604b30",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/checks/method-zero-oracle/cases.json": "a1ce2d22b87fdd29c703cb7798dcfc0ff23de834bbe4221327b9c76a349c805f",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/fixtures.tar.gz": "31a7d70c9833dcf84322d541744ae007f1b5b182920eac26b45ede372283092a",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/fixture-variants.json": "a29eb6a16eca03aa91b5b4758e06ca2cc0b195ae1eaf1bc768401d42f3f2519e",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java": "9400f622fd1e220aa1a0cbd578aff060d837468b64227db40d099791b717729f",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac": "954b31239fbf59e5b7c16e2af639a8a7ec36f6b602afd970e64054eabad0ac54",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/release": "d940b2ac1d3f585fd23451d205bed9c91ad6f3f07d14b6765eb33029911aadc9",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/modules": "0473441a67b3287836922b4ad05a140029f9fcc5e688fd3cf1ac3a21d15afcf9",
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/server/libjvm.dylib": "51d9529a35eed323d31f38813cc295e072248701bf51360bbcd1431198e52f99",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutor.kt": "2de0ff1f84fc67fd76f3d4c3335c406ed440c625e29f3911aa73d2aa04cf2586",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutionBudget.kt": "3fdfd1588e92c63a682bfcdbd3e9b79c7b67142a36d3b04700f49c4397ad18a3"
+}

@@ -1,0 +1,81 @@
+[
+  {
+    "phase": "javap",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+      "-classpath",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+      "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+      "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+      "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+      "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T09:57:47.699819+00:00",
+    "endUTC": "2026-09-08T09:57:47.865136+00:00"
+  },
+  {
+    "phase": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/RawWorkFixture.java",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/RawWorkOracle.java",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/BufferedOracle.java"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T09:57:47.865502+00:00",
+    "endUTC": "2026-09-08T09:57:48.282211+00:00"
+  },
+  {
+    "phase": "generate",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "RawWorkFixture",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/fixture-specs.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/variants",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/mutations.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T09:57:48.282572+00:00",
+    "endUTC": "2026-09-08T09:57:48.654747+00:00"
+  },
+  {
+    "phase": "buffered",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "BufferedOracle",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/buffered-cases.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/buffered-main.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T09:57:49.499093+00:00",
+    "endUTC": "2026-09-08T09:57:49.588993+00:00"
+  },
+  {
+    "phase": "run",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "RawWorkOracle",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/cases.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/fixtures",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/main.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T09:57:49.589369+00:00",
+    "endUTC": "2026-09-08T09:57:49.870811+00:00"
+  }
+]

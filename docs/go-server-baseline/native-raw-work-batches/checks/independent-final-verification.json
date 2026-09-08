@@ -1,0 +1,255 @@
+{
+  "auditUTC": "2026-09-08T10:32:06.195793+00:00",
+  "scope": "Independent file hashes, source bindings, streaming archived-output comparison and log review only. No build, test, JVM, Go workload or benchmark execution.",
+  "verified": true,
+  "moduleBinding": {
+    "moduleFiles": 2545,
+    "checksInputs": 2775,
+    "currentEqualsSourceVerification": true,
+    "currentEqualsFinalChecksInputs": true,
+    "currentEqualsReal64FrozenFiles": true,
+    "currentEqualsMatrixSourceBefore": true
+  },
+  "checks": {
+    "steps": [
+      {
+        "name": "context",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      },
+      {
+        "name": "race",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      },
+      {
+        "name": "vet",
+        "exitCode": 0,
+        "inputsUnchanged": true
+      }
+    ],
+    "archivedLogsByteEqualToExternalChecksV3": true,
+    "existingJVMScenarios": 119,
+    "existingScenarioScope": "Mixed public executions, constructors and private tracker controls, not 119 public query cases.",
+    "newRawPublicCases": 43,
+    "newRawOperations": 57,
+    "newMethodPublicCases": 16,
+    "newMethodOperations": 16,
+    "newPublicCases": 59,
+    "applicableActualBufferCases": 8,
+    "nativeBudgetCancellationControls": 2,
+    "nativeSourceLoopControl": true,
+    "comparedRequestFields": [
+      "complete columns/rows",
+      "simple error class and nullable message",
+      "atomic empty failed result",
+      "all eight ExecutionDiagnostics fields",
+      "remaining budget",
+      "cancelled flag",
+      "cancellation reason"
+    ],
+    "storageFieldValues": {
+      "isCallSiteStringIndexInitialized": [
+        false
+      ],
+      "isMappedCallSiteStringIndexViewInitialized": [
+        false
+      ],
+      "rawStringMatchStateCount": [
+        0
+      ],
+      "rawProjectionMatchCount": [
+        0
+      ]
+    },
+    "storageMappingConclusion": "RawMatchCount=0 matches main graph-level RawStringMatchStates.size(): stateFor has no production caller. Iterator-local matchers are excluded. All four compared storage observations are zero/false: absence of publication, not cache growth.",
+    "unmappedStorageObservers": [
+      "callSiteParallelScanCount",
+      "callSiteStringLookupEntryCount",
+      "callSiteStringIndexLookupCount"
+    ],
+    "primitiveLimit": "Pending, completed consumes and total submitted units compared; arbitrary callback failures and exact callback partition trace are not claimed. Budget/cancel controls are explicitly Go contracts."
+  },
+  "archiveChecks": {
+    ".": {
+      "manifestFiles": 126,
+      "externalByteCopies": 104
+    },
+    "checks/method-zero-oracle": {
+      "manifestFiles": 58,
+      "externalByteCopies": 42
+    },
+    "real64": {
+      "externalByteOrDecompressedCopies": 26
+    },
+    "checks/matrix201": {
+      "externalByteOrDecompressedCopies": 17
+    }
+  },
+  "real64": [
+    {
+      "state": "cold",
+      "records": 1269,
+      "phaseCases": {
+        "replay": 1267
+      },
+      "graphStateObservations": 162304,
+      "publicDifferences": [],
+      "stateDifferences": [],
+      "invocationPrepared": true,
+      "originalGateExitCode": 1,
+      "preservedErrors": [
+        {
+          "index": 821,
+          "id": "four-or-graph-id-targeted",
+          "error": "IllegalStateException",
+          "message": "Unsafe expression reached parallel string projection"
+        }
+      ],
+      "preservedObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ]
+    },
+    {
+      "state": "warm",
+      "records": 1268,
+      "phaseCases": {
+        "warmup": 1267
+      },
+      "graphStateObservations": 162240,
+      "publicDifferences": [],
+      "stateDifferences": [],
+      "invocationPrepared": false,
+      "originalGateExitCode": 1,
+      "preservedErrors": [
+        {
+          "index": 821,
+          "id": "four-or-graph-id-targeted",
+          "error": "IllegalStateException",
+          "message": "Unsafe expression reached parallel string projection"
+        }
+      ],
+      "preservedObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ]
+    },
+    {
+      "state": "startup-prepared",
+      "records": 1269,
+      "phaseCases": {
+        "replay": 1267
+      },
+      "graphStateObservations": 162304,
+      "publicDifferences": [],
+      "stateDifferences": [],
+      "invocationPrepared": true,
+      "originalGateExitCode": 1,
+      "preservedErrors": [
+        {
+          "index": 821,
+          "id": "four-or-graph-id-targeted",
+          "error": "IllegalStateException",
+          "message": "Unsafe expression reached parallel string projection"
+        }
+      ],
+      "preservedObserverDifferences": [
+        {
+          "index": 821,
+          "main": "java.lang.IllegalStateException",
+          "native": null
+        }
+      ]
+    }
+  ],
+  "real64GraphStateObservationsTotal": 486848,
+  "real64FixtureVerificationScope": "Both original per-state receipts record all 1152 original files unchanged. This audit did not rehash the 10 GB source fixture.",
+  "matrix201": {
+    "cases": 201,
+    "publicMatches": 166,
+    "publicCases": 181,
+    "providerWrapperMatches": 19,
+    "providerWrapperCases": 20,
+    "allGoCaseFieldsExceptRuntimeStackEqualToPrevious": true,
+    "preservedRuntimeObserverDifferences": [
+      {
+        "name": "provider-field-bad-sid-0-example",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "name": "provider-field-bad-sid-0-never-matches-generic-oracle",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "name": "provider-field-bad-sid-1-example",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "name": "provider-field-bad-sid-1-never-matches-generic-oracle",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "name": "provider-field-bad-sid-2-example",
+        "fields": [
+          "goStack"
+        ]
+      },
+      {
+        "name": "provider-field-payload-id-example",
+        "fields": [
+          "goStack"
+        ]
+      }
+    ],
+    "unchangedDifferences": [
+      "six-empty-1",
+      "six-empty-2",
+      "enum-bad-tail-hit",
+      "field-bad-tail-hit",
+      "field-bad-tail-miss",
+      "field-bad-tail-global-miss",
+      "annotation-bad-tail-hit",
+      "annotation-bad-tail-miss",
+      "annotation-bad-tail-global-miss",
+      "unicode-4-EnumConstant",
+      "unicode-4-LocalVariable",
+      "unicode-4-Field",
+      "unicode-5-EnumConstant",
+      "unicode-5-LocalVariable",
+      "unicode-5-Field",
+      "provider-field-payload-id-example"
+    ],
+    "diagnosticsCompared": false
+  },
+  "documentsReviewed": {
+    "docs/go-server-baseline/native-raw-work-batches/native-readme.md": "e1b27104f1b13aa22b09ad1077c3025607c28a17f183e790ee72b21812ba3b5e",
+    "docs/go-server-optimization-attempts.md": "9d8cb7dd80d337ad59ecb22a1af712fa4bc2e6dff4ec9050d19a29341436a96b",
+    "docs/go-server-baseline/native-raw-work-batches/next-leading-accounting.md": "c4c9aa2d29dcd4956ac759edc318e636fbeea5b01acf5cc2e34a370dec660ce0"
+  },
+  "limitations": [
+    "Original case 821 and all-success gate exit 1 remain.",
+    "Warm covers prewarm only, invocationPrepared=false.",
+    "Qualified JVM errorClass observer difference remains.",
+    "Original JVM fast-throw nullable message/stack variability is preserved; diagnostic flags do not replace original acceptance.",
+    "201-case historical adapter does not supply ExecutionContext or compare its diagnostics.",
+    "Serial raw accounting does not establish complete optimized/parallel/index/cache/path/server accounting.",
+    "No P95, CPU, latency, allocation or 10x performance acceptance proven."
+  ],
+  "performanceMeasurements": 0,
+  "performanceAcceptanceProven": false
+}

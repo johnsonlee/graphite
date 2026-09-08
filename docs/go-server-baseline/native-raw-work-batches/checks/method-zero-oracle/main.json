@@ -1,0 +1,2479 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "javaVersion": "17.0.18",
+  "performanceMeasurements": 0,
+  "cases": [
+    {
+      "name": "method-true",
+      "spec": {
+        "name": "method-true",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-true-parameters",
+      "spec": {
+        "name": "method-true-parameters",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name LIMIT 0",
+            "parameters": {
+              "unused": "value"
+            }
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name LIMIT 0",
+            "parameters": {
+              "unused": "value"
+            }
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 1,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 1,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-unfiltered",
+      "spec": {
+        "name": "method-unfiltered",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-order",
+      "spec": {
+        "name": "method-order",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name ORDER BY name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name ORDER BY name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-skip",
+      "spec": {
+        "name": "method-skip",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP 0 LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP 0 LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-string",
+      "spec": {
+        "name": "method-string",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE m.name CONTAINS 'hit' RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE m.name CONTAINS 'hit' RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-relationship",
+      "spec": {
+        "name": "method-relationship",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method)-[:CALLS]->(n:Method) WHERE true RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method)-[:CALLS]->(n:Method) WHERE true RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 1,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 1,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "local-true",
+      "spec": {
+        "name": "local-true",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 1,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 1,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "local-order",
+      "spec": {
+        "name": "local-order",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name ORDER BY name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name ORDER BY name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "local-skip",
+      "spec": {
+        "name": "local-skip",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name SKIP 0 LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (n:LocalVariable) WHERE true RETURN n.name AS name SKIP 0 LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-skip-one",
+      "spec": {
+        "name": "method-skip-one",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP 1 LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP 1 LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-skip-parameter",
+      "spec": {
+        "name": "method-skip-parameter",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP $s LIMIT 0",
+            "parameters": {
+              "s": 1
+            }
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method) WHERE true RETURN m.name AS name SKIP $s LIMIT 0",
+            "parameters": {
+              "s": 1
+            }
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 1,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 1,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-property-name",
+      "spec": {
+        "name": "method-property-name",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method {name: 'x'}) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method {name: 'x'}) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-property-bogus",
+      "spec": {
+        "name": "method-property-bogus",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method {bogus: 'x'}) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method {bogus: 'x'}) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 1,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 1,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-property-parameter-types",
+      "spec": {
+        "name": "method-property-parameter-types",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method {parameter_types: ['I']}) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method {parameter_types: ['I']}) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 1,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 1,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 0,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "method-property-signature",
+      "spec": {
+        "name": "method-property-signature",
+        "mode": "context",
+        "budget": "10000",
+        "sources": [
+          {
+            "fixture": "local-first",
+            "graphId": "source0"
+          }
+        ],
+        "operations": [
+          {
+            "op": "execute",
+            "query": "MATCH (m:Method {signature: 'bad'}) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          }
+        ]
+      },
+      "construction": {
+        "outcome": "SUCCESS",
+        "maxWorkUnits": "10000",
+        "after": {
+          "diagnostics": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 0,
+            "filteredNodeLimitFastPathExecutions": 0,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 0
+          },
+          "remaining": "10000",
+          "cancelled": false,
+          "cancellationReason": {
+            "error": "CypherQueryCancelledException",
+            "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+            "message": "Cypher query cancelled"
+          },
+          "storage": []
+        }
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "execute",
+            "query": "MATCH (m:Method {signature: 'bad'}) RETURN m.name AS name LIMIT 0",
+            "parameters": {}
+          },
+          "before": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 0,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          },
+          "value": {
+            "columns": [
+              "name"
+            ],
+            "rows": []
+          },
+          "outcome": "SUCCESS",
+          "after": {
+            "diagnostics": {
+              "graphIdSourceSelections": 0,
+              "graphIdSourcePruningExecutions": 0,
+              "graphIdSourcesPruned": 0,
+              "graphIdSourceConflicts": 0,
+              "fastPathExecutions": 0,
+              "filteredNodeLimitFastPathExecutions": 0,
+              "generalFallbackExecutions": 1,
+              "workUnitsConsumed": 0
+            },
+            "remaining": "10000",
+            "cancelled": false,
+            "cancellationReason": {
+              "error": "CypherQueryCancelledException",
+              "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+              "message": "Cypher query cancelled"
+            },
+            "storage": [
+              {
+                "graphId": "source0",
+                "isCallSiteStringIndexInitialized": false,
+                "isMappedCallSiteStringIndexViewInitialized": false,
+                "rawStringMatchStateCount": 0,
+                "rawProjectionMatchCount": 0,
+                "callSiteParallelScanCount": 0,
+                "callSiteStringLookupEntryCount": 0,
+                "callSiteStringIndexLookupCount": 0
+              }
+            ]
+          }
+        }
+      ],
+      "final": {
+        "diagnostics": {
+          "graphIdSourceSelections": 0,
+          "graphIdSourcePruningExecutions": 0,
+          "graphIdSourcesPruned": 0,
+          "graphIdSourceConflicts": 0,
+          "fastPathExecutions": 0,
+          "filteredNodeLimitFastPathExecutions": 0,
+          "generalFallbackExecutions": 1,
+          "workUnitsConsumed": 0
+        },
+        "remaining": "10000",
+        "cancelled": false,
+        "cancellationReason": {
+          "error": "CypherQueryCancelledException",
+          "errorClass": "io.johnsonlee.graphite.cypher.CypherQueryCancelledException",
+          "message": "Cypher query cancelled"
+        },
+        "storage": [
+          {
+            "graphId": "source0",
+            "isCallSiteStringIndexInitialized": false,
+            "isMappedCallSiteStringIndexViewInitialized": false,
+            "rawStringMatchStateCount": 0,
+            "rawProjectionMatchCount": 0,
+            "callSiteParallelScanCount": 0,
+            "callSiteStringLookupEntryCount": 0,
+            "callSiteStringIndexLookupCount": 0
+          }
+        ]
+      }
+    }
+  ]
+}

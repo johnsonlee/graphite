@@ -94,12 +94,15 @@ func (e evaluator) mainStringCandidatesExcludingCallSites(source Graph, pattern 
 					matchStates[i] = states
 				}
 			}
+			accounting := bufferedGraphWork{work: local.work}
+			defer accounting.flush()
 			for position < len(ids) {
 				local.check()
 				id := ids[position]
 				position++
 				var node store.Node
 				if source.Store.Mode == "MAPPED" && kind != "AnnotationNode" {
+					accounting.consume()
 					matched := false
 					for i, atom := range filters {
 						sid, present, err := source.Store.ProjectionPropertyStringID(ctx, id, kind, atom.property)
@@ -146,6 +149,7 @@ func (e evaluator) mainStringCandidatesExcludingCallSites(source Graph, pattern 
 					node = value
 				}
 				if source.Store.Mode != "MAPPED" || kind == "AnnotationNode" {
+					local.consume(1)
 					matched := false
 					for _, atom := range filters {
 						if local.distinctAtomMatches(atom, NodeProperty(node, atom.property)) {

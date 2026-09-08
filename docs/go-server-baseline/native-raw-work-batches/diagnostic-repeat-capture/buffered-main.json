@@ -1,0 +1,1109 @@
+{
+  "cases": [
+    {
+      "name": "batch-0",
+      "spec": {
+        "name": "batch-0",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 0
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 0
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": []
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": []
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": []
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": []
+      }
+    },
+    {
+      "name": "batch-1",
+      "spec": {
+        "name": "batch-1",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1,
+          "after": {
+            "pending": "1",
+            "delegateCalls": []
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1"
+        ]
+      }
+    },
+    {
+      "name": "batch-1023",
+      "spec": {
+        "name": "batch-1023",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1023
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1023
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1023,
+          "after": {
+            "pending": "1023",
+            "delegateCalls": []
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1023",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1023"
+        ]
+      }
+    },
+    {
+      "name": "batch-1024",
+      "spec": {
+        "name": "batch-1024",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1024
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1024
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1024,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1024"
+        ]
+      }
+    },
+    {
+      "name": "batch-1025",
+      "spec": {
+        "name": "batch-1025",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1025
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1025
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1025,
+          "after": {
+            "pending": "1",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1",
+            "delegateCalls": [
+              "1024"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024",
+              "1"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024",
+              "1"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024",
+              "1"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1024",
+          "1"
+        ]
+      }
+    },
+    {
+      "name": "incremental-boundary",
+      "spec": {
+        "name": "incremental-boundary",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1023
+          },
+          {
+            "op": "consume",
+            "count": 1
+          },
+          {
+            "op": "consume",
+            "count": 1
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1023
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1023,
+          "after": {
+            "pending": "1023",
+            "delegateCalls": []
+          }
+        },
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1
+          },
+          "before": {
+            "pending": "1023",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1,
+          "after": {
+            "pending": "1",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1",
+            "delegateCalls": [
+              "1024"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024",
+              "1"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1024",
+          "1"
+        ]
+      }
+    },
+    {
+      "name": "manual-flush-reset",
+      "spec": {
+        "name": "manual-flush-reset",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1023
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "consume",
+            "count": 1023
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1023
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1023,
+          "after": {
+            "pending": "1023",
+            "delegateCalls": []
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1023",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1023
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1023,
+          "after": {
+            "pending": "1023",
+            "delegateCalls": [
+              "1023"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1023",
+            "delegateCalls": [
+              "1023"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023",
+              "1023"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1023",
+          "1023"
+        ]
+      }
+    },
+    {
+      "name": "delegate-fails-auto",
+      "spec": {
+        "name": "delegate-fails-auto",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1025
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "consume",
+            "count": 1
+          },
+          {
+            "op": "flush"
+          }
+        ],
+        "failCall": 1
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1025
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "FAILED",
+          "error": "IllegalStateException",
+          "errorClass": "java.lang.IllegalStateException",
+          "message": "declared delegate failure",
+          "stack": [
+            "BufferedOracle$1.consume(BufferedOracle.java:18)",
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.consumeGraphWork(MappedWebGraphBackedGraph.kt:3100)",
+            "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.flush(MappedWebGraphBackedGraph.kt:3123)",
+            "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume(MappedWebGraphBackedGraph.kt:3116)",
+            "jdk.internal.reflect.GeneratedMethodAccessor1.invoke(Unknown Source)",
+            "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.base/java.lang.reflect.Method.invoke(Method.java:569)",
+            "BufferedOracle.main(BufferedOracle.java:21)"
+          ],
+          "completedConsumes": 1023,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1,
+          "after": {
+            "pending": "1",
+            "delegateCalls": [
+              "1024"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1",
+            "delegateCalls": [
+              "1024"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1024",
+              "1"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1024",
+          "1"
+        ]
+      }
+    },
+    {
+      "name": "delegate-fails-manual",
+      "spec": {
+        "name": "delegate-fails-manual",
+        "delegate": "batch",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1023
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "consume",
+            "count": 1
+          },
+          {
+            "op": "flush"
+          }
+        ],
+        "failCall": 1
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1023
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1023,
+          "after": {
+            "pending": "1023",
+            "delegateCalls": []
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1023",
+            "delegateCalls": []
+          },
+          "outcome": "FAILED",
+          "error": "IllegalStateException",
+          "errorClass": "java.lang.IllegalStateException",
+          "message": "declared delegate failure",
+          "stack": [
+            "BufferedOracle$1.consume(BufferedOracle.java:18)",
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.consumeGraphWork(MappedWebGraphBackedGraph.kt:3100)",
+            "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.flush(MappedWebGraphBackedGraph.kt:3123)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)",
+            "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.base/java.lang.reflect.Method.invoke(Method.java:569)",
+            "BufferedOracle.main(BufferedOracle.java:21)"
+          ],
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1,
+          "after": {
+            "pending": "1",
+            "delegateCalls": [
+              "1023"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "1",
+            "delegateCalls": [
+              "1023"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1023",
+              "1"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1023",
+          "1"
+        ]
+      }
+    },
+    {
+      "name": "unit-delegate",
+      "spec": {
+        "name": "unit-delegate",
+        "delegate": "unit",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 3
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 3
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 3,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1",
+              "1",
+              "1"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1",
+              "1",
+              "1"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1",
+              "1",
+              "1"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1",
+          "1",
+          "1"
+        ]
+      }
+    },
+    {
+      "name": "unit-delegate-fails",
+      "spec": {
+        "name": "unit-delegate-fails",
+        "delegate": "unit",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 3
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "consume",
+            "count": 1
+          }
+        ],
+        "failCall": 2
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 3
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "FAILED",
+          "error": "IllegalStateException",
+          "errorClass": "java.lang.IllegalStateException",
+          "message": "declared delegate failure",
+          "stack": [
+            "BufferedOracle.lambda$main$0(BufferedOracle.java:17)",
+            "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume(MappedWebGraphBackedGraph.kt:3112)",
+            "jdk.internal.reflect.GeneratedMethodAccessor1.invoke(Unknown Source)",
+            "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.base/java.lang.reflect.Method.invoke(Method.java:569)",
+            "BufferedOracle.main(BufferedOracle.java:21)"
+          ],
+          "completedConsumes": 1,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1",
+              "1"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1",
+              "1"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1",
+              "1"
+            ]
+          }
+        },
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": [
+              "1",
+              "1"
+            ]
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1,
+          "after": {
+            "pending": "0",
+            "delegateCalls": [
+              "1",
+              "1",
+              "1"
+            ]
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": [
+          "1",
+          "1",
+          "1"
+        ]
+      }
+    },
+    {
+      "name": "null-delegate",
+      "spec": {
+        "name": "null-delegate",
+        "delegate": "null",
+        "operations": [
+          {
+            "op": "consume",
+            "count": 1025
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "spec": {
+            "op": "consume",
+            "count": 1025
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 1025,
+          "after": {
+            "pending": "0",
+            "delegateCalls": []
+          }
+        },
+        {
+          "spec": {
+            "op": "flush"
+          },
+          "before": {
+            "pending": "0",
+            "delegateCalls": []
+          },
+          "outcome": "SUCCESS",
+          "completedConsumes": 0,
+          "after": {
+            "pending": "0",
+            "delegateCalls": []
+          }
+        }
+      ],
+      "final": {
+        "pending": "0",
+        "delegateCalls": []
+      }
+    }
+  ],
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "javaVersion": "17.0.18",
+  "performanceMeasurements": 0
+}

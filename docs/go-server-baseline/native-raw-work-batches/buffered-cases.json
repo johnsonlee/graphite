@@ -1,0 +1,212 @@
+[
+  {
+    "name": "batch-0",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 0
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  },
+  {
+    "name": "batch-1",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  },
+  {
+    "name": "batch-1023",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1023
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  },
+  {
+    "name": "batch-1024",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1024
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  },
+  {
+    "name": "batch-1025",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1025
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  },
+  {
+    "name": "incremental-boundary",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1023
+      },
+      {
+        "op": "consume",
+        "count": 1
+      },
+      {
+        "op": "consume",
+        "count": 1
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  },
+  {
+    "name": "manual-flush-reset",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1023
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "consume",
+        "count": 1023
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  },
+  {
+    "name": "delegate-fails-auto",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1025
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "consume",
+        "count": 1
+      },
+      {
+        "op": "flush"
+      }
+    ],
+    "failCall": 1
+  },
+  {
+    "name": "delegate-fails-manual",
+    "delegate": "batch",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1023
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "consume",
+        "count": 1
+      },
+      {
+        "op": "flush"
+      }
+    ],
+    "failCall": 1
+  },
+  {
+    "name": "unit-delegate",
+    "delegate": "unit",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 3
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  },
+  {
+    "name": "unit-delegate-fails",
+    "delegate": "unit",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 3
+      },
+      {
+        "op": "flush"
+      },
+      {
+        "op": "consume",
+        "count": 1
+      }
+    ],
+    "failCall": 2
+  },
+  {
+    "name": "null-delegate",
+    "delegate": "null",
+    "operations": [
+      {
+        "op": "consume",
+        "count": 1025
+      },
+      {
+        "op": "flush"
+      }
+    ]
+  }
+]

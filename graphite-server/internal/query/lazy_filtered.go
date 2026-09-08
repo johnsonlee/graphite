@@ -110,13 +110,23 @@ func lazyKnownLabel(label string) bool {
 	return false
 }
 
-func (e evaluator) lazyFiltered(graph *store.Store, branch cypher.SingleQuery) (Result, bool) {
+func (e evaluator) lazyFiltered(graph *store.Store, branch cypher.SingleQuery) (result Result, accepted bool) {
 	defer ordinarySourceFailure()
 	p := e.compileLazyFiltered(branch)
 	if p == nil {
 		return Result{}, false
 	}
-	result := Result{Columns: p.columns, Rows: []map[string]any{}}
+	defer func() {
+		// Main records a completed dispatcher only after successful evaluation.
+		if accepted && e.work != nil {
+			if p.bounded {
+				e.work.recordFilteredNodeLimitFastPath()
+			} else {
+				e.work.recordFastPath()
+			}
+		}
+	}()
+	result = Result{Columns: p.columns, Rows: []map[string]any{}}
 	if p.limit <= 0 {
 		return result, true
 	}

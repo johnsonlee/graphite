@@ -1,0 +1,20 @@
+{
+  "verifiedUTC": "2026-09-08T10:12:03.172266+00:00",
+  "command": [
+    "python3",
+    "docs/go-server-baseline/native-raw-work-batches/checks/method-zero-oracle/verify.py"
+  ],
+  "exitCode": 0,
+  "summary": {
+    "verified": true,
+    "manifestFiles": 58,
+    "cases": 16,
+    "operations": 16,
+    "fixtureFiles": 16,
+    "completeRepeatEqual": true,
+    "performanceMeasurements": 0
+  },
+  "stderr": "",
+  "manifestSHA256": "48c3f78c29e4759a7861290d145cccc6c7216232ab1c4d25fe794ccf79eeec38",
+  "performanceMeasurements": 0
+}

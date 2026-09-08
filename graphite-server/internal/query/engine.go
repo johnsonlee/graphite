@@ -359,13 +359,37 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 	if hasUnknownNodeLabel(branch) {
 		return e.generalBranch(graph, branch)
 	}
+	if result, ok := e.methodEmpty(graph, branch); ok {
+		if e.work != nil {
+			e.work.recordFastPath()
+		}
+		return result
+	}
 	if empty, ok := filteredLiteralEmpty(branch); ok {
+		// Method dispatch precedes filtered/streaming admission in main.
+		// A declined Method request must retain general evaluation semantics.
+		if referencesMethod(branch) {
+			return e.generalBranch(graph, branch)
+		}
+		if e.work != nil {
+			match := branch.Clauses[0].(cypher.MatchClause)
+			projection := branch.Clauses[1].(cypher.ProjectionClause)
+			pattern := match.Patterns[0]
+			if len(pattern.Nodes) == 1 && len(pattern.Relationships) == 0 && pattern.Nodes[0].Variable != "" && projection.Skip == nil && len(projection.OrderBy) == 0 {
+				e.work.recordFilteredNodeLimitFastPath()
+			} else {
+				e.work.recordFastPath()
+			}
+		}
 		return empty
 	}
 	if result, ok := e.filteredStringCount(graph, branch); ok {
 		return result
 	}
 	if result, ok := e.ordinaryProjection(graph, branch); ok {
+		if e.work != nil {
+			e.work.recordFilteredNodeLimitFastPath()
+		}
 		return result
 	}
 	if result, ok := e.indexedDistinct(graph, branch); ok {

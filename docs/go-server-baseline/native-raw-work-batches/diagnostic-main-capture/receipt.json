@@ -1,0 +1,121 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "commands": [
+    {
+      "phase": "javap",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javap",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.cypher.CypherExecutionContext",
+        "io.johnsonlee.graphite.cypher.CypherWorkTracker",
+        "io.johnsonlee.graphite.cypher.CypherCancellationSignal",
+        "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer",
+        "io.johnsonlee.graphite.graph.GraphWorkBatchConsumer"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:00:19.364093+00:00",
+      "endUTC": "2026-09-08T10:00:19.498893+00:00"
+    },
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/RawWorkFixture.java",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/RawWorkOracle.java",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/BufferedOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:00:19.499249+00:00",
+      "endUTC": "2026-09-08T10:00:19.940649+00:00"
+    },
+    {
+      "phase": "generate",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "RawWorkFixture",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/fixture-specs.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/variants",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/mutations.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:00:19.941062+00:00",
+      "endUTC": "2026-09-08T10:00:20.303013+00:00"
+    },
+    {
+      "phase": "buffered",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx256m",
+        "-XX:-OmitStackTraceInFastThrow",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "BufferedOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/buffered-cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/buffered-main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:00:21.159211+00:00",
+      "endUTC": "2026-09-08T10:00:21.248217+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-XX:-OmitStackTraceInFastThrow",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "RawWorkOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:00:21.248641+00:00",
+      "endUTC": "2026-09-08T10:00:21.533167+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "BufferedOracle$1.class",
+      "bytes": 884,
+      "sha256": "a7a47650a327a47074295463f60facb718a581d447dcef18f0c36795125ba61e"
+    },
+    {
+      "file": "BufferedOracle.class",
+      "bytes": 7009,
+      "sha256": "8fe595c292cf104a98070fd09642675bb8136445f8e06cc692fa696fbb7d8195"
+    },
+    {
+      "file": "RawWorkFixture.class",
+      "bytes": 8442,
+      "sha256": "805a29d0725e2ada28f492b17f066cd2dd2c3002b780514dc48ccd19fa276eb8"
+    },
+    {
+      "file": "RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "file": "RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    }
+  ],
+  "fixtureAudit": {
+    "originalFiles": 1048,
+    "changed": [],
+    "added": [],
+    "missing": []
+  },
+  "performanceMeasurements": 0
+}

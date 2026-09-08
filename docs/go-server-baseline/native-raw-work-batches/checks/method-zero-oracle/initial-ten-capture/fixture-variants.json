@@ -1,0 +1,82 @@
+[
+  {
+    "file": "local-first/forward.graph",
+    "bytes": 130,
+    "sha256": "6306772284240adae66f7cd623296676fee227129a6a480a3c3fe066183f3310"
+  },
+  {
+    "file": "local-first/forward.offsets",
+    "bytes": 389,
+    "sha256": "5e1da145ab8648312af280941be1b48295efc201b8e201634e27dd19f7d12f69"
+  },
+  {
+    "file": "local-first/forward.properties",
+    "bytes": 624,
+    "sha256": "8b0912a501839061f936a8b39e2df8a83afb9f400dc07fa683363fcbe9e504e4"
+  },
+  {
+    "file": "local-first/graph.callsite-string-content.identity",
+    "bytes": 32,
+    "sha256": "05f7e595bb66825dd2857b21d9d73d39e48e1021f7be7ff311103aa4e48f6a7d"
+  },
+  {
+    "file": "local-first/graph.classoverview",
+    "bytes": 16,
+    "sha256": "a0b3a40ac88969c64df5eedbb341337b49f7f5936acfce30cfe6515cb0b5ca2b"
+  },
+  {
+    "file": "local-first/graph.comparisons",
+    "bytes": 8,
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "file": "local-first/graph.labelprefix",
+    "bytes": 4144,
+    "sha256": "4eebc85577cab5fbd03cbade8bff81821d1f1d01cce6c1bf1f804325df41a949"
+  },
+  {
+    "file": "local-first/graph.labels",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "local-first/graph.metadata",
+    "bytes": 36,
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "file": "local-first/graph.nodedata",
+    "bytes": 29733,
+    "sha256": "2ba453721f10b874f6df999f21bc1f691405a1065b0ca21d6a539202e37b0437"
+  },
+  {
+    "file": "local-first/graph.nodeindex",
+    "bytes": 13333,
+    "sha256": "af30d64a63c417d55ac34d776d6c56e70e5654a131afeb650e5d6f8ac52ac010"
+  },
+  {
+    "file": "local-first/graph.nodeoffsets",
+    "bytes": 8288,
+    "sha256": "049ca3f7ae6ecf8a064bb78467d3c8a4a3df37503523f9a1a3ee58f04d2051b5"
+  },
+  {
+    "file": "local-first/graph.resources",
+    "bytes": 8,
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "file": "local-first/graph.strings",
+    "bytes": 8081,
+    "sha256": "954cf8119f7385fe9e5393fb60e2f3faf04dae516c257f82414768b8393b8bd2"
+  },
+  {
+    "file": "local-first/graph.strings.identity",
+    "bytes": 32,
+    "sha256": "89a47b5f28052bff24b5b2cdc43bbf8fa0437ca2cb34e74301fdc71888e494ad"
+  },
+  {
+    "file": "local-first/graph.typeindex",
+    "bytes": 4316,
+    "sha256": "bceb2115a8f7b8be8ea48344e5ae50447a1592c318c343445972d6bf5972d2ff"
+  }
+]

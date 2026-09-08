@@ -1,0 +1,66 @@
+[
+  {
+    "after": 2147483647,
+    "fixture": "local-bad0",
+    "file": "graph.nodedata",
+    "offset": 13,
+    "nodeID": 10,
+    "before": 2
+  },
+  {
+    "after": 2147483647,
+    "fixture": "local-bad1022",
+    "file": "graph.nodedata",
+    "offset": 29651,
+    "nodeID": 1032,
+    "before": 30
+  },
+  {
+    "after": 2147483647,
+    "fixture": "local-bad1023",
+    "file": "graph.nodedata",
+    "offset": 29680,
+    "nodeID": 1033,
+    "before": 31
+  },
+  {
+    "after": 2147483647,
+    "fixture": "local-bad1024",
+    "file": "graph.nodedata",
+    "offset": 29709,
+    "nodeID": 1034,
+    "before": 32
+  },
+  {
+    "after": 2147483647,
+    "fixture": "call-bad0",
+    "file": "graph.nodedata",
+    "offset": 17,
+    "nodeID": 10,
+    "before": 1
+  },
+  {
+    "after": 2147483647,
+    "fixture": "call-bad1022",
+    "file": "graph.nodedata",
+    "offset": 50095,
+    "nodeID": 1032,
+    "before": 29
+  },
+  {
+    "after": 2147483647,
+    "fixture": "call-bad1023",
+    "file": "graph.nodedata",
+    "offset": 50144,
+    "nodeID": 1033,
+    "before": 30
+  },
+  {
+    "after": 2147483647,
+    "fixture": "call-bad1024",
+    "file": "graph.nodedata",
+    "offset": 50193,
+    "nodeID": 1034,
+    "before": 31
+  }
+]

@@ -1,0 +1,97 @@
+{
+  "pairs": [
+    {
+      "main": "main-capture",
+      "repeat": "repeat-capture",
+      "publicCaseCount": 43,
+      "publicOperationCount": 57,
+      "primitiveCaseCount": 12,
+      "primitiveOperationCount": 39,
+      "primitiveCompleteRecordsEqual": true,
+      "fullFieldDifferences": [
+        {
+          "path": ".cases[32].operations[0].message",
+          "main": "Index 2147483647 out of bounds for length 1026",
+          "repeat": null
+        },
+        {
+          "path": ".cases[32].operations[0].stack",
+          "main": [
+            "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+            "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$serialRawCallSiteStringDisjunction$1.invokeSuspend(MappedWebGraphBackedGraph.kt:1075)",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+            "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+            "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1731)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1375)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+            "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+            "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+            "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+            "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)",
+            "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.base/java.lang.reflect.Method.invoke(Method.java:569)",
+            "RawWorkOracle.invoke(RawWorkOracle.java:16)",
+            "RawWorkOracle.operation(RawWorkOracle.java:73)",
+            "RawWorkOracle.main(RawWorkOracle.java:108)"
+          ],
+          "repeat": []
+        },
+        {
+          "path": ".cases[34].operations[0].message",
+          "main": "Index 2147483647 out of bounds for length 1026",
+          "repeat": null
+        },
+        {
+          "path": ".cases[34].operations[0].stack",
+          "main": [
+            "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+            "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$serialRawCallSiteStringDisjunction$1.invokeSuspend(MappedWebGraphBackedGraph.kt:1075)",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+            "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+            "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1731)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1375)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+            "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+            "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+            "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+            "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+            "jdk.internal.reflect.GeneratedMethodAccessor12.invoke(Unknown Source)",
+            "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.base/java.lang.reflect.Method.invoke(Method.java:569)",
+            "RawWorkOracle.invoke(RawWorkOracle.java:16)",
+            "RawWorkOracle.operation(RawWorkOracle.java:73)",
+            "RawWorkOracle.main(RawWorkOracle.java:108)"
+          ],
+          "repeat": []
+        }
+      ]
+    },
+    {
+      "main": "diagnostic-main-capture",
+      "repeat": "diagnostic-repeat-capture",
+      "publicCaseCount": 43,
+      "publicOperationCount": 57,
+      "primitiveCaseCount": 12,
+      "primitiveOperationCount": 39,
+      "primitiveCompleteRecordsEqual": true,
+      "fullFieldDifferences": []
+    }
+  ],
+  "originalConfigurationPreserved": true,
+  "diagnosticFlag": "-XX:-OmitStackTraceInFastThrow",
+  "diagnosticPurpose": "Investigate nullable messages and omitted stacks; does not replace original JVM configuration acceptance.",
+  "fixtureArchiveRegularFiles": 329,
+  "performanceMeasurements": 0
+}

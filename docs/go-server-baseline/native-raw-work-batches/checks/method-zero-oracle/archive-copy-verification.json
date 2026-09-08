@@ -1,0 +1,257 @@
+{
+  "copied": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/classes/RawWorkOracle$State.class",
+      "file": "initial-ten-capture/classes/RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/classes/RawWorkOracle.class",
+      "file": "initial-ten-capture/classes/RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/commands.json",
+      "file": "initial-ten-capture/commands.json",
+      "bytes": 1517,
+      "sha256": "7fc2b66be862fb24bfdfc5ad37a2d8850dadde806801a05e109fda9e860fa3b9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/compile.stderr",
+      "file": "initial-ten-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/compile.stdout",
+      "file": "initial-ten-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/fixture-after.json",
+      "file": "initial-ten-capture/fixture-after.json",
+      "bytes": 26019,
+      "sha256": "259aa4505c2a44cc9785686d9aa7ad901cf1ef92c638aa8eed94cdf42b3c5400"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/fixture-before.json",
+      "file": "initial-ten-capture/fixture-before.json",
+      "bytes": 26019,
+      "sha256": "259aa4505c2a44cc9785686d9aa7ad901cf1ef92c638aa8eed94cdf42b3c5400"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/fixture-variants.json",
+      "file": "initial-ten-capture/fixture-variants.json",
+      "bytes": 2451,
+      "sha256": "4db3b654b0ddf242ab5725d4dd7bcd5633cb7920bbde01d524d84886e0ab8324"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/fixtures.tar.gz",
+      "file": "initial-ten-capture/fixtures.tar.gz",
+      "bytes": 19311,
+      "sha256": "3c8344bf1fd16dd9d9ab13eb15834990e47a60d33bdccecff2034a7f416dc9ea"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/inputs.json",
+      "file": "initial-ten-capture/inputs.json",
+      "bytes": 2731,
+      "sha256": "9d3c42537bcc37dc4dc3154d6821f19af742d173b2ff2253fef7be1bb53e04f2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/main.json",
+      "file": "initial-ten-capture/main.json",
+      "bytes": 52984,
+      "sha256": "a2a78b281ee58940b396681bd9ca3e728cbee992311659023d7c0c3ab4ac22b8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/receipt.json",
+      "file": "initial-ten-capture/receipt.json",
+      "bytes": 2113,
+      "sha256": "d5d99c38b906df173df45bf1bbd69b70db5c4f012b07a7e467c0d3c6eb850e14"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/run.stderr",
+      "file": "initial-ten-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/run.stdout",
+      "file": "initial-ten-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/classes/RawWorkOracle$State.class",
+      "file": "main-capture/classes/RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/classes/RawWorkOracle.class",
+      "file": "main-capture/classes/RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/commands.json",
+      "file": "main-capture/commands.json",
+      "bytes": 1537,
+      "sha256": "715b7ebefd249435f25636b9babf7cfb99cf558e47a6fe733dfad5ebb2400f77"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/fixture-after.json",
+      "file": "main-capture/fixture-after.json",
+      "bytes": 42451,
+      "sha256": "2306a837c5428e1bf74668f93a8178cd55a47f262bc228e444a0b3d8988b18fc"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/fixture-before.json",
+      "file": "main-capture/fixture-before.json",
+      "bytes": 42451,
+      "sha256": "2306a837c5428e1bf74668f93a8178cd55a47f262bc228e444a0b3d8988b18fc"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/fixture-variants.json",
+      "file": "main-capture/fixture-variants.json",
+      "bytes": 2451,
+      "sha256": "4db3b654b0ddf242ab5725d4dd7bcd5633cb7920bbde01d524d84886e0ab8324"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/fixtures.tar.gz",
+      "file": "main-capture/fixtures.tar.gz",
+      "bytes": 19281,
+      "sha256": "98c8ad13f9ecbb1ba950a3ef5f7c929078e513da20916f8a629de074516ddc05"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/inputs.json",
+      "file": "main-capture/inputs.json",
+      "bytes": 2979,
+      "sha256": "67900ae09072bac852d173a1a5dfcb9e42fce9c63b699285a60e5c5b1f803df3"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/main.json",
+      "file": "main-capture/main.json",
+      "bytes": 84778,
+      "sha256": "1aacfb3dba5f7cf7126fb2a2395d5daafa4854b803b4168b2197942b0b9bd1f4"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/receipt.json",
+      "file": "main-capture/receipt.json",
+      "bytes": 2133,
+      "sha256": "36c68e5f3639b7cb6edc20d3f4fb06b47db9e48b516c2928e8e3a48934f2a2d3"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/run.stderr",
+      "file": "main-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v1/run.stdout",
+      "file": "main-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/classes/RawWorkOracle$State.class",
+      "file": "repeat-capture/classes/RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/classes/RawWorkOracle.class",
+      "file": "repeat-capture/classes/RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/commands.json",
+      "file": "repeat-capture/commands.json",
+      "bytes": 1537,
+      "sha256": "68af6efe95beba4aafc663b14ff5e2117677156c93d15dec3b630f652ce7d709"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/fixture-after.json",
+      "file": "repeat-capture/fixture-after.json",
+      "bytes": 42451,
+      "sha256": "2306a837c5428e1bf74668f93a8178cd55a47f262bc228e444a0b3d8988b18fc"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/fixture-before.json",
+      "file": "repeat-capture/fixture-before.json",
+      "bytes": 42451,
+      "sha256": "2306a837c5428e1bf74668f93a8178cd55a47f262bc228e444a0b3d8988b18fc"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/fixture-variants.json",
+      "file": "repeat-capture/fixture-variants.json",
+      "bytes": 2451,
+      "sha256": "4db3b654b0ddf242ab5725d4dd7bcd5633cb7920bbde01d524d84886e0ab8324"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/fixtures.tar.gz",
+      "file": "repeat-capture/fixtures.tar.gz",
+      "bytes": 19305,
+      "sha256": "c9c608e7d759e8c2c2260ef317463bec329dd38c74a44d5f441f1d1037bc1baf"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "bytes": 2979,
+      "sha256": "67900ae09072bac852d173a1a5dfcb9e42fce9c63b699285a60e5c5b1f803df3"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/main.json",
+      "file": "repeat-capture/main.json",
+      "bytes": 84778,
+      "sha256": "1aacfb3dba5f7cf7126fb2a2395d5daafa4854b803b4168b2197942b0b9bd1f4"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "bytes": 2133,
+      "sha256": "2bb67c5c62727a6dfa599f82b0a1683f0fb6265c73089ac7c3b5c7ff1d6ea7aa"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/run.stderr",
+      "file": "repeat-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/run.stdout",
+      "file": "repeat-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "allCopiedBytesVerified": true
+}

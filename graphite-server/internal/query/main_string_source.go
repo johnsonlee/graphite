@@ -123,6 +123,8 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 		if boundedRaw && matchers == nil {
 			matchers = sharedStringMatchers(plan.atoms, len(source.Store.Strings), serialRawMatcherCapacity)
 		}
+		accounting := bufferedGraphWork{work: e.work}
+		defer accounting.flush()
 		for {
 			if raw && yielded >= limit {
 				return store.Node{}, false
@@ -133,6 +135,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			}
 			e.check()
 			if raw {
+				accounting.consume()
 				sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
 				failMainStringRead(err)
 				matched := false
@@ -173,6 +176,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 				}
 				continue
 			}
+			accounting.flush()
 			if plan.generic {
 				_, err := source.Store.ProjectionNodeOrder(e.ctx, node.ID)
 				failMainStringRead(err)
@@ -193,6 +197,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			ai++
 			node, err := source.Store.CandidateNode(e.ctx, id)
 			failMainStringRead(err)
+			e.consume(1)
 			for _, atom := range plan.atoms {
 				if e.distinctAtomMatches(atom, NodeProperty(node, atom.property)) {
 					return node, true

@@ -1,0 +1,36 @@
+{
+  "reason": "Independent source review found Method LIMIT 0 misclassified as filtered fast path. Stopped the obsolete replay before changing production code; preserve cold and incomplete warm evidence.",
+  "controllerSession": 69444,
+  "controllerPID": 16444,
+  "processGroup": 16444,
+  "signal": "SIGINT",
+  "controllerExitCode": 130,
+  "warmChildPID": 16722,
+  "warmChildAbsentAfterStop": true,
+  "completeStates": [
+    "cold"
+  ],
+  "incompleteStates": [
+    "warm"
+  ],
+  "unstartedStates": [
+    "startup-prepared"
+  ],
+  "externalSource": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1",
+  "files": {
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-cold-postrun-fixtures.json": "89d16bcb0e941b476dcac3e7691dacf8d859ea7da29e43b46876362f856b2132",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-cold-process.json": "4dfedbfa76923d477d5281375cf31829c32edc7993e696dba9893dc9c6a98e0e",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/module-source.json": "e7df43e091371b1a898f8263a599d41acc98ae02afbc26beb8f9cb81c71d5a62",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-cold-inputs.json": "a0ea649ae7da31b3477e8e38bd1300c3334ed803014a814d72030c40d0895a37",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-warm-process.log": "aa58a1b01e760a32b6002ca45cedb205da2a336fcccb4f676b009018923948e7",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/cold-comparison.json": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/verify-cold.log": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/controller.json": "5ffbcb6d8f30f58e989bb013f04eda27c4194b83576a00727ca2862d4b55d293",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-warm-process.json": "1a791be5f025a9e80757f00183d58caecf81d3eb5406e0d6ace2c2a92996ccc8",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-warm-preflight.json": "528122202f64ee3fac0748fe990af28dde8a467e9654bbab529208b84e3af062",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-cold-process.log": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-warm-inputs.json": "a0ea649ae7da31b3477e8e38bd1300c3334ed803014a814d72030c40d0895a37",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-real64-v1/native-cold-preflight.json": "89d16bcb0e941b476dcac3e7691dacf8d859ea7da29e43b46876362f856b2132"
+  },
+  "performanceMeasurements": 0
+}

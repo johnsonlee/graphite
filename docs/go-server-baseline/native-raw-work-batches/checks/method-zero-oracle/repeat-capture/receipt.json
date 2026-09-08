@@ -1,0 +1,51 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "fixtureFilesUnchanged": 256,
+  "fixtureVariantFiles": 16,
+  "commands": [
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/checks/method-zero-oracle/RawWorkOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:10:26.476562+00:00",
+      "endUTC": "2026-09-08T10:10:26.856352+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "RawWorkOracle",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/checks/method-zero-oracle/all-cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-expanded-v2/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T10:10:26.856724+00:00",
+      "endUTC": "2026-09-08T10:10:27.067824+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "file": "RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    }
+  ],
+  "performanceMeasurements": 0
+}

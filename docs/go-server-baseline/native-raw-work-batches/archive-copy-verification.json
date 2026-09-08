@@ -1,0 +1,629 @@
+{
+  "copied": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/buffered-main.json",
+      "file": "main-capture/buffered-main.json",
+      "bytes": 24494,
+      "sha256": "ef821fc27c4e39f4613efc2f9c6135b0f1a6b137cef95f3b901b299cf5b1e48c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/buffered.stderr",
+      "file": "main-capture/buffered.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/buffered.stdout",
+      "file": "main-capture/buffered.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes/BufferedOracle$1.class",
+      "file": "main-capture/classes/BufferedOracle$1.class",
+      "bytes": 884,
+      "sha256": "a7a47650a327a47074295463f60facb718a581d447dcef18f0c36795125ba61e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes/BufferedOracle.class",
+      "file": "main-capture/classes/BufferedOracle.class",
+      "bytes": 7009,
+      "sha256": "8fe595c292cf104a98070fd09642675bb8136445f8e06cc692fa696fbb7d8195"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes/RawWorkFixture.class",
+      "file": "main-capture/classes/RawWorkFixture.class",
+      "bytes": 8442,
+      "sha256": "805a29d0725e2ada28f492b17f066cd2dd2c3002b780514dc48ccd19fa276eb8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes/RawWorkOracle$State.class",
+      "file": "main-capture/classes/RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/classes/RawWorkOracle.class",
+      "file": "main-capture/classes/RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/commands.json",
+      "file": "main-capture/commands.json",
+      "bytes": 4091,
+      "sha256": "66e86aac6f35b6c2c0a155e21d22933acfaedb092817384df608bab112576f91"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/fixture-after.json.gz",
+      "file": "main-capture/fixture-after.json.gz",
+      "bytes": 8352,
+      "sha256": "4c9944b4d77067f4ce8eebc283bdfa44df47e2fe0d692b6c85bfa138353959a4"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/fixture-audit.json",
+      "file": "main-capture/fixture-audit.json",
+      "bytes": 77,
+      "sha256": "74bfb9455add437450781af331ce9f1bac8f0646e54ff3ebaff49987bd4b6d47"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/fixture-before.json.gz",
+      "file": "main-capture/fixture-before.json.gz",
+      "bytes": 8353,
+      "sha256": "6ae3bb0e2ddf7a2f160f95820d27994cd02080561c59fe1fe5d23255de435b05"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/fixture-variants.json",
+      "file": "main-capture/fixture-variants.json",
+      "bytes": 50571,
+      "sha256": "a29eb6a16eca03aa91b5b4758e06ca2cc0b195ae1eaf1bc768401d42f3f2519e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/fixtures.tar.gz",
+      "file": "main-capture/fixtures.tar.gz",
+      "bytes": 571561,
+      "sha256": "31a7d70c9833dcf84322d541744ae007f1b5b182920eac26b45ede372283092a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/generate.stderr",
+      "file": "main-capture/generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/generate.stdout",
+      "file": "main-capture/generate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/inputs.json",
+      "file": "main-capture/inputs.json",
+      "bytes": 4074,
+      "sha256": "af45dd05a7e042e2d8b0af3992fa48ccb1c78f9e7477908da68bb39f1948fe14"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/javap.stderr",
+      "file": "main-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/javap.stdout",
+      "file": "main-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/main.json",
+      "file": "main-capture/main.json",
+      "bytes": 371965,
+      "sha256": "44f20121ebda4cdf5958474651c31af9b3b50cc897af7187cdb575d7e6b0c387"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/mutations.json",
+      "file": "main-capture/mutations.json",
+      "bytes": 1213,
+      "sha256": "10f33bf35839834692226f998883af79aec90369b1cfcd394ed46fa865bc5095"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/receipt.json",
+      "file": "main-capture/receipt.json",
+      "bytes": 5296,
+      "sha256": "e44888b6f28afec2a581b2e99f193e0b874f0ef22d37e518bd165e4cc8d1d402"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/run.stderr",
+      "file": "main-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v1/run.stdout",
+      "file": "main-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/buffered-main.json",
+      "file": "repeat-capture/buffered-main.json",
+      "bytes": 24494,
+      "sha256": "10f84842eb0383045f523ad1fdee6d8b544271895346aa2704aac3ed73de74c0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/buffered.stderr",
+      "file": "repeat-capture/buffered.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/buffered.stdout",
+      "file": "repeat-capture/buffered.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/classes/BufferedOracle$1.class",
+      "file": "repeat-capture/classes/BufferedOracle$1.class",
+      "bytes": 884,
+      "sha256": "a7a47650a327a47074295463f60facb718a581d447dcef18f0c36795125ba61e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/classes/BufferedOracle.class",
+      "file": "repeat-capture/classes/BufferedOracle.class",
+      "bytes": 7009,
+      "sha256": "8fe595c292cf104a98070fd09642675bb8136445f8e06cc692fa696fbb7d8195"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/classes/RawWorkFixture.class",
+      "file": "repeat-capture/classes/RawWorkFixture.class",
+      "bytes": 8442,
+      "sha256": "805a29d0725e2ada28f492b17f066cd2dd2c3002b780514dc48ccd19fa276eb8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/classes/RawWorkOracle$State.class",
+      "file": "repeat-capture/classes/RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/classes/RawWorkOracle.class",
+      "file": "repeat-capture/classes/RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/commands.json",
+      "file": "repeat-capture/commands.json",
+      "bytes": 4091,
+      "sha256": "6fd45f19af47bbf5a5f61f748d7b7d798a2eb2aaac1e45bca29b2988bb7c34c2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/fixture-after.json.gz",
+      "file": "repeat-capture/fixture-after.json.gz",
+      "bytes": 8428,
+      "sha256": "cc85a74526cfdf3c5044e8c3fbf4a155587ce833e70f2ef003d23735c3f3ed93"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/fixture-audit.json",
+      "file": "repeat-capture/fixture-audit.json",
+      "bytes": 77,
+      "sha256": "74bfb9455add437450781af331ce9f1bac8f0646e54ff3ebaff49987bd4b6d47"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/fixture-before.json.gz",
+      "file": "repeat-capture/fixture-before.json.gz",
+      "bytes": 8429,
+      "sha256": "22814e2f772ebe93f321326f4f4c1962636cb1b3b98925cc89f0e5368250e096"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/fixture-variants.json",
+      "file": "repeat-capture/fixture-variants.json",
+      "bytes": 50571,
+      "sha256": "ee505447080586da95ece7788f5104aedfec9d9dc57397302018abd56c6bffc2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/fixtures.tar.gz",
+      "file": "repeat-capture/fixtures.tar.gz",
+      "bytes": 571553,
+      "sha256": "3e537c12ecd57309d43d250ff18fff420dcb1cb85965d54c00108be8c38c77fc"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/generate.stderr",
+      "file": "repeat-capture/generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/generate.stdout",
+      "file": "repeat-capture/generate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "bytes": 4074,
+      "sha256": "af45dd05a7e042e2d8b0af3992fa48ccb1c78f9e7477908da68bb39f1948fe14"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/javap.stderr",
+      "file": "repeat-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/javap.stdout",
+      "file": "repeat-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/main.json",
+      "file": "repeat-capture/main.json",
+      "bytes": 367390,
+      "sha256": "5f5d4bc5529d502c829896cb6789087037e2fc3cc9cd435965a88378659cadcc"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/mutations.json",
+      "file": "repeat-capture/mutations.json",
+      "bytes": 1213,
+      "sha256": "60a7b569aeb833c68662846700fc3bdfda2b4e580f0b96d4c30887006d6074d6"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "bytes": 5296,
+      "sha256": "8b06d247a5d613f4ba75193774b6f3cfb0c40deb5a2fca2d0b0b6a280647b049"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/run.stderr",
+      "file": "repeat-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-main-v2/run.stdout",
+      "file": "repeat-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/buffered-main.json",
+      "file": "diagnostic-main-capture/buffered-main.json",
+      "bytes": 24494,
+      "sha256": "27f217d18821a2563eea933d9dd98aa65a92fe837fc59cb138f856fca94b8738"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/buffered.stderr",
+      "file": "diagnostic-main-capture/buffered.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/buffered.stdout",
+      "file": "diagnostic-main-capture/buffered.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes/BufferedOracle$1.class",
+      "file": "diagnostic-main-capture/classes/BufferedOracle$1.class",
+      "bytes": 884,
+      "sha256": "a7a47650a327a47074295463f60facb718a581d447dcef18f0c36795125ba61e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes/BufferedOracle.class",
+      "file": "diagnostic-main-capture/classes/BufferedOracle.class",
+      "bytes": 7009,
+      "sha256": "8fe595c292cf104a98070fd09642675bb8136445f8e06cc692fa696fbb7d8195"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes/RawWorkFixture.class",
+      "file": "diagnostic-main-capture/classes/RawWorkFixture.class",
+      "bytes": 8442,
+      "sha256": "805a29d0725e2ada28f492b17f066cd2dd2c3002b780514dc48ccd19fa276eb8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes/RawWorkOracle$State.class",
+      "file": "diagnostic-main-capture/classes/RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/classes/RawWorkOracle.class",
+      "file": "diagnostic-main-capture/classes/RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/commands.json",
+      "file": "diagnostic-main-capture/commands.json",
+      "bytes": 4225,
+      "sha256": "04e75f72a71f55c25a0cba6fa418e23b054acfa279ae348cf75596a4b0336580"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/compile.stderr",
+      "file": "diagnostic-main-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/compile.stdout",
+      "file": "diagnostic-main-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/fixture-after.json.gz",
+      "file": "diagnostic-main-capture/fixture-after.json.gz",
+      "bytes": 8351,
+      "sha256": "304a57338d521bb6d41e182fd74b3caaa4eb5a6d13f449b939d7a5b8ae823f1c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/fixture-audit.json",
+      "file": "diagnostic-main-capture/fixture-audit.json",
+      "bytes": 77,
+      "sha256": "74bfb9455add437450781af331ce9f1bac8f0646e54ff3ebaff49987bd4b6d47"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/fixture-before.json.gz",
+      "file": "diagnostic-main-capture/fixture-before.json.gz",
+      "bytes": 8352,
+      "sha256": "bd6d83a79fe3e253cd93ca7ea5a4417966afadeb77a721bb91a16033e969d159"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/fixture-variants.json",
+      "file": "diagnostic-main-capture/fixture-variants.json",
+      "bytes": 50571,
+      "sha256": "743626d24bcb4d8c4147fb25c73c45dd2ec993382156179576b637081b6064f0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/fixtures.tar.gz",
+      "file": "diagnostic-main-capture/fixtures.tar.gz",
+      "bytes": 571426,
+      "sha256": "1c2966e65cd1762e04d921caf2968501a06925693478b777077e5ba0cf6acf82"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/generate.stderr",
+      "file": "diagnostic-main-capture/generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/generate.stdout",
+      "file": "diagnostic-main-capture/generate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/inputs.json",
+      "file": "diagnostic-main-capture/inputs.json",
+      "bytes": 4295,
+      "sha256": "3c921e6c61339a3fa6dae2e498a039fb7c1304e121b7e7c90471c757c4102b1d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/javap.stderr",
+      "file": "diagnostic-main-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/javap.stdout",
+      "file": "diagnostic-main-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/main.json",
+      "file": "diagnostic-main-capture/main.json",
+      "bytes": 371965,
+      "sha256": "44f20121ebda4cdf5958474651c31af9b3b50cc897af7187cdb575d7e6b0c387"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/mutations.json",
+      "file": "diagnostic-main-capture/mutations.json",
+      "bytes": 1213,
+      "sha256": "47e46e33796383a4981ab169eb6a0fdd7ceadeb289f65a541b2b03bfccfba029"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/receipt.json",
+      "file": "diagnostic-main-capture/receipt.json",
+      "bytes": 5434,
+      "sha256": "b147eb34555a4c96aeb6aaa06a77331eca8883b1925abc7ee98bf5dd5baae05f"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/run.stderr",
+      "file": "diagnostic-main-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v1/run.stdout",
+      "file": "diagnostic-main-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/buffered-main.json",
+      "file": "diagnostic-repeat-capture/buffered-main.json",
+      "bytes": 24494,
+      "sha256": "dcf5d07ded752f00fd888d54b218418d045552e6073be39cb1ef18afd57e3d8d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/buffered.stderr",
+      "file": "diagnostic-repeat-capture/buffered.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/buffered.stdout",
+      "file": "diagnostic-repeat-capture/buffered.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/classes/BufferedOracle$1.class",
+      "file": "diagnostic-repeat-capture/classes/BufferedOracle$1.class",
+      "bytes": 884,
+      "sha256": "a7a47650a327a47074295463f60facb718a581d447dcef18f0c36795125ba61e"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/classes/BufferedOracle.class",
+      "file": "diagnostic-repeat-capture/classes/BufferedOracle.class",
+      "bytes": 7009,
+      "sha256": "8fe595c292cf104a98070fd09642675bb8136445f8e06cc692fa696fbb7d8195"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/classes/RawWorkFixture.class",
+      "file": "diagnostic-repeat-capture/classes/RawWorkFixture.class",
+      "bytes": 8442,
+      "sha256": "805a29d0725e2ada28f492b17f066cd2dd2c3002b780514dc48ccd19fa276eb8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/classes/RawWorkOracle$State.class",
+      "file": "diagnostic-repeat-capture/classes/RawWorkOracle$State.class",
+      "bytes": 4835,
+      "sha256": "56824c87ed9470d23302765f84930d698f1f05e11797b8c8697e33d10250fde0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/classes/RawWorkOracle.class",
+      "file": "diagnostic-repeat-capture/classes/RawWorkOracle.class",
+      "bytes": 14226,
+      "sha256": "8dd18937fd97c2cbff864d836b14aeb60f9eb1233ae59a80539a146e45f45359"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/commands.json",
+      "file": "diagnostic-repeat-capture/commands.json",
+      "bytes": 4225,
+      "sha256": "df4b9a39f98ebc255705c44025673066e1fe85d5b9166812ee5383e77f0a8f75"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/compile.stderr",
+      "file": "diagnostic-repeat-capture/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/compile.stdout",
+      "file": "diagnostic-repeat-capture/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/fixture-after.json.gz",
+      "file": "diagnostic-repeat-capture/fixture-after.json.gz",
+      "bytes": 8351,
+      "sha256": "f8d3b2c57f3d3838769bf5f4956428b405b02c9400e95a2f9ed5df17f63d765b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/fixture-audit.json",
+      "file": "diagnostic-repeat-capture/fixture-audit.json",
+      "bytes": 77,
+      "sha256": "74bfb9455add437450781af331ce9f1bac8f0646e54ff3ebaff49987bd4b6d47"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/fixture-before.json.gz",
+      "file": "diagnostic-repeat-capture/fixture-before.json.gz",
+      "bytes": 8352,
+      "sha256": "16f4019b24f1002282ffa34a31ae19cbbca5a45e66e3506a22bfe6794539df48"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/fixture-variants.json",
+      "file": "diagnostic-repeat-capture/fixture-variants.json",
+      "bytes": 50571,
+      "sha256": "1946299b65e6a9c5c8f0a6e3b049f7c2ba89b29f01e1673a3cc5b82d198753aa"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/fixtures.tar.gz",
+      "file": "diagnostic-repeat-capture/fixtures.tar.gz",
+      "bytes": 571654,
+      "sha256": "14a5c43aa451056ebb02a32b5dbc270556183c86ad2a88f7546fd73617309c4d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/generate.stderr",
+      "file": "diagnostic-repeat-capture/generate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/generate.stdout",
+      "file": "diagnostic-repeat-capture/generate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/inputs.json",
+      "file": "diagnostic-repeat-capture/inputs.json",
+      "bytes": 4295,
+      "sha256": "3c921e6c61339a3fa6dae2e498a039fb7c1304e121b7e7c90471c757c4102b1d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/javap.stderr",
+      "file": "diagnostic-repeat-capture/javap.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/javap.stdout",
+      "file": "diagnostic-repeat-capture/javap.stdout",
+      "bytes": 2987,
+      "sha256": "333305d7cc2bd08ef582db7d99373a118fcc44ee21333d4ff538f06dbca17dcb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/main.json",
+      "file": "diagnostic-repeat-capture/main.json",
+      "bytes": 371965,
+      "sha256": "44f20121ebda4cdf5958474651c31af9b3b50cc897af7187cdb575d7e6b0c387"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/mutations.json",
+      "file": "diagnostic-repeat-capture/mutations.json",
+      "bytes": 1213,
+      "sha256": "4407e3d12f514ff4bda1545d5b4d2934c9eeef17745371496bca9f0a95f7b8cf"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/receipt.json",
+      "file": "diagnostic-repeat-capture/receipt.json",
+      "bytes": 5434,
+      "sha256": "5614cf0c695ba917b9fac3b6599465df9d0d9a53219edd35f4f10d778d7e794d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/run.stderr",
+      "file": "diagnostic-repeat-capture/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-diagnostic-v2/run.stdout",
+      "file": "diagnostic-repeat-capture/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "allCopiedBytesVerified": true
+}

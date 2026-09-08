@@ -1446,3 +1446,70 @@ path counters, server request context/explicit-bound integration, resource
 sampling, existing semantic differences and required benchmark gates. Earlier
 n=1 timings do not describe this changed engine. Full server fidelity and 10x
 per-case P95 acceptance remain open.
+
+
+### Functional follow-up — serial raw work batches and empty-query dispatch
+
+Baseline Go is `cf920cd4e84eafe7d3c641fe747bb0b1d14da16a`; actual main remains
+`4e328b0109e13c896b74004823fb049fcb19251a`. This is a correctness follow-up,
+not a new latency optimization attempt. The hypothesis is that raw serial
+storage must submit pending work at main's exact batch/yield/finally boundaries,
+including the ordering between budget errors and malformed persisted reads.
+
+The native buffer now submits 1,024 inspected nodes at a time, clears pending
+before submission, flushes before exposing a node, and settles pending work on
+exhaustion or decoding failure. Empty flushes do not poll cancellation. Generic
+Annotation/eager fallback charges after successful decoding before filtering.
+Successful ordinary/lazy filtered dispatches now report their actual planner
+counter after completion. Actual stacks established that even the tested
+single-predicate Local name query uses the fused buffered disjunction path.
+
+Independent review found that Method LIMIT 0 must precede the generic empty
+filtered guard. A dedicated non-scanning admission helper preserves numeric-only
+counts, inline-property validation, requested-zero ordering and the empty source
+wave. Declined Method requests keep general evaluation. The initial real64
+capture was stopped after cold while this was corrected; its partial warm output
+and intermediate passing checks remain preserved. Final checks and replays use
+new frozen sources and new output directories.
+
+| Evidence | Result |
+| --- | --- |
+| New actual main serial-raw public oracle | 43 scenarios / 57 ordered operations match |
+| New actual main Method-empty oracle | 16 scenarios / 16 operations match |
+| Applicable actual buffer primitive oracle | 8 batch/null scenarios match |
+| Existing actual JVM context/execution oracle | All 119 scenarios still pass |
+| Native budget/cancel and empty-source controls | Pass |
+| Full module race / vet | Pass; 2,775 recorded inputs unchanged |
+| Existing complete 201-case matrix | No new differences; original 16 remain |
+| Real64 cold | All 1,267 cases compared; 162,304 state observations agree |
+| Real64 warm prewarm | All 1,267 cases compared; 162,240 state observations agree |
+| Real64 startup-prepared | All 1,267 cases compared; 162,304 state observations agree |
+| New latency / CPU / allocation measurements | None |
+| Per-case P95 / 10x acceptance | Unproven |
+| Keep/revert | Keep the verified serial accounting and dispatch correction |
+
+The raw-work JVM oracle uses 20 actual-main-written small persisted correctness
+variants, never performance fixtures. Two original-config CallSite failures have
+variable nullable messages and omitted stacks; both observed outcomes remain in
+the tests. Two separately flagged diagnostic captures repeat completely but do
+not replace original JVM acceptance. The Method oracle uses a graph with no
+methods and establishes admission/counter behavior, not nonempty method scans.
+The public tests compare complete results/errors, all eight request diagnostics,
+remaining work/cancellation and four mapped storage states. The four states are
+zero/false in this oracle, so they prove no publication, not cache growth. Three
+unimplemented storage event counters and JVM-only observers remain explicit.
+
+The real64 fixture is the same immutable 64 persisted graphs, 1,152 original
+files, and original 1,267-case workload. All three isolated captures preserve the
+original case 821 failure and original gate exit 1; formal warm remains
+unprepared. The 201-case adapter retains 166/181 public and 19/20 provider matches;
+it does not supply the new context or compare its diagnostics. Its historical
+API-unavailable wording is qualified in the accompanying native README.
+
+Evidence under `docs/go-server-baseline/native-raw-work-batches/` binds all 2,545
+module files across checks, real64 and the 201-case source copy. Remaining work
+includes raw leading projection probes/caches, parallel and indexed consumers,
+Method/path work, source-selection diagnostics, request-wide server integration,
+resource sampling, known semantic gaps and required benchmark gates. Earlier
+single-sample timings are not attributed to this changed implementation. The
+full server fidelity and per-case 10x P95 goal remains open.

@@ -1,0 +1,32 @@
+[
+  {
+    "phase": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/checks/method-zero-oracle/RawWorkOracle.java"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T10:09:22.818993+00:00",
+    "endUTC": "2026-09-08T10:09:23.242645+00:00"
+  },
+  {
+    "phase": "run",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "RawWorkOracle",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-raw-work-batches/checks/method-zero-oracle/cases.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/fixtures",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/raw-method-zero-main-v1/main.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T10:09:23.243013+00:00",
+    "endUTC": "2026-09-08T10:09:23.439589+00:00"
+  }
+]

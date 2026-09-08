@@ -1,0 +1,9 @@
+{
+  "caseCount": 16,
+  "operationCount": 16,
+  "completeRecordsEqual": true,
+  "fixtureArchiveRegularFiles": 16,
+  "fixtureFilesUnchangedPerExpandedCapture": 256,
+  "initialTenCaseCaptureRetained": true,
+  "performanceMeasurements": 0
+}

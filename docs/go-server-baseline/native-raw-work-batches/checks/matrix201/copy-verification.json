@@ -1,0 +1,128 @@
+{
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/source-before.json",
+      "sourceSHA256": "dcdeddcd34c783ec95b757e8b0d0efcdabeb508ad8a6be2e4fa7a36e176c654c",
+      "archive": "source-before.json",
+      "archiveSHA256": "dcdeddcd34c783ec95b757e8b0d0efcdabeb508ad8a6be2e4fa7a36e176c654c",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/inputs.json",
+      "sourceSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "archive": "inputs.json",
+      "archiveSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/input.json",
+      "sourceSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "archive": "input.json",
+      "archiveSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/compiled-source.json",
+      "sourceSHA256": "51ec267386b5343d29bc823662c5f1cc4c1d8aa5750090cad0338c68c75b583e",
+      "archive": "compiled-source.json",
+      "archiveSHA256": "51ec267386b5343d29bc823662c5f1cc4c1d8aa5750090cad0338c68c75b583e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/source.tar.gz",
+      "sourceSHA256": "25ed387deb057a6ad9dc8b6699fcc44e4236abd1455298e192c41f7ac96dc1a5",
+      "archive": "source.tar.gz",
+      "archiveSHA256": "25ed387deb057a6ad9dc8b6699fcc44e4236abd1455298e192c41f7ac96dc1a5",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/compile.stdout",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "compile.stdout",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/compile.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "compile.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/capture.stdout",
+      "sourceSHA256": "3d23c4512d5bb390ea1b22bd9f6da83c5c95064ef1b76d0d1c3ca26e353c6db0",
+      "archive": "capture.stdout",
+      "archiveSHA256": "3d23c4512d5bb390ea1b22bd9f6da83c5c95064ef1b76d0d1c3ca26e353c6db0",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/capture.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "capture.stderr",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/commands.json",
+      "sourceSHA256": "a0cb0913cc39f8cef4c7cbd8c1465e40126fbd1369cce850afb168a1c1cbe2ca",
+      "archive": "commands.json",
+      "archiveSHA256": "a0cb0913cc39f8cef4c7cbd8c1465e40126fbd1369cce850afb168a1c1cbe2ca",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/go.json",
+      "sourceSHA256": "b974b32d04f43c12f5494e0083cca71e37d20287cb861927079e2046c5ef4e05",
+      "archive": "go.json",
+      "archiveSHA256": "b974b32d04f43c12f5494e0083cca71e37d20287cb861927079e2046c5ef4e05",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/source-after.json",
+      "sourceSHA256": "51ec267386b5343d29bc823662c5f1cc4c1d8aa5750090cad0338c68c75b583e",
+      "archive": "source-after.json",
+      "archiveSHA256": "51ec267386b5343d29bc823662c5f1cc4c1d8aa5750090cad0338c68c75b583e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/comparison.json",
+      "sourceSHA256": "2fb4cdf2617384d4ee1fbf821a296ca061f0c3bcc1422fa8906dd500034f714d",
+      "archive": "comparison.json",
+      "archiveSHA256": "2fb4cdf2617384d4ee1fbf821a296ca061f0c3bcc1422fa8906dd500034f714d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/artifact-manifest.json",
+      "sourceSHA256": "f420b96d815c85f29d5bb22de95956dfa9f428442f57e561e83925be4e01c9ac",
+      "archive": "artifact-manifest.json",
+      "archiveSHA256": "f420b96d815c85f29d5bb22de95956dfa9f428442f57e561e83925be4e01c9ac",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/fixtures-before.json",
+      "sourceSHA256": "678613037c05bf4070b36839058c0b0a3fcbb0d11b4ca5b90332b70f9d4b824d",
+      "archive": "fixtures-before.json.gz",
+      "archiveSHA256": "2f8fdc84008f5e92e5c4a94b58c96a82687452c49ba77799ce94430a37f450ed",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/fixtures-after.json",
+      "sourceSHA256": "0f4fcc9793ac0d6cfa5c65f604532132c9230db91e5e242340d69b0e81b89b1e",
+      "archive": "fixtures-after.json.gz",
+      "archiveSHA256": "cd75a514c3462c68692628cd8edd41bd5c1e627365085af37ad463aff7044f92",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/raw-work-batches-cf920cd4-matrix-v1/diagnostic.test",
+      "sourceSHA256": "46a25f0cc2427fb55fa5d737df9503c856526ddc14a90107234ff2e5bda312e6",
+      "archive": "diagnostic.test.gz",
+      "archiveSHA256": "3bc0da52013fa4051b6644ff14d82416c215d2073cf0a0f2c8b481f1ab67d706",
+      "decompressedBytesEqual": true
+    }
+  ],
+  "controllerExitCode": 1,
+  "previousComparedOutputDifferences": [],
+  "cases": 201,
+  "performanceMeasurements": 0,
+  "diagnosticsScope": "The legacy adapter does not pass the new ExecutionContext or compare its diagnostics; full route accounting remains incomplete. Its original comparison wording is retained verbatim."
+}

@@ -1,0 +1,128 @@
+{
+  "local-miss": {
+    "kind": "local",
+    "count": 1025,
+    "hits": []
+  },
+  "local-first": {
+    "kind": "local",
+    "count": 1025,
+    "hits": [
+      0
+    ]
+  },
+  "local-boundary": {
+    "kind": "local",
+    "count": 1025,
+    "hits": [
+      1023
+    ]
+  },
+  "local-last": {
+    "kind": "local",
+    "count": 1025,
+    "hits": [
+      1024
+    ]
+  },
+  "local-firstlast": {
+    "kind": "local",
+    "count": 1025,
+    "hits": [
+      0,
+      1024
+    ]
+  },
+  "local-bad0": {
+    "kind": "local",
+    "count": 1025,
+    "hits": [],
+    "badIndex": 0
+  },
+  "local-bad1022": {
+    "kind": "local",
+    "count": 1025,
+    "hits": [],
+    "badIndex": 1022
+  },
+  "local-bad1023": {
+    "kind": "local",
+    "count": 1025,
+    "hits": [],
+    "badIndex": 1023
+  },
+  "local-bad1024": {
+    "kind": "local",
+    "count": 1025,
+    "hits": [],
+    "badIndex": 1024
+  },
+  "local-empty": {
+    "kind": "local",
+    "count": 0,
+    "hits": []
+  },
+  "call-miss": {
+    "kind": "call",
+    "count": 1025,
+    "hits": []
+  },
+  "call-first": {
+    "kind": "call",
+    "count": 1025,
+    "hits": [
+      0
+    ]
+  },
+  "call-boundary": {
+    "kind": "call",
+    "count": 1025,
+    "hits": [
+      1023
+    ]
+  },
+  "call-last": {
+    "kind": "call",
+    "count": 1025,
+    "hits": [
+      1024
+    ]
+  },
+  "call-firstlast": {
+    "kind": "call",
+    "count": 1025,
+    "hits": [
+      0,
+      1024
+    ]
+  },
+  "call-bad0": {
+    "kind": "call",
+    "count": 1025,
+    "hits": [],
+    "badIndex": 0
+  },
+  "call-bad1022": {
+    "kind": "call",
+    "count": 1025,
+    "hits": [],
+    "badIndex": 1022
+  },
+  "call-bad1023": {
+    "kind": "call",
+    "count": 1025,
+    "hits": [],
+    "badIndex": 1023
+  },
+  "call-bad1024": {
+    "kind": "call",
+    "count": 1025,
+    "hits": [],
+    "badIndex": 1024
+  },
+  "call-empty": {
+    "kind": "call",
+    "count": 0,
+    "hits": []
+  }
+}

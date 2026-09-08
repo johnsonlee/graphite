@@ -1,0 +1,46 @@
+{
+  "baselineRevision": "cf920cd4e84eafe7d3c641fe747bb0b1d14da16a",
+  "steps": [
+    {
+      "name": "context",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^Test(ExecutionContext|RawWork|BufferedGraphWork)",
+        "./internal/query"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "inputsUnchanged": true
+    },
+    {
+      "name": "race",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "inputsUnchanged": true
+    },
+    {
+      "name": "vet",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "inputsUnchanged": true
+    }
+  ],
+  "inputCount": 2775,
+  "performanceMeasurements": 0
+}
