@@ -452,7 +452,8 @@ function compareGraphIdPressure(
     baseObservations,
     candidateObservations,
     minimumSpeedup = 10,
-    expectedReplays = 1
+    baseFirstObservations = null,
+    candidateFirstObservations = null
 ) {
     return compareGraphIdPressureRaw(
         baseResults,
@@ -462,7 +463,8 @@ function compareGraphIdPressure(
         correctnessFromObservations(baseObservations),
         correctnessFromObservations(candidateObservations),
         minimumSpeedup,
-        expectedReplays
+        baseFirstObservations,
+        candidateFirstObservations
     );
 }
 
@@ -869,27 +871,26 @@ test("fixture64 global-wide driver binds pinned JAR provenance and alternates pa
     assert.match(driver, /gh gist create --public/);
 });
 
-test("fixture64 routing comparator gates the measured replay and reads the cold-first row from the no-warm-up replay", () => {
+test("fixture64 routing comparator gates the measured replay and reads the cold-first row from the no-warm-up sidecar", () => {
     const base = graphIdPressureResult({
         callSiteIndexAdmittedGraphs: 64,
         callSiteIndexRetainedBytes: 1024,
         callSiteTrigramIndexedGraphs: 64
     }, "cold");
     const candidate = mappedViewPressureResult({}, "cold");
-    const twoReplays = (first, measured) => `${first}${measured.split("\n").slice(1).join("\n")}`;
-    const baseObservations = twoReplays(
-        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
-        graphIdObservations(20_000_000_000, "success", 20_000_000_000)
-    );
+    // The primary observations are the measured (JVM-warm) replay; the ".first" sidecar is the
+    // no-warm-up replay, one workload per file as the trusted verifier requires.
+    const baseMeasured = graphIdObservations(20_000_000_000, "success", 20_000_000_000);
+    const baseFirst = graphIdObservations(20_000_000_000, "success", 20_000_000_000);
     // The candidate's no-warm-up replay is slow; only the measured replay is fast.
-    const candidateObservations = twoReplays(
-        graphIdObservations(5_000_000_000, "success", 5_000_000_000),
-        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    const candidateMeasured = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
+    const candidateFirst = graphIdObservations(5_000_000_000, "success", 5_000_000_000);
+    const comparison = compareGraphIdPressure(
+        [base], [candidate], baseMeasured, candidateMeasured, 10, baseFirst, candidateFirst
     );
-    const comparison = compareGraphIdPressure([base], [candidate], baseObservations, candidateObservations, 10, 2);
     assert.deepEqual(comparison.errors, []);
     assert.equal(comparison.passed, true);
-    assert.equal(comparison.replays, 2);
+    assert.equal(comparison.noWarmupObservations, true);
     assert.equal(comparison.graphParameterP95Speedup, 20);
     assert.equal(comparison.p95Speedup, 20);
     assert.equal(comparison.coldFirst.candidateLatencyNanos, 5_000_000_000);
@@ -903,31 +904,26 @@ test("fixture64 routing comparator gates the measured replay and reads the cold-
 
     // A measured replay that regressed fails even when the no-warm-up replay was fast.
     const regressed = compareGraphIdPressure(
-        [base],
-        [candidate],
-        baseObservations,
-        twoReplays(
-            graphIdObservations(1_000_000_000, "success", 1_000_000_000),
-            graphIdObservations(30_000_000_000, "success", 30_000_000_000)
-        ),
-        10,
-        2
+        [base], [candidate],
+        graphIdObservations(30_000_000_000, "success", 30_000_000_000), candidateMeasured,
+        10, baseFirst, graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
-    assert.equal(regressed.passed, false);
+    assert.equal(regressed.passed, true);
+    const regressedCandidate = compareGraphIdPressure(
+        [base], [candidate],
+        baseMeasured, graphIdObservations(30_000_000_000, "success", 30_000_000_000),
+        10, baseFirst, candidateFirst
+    );
+    assert.equal(regressedCandidate.passed, false);
 
-    // The replay count is part of the contract in both directions.
-    const missingReplay = compareGraphIdPressure(
-        [base], [candidate], graphIdObservations(20_000_000_000), graphIdObservations(1_000_000_000), 10, 2
-    );
-    assert.match(missingReplay.errors.join("\n"), /base: expected 2 graph-routing replay\(s\), found 1/);
-    const extraReplay = compareGraphIdPressure([base], [candidate], baseObservations, candidateObservations, 10, 1);
-    assert.match(extraReplay.errors.join("\n"), /candidate: expected 1 graph-routing replay\(s\), found 2/);
+    // Without a sidecar the cold-first and advisory fall back to the measured replay.
     const singleReplay = compareGraphIdPressure(
-        [base], [candidate], graphIdObservations(20_000_000_000), graphIdObservations(1_000_000_000)
+        [base], [candidate], baseMeasured, candidateMeasured
     );
-    assert.equal(singleReplay.replays, 1);
+    assert.equal(singleReplay.noWarmupObservations, false);
     assert.equal(singleReplay.noWarmupRequestSelected, null);
     assert.doesNotMatch(renderGraphIdPressureReport(singleReplay), /JVM-warm/);
+    assert.equal(singleReplay.coldFirst.candidateLatencyNanos, 1_000_000_000);
 });
 
 test("fixture64 startup-prepared graphId pressure guards the optimization already on main", () => {
@@ -1916,7 +1912,9 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         driver,
         /coverageFamily=graph-routing-reference -p indexState=cold \\\n\s*-p timeoutMillis="\$\{TIMEOUT_MILLIS\}" -wi 0 -i 1 -f 1/
     );
-    assert.match(driver, /--expected-replays 2 \\/);
+    assert.match(driver, /--base-first-observations "\$\{OUTPUT_DIR\}\/base-graph-routing-\$\{INDEX_STATE\}\.tsv\.first"/);
+    assert.match(driver, /--candidate-first-observations "\$\{OUTPUT_DIR\}\/candidate-graph-routing-\$\{INDEX_STATE\}\.tsv\.first"/);
+    assert.doesNotMatch(driver, /--expected-replays/);
     assert.equal((driver.match(/-wi 1 -i 1/g) ?? []).length, 1);
     const globalWideDriver = fs.readFileSync(new URL("./run-real64-global-wide.sh", import.meta.url), "utf8");
     assert.match(globalWideDriver, /-wi 0 -i 1 -f 1/);

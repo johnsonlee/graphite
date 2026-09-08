@@ -119,11 +119,13 @@ The fixture64 routing driver runs each of the `cold`, `warm` and `startup-prepar
 one JMH warm-up iteration before the measured one (`-wi 1 -i 1`). The invocation setup resets the
 index state before both replays, so the measured replay is index-cold (or warm, or prepared) on a
 process whose compiler queue has drained: the gate compares routing, not the JVM's first execution
-of the routing code. The harness keeps every replay's observations, in order, under one header, and
-the comparator (`--expected-replays 2`) reads the rules from the last replay while the first cold
-K64 request keeps being read from the no-warm-up first replay; that replay's request-selected P50
-and P95 are reported as an advisory line. The base reference run and the global-wide driver keep
-`-wi 0`, so the first-execution evidence of the global-wide gate is unchanged.
+of the routing code. The harness writes the measured replay to the primary observations file (one
+workload per file, as the trusted workload verifier requires) and copies the no-warm-up first
+replay once to a `<primary>.first` sidecar. The comparator reads the gated rules from the primary
+file and, when the driver passes `--base-first-observations`/`--candidate-first-observations`,
+reads the first cold K64 request and the advisory request-selected P50/P95 from the sidecar. The
+base reference run and the global-wide driver keep `-wi 0`, so the first-execution evidence of the
+global-wide gate is unchanged.
 
 ## Comparable base/candidate run
 

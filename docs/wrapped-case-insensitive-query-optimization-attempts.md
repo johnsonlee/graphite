@@ -5167,10 +5167,13 @@ thread's allocation (31 MB over the replay) were ruled out.
 
 **Change (owner's decision on #117):** the routing driver runs every routing state with one JMH
 warm-up iteration (`-wi 1 -i 1`), the invocation setup resetting the index state before both
-replays, so the measured replay is index-cold on a JVM-warm process. The harness appends each
-replay's observations under one header; the comparator takes `--expected-replays 2`, reads the
-rules from the measured (last) replay, keeps reading the first cold K64 request from the no-warm-up
-first replay, reports that replay's request-selected P50/P95 as an advisory line, and fails when
-the replay count is not the one the driver ran. The base reference run and the global-wide driver
-keep `-wi 0`; a gate test pins all three flags. The comparator pins in the workflow follow the new
-script content.
+replays, so the measured replay is index-cold on a JVM-warm process. The harness writes the
+measured replay to the primary observations file (one workload per file, which the trusted
+workload verifier requires) and copies the no-warm-up first replay once to a `<primary>.first`
+sidecar; the comparator reads the gated rules from the primary file and, through
+`--base-first-observations`/`--candidate-first-observations`, reads the first cold K64 request and
+the advisory request-selected P50/P95 from the sidecar. An earlier revision appended both replays
+to one file, which broke the workload verifier's one-workload-per-file invariant; the sidecar keeps
+that verifier untouched. The base reference run and the global-wide driver keep `-wi 0`; gate tests
+pin the flags and the sidecar paths. The comparator pins in the workflow follow the new script
+content.

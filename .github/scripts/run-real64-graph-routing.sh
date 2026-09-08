@@ -246,10 +246,11 @@ for INDEX_STATE in cold warm startup-prepared; do
     --candidate "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.json" \
     --base-observations "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.tsv" \
     --candidate-observations "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.tsv" \
+    --base-first-observations "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.tsv.first" \
+    --candidate-first-observations "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.tsv.first" \
     --base-correctness "${BASE_CORRECTNESS_ORACLE}" \
     --candidate-correctness "${ORACLE}" \
     --minimum-speedup 10 \
-    --expected-replays 2 \
     --report "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-report.md" \
     --status "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-status.json"; then
     echo "${INDEX_STATE} graph-routing comparison failed; retaining evidence for aggregation" >&2

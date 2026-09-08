@@ -593,32 +593,6 @@ function parsePressureObservations(contents, revision, errors) {
 
 const GRAPH_ROUTING_COLD_FIRST_ID = "request-selected-set-wrapped-contains-k64-group-00-zero";
 
-/**
- * One JVM writes every replay of the workload, in order, under one header: with a JMH warm-up
- * iteration the file holds the no-warm-up first replay followed by the measured one. Each replay
- * starts with the cold-first K64 request, which delimits them; every id must appear once per
- * replay, and the count of replays must be the one the driver ran.
- */
-function splitPressureReplays(rows, revision, expectedReplays, errors) {
-    const replays = [];
-    for (const row of rows) {
-        if (row.id === GRAPH_ROUTING_COLD_FIRST_ID || replays.length === 0) replays.push([]);
-        replays[replays.length - 1].push(row);
-    }
-    if (rows.length > 0 && replays.length !== expectedReplays) {
-        errors.push(`${revision}: expected ${expectedReplays} graph-routing replay(s), found ${replays.length}`);
-    }
-    replays.forEach((replay, index) => {
-        const seen = new Set();
-        for (const row of replay) {
-            if (seen.has(row.id)) {
-                errors.push(`${revision}: duplicate graph-routing observation ${row.id} in replay ${index + 1}`);
-            }
-            seen.add(row.id);
-        }
-    });
-    return replays;
-}
 
 const GRAPH_ROUTING_SELECTIVITIES = ["zero", "targeted", "dense"];
 const GRAPH_ROUTING_ORACLE_SHAPES = [
@@ -878,7 +852,8 @@ export function compareGraphIdPressure(
     baseCorrectnessContents,
     candidateCorrectnessContents,
     minimumSpeedup = 10,
-    expectedReplays = 1
+    baseFirstObservations = null,
+    candidateFirstObservations = null
 ) {
     const errors = [];
     const expectedBenchmark = "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
@@ -997,18 +972,19 @@ export function compareGraphIdPressure(
         }
     }
 
-    const baseReplays = splitPressureReplays(
-        parsePressureObservations(baseObservations, "base", errors), "base", expectedReplays, errors
-    );
-    const candidateReplays = splitPressureReplays(
-        parsePressureObservations(candidateObservations, "candidate", errors), "candidate", expectedReplays, errors
-    );
-    // The rules read the measured (last) replay; the cold-first K64 request and the advisory
+    // The gated rules read the measured replay from the primary observations (one workload per
+    // file, as the trusted verifier requires). The cold-first K64 request and the advisory
+    // no-warm-up distribution read the separate no-warm-up first replay when the driver provides
+    // it; without it they fall back to the measured replay (the no-warm-up single-replay contract).
+    const baseRows = parsePressureObservations(baseObservations, "base", errors);
+    const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
+    const haveNoWarmup = baseFirstObservations !== null && candidateFirstObservations !== null;
+    const baseNoWarmupRows = haveNoWarmup
+        ? parsePressureObservations(baseFirstObservations, "base no-warm-up", errors) : baseRows;
+    const candidateNoWarmupRows = haveNoWarmup
+        ? parsePressureObservations(candidateFirstObservations, "candidate no-warm-up", errors) : candidateRows;
+    // The cold-first K64 request and the advisory
     // request-selected distribution read the first replay, which no warm-up precedes.
-    const baseRows = baseReplays.at(-1) ?? [];
-    const candidateRows = candidateReplays.at(-1) ?? [];
-    const baseNoWarmupRows = baseReplays[0] ?? [];
-    const candidateNoWarmupRows = candidateReplays[0] ?? [];
     const coldFirstId = GRAPH_ROUTING_COLD_FIRST_ID;
     let coldFirst = null;
     if (candidateIndexState === "cold") {
@@ -1453,7 +1429,7 @@ export function compareGraphIdPressure(
         .filter((latency) => latency !== null && latency > 0);
     const baseNoWarmupLatencies = noWarmupLatencies(baseNoWarmupRows);
     const candidateNoWarmupLatencies = noWarmupLatencies(candidateNoWarmupRows);
-    const noWarmupRequestSelected = expectedReplays > 1 &&
+    const noWarmupRequestSelected = haveNoWarmup &&
         baseNoWarmupLatencies.length > 0 && candidateNoWarmupLatencies.length > 0 ? {
             sampleCount: candidateNoWarmupLatencies.length,
             baseP50: pressurePercentile(baseNoWarmupLatencies, 0.50),
@@ -1557,7 +1533,7 @@ export function compareGraphIdPressure(
         routingOverheadP50,
         routingOverheadP95,
         indexState: candidateIndexState,
-        replays: expectedReplays,
+        noWarmupObservations: haveNoWarmup,
         noWarmupRequestSelected,
         resources: {
             base: baseResources,
@@ -2189,8 +2165,8 @@ export function renderGraphIdPressureReport(comparison) {
     const lines = [
         "### 64 fixture-derived graphId pressure gate",
         "",
-        `Index state: **${comparison.indexState}**` + ((comparison.replays ?? 1) > 1 ?
-            ` (index-cold on a JVM-warm process: ${comparison.replays - 1} warm-up replay precedes the ` +
+        `Index state: **${comparison.indexState}**` + (comparison.noWarmupObservations ?
+            ` (index-cold on a JVM-warm process: 1 warm-up replay precedes the ` +
                 "measured replay, the index state is reset before each; the first cold K64 request is read " +
                 "from the no-warm-up replay)" : ""),
         "",
@@ -3087,7 +3063,8 @@ function compareGraphIdPressureCommand(args) {
         fs.readFileSync(requireArg(args, "base-correctness"), "utf8"),
         fs.readFileSync(requireArg(args, "candidate-correctness"), "utf8"),
         Number(args["minimum-speedup"] ?? 10),
-        Number(args["expected-replays"] ?? 1)
+        args["base-first-observations"] ? fs.readFileSync(args["base-first-observations"], "utf8") : null,
+        args["candidate-first-observations"] ? fs.readFileSync(args["candidate-first-observations"], "utf8") : null
     );
     writeFile(requireArg(args, "report"), renderGraphIdPressureReport(comparison));
     writeJson(requireArg(args, "status"), comparison);
