@@ -786,15 +786,18 @@ open class MethodDiscoveryCompatibilityBenchmark {
     }
 
     private fun measure(counters: MethodCompatibilityCounters, action: () -> Long): Long {
-        val beforeInternal = internalThreadCpuNanos()
-        val beforeCpu = processCpuTimeNanos()
+        // The subtracted internal interval is nested inside the process interval: the process
+        // figure is read first before the action and last after it, so any internal CPU spent in
+        // the snapshot gaps is charged to the request rather than subtracted from it.
+        val beforeRss = residentSetBytes()
         val beforeGcTime = gcTimeMillis()
         val beforeJit = jitTimeMillis()
-        val beforeRss = residentSetBytes()
+        val beforeCpu = processCpuTimeNanos()
+        val beforeInternal = internalThreadCpuNanos()
         val bytes = action()
-        val afterRss = residentSetBytes()
-        val afterCpu = processCpuTimeNanos()
         val afterInternal = internalThreadCpuNanos()
+        val afterCpu = processCpuTimeNanos()
+        val afterRss = residentSetBytes()
         counters.requestsSucceeded++
         counters.responseBytes += bytes
         counters.processCpuNanos = (afterCpu - beforeCpu).coerceAtLeast(0L)
@@ -808,7 +811,11 @@ open class MethodDiscoveryCompatibilityBenchmark {
         val internalCpu = afterInternal.entries.sumOf { (tid, cpu) -> cpu - (beforeInternal[tid] ?: 0L) }
         counters.jvmInternalCpuNanos = internalCpu.coerceAtLeast(0L)
         counters.jvmInternalThreadsEnded = beforeInternal.keys.count { it !in afterInternal }.toLong()
-        counters.javaThreadCpuNanos = (counters.processCpuNanos - counters.jvmInternalCpuNanos).coerceAtLeast(0L)
+        // With the nesting above the remainder can only fall below zero by the process clock's
+        // tick resolution; the shortfall is published instead of being hidden by the clamp.
+        val remainder = counters.processCpuNanos - counters.jvmInternalCpuNanos
+        counters.cpuAccountingUnderflowNanos = (-remainder).coerceAtLeast(0L)
+        counters.javaThreadCpuNanos = remainder.coerceAtLeast(0L)
         counters.gcTimeMillis = (gcTimeMillis() - beforeGcTime).coerceAtLeast(0L)
         counters.jitTimeMillis = (jitTimeMillis() - beforeJit).coerceAtLeast(0L)
         counters.residentSetBeforeBytes = beforeRss
@@ -873,6 +880,35 @@ open class MethodDiscoveryCompatibilityBenchmark {
             "Request-serving CPU accounting missed a worker that lived inside the window: " +
                 "worker ${expected} ns, accounted ${counters.javaThreadCpuNanos} ns, " +
                 "process ${counters.processCpuNanos} ns, internal ${counters.jvmInternalCpuNanos} ns"
+        }
+        verifySnapshotNesting("idle action") { 0L }
+        verifySnapshotNesting("collector-loaded action") {
+            // Enough short-lived garbage to run the collector's threads inside the window, so the
+            // internal share is non-trivial while the interval containment is checked.
+            val retained = ArrayList<ByteArray>(CPU_ACCOUNTING_GARBAGE_CHUNKS)
+            repeat(CPU_ACCOUNTING_GARBAGE_CHUNKS) { index ->
+                val chunk = ByteArray(CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES)
+                chunk[index % chunk.size] = index.toByte()
+                if (retained.size >= CPU_ACCOUNTING_GARBAGE_RETAINED) retained.removeAt(0)
+                retained.add(chunk)
+            }
+            retained.size.toLong()
+        }
+    }
+
+    /**
+     * Contract check for the snapshot gaps: because the internal interval is read inside the
+     * process interval, the subtracted internal CPU can exceed the process figure only by the
+     * process clock's tick, whatever the JVM's threads did around the action. A larger shortfall
+     * means the intervals are no longer nested and the row would under-report, so it fails.
+     */
+    private fun verifySnapshotNesting(label: String, action: () -> Long) {
+        val counters = MethodCompatibilityCounters()
+        measure(counters, action)
+        check(counters.cpuAccountingUnderflowNanos <= CPU_ACCOUNTING_MAX_UNDERFLOW_NANOS) {
+            "Internal CPU exceeded the process interval on the $label: " +
+                "process ${counters.processCpuNanos} ns, internal ${counters.jvmInternalCpuNanos} ns, " +
+                "shortfall ${counters.cpuAccountingUnderflowNanos} ns"
         }
     }
 
@@ -1032,6 +1068,9 @@ open class MethodBenchmarkCompatibilityCounters {
 
     @JvmField
     var jvmInternalThreadsEnded: Long = 0
+
+    @JvmField
+    var cpuAccountingUnderflowNanos: Long = 0
 
     @JvmField
     var gcTimeMillis: Long = 0
@@ -1983,6 +2022,11 @@ private const val EXPLICIT_GC_CAUSE = "System.gc()"
 private const val END_OF_MAJOR_GC = "end of major GC"
 private const val END_OF_MINOR_GC = "end of minor GC"
 private const val CPU_ACCOUNTING_WORKER_NANOS = 200_000_000L
+private const val CPU_ACCOUNTING_GARBAGE_CHUNKS = 512
+private const val CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES = 1 shl 20
+private const val CPU_ACCOUNTING_GARBAGE_RETAINED = 64
+/** Two ticks of the process CPU clock (10 ms on Linux), the only slack the nesting leaves. */
+private const val CPU_ACCOUNTING_MAX_UNDERFLOW_NANOS = 20_000_000L
 private const val CPU_ACCOUNTING_MIN_SHARE_PERCENT = 90L
 private const val PERCENT = 100L
 
