@@ -1,0 +1,220 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "files": [
+    {
+      "file": "UnknownLabelOracle.java",
+      "bytes": 4369,
+      "sha256": "879484c26c0fab5367c85809cc68402e8fd2ca5e50c62c28ba310ca0cc261480"
+    },
+    {
+      "file": "prepare.py",
+      "bytes": 9561,
+      "sha256": "ee31d844df0de02e48203e7a8ee3aea87326d9234298b0ad41f43486ff4c7e09"
+    },
+    {
+      "file": "cases.json",
+      "bytes": 43385,
+      "sha256": "ca7f2afa939362bbf969c3be6f1b7974fcf4eb4b1db01642e4198762c126038e"
+    },
+    {
+      "file": "main.json",
+      "bytes": 173781,
+      "sha256": "205c2da0f30b449d0d2b38a47afb0a54fc9da7b8f14b4f09924fa6fb54f9c9ed"
+    },
+    {
+      "file": "repeat-main.json.gz",
+      "bytes": 5617,
+      "sha256": "6f9fb5e12101446c5ea75ca6013c7e819fff05108140df47149e2d9126892473"
+    },
+    {
+      "file": "mutations.json",
+      "bytes": 43734,
+      "sha256": "a23ff9b258df999bbc7dc0bf1836e397a13d210d7f33e339d6afed3939fc9336"
+    },
+    {
+      "file": "source-fixture.json",
+      "bytes": 1663,
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b"
+    },
+    {
+      "file": "initial114-cases.json.gz",
+      "bytes": 1363,
+      "sha256": "af6f04212e6ed088dccdc6660bffb01b7d222dc9e7aa0cf51cb93635cae0667d"
+    },
+    {
+      "file": "initial114-main.json.gz",
+      "bytes": 4621,
+      "sha256": "17ef70e05d600ad8e4950c8dd49741b9594eb7e40222bcbda2606e79eb05fa94"
+    },
+    {
+      "file": "run0-fixture-copied.json.gz",
+      "bytes": 7627,
+      "sha256": "4e7d7b6631e9d76ec3455f8f777c1cc8500e2c1cbc905cb8402af9f6d18ce55b"
+    },
+    {
+      "file": "run0-fixture-before.json.gz",
+      "bytes": 8230,
+      "sha256": "4351845fe35196ed1d7d2f935940d8c4b7039552338b95f88bc7d3f44e9d769f"
+    },
+    {
+      "file": "run0-fixture-after.json.gz",
+      "bytes": 9811,
+      "sha256": "b757e090857e62fa96fc1b60bb68a1d17ec0eb4a946da647f3b8e13f71ce4286"
+    },
+    {
+      "file": "run0-mutations.json.gz",
+      "bytes": 1291,
+      "sha256": "7aba046f4fa3d3ded1372d841c985046c88ad825767f192f2c131bd798209681"
+    },
+    {
+      "file": "run1-fixture-copied.json.gz",
+      "bytes": 7627,
+      "sha256": "4e7d7b6631e9d76ec3455f8f777c1cc8500e2c1cbc905cb8402af9f6d18ce55b"
+    },
+    {
+      "file": "run1-fixture-before.json.gz",
+      "bytes": 8230,
+      "sha256": "4351845fe35196ed1d7d2f935940d8c4b7039552338b95f88bc7d3f44e9d769f"
+    },
+    {
+      "file": "run1-fixture-after.json.gz",
+      "bytes": 9811,
+      "sha256": "b757e090857e62fa96fc1b60bb68a1d17ec0eb4a946da647f3b8e13f71ce4286"
+    },
+    {
+      "file": "run1-mutations.json.gz",
+      "bytes": 1291,
+      "sha256": "7aba046f4fa3d3ded1372d841c985046c88ad825767f192f2c131bd798209681"
+    },
+    {
+      "file": "fixture-audit.json",
+      "bytes": 51777,
+      "sha256": "c82698ec2a3d533b1b3bd9d26938cbc953fbc9c00c24eed374ba5457fd3f7957"
+    },
+    {
+      "file": "verify.py",
+      "bytes": 8976,
+      "sha256": "9f877f644b99272f4bb32b2a6fc58d4602f2a1ea3b39323cad50bee64ecda5b2"
+    },
+    {
+      "file": "verification.json",
+      "bytes": 487,
+      "sha256": "3257bfa1abe482f3aaa89005e6534f68de71a7f7dd51ac2d96f0480ec8242b65"
+    },
+    {
+      "file": "oracle-readme.md",
+      "bytes": 11054,
+      "sha256": "c578024db2f616bb4a8a8f0884416022f25e4a33bf3416d9ef3d0e046637f5d2"
+    },
+    {
+      "file": "oracle-inputs.json",
+      "bytes": 3087,
+      "sha256": "3e59c5fabe50b323da8787c7fdc3c45632c557b9d42788e2d08926c965e6330b"
+    },
+    {
+      "file": "commands.json",
+      "bytes": 2808,
+      "sha256": "ef6e4e5ded2c0f1012e1aabc941d580bc38ad9335e1c5b315a563e7b216c8b78"
+    },
+    {
+      "file": "oracle-receipt.json",
+      "bytes": 479,
+      "sha256": "0f9ba7570c8b9815a65bcfd0cb5f385dd87472d954a1f4371392f94d3704d696"
+    },
+    {
+      "file": "compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "final.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "final.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "repeat.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "repeat.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "initial120-oracle.tar.gz",
+      "bytes": 52268,
+      "sha256": "0b041f1d3244f4bcb68bf4e3e614e3651de412d0a6a2bd68afa7d5b987c66e8e"
+    },
+    {
+      "file": "mapped-index-reference.json",
+      "bytes": 2188,
+      "sha256": "ee64359551b9b8ad49fe67edf5e72e9dc0ca441fae79d5d451293f2708e7508d"
+    },
+    {
+      "file": "mapped-index-reference/graph.nodeoffsets",
+      "bytes": 256,
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796"
+    },
+    {
+      "file": "mapped-index-reference/graph.typeindex",
+      "bytes": 280,
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c"
+    },
+    {
+      "file": "additions.json",
+      "bytes": 4197,
+      "sha256": "c39853c71721d904a99f786f75655d3c382d7fcdeeeb2f1fdcba6cc87a395ea7"
+    },
+    {
+      "file": "run0-additions.json.gz",
+      "bytes": 319,
+      "sha256": "23d024293d94dd79fb48b2be639c86253f0a118b782099e3da562438fd0d69dd"
+    },
+    {
+      "file": "run1-additions.json.gz",
+      "bytes": 319,
+      "sha256": "23d024293d94dd79fb48b2be639c86253f0a118b782099e3da562438fd0d69dd"
+    },
+    {
+      "file": "edges1.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "edges1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "edges2.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "edges2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

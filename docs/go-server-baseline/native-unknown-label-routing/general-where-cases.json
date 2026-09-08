@@ -1,0 +1,106 @@
+[
+  {
+    "name": "general-where-0-badFalse",
+    "query": "MATCH (n:IntConstant) WHERE 1/0=0 MATCH (x:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "node-encounter/mixed-sparse"
+  },
+  {
+    "name": "general-where-0-badTrue",
+    "query": "MATCH (n:IntConstant) WHERE 1/0=0 MATCH (x:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 22
+      }
+    ],
+    "fixture": "node-encounter/mixed-sparse"
+  },
+  {
+    "name": "general-where-1-badFalse",
+    "query": "MATCH (n:IntConstant) WHERE false MATCH (x:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "node-encounter/mixed-sparse"
+  },
+  {
+    "name": "general-where-1-badTrue",
+    "query": "MATCH (n:IntConstant) WHERE false MATCH (x:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 22
+      }
+    ],
+    "fixture": "node-encounter/mixed-sparse"
+  },
+  {
+    "name": "general-where-2-badFalse",
+    "query": "UNWIND ['90','22'] AS eid MATCH (n:IntConstant) WHERE elementId(n)=eid AND 1/0=0 MATCH (x:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "node-encounter/mixed-sparse"
+  },
+  {
+    "name": "general-where-2-badTrue",
+    "query": "UNWIND ['90','22'] AS eid MATCH (n:IntConstant) WHERE elementId(n)=eid AND 1/0=0 MATCH (x:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 22
+      }
+    ],
+    "fixture": "node-encounter/mixed-sparse"
+  },
+  {
+    "name": "general-where-3-badFalse",
+    "query": "MATCH (x:IntConstant) RETURN 1 AS k LIMIT 1 MATCH (n:Missing) WHERE elementId(n)='22' RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "node-encounter/mixed-sparse"
+  },
+  {
+    "name": "general-where-3-badTrue",
+    "query": "MATCH (x:IntConstant) RETURN 1 AS k LIMIT 1 MATCH (n:Missing) WHERE elementId(n)='22' RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 22
+      }
+    ],
+    "fixture": "node-encounter/mixed-sparse"
+  }
+]

@@ -1,0 +1,946 @@
+{
+  "baselineRevision": "4ac9dd8b5f5fcfaf9ec920d7f7d381faedb5fe88",
+  "scope": "General Cypher candidate routing and read order correctness; no performance claim",
+  "files": [
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/.gitignore",
+      "bytes": 39,
+      "sha256": "d5af37633bc0798df6d5ba5e9a5df097c0e455f777b4713ef9c3fb326432f90a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/README.md",
+      "bytes": 4447,
+      "sha256": "970aeca8ecc20e7907fe6db57de884ef9f66f4552cea13564ec409bd77af08a4"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/UnknownLabelOracle.java",
+      "bytes": 4369,
+      "sha256": "879484c26c0fab5367c85809cc68402e8fd2ca5e50c62c28ba310ca0cc261480"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/additions.json",
+      "bytes": 4197,
+      "sha256": "c39853c71721d904a99f786f75655d3c382d7fcdeeeb2f1fdcba6cc87a395ea7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/archive-real64.py",
+      "bytes": 1753,
+      "sha256": "bc702b5ee0e3d6535be8c0542236e545fbcd277cef44d3b7dcccee798542a3a6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/audit-final.py",
+      "bytes": 5917,
+      "sha256": "7c5558f983fb697f3eb3ee7d2bf8d586292077af47b15a46dc6bfc64321e6992"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/capture-archives.json",
+      "bytes": 1170,
+      "sha256": "af183bdcb80becbd6e822716f4ebe913a0828e4310bfdf070c9598db78d4764f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/cases.json",
+      "bytes": 43385,
+      "sha256": "ca7f2afa939362bbf969c3be6f1b7974fcf4eb4b1db01642e4198762c126038e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/commands.json",
+      "bytes": 2808,
+      "sha256": "ef6e4e5ded2c0f1012e1aabc941d580bc38ad9335e1c5b315a563e7b216c8b78"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/edges1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/edges1.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/edges2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/edges2.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/final-audit.json",
+      "bytes": 849,
+      "sha256": "56561048da113f7a2a2ae564af64b504bde1e4a2d0f360342f7b282b91646b38"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/final-audit.log",
+      "bytes": 849,
+      "sha256": "56561048da113f7a2a2ae564af64b504bde1e4a2d0f360342f7b282b91646b38"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/final.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/final.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/fixture-audit.json",
+      "bytes": 51777,
+      "sha256": "c82698ec2a3d533b1b3bd9d26938cbc953fbc9c00c24eed374ba5457fd3f7957"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-cases.json",
+      "bytes": 2561,
+      "sha256": "f32b6ed6e3c60b8f88eeb8b0606211006b099c5e35c09d93a5ee2f634bf274e6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-final1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-final1.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-final2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-final2.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-fixture-audit.json",
+      "bytes": 349,
+      "sha256": "ba2e688af57b9160e7d55e52998413bc4233daff26610ccfb38a281da8861f23"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-initial6.tar.gz",
+      "bytes": 9301,
+      "sha256": "419a3f8e9f8147acd8c60c0684ab62e4f3ba43033bdb812390f4e7c7e649a0c3"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-main.json",
+      "bytes": 15636,
+      "sha256": "ac24586c401de35c50c9ecd5e66ba69de4669c3e8c54a532774a90ea92696266"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-manifest.json",
+      "bytes": 4688,
+      "sha256": "6536f181154932706aaef658958e1af6431b8d66a6dc2d4d54b797c8d5e1411d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-mutations.json",
+      "bytes": 1807,
+      "sha256": "d0ed4e813445d99b9d82fea937afd7af09c89542dc9290004f5e05213e780cb8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-prepare.py",
+      "bytes": 3290,
+      "sha256": "0c61ada3e464c899b199f5c1537f209911c7db36e4ce0db3591e760957f705f7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-readme.md",
+      "bytes": 2699,
+      "sha256": "e6efbb4be0ba3a2c67d3d534c9eedaad34f89693104810817caaac7e74dca583"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-receipt.json",
+      "bytes": 5085,
+      "sha256": "e184a14e13afd669837280ed16f0da30233ec7a92e0a64b32b6e2f426df6386a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-repeat-main.json.gz",
+      "bytes": 1245,
+      "sha256": "3792f4c6cc640e7b62f35ae1bd6e40c9c78ea3547fdcc275b75adec578e5704e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run1-fixture-after.json.gz",
+      "bytes": 1580,
+      "sha256": "6b9ebe7124329103287a42f5cd0fe5407c7caab2a93b7803b5485cfbdb1da329"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run1-fixture-before.json.gz",
+      "bytes": 1580,
+      "sha256": "6b9ebe7124329103287a42f5cd0fe5407c7caab2a93b7803b5485cfbdb1da329"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run1-fixture-copied.json.gz",
+      "bytes": 1539,
+      "sha256": "789deaa277d6358cd60adda187e8d693d442904a387cb07bfb650a2842a81162"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run1-mutations.json.gz",
+      "bytes": 318,
+      "sha256": "11999a25330b9490afb13332ee7e351d699bf00c5db1cd54c92e662904b0be60"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run1.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run2-fixture-after.json.gz",
+      "bytes": 1580,
+      "sha256": "6b9ebe7124329103287a42f5cd0fe5407c7caab2a93b7803b5485cfbdb1da329"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run2-fixture-before.json.gz",
+      "bytes": 1580,
+      "sha256": "6b9ebe7124329103287a42f5cd0fe5407c7caab2a93b7803b5485cfbdb1da329"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run2-fixture-copied.json.gz",
+      "bytes": 1539,
+      "sha256": "789deaa277d6358cd60adda187e8d693d442904a387cb07bfb650a2842a81162"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run2-mutations.json.gz",
+      "bytes": 318,
+      "sha256": "11999a25330b9490afb13332ee7e351d699bf00c5db1cd54c92e662904b0be60"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-run2.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-source-fixture.json",
+      "bytes": 3303,
+      "sha256": "80dd555784888c7a1dfd2d3608bcafa15e4b47bb3682b3b97975496f457b076f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-verification.json",
+      "bytes": 282,
+      "sha256": "6c0a299538e1c52f0a77d89a5d6c1c5f3e7468f196c15b7bcc3598842f7fce46"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/general-where-verify.py",
+      "bytes": 3695,
+      "sha256": "9e56f053b2dab94ef91da95c44f8ddfad5d785ca31b8fcb98aa5f93f6d1f847a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/initial114-cases.json.gz",
+      "bytes": 1363,
+      "sha256": "af6f04212e6ed088dccdc6660bffb01b7d222dc9e7aa0cf51cb93635cae0667d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/initial114-main.json.gz",
+      "bytes": 4621,
+      "sha256": "17ef70e05d600ad8e4950c8dd49741b9594eb7e40222bcbda2606e79eb05fa94"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/initial120-oracle.tar.gz",
+      "bytes": 52268,
+      "sha256": "0b041f1d3244f4bcb68bf4e3e614e3651de412d0a6a2bd68afa7d5b987c66e8e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/main.json",
+      "bytes": 173781,
+      "sha256": "205c2da0f30b449d0d2b38a47afb0a54fc9da7b8f14b4f09924fa6fb54f9c9ed"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/mapped-index-reference.json",
+      "bytes": 2188,
+      "sha256": "ee64359551b9b8ad49fe67edf5e72e9dc0ca441fae79d5d451293f2708e7508d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/mapped-index-reference/graph.nodeoffsets",
+      "bytes": 256,
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/mapped-index-reference/graph.typeindex",
+      "bytes": 280,
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/module-source.json",
+      "bytes": 364428,
+      "sha256": "807746e04e9ba14627f19b3a5db8ac8c08f66a6177699d490c9517cc9f868a84"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/mutations.json",
+      "bytes": 43734,
+      "sha256": "a23ff9b258df999bbc7dc0bf1836e397a13d210d7f33e339d6afed3939fc9336"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs/cases.json",
+      "bytes": 35947,
+      "sha256": "235521599af1aa559d5845ec744de74d741f0c8a1f97ec84684c3e6254393c63"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs/main.json",
+      "bytes": 149761,
+      "sha256": "59feca622a3c6f3b0de9e106eaf9d0e25ccc980dfabdab4e2ffd43ab17e8fd0f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs/mutations.json",
+      "bytes": 34537,
+      "sha256": "5fcbc2b191be7a882f4fe24ac173c4c21a7fb7e4c6aa6eacc97b0c680644b331"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs/source-fixture.json",
+      "bytes": 1663,
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-receipt.json",
+      "bytes": 2644,
+      "sha256": "8d0667b917c97f4ab96a6508f053ac39c3a3fe6bec0aa3dd384c137cfd67c7cd"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120.json",
+      "bytes": 167768,
+      "sha256": "6dd445988441dabbc00db8d9d4c007a595ef696374f7153aba974dabf2a5d4d7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120.log",
+      "bytes": 16053,
+      "sha256": "bbe3d1143521cf1015fd03c8551739677c5073a4c8890187b094362928e18eae"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-before-inputs.json",
+      "bytes": 239947,
+      "sha256": "2f742a6fab22e937da8b681a24938e9f8e5df73f80bb8720e15c3330d2074e3c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-before-receipt.json",
+      "bytes": 12866,
+      "sha256": "94802b0712d19020469a390d295597f0dfb54903e9a31f9101eeb514e2194427"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-before.json",
+      "bytes": 166137,
+      "sha256": "e8b88fad43d464d0a9a3200fa9a5a9b50e59a0c6b106dbf020a28bcb3e3aedec"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-before.log",
+      "bytes": 47475,
+      "sha256": "5d7b4780312a8c08ac0b29e975cc048d3fa1a1c2c0322104454bb65b3c622768"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-candidate140-initial-receipt-original.json",
+      "bytes": 70324,
+      "sha256": "af6d8f88a976929296a60ea34743bdf1e964d9c20c21e61689bc1cdb53a670f0"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-candidate140-initial-receipt.json",
+      "bytes": 70555,
+      "sha256": "dffe39587d82f7284d88e46f5c2cc1498f8735981e4ea819d4b835bcf3575193"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-candidate140-initial.json",
+      "bytes": 208601,
+      "sha256": "d4e574bfd5185accf6c39d7fe57dfbaeedbacb0b013a3da899bab1c91a0fe675"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-candidate140-initial.log",
+      "bytes": 18467,
+      "sha256": "fdacfd457c5d87ce3bdd1f6daef1e6d2d043b56b8be9887112d977d328176d53"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-before-overlay.json",
+      "bytes": 64995,
+      "sha256": "01a61c9151a4e7658e136889c6b79509968e7af7564a1644328a58b0a460ec63"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-before.json",
+      "bytes": 209168,
+      "sha256": "30a4f732769a626887a1bb2bf5c464d2e21d645075ca0aa744dff27139539843"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-before.log",
+      "bytes": 68695,
+      "sha256": "8f4f5ad3ff01c4091fa53c7dbf0f0684dc1aca3e05b56aed10d8bed7c1a25563"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-inputs/additions.json",
+      "bytes": 4197,
+      "sha256": "c39853c71721d904a99f786f75655d3c382d7fcdeeeb2f1fdcba6cc87a395ea7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-inputs/cases.json",
+      "bytes": 43385,
+      "sha256": "ca7f2afa939362bbf969c3be6f1b7974fcf4eb4b1db01642e4198762c126038e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-inputs/main.json",
+      "bytes": 173781,
+      "sha256": "205c2da0f30b449d0d2b38a47afb0a54fc9da7b8f14b4f09924fa6fb54f9c9ed"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-inputs/mapped-index-reference.json",
+      "bytes": 2188,
+      "sha256": "ee64359551b9b8ad49fe67edf5e72e9dc0ca441fae79d5d451293f2708e7508d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-inputs/mapped-index-reference/graph.nodeoffsets",
+      "bytes": 256,
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-inputs/mapped-index-reference/graph.typeindex",
+      "bytes": 280,
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-inputs/mutations.json",
+      "bytes": 43734,
+      "sha256": "a23ff9b258df999bbc7dc0bf1836e397a13d210d7f33e339d6afed3939fc9336"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-inputs/source-fixture.json",
+      "bytes": 1663,
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/additions.json",
+      "bytes": 4197,
+      "sha256": "c39853c71721d904a99f786f75655d3c382d7fcdeeeb2f1fdcba6cc87a395ea7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/cases.json",
+      "bytes": 43385,
+      "sha256": "ca7f2afa939362bbf969c3be6f1b7974fcf4eb4b1db01642e4198762c126038e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/general-where-cases.json",
+      "bytes": 1894,
+      "sha256": "10cce467c82f604ea51dbea8b80c1642a2abd028d7a7851cfa318b5b3c621c27"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/general-where-main.json",
+      "bytes": 12865,
+      "sha256": "ecefeba97a1ecaa610071744e938c93eda6fa229499e87ea2783dd22a880f617"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/general-where-mutations.json",
+      "bytes": 1356,
+      "sha256": "7570ce95f2876e336498a3f64173930c42c6cec7d0001c834c223542bd78106c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/general-where-source-fixture.json",
+      "bytes": 3303,
+      "sha256": "80dd555784888c7a1dfd2d3608bcafa15e4b47bb3682b3b97975496f457b076f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/main.json",
+      "bytes": 173781,
+      "sha256": "205c2da0f30b449d0d2b38a47afb0a54fc9da7b8f14b4f09924fa6fb54f9c9ed"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/mapped-index-reference.json",
+      "bytes": 2188,
+      "sha256": "ee64359551b9b8ad49fe67edf5e72e9dc0ca441fae79d5d451293f2708e7508d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/mapped-index-reference/graph.nodeoffsets",
+      "bytes": 256,
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/mapped-index-reference/graph.typeindex",
+      "bytes": 280,
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/mutations.json",
+      "bytes": 43734,
+      "sha256": "a23ff9b258df999bbc7dc0bf1836e397a13d210d7f33e339d6afed3939fc9336"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final146-inputs/source-fixture.json",
+      "bytes": 1663,
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-after.json",
+      "bytes": 208601,
+      "sha256": "d4e574bfd5185accf6c39d7fe57dfbaeedbacb0b013a3da899bab1c91a0fe675"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-after.log",
+      "bytes": 19845,
+      "sha256": "1448e83995da0997d540d63c7c1e3559e13521655e3220b08de738076965e338"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-before.json",
+      "bytes": 209168,
+      "sha256": "30a4f732769a626887a1bb2bf5c464d2e21d645075ca0aa744dff27139539843"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-before.log",
+      "bytes": 71017,
+      "sha256": "d0140dcd3e685ccdc6e8932696313fa9767f9ac1cb8db65d2028733d8b6c2f27"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/additions.json",
+      "bytes": 4197,
+      "sha256": "c39853c71721d904a99f786f75655d3c382d7fcdeeeb2f1fdcba6cc87a395ea7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/cases.json",
+      "bytes": 43385,
+      "sha256": "ca7f2afa939362bbf969c3be6f1b7974fcf4eb4b1db01642e4198762c126038e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/general-where-cases.json",
+      "bytes": 2561,
+      "sha256": "f32b6ed6e3c60b8f88eeb8b0606211006b099c5e35c09d93a5ee2f634bf274e6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/general-where-main.json",
+      "bytes": 15636,
+      "sha256": "ac24586c401de35c50c9ecd5e66ba69de4669c3e8c54a532774a90ea92696266"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/general-where-mutations.json",
+      "bytes": 1807,
+      "sha256": "d0ed4e813445d99b9d82fea937afd7af09c89542dc9290004f5e05213e780cb8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/general-where-source-fixture.json",
+      "bytes": 3303,
+      "sha256": "80dd555784888c7a1dfd2d3608bcafa15e4b47bb3682b3b97975496f457b076f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/main.json",
+      "bytes": 173781,
+      "sha256": "205c2da0f30b449d0d2b38a47afb0a54fc9da7b8f14b4f09924fa6fb54f9c9ed"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/mapped-index-reference.json",
+      "bytes": 2188,
+      "sha256": "ee64359551b9b8ad49fe67edf5e72e9dc0ca441fae79d5d451293f2708e7508d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/mapped-index-reference/graph.nodeoffsets",
+      "bytes": 256,
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/mapped-index-reference/graph.typeindex",
+      "bytes": 280,
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/mutations.json",
+      "bytes": 43734,
+      "sha256": "a23ff9b258df999bbc7dc0bf1836e397a13d210d7f33e339d6afed3939fc9336"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/source-fixture.json",
+      "bytes": 1663,
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-receipt.json",
+      "bytes": 28305,
+      "sha256": "5032b7d42d4f920b35648847a6bb73e1c242a2a7f583ba9ef2289c05c01290a6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-source-after.json",
+      "bytes": 36217,
+      "sha256": "59224b018f7db72a3f601f57aec8bc6d191fbdca53f27180ae794543a44bc6c6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-source-before.json",
+      "bytes": 36217,
+      "sha256": "59224b018f7db72a3f601f57aec8bc6d191fbdca53f27180ae794543a44bc6c6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-general-where-after.json",
+      "bytes": 14467,
+      "sha256": "9288fc50e83e90939bea704450e7dd5cab840b7d1931a2a3c284860710a9f38a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-general-where-before.json",
+      "bytes": 14399,
+      "sha256": "68286a77727e246670c194bf098cb0470fddaf78905e47743b0a954af7d93e36"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/oracle-inputs.json",
+      "bytes": 3087,
+      "sha256": "3e59c5fabe50b323da8787c7fdc3c45632c557b9d42788e2d08926c965e6330b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/oracle-manifest.json",
+      "bytes": 6654,
+      "sha256": "0c48bac3eb636f9dc7e3dbd87f24f8dc25a9e516599a05ab476f40761c8fa2ec"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/oracle-readme.md",
+      "bytes": 11054,
+      "sha256": "c578024db2f616bb4a8a8f0884416022f25e4a33bf3416d9ef3d0e046637f5d2"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/oracle-receipt.json",
+      "bytes": 479,
+      "sha256": "0f9ba7570c8b9815a65bcfd0cb5f385dd87472d954a1f4371392f94d3704d696"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/prepare.py",
+      "bytes": 9561,
+      "sha256": "ee31d844df0de02e48203e7a8ee3aea87326d9234298b0ad41f43486ff4c7e09"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/query-development.log",
+      "bytes": 75,
+      "sha256": "701e2f401b97489488f022bab910f39fc2384b96fc6d257205a368e19a10bafc"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/cold-comparison.json",
+      "bytes": 1518,
+      "sha256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/controller.json",
+      "bytes": 1623,
+      "sha256": "3f988e0a025ba77d2fa90d082ee57e759701f24f589dc5464cb11d5842b4a29e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-cold-inputs.json",
+      "bytes": 55389,
+      "sha256": "b410c7d19ba719ee31736a3a77234b0a522dd69654ec5914f824a8e6d3655cf9"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-cold-postrun-fixtures.json",
+      "bytes": 221,
+      "sha256": "aa40a243cf1feebafd0c960249456f90b95709c2d6e1e3175d298f97fc902e1e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-cold-preflight.json",
+      "bytes": 221,
+      "sha256": "aa40a243cf1feebafd0c960249456f90b95709c2d6e1e3175d298f97fc902e1e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-cold-process.json",
+      "bytes": 1406,
+      "sha256": "8c6d9d3e4b09b078b1e82568871f728d8707ac9241e76b2f9720e2422438cdd9"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-cold-process.log",
+      "bytes": 113440,
+      "sha256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-cold/responses.jsonl.gz",
+      "bytes": 3278413,
+      "sha256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-startup-prepared-inputs.json",
+      "bytes": 55389,
+      "sha256": "b410c7d19ba719ee31736a3a77234b0a522dd69654ec5914f824a8e6d3655cf9"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-startup-prepared-postrun-fixtures.json",
+      "bytes": 233,
+      "sha256": "352d73581cbf2c579f5474bdc812714ef0e7f6ed57861725151b262ad69377b0"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-startup-prepared-preflight.json",
+      "bytes": 233,
+      "sha256": "352d73581cbf2c579f5474bdc812714ef0e7f6ed57861725151b262ad69377b0"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-startup-prepared-process.json",
+      "bytes": 1478,
+      "sha256": "eb3763c93a8b25cd61e94232176f490bfde554474d21c75cb4b70bb313e9d17d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-startup-prepared-process.log",
+      "bytes": 113440,
+      "sha256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-startup-prepared/responses.jsonl.gz",
+      "bytes": 3271162,
+      "sha256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-warm-inputs.json",
+      "bytes": 55389,
+      "sha256": "b410c7d19ba719ee31736a3a77234b0a522dd69654ec5914f824a8e6d3655cf9"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-warm-postrun-fixtures.json",
+      "bytes": 221,
+      "sha256": "294cad961f17131af054f222fce03a15a4f587b5fcc3101a32cb96268d50c61b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-warm-preflight.json",
+      "bytes": 221,
+      "sha256": "294cad961f17131af054f222fce03a15a4f587b5fcc3101a32cb96268d50c61b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-warm-process.json",
+      "bytes": 1406,
+      "sha256": "57e85623b206689fe9efc525384f13e6e2d53b051c97499b7d2974b82e0c2b6a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-warm-process.log",
+      "bytes": 113440,
+      "sha256": "d5f7c883aed183cdd870e8c2ee532893529b3b68ef728e82c2fa5fd4da8caf68"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/native-warm/responses.jsonl.gz",
+      "bytes": 3278959,
+      "sha256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/startup-prepared-comparison.json",
+      "bytes": 1536,
+      "sha256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/verify-cold.log",
+      "bytes": 1518,
+      "sha256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/verify-startup-prepared.log",
+      "bytes": 1536,
+      "sha256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/verify-warm.log",
+      "bytes": 1517,
+      "sha256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/real64/warm-comparison.json",
+      "bytes": 1517,
+      "sha256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/repeat-main.json.gz",
+      "bytes": 5617,
+      "sha256": "6f9fb5e12101446c5ea75ca6013c7e819fff05108140df47149e2d9126892473"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/repeat.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/repeat.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/review.json",
+      "bytes": 621,
+      "sha256": "4140161afd7781f67f602b728320c81a3c7a6674c3d799a4b63c4783be040d23"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run-real64.py",
+      "bytes": 2421,
+      "sha256": "215a8c19a68a276b0270d685211c9804f4180ed5356597602a54bbea054c3f16"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run-tests.py",
+      "bytes": 2125,
+      "sha256": "201b57c72a8386b3e754940109277edc9c7006d0e805e4944d19b94c64765c91"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run0-additions.json.gz",
+      "bytes": 319,
+      "sha256": "23d024293d94dd79fb48b2be639c86253f0a118b782099e3da562438fd0d69dd"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run0-fixture-after.json.gz",
+      "bytes": 9811,
+      "sha256": "b757e090857e62fa96fc1b60bb68a1d17ec0eb4a946da647f3b8e13f71ce4286"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run0-fixture-before.json.gz",
+      "bytes": 8230,
+      "sha256": "4351845fe35196ed1d7d2f935940d8c4b7039552338b95f88bc7d3f44e9d769f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run0-fixture-copied.json.gz",
+      "bytes": 7627,
+      "sha256": "4e7d7b6631e9d76ec3455f8f777c1cc8500e2c1cbc905cb8402af9f6d18ce55b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run0-mutations.json.gz",
+      "bytes": 1291,
+      "sha256": "7aba046f4fa3d3ded1372d841c985046c88ad825767f192f2c131bd798209681"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run1-additions.json.gz",
+      "bytes": 319,
+      "sha256": "23d024293d94dd79fb48b2be639c86253f0a118b782099e3da562438fd0d69dd"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run1-fixture-after.json.gz",
+      "bytes": 9811,
+      "sha256": "b757e090857e62fa96fc1b60bb68a1d17ec0eb4a946da647f3b8e13f71ce4286"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run1-fixture-before.json.gz",
+      "bytes": 8230,
+      "sha256": "4351845fe35196ed1d7d2f935940d8c4b7039552338b95f88bc7d3f44e9d769f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run1-fixture-copied.json.gz",
+      "bytes": 7627,
+      "sha256": "4e7d7b6631e9d76ec3455f8f777c1cc8500e2c1cbc905cb8402af9f6d18ce55b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/run1-mutations.json.gz",
+      "bytes": 1291,
+      "sha256": "7aba046f4fa3d3ded1372d841c985046c88ad825767f192f2c131bd798209681"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/source-fixture.json",
+      "bytes": 1663,
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/tests/filtered-count.json",
+      "bytes": 358645,
+      "sha256": "becb92a78fab865e4bd7771dd58c2a851e4b2be9ed74d639b4c932f212cf918f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/tests/general-where.json",
+      "bytes": 14467,
+      "sha256": "9288fc50e83e90939bea704450e7dd5cab840b7d1931a2a3c284860710a9f38a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/tests/inputs.json",
+      "bytes": 621375,
+      "sha256": "a494da8b097fa65aa569a9a75fadebf66c9a5edbcd4606321a4e4eba8f71f423"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/tests/race.log",
+      "bytes": 1478,
+      "sha256": "9898939b9b6a259a3587986b7cbedd0bacef716a2fd902a3b6e39e4f8e1cb365"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/tests/receipt.json",
+      "bytes": 1274,
+      "sha256": "f3fc6c69bc922d46463c10de1a176b74818ef2651ff49b30871090f4d110be34"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/tests/source-constructor.json",
+      "bytes": 366283,
+      "sha256": "6f3648db231846ba28b11df21a6ed7aabe1db6c2634db02b24670823f18c6746"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/tests/unknown-label.json",
+      "bytes": 208601,
+      "sha256": "d4e574bfd5185accf6c39d7fe57dfbaeedbacb0b013a3da899bab1c91a0fe675"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/tests/vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/verification.json",
+      "bytes": 487,
+      "sha256": "3257bfa1abe482f3aaa89005e6534f68de71a7f7dd51ac2d96f0480ec8242b65"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/verify.py",
+      "bytes": 8976,
+      "sha256": "9f877f644b99272f4bb32b2a6fc58d4602f2a1ea3b39323cad50bee64ecda5b2"
+    },
+    {
+      "file": "docs/go-server-optimization-attempts.md",
+      "bytes": 87697,
+      "sha256": "909b66c23d581317e2017ed7d983f47a225135c4bfac156a63f9b39d8d1c82d1"
+    },
+    {
+      "file": "graphite-server/internal/query/candidate_slot_test.go",
+      "bytes": 7023,
+      "sha256": "4166c45f7c433d32e90a4fa410a16f296c782f41bf99889e83ce72a071deb78e"
+    },
+    {
+      "file": "graphite-server/internal/query/early_match.go",
+      "bytes": 4451,
+      "sha256": "aa07af6d32c877aa57ecc370a3061610f0895beb18809c79bb9a5a91cb9f6f9e"
+    },
+    {
+      "file": "graphite-server/internal/query/engine.go",
+      "bytes": 16335,
+      "sha256": "6c1dfef3ba743d2ca140d84d333d988920ccc86ac3b20b8dab3138c6f24b555f"
+    },
+    {
+      "file": "graphite-server/internal/query/filtered_string_count_test.go",
+      "bytes": 8095,
+      "sha256": "50c8a216eb30359d7ba594884fcece59d933846b0c8d66b4b5de7c2858785611"
+    },
+    {
+      "file": "graphite-server/internal/query/general_candidates.go",
+      "bytes": 4395,
+      "sha256": "e7e81c7e62a85f8da42524230e38f6de8158f4e07f4787f72f58230022f97b3e"
+    },
+    {
+      "file": "graphite-server/internal/query/general_where_test.go",
+      "bytes": 2544,
+      "sha256": "5f6ec1e5572a01956a1261e212c9a4513fed1fa714d7332ea232ee767e8a2822"
+    },
+    {
+      "file": "graphite-server/internal/query/scan.go",
+      "bytes": 2283,
+      "sha256": "c370260c8b0fca3a2cdba7094ba3ebbb335b662e8702917bd147c7b9ea5366ef"
+    },
+    {
+      "file": "graphite-server/internal/query/traversal.go",
+      "bytes": 13773,
+      "sha256": "4a26c7c57636e6323e9cccf0f50ec8b2d1a57699712f209883c9d6719b6544f5"
+    },
+    {
+      "file": "graphite-server/internal/query/unknown_label_test.go",
+      "bytes": 14068,
+      "sha256": "bc18ca48f9dbe519a837b06a344d3bb8359fd37254f8c1eb11e2595593b3bc80"
+    },
+    {
+      "file": "graphite-server/internal/store/general_node.go",
+      "bytes": 1928,
+      "sha256": "213e2a8416e90e61806053df862b4194c984bde80e90704ec9f7184ecbe08bb5"
+    }
+  ]
+}

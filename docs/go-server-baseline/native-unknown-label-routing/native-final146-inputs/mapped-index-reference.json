@@ -1,0 +1,103 @@
+{
+  "origin": "/tmp/graphite-unknown-label-main-4e328b0-final/fixtures/label-0-badNone-crossFalse/store0",
+  "originCase": "label-0-badNone-crossFalse",
+  "runtime": "actual pinned main first 120 run",
+  "legacyIndexSha256": "54cf522486908aa55f75f165bda0117cd48c5e3a57863f23714fcdf2740d5296",
+  "offsetHeader": "0x47524c03",
+  "slots": 31,
+  "offsetsIndependentlyReconstructedFromAllLegacyEntries": true,
+  "entries": [
+    {
+      "nodeID": 0,
+      "indexTag": 0,
+      "nodeDataRecordOffset": 8
+    },
+    {
+      "nodeID": 2,
+      "indexTag": 1,
+      "nodeDataRecordOffset": 17
+    },
+    {
+      "nodeID": 4,
+      "indexTag": 2,
+      "nodeDataRecordOffset": 26
+    },
+    {
+      "nodeID": 6,
+      "indexTag": 3,
+      "nodeDataRecordOffset": 39
+    },
+    {
+      "nodeID": 8,
+      "indexTag": 4,
+      "nodeDataRecordOffset": 48
+    },
+    {
+      "nodeID": 10,
+      "indexTag": 5,
+      "nodeDataRecordOffset": 61
+    },
+    {
+      "nodeID": 12,
+      "indexTag": 6,
+      "nodeDataRecordOffset": 67
+    },
+    {
+      "nodeID": 14,
+      "indexTag": 7,
+      "nodeDataRecordOffset": 72
+    },
+    {
+      "nodeID": 16,
+      "indexTag": 8,
+      "nodeDataRecordOffset": 119
+    },
+    {
+      "nodeID": 18,
+      "indexTag": 9,
+      "nodeDataRecordOffset": 152
+    },
+    {
+      "nodeID": 20,
+      "indexTag": 10,
+      "nodeDataRecordOffset": 170
+    },
+    {
+      "nodeID": 22,
+      "indexTag": 11,
+      "nodeDataRecordOffset": 203
+    },
+    {
+      "nodeID": 24,
+      "indexTag": 12,
+      "nodeDataRecordOffset": 233
+    },
+    {
+      "nodeID": 26,
+      "indexTag": 13,
+      "nodeDataRecordOffset": 298
+    },
+    {
+      "nodeID": 28,
+      "indexTag": 14,
+      "nodeDataRecordOffset": 353
+    },
+    {
+      "nodeID": 30,
+      "indexTag": 15,
+      "nodeDataRecordOffset": 405
+    }
+  ],
+  "files": [
+    {
+      "file": "mapped-index-reference/graph.nodeoffsets",
+      "bytes": 256,
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796"
+    },
+    {
+      "file": "mapped-index-reference/graph.typeindex",
+      "bytes": 280,
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c"
+    }
+  ]
+}

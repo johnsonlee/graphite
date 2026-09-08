@@ -1,0 +1,675 @@
+{
+  "recordedAt": "2026-09-08T04:37:58.632185+00:00",
+  "baselineRevision": "4ac9dd8b5f5fcfaf9ec920d7f7d381faedb5fe88",
+  "sessionId": 71550,
+  "exitCode": 1,
+  "command": "UNKNOWN_LABEL_OUTPUT=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-before.json\" /opt/homebrew/Cellar/go/1.22.0/libexec/bin/go -C graphite-server test ./internal/query -run '^TestUnknownLabelActualMain$' -count=1 -v > docs/go-server-baseline/native-unknown-label-routing/native-before.log 2>&1",
+  "primaryObservations": 120,
+  "differentPrimaryCases": 42,
+  "primaryDifferences": [
+    {
+      "name": "label-0-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-0-bad0-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-0-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-0-bad24-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-1-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-1-bad24-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-2-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-2-bad0-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-2-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-2-bad24-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-4-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-4-bad0-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-4-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-4-bad24-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-5-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-5-bad0-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-6-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-6-bad0-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-6-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-6-bad24-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-0-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-1-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-2-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-3-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-4-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-5-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-8-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-10-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-11-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-12-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-13-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-14-bad0",
+      "fields": [
+        "message"
+      ]
+    },
+    {
+      "name": "positive-CallSite-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "scope-Missing-IntConstant-good-False",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "scope-Missing-IntConstant-good-True",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "scope-Missing-IntConstant-bad-False",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "scope-Missing-IntConstant-bad-True",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "relations-0-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "predicate-order-0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "predicate-order-0-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "predicate-order-1-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "predicate-order-1-crossTrue",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    }
+  ],
+  "singleMatchedContextObservations": 55,
+  "differentSingleMatchedContextCases": 20,
+  "singleMatchedContextDifferences": [
+    {
+      "name": "label-0-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-0-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-1-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-2-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-2-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-4-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-4-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-5-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-6-bad0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "label-6-bad24-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-0-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-2-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-4-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-8-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-10-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-12-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "clauses-14-bad0",
+      "fields": [
+        "message"
+      ]
+    },
+    {
+      "name": "positive-CallSite-bad0",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "predicate-order-0-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    },
+    {
+      "name": "predicate-order-1-crossFalse",
+      "fields": [
+        "outcome",
+        "columns",
+        "rows",
+        "error",
+        "message"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "cases.json",
+      "sha256": "235521599af1aa559d5845ec744de74d741f0c8a1f97ec84684c3e6254393c63",
+      "bytes": 35947
+    },
+    {
+      "file": "main.json",
+      "sha256": "02e97b4a08eaa63187aaae8e5cac685819ee52dc94d0d026797dc9e3e7265c85",
+      "bytes": 149951
+    },
+    {
+      "file": "mutations.json",
+      "sha256": "5fcbc2b191be7a882f4fe24ac173c4c21a7fb7e4c6aa6eacc97b0c680644b331",
+      "bytes": 34537
+    },
+    {
+      "file": "source-fixture.json",
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b",
+      "bytes": 1663
+    },
+    {
+      "file": "native-before.json",
+      "sha256": "e8b88fad43d464d0a9a3200fa9a5a9b50e59a0c6b106dbf020a28bcb3e3aedec",
+      "bytes": 166137
+    },
+    {
+      "file": "native-before.log",
+      "sha256": "5d7b4780312a8c08ac0b29e975cc048d3fa1a1c2c0322104454bb65b3c622768",
+      "bytes": 47475
+    },
+    {
+      "file": "native-before-inputs.json",
+      "sha256": "2f742a6fab22e937da8b681a24938e9f8e5df73f80bb8720e15c3330d2074e3c",
+      "bytes": 239947
+    }
+  ],
+  "test": {
+    "file": "graphite-server/internal/query/unknown_label_test.go",
+    "sha256": "bf9712a82c46369ef9a38ba40a1353b9c0f3eedf774784eaae7f27696894a7e1",
+    "bytes": 9555
+  },
+  "notes": [
+    "Production was held at 4ac9dd8b until session71550 terminal. No production or existing tests edited by test agent.",
+    "Every fixture input verified against original JVM source-file hashes before copying; bad tags derived from nodeindex and matched against all77 explicit mutation records.",
+    "Single public Execute and the matched work-tracking internal boundary run independently on fresh copies. No finite-work equivalence claim.",
+    "All public fields and before/after source states compared strictly. Map/List implementation classes normalize to public kind only; scalar numeric types remain distinct."
+  ]
+}

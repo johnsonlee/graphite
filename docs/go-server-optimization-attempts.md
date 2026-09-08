@@ -870,3 +870,49 @@ Keep the functional correction. Evidence is in
 was made in this follow-up; prior latency samples are not reattributed to this
 candidate. Full server/engine parity, unknown-label routing, work/metrics policy,
 the original reference failure, per-case P95/10x and required PR gates remain open.
+
+
+### 2026-09-08 — Functional follow-up: general candidate routing and read order
+
+Against Go `4ac9dd8b5f5fcfaf9ec920d7f7d381faedb5fe88`, port original main
+`4e328b0109e13c896b74004823fb049fcb19251a` unknown-label dispatch, candidate
+class/binding order, mapped node-offset lookup and literal elementId seek.
+Unknown labels enter general execution before all fast paths. Any Method label
+selects metadata; otherwise first-label class resolution precedes existing
+bindings. Fresh mapped single-label candidates preserve the JVM iterator's erased
+cast; multilabel, bound and seek paths retain their separate class checks.
+
+Independent review also found general WHERE was interleaved with candidate reads.
+General non-optional MATCH now materializes patterns across all inputs before
+filtering; OPTIONAL materializes per input. This removes the former general
+indexed/streaming scanner whose skipped reads could change errors. Positive early
+limits retain lazy traversal, with seeks attempted first even for MATCH following
+RETURN LIMIT. Actual original-main controls verify both error-order corrections.
+
+There are 140 routing/type/offset cases and eight general WHERE/seek-order cases,
+each executed twice in the pinned JVM: 296 matching public/type/state observations.
+Final Go has 148 primary and 81 independent single-source auxiliary calls with zero
+differences. The complete old-production overlay has 60 routing plus two WHERE
+primary differences, and 36 plus two auxiliary differences. Original 120/6 controls,
+failed before captures and the explicitly non-final intermediate 140 candidate are
+retained. Final candidate source hashes are unchanged across its run.
+
+Full-module `go test -race -count=1 ./...` and `go vet ./...` pass, with 2,595
+module/oracle inputs unchanged. The prior constructor corpus retains 298 exact
+cases, and all 388 filtered COUNT public observations now compare strictly without
+the old unknown-label exception; the independently proven sibling scheduling
+allowance remains bounded to its original state coordinate.
+
+A separate immutable 2,523-file module completes real64 cold replay, warm prewarm
+and startup-prepared replay. Each preserves all 1,267 cases, 1,266 successful results
+and the original failure; seven state fields match over 486,848 observations and
+all 1,152 original files remain unchanged per runtime. All comparators pass while
+runtime exit 1 retains the original all-success gate failure. Three raw response
+streams are archived with decompressed-byte hashes verified.
+
+Keep the functional correction. Evidence and reproducible commands are in
+`docs/go-server-baseline/native-unknown-label-routing/`. No latency/P95 measurement
+was made or attributed to this candidate. Mapped supertype order and deliberately
+inconsistent type/node indexes, non-CallSite malformed decoding, work metrics and
+worker configuration, remaining JVM-backed CLI paths, formal warm replay, repeated
+per-case P95/10x and required PR benchmark gates remain open.

@@ -1,0 +1,6102 @@
+[
+  {
+    "spec": {
+      "name": "label-0-badNone-crossFalse",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-0-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-0-badNone-crossTrue",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-0-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-0-bad0-crossFalse",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-0-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-0-bad0-crossTrue",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-0-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-0-bad24-crossFalse",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-0-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-0-bad24-crossTrue",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-0-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-1-badNone-crossFalse",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-1-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-1-badNone-crossTrue",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-1-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-1-bad0-crossFalse",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-1-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-1-bad0-crossTrue",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-1-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-1-bad24-crossFalse",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-1-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-1-bad24-crossTrue",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-1-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-2-badNone-crossFalse",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-2-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-2-badNone-crossTrue",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-2-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-2-bad0-crossFalse",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-2-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-2-bad0-crossTrue",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-2-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-2-bad24-crossFalse",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-2-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-2-bad24-crossTrue",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-2-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-3-badNone-crossFalse",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-3-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-3-badNone-crossTrue",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-3-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-3-bad0-crossFalse",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-3-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-3-bad0-crossTrue",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-3-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:323)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-3-bad24-crossFalse",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-3-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-3-bad24-crossTrue",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-3-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:323)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-4-badNone-crossFalse",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-4-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-4-badNone-crossTrue",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-4-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-4-bad0-crossFalse",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-4-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-4-bad0-crossTrue",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-4-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-4-bad24-crossFalse",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-4-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-4-bad24-crossTrue",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-4-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-5-badNone-crossFalse",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-5-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-5-badNone-crossTrue",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-5-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-5-bad0-crossFalse",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-5-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-5-bad0-crossTrue",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-5-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-5-bad24-crossFalse",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-5-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-5-bad24-crossTrue",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-5-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-6-badNone-crossFalse",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-6-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-6-badNone-crossTrue",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-6-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-6-bad0-crossFalse",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-6-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-6-bad0-crossTrue",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-6-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-6-bad24-crossFalse",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-6-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-6-bad24-crossTrue",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-6-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-7-badNone-crossFalse",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-7-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-7-badNone-crossTrue",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-7-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-7-bad0-crossFalse",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-7-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-7-bad0-crossTrue",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-7-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-7-bad24-crossFalse",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-7-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-7-bad24-crossTrue",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-7-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-8-badNone-crossFalse",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-8-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-8-badNone-crossTrue",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-8-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-8-bad0-crossFalse",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-8-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-8-bad0-crossTrue",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-8-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-8-bad24-crossFalse",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-8-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-8-bad24-crossTrue",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-8-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-9-badNone-crossFalse",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-9-badNone-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-9-badNone-crossTrue",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-9-badNone-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-9-bad0-crossFalse",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-9-bad0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-9-bad0-crossTrue",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-9-bad0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-9-bad24-crossFalse",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-9-bad24-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "label-9-bad24-crossTrue",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "label-9-bad24-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-0-badNone",
+      "query": "MATCH (n:Missing) RETURN count(*) AS x",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-0-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ],
+    "types": [
+      {
+        "x": "java.lang.Long"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-0-bad0",
+      "query": "MATCH (n:Missing) RETURN count(*) AS x",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-0-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ],
+    "types": [
+      {
+        "x": "java.lang.Long"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-1-badNone",
+      "query": "OPTIONAL MATCH (n:Missing) RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-1-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": null,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ],
+    "types": [
+      {
+        "n": null
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-1-bad0",
+      "query": "OPTIONAL MATCH (n:Missing) RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-1-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": null,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ],
+    "types": [
+      {
+        "n": null
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-2-badNone",
+      "query": "OPTIONAL MATCH (n:Missing) RETURN count(*) AS rows,count(n) AS nodes",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-2-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "rows",
+      "nodes"
+    ],
+    "rows": [
+      {
+        "rows": 1,
+        "nodes": 0
+      }
+    ],
+    "types": [
+      {
+        "rows": "java.lang.Long",
+        "nodes": "java.lang.Long"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-2-bad0",
+      "query": "OPTIONAL MATCH (n:Missing) RETURN count(*) AS rows,count(n) AS nodes",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-2-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "rows",
+      "nodes"
+    ],
+    "rows": [
+      {
+        "rows": 1,
+        "nodes": 0
+      }
+    ],
+    "types": [
+      {
+        "rows": "java.lang.Long",
+        "nodes": "java.lang.Long"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-3-badNone",
+      "query": "UNWIND [1,2] AS x OPTIONAL MATCH (n:Missing) RETURN x,n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-3-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x",
+      "n"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "n": null,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "n": null,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ],
+    "types": [
+      {
+        "x": "java.lang.Integer",
+        "n": null
+      },
+      {
+        "x": "java.lang.Integer",
+        "n": null
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-3-bad0",
+      "query": "UNWIND [1,2] AS x OPTIONAL MATCH (n:Missing) RETURN x,n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-3-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x",
+      "n"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "n": null,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "n": null,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ],
+    "types": [
+      {
+        "x": "java.lang.Integer",
+        "n": null
+      },
+      {
+        "x": "java.lang.Integer",
+        "n": null
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-4-badNone",
+      "query": "UNWIND [1,2] AS x MATCH (n:Missing) RETURN x",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-4-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-4-bad0",
+      "query": "UNWIND [1,2] AS x MATCH (n:Missing) RETURN x",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-4-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-5-badNone",
+      "query": "MATCH (n:Missing) UNWIND [1/0] AS x RETURN x",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-5-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-5-bad0",
+      "query": "MATCH (n:Missing) UNWIND [1/0] AS x RETURN x",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-5-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-6-badNone",
+      "query": "WITH {id:0} AS n MATCH (n:Missing) RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-6-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-6-bad0",
+      "query": "WITH {id:0} AS n MATCH (n:Missing) RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-6-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-7-badNone",
+      "query": "MATCH (n:IntConstant) WITH n MATCH (n:Missing) RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-7-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-7-bad0",
+      "query": "MATCH (n:IntConstant) WITH n MATCH (n:Missing) RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-7-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-8-badNone",
+      "query": "MATCH (n:Missing) MATCH (m:IntConstant) RETURN m",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-8-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "m"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-8-bad0",
+      "query": "MATCH (n:Missing) MATCH (m:IntConstant) RETURN m",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-8-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "m"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-9-badNone",
+      "query": "MATCH (n:IntConstant),(m:Missing) RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-9-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-9-bad0",
+      "query": "MATCH (n:IntConstant),(m:Missing) RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-9-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-10-badNone",
+      "query": "MATCH (n:Missing),(m:IntConstant) RETURN m",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-10-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "m"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-10-bad0",
+      "query": "MATCH (n:Missing),(m:IntConstant) RETURN m",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-10-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "m"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-11-badNone",
+      "query": "MATCH (n:Missing) RETURN count(*) AS x UNION RETURN 1 AS x",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-11-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ],
+    "types": [
+      {
+        "x": "java.lang.Long"
+      },
+      {
+        "x": "java.lang.Integer"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-11-bad0",
+      "query": "MATCH (n:Missing) RETURN count(*) AS x UNION RETURN 1 AS x",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-11-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ],
+    "types": [
+      {
+        "x": "java.lang.Long"
+      },
+      {
+        "x": "java.lang.Integer"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-12-badNone",
+      "query": "MATCH (n:Missing) RETURN n UNION ALL RETURN 1 AS n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-12-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 1
+      }
+    ],
+    "types": [
+      {
+        "n": "java.lang.Integer"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-12-bad0",
+      "query": "MATCH (n:Missing) RETURN n UNION ALL RETURN 1 AS n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-12-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 1
+      }
+    ],
+    "types": [
+      {
+        "n": "java.lang.Integer"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-13-badNone",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 0",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-13-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-13-bad0",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 0",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-13-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-14-badNone",
+      "query": "MATCH (n:Missing) RETURN n LIMIT -1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-14-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero.",
+    "stack": [
+      "kotlin.collections.CollectionsKt___CollectionsKt.take(_Collections.kt:898)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:595)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-14-bad0",
+      "query": "MATCH (n:Missing) RETURN n LIMIT -1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-14-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero.",
+    "stack": [
+      "kotlin.collections.CollectionsKt___CollectionsKt.take(_Collections.kt:898)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:595)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-15-badNone",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1/0",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-15-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "CypherException",
+    "qualifiedError": "io.johnsonlee.graphite.cypher.CypherException",
+    "message": "Division by zero",
+    "stack": [
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.evaluateToInt(QueryPipeline.kt:5390)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.computeEarlyLimit(QueryPipeline.kt:5386)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:544)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "clauses-15-bad0",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1/0",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "clauses-15-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "CypherException",
+    "qualifiedError": "io.johnsonlee.graphite.cypher.CypherException",
+    "message": "Division by zero",
+    "stack": [
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.evaluateToInt(QueryPipeline.kt:5390)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.computeEarlyLimit(QueryPipeline.kt:5386)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:544)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "positive-Method-badNone",
+      "query": "MATCH (n:Method) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "positive-Method-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": {
+          "signature": "Example.run(int)",
+          "class": "Example",
+          "name": "run",
+          "parameter_types": [
+            "int"
+          ],
+          "return_type": "void"
+        }
+      }
+    ],
+    "types": [
+      {
+        "n": "java.util.LinkedHashMap"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "positive-Method-bad0",
+      "query": "MATCH (n:Method) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "positive-Method-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": {
+          "signature": "Example.run(int)",
+          "class": "Example",
+          "name": "run",
+          "parameter_types": [
+            "int"
+          ],
+          "return_type": "void"
+        }
+      }
+    ],
+    "types": [
+      {
+        "n": "java.util.LinkedHashMap"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "positive-CallSite-badNone",
+      "query": "MATCH (n:CallSite) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "positive-CallSite-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": {
+          "id": 24,
+          "type": "CallSiteNode",
+          "callee_class": "Example",
+          "callee_name": "callee",
+          "caller_class": "Example",
+          "caller_name": "run",
+          "line": 37
+        }
+      }
+    ],
+    "types": [
+      {
+        "n": "java.util.LinkedHashMap"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "positive-CallSite-bad0",
+      "query": "MATCH (n:CallSite) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "positive-CallSite-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": {
+          "id": 24,
+          "type": "CallSiteNode",
+          "callee_class": "Example",
+          "callee_name": "callee",
+          "caller_class": "Example",
+          "caller_name": "run",
+          "line": 37
+        }
+      }
+    ],
+    "types": [
+      {
+        "n": "java.util.LinkedHashMap"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "positive-IntConstant-badNone",
+      "query": "MATCH (n:IntConstant) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "positive-IntConstant-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": {
+          "id": 0,
+          "type": "IntConstant",
+          "value": -17
+        }
+      }
+    ],
+    "types": [
+      {
+        "n": "java.util.LinkedHashMap"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "positive-IntConstant-bad0",
+      "query": "MATCH (n:IntConstant) RETURN n LIMIT 1",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "positive-IntConstant-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "scope-IntConstant-Missing-good-False",
+      "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='good' RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "scope-IntConstant-Missing-good-False",
+    "before": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "scope-IntConstant-Missing-good-True",
+      "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='good' RETURN n",
+      "cross": true,
+      "scoped": true,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "scope-IntConstant-Missing-good-True",
+    "before": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "scope-IntConstant-Missing-bad-False",
+      "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='bad' RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "scope-IntConstant-Missing-bad-False",
+    "before": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "scope-IntConstant-Missing-bad-True",
+      "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='bad' RETURN n",
+      "cross": true,
+      "scoped": true,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "scope-IntConstant-Missing-bad-True",
+    "before": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "scope-Missing-IntConstant-good-False",
+      "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='good' RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "scope-Missing-IntConstant-good-False",
+    "before": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "scope-Missing-IntConstant-good-True",
+      "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='good' RETURN n",
+      "cross": true,
+      "scoped": true,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "scope-Missing-IntConstant-good-True",
+    "before": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "scope-Missing-IntConstant-bad-False",
+      "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='bad' RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "scope-Missing-IntConstant-bad-False",
+    "before": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "scope-Missing-IntConstant-bad-True",
+      "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='bad' RETURN n",
+      "cross": true,
+      "scoped": true,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "scope-Missing-IntConstant-bad-True",
+    "before": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "good",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "bad",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "relations-0-badNone",
+      "query": "MATCH (a:Missing)-[r]->(b) RETURN b LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "relations-0-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "b"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "relations-0-bad0",
+      "query": "MATCH (a:Missing)-[r]->(b) RETURN b LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "relations-0-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "b"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "relations-1-badNone",
+      "query": "MATCH (a:CallSite)-[r]->(b:Missing) RETURN b LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "relations-1-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "b"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "relations-1-bad0",
+      "query": "MATCH (a:CallSite)-[r]->(b:Missing) RETURN b LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "relations-1-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.trackedNode-YqQIXfs(QueryPipeline.kt:4617)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.access$trackedNode-YqQIXfs(QueryPipeline.kt:293)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline$matchSingleHopLazily$1.invokeSuspend(QueryPipeline.kt:4243)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "relations-2-badNone",
+      "query": "MATCH (a:IntConstant:Missing)-[r]->(b) RETURN b LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "relations-2-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "b"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "relations-2-bad0",
+      "query": "MATCH (a:IntConstant:Missing)-[r]->(b) RETURN b LIMIT 1",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "relations-2-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:169)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:328)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "kotlin.sequences.TakeSequence$iterator$1.hasNext(Sequences.kt:439)",
+      "kotlin.sequences.SequencesKt___SequencesKt.toList(_Sequences.kt:813)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3937)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "relations-3-badNone",
+      "query": "MATCH (n:Missing) WHERE elementId(n)='g0:0' RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "relations-3-badNone",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "relations-3-bad0",
+      "query": "MATCH (n:Missing) WHERE elementId(n)='g0:0' RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "relations-3-bad0",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.trackedNode-YqQIXfs(QueryPipeline.kt:4617)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.seekNode(QueryPipeline.kt:678)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryElementIdSeek(QueryPipeline.kt:628)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:555)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "predicate-order-0-crossFalse",
+      "query": "MATCH (n:Missing) WHERE false RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "predicate-order-0-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "predicate-order-0-crossTrue",
+      "query": "MATCH (n:Missing) WHERE false RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "predicate-order-0-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "predicate-order-1-crossFalse",
+      "query": "MATCH (n:Missing) WHERE 1/0=0 RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "predicate-order-1-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "predicate-order-1-crossTrue",
+      "query": "MATCH (n:Missing) WHERE 1/0=0 RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "predicate-order-1-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "predicate-order-2-crossFalse",
+      "query": "MATCH (n:IntConstant:Missing) WHERE false RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "predicate-order-2-crossFalse",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "predicate-order-2-crossTrue",
+      "query": "MATCH (n:IntConstant:Missing) WHERE false RETURN n",
+      "cross": true,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0.0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "all-types"
+    },
+    "name": "predicate-order-2-crossTrue",
+    "before": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.ensureItemIterator(Sequences.kt:331)",
+      "kotlin.sequences.FlatteningSequence$iterator$1.hasNext(Sequences.kt:318)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:44)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "id": "g0",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "g1",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "phase": "execute"
+  }
+]

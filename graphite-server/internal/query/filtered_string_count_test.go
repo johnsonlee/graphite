@@ -168,20 +168,13 @@ func TestFilteredStringCountMain(t *testing.T) {
 			result, err = ExecuteCrossWithOptions(context.Background(), sources, spec["query"].(string), params, -1, ExecutionOptions{SourceScopeApplied: scoped, WorkTrackingEnabled: true})
 		}
 		got := distinctOracleResult(map[string]any{"name": want["name"], "repetition": want["repetition"]}, result, err)
-		// The generic unknown-label difference remains outside this consumer.
-		// Constructor errors are now part of the strict public comparisons.
-		knownGap := want["name"] == "malformed-unknown-label-1"
-		if knownGap {
-			got["knownParityGap"] = true
-			t.Logf("outside filtered-count path: %s main error=%v rows=%v; Go error=%v rows=%v", want["name"], want["error"], want["rows"], got["error"], got["rows"])
-		}
 		outputs = append(outputs, got)
 		for _, field := range []string{"columns", "rows", "error", "message"} {
-			if !knownGap && !reflect.DeepEqual(got[field], want[field]) {
+			if !reflect.DeepEqual(got[field], want[field]) {
 				t.Errorf("%s repeat%v %s got=%#v want=%#v", want["name"], want["repetition"], field, got[field], want[field])
 			}
 		}
-		if err == nil && !knownGap {
+		if err == nil {
 			for rowIndex, row := range result.Rows {
 				for _, column := range result.Columns {
 					if _, ok := row[column].(int64); !ok && len(want["types"].([]any)) > 0 && want["types"].([]any)[rowIndex].(map[string]any)[column] == "java.lang.Long" {
@@ -206,7 +199,7 @@ func TestFilteredStringCountMain(t *testing.T) {
 		var actual any
 		json.Unmarshal(bytes, &actual)
 		got["after"] = actual
-		if !knownGap && !reflect.DeepEqual(actual, want["after"]) {
+		if !reflect.DeepEqual(actual, want["after"]) {
 			// Only the independently observed canceled sibling coordinate is
 			// schedule-dependent. Every other field and source remains exact.
 			allowed := false

@@ -1,7 +1,6 @@
 package query
 
 import (
-	"errors"
 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
 	"strings"
@@ -15,10 +14,33 @@ type matchState struct {
 }
 
 func (e evaluator) match(graph *store.Store, rows []map[string]any, clause cypher.MatchClause) []map[string]any {
-	if clause.Where != nil && len(clause.Patterns) == 1 && len(clause.Patterns[0].Nodes) == 1 && len(clause.Patterns[0].Relationships) == 0 && clause.Patterns[0].PathVariable == "" {
-		return e.matchSingleNode(graph, rows, clause)
+	if clause.Optional {
+		return e.matchMaterialized(graph, rows, clause)
 	}
-	return e.matchMaterialized(graph, rows, clause)
+	// Main completes each pattern for every input before advancing to the next
+	// pattern, and materializes the entire MATCH before evaluating its WHERE.
+	states := make([]matchState, len(rows))
+	for i, row := range rows {
+		states[i].row = row
+		if len(clause.Patterns) > 1 {
+			states[i].used = map[edgeIdentity]bool{}
+		}
+	}
+	for _, pattern := range clause.Patterns {
+		next := []matchState{}
+		for _, state := range states {
+			e.check()
+			next = append(next, e.matchPattern(graph, pattern, state)...)
+		}
+		states = next
+	}
+	result := []map[string]any{}
+	for _, state := range states {
+		if clause.Where == nil || e.eval(clause.Where, state.row) == true {
+			result = append(result, state.row)
+		}
+	}
+	return result
 }
 func (e evaluator) matchMaterialized(graph *store.Store, rows []map[string]any, clause cypher.MatchClause) []map[string]any {
 	result := []map[string]any{}
@@ -84,7 +106,7 @@ func (e evaluator) matchPattern(graph *store.Store, pattern cypher.Pattern, init
 	states := []matchState{}
 	e.nodeCandidates(graph, pattern.Nodes[0], initial.row, func(value any) {
 		e.check()
-		if !e.matches(value, pattern.Nodes[0], initial.row) {
+		if !e.matchesCandidate(value, pattern.Nodes[0], initial.row) {
 			return
 		}
 		bound := e.cloneRow(initial.row)
@@ -125,14 +147,24 @@ func (e evaluator) walkNodeCandidates(graph *store.Store, pattern cypher.NodePat
 // walkNodeCandidatesUntil returns false when the consumer stops the source.
 // The budget belongs to the caller, across all graphs, never to each source.
 func (e evaluator) walkNodeCandidatesUntil(graph *store.Store, pattern cypher.NodePattern, bindings map[string]any, slot *candidateSlot, accept func(any) bool) bool {
-	if pattern.Variable != "" {
-		if value, bound := bindings[pattern.Variable]; bound {
-			return accept(value)
-		}
-	}
 	methods := false
 	for _, label := range pattern.Labels {
 		methods = methods || strings.EqualFold(label, "Method")
+	}
+	label := "Node"
+	if len(pattern.Labels) != 0 {
+		label = pattern.Labels[0]
+	}
+	if !methods && !lazyKnownLabel(label) {
+		return true
+	}
+	if pattern.Variable != "" {
+		if value, bound := bindings[pattern.Variable]; bound {
+			if methods && candidateIsMethod(value) || !methods && candidateMatchesClass(value, label) {
+				return accept(value)
+			}
+			return true
+		}
 	}
 	sources := e.graphs
 	if !e.cross && graph != nil {
@@ -162,11 +194,14 @@ func (e evaluator) walkNodeCandidatesUntil(graph *store.Store, pattern cypher.No
 			}
 			continue
 		}
-		for _, id := range source.Store.QueryNodeIDs() {
+		for _, id := range lazyGenericIDs(source.Store, pattern) {
 			e.check()
-			node, err := source.Store.Node(id)
+			node, present, err := source.Store.GeneralCandidateNode(e.ctx, id)
 			if err != nil {
-				failNodeRead(err)
+				failProjectionRead(err)
+			}
+			if !present {
+				continue
 			}
 			if slot != nil {
 				slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
@@ -357,12 +392,12 @@ func (e evaluator) matchRelationshipUntil(graph *store.Store, state matchState, 
 	}
 	load := func(id int32) (any, bool) {
 		e.check()
-		node, err := source.Node(id)
-		if errors.Is(err, store.ErrNodeNotFound) {
-			return nil, false
-		}
+		node, present, err := source.GeneralCandidateNode(e.ctx, id)
 		if err != nil {
-			failNodeRead(err)
+			failProjectionRead(err)
+		}
+		if !present {
+			return nil, false
 		}
 		return e.nodeValue(source, graphID, node), true
 	}

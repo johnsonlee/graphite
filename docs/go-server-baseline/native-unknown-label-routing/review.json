@@ -1,0 +1,11 @@
+{
+  "reviewer": "count_review",
+  "scope": "Read-only pinned-main source and JAR bytecode review of general candidate routing, decoding wrapper, materialization and elementId seek order",
+  "findingsCorrected": [
+    "Non-optional general MATCH materializes each pattern for all inputs before WHERE; OPTIONAL materializes each input before WHERE",
+    "Literal elementId seek runs before global earlyLimit, including MATCH following RETURN LIMIT"
+  ],
+  "finalReview": "No additional change requested after re-reading the final source and receipts",
+  "runtimeChecksByReviewer": false,
+  "performanceAcceptance": false
+}

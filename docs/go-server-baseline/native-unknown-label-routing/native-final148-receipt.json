@@ -1,0 +1,1121 @@
+{
+  "kind": "final actual-main148 unknown-label routing correctness",
+  "baselineRevision": "4ac9dd8b5f5fcfaf9ec920d7f7d381faedb5fe88",
+  "before": {
+    "command": "UNKNOWN_LABEL_INPUT_DIR=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs\" UNKNOWN_LABEL_OUTPUT=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-final148-before.json\" GENERAL_WHERE_OUTPUT=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-general-where-before.json\" /opt/homebrew/Cellar/go/1.22.0/libexec/bin/go -C graphite-server test -overlay /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-unknown-label-before-4ac-35qg1xru/overlay.json -vet=off ./internal/query -run '^TestUnknownLabel(ActualMain|GeneralWhereActualMain)$' -count=1 -v > docs/go-server-baseline/native-unknown-label-routing/native-final148-before.log 2>&1",
+    "sessionId": 86773,
+    "exitCode": 1,
+    "unknownLabel": {
+      "primaryObservations": 140,
+      "singleMatchedContextObservations": 73,
+      "primaryDifferences": [
+        {
+          "name": "label-0-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-0-bad0-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-0-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-0-bad24-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-1-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-1-bad24-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-2-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-2-bad0-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-2-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-2-bad24-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-4-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-4-bad0-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-4-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-4-bad24-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-5-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-5-bad0-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-6-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-6-bad0-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-6-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-6-bad24-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-0-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-1-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-2-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-3-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-4-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-5-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-8-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-10-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-11-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-12-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-13-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-14-bad0",
+          "fields": [
+            "message"
+          ]
+        },
+        {
+          "name": "positive-CallSite-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "scope-Missing-IntConstant-good-False",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "scope-Missing-IntConstant-good-True",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "scope-Missing-IntConstant-bad-False",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "scope-Missing-IntConstant-bad-True",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "relations-0-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "predicate-order-0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "predicate-order-0-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "predicate-order-1-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "predicate-order-1-crossTrue",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-1",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-2",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-3",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-4",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-5",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-6",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-7",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "offset-missing-0",
+          "fields": [
+            "rows",
+            "publicTypes"
+          ]
+        },
+        {
+          "name": "offset-missing-1",
+          "fields": [
+            "rows",
+            "publicTypes"
+          ]
+        },
+        {
+          "name": "offset-negative2-0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error"
+          ]
+        },
+        {
+          "name": "offset-negative2-1",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error"
+          ]
+        },
+        {
+          "name": "offset-negative2-2",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error"
+          ]
+        },
+        {
+          "name": "offset-alias-0",
+          "fields": [
+            "rows"
+          ]
+        },
+        {
+          "name": "offset-alias-1",
+          "fields": [
+            "rows",
+            "publicTypes"
+          ]
+        },
+        {
+          "name": "offset-out-of-range-0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "offset-out-of-range-1",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "offset-out-of-range-2",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        }
+      ],
+      "singleMatchedContextDifferences": [
+        {
+          "name": "label-0-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-0-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-1-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-2-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-2-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-4-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-4-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-5-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-6-bad0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "label-6-bad24-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-0-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-2-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-4-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-8-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-10-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-12-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "clauses-14-bad0",
+          "fields": [
+            "message"
+          ]
+        },
+        {
+          "name": "positive-CallSite-bad0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "predicate-order-0-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "predicate-order-1-crossFalse",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-1",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-2",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-3",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-4",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-5",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "typed-erasure-6",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "offset-missing-0",
+          "fields": [
+            "rows",
+            "publicTypes"
+          ]
+        },
+        {
+          "name": "offset-missing-1",
+          "fields": [
+            "rows",
+            "publicTypes"
+          ]
+        },
+        {
+          "name": "offset-negative2-0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error"
+          ]
+        },
+        {
+          "name": "offset-negative2-1",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error"
+          ]
+        },
+        {
+          "name": "offset-negative2-2",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error"
+          ]
+        },
+        {
+          "name": "offset-alias-0",
+          "fields": [
+            "rows"
+          ]
+        },
+        {
+          "name": "offset-alias-1",
+          "fields": [
+            "rows",
+            "publicTypes"
+          ]
+        },
+        {
+          "name": "offset-out-of-range-0",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "offset-out-of-range-1",
+          "fields": [
+            "outcome",
+            "columns",
+            "rows",
+            "error",
+            "message"
+          ]
+        }
+      ]
+    },
+    "generalWhere": {
+      "primaryObservations": 8,
+      "singleMatchedContextObservations": 8,
+      "primaryDifferences": [
+        {
+          "name": "general-where-0-badTrue",
+          "fields": [
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "general-where-2-badTrue",
+          "fields": [
+            "error",
+            "message"
+          ]
+        }
+      ],
+      "singleMatchedContextDifferences": [
+        {
+          "name": "general-where-0-badTrue",
+          "fields": [
+            "error",
+            "message"
+          ]
+        },
+        {
+          "name": "general-where-2-badTrue",
+          "fields": [
+            "error",
+            "message"
+          ]
+        }
+      ]
+    }
+  },
+  "after": {
+    "command": "UNKNOWN_LABEL_INPUT_DIR=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs\" UNKNOWN_LABEL_OUTPUT=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-final148-after.json\" GENERAL_WHERE_OUTPUT=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-general-where-after.json\" /opt/homebrew/Cellar/go/1.22.0/libexec/bin/go -C graphite-server test ./internal/query -run '^TestUnknownLabel(ActualMain|GeneralWhereActualMain)$' -count=1 -v > docs/go-server-baseline/native-unknown-label-routing/native-final148-after.log 2>&1",
+    "sessionId": 97523,
+    "exitCode": 0,
+    "unknownLabel": {
+      "primaryObservations": 140,
+      "singleMatchedContextObservations": 73,
+      "primaryDifferences": [],
+      "singleMatchedContextDifferences": []
+    },
+    "generalWhere": {
+      "primaryObservations": 8,
+      "singleMatchedContextObservations": 8,
+      "primaryDifferences": [],
+      "singleMatchedContextDifferences": []
+    }
+  },
+  "sourceStability": {
+    "allGoFilesIdenticalBeforeAndAfter": true,
+    "before": "native-final148-source-before.json",
+    "after": "native-final148-source-after.json"
+  },
+  "fixtureValidation": {
+    "primaryCases": 148,
+    "tagAndOffsetMutations": 101,
+    "copiedReferenceSidecars": 18,
+    "policy": "Every fresh fixture copy checked against complete source file SHA256 inventory. Tag mutation derives legacy nodeindex record and validates node-data ID/tag and existing mapped offset. Offset mutations independently verify all legacy index positions in JVM reference sidecar and match exact additions/mutation manifests."
+  },
+  "comparison": "Strict complete public columns/rows/errors/messages/scalar types and before/after source states. Container class representation normalization only; full original native and JVM classes retained. No mismatch allowlists.",
+  "limitations": "Synthetic correctness only; no performance, work-accounting or finite-budget claim. Primary single uses public Execute. Auxiliary single uses fresh fixtures with matched WorkTrackingEnabled=true internal boundary. Before disables auto vet only; root performs final module race/vet.",
+  "supersedesCandidate": "native-candidate140-initial session47518 was diagnostic only due possible overlapping production edits; this final run is source-stable.",
+  "files": [
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/additions.json",
+      "bytes": 4197,
+      "sha256": "c39853c71721d904a99f786f75655d3c382d7fcdeeeb2f1fdcba6cc87a395ea7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/cases.json",
+      "bytes": 43385,
+      "sha256": "ca7f2afa939362bbf969c3be6f1b7974fcf4eb4b1db01642e4198762c126038e"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/general-where-cases.json",
+      "bytes": 2561,
+      "sha256": "f32b6ed6e3c60b8f88eeb8b0606211006b099c5e35c09d93a5ee2f634bf274e6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/general-where-main.json",
+      "bytes": 15636,
+      "sha256": "ac24586c401de35c50c9ecd5e66ba69de4669c3e8c54a532774a90ea92696266"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/general-where-mutations.json",
+      "bytes": 1807,
+      "sha256": "d0ed4e813445d99b9d82fea937afd7af09c89542dc9290004f5e05213e780cb8"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/general-where-source-fixture.json",
+      "bytes": 3303,
+      "sha256": "80dd555784888c7a1dfd2d3608bcafa15e4b47bb3682b3b97975496f457b076f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/main.json",
+      "bytes": 173781,
+      "sha256": "205c2da0f30b449d0d2b38a47afb0a54fc9da7b8f14b4f09924fa6fb54f9c9ed"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/mapped-index-reference/graph.nodeoffsets",
+      "bytes": 256,
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/mapped-index-reference/graph.typeindex",
+      "bytes": 280,
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/mapped-index-reference.json",
+      "bytes": 2188,
+      "sha256": "ee64359551b9b8ad49fe67edf5e72e9dc0ca441fae79d5d451293f2708e7508d"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/mutations.json",
+      "bytes": 43734,
+      "sha256": "a23ff9b258df999bbc7dc0bf1836e397a13d210d7f33e339d6afed3939fc9336"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-inputs/source-fixture.json",
+      "bytes": 1663,
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-after.json",
+      "bytes": 208601,
+      "sha256": "d4e574bfd5185accf6c39d7fe57dfbaeedbacb0b013a3da899bab1c91a0fe675"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-before.json",
+      "bytes": 209168,
+      "sha256": "30a4f732769a626887a1bb2bf5c464d2e21d645075ca0aa744dff27139539843"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-source-after.json",
+      "bytes": 36217,
+      "sha256": "59224b018f7db72a3f601f57aec8bc6d191fbdca53f27180ae794543a44bc6c6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-source-before.json",
+      "bytes": 36217,
+      "sha256": "59224b018f7db72a3f601f57aec8bc6d191fbdca53f27180ae794543a44bc6c6"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-after.log",
+      "bytes": 19845,
+      "sha256": "1448e83995da0997d540d63c7c1e3559e13521655e3220b08de738076965e338"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final148-before.log",
+      "bytes": 71017,
+      "sha256": "d0140dcd3e685ccdc6e8932696313fa9767f9ac1cb8db65d2028733d8b6c2f27"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-general-where-before.json",
+      "bytes": 14399,
+      "sha256": "68286a77727e246670c194bf098cb0470fddaf78905e47743b0a954af7d93e36"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-general-where-after.json",
+      "bytes": 14467,
+      "sha256": "9288fc50e83e90939bea704450e7dd5cab840b7d1931a2a3c284860710a9f38a"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-final-before-overlay.json",
+      "bytes": 64995,
+      "sha256": "01a61c9151a4e7658e136889c6b79509968e7af7564a1644328a58b0a460ec63"
+    },
+    {
+      "file": "graphite-server/internal/query/unknown_label_test.go",
+      "bytes": 14068,
+      "sha256": "bc18ca48f9dbe519a837b06a344d3bb8359fd37254f8c1eb11e2595593b3bc80"
+    },
+    {
+      "file": "graphite-server/internal/query/general_where_test.go",
+      "bytes": 2544,
+      "sha256": "5f6ec1e5572a01956a1261e212c9a4513fed1fa714d7332ea232ee767e8a2822"
+    }
+  ]
+}

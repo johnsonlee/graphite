@@ -1,0 +1,18 @@
+[
+  {
+    "root": "/tmp/graphite-general-where-main-4e328b0-final1",
+    "beforeCount": 160,
+    "afterCount": 160,
+    "changed": [],
+    "added": [],
+    "missing": []
+  },
+  {
+    "root": "/tmp/graphite-general-where-main-4e328b0-final2",
+    "beforeCount": 160,
+    "afterCount": 160,
+    "changed": [],
+    "added": [],
+    "missing": []
+  }
+]

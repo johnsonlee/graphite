@@ -1,0 +1,15 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainFixtureRoot": "/tmp/graphite-unknown-label-main-4e328b0-edges1",
+  "repeatFixtureRoot": "/tmp/graphite-unknown-label-main-4e328b0-edges2",
+  "compileExitCode": 0,
+  "mainExitCode": 0,
+  "repeatExitCode": 0,
+  "verifyExitCode": 0,
+  "initial114ExitCode": 0,
+  "performanceMeasurements": 0,
+  "goSourceChanges": 0,
+  "cases": 140,
+  "actualMainCalls": 280,
+  "original120Archive": "initial120-oracle.tar.gz"
+}

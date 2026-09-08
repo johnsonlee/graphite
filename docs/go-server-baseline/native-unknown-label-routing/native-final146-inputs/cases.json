@@ -1,0 +1,2143 @@
+[
+  {
+    "name": "label-0-badNone-crossFalse",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-0-badNone-crossTrue",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-0-bad0-crossFalse",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-0-bad0-crossTrue",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-0-bad24-crossFalse",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-0-bad24-crossTrue",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-1-badNone-crossFalse",
+    "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-1-badNone-crossTrue",
+    "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-1-bad0-crossFalse",
+    "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-1-bad0-crossTrue",
+    "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-1-bad24-crossFalse",
+    "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-1-bad24-crossTrue",
+    "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-2-badNone-crossFalse",
+    "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-2-badNone-crossTrue",
+    "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-2-bad0-crossFalse",
+    "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-2-bad0-crossTrue",
+    "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-2-bad24-crossFalse",
+    "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-2-bad24-crossTrue",
+    "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-3-badNone-crossFalse",
+    "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-3-badNone-crossTrue",
+    "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-3-bad0-crossFalse",
+    "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-3-bad0-crossTrue",
+    "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-3-bad24-crossFalse",
+    "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-3-bad24-crossTrue",
+    "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-4-badNone-crossFalse",
+    "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-4-badNone-crossTrue",
+    "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-4-bad0-crossFalse",
+    "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-4-bad0-crossTrue",
+    "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-4-bad24-crossFalse",
+    "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-4-bad24-crossTrue",
+    "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-5-badNone-crossFalse",
+    "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-5-badNone-crossTrue",
+    "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-5-bad0-crossFalse",
+    "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-5-bad0-crossTrue",
+    "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-5-bad24-crossFalse",
+    "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-5-bad24-crossTrue",
+    "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-6-badNone-crossFalse",
+    "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-6-badNone-crossTrue",
+    "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-6-bad0-crossFalse",
+    "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-6-bad0-crossTrue",
+    "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-6-bad24-crossFalse",
+    "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-6-bad24-crossTrue",
+    "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-7-badNone-crossFalse",
+    "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-7-badNone-crossTrue",
+    "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-7-bad0-crossFalse",
+    "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-7-bad0-crossTrue",
+    "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-7-bad24-crossFalse",
+    "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-7-bad24-crossTrue",
+    "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-8-badNone-crossFalse",
+    "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-8-badNone-crossTrue",
+    "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-8-bad0-crossFalse",
+    "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-8-bad0-crossTrue",
+    "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-8-bad24-crossFalse",
+    "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-8-bad24-crossTrue",
+    "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-9-badNone-crossFalse",
+    "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-9-badNone-crossTrue",
+    "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-9-bad0-crossFalse",
+    "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-9-bad0-crossTrue",
+    "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-9-bad24-crossFalse",
+    "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "label-9-bad24-crossTrue",
+    "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-0-badNone",
+    "query": "MATCH (n:Missing) RETURN count(*) AS x",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-0-bad0",
+    "query": "MATCH (n:Missing) RETURN count(*) AS x",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-1-badNone",
+    "query": "OPTIONAL MATCH (n:Missing) RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-1-bad0",
+    "query": "OPTIONAL MATCH (n:Missing) RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-2-badNone",
+    "query": "OPTIONAL MATCH (n:Missing) RETURN count(*) AS rows,count(n) AS nodes",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-2-bad0",
+    "query": "OPTIONAL MATCH (n:Missing) RETURN count(*) AS rows,count(n) AS nodes",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-3-badNone",
+    "query": "UNWIND [1,2] AS x OPTIONAL MATCH (n:Missing) RETURN x,n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-3-bad0",
+    "query": "UNWIND [1,2] AS x OPTIONAL MATCH (n:Missing) RETURN x,n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-4-badNone",
+    "query": "UNWIND [1,2] AS x MATCH (n:Missing) RETURN x",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-4-bad0",
+    "query": "UNWIND [1,2] AS x MATCH (n:Missing) RETURN x",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-5-badNone",
+    "query": "MATCH (n:Missing) UNWIND [1/0] AS x RETURN x",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-5-bad0",
+    "query": "MATCH (n:Missing) UNWIND [1/0] AS x RETURN x",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-6-badNone",
+    "query": "WITH {id:0} AS n MATCH (n:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-6-bad0",
+    "query": "WITH {id:0} AS n MATCH (n:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-7-badNone",
+    "query": "MATCH (n:IntConstant) WITH n MATCH (n:Missing) RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-7-bad0",
+    "query": "MATCH (n:IntConstant) WITH n MATCH (n:Missing) RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-8-badNone",
+    "query": "MATCH (n:Missing) MATCH (m:IntConstant) RETURN m",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-8-bad0",
+    "query": "MATCH (n:Missing) MATCH (m:IntConstant) RETURN m",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-9-badNone",
+    "query": "MATCH (n:IntConstant),(m:Missing) RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-9-bad0",
+    "query": "MATCH (n:IntConstant),(m:Missing) RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-10-badNone",
+    "query": "MATCH (n:Missing),(m:IntConstant) RETURN m",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-10-bad0",
+    "query": "MATCH (n:Missing),(m:IntConstant) RETURN m",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-11-badNone",
+    "query": "MATCH (n:Missing) RETURN count(*) AS x UNION RETURN 1 AS x",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-11-bad0",
+    "query": "MATCH (n:Missing) RETURN count(*) AS x UNION RETURN 1 AS x",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-12-badNone",
+    "query": "MATCH (n:Missing) RETURN n UNION ALL RETURN 1 AS n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-12-bad0",
+    "query": "MATCH (n:Missing) RETURN n UNION ALL RETURN 1 AS n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-13-badNone",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 0",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-13-bad0",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 0",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-14-badNone",
+    "query": "MATCH (n:Missing) RETURN n LIMIT -1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-14-bad0",
+    "query": "MATCH (n:Missing) RETURN n LIMIT -1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-15-badNone",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 1/0",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "clauses-15-bad0",
+    "query": "MATCH (n:Missing) RETURN n LIMIT 1/0",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "positive-Method-badNone",
+    "query": "MATCH (n:Method) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "positive-Method-bad0",
+    "query": "MATCH (n:Method) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "positive-CallSite-badNone",
+    "query": "MATCH (n:CallSite) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "positive-CallSite-bad0",
+    "query": "MATCH (n:CallSite) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "positive-IntConstant-badNone",
+    "query": "MATCH (n:IntConstant) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "positive-IntConstant-bad0",
+    "query": "MATCH (n:IntConstant) RETURN n LIMIT 1",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "scope-IntConstant-Missing-good-False",
+    "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='good' RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "good",
+        "mutationNode": null
+      },
+      {
+        "id": "bad",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "scope-IntConstant-Missing-good-True",
+    "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='good' RETURN n",
+    "cross": true,
+    "scoped": true,
+    "sources": [
+      {
+        "id": "good",
+        "mutationNode": null
+      },
+      {
+        "id": "bad",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "scope-IntConstant-Missing-bad-False",
+    "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='bad' RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "good",
+        "mutationNode": null
+      },
+      {
+        "id": "bad",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "scope-IntConstant-Missing-bad-True",
+    "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='bad' RETURN n",
+    "cross": true,
+    "scoped": true,
+    "sources": [
+      {
+        "id": "good",
+        "mutationNode": null
+      },
+      {
+        "id": "bad",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "scope-Missing-IntConstant-good-False",
+    "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='good' RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "good",
+        "mutationNode": null
+      },
+      {
+        "id": "bad",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "scope-Missing-IntConstant-good-True",
+    "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='good' RETURN n",
+    "cross": true,
+    "scoped": true,
+    "sources": [
+      {
+        "id": "good",
+        "mutationNode": null
+      },
+      {
+        "id": "bad",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "scope-Missing-IntConstant-bad-False",
+    "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='bad' RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "good",
+        "mutationNode": null
+      },
+      {
+        "id": "bad",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "scope-Missing-IntConstant-bad-True",
+    "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='bad' RETURN n",
+    "cross": true,
+    "scoped": true,
+    "sources": [
+      {
+        "id": "good",
+        "mutationNode": null
+      },
+      {
+        "id": "bad",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "relations-0-badNone",
+    "query": "MATCH (a:Missing)-[r]->(b) RETURN b LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "relations-0-bad0",
+    "query": "MATCH (a:Missing)-[r]->(b) RETURN b LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "relations-1-badNone",
+    "query": "MATCH (a:CallSite)-[r]->(b:Missing) RETURN b LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "relations-1-bad0",
+    "query": "MATCH (a:CallSite)-[r]->(b:Missing) RETURN b LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "relations-2-badNone",
+    "query": "MATCH (a:IntConstant:Missing)-[r]->(b) RETURN b LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "relations-2-bad0",
+    "query": "MATCH (a:IntConstant:Missing)-[r]->(b) RETURN b LIMIT 1",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "relations-3-badNone",
+    "query": "MATCH (n:Missing) WHERE elementId(n)='g0:0' RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "relations-3-bad0",
+    "query": "MATCH (n:Missing) WHERE elementId(n)='g0:0' RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "predicate-order-0-crossFalse",
+    "query": "MATCH (n:Missing) WHERE false RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "predicate-order-0-crossTrue",
+    "query": "MATCH (n:Missing) WHERE false RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "predicate-order-1-crossFalse",
+    "query": "MATCH (n:Missing) WHERE 1/0=0 RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "predicate-order-1-crossTrue",
+    "query": "MATCH (n:Missing) WHERE 1/0=0 RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "predicate-order-2-crossFalse",
+    "query": "MATCH (n:IntConstant:Missing) WHERE false RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "predicate-order-2-crossTrue",
+    "query": "MATCH (n:IntConstant:Missing) WHERE false RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "typed-erasure-0",
+    "query": "MATCH (n:CallSite) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24,
+        "mutationTag": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "typed-erasure-1",
+    "query": "MATCH (n:CallSite:CallSite) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24,
+        "mutationTag": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "typed-erasure-2",
+    "query": "MATCH (n:CallSite:IntConstant) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24,
+        "mutationTag": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "typed-erasure-3",
+    "query": "MATCH (n:CallSite) WITH n MATCH (n:CallSite) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24,
+        "mutationTag": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "typed-erasure-4",
+    "query": "MATCH (n:CallSite) WITH n MATCH (n:IntConstant) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24,
+        "mutationTag": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "typed-erasure-5",
+    "query": "MATCH (n:CallSite) WHERE elementId(n)='24' OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24,
+        "mutationTag": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "typed-erasure-6",
+    "query": "MATCH (n:IntConstant) WHERE elementId(n)='24' OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24,
+        "mutationTag": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "typed-erasure-7",
+    "query": "MATCH (n:CallSite) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 24,
+        "mutationTag": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-missing-0",
+    "query": "MATCH (n:CallSite) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "missing",
+          "aliasNode": null
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-missing-1",
+    "query": "MATCH (n:CallSite) WHERE elementId(n)='24' OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "missing",
+          "aliasNode": null
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-missing-2",
+    "query": "MATCH (n:IntConstant) WHERE elementId(n)='24' OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "missing",
+          "aliasNode": null
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-negative2-0",
+    "query": "MATCH (n:CallSite) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "negative2",
+          "aliasNode": null
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-negative2-1",
+    "query": "MATCH (n:CallSite) WHERE elementId(n)='24' OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "negative2",
+          "aliasNode": null
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-negative2-2",
+    "query": "MATCH (n:IntConstant) WHERE elementId(n)='24' OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "negative2",
+          "aliasNode": null
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-alias-0",
+    "query": "MATCH (n:CallSite) OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "alias",
+          "aliasNode": 0
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-alias-1",
+    "query": "MATCH (n:CallSite) WHERE elementId(n)='24' OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "alias",
+          "aliasNode": 0
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-alias-2",
+    "query": "MATCH (n:IntConstant) WHERE elementId(n)='24' OPTIONAL MATCH (x:Missing) RETURN labels(n) AS labels,n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": null,
+        "nodeOffset": {
+          "nodeID": 24,
+          "mode": "alias",
+          "aliasNode": 0
+        }
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-out-of-range-0",
+    "query": "MATCH (n:CallSite) WHERE elementId(n)='-1' OPTIONAL MATCH (x:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-out-of-range-1",
+    "query": "MATCH (n:CallSite) WHERE elementId(n)='31' OPTIONAL MATCH (x:Missing) RETURN n",
+    "cross": false,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      }
+    ],
+    "fixture": "all-types"
+  },
+  {
+    "name": "offset-out-of-range-2",
+    "query": "MATCH (n:CallSite) WHERE elementId(n)='g0:2147483647' OPTIONAL MATCH (x:Missing) RETURN n",
+    "cross": true,
+    "scoped": false,
+    "sources": [
+      {
+        "id": "g0",
+        "mutationNode": 0
+      },
+      {
+        "id": "g1",
+        "mutationNode": null
+      }
+    ],
+    "fixture": "all-types"
+  }
+]

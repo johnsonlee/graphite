@@ -1,0 +1,590 @@
+[
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "CypherException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "general-where-0-badFalse",
+      "nativeErrorMessage": "Division by zero",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "node-encounter/mixed-sparse",
+        "name": "general-where-0-badFalse",
+        "query": "MATCH (n:IntConstant) WHERE 1/0=0 MATCH (x:Missing) RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "message": "Division by zero",
+    "name": "general-where-0-badFalse",
+    "nativeErrorMessage": "Division by zero",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "node-encounter/mixed-sparse",
+      "name": "general-where-0-badFalse",
+      "query": "MATCH (n:IntConstant) WHERE 1/0=0 MATCH (x:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "CypherException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "general-where-0-badTrue",
+      "nativeErrorMessage": "Division by zero",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "node-encounter/mixed-sparse",
+        "name": "general-where-0-badTrue",
+        "query": "MATCH (n:IntConstant) WHERE 1/0=0 MATCH (x:Missing) RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 22
+          }
+        ]
+      }
+    },
+    "message": "Division by zero",
+    "name": "general-where-0-badTrue",
+    "nativeErrorMessage": "Division by zero",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "node-encounter/mixed-sparse",
+      "name": "general-where-0-badTrue",
+      "query": "MATCH (n:IntConstant) WHERE 1/0=0 MATCH (x:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 22
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "general-where-1-badFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "node-encounter/mixed-sparse",
+        "name": "general-where-1-badFalse",
+        "query": "MATCH (n:IntConstant) WHERE false MATCH (x:Missing) RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "general-where-1-badFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "node-encounter/mixed-sparse",
+      "name": "general-where-1-badFalse",
+      "query": "MATCH (n:IntConstant) WHERE false MATCH (x:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: -1",
+      "name": "general-where-1-badTrue",
+      "nativeErrorMessage": "Unknown node tag: -1",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "node-encounter/mixed-sparse",
+        "name": "general-where-1-badTrue",
+        "query": "MATCH (n:IntConstant) WHERE false MATCH (x:Missing) RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 22
+          }
+        ]
+      }
+    },
+    "message": "Unknown node tag: -1",
+    "name": "general-where-1-badTrue",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "node-encounter/mixed-sparse",
+      "name": "general-where-1-badTrue",
+      "query": "MATCH (n:IntConstant) WHERE false MATCH (x:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 22
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "CypherException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "general-where-2-badFalse",
+      "nativeErrorMessage": "Division by zero",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "node-encounter/mixed-sparse",
+        "name": "general-where-2-badFalse",
+        "query": "UNWIND ['90','22'] AS eid MATCH (n:IntConstant) WHERE elementId(n)=eid AND 1/0=0 MATCH (x:Missing) RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "message": "Division by zero",
+    "name": "general-where-2-badFalse",
+    "nativeErrorMessage": "Division by zero",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "node-encounter/mixed-sparse",
+      "name": "general-where-2-badFalse",
+      "query": "UNWIND ['90','22'] AS eid MATCH (n:IntConstant) WHERE elementId(n)=eid AND 1/0=0 MATCH (x:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "CypherException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "general-where-2-badTrue",
+      "nativeErrorMessage": "Division by zero",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "node-encounter/mixed-sparse",
+        "name": "general-where-2-badTrue",
+        "query": "UNWIND ['90','22'] AS eid MATCH (n:IntConstant) WHERE elementId(n)=eid AND 1/0=0 MATCH (x:Missing) RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 22
+          }
+        ]
+      }
+    },
+    "message": "Division by zero",
+    "name": "general-where-2-badTrue",
+    "nativeErrorMessage": "Division by zero",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "node-encounter/mixed-sparse",
+      "name": "general-where-2-badTrue",
+      "query": "UNWIND ['90','22'] AS eid MATCH (n:IntConstant) WHERE elementId(n)=eid AND 1/0=0 MATCH (x:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 22
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "general-where-3-badFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "node-encounter/mixed-sparse",
+        "name": "general-where-3-badFalse",
+        "query": "MATCH (x:IntConstant) RETURN 1 AS k LIMIT 1 MATCH (n:Missing) WHERE elementId(n)='22' RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "general-where-3-badFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "node-encounter/mixed-sparse",
+      "name": "general-where-3-badFalse",
+      "query": "MATCH (x:IntConstant) RETURN 1 AS k LIMIT 1 MATCH (n:Missing) WHERE elementId(n)='22' RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: -1",
+      "name": "general-where-3-badTrue",
+      "nativeErrorMessage": "Unknown node tag: -1",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "node-encounter/mixed-sparse",
+        "name": "general-where-3-badTrue",
+        "query": "MATCH (x:IntConstant) RETURN 1 AS k LIMIT 1 MATCH (n:Missing) WHERE elementId(n)='22' RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 22
+          }
+        ]
+      }
+    },
+    "message": "Unknown node tag: -1",
+    "name": "general-where-3-badTrue",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "node-encounter/mixed-sparse",
+      "name": "general-where-3-badTrue",
+      "query": "MATCH (x:IntConstant) RETURN 1 AS k LIMIT 1 MATCH (n:Missing) WHERE elementId(n)='22' RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 22
+        }
+      ]
+    }
+  }
+]

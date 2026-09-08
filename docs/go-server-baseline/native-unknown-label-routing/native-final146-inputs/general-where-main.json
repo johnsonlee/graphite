@@ -1,0 +1,313 @@
+[
+  {
+    "spec": {
+      "name": "general-where-0-badFalse",
+      "query": "MATCH (n:IntConstant) WHERE 1/0\u003d0 MATCH (x:Missing) RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "node-encounter/mixed-sparse"
+    },
+    "name": "general-where-0-badFalse",
+    "before": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "CypherException",
+    "qualifiedError": "io.johnsonlee.graphite.cypher.CypherException",
+    "message": "Division by zero",
+    "stack": [
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateComparison(ExpressionEvaluator.kt:178)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:75)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWhere(QueryPipeline.kt:4832)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:569)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "general-where-0-badTrue",
+      "query": "MATCH (n:IntConstant) WHERE 1/0\u003d0 MATCH (x:Missing) RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 22.0
+        }
+      ],
+      "fixture": "node-encounter/mixed-sparse"
+    },
+    "name": "general-where-0-badTrue",
+    "before": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "general-where-1-badFalse",
+      "query": "MATCH (n:IntConstant) WHERE false MATCH (x:Missing) RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "node-encounter/mixed-sparse"
+    },
+    "name": "general-where-1-badFalse",
+    "before": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "rows": [],
+    "types": [],
+    "outcome": "SUCCESS",
+    "after": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "general-where-1-badTrue",
+      "query": "MATCH (n:IntConstant) WHERE false MATCH (x:Missing) RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 22.0
+        }
+      ],
+      "fixture": "node-encounter/mixed-sparse"
+    },
+    "name": "general-where-1-badTrue",
+    "before": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "general-where-2-badFalse",
+      "query": "UNWIND [\u002790\u0027,\u002722\u0027] AS eid MATCH (n:IntConstant) WHERE elementId(n)\u003deid AND 1/0\u003d0 MATCH (x:Missing) RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ],
+      "fixture": "node-encounter/mixed-sparse"
+    },
+    "name": "general-where-2-badFalse",
+    "before": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "CypherException",
+    "qualifiedError": "io.johnsonlee.graphite.cypher.CypherException",
+    "message": "Division by zero",
+    "stack": [
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateComparison(ExpressionEvaluator.kt:178)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:75)",
+      "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:99)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWhere(QueryPipeline.kt:4832)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:569)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "phase": "execute"
+  },
+  {
+    "spec": {
+      "name": "general-where-2-badTrue",
+      "query": "UNWIND [\u002790\u0027,\u002722\u0027] AS eid MATCH (n:IntConstant) WHERE elementId(n)\u003deid AND 1/0\u003d0 MATCH (x:Missing) RETURN n",
+      "cross": false,
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 22.0
+        }
+      ],
+      "fixture": "node-encounter/mixed-sparse"
+    },
+    "name": "general-where-2-badTrue",
+    "before": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "outcome": "FAILED",
+    "error": "IllegalArgumentException",
+    "qualifiedError": "java.lang.IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:567)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.nodes$lambda$6(MappedWebGraphBackedGraph.kt:263)",
+      "kotlin.sequences.TransformingSequence$iterator$1.next(Sequences.kt:210)",
+      "kotlin.sequences.FilteringSequence$iterator$1.calcNext(Sequences.kt:170)",
+      "kotlin.sequences.FilteringSequence$iterator$1.hasNext(Sequences.kt:194)",
+      "io.johnsonlee.graphite.cypher.WorkTrackingSequence$iterator$1.hasNext(QueryPipeline.kt:244)",
+      "kotlin.sequences.TransformingSequence$iterator$1.hasNext(Sequences.kt:214)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchNodeElement(QueryPipeline.kt:4108)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPatternEagerly(QueryPipeline.kt:4039)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.matchPattern(QueryPipeline.kt:3940)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeMatch(QueryPipeline.kt:3864)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:562)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:374)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "UnknownLabelOracle.main(UnknownLabelOracle.java:45)"
+    ],
+    "causes": [],
+    "after": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "g0"
+      }
+    ],
+    "phase": "execute"
+  }
+]

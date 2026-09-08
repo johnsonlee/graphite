@@ -1,0 +1,49 @@
+{
+  "kind": "actual-main original120 candidate correctness",
+  "baselineRevision": "4ac9dd8b5f5fcfaf9ec920d7f7d381faedb5fe88",
+  "command": "UNKNOWN_LABEL_INPUT_DIR=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs\" UNKNOWN_LABEL_OUTPUT=\"$PWD/docs/go-server-baseline/native-unknown-label-routing/native-after120.json\" /opt/homebrew/Cellar/go/1.22.0/libexec/bin/go -C graphite-server test ./internal/query -run '^TestUnknownLabelActualMain$' -count=1 -v > docs/go-server-baseline/native-unknown-label-routing/native-after120.log 2>&1",
+  "sessionId": 91606,
+  "exitCode": 0,
+  "primaryObservations": 120,
+  "singleMatchedContextObservations": 55,
+  "strictPublicStateDifferences": [],
+  "publicTypeComparison": "strict scalar classes; explicit Java/Go map and list container representation normalization in sourceConstructor helpers; all original type observations retained",
+  "qualification": "Primary single uses actual Execute. Independent matched WorkTrackingEnabled=true single boundary uses fresh fixture copies. No finite-budget/work-accounting/performance equivalence claim.",
+  "files": [
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs/cases.json",
+      "bytes": 35947,
+      "sha256": "235521599af1aa559d5845ec744de74d741f0c8a1f97ec84684c3e6254393c63"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs/main.json",
+      "bytes": 149761,
+      "sha256": "59feca622a3c6f3b0de9e106eaf9d0e25ccc980dfabdab4e2ffd43ab17e8fd0f"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs/mutations.json",
+      "bytes": 34537,
+      "sha256": "5fcbc2b191be7a882f4fe24ac173c4c21a7fb7e4c6aa6eacc97b0c680644b331"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120-inputs/source-fixture.json",
+      "bytes": 1663,
+      "sha256": "3007c9d3f837b63b709af444cc405f57800733e3631aff7ef38adf62dcc7b25b"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120.json",
+      "bytes": 167768,
+      "sha256": "6dd445988441dabbc00db8d9d4c007a595ef696374f7153aba974dabf2a5d4d7"
+    },
+    {
+      "file": "docs/go-server-baseline/native-unknown-label-routing/native-after120.log",
+      "bytes": 16053,
+      "sha256": "bbe3d1143521cf1015fd03c8551739677c5073a4c8890187b094362928e18eae"
+    },
+    {
+      "file": "graphite-server/internal/query/unknown_label_test.go",
+      "bytes": 9638,
+      "sha256": "daab950b52869f9b8c71e14c1329d0da2f82a6245bf6b80cac4a08795be77f6e"
+    }
+  ]
+}

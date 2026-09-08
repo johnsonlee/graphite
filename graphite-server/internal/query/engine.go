@@ -172,6 +172,9 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 }
 func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result {
 	e.check()
+	if hasUnknownNodeLabel(branch) {
+		return e.generalBranch(graph, branch)
+	}
 	if empty, ok := filteredLiteralEmpty(branch); ok {
 		return empty
 	}
@@ -195,19 +198,23 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 	if result, ok := e.streamingPagination(graph, branch); ok {
 		return result
 	}
+	return e.generalBranch(graph, branch)
+}
+
+func (e evaluator) generalBranch(graph *store.Store, branch cypher.SingleQuery) Result {
 	earlyLimit := e.computeEarlyLimit(branch)
 	rows := []map[string]any{{}}
 	columns := []string{}
-	for ordinal, clause := range branch.Clauses {
+	for _, clause := range branch.Clauses {
 		e.check()
 		switch c := clause.(type) {
 		case cypher.MatchClause:
-			current := e
-			current.indexFirst = ordinal == 0
-			if earlyLimit > 0 && !c.Optional {
-				rows = current.matchWithLimit(graph, rows, c, earlyLimit)
+			if sought, ok := e.tryGeneralElementIDSeek(graph, rows, c); ok {
+				rows = sought
+			} else if earlyLimit > 0 && !c.Optional {
+				rows = e.matchWithLimit(graph, rows, c, earlyLimit)
 			} else {
-				rows = current.match(graph, rows, c)
+				rows = e.match(graph, rows, c)
 			}
 		case cypher.UnwindClause:
 			next := []map[string]any{}

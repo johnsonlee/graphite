@@ -1,0 +1,13 @@
+# General MATCH and WHERE execution order
+
+This independent eight-case corpus leaves the frozen140-case oracle unchanged. It invokes the same original public executor/helper and pinned main JAR, revision4e328b0109e13c896b74004823fb049fcb19251a, SHA25691c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d. Both eight-case runs terminated successfully; `general-where-verify.py` strictly checks public columns/rows/errors/messages/types/source states and reports zero differences. This is correctness evidence only.
+
+The original persisted `node-encounter/mixed-sparse` fixture has IntConstant candidates in index order90,41,22 at raw offsets8,75,142. Both legacy and mapped type indexes independently prove this order. Four cases copy all20 source files then change only node22's raw tag at byte146 from0 to255. The mapped nodeoffset slot184 stores143, proving raw offset142. Original source files, each copied file, exact mutations, and post-run files are hashed. Neither runtime changes nor creates any fixture files.
+
+All queries contain a later unknown-label MATCH to force general execution. Clean `MATCH (n:IntConstant) WHERE 1/0=0 MATCH (x:Missing) RETURN n` raises Division by zero; mutating the last candidate instead raises Unknown node tag:−1. The analogous WHEREfalse query returns empty on clean input and still raises the late malformed read on mutated input. This establishes that general MATCH finishes reading its candidates before WHERE evaluates the first row.
+
+The UNWIND control supplies element IDs90 then22. Its WHERE combines the per-input elementId seek with division by zero. The clean case raises the arithmetic error, while bad node22 raises the later input's raw read error first. The full public error stack is retained, including null values and class names.
+
+The final clean/bad pair is `MATCH (x:IntConstant) RETURN 1 AS k LIMIT 1 MATCH (n:Missing) WHERE elementId(n)='22' RETURN n`. Original main accepts this grammar. Clean input returns empty; bad node22 raises the unknown tag error, showing that a prior RETURN LIMIT does not bypass the subsequent elementId seek. This query is a bounded execution-order control, not an endorsement of broad multi-RETURN semantics.
+
+`general-where-initial6.tar.gz` preserves the first six-case source/captures/audits verbatim. The final eight-case prefix is checked against it. Durable inputs are `general-where-cases.json`, `general-where-main.json`, `general-where-mutations.json`, and `general-where-source-fixture.json`; compressed repeat and both raw fixture audits preserve independent replay evidence. `general-where-manifest.json` lists only this oracle's explicit files and shared executable input hashes.

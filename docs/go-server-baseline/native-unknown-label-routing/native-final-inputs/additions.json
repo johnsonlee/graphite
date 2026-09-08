@@ -1,0 +1,110 @@
+[
+  {
+    "file": "fixtures/offset-missing-0/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-missing-0/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  },
+  {
+    "file": "fixtures/offset-missing-1/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-missing-1/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  },
+  {
+    "file": "fixtures/offset-missing-2/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-missing-2/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  },
+  {
+    "file": "fixtures/offset-negative2-0/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-negative2-0/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  },
+  {
+    "file": "fixtures/offset-negative2-1/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-negative2-1/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  },
+  {
+    "file": "fixtures/offset-negative2-2/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-negative2-2/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  },
+  {
+    "file": "fixtures/offset-alias-0/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-alias-0/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  },
+  {
+    "file": "fixtures/offset-alias-1/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-alias-1/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  },
+  {
+    "file": "fixtures/offset-alias-2/store0/graph.nodeoffsets",
+    "bytes": 256,
+    "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+    "reference": "mapped-index-reference/graph.nodeoffsets"
+  },
+  {
+    "file": "fixtures/offset-alias-2/store0/graph.typeindex",
+    "bytes": 280,
+    "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+    "reference": "mapped-index-reference/graph.typeindex"
+  }
+]

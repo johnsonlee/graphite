@@ -1,0 +1,8145 @@
+[
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-0-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-0-badNone-crossFalse",
+        "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-0-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-0-badNone-crossFalse",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-0-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-0-badNone-crossTrue",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-0-bad0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-0-bad0-crossFalse",
+        "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "label-0-bad0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-0-bad0-crossFalse",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-0-bad0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-0-bad0-crossTrue",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-0-bad24-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-0-bad24-crossFalse",
+        "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "name": "label-0-bad24-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-0-bad24-crossFalse",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-0-bad24-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-0-bad24-crossTrue",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-1-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-1-badNone-crossFalse",
+        "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-1-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-1-badNone-crossFalse",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-1-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-1-badNone-crossTrue",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: -1",
+      "name": "label-1-bad0-crossFalse",
+      "nativeErrorMessage": "Unknown node tag: -1",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-1-bad0-crossFalse",
+        "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "message": "Unknown node tag: -1",
+    "name": "label-1-bad0-crossFalse",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-1-bad0-crossFalse",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "label-1-bad0-crossTrue",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-1-bad0-crossTrue",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-1-bad24-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-1-bad24-crossFalse",
+        "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "name": "label-1-bad24-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-1-bad24-crossFalse",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-1-bad24-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-1-bad24-crossTrue",
+      "query": "MATCH (n:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-2-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-2-badNone-crossFalse",
+        "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-2-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-2-badNone-crossFalse",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-2-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-2-badNone-crossTrue",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-2-bad0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-2-bad0-crossFalse",
+        "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "label-2-bad0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-2-bad0-crossFalse",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-2-bad0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-2-bad0-crossTrue",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-2-bad24-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-2-bad24-crossFalse",
+        "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "name": "label-2-bad24-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-2-bad24-crossFalse",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-2-bad24-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-2-bad24-crossTrue",
+      "query": "MATCH (n:Missing:IntConstant) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-3-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-3-badNone-crossFalse",
+        "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-3-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-3-badNone-crossFalse",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-3-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-3-badNone-crossTrue",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: -1",
+      "name": "label-3-bad0-crossFalse",
+      "nativeErrorMessage": "Unknown node tag: -1",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-3-bad0-crossFalse",
+        "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "message": "Unknown node tag: -1",
+    "name": "label-3-bad0-crossFalse",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-3-bad0-crossFalse",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "label-3-bad0-crossTrue",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-3-bad0-crossTrue",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: -1",
+      "name": "label-3-bad24-crossFalse",
+      "nativeErrorMessage": "Unknown node tag: -1",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-3-bad24-crossFalse",
+        "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "message": "Unknown node tag: -1",
+    "name": "label-3-bad24-crossFalse",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-3-bad24-crossFalse",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "label-3-bad24-crossTrue",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-3-bad24-crossTrue",
+      "query": "MATCH (n:Node:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-4-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-4-badNone-crossFalse",
+        "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-4-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-4-badNone-crossFalse",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-4-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-4-badNone-crossTrue",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-4-bad0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-4-bad0-crossFalse",
+        "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "label-4-bad0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-4-bad0-crossFalse",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-4-bad0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-4-bad0-crossTrue",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-4-bad24-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-4-bad24-crossFalse",
+        "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "name": "label-4-bad24-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-4-bad24-crossFalse",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-4-bad24-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-4-bad24-crossTrue",
+      "query": "MATCH (n:Missing:Node) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-5-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-5-badNone-crossFalse",
+        "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-5-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-5-badNone-crossFalse",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-5-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-5-badNone-crossTrue",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-5-bad0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-5-bad0-crossFalse",
+        "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "label-5-bad0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-5-bad0-crossFalse",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-5-bad0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-5-bad0-crossTrue",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: -1",
+      "name": "label-5-bad24-crossFalse",
+      "nativeErrorMessage": "Unknown node tag: -1",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-5-bad24-crossFalse",
+        "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "message": "Unknown node tag: -1",
+    "name": "label-5-bad24-crossFalse",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-5-bad24-crossFalse",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "label-5-bad24-crossTrue",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-5-bad24-crossTrue",
+      "query": "MATCH (n:CallSite:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-6-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-6-badNone-crossFalse",
+        "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-6-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-6-badNone-crossFalse",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-6-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-6-badNone-crossTrue",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-6-bad0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-6-bad0-crossFalse",
+        "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "label-6-bad0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-6-bad0-crossFalse",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-6-bad0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-6-bad0-crossTrue",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-6-bad24-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-6-bad24-crossFalse",
+        "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "name": "label-6-bad24-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-6-bad24-crossFalse",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-6-bad24-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-6-bad24-crossTrue",
+      "query": "MATCH (n:Missing:CallSite) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-7-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-7-badNone-crossFalse",
+        "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-7-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-7-badNone-crossFalse",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-7-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-7-badNone-crossTrue",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-7-bad0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-7-bad0-crossFalse",
+        "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "label-7-bad0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-7-bad0-crossFalse",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-7-bad0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-7-bad0-crossTrue",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-7-bad24-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-7-bad24-crossFalse",
+        "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "name": "label-7-bad24-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-7-bad24-crossFalse",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-7-bad24-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-7-bad24-crossTrue",
+      "query": "MATCH (n:Method:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-8-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-8-badNone-crossFalse",
+        "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-8-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-8-badNone-crossFalse",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-8-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-8-badNone-crossTrue",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-8-bad0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-8-bad0-crossFalse",
+        "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "label-8-bad0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-8-bad0-crossFalse",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-8-bad0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-8-bad0-crossTrue",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-8-bad24-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-8-bad24-crossFalse",
+        "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "name": "label-8-bad24-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-8-bad24-crossFalse",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-8-bad24-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-8-bad24-crossTrue",
+      "query": "MATCH (n:Missing:Method) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-9-badNone-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-9-badNone-crossFalse",
+        "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "label-9-badNone-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-9-badNone-crossFalse",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-9-badNone-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-9-badNone-crossTrue",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-9-bad0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-9-bad0-crossFalse",
+        "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "label-9-bad0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-9-bad0-crossFalse",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-9-bad0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-9-bad0-crossTrue",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "label-9-bad24-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "label-9-bad24-crossFalse",
+        "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 24
+          }
+        ]
+      }
+    },
+    "name": "label-9-bad24-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "label-9-bad24-crossFalse",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "label-9-bad24-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "label-9-bad24-crossTrue",
+      "query": "MATCH (n:Method:IntConstant:Missing) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 24
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "name": "clauses-0-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "x": "int64"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "x": "java.lang.Long"
+        }
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-0-badNone",
+        "query": "MATCH (n:Missing) RETURN count(*) AS x",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "clauses-0-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "x": "int64"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "x": "java.lang.Long"
+      }
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-0-badNone",
+      "query": "MATCH (n:Missing) RETURN count(*) AS x",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "name": "clauses-0-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "x": "int64"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "x": "java.lang.Long"
+        }
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-0-bad0",
+        "query": "MATCH (n:Missing) RETURN count(*) AS x",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "clauses-0-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "x": "int64"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "x": "java.lang.Long"
+      }
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-0-bad0",
+      "query": "MATCH (n:Missing) RETURN count(*) AS x",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "clauses-1-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "\u003cnil\u003e"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": null
+      }
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "n": null
+      }
+    ],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-1-badNone",
+      "query": "OPTIONAL MATCH (n:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "clauses-1-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "\u003cnil\u003e"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": null
+      }
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "n": null
+      }
+    ],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-1-bad0",
+      "query": "OPTIONAL MATCH (n:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "rows",
+      "nodes"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "rows",
+        "nodes"
+      ],
+      "name": "clauses-2-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "nodes": "int64",
+          "rows": "int64"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "nodes": "java.lang.Long",
+          "rows": "java.lang.Long"
+        }
+      ],
+      "rows": [
+        {
+          "nodes": 0,
+          "rows": 1
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-2-badNone",
+        "query": "OPTIONAL MATCH (n:Missing) RETURN count(*) AS rows,count(n) AS nodes",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "clauses-2-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "nodes": "int64",
+        "rows": "int64"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "nodes": "java.lang.Long",
+        "rows": "java.lang.Long"
+      }
+    ],
+    "rows": [
+      {
+        "nodes": 0,
+        "rows": 1
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-2-badNone",
+      "query": "OPTIONAL MATCH (n:Missing) RETURN count(*) AS rows,count(n) AS nodes",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "rows",
+      "nodes"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "rows",
+        "nodes"
+      ],
+      "name": "clauses-2-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "nodes": "int64",
+          "rows": "int64"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "nodes": "java.lang.Long",
+          "rows": "java.lang.Long"
+        }
+      ],
+      "rows": [
+        {
+          "nodes": 0,
+          "rows": 1
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-2-bad0",
+        "query": "OPTIONAL MATCH (n:Missing) RETURN count(*) AS rows,count(n) AS nodes",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "clauses-2-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "nodes": "int64",
+        "rows": "int64"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "nodes": "java.lang.Long",
+        "rows": "java.lang.Long"
+      }
+    ],
+    "rows": [
+      {
+        "nodes": 0,
+        "rows": 1
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-2-bad0",
+      "query": "OPTIONAL MATCH (n:Missing) RETURN count(*) AS rows,count(n) AS nodes",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x",
+      "n"
+    ],
+    "name": "clauses-3-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "\u003cnil\u003e",
+        "x": "int32"
+      },
+      {
+        "n": "\u003cnil\u003e",
+        "x": "int32"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": null,
+        "x": "java.lang.Integer"
+      },
+      {
+        "n": null,
+        "x": "java.lang.Integer"
+      }
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "n": null,
+        "x": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "n": null,
+        "x": 2
+      }
+    ],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-3-badNone",
+      "query": "UNWIND [1,2] AS x OPTIONAL MATCH (n:Missing) RETURN x,n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x",
+      "n"
+    ],
+    "name": "clauses-3-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "\u003cnil\u003e",
+        "x": "int32"
+      },
+      {
+        "n": "\u003cnil\u003e",
+        "x": "int32"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": null,
+        "x": "java.lang.Integer"
+      },
+      {
+        "n": null,
+        "x": "java.lang.Integer"
+      }
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "n": null,
+        "x": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "n": null,
+        "x": 2
+      }
+    ],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-3-bad0",
+      "query": "UNWIND [1,2] AS x OPTIONAL MATCH (n:Missing) RETURN x,n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "name": "clauses-4-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-4-badNone",
+        "query": "UNWIND [1,2] AS x MATCH (n:Missing) RETURN x",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "clauses-4-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-4-badNone",
+      "query": "UNWIND [1,2] AS x MATCH (n:Missing) RETURN x",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "name": "clauses-4-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-4-bad0",
+        "query": "UNWIND [1,2] AS x MATCH (n:Missing) RETURN x",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "clauses-4-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-4-bad0",
+      "query": "UNWIND [1,2] AS x MATCH (n:Missing) RETURN x",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "name": "clauses-5-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-5-badNone",
+      "query": "MATCH (n:Missing) UNWIND [1/0] AS x RETURN x",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "name": "clauses-5-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-5-bad0",
+      "query": "MATCH (n:Missing) UNWIND [1/0] AS x RETURN x",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "clauses-6-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-6-badNone",
+        "query": "WITH {id:0} AS n MATCH (n:Missing) RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "clauses-6-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-6-badNone",
+      "query": "WITH {id:0} AS n MATCH (n:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "clauses-6-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-6-bad0",
+        "query": "WITH {id:0} AS n MATCH (n:Missing) RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "clauses-6-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-6-bad0",
+      "query": "WITH {id:0} AS n MATCH (n:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "clauses-7-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-7-badNone",
+      "query": "MATCH (n:IntConstant) WITH n MATCH (n:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "clauses-7-bad0",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-7-bad0",
+      "query": "MATCH (n:IntConstant) WITH n MATCH (n:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "m"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "m"
+      ],
+      "name": "clauses-8-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-8-badNone",
+        "query": "MATCH (n:Missing) MATCH (m:IntConstant) RETURN m",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "clauses-8-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-8-badNone",
+      "query": "MATCH (n:Missing) MATCH (m:IntConstant) RETURN m",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "m"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "m"
+      ],
+      "name": "clauses-8-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-8-bad0",
+        "query": "MATCH (n:Missing) MATCH (m:IntConstant) RETURN m",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "clauses-8-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-8-bad0",
+      "query": "MATCH (n:Missing) MATCH (m:IntConstant) RETURN m",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "clauses-9-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-9-badNone",
+      "query": "MATCH (n:IntConstant),(m:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "clauses-9-bad0",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-9-bad0",
+      "query": "MATCH (n:IntConstant),(m:Missing) RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "m"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "m"
+      ],
+      "name": "clauses-10-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-10-badNone",
+        "query": "MATCH (n:Missing),(m:IntConstant) RETURN m",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "clauses-10-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-10-badNone",
+      "query": "MATCH (n:Missing),(m:IntConstant) RETURN m",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "m"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "m"
+      ],
+      "name": "clauses-10-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-10-bad0",
+        "query": "MATCH (n:Missing),(m:IntConstant) RETURN m",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "clauses-10-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-10-bad0",
+      "query": "MATCH (n:Missing),(m:IntConstant) RETURN m",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "name": "clauses-11-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "x": "int64"
+      },
+      {
+        "x": "int32"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "x": "java.lang.Long"
+      },
+      {
+        "x": "java.lang.Integer"
+      }
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "x": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "x": 1
+      }
+    ],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-11-badNone",
+      "query": "MATCH (n:Missing) RETURN count(*) AS x UNION RETURN 1 AS x",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "name": "clauses-11-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "x": "int64"
+      },
+      {
+        "x": "int32"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "x": "java.lang.Long"
+      },
+      {
+        "x": "java.lang.Integer"
+      }
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "x": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": []
+        },
+        "x": 1
+      }
+    ],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-11-bad0",
+      "query": "MATCH (n:Missing) RETURN count(*) AS x UNION RETURN 1 AS x",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "clauses-12-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "n": "int32"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "n": "java.lang.Integer"
+        }
+      ],
+      "rows": [
+        {
+          "n": 1
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-12-badNone",
+        "query": "MATCH (n:Missing) RETURN n UNION ALL RETURN 1 AS n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "clauses-12-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "int32"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": "java.lang.Integer"
+      }
+    ],
+    "rows": [
+      {
+        "n": 1
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-12-badNone",
+      "query": "MATCH (n:Missing) RETURN n UNION ALL RETURN 1 AS n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "clauses-12-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "n": "int32"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "n": "java.lang.Integer"
+        }
+      ],
+      "rows": [
+        {
+          "n": 1
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-12-bad0",
+        "query": "MATCH (n:Missing) RETURN n UNION ALL RETURN 1 AS n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "clauses-12-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "int32"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": "java.lang.Integer"
+      }
+    ],
+    "rows": [
+      {
+        "n": 1
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-12-bad0",
+      "query": "MATCH (n:Missing) RETURN n UNION ALL RETURN 1 AS n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "clauses-13-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-13-badNone",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 0",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "clauses-13-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-13-bad0",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 0",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero.",
+      "name": "clauses-14-badNone",
+      "nativeErrorMessage": "Requested element count -1 is less than zero.",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-14-badNone",
+        "query": "MATCH (n:Missing) RETURN n LIMIT -1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "message": "Requested element count -1 is less than zero.",
+    "name": "clauses-14-badNone",
+    "nativeErrorMessage": "Requested element count -1 is less than zero.",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-14-badNone",
+      "query": "MATCH (n:Missing) RETURN n LIMIT -1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero.",
+      "name": "clauses-14-bad0",
+      "nativeErrorMessage": "Requested element count -1 is less than zero.",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "clauses-14-bad0",
+        "query": "MATCH (n:Missing) RETURN n LIMIT -1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "message": "Requested element count -1 is less than zero.",
+    "name": "clauses-14-bad0",
+    "nativeErrorMessage": "Requested element count -1 is less than zero.",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "clauses-14-bad0",
+      "query": "MATCH (n:Missing) RETURN n LIMIT -1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "clauses-15-badNone",
+    "nativeErrorMessage": "Division by zero",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-15-badNone",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1/0",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "clauses-15-bad0",
+    "nativeErrorMessage": "Division by zero",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "clauses-15-bad0",
+      "query": "MATCH (n:Missing) RETURN n LIMIT 1/0",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "positive-Method-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "n": "map[string]interface {}"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "n": "map"
+        }
+      ],
+      "rows": [
+        {
+          "n": {
+            "class": "Example",
+            "name": "run",
+            "parameter_types": [
+              "int"
+            ],
+            "return_type": "void",
+            "signature": "Example.run(int)"
+          }
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "positive-Method-badNone",
+        "query": "MATCH (n:Method) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "positive-Method-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "map[string]interface {}"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": "map"
+      }
+    ],
+    "rows": [
+      {
+        "n": {
+          "class": "Example",
+          "name": "run",
+          "parameter_types": [
+            "int"
+          ],
+          "return_type": "void",
+          "signature": "Example.run(int)"
+        }
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "positive-Method-badNone",
+      "query": "MATCH (n:Method) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "positive-Method-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "n": "map[string]interface {}"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "n": "map"
+        }
+      ],
+      "rows": [
+        {
+          "n": {
+            "class": "Example",
+            "name": "run",
+            "parameter_types": [
+              "int"
+            ],
+            "return_type": "void",
+            "signature": "Example.run(int)"
+          }
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "positive-Method-bad0",
+        "query": "MATCH (n:Method) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "positive-Method-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "map[string]interface {}"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": "map"
+      }
+    ],
+    "rows": [
+      {
+        "n": {
+          "class": "Example",
+          "name": "run",
+          "parameter_types": [
+            "int"
+          ],
+          "return_type": "void",
+          "signature": "Example.run(int)"
+        }
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "positive-Method-bad0",
+      "query": "MATCH (n:Method) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "positive-CallSite-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "n": "map[string]interface {}"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "n": "map"
+        }
+      ],
+      "rows": [
+        {
+          "n": {
+            "callee_class": "Example",
+            "callee_name": "callee",
+            "caller_class": "Example",
+            "caller_name": "run",
+            "id": 24,
+            "line": 37,
+            "type": "CallSiteNode"
+          }
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "positive-CallSite-badNone",
+        "query": "MATCH (n:CallSite) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "positive-CallSite-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "map[string]interface {}"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": "map"
+      }
+    ],
+    "rows": [
+      {
+        "n": {
+          "callee_class": "Example",
+          "callee_name": "callee",
+          "caller_class": "Example",
+          "caller_name": "run",
+          "id": 24,
+          "line": 37,
+          "type": "CallSiteNode"
+        }
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "positive-CallSite-badNone",
+      "query": "MATCH (n:CallSite) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "positive-CallSite-bad0",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "n": "map[string]interface {}"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "n": "map"
+        }
+      ],
+      "rows": [
+        {
+          "n": {
+            "callee_class": "Example",
+            "callee_name": "callee",
+            "caller_class": "Example",
+            "caller_name": "run",
+            "id": 24,
+            "line": 37,
+            "type": "CallSiteNode"
+          }
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "positive-CallSite-bad0",
+        "query": "MATCH (n:CallSite) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "positive-CallSite-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "map[string]interface {}"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": "map"
+      }
+    ],
+    "rows": [
+      {
+        "n": {
+          "callee_class": "Example",
+          "callee_name": "callee",
+          "caller_class": "Example",
+          "caller_name": "run",
+          "id": 24,
+          "line": 37,
+          "type": "CallSiteNode"
+        }
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "positive-CallSite-bad0",
+      "query": "MATCH (n:CallSite) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "positive-IntConstant-badNone",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [
+        {
+          "n": "map[string]interface {}"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "publicTypes": [
+        {
+          "n": "map"
+        }
+      ],
+      "rows": [
+        {
+          "n": {
+            "id": 0,
+            "type": "IntConstant",
+            "value": -17
+          }
+        }
+      ],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "positive-IntConstant-badNone",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": null
+          }
+        ]
+      }
+    },
+    "name": "positive-IntConstant-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [
+      {
+        "n": "map[string]interface {}"
+      }
+    ],
+    "outcome": "SUCCESS",
+    "publicTypes": [
+      {
+        "n": "map"
+      }
+    ],
+    "rows": [
+      {
+        "n": {
+          "id": 0,
+          "type": "IntConstant",
+          "value": -17
+        }
+      }
+    ],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "positive-IntConstant-badNone",
+      "query": "MATCH (n:IntConstant) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: -1",
+      "name": "positive-IntConstant-bad0",
+      "nativeErrorMessage": "Unknown node tag: -1",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "positive-IntConstant-bad0",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 1",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "message": "Unknown node tag: -1",
+    "name": "positive-IntConstant-bad0",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "positive-IntConstant-bad0",
+      "query": "MATCH (n:IntConstant) RETURN n LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "scope-IntConstant-Missing-good-False",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "scope-IntConstant-Missing-good-False",
+      "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='good' RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "scope-IntConstant-Missing-good-True",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "scope-IntConstant-Missing-good-True",
+      "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='good' RETURN n",
+      "scoped": true,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "scope-IntConstant-Missing-bad-False",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "scope-IntConstant-Missing-bad-False",
+      "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='bad' RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "scope-IntConstant-Missing-bad-True",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "scope-IntConstant-Missing-bad-True",
+      "query": "MATCH (n:IntConstant:Missing) WHERE graphId(n)='bad' RETURN n",
+      "scoped": true,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "scope-Missing-IntConstant-good-False",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "scope-Missing-IntConstant-good-False",
+      "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='good' RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "scope-Missing-IntConstant-good-True",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "scope-Missing-IntConstant-good-True",
+      "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='good' RETURN n",
+      "scoped": true,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "scope-Missing-IntConstant-bad-False",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "scope-Missing-IntConstant-bad-False",
+      "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='bad' RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "good",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "bad",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "scope-Missing-IntConstant-bad-True",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "scope-Missing-IntConstant-bad-True",
+      "query": "MATCH (n:Missing:IntConstant) WHERE graphId(n)='bad' RETURN n",
+      "scoped": true,
+      "sources": [
+        {
+          "id": "good",
+          "mutationNode": null
+        },
+        {
+          "id": "bad",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "b"
+    ],
+    "name": "relations-0-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "relations-0-badNone",
+      "query": "MATCH (a:Missing)-[r]-\u003e(b) RETURN b LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "b"
+    ],
+    "name": "relations-0-bad0",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "relations-0-bad0",
+      "query": "MATCH (a:Missing)-[r]-\u003e(b) RETURN b LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "b"
+    ],
+    "name": "relations-1-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "relations-1-badNone",
+      "query": "MATCH (a:CallSite)-[r]-\u003e(b:Missing) RETURN b LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "relations-1-bad0",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "relations-1-bad0",
+      "query": "MATCH (a:CallSite)-[r]-\u003e(b:Missing) RETURN b LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "b"
+    ],
+    "name": "relations-2-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "relations-2-badNone",
+      "query": "MATCH (a:IntConstant:Missing)-[r]-\u003e(b) RETURN b LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "relations-2-bad0",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "relations-2-bad0",
+      "query": "MATCH (a:IntConstant:Missing)-[r]-\u003e(b) RETURN b LIMIT 1",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "relations-3-badNone",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "relations-3-badNone",
+      "query": "MATCH (n:Missing) WHERE elementId(n)='g0:0' RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": null
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "relations-3-bad0",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "relations-3-bad0",
+      "query": "MATCH (n:Missing) WHERE elementId(n)='g0:0' RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "predicate-order-0-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "predicate-order-0-crossFalse",
+        "query": "MATCH (n:Missing) WHERE false RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "predicate-order-0-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "predicate-order-0-crossFalse",
+      "query": "MATCH (n:Missing) WHERE false RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "predicate-order-0-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "predicate-order-0-crossTrue",
+      "query": "MATCH (n:Missing) WHERE false RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "columns": [
+        "n"
+      ],
+      "name": "predicate-order-1-crossFalse",
+      "nativeErrorType": "\u003cnil\u003e",
+      "nativeValueTypes": [],
+      "outcome": "SUCCESS",
+      "publicTypes": [],
+      "rows": [],
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "predicate-order-1-crossFalse",
+        "query": "MATCH (n:Missing) WHERE 1/0=0 RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "name": "predicate-order-1-crossFalse",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "predicate-order-1-crossFalse",
+      "query": "MATCH (n:Missing) WHERE 1/0=0 RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "columns": [
+      "n"
+    ],
+    "name": "predicate-order-1-crossTrue",
+    "nativeErrorType": "\u003cnil\u003e",
+    "nativeValueTypes": [],
+    "outcome": "SUCCESS",
+    "publicTypes": [],
+    "rows": [],
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "predicate-order-1-crossTrue",
+      "query": "MATCH (n:Missing) WHERE 1/0=0 RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "Execute",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "matchedContextBoundary": {
+      "after": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "api": "executeSources(single, WorkTrackingEnabled=true)",
+      "before": [
+        {
+          "id": "g0",
+          "mappedView": false,
+          "retained": false
+        }
+      ],
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: -1",
+      "name": "predicate-order-2-crossFalse",
+      "nativeErrorMessage": "Unknown node tag: -1",
+      "nativeErrorType": "*query.Error",
+      "outcome": "FAILED",
+      "spec": {
+        "cross": false,
+        "fixture": "all-types",
+        "name": "predicate-order-2-crossFalse",
+        "query": "MATCH (n:IntConstant:Missing) WHERE false RETURN n",
+        "scoped": false,
+        "sources": [
+          {
+            "id": "g0",
+            "mutationNode": 0
+          }
+        ]
+      }
+    },
+    "message": "Unknown node tag: -1",
+    "name": "predicate-order-2-crossFalse",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": false,
+      "fixture": "all-types",
+      "name": "predicate-order-2-crossFalse",
+      "query": "MATCH (n:IntConstant:Missing) WHERE false RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        }
+      ]
+    }
+  },
+  {
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "api": "ExecuteCrossWithOptions",
+    "before": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1",
+    "name": "predicate-order-2-crossTrue",
+    "nativeErrorMessage": "Unknown node tag: -1",
+    "nativeErrorType": "*query.Error",
+    "outcome": "FAILED",
+    "spec": {
+      "cross": true,
+      "fixture": "all-types",
+      "name": "predicate-order-2-crossTrue",
+      "query": "MATCH (n:IntConstant:Missing) WHERE false RETURN n",
+      "scoped": false,
+      "sources": [
+        {
+          "id": "g0",
+          "mutationNode": 0
+        },
+        {
+          "id": "g1",
+          "mutationNode": null
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "cases": 8,
+  "actualMainCalls": 16,
+  "repeatPublicAndStateDifferences": 0,
+  "originalSixPrefixPreserved": true,
+  "physicalGraphCopiesPerRun": 8,
+  "originalFilesPerCopy": 20,
+  "explicitMutationsPerRun": 4,
+  "runtimeChangedFilesPerRun": 0,
+  "performanceMeasurements": 0
+}

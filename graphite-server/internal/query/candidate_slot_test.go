@@ -153,7 +153,7 @@ func TestCandidateRowsAndOrderBookkeepingNeverRetainBorrowedPointers(t *testing.
 	}
 }
 
-func TestCandidateReadErrorsPrecedePredicateAndLabelFiltering(t *testing.T) {
+func TestGeneralCandidateReadOrder(t *testing.T) {
 	dir := t.TempDir()
 	entries, err := os.ReadDir("testdata/traversal")
 	if err != nil {
@@ -187,12 +187,16 @@ func TestCandidateReadErrorsPrecedePredicateAndLabelFiltering(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer graph.Close()
-	for _, source := range []string{"MATCH (n) WHERE false RETURN n", "MATCH (n:NoSuchLabel) WHERE true RETURN n", "MATCH (n) WHERE 1/0=0 RETURN n"} {
+	for _, source := range []string{"MATCH (n) WHERE false RETURN n", "MATCH (n) WHERE 1/0=0 RETURN n"} {
 		_, err := Execute(context.Background(), graph, source, nil, -1)
 		var qe *Error
 		if !errors.As(err, &qe) || qe.Class != "IllegalArgumentException" || qe.Message != "Unknown node tag: -1" {
 			t.Errorf("%s: got %v", source, err)
 		}
+	}
+	result, err := Execute(context.Background(), graph, "MATCH (n:NoSuchLabel) WHERE true RETURN n", nil, -1)
+	if err != nil || !reflect.DeepEqual(result.Columns, []string{"n"}) || !reflect.DeepEqual(result.Rows, []map[string]any{}) {
+		t.Fatalf("unknown first label must not read nodes: result=%#v err=%v", result, err)
 	}
 }
 

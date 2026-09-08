@@ -1,0 +1,19 @@
+{
+  "cases": 140,
+  "actualMainCalls": 280,
+  "repeatPublicAndStateDifferences": 0,
+  "outcomes": {
+    "SUCCESS": 113,
+    "IllegalArgumentException": 22,
+    "CypherException": 2,
+    "EOFException": 3
+  },
+  "originalFixtureSourceFiles": 10,
+  "physicalGraphCopiesPerRun": 207,
+  "copiedFilesPerRun": 2070,
+  "explicitMutatedFilesPerRun": 97,
+  "explicitSidecarAdditionsPerRun": 18,
+  "runtimeChangedFilesPerRun": 0,
+  "generatedSidecarsPerRun": 396,
+  "performanceMeasurements": 0
+}

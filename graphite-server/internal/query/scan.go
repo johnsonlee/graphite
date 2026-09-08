@@ -34,7 +34,7 @@ func (e evaluator) matchSingleNode(graph *store.Store, rows []map[string]any, cl
 				}
 			}()
 			e.check()
-			if !e.matches(value, pattern, row) {
+			if !e.matchesCandidate(value, pattern, row) {
 				return
 			}
 			if pattern.Variable != "" {

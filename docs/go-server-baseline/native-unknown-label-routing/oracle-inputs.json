@@ -1,0 +1,62 @@
+[
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "bytes": 26940017,
+    "sha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+    "bytes": 241874,
+    "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutor.kt",
+    "bytes": 25235,
+    "sha256": "2de0ff1f84fc67fd76f3d4c3335c406ed440c625e29f3911aa73d2aa04cf2586"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/MethodQueryExecutor.kt",
+    "bytes": 35131,
+    "sha256": "5d435e534f56a56c0d64ba1457d44775dc50a3851f8f68492e6bc22ed354a968"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CrossGraphValues.kt",
+    "bytes": 3478,
+    "sha256": "090eb113da33baa4083e77b8a45847ebd33211cfbf5a6c992ca1cb7c083dc5ba"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-unknown-label-routing/UnknownLabelOracle.java",
+    "bytes": 4369,
+    "sha256": "879484c26c0fab5367c85809cc68402e8fd2ca5e50c62c28ba310ca0cc261480"
+  },
+  {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-unknown-label-routing/prepare.py",
+    "bytes": 9561,
+    "sha256": "ee31d844df0de02e48203e7a8ee3aea87326d9234298b0ad41f43486ff4c7e09"
+  },
+  {
+    "path": "/private/tmp/graphite-unknown-label-main-4e328b0-run1/classes/UnknownLabelOracle.class",
+    "bytes": 7856,
+    "sha256": "3ac1cfe27805cfae7492355314ca7a2f6f8257a9335883c5794e0f548179d978"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+    "bytes": 145024,
+    "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeOffsetIndex.kt",
+    "bytes": 3207,
+    "sha256": "b0be23221c4b6736f53cd72da6b325d40cce93042af8c63beb3831806c4d69a3"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeTypeIndex.kt",
+    "bytes": 6357,
+    "sha256": "476ffd5884114dc18beb37e03cf1da9e2a5fcb64092a244564d09b688a46ab2e"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt",
+    "bytes": 53704,
+    "sha256": "2fe499f043740e7b70970a242613f760bf23577aef45d6fa612161e1d4d546ad"
+  }
+]

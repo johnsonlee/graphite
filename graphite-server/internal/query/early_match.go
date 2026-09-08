@@ -118,7 +118,7 @@ func (e evaluator) matchPatternUntil(graph *store.Store, pattern cypher.Pattern,
 	}
 	return e.walkNodeCandidatesUntil(graph, pattern.Nodes[0], initial.row, nil, func(value any) bool {
 		e.check()
-		if !e.matches(value, pattern.Nodes[0], initial.row) {
+		if !e.matchesCandidate(value, pattern.Nodes[0], initial.row) {
 			return true
 		}
 		bound := e.cloneRow(initial.row)

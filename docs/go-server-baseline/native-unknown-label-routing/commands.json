@@ -1,0 +1,64 @@
+{
+  "compile": [
+    "javac",
+    "-cp",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "-d",
+    "/tmp/graphite-unknown-label-main-4e328b0-run1/classes",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-unknown-label-routing/UnknownLabelOracle.java"
+  ],
+  "main": [
+    "java",
+    "-Xmx512m",
+    "-cp",
+    "/tmp/graphite-unknown-label-main-4e328b0-run1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "UnknownLabelOracle",
+    "/tmp/graphite-unknown-label-main-4e328b0-edges1/fixtures",
+    "/tmp/graphite-unknown-label-main-4e328b0-edges1/cases.json",
+    "/tmp/graphite-unknown-label-main-4e328b0-edges1/main.json"
+  ],
+  "repeat": [
+    "java",
+    "-Xmx512m",
+    "-cp",
+    "/tmp/graphite-unknown-label-main-4e328b0-run1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "UnknownLabelOracle",
+    "/tmp/graphite-unknown-label-main-4e328b0-edges2/fixtures",
+    "/tmp/graphite-unknown-label-main-4e328b0-edges2/cases.json",
+    "/tmp/graphite-unknown-label-main-4e328b0-edges2/main.json"
+  ],
+  "verify": [
+    "python3",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-unknown-label-routing/verify.py"
+  ],
+  "original120Main": [
+    "java",
+    "-Xmx512m",
+    "-cp",
+    "/tmp/graphite-unknown-label-main-4e328b0-run1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "UnknownLabelOracle",
+    "/tmp/graphite-unknown-label-main-4e328b0-final/fixtures",
+    "/tmp/graphite-unknown-label-main-4e328b0-final/cases.json",
+    "/tmp/graphite-unknown-label-main-4e328b0-final/main.json"
+  ],
+  "original120Repeat": [
+    "java",
+    "-Xmx512m",
+    "-cp",
+    "/tmp/graphite-unknown-label-main-4e328b0-run1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "UnknownLabelOracle",
+    "/tmp/graphite-unknown-label-main-4e328b0-repeat/fixtures",
+    "/tmp/graphite-unknown-label-main-4e328b0-repeat/cases.json",
+    "/tmp/graphite-unknown-label-main-4e328b0-repeat/main.json"
+  ],
+  "prepareedges1": [
+    "python3",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-unknown-label-routing/prepare.py",
+    "/tmp/graphite-unknown-label-main-4e328b0-edges1"
+  ],
+  "prepareedges2": [
+    "python3",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-unknown-label-routing/prepare.py",
+    "/tmp/graphite-unknown-label-main-4e328b0-edges2"
+  ]
+}

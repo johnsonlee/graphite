@@ -1,0 +1,41 @@
+[
+  {
+    "file": "fixtures/general-where-0-badTrue/store0/graph.nodedata",
+    "nodeID": 22,
+    "indexRecordByteOffset": 86,
+    "indexTag": 0,
+    "nodeDataRecordOffset": 142,
+    "tagByteOffset": 146,
+    "nodeOffsetsValue": 142,
+    "oldTag": 0,
+    "newTag": 255,
+    "originalSha256": "c346ed58855537af8ad3de454baae7a47bfe55f979bbfb8fe40b5b3af46ea937",
+    "mutatedSha256": "bc4c2226e695d1d1471d24531d58081eb85aa6ff3a08decbbe27624b5a234159"
+  },
+  {
+    "file": "fixtures/general-where-1-badTrue/store0/graph.nodedata",
+    "nodeID": 22,
+    "indexRecordByteOffset": 86,
+    "indexTag": 0,
+    "nodeDataRecordOffset": 142,
+    "tagByteOffset": 146,
+    "nodeOffsetsValue": 142,
+    "oldTag": 0,
+    "newTag": 255,
+    "originalSha256": "c346ed58855537af8ad3de454baae7a47bfe55f979bbfb8fe40b5b3af46ea937",
+    "mutatedSha256": "bc4c2226e695d1d1471d24531d58081eb85aa6ff3a08decbbe27624b5a234159"
+  },
+  {
+    "file": "fixtures/general-where-2-badTrue/store0/graph.nodedata",
+    "nodeID": 22,
+    "indexRecordByteOffset": 86,
+    "indexTag": 0,
+    "nodeDataRecordOffset": 142,
+    "tagByteOffset": 146,
+    "nodeOffsetsValue": 142,
+    "oldTag": 0,
+    "newTag": 255,
+    "originalSha256": "c346ed58855537af8ad3de454baae7a47bfe55f979bbfb8fe40b5b3af46ea937",
+    "mutatedSha256": "bc4c2226e695d1d1471d24531d58081eb85aa6ff3a08decbbe27624b5a234159"
+  }
+]
