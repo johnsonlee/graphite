@@ -3330,3 +3330,14 @@ test("a candidate-owned smoke exercises the new CPU accounting harness in a real
     assert.match(job, /name: benchmark-cpu-accounting-smoke-/);
     assert.doesNotMatch(job, /name: jmh-explore-/, "the smoke must not reuse the paired gate artifacts");
 });
+
+test("the authoritative aggregate depends on and enforces the CPU-accounting smoke", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const gate = workflow.slice(workflow.indexOf("\n  benchmark-regression-gate:"));
+    const needsLine = gate.slice(gate.indexOf("needs:"), gate.indexOf("\n", gate.indexOf("needs:")));
+    assert.match(needsLine, /validate-cpu-accounting/, "the aggregate gate must depend on the smoke job");
+    assert.match(gate, /CPU_ACCOUNTING_SMOKE_JOB: \$\{\{ needs\.validate-cpu-accounting\.result \}\}/,
+        "the enforce step must expose the smoke job's result");
+    assert.match(gate, /\[ "\$\{CPU_ACCOUNTING_SMOKE_JOB\}" != success \]/,
+        "the enforce step must fail unless the smoke succeeded");
+});

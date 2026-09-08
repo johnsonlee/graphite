@@ -2808,7 +2808,7 @@ jobs:
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting]
     runs-on: ubuntu-latest
 
     steps:
@@ -2920,6 +2920,7 @@ jobs:
         LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
         GRAPH_ROUTING_JOB: ${{ needs.graph-routing-pressure-evidence.result }}
         GLOBAL_WIDE_JOB: ${{ needs.global-wide-pressure-evidence.result }}
+        CPU_ACCOUNTING_SMOKE_JOB: ${{ needs.validate-cpu-accounting.result }}
       run: |
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
           [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
@@ -2929,7 +2930,8 @@ jobs:
           [ "${BUDGETED_STRING_JOB}" != success ] || \
           [ "${LARGE_CORPUS_JOB}" != success ] || \
           [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ] || \
-          [ "${GRAPH_ROUTING_JOB}" != success ] || [ "${GLOBAL_WIDE_JOB}" != success ]; then
+          [ "${GRAPH_ROUTING_JOB}" != success ] || [ "${GLOBAL_WIDE_JOB}" != success ] || \
+          [ "${CPU_ACCOUNTING_SMOKE_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"
           exit 1
         fi
