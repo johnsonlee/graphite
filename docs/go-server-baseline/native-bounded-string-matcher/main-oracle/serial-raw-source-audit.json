@@ -1,0 +1,32 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "source": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+  "sourceSha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+  "startLine": 1035,
+  "excerpt": [
+    "    private fun <T : Node> serialRawCallSiteStringDisjunction(",
+    "        type: Class<T>,",
+    "        predicates: List<StringPropertyPredicate>,",
+    "        limit: Int,",
+    "        workConsumer: GraphWorkConsumer?",
+    "    ): Sequence<T>? {",
+    "        if (type != CallSiteNode::class.java || limit == Int.MAX_VALUE) return null",
+    "        if (workConsumer !is SerialGraphWorkBatchConsumer) return null",
+    "        return sequence {",
+    "            val propertyIndexes = predicates.map { predicate ->",
+    "                requiredCallSiteStringPropertyIndex(predicate.property)",
+    "            }",
+    "            val sharedMatchers = mutableMapOf<StringPredicateKey, BoundedStringMatcher>()",
+    "            val matchers = predicates.map { predicate ->",
+    "                val key = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)",
+    "                sharedMatchers.getOrPut(key) { BoundedStringMatcher(stringTable, key) }",
+    "            }",
+    "            val accounting = BufferedGraphWorkConsumer(workConsumer)",
+    "            val nodeIds = nodeTypeIndex.idIterator(type)",
+    "            var inspected = 0",
+    "            var yielded = 0",
+    "            try {",
+    "                while (yielded < limit && nodeIds.hasNext()) {"
+  ],
+  "finding": "Bounded serial raw disjunction requires CallSite, finite limit, SerialGraphWorkBatchConsumer; matcher identity excludes property and uses default capacity65536."
+}

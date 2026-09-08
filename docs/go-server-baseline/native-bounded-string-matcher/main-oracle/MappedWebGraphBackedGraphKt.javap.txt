@@ -1,0 +1,806 @@
+Compiled from "MappedWebGraphBackedGraph.kt"
+public final class io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt {
+  private static final java.util.concurrent.atomic.AtomicInteger callSiteScanWorkerNumber;
+
+  private static final kotlin.Lazy callSiteScanParallelism$delegate;
+
+  private static final kotlin.Lazy callSiteScanExecutor$delegate;
+
+  private static final int NODE_HEADER_BYTES;
+
+  private static final int METHOD_DESCRIPTOR_FIXED_INTS;
+
+  private static final java.lang.String GRAPH_ID_PROJECTION_PROPERTY;
+
+  private static final java.util.Set<java.lang.String> CALL_SITE_NULL_STRING_PROPERTIES;
+
+  private static final int ASCII_MAX_CODE;
+
+  private static final java.lang.String MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED;
+
+  private static final java.lang.String CALL_SITE_SCAN_PARALLELISM_PROPERTY;
+
+  private static final io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER;
+
+  private static final long MIN_PARALLEL_CALL_SITE_SCAN_NODES;
+
+  private static final int CALL_SITE_INDEX_IO_BUFFER_BYTES;
+
+  public static final java.lang.String CALL_SITE_STRING_CONTENT_IDENTITY_FILE;
+
+  private static final int CALL_SITE_STRING_INDEX_IDENTITY_BYTES;
+
+  private static final int MAX_STRING_PROPERTY_INDEXES;
+
+  private static final long MIN_CALL_SITE_STRING_PREFLIGHT_NODES;
+
+  private static final int MIN_CALL_SITE_STRING_PREFLIGHT_TERM_LENGTH;
+
+  private static final int MAX_STRING_PROPERTY_ADMISSION_NODES;
+
+  private static final int MAX_STRING_PROPERTY_ADMISSIONS;
+
+  private static final long MAX_STRING_PROPERTY_ADMISSION_BYTES;
+
+  private static final long STRING_PROPERTY_ADMISSION_ESTIMATED_BYTES;
+
+  private static final long MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES;
+
+  private static final int MAX_RAW_STRING_MATCH_STATE_BYTES;
+
+  private static final int MAX_RAW_STRING_MATCH_STATES;
+
+  private static final int LOCAL_STRING_MATCH_CACHE_CAPACITY;
+
+  private static final int LOCAL_STRING_MATCH_CACHE_HASH_SHIFT;
+
+  private static final int RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY;
+
+  private static final int RAW_PROJECTION_MIN_PROBE_NODES;
+
+  private static final int RAW_PROJECTION_MAX_PROBE_NODES;
+
+  private static final int RAW_PROJECTION_PROBE_FACTOR;
+
+  private static final int MAX_RAW_PROJECTION_MATCH_ENTRIES;
+
+  private static final int ORDERED_PREFIX_WAVE_COUNT;
+
+  private static final long RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES;
+
+  private static final int STRING_PROPERTY_INDEX_ARRAYS;
+
+  public static final long PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES;
+
+  private static final int MAX_STRING_MATCH_CACHE_ENTRIES;
+
+  private static final long MAX_STRING_MATCH_CACHE_BYTES;
+
+  private static final long STRING_MATCH_CACHE_ENTRY_ESTIMATED_BYTES;
+
+  private static final long STRING_HEADER_ESTIMATED_BYTES;
+
+  private static final long MAX_TRIGRAM_INDEX_RETAINED_BYTES;
+
+  private static final int MAX_TRIGRAM_POSTINGS;
+
+  private static final int MAX_TRIGRAM_INDEX_STRINGS;
+
+  private static final long TRIGRAM_ENTRY_ESTIMATED_BYTES;
+
+  private static final long TRIGRAM_POSTING_ESTIMATED_BYTES;
+
+  private static final int MIN_TRIGRAM_LENGTH;
+
+  private static final float STRING_PROPERTY_INDEX_LOAD_FACTOR;
+
+  private static final int STRING_HASH_FACTOR;
+
+  public static final byte RAW_STRING_MISS;
+
+  public static final byte RAW_STRING_MATCH;
+
+  private static final int RAW_SCAN_INTERRUPTION_POLL_MASK;
+
+  private static final long GRAPH_WORK_ACCOUNTING_BATCH_SIZE;
+
+  public static final int getCallSiteScanParallelism();
+    Code:
+       0: getstatic     #10                 // Field callSiteScanParallelism$delegate:Lkotlin/Lazy;
+       3: astore_0
+       4: aload_0
+       5: invokeinterface #16,  1           // InterfaceMethod kotlin/Lazy.getValue:()Ljava/lang/Object;
+      10: checkcast     #18                 // class java/lang/Number
+      13: invokevirtual #21                 // Method java/lang/Number.intValue:()I
+      16: ireturn
+
+  public static final java.util.concurrent.ExecutorService getCallSiteScanExecutor();
+    Code:
+       0: getstatic     #26                 // Field callSiteScanExecutor$delegate:Lkotlin/Lazy;
+       3: astore_0
+       4: aload_0
+       5: invokeinterface #16,  1           // InterfaceMethod kotlin/Lazy.getValue:()Ljava/lang/Object;
+      10: checkcast     #28                 // class java/util/concurrent/ExecutorService
+      13: areturn
+
+  private static final boolean shareStringMatcher(java.util.List<io.johnsonlee.graphite.graph.StringPropertyPredicate>);
+    Code:
+       0: aload_0
+       1: invokestatic  #37                 // Method kotlin/collections/CollectionsKt.firstOrNull:(Ljava/util/List;)Ljava/lang/Object;
+       4: checkcast     #39                 // class io/johnsonlee/graphite/graph/StringPropertyPredicate
+       7: dup
+       8: ifnull        155
+      11: astore_1
+      12: iconst_0
+      13: istore_2
+      14: aload_0
+      15: checkcast     #41                 // class java/lang/Iterable
+      18: iconst_1
+      19: invokestatic  #45                 // Method kotlin/collections/CollectionsKt.drop:(Ljava/lang/Iterable;I)Ljava/util/List;
+      22: checkcast     #41                 // class java/lang/Iterable
+      25: astore_3
+      26: iconst_0
+      27: istore        4
+      29: aload_3
+      30: instanceof    #47                 // class java/util/Collection
+      33: ifeq          52
+      36: aload_3
+      37: checkcast     #47                 // class java/util/Collection
+      40: invokeinterface #51,  1           // InterfaceMethod java/util/Collection.isEmpty:()Z
+      45: ifeq          52
+      48: iconst_1
+      49: goto          141
+      52: aload_3
+      53: invokeinterface #55,  1           // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+      58: astore        5
+      60: aload         5
+      62: invokeinterface #60,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+      67: ifeq          140
+      70: aload         5
+      72: invokeinterface #63,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      77: astore        6
+      79: aload         6
+      81: checkcast     #39                 // class io/johnsonlee/graphite/graph/StringPropertyPredicate
+      84: astore        7
+      86: iconst_0
+      87: istore        8
+      89: aload         7
+      91: invokevirtual #67                 // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getTransform:()Lio/johnsonlee/graphite/graph/StringValueTransform;
+      94: aload_1
+      95: invokevirtual #67                 // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getTransform:()Lio/johnsonlee/graphite/graph/StringValueTransform;
+      98: if_acmpne     132
+     101: aload         7
+     103: invokevirtual #71                 // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getMode:()Lio/johnsonlee/graphite/graph/StringMatchMode;
+     106: aload_1
+     107: invokevirtual #71                 // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getMode:()Lio/johnsonlee/graphite/graph/StringMatchMode;
+     110: if_acmpne     132
+     113: aload         7
+     115: invokevirtual #75                 // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getExpected:()Ljava/lang/String;
+     118: aload_1
+     119: invokevirtual #75                 // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getExpected:()Ljava/lang/String;
+     122: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     125: ifeq          132
+     128: iconst_1
+     129: goto          133
+     132: iconst_0
+     133: ifne          60
+     136: iconst_0
+     137: goto          141
+     140: iconst_1
+     141: nop
+     142: nop
+     143: iconst_1
+     144: if_icmpne     151
+     147: iconst_1
+     148: goto          157
+     151: iconst_0
+     152: goto          157
+     155: pop
+     156: iconst_0
+     157: ireturn
+
+  private static final long estimatedStringPropertyIndexBytes(long);
+    Code:
+       0: ldc2_w        #99                 // long 48l
+       3: lload_0
+       4: iconst_3
+       5: i2l
+       6: lmul
+       7: iconst_4
+       8: i2l
+       9: lmul
+      10: ladd
+      11: lreturn
+
+  private static final long estimatedRawStringMatchStateBytes(io.johnsonlee.graphite.webgraph.RawStringMatchKey, int);
+    Code:
+       0: ldc2_w        #105                // long 136l
+       3: aload_0
+       4: invokevirtual #112                // Method io/johnsonlee/graphite/webgraph/RawStringMatchKey.getProperty:()Lio/johnsonlee/graphite/webgraph/StringPropertyKey;
+       7: invokevirtual #116                // Method io/johnsonlee/graphite/webgraph/StringPropertyKey.getProperty:()Ljava/lang/String;
+      10: invokevirtual #121                // Method java/lang/String.length:()I
+      13: i2l
+      14: iconst_2
+      15: i2l
+      16: lmul
+      17: ladd
+      18: ldc2_w        #122                // long 24l
+      21: ladd
+      22: aload_0
+      23: invokevirtual #124                // Method io/johnsonlee/graphite/webgraph/RawStringMatchKey.getExpected:()Ljava/lang/String;
+      26: invokevirtual #121                // Method java/lang/String.length:()I
+      29: i2l
+      30: iconst_2
+      31: i2l
+      32: lmul
+      33: ladd
+      34: iload_1
+      35: i2l
+      36: ladd
+      37: lreturn
+
+  private static final long estimatedMatchingStringCacheBytes(io.johnsonlee.graphite.webgraph.StringMatchKey, int[]);
+    Code:
+       0: ldc2_w        #130                // long 104l
+       3: aload_0
+       4: invokevirtual #134                // Method io/johnsonlee/graphite/webgraph/StringMatchKey.getExpected:()Ljava/lang/String;
+       7: invokevirtual #121                // Method java/lang/String.length:()I
+      10: i2l
+      11: iconst_2
+      12: i2l
+      13: lmul
+      14: ladd
+      15: aload_1
+      16: arraylength
+      17: i2l
+      18: iconst_4
+      19: i2l
+      20: lmul
+      21: ladd
+      22: lreturn
+
+  private static final long estimatedStringPropertyAdmissionBytes(io.johnsonlee.graphite.webgraph.StringPropertyAdmissionKey);
+    Code:
+       0: ldc2_w        #140                // long 96l
+       3: aload_0
+       4: invokevirtual #144                // Method io/johnsonlee/graphite/webgraph/StringPropertyAdmissionKey.getProperty:()Lio/johnsonlee/graphite/webgraph/StringPropertyKey;
+       7: invokevirtual #116                // Method io/johnsonlee/graphite/webgraph/StringPropertyKey.getProperty:()Ljava/lang/String;
+      10: invokevirtual #121                // Method java/lang/String.length:()I
+      13: i2l
+      14: iconst_2
+      15: i2l
+      16: lmul
+      17: ladd
+      18: aload_0
+      19: invokevirtual #145                // Method io/johnsonlee/graphite/webgraph/StringPropertyAdmissionKey.getExpected:()Ljava/lang/String;
+      22: invokevirtual #121                // Method java/lang/String.length:()I
+      25: i2l
+      26: iconst_2
+      27: i2l
+      28: lmul
+      29: ladd
+      30: lreturn
+
+  public static final boolean stringMatches(java.lang.String, io.johnsonlee.graphite.graph.StringValueTransform, io.johnsonlee.graphite.graph.StringMatchMode, java.lang.String);
+    Code:
+       0: aload_0
+       1: ldc           #152                // String actual
+       3: invokestatic  #156                // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       6: aload_2
+       7: ldc           #158                // String mode
+       9: invokestatic  #156                // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      12: aload_3
+      13: ldc           #160                // String expected
+      15: invokestatic  #156                // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      18: aload_0
+      19: aload_1
+      20: invokestatic  #164                // Method transformString:(Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;)Ljava/lang/String;
+      23: astore        4
+      25: aload_2
+      26: getstatic     #169                // Field io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt$WhenMappings.$EnumSwitchMapping$0:[I
+      29: swap
+      30: invokevirtual #174                // Method io/johnsonlee/graphite/graph/StringMatchMode.ordinal:()I
+      33: iaload
+      34: tableswitch   { // 1 to 4
+                     1: 64
+                     2: 73
+                     3: 85
+                     4: 97
+               default: 115
+          }
+      64: aload         4
+      66: aload_3
+      67: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      70: goto          123
+      73: aload         4
+      75: aload_3
+      76: iconst_0
+      77: iconst_2
+      78: aconst_null
+      79: invokestatic  #180                // Method kotlin/text/StringsKt.startsWith$default:(Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Z
+      82: goto          123
+      85: aload         4
+      87: aload_3
+      88: iconst_0
+      89: iconst_2
+      90: aconst_null
+      91: invokestatic  #183                // Method kotlin/text/StringsKt.endsWith$default:(Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Z
+      94: goto          123
+      97: aload         4
+      99: checkcast     #185                // class java/lang/CharSequence
+     102: aload_3
+     103: checkcast     #185                // class java/lang/CharSequence
+     106: iconst_0
+     107: iconst_2
+     108: aconst_null
+     109: invokestatic  #189                // Method kotlin/text/StringsKt.contains$default:(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+     112: goto          123
+     115: new           #191                // class kotlin/NoWhenBranchMatchedException
+     118: dup
+     119: invokespecial #195                // Method kotlin/NoWhenBranchMatchedException."<init>":()V
+     122: athrow
+     123: ireturn
+
+  public static final boolean reusableContains(it.unimi.dsi.lang.MutableString, io.johnsonlee.graphite.graph.StringValueTransform, java.lang.String);
+    Code:
+       0: aload_0
+       1: ldc           #152                // String actual
+       3: invokestatic  #156                // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       6: aload_2
+       7: ldc           #160                // String expected
+       9: invokestatic  #156                // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      12: aload_1
+      13: getstatic     #207                // Field io/johnsonlee/graphite/graph/StringValueTransform.LOWERCASE:Lio/johnsonlee/graphite/graph/StringValueTransform;
+      16: if_acmpne     69
+      19: iconst_0
+      20: istore_3
+      21: iload_3
+      22: aload_0
+      23: invokevirtual #210                // Method it/unimi/dsi/lang/MutableString.length:()I
+      26: if_icmpge     64
+      29: aload_0
+      30: iload_3
+      31: invokevirtual #214                // Method it/unimi/dsi/lang/MutableString.charAt:(I)C
+      34: bipush        127
+      36: if_icmple     58
+      39: aload_0
+      40: invokevirtual #217                // Method it/unimi/dsi/lang/MutableString.toString:()Ljava/lang/String;
+      43: dup
+      44: ldc           #219                // String toString(...)
+      46: invokestatic  #222                // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+      49: aload_1
+      50: getstatic     #225                // Field io/johnsonlee/graphite/graph/StringMatchMode.CONTAINS:Lio/johnsonlee/graphite/graph/StringMatchMode;
+      53: aload_2
+      54: invokestatic  #227                // Method stringMatches:(Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;)Z
+      57: ireturn
+      58: iinc          3, 1
+      61: goto          21
+      64: aload_0
+      65: invokevirtual #231                // Method it/unimi/dsi/lang/MutableString.toLowerCase:()Lit/unimi/dsi/lang/MutableString;
+      68: pop
+      69: aload_0
+      70: aload_2
+      71: checkcast     #185                // class java/lang/CharSequence
+      74: invokevirtual #235                // Method it/unimi/dsi/lang/MutableString.indexOf:(Ljava/lang/CharSequence;)I
+      77: iflt          84
+      80: iconst_1
+      81: goto          85
+      84: iconst_0
+      85: ireturn
+
+  public static final void consumeGraphWork(io.johnsonlee.graphite.graph.GraphWorkConsumer, long);
+    Code:
+       0: aload_0
+       1: ifnull        10
+       4: lload_1
+       5: lconst_0
+       6: lcmp
+       7: ifne          11
+      10: return
+      11: aload_0
+      12: instanceof    #241                // class io/johnsonlee/graphite/graph/GraphWorkBatchConsumer
+      15: ifeq          31
+      18: aload_0
+      19: checkcast     #241                // class io/johnsonlee/graphite/graph/GraphWorkBatchConsumer
+      22: lload_1
+      23: invokeinterface #245,  3          // InterfaceMethod io/johnsonlee/graphite/graph/GraphWorkBatchConsumer.consume:(J)V
+      28: goto          68
+      31: lload_1
+      32: ldc2_w        #246                // long 2147483647l
+      35: invokestatic  #253                // Method kotlin/ranges/RangesKt.coerceAtMost:(JJ)J
+      38: l2i
+      39: istore_3
+      40: iconst_0
+      41: istore        4
+      43: iload         4
+      45: iload_3
+      46: if_icmpge     68
+      49: iload         4
+      51: istore        5
+      53: iconst_0
+      54: istore        6
+      56: aload_0
+      57: invokeinterface #257,  1          // InterfaceMethod io/johnsonlee/graphite/graph/GraphWorkConsumer.consume:()V
+      62: iinc          4, 1
+      65: goto          43
+      68: return
+
+  private static final java.lang.String transformString(java.lang.String, io.johnsonlee.graphite.graph.StringValueTransform);
+    Code:
+       0: aload_1
+       1: dup
+       2: ifnonnull     10
+       5: pop
+       6: iconst_m1
+       7: goto          18
+      10: getstatic     #265                // Field io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt$WhenMappings.$EnumSwitchMapping$1:[I
+      13: swap
+      14: invokevirtual #266                // Method io/johnsonlee/graphite/graph/StringValueTransform.ordinal:()I
+      17: iaload
+      18: tableswitch   { // -1 to 1
+                    -1: 44
+                     0: 65
+                     1: 48
+               default: 65
+          }
+      44: aload_0
+      45: goto          73
+      48: aload_0
+      49: getstatic     #272                // Field java/util/Locale.ROOT:Ljava/util/Locale;
+      52: invokevirtual #275                // Method java/lang/String.toLowerCase:(Ljava/util/Locale;)Ljava/lang/String;
+      55: dup
+      56: ldc_w         #277                // String toLowerCase(...)
+      59: invokestatic  #222                // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+      62: goto          73
+      65: new           #191                // class kotlin/NoWhenBranchMatchedException
+      68: dup
+      69: invokespecial #195                // Method kotlin/NoWhenBranchMatchedException."<init>":()V
+      72: athrow
+      73: areturn
+
+  private static final int trigramHash(java.lang.String, int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokevirtual #281                // Method java/lang/String.charAt:(I)C
+       5: bipush        31
+       7: imul
+       8: aload_0
+       9: iload_1
+      10: iconst_1
+      11: iadd
+      12: invokevirtual #281                // Method java/lang/String.charAt:(I)C
+      15: iadd
+      16: bipush        31
+      18: imul
+      19: aload_0
+      20: iload_1
+      21: iconst_2
+      22: iadd
+      23: invokevirtual #281                // Method java/lang/String.charAt:(I)C
+      26: iadd
+      27: ireturn
+
+  private static final boolean supportsRawStringProperty(java.lang.Class<? extends io.johnsonlee.graphite.core.Node>, java.lang.String);
+    Code:
+       0: aload_0
+       1: astore_2
+       2: aload_2
+       3: ldc_w         #287                // class io/johnsonlee/graphite/core/StringConstant
+       6: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+       9: ifeq          22
+      12: aload_1
+      13: ldc_w         #288                // String value
+      16: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      19: goto          273
+      22: aload_2
+      23: ldc_w         #290                // class io/johnsonlee/graphite/core/EnumConstant
+      26: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      29: ifeq          60
+      32: aload_1
+      33: ldc_w         #292                // String enum_type
+      36: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      39: ifne          52
+      42: aload_1
+      43: ldc_w         #294                // String name
+      46: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      49: ifeq          56
+      52: iconst_1
+      53: goto          273
+      56: iconst_0
+      57: goto          273
+      60: aload_2
+      61: ldc_w         #296                // class io/johnsonlee/graphite/core/LocalVariable
+      64: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      67: ifeq          98
+      70: aload_1
+      71: ldc_w         #294                // String name
+      74: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      77: ifne          90
+      80: aload_1
+      81: ldc_w         #298                // String type
+      84: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      87: ifeq          94
+      90: iconst_1
+      91: goto          273
+      94: iconst_0
+      95: goto          273
+      98: aload_2
+      99: ldc_w         #300                // class io/johnsonlee/graphite/core/FieldNode
+     102: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     105: ifeq          146
+     108: aload_1
+     109: ldc_w         #302                // String class
+     112: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     115: ifne          138
+     118: aload_1
+     119: ldc_w         #294                // String name
+     122: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     125: ifne          138
+     128: aload_1
+     129: ldc_w         #298                // String type
+     132: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     135: ifeq          142
+     138: iconst_1
+     139: goto          273
+     142: iconst_0
+     143: goto          273
+     146: aload_2
+     147: ldc_w         #304                // class io/johnsonlee/graphite/core/ParameterNode
+     150: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     153: ifeq          166
+     156: aload_1
+     157: ldc_w         #298                // String type
+     160: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     163: goto          273
+     166: aload_2
+     167: ldc_w         #306                // class io/johnsonlee/graphite/core/ResourceFileNode
+     170: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     173: ifeq          214
+     176: aload_1
+     177: ldc_w         #308                // String path
+     180: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     183: ifne          206
+     186: aload_1
+     187: ldc_w         #310                // String source
+     190: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     193: ifne          206
+     196: aload_1
+     197: ldc_w         #312                // String format
+     200: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     203: ifeq          210
+     206: iconst_1
+     207: goto          273
+     210: iconst_0
+     211: goto          273
+     214: aload_2
+     215: ldc_w         #314                // class io/johnsonlee/graphite/core/CallSiteNode
+     218: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     221: ifeq          272
+     224: aload_1
+     225: ldc_w         #316                // String caller_class
+     228: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     231: ifne          264
+     234: aload_1
+     235: ldc_w         #318                // String caller_name
+     238: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     241: ifne          264
+     244: aload_1
+     245: ldc_w         #320                // String callee_class
+     248: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     251: ifne          264
+     254: aload_1
+     255: ldc_w         #322                // String callee_name
+     258: invokestatic  #81                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     261: ifeq          268
+     264: iconst_1
+     265: goto          273
+     268: iconst_0
+     269: goto          273
+     272: iconst_0
+     273: ireturn
+
+  private static final void updateIdentityInt(java.security.MessageDigest, int);
+    Code:
+       0: iconst_3
+       1: istore_2
+       2: iconst_m1
+       3: iload_2
+       4: if_icmpge     24
+       7: aload_0
+       8: iload_1
+       9: iload_2
+      10: bipush        8
+      12: imul
+      13: iushr
+      14: i2b
+      15: invokevirtual #334                // Method java/security/MessageDigest.update:(B)V
+      18: iinc          2, -1
+      21: goto          2
+      24: return
+
+  private static final void updateIdentityLong(java.security.MessageDigest, long);
+    Code:
+       0: bipush        7
+       2: istore_3
+       3: iconst_m1
+       4: iload_3
+       5: if_icmpge     26
+       8: aload_0
+       9: lload_1
+      10: iload_3
+      11: bipush        8
+      13: imul
+      14: lushr
+      15: l2i
+      16: i2b
+      17: invokevirtual #334                // Method java/security/MessageDigest.update:(B)V
+      20: iinc          3, -1
+      23: goto          3
+      26: return
+
+  private static final int callSiteScanParallelism_delegate$lambda$0();
+    Code:
+       0: invokestatic  #347                // Method java/lang/Runtime.getRuntime:()Ljava/lang/Runtime;
+       3: invokevirtual #350                // Method java/lang/Runtime.availableProcessors:()I
+       6: iconst_1
+       7: invokestatic  #354                // Method kotlin/ranges/RangesKt.coerceAtLeast:(II)I
+      10: istore_0
+      11: ldc_w         #356                // String graphite.webgraph.callSiteScanParallelism
+      14: invokestatic  #361                // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+      17: astore_1
+      18: aload_1
+      19: ifnull        43
+      22: aload_1
+      23: invokestatic  #365                // Method kotlin/text/StringsKt.toIntOrNull:(Ljava/lang/String;)Ljava/lang/Integer;
+      26: astore_2
+      27: aload_2
+      28: ifnull        43
+      31: aload_2
+      32: invokevirtual #368                // Method java/lang/Integer.intValue:()I
+      35: iconst_1
+      36: iload_0
+      37: invokestatic  #372                // Method kotlin/ranges/RangesKt.coerceIn:(III)I
+      40: goto          44
+      43: iload_0
+      44: ireturn
+
+  private static final java.lang.Thread callSiteScanExecutor_delegate$lambda$3$lambda$2(java.lang.Runnable);
+    Code:
+       0: new           #377                // class java/lang/Thread
+       3: dup
+       4: aload_0
+       5: getstatic     #381                // Field callSiteScanWorkerNumber:Ljava/util/concurrent/atomic/AtomicInteger;
+       8: invokevirtual #386                // Method java/util/concurrent/atomic/AtomicInteger.incrementAndGet:()I
+      11: invokedynamic #398,  0            // InvokeDynamic #0:makeConcatWithConstants:(I)Ljava/lang/String;
+      16: invokespecial #401                // Method java/lang/Thread."<init>":(Ljava/lang/Runnable;Ljava/lang/String;)V
+      19: astore_1
+      20: aload_1
+      21: astore_2
+      22: iconst_0
+      23: istore_3
+      24: aload_2
+      25: iconst_1
+      26: invokevirtual #405                // Method java/lang/Thread.setDaemon:(Z)V
+      29: nop
+      30: aload_1
+      31: areturn
+
+  private static final java.util.concurrent.ExecutorService callSiteScanExecutor_delegate$lambda$3();
+    Code:
+       0: invokestatic  #413                // Method getCallSiteScanParallelism:()I
+       3: invokedynamic #428,  0            // InvokeDynamic #1:newThread:()Ljava/util/concurrent/ThreadFactory;
+       8: invokestatic  #434                // Method java/util/concurrent/Executors.newFixedThreadPool:(ILjava/util/concurrent/ThreadFactory;)Ljava/util/concurrent/ExecutorService;
+      11: areturn
+
+  private static final void CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER$lambda$4(long);
+    Code:
+       0: return
+
+  public static final void access$updateIdentityInt(java.security.MessageDigest, int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokestatic  #438                // Method updateIdentityInt:(Ljava/security/MessageDigest;I)V
+       5: return
+
+  public static final boolean access$shareStringMatcher(java.util.List);
+    Code:
+       0: aload_0
+       1: invokestatic  #442                // Method shareStringMatcher:(Ljava/util/List;)Z
+       4: ireturn
+
+  public static final boolean access$supportsRawStringProperty(java.lang.Class, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokestatic  #445                // Method supportsRawStringProperty:(Ljava/lang/Class;Ljava/lang/String;)Z
+       5: ireturn
+
+  public static final io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer access$getCALL_SITE_INDEX_PREPARATION_WORK_CONSUMER$p();
+    Code:
+       0: getstatic     #451                // Field CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER:Lio/johnsonlee/graphite/graph/ParallelGraphWorkBatchConsumer;
+       3: areturn
+
+  public static final long access$estimatedStringPropertyIndexBytes(long);
+    Code:
+       0: lload_0
+       1: invokestatic  #454                // Method estimatedStringPropertyIndexBytes:(J)J
+       4: lreturn
+
+  public static final void access$updateIdentityLong(java.security.MessageDigest, long);
+    Code:
+       0: aload_0
+       1: lload_1
+       2: invokestatic  #457                // Method updateIdentityLong:(Ljava/security/MessageDigest;J)V
+       5: return
+
+  public static final java.util.Set access$getCALL_SITE_NULL_STRING_PROPERTIES$p();
+    Code:
+       0: getstatic     #463                // Field CALL_SITE_NULL_STRING_PROPERTIES:Ljava/util/Set;
+       3: areturn
+
+  public static final long access$estimatedRawStringMatchStateBytes(io.johnsonlee.graphite.webgraph.RawStringMatchKey, int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokestatic  #466                // Method estimatedRawStringMatchStateBytes:(Lio/johnsonlee/graphite/webgraph/RawStringMatchKey;I)J
+       5: lreturn
+
+  public static final long access$estimatedStringPropertyAdmissionBytes(io.johnsonlee.graphite.webgraph.StringPropertyAdmissionKey);
+    Code:
+       0: aload_0
+       1: invokestatic  #469                // Method estimatedStringPropertyAdmissionBytes:(Lio/johnsonlee/graphite/webgraph/StringPropertyAdmissionKey;)J
+       4: lreturn
+
+  public static final long access$estimatedMatchingStringCacheBytes(io.johnsonlee.graphite.webgraph.StringMatchKey, int[]);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokestatic  #472                // Method estimatedMatchingStringCacheBytes:(Lio/johnsonlee/graphite/webgraph/StringMatchKey;[I)J
+       5: lreturn
+
+  public static final int access$trigramHash(java.lang.String, int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokestatic  #475                // Method trigramHash:(Ljava/lang/String;I)I
+       5: ireturn
+
+  public static final java.lang.String access$transformString(java.lang.String, io.johnsonlee.graphite.graph.StringValueTransform);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokestatic  #164                // Method transformString:(Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;)Ljava/lang/String;
+       5: areturn
+
+  static {};
+    Code:
+       0: new           #383                // class java/util/concurrent/atomic/AtomicInteger
+       3: dup
+       4: invokespecial #478                // Method java/util/concurrent/atomic/AtomicInteger."<init>":()V
+       7: putstatic     #381                // Field callSiteScanWorkerNumber:Ljava/util/concurrent/atomic/AtomicInteger;
+      10: invokedynamic #488,  0            // InvokeDynamic #2:invoke:()Lkotlin/jvm/functions/Function0;
+      15: invokestatic  #494                // Method kotlin/LazyKt.lazy:(Lkotlin/jvm/functions/Function0;)Lkotlin/Lazy;
+      18: putstatic     #10                 // Field callSiteScanParallelism$delegate:Lkotlin/Lazy;
+      21: invokedynamic #499,  0            // InvokeDynamic #3:invoke:()Lkotlin/jvm/functions/Function0;
+      26: invokestatic  #494                // Method kotlin/LazyKt.lazy:(Lkotlin/jvm/functions/Function0;)Lkotlin/Lazy;
+      29: putstatic     #26                 // Field callSiteScanExecutor$delegate:Lkotlin/Lazy;
+      32: iconst_2
+      33: anewarray     #118                // class java/lang/String
+      36: astore_0
+      37: aload_0
+      38: iconst_0
+      39: ldc_w         #302                // String class
+      42: aastore
+      43: aload_0
+      44: iconst_1
+      45: ldc_w         #294                // String name
+      48: aastore
+      49: aload_0
+      50: invokestatic  #505                // Method kotlin/collections/SetsKt.setOf:([Ljava/lang/Object;)Ljava/util/Set;
+      53: putstatic     #463                // Field CALL_SITE_NULL_STRING_PROPERTIES:Ljava/util/Set;
+      56: invokedynamic #511,  0            // InvokeDynamic #4:consume:()Lio/johnsonlee/graphite/graph/ParallelGraphWorkBatchConsumer;
+      61: putstatic     #451                // Field CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER:Lio/johnsonlee/graphite/graph/ParallelGraphWorkBatchConsumer;
+      64: return
+}

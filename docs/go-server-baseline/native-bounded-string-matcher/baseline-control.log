@@ -1,0 +1,5 @@
+--- FAIL: TestBoundedMatcherPublicMain (0.38s)
+    bounded_string_matcher_test.go:62: count=64 mutation=caller-name-max repeat=0 error=IndexOutOfBoundsException want=ArrayIndexOutOfBoundsException
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.704s
+FAIL

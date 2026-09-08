@@ -1,0 +1,256 @@
+Compiled from "MappedWebGraphBackedGraph.kt"
+final class io.johnsonlee.graphite.webgraph.BoundedStringMatcher {
+  private final io.johnsonlee.graphite.webgraph.StringTable stringTable;
+
+  private final io.johnsonlee.graphite.webgraph.StringPredicateKey predicate;
+
+  private final int stringCount;
+
+  private final int capacity;
+
+  private final byte[] dense;
+
+  private final int[] keys;
+
+  private final byte[] values;
+
+  private final it.unimi.dsi.lang.MutableString actual;
+
+  public io.johnsonlee.graphite.webgraph.BoundedStringMatcher(io.johnsonlee.graphite.webgraph.StringTable, io.johnsonlee.graphite.webgraph.StringPredicateKey, int);
+    Code:
+       0: aload_1
+       1: ldc           #9                  // String stringTable
+       3: invokestatic  #15                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       6: aload_2
+       7: ldc           #17                 // String predicate
+       9: invokestatic  #15                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      12: aload_0
+      13: invokespecial #20                 // Method java/lang/Object."<init>":()V
+      16: aload_0
+      17: aload_1
+      18: putfield      #23                 // Field stringTable:Lio/johnsonlee/graphite/webgraph/StringTable;
+      21: aload_0
+      22: aload_2
+      23: putfield      #26                 // Field predicate:Lio/johnsonlee/graphite/webgraph/StringPredicateKey;
+      26: aload_0
+      27: aload_0
+      28: getfield      #23                 // Field stringTable:Lio/johnsonlee/graphite/webgraph/StringTable;
+      31: invokevirtual #32                 // Method io/johnsonlee/graphite/webgraph/StringTable.size:()I
+      34: putfield      #36                 // Field stringCount:I
+      37: aload_0
+      38: iload_3
+      39: iconst_1
+      40: invokestatic  #42                 // Method kotlin/ranges/RangesKt.coerceAtLeast:(II)I
+      43: invokestatic  #48                 // Method java/lang/Integer.highestOneBit:(I)I
+      46: putfield      #51                 // Field capacity:I
+      49: aload_0
+      50: aload_0
+      51: getfield      #36                 // Field stringCount:I
+      54: aload_0
+      55: getfield      #51                 // Field capacity:I
+      58: if_icmpgt     70
+      61: aload_0
+      62: getfield      #36                 // Field stringCount:I
+      65: newarray       byte
+      67: goto          71
+      70: aconst_null
+      71: putfield      #55                 // Field dense:[B
+      74: aload_0
+      75: aload_0
+      76: getfield      #55                 // Field dense:[B
+      79: ifnonnull     91
+      82: aload_0
+      83: getfield      #51                 // Field capacity:I
+      86: newarray       int
+      88: goto          92
+      91: aconst_null
+      92: putfield      #59                 // Field keys:[I
+      95: aload_0
+      96: aload_0
+      97: getfield      #55                 // Field dense:[B
+     100: ifnonnull     112
+     103: aload_0
+     104: getfield      #51                 // Field capacity:I
+     107: newarray       byte
+     109: goto          113
+     112: aconst_null
+     113: putfield      #62                 // Field values:[B
+     116: aload_0
+     117: new           #64                 // class it/unimi/dsi/lang/MutableString
+     120: dup
+     121: invokespecial #65                 // Method it/unimi/dsi/lang/MutableString."<init>":()V
+     124: putfield      #69                 // Field actual:Lit/unimi/dsi/lang/MutableString;
+     127: return
+
+  public io.johnsonlee.graphite.webgraph.BoundedStringMatcher(io.johnsonlee.graphite.webgraph.StringTable, io.johnsonlee.graphite.webgraph.StringPredicateKey, int, int, kotlin.jvm.internal.DefaultConstructorMarker);
+    Code:
+       0: iload         4
+       2: iconst_4
+       3: iand
+       4: ifeq          10
+       7: ldc           #78                 // int 65536
+       9: istore_3
+      10: aload_0
+      11: aload_1
+      12: aload_2
+      13: iload_3
+      14: invokespecial #80                 // Method "<init>":(Lio/johnsonlee/graphite/webgraph/StringTable;Lio/johnsonlee/graphite/webgraph/StringPredicateKey;I)V
+      17: return
+
+  public final boolean matches(int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokespecial #86                 // Method state:(I)B
+       5: istore_2
+       6: iload_2
+       7: iconst_2
+       8: if_icmpne     13
+      11: iconst_1
+      12: ireturn
+      13: iload_2
+      14: iconst_1
+      15: if_icmpne     20
+      18: iconst_0
+      19: ireturn
+      20: aload_0
+      21: getfield      #23                 // Field stringTable:Lio/johnsonlee/graphite/webgraph/StringTable;
+      24: iload_1
+      25: aload_0
+      26: getfield      #69                 // Field actual:Lit/unimi/dsi/lang/MutableString;
+      29: invokevirtual #90                 // Method io/johnsonlee/graphite/webgraph/StringTable.get$webgraph:(ILit/unimi/dsi/lang/MutableString;)V
+      32: aload_0
+      33: getfield      #26                 // Field predicate:Lio/johnsonlee/graphite/webgraph/StringPredicateKey;
+      36: invokevirtual #94                 // Method io/johnsonlee/graphite/webgraph/StringPredicateKey.getMode:()Lio/johnsonlee/graphite/graph/StringMatchMode;
+      39: getstatic     #100                // Field io/johnsonlee/graphite/graph/StringMatchMode.CONTAINS:Lio/johnsonlee/graphite/graph/StringMatchMode;
+      42: if_acmpne     69
+      45: aload_0
+      46: getfield      #69                 // Field actual:Lit/unimi/dsi/lang/MutableString;
+      49: aload_0
+      50: getfield      #26                 // Field predicate:Lio/johnsonlee/graphite/webgraph/StringPredicateKey;
+      53: invokevirtual #104                // Method io/johnsonlee/graphite/webgraph/StringPredicateKey.getTransform:()Lio/johnsonlee/graphite/graph/StringValueTransform;
+      56: aload_0
+      57: getfield      #26                 // Field predicate:Lio/johnsonlee/graphite/webgraph/StringPredicateKey;
+      60: invokevirtual #108                // Method io/johnsonlee/graphite/webgraph/StringPredicateKey.getExpected:()Ljava/lang/String;
+      63: invokestatic  #114                // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.reusableContains:(Lit/unimi/dsi/lang/MutableString;Lio/johnsonlee/graphite/graph/StringValueTransform;Ljava/lang/String;)Z
+      66: goto          106
+      69: aload_0
+      70: getfield      #69                 // Field actual:Lit/unimi/dsi/lang/MutableString;
+      73: invokevirtual #117                // Method it/unimi/dsi/lang/MutableString.toString:()Ljava/lang/String;
+      76: dup
+      77: ldc           #119                // String toString(...)
+      79: invokestatic  #122                // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+      82: aload_0
+      83: getfield      #26                 // Field predicate:Lio/johnsonlee/graphite/webgraph/StringPredicateKey;
+      86: invokevirtual #104                // Method io/johnsonlee/graphite/webgraph/StringPredicateKey.getTransform:()Lio/johnsonlee/graphite/graph/StringValueTransform;
+      89: aload_0
+      90: getfield      #26                 // Field predicate:Lio/johnsonlee/graphite/webgraph/StringPredicateKey;
+      93: invokevirtual #94                 // Method io/johnsonlee/graphite/webgraph/StringPredicateKey.getMode:()Lio/johnsonlee/graphite/graph/StringMatchMode;
+      96: aload_0
+      97: getfield      #26                 // Field predicate:Lio/johnsonlee/graphite/webgraph/StringPredicateKey;
+     100: invokevirtual #108                // Method io/johnsonlee/graphite/webgraph/StringPredicateKey.getExpected:()Ljava/lang/String;
+     103: invokestatic  #126                // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.stringMatches:(Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;)Z
+     106: istore_3
+     107: aload_0
+     108: iload_1
+     109: iload_3
+     110: ifeq          117
+     113: iconst_2
+     114: goto          118
+     117: iconst_1
+     118: invokespecial #130                // Method put:(IB)V
+     121: iload_3
+     122: ireturn
+
+  private final byte state(int);
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field dense:[B
+       4: astore_2
+       5: aload_2
+       6: ifnull        18
+       9: aload_2
+      10: astore_3
+      11: iconst_0
+      12: istore        4
+      14: aload_3
+      15: iload_1
+      16: baload
+      17: ireturn
+      18: aload_0
+      19: iload_1
+      20: invokespecial #137                // Method cacheSlot:(I)I
+      23: istore_2
+      24: aload_0
+      25: getfield      #59                 // Field keys:[I
+      28: dup
+      29: invokestatic  #141                // Method kotlin/jvm/internal/Intrinsics.checkNotNull:(Ljava/lang/Object;)V
+      32: iload_2
+      33: iaload
+      34: iload_1
+      35: iconst_1
+      36: iadd
+      37: if_icmpne     53
+      40: aload_0
+      41: getfield      #62                 // Field values:[B
+      44: dup
+      45: invokestatic  #141                // Method kotlin/jvm/internal/Intrinsics.checkNotNull:(Ljava/lang/Object;)V
+      48: iload_2
+      49: baload
+      50: goto          54
+      53: iconst_0
+      54: ireturn
+
+  private final void put(int, byte);
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field dense:[B
+       4: dup
+       5: ifnull        19
+       8: astore        4
+      10: iconst_0
+      11: istore        5
+      13: aload         4
+      15: iload_1
+      16: iload_2
+      17: bastore
+      18: return
+      19: pop
+      20: aload_0
+      21: iload_1
+      22: invokespecial #137                // Method cacheSlot:(I)I
+      25: istore_3
+      26: aload_0
+      27: getfield      #62                 // Field values:[B
+      30: dup
+      31: invokestatic  #141                // Method kotlin/jvm/internal/Intrinsics.checkNotNull:(Ljava/lang/Object;)V
+      34: iload_3
+      35: iload_2
+      36: bastore
+      37: aload_0
+      38: getfield      #59                 // Field keys:[I
+      41: dup
+      42: invokestatic  #141                // Method kotlin/jvm/internal/Intrinsics.checkNotNull:(Ljava/lang/Object;)V
+      45: iload_3
+      46: iload_1
+      47: iconst_1
+      48: iadd
+      49: iastore
+      50: return
+
+  private final int cacheSlot(int);
+    Code:
+       0: iload_1
+       1: iload_1
+       2: bipush        16
+       4: iushr
+       5: ixor
+       6: istore_2
+       7: iload_2
+       8: aload_0
+       9: getfield      #51                 // Field capacity:I
+      12: iconst_1
+      13: isub
+      14: iand
+      15: ireturn
+}

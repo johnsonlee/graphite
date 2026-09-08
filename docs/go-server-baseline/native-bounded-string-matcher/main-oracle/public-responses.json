@@ -1,0 +1,476 @@
+[
+  {
+    "sourceCount": 2,
+    "fixtureMutation": "clean",
+    "repetition": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": null,
+    "mutationFile": null,
+    "mutationByteOffset": null,
+    "mutationNewSID": null,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "g00"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "sourceCount": 2,
+    "fixtureMutation": "clean",
+    "repetition": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": null,
+    "mutationFile": null,
+    "mutationByteOffset": null,
+    "mutationNewSID": null,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "g00"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "sourceCount": 2,
+    "fixtureMutation": "bad-return-type",
+    "repetition": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 98,
+    "mutationNewSID": 2147483647,
+    "error": "java.lang.IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "stack": [
+      "it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex(AbstractObjectList.java:68)",
+      "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(CharArrayFrontCodedList.java:298)",
+      "it.unimi.dsi.util.FrontCodedStringList.get(FrontCodedStringList.java:179)",
+      "io.johnsonlee.graphite.webgraph.StringTable.get(StringTable.kt:59)",
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readMethodDescriptor(NodeSerializer.kt:799)",
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:547)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$serialRawCallSiteStringDisjunction$1.invokeSuspend(MappedWebGraphBackedGraph.kt:1080)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1731)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 2,
+    "fixtureMutation": "bad-return-type",
+    "repetition": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 98,
+    "mutationNewSID": 2147483647,
+    "error": "java.lang.IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "stack": [
+      "it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex(AbstractObjectList.java:68)",
+      "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(CharArrayFrontCodedList.java:298)",
+      "it.unimi.dsi.util.FrontCodedStringList.get(FrontCodedStringList.java:179)",
+      "io.johnsonlee.graphite.webgraph.StringTable.get(StringTable.kt:59)",
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readMethodDescriptor(NodeSerializer.kt:799)",
+      "io.johnsonlee.graphite.webgraph.NodeSerializer.readNode(NodeSerializer.kt:547)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.readNodeAt(MappedWebGraphBackedGraph.kt:2541)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.node-NKfh_u4(MappedWebGraphBackedGraph.kt:258)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$serialRawCallSiteStringDisjunction$1.invokeSuspend(MappedWebGraphBackedGraph.kt:1080)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1731)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 2,
+    "fixtureMutation": "caller-name-max",
+    "repetition": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 74,
+    "mutationNewSID": 2147483647,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 2147483647 out of bounds for length 9",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$serialRawCallSiteStringDisjunction$1.invokeSuspend(MappedWebGraphBackedGraph.kt:1075)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1731)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 2,
+    "fixtureMutation": "caller-name-max",
+    "repetition": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 74,
+    "mutationNewSID": 2147483647,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 2147483647 out of bounds for length 9",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$serialRawCallSiteStringDisjunction$1.invokeSuspend(MappedWebGraphBackedGraph.kt:1075)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1731)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 2,
+    "fixtureMutation": "caller-name-negative",
+    "repetition": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 74,
+    "mutationNewSID": -1,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index -1 out of bounds for length 9",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$serialRawCallSiteStringDisjunction$1.invokeSuspend(MappedWebGraphBackedGraph.kt:1075)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1731)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 2,
+    "fixtureMutation": "caller-name-negative",
+    "repetition": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 74,
+    "mutationNewSID": -1,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index -1 out of bounds for length 9",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$serialRawCallSiteStringDisjunction$1.invokeSuspend(MappedWebGraphBackedGraph.kt:1075)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline$mergeNodeSequences$1.invokeSuspend(QueryPipeline.kt:2936)",
+      "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)",
+      "kotlin.sequences.SequenceBuilderIterator.hasNext(SequenceBuilder.kt:129)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1731)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 64,
+    "fixtureMutation": "clean",
+    "repetition": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": null,
+    "mutationFile": null,
+    "mutationByteOffset": null,
+    "mutationNewSID": null,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "g00"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "sourceCount": 64,
+    "fixtureMutation": "clean",
+    "repetition": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": null,
+    "mutationFile": null,
+    "mutationByteOffset": null,
+    "mutationNewSID": null,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "g00"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "sourceCount": 64,
+    "fixtureMutation": "bad-return-type",
+    "repetition": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 98,
+    "mutationNewSID": 2147483647,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "g00"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "sourceCount": 64,
+    "fixtureMutation": "bad-return-type",
+    "repetition": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 98,
+    "mutationNewSID": 2147483647,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "g00"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "sourceCount": 64,
+    "fixtureMutation": "caller-name-max",
+    "repetition": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 74,
+    "mutationNewSID": 2147483647,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 2147483647 out of bounds for length 9",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.rawCallSiteStringProjection(MappedWebGraphBackedGraph.kt:860)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.projectStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:759)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.projectLeadingRows(QueryPipeline.kt:1862)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1668)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 64,
+    "fixtureMutation": "caller-name-max",
+    "repetition": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 74,
+    "mutationNewSID": 2147483647,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 2147483647 out of bounds for length 9",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.rawCallSiteStringProjection(MappedWebGraphBackedGraph.kt:860)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.projectStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:759)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.projectLeadingRows(QueryPipeline.kt:1862)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1668)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 64,
+    "fixtureMutation": "caller-name-negative",
+    "repetition": 0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 74,
+    "mutationNewSID": -1,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index -1 out of bounds for length 9",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.rawCallSiteStringProjection(MappedWebGraphBackedGraph.kt:860)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.projectStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:759)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.projectLeadingRows(QueryPipeline.kt:1862)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1668)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  },
+  {
+    "sourceCount": 64,
+    "fixtureMutation": "caller-name-negative",
+    "repetition": 1,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027othe\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "sourceFixture": "clean",
+    "mutatedSource": "g00",
+    "mutationFile": "graph.nodedata",
+    "mutationByteOffset": 74,
+    "mutationNewSID": -1,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index -1 out of bounds for length 9",
+    "stack": [
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.state(MappedWebGraphBackedGraph.kt:2695)",
+      "io.johnsonlee.graphite.webgraph.BoundedStringMatcher.matches(MappedWebGraphBackedGraph.kt:2681)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.rawCallSiteStringProjection(MappedWebGraphBackedGraph.kt:860)",
+      "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.projectStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:759)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.projectLeadingRows(QueryPipeline.kt:1862)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows(QueryPipeline.kt:1668)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunctionRows$default(QueryPipeline.kt:1639)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringFilter(QueryPipeline.kt:1551)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1331)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+      "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+      "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+      "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(CypherExecutor.kt:510)",
+      "BoundedMatcherPublicOracle.main(BoundedMatcherPublicOracle.java:28)"
+    ]
+  }
+]

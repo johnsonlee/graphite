@@ -1,0 +1,41 @@
+{
+  "startedUtc": "2026-09-08T02:37:37.560273+00:00",
+  "endedUtc": "2026-09-08T02:37:39.110244+00:00",
+  "jar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "jarSha256BeforeAndAfter": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "inputHashes": {
+    "BoundedMatcherPublicOracle.java": "f2c0efaa07106d41182f585b96cccaba3e3f52b4510b70fbe154c498c679faf0",
+    "run-public.py": "b92dabcb5cb28985cc314408e7376c1b9a84c1fcab8dd8a2b0ee79c20b810c26"
+  },
+  "commands": [
+    {
+      "argv": [
+        "javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-bounded-string-matcher/main-oracle/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-bounded-string-matcher/main-oracle/BoundedMatcherPublicOracle.java"
+      ],
+      "exitCode": 0,
+      "stdout": "public-compile.stdout",
+      "stderr": "public-compile.stderr"
+    },
+    {
+      "argv": [
+        "java",
+        "-cp",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-bounded-string-matcher/main-oracle/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "BoundedMatcherPublicOracle",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-bounded-public-knk1nrr5",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-bounded-string-matcher/main-oracle/public-responses.json"
+      ],
+      "exitCode": 0,
+      "stdout": "public-run.stdout",
+      "stderr": "public-run.stderr"
+    }
+  ],
+  "publicObservations": 16,
+  "verified": true,
+  "performanceMeasurement": false
+}

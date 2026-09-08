@@ -1,0 +1,960 @@
+Compiled from "QueryPipeline.kt"
+public final class io.johnsonlee.graphite.cypher.QueryPipelineKt {
+  private static final int COUNT_QUERY_CLAUSES;
+
+  private static final int LABEL_HISTOGRAM_QUERY_CLAUSES;
+
+  private static final int ORDERED_DISTINCT_GRAPH_ID_QUERY_CLAUSES;
+
+  private static final int DISTINCT_LIMIT_QUERY_CLAUSES;
+
+  private static final int FILTERED_LIMIT_QUERY_CLAUSES;
+
+  private static final int SINGLE_HOP_LIMIT_QUERY_CLAUSES;
+
+  private static final int SINGLE_HOP_PATTERN_ELEMENTS;
+
+  private static final java.lang.String SINGLE_GRAPH_ID;
+
+  public static final int MAX_ORDERED_TOP_K_ROWS;
+
+  private static final java.lang.String INTERNAL_MATCHED_PATH_SEGMENTS_KEY;
+
+  private static final java.lang.String INTERNAL_CURRENT_NODE_KEY;
+
+  private static final java.lang.String INTERNAL_PATH_START_NODE_KEY;
+
+  private static final java.lang.String INTERNAL_RELATIONSHIP_MATCH_STATE_KEY;
+
+  private static final java.lang.String INTERNAL_ORDER_VALUES_KEY;
+
+  private static final io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer noOpParallelGraphWorkConsumer;
+
+  private static final java.lang.String DIRECT_STRING_PARALLELISM_PROPERTY;
+
+  private static final int BALANCED_STRING_SCAN_MIN_SOURCE_COUNT;
+
+  private static final int LEGACY_DIRECT_STRING_GRAPH_PARALLELISM;
+
+  private static final int RAW_LEADING_MAX_TERM_LENGTH;
+
+  private static final int RAW_LEADING_MAX_LIMIT;
+
+  private static final int DIRECT_ORDER_SOURCE_SHIFT;
+
+  private static final java.util.concurrent.atomic.AtomicInteger directStringWorkerNumber;
+
+  private static final java.lang.ThreadLocal<java.lang.Boolean> directStringWorkerActive;
+
+  private static final java.util.concurrent.atomic.AtomicInteger directStringActiveWorkers;
+
+  private static final java.util.concurrent.atomic.AtomicInteger directStringPeakActiveWorkers;
+
+  private static final kotlin.Lazy configuredDirectStringParallelism$delegate;
+
+  private static final kotlin.Lazy directStringExecutorParallelism$delegate;
+
+  private static final kotlin.Lazy directStringExecutor$delegate;
+
+  private static final io.johnsonlee.graphite.cypher.SerialStringGraphWorkConsumer noOpSerialStringGraphWorkConsumer;
+
+  private static final io.johnsonlee.graphite.cypher.PreferredPersistedStringIndexGraphWorkConsumer noOpPreferredPersistedStringIndexGraphWorkConsumer;
+
+  private static final io.johnsonlee.graphite.cypher.PreferredRawStringGraphWorkConsumer noOpPreferredRawStringGraphWorkConsumer;
+
+  private static final java.util.Set<java.lang.String> QUALIFIED_NODE_PROPERTIES;
+
+  private static final java.util.List<kotlin.Pair<java.lang.Class<? extends io.johnsonlee.graphite.core.Node>, java.util.Set<java.lang.String>>> DIRECT_STRING_NODE_PROPERTIES;
+
+  private static final java.util.Set<java.lang.String> CALL_SITE_DIRECT_STRING_PROPERTIES;
+
+  private static final java.util.Set<java.lang.String> CALL_SITE_NULL_STRING_PROPERTIES;
+
+  private static final java.lang.Class<? extends io.johnsonlee.graphite.core.Node> resolveNodeClass(java.util.List<java.lang.String>);
+    Code:
+       0: aload_0
+       1: invokestatic  #13                 // Method kotlin/collections/CollectionsKt.firstOrNull:(Ljava/util/List;)Ljava/lang/Object;
+       4: checkcast     #15                 // class java/lang/String
+       7: dup
+       8: ifnull        34
+      11: astore_1
+      12: getstatic     #21                 // Field io/johnsonlee/graphite/cypher/NodePropertyAccessor.INSTANCE:Lio/johnsonlee/graphite/cypher/NodePropertyAccessor;
+      15: astore_2
+      16: aload_1
+      17: astore_3
+      18: iconst_0
+      19: istore        4
+      21: iconst_0
+      22: istore        5
+      24: aload_2
+      25: aload_3
+      26: invokevirtual #25                 // Method io/johnsonlee/graphite/cypher/NodePropertyAccessor.resolveNodeLabelOrNull:(Ljava/lang/String;)Ljava/lang/Class;
+      29: nop
+      30: dup
+      31: ifnonnull     56
+      34: pop
+      35: ldc           #27                 // class io/johnsonlee/graphite/core/Node
+      37: astore_1
+      38: aload_1
+      39: astore_2
+      40: iconst_0
+      41: istore_3
+      42: aload_0
+      43: invokeinterface #33,  1           // InterfaceMethod java/util/List.isEmpty:()Z
+      48: ifeq          55
+      51: aload_1
+      52: goto          56
+      55: aconst_null
+      56: areturn
+
+  public static final int directStringGraphPeakActiveWorkers();
+    Code:
+       0: getstatic     #51                 // Field directStringPeakActiveWorkers:Ljava/util/concurrent/atomic/AtomicInteger;
+       3: invokevirtual #56                 // Method java/util/concurrent/atomic/AtomicInteger.get:()I
+       6: ireturn
+
+  public static final void resetDirectStringGraphWorkerMetrics();
+    Code:
+       0: getstatic     #61                 // Field directStringActiveWorkers:Ljava/util/concurrent/atomic/AtomicInteger;
+       3: invokevirtual #56                 // Method java/util/concurrent/atomic/AtomicInteger.get:()I
+       6: ifne          13
+       9: iconst_1
+      10: goto          14
+      13: iconst_0
+      14: ifne          34
+      17: iconst_0
+      18: istore_0
+      19: ldc           #63                 // String Cannot reset active direct-string graph worker metrics
+      21: astore_0
+      22: new           #65                 // class java/lang/IllegalStateException
+      25: dup
+      26: aload_0
+      27: invokevirtual #69                 // Method java/lang/Object.toString:()Ljava/lang/String;
+      30: invokespecial #73                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+      33: athrow
+      34: getstatic     #51                 // Field directStringPeakActiveWorkers:Ljava/util/concurrent/atomic/AtomicInteger;
+      37: iconst_0
+      38: invokevirtual #77                 // Method java/util/concurrent/atomic/AtomicInteger.set:(I)V
+      41: return
+
+  public static final io.johnsonlee.graphite.graph.GraphScanParallelismPlan resolveDirectStringParallelismPlan(int, java.lang.String);
+    Code:
+       0: iload_0
+       1: iconst_1
+       2: invokestatic  #88                 // Method kotlin/ranges/RangesKt.coerceAtLeast:(II)I
+       5: istore_2
+       6: aload_1
+       7: ifnull        37
+      10: aload_1
+      11: invokestatic  #94                 // Method kotlin/text/StringsKt.toIntOrNull:(Ljava/lang/String;)Ljava/lang/Integer;
+      14: astore        4
+      16: aload         4
+      18: ifnull        37
+      21: aload         4
+      23: invokevirtual #99                 // Method java/lang/Integer.intValue:()I
+      26: iconst_1
+      27: iload_2
+      28: invokestatic  #103                // Method kotlin/ranges/RangesKt.coerceIn:(III)I
+      31: invokestatic  #107                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      34: goto          38
+      37: aconst_null
+      38: astore_3
+      39: aload_3
+      40: dup
+      41: ifnull        69
+      44: checkcast     #109                // class java/lang/Number
+      47: invokevirtual #110                // Method java/lang/Number.intValue:()I
+      50: istore        5
+      52: iconst_0
+      53: istore        6
+      55: getstatic     #116                // Field io/johnsonlee/graphite/graph/GraphScanParallelismPlan.Companion:Lio/johnsonlee/graphite/graph/GraphScanParallelismPlan$Companion;
+      58: iload_2
+      59: iload         5
+      61: invokevirtual #122                // Method io/johnsonlee/graphite/graph/GraphScanParallelismPlan$Companion.withGraphWorkers:(II)Lio/johnsonlee/graphite/graph/GraphScanParallelismPlan;
+      64: nop
+      65: dup
+      66: ifnonnull     77
+      69: pop
+      70: getstatic     #116                // Field io/johnsonlee/graphite/graph/GraphScanParallelismPlan.Companion:Lio/johnsonlee/graphite/graph/GraphScanParallelismPlan$Companion;
+      73: iload_2
+      74: invokevirtual #126                // Method io/johnsonlee/graphite/graph/GraphScanParallelismPlan$Companion.balanced:(I)Lio/johnsonlee/graphite/graph/GraphScanParallelismPlan;
+      77: areturn
+
+  public static io.johnsonlee.graphite.graph.GraphScanParallelismPlan resolveDirectStringParallelismPlan$default(int, java.lang.String, int, java.lang.Object);
+    Code:
+       0: iload_2
+       1: iconst_1
+       2: iand
+       3: ifeq          13
+       6: invokestatic  #140                // Method java/lang/Runtime.getRuntime:()Ljava/lang/Runtime;
+       9: invokevirtual #143                // Method java/lang/Runtime.availableProcessors:()I
+      12: istore_0
+      13: iload_2
+      14: iconst_2
+      15: iand
+      16: ifeq          25
+      19: ldc           #145                // String graphite.cypher.directStringParallelism
+      21: invokestatic  #151                // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+      24: astore_1
+      25: iload_0
+      26: aload_1
+      27: invokestatic  #153                // Method resolveDirectStringParallelismPlan:(ILjava/lang/String;)Lio/johnsonlee/graphite/graph/GraphScanParallelismPlan;
+      30: areturn
+
+  public static final int resolveDirectStringGraphParallelism(int, int, java.lang.String, boolean);
+    Code:
+       0: iload_1
+       1: iconst_1
+       2: invokestatic  #88                 // Method kotlin/ranges/RangesKt.coerceAtLeast:(II)I
+       5: istore        4
+       7: iload_0
+       8: iconst_1
+       9: invokestatic  #88                 // Method kotlin/ranges/RangesKt.coerceAtLeast:(II)I
+      12: istore        5
+      14: aload_2
+      15: ifnonnull     41
+      18: iload_3
+      19: ifne          28
+      22: iload_0
+      23: bipush        40
+      25: if_icmpge     41
+      28: iload         5
+      30: iload         4
+      32: bipush        8
+      34: invokestatic  #160                // Method java/lang/Math.min:(II)I
+      37: invokestatic  #160                // Method java/lang/Math.min:(II)I
+      40: ireturn
+      41: iload_1
+      42: aload_2
+      43: invokestatic  #153                // Method resolveDirectStringParallelismPlan:(ILjava/lang/String;)Lio/johnsonlee/graphite/graph/GraphScanParallelismPlan;
+      46: astore        6
+      48: iload         5
+      50: aload         6
+      52: invokevirtual #163                // Method io/johnsonlee/graphite/graph/GraphScanParallelismPlan.getGraphWorkerCount:()I
+      55: invokestatic  #160                // Method java/lang/Math.min:(II)I
+      58: ireturn
+
+  public static int resolveDirectStringGraphParallelism$default(int, int, java.lang.String, boolean, int, java.lang.Object);
+    Code:
+       0: iload         4
+       2: iconst_2
+       3: iand
+       4: ifeq          14
+       7: invokestatic  #140                // Method java/lang/Runtime.getRuntime:()Ljava/lang/Runtime;
+      10: invokevirtual #143                // Method java/lang/Runtime.availableProcessors:()I
+      13: istore_1
+      14: iload         4
+      16: iconst_4
+      17: iand
+      18: ifeq          27
+      21: ldc           #145                // String graphite.cypher.directStringParallelism
+      23: invokestatic  #151                // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+      26: astore_2
+      27: iload         4
+      29: bipush        8
+      31: iand
+      32: ifeq          37
+      35: iconst_0
+      36: istore_3
+      37: iload_0
+      38: iload_1
+      39: aload_2
+      40: iload_3
+      41: invokestatic  #173                // Method resolveDirectStringGraphParallelism:(IILjava/lang/String;Z)I
+      44: ireturn
+
+  public static final int resolveDirectStringExecutorParallelism(int, java.lang.String);
+    Code:
+       0: iload_0
+       1: iconst_1
+       2: invokestatic  #88                 // Method kotlin/ranges/RangesKt.coerceAtLeast:(II)I
+       5: istore_2
+       6: iload_2
+       7: bipush        8
+       9: invokestatic  #160                // Method java/lang/Math.min:(II)I
+      12: iload_2
+      13: aload_1
+      14: invokestatic  #153                // Method resolveDirectStringParallelismPlan:(ILjava/lang/String;)Lio/johnsonlee/graphite/graph/GraphScanParallelismPlan;
+      17: invokevirtual #163                // Method io/johnsonlee/graphite/graph/GraphScanParallelismPlan.getGraphWorkerCount:()I
+      20: invokestatic  #178                // Method java/lang/Math.max:(II)I
+      23: ireturn
+
+  public static int resolveDirectStringExecutorParallelism$default(int, java.lang.String, int, java.lang.Object);
+    Code:
+       0: iload_2
+       1: iconst_1
+       2: iand
+       3: ifeq          13
+       6: invokestatic  #140                // Method java/lang/Runtime.getRuntime:()Ljava/lang/Runtime;
+       9: invokevirtual #143                // Method java/lang/Runtime.availableProcessors:()I
+      12: istore_0
+      13: iload_2
+      14: iconst_2
+      15: iand
+      16: ifeq          25
+      19: ldc           #145                // String graphite.cypher.directStringParallelism
+      21: invokestatic  #151                // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+      24: astore_1
+      25: iload_0
+      26: aload_1
+      27: invokestatic  #182                // Method resolveDirectStringExecutorParallelism:(ILjava/lang/String;)I
+      30: ireturn
+
+  private static final java.lang.String getConfiguredDirectStringParallelism();
+    Code:
+       0: getstatic     #187                // Field configuredDirectStringParallelism$delegate:Lkotlin/Lazy;
+       3: astore_0
+       4: aload_0
+       5: invokeinterface #193,  1          // InterfaceMethod kotlin/Lazy.getValue:()Ljava/lang/Object;
+      10: checkcast     #15                 // class java/lang/String
+      13: areturn
+
+  private static final int getDirectStringExecutorParallelism();
+    Code:
+       0: getstatic     #197                // Field directStringExecutorParallelism$delegate:Lkotlin/Lazy;
+       3: astore_0
+       4: aload_0
+       5: invokeinterface #193,  1          // InterfaceMethod kotlin/Lazy.getValue:()Ljava/lang/Object;
+      10: checkcast     #109                // class java/lang/Number
+      13: invokevirtual #110                // Method java/lang/Number.intValue:()I
+      16: ireturn
+
+  private static final java.util.concurrent.ExecutorService getDirectStringExecutor();
+    Code:
+       0: getstatic     #202                // Field directStringExecutor$delegate:Lkotlin/Lazy;
+       3: astore_0
+       4: aload_0
+       5: invokeinterface #193,  1          // InterfaceMethod kotlin/Lazy.getValue:()Ljava/lang/Object;
+      10: checkcast     #204                // class java/util/concurrent/ExecutorService
+      13: areturn
+
+  private static final int directStringGraphParallelism(int, boolean);
+    Code:
+       0: iload_0
+       1: iconst_0
+       2: invokestatic  #208                // Method getConfiguredDirectStringParallelism:()Ljava/lang/String;
+       5: iload_1
+       6: iconst_2
+       7: aconst_null
+       8: invokestatic  #210                // Method resolveDirectStringGraphParallelism$default:(IILjava/lang/String;ZILjava/lang/Object;)I
+      11: ireturn
+
+  static int directStringGraphParallelism$default(int, boolean, int, java.lang.Object);
+    Code:
+       0: iload_2
+       1: iconst_2
+       2: iand
+       3: ifeq          8
+       6: iconst_0
+       7: istore_1
+       8: iload_0
+       9: iload_1
+      10: invokestatic  #214                // Method directStringGraphParallelism:(IZ)I
+      13: ireturn
+
+  private static final boolean usesBalancedStringSplit(int);
+    Code:
+       0: invokestatic  #208                // Method getConfiguredDirectStringParallelism:()Ljava/lang/String;
+       3: ifnonnull     12
+       6: iload_0
+       7: bipush        40
+       9: if_icmplt     16
+      12: iconst_1
+      13: goto          17
+      16: iconst_0
+      17: ireturn
+
+  public static final io.johnsonlee.graphite.graph.GraphWorkConsumer directStringStorageWorkConsumer(int, int, java.lang.String, boolean, boolean, boolean, kotlin.jvm.functions.Function1<? super java.lang.Long, kotlin.Unit>);
+    Code:
+       0: iload         4
+       2: ifeq          42
+       5: aload         6
+       7: dup
+       8: ifnull        32
+      11: astore        8
+      13: iconst_0
+      14: istore        9
+      16: iconst_0
+      17: istore        10
+      19: new           #221                // class io/johnsonlee/graphite/cypher/PreferredRawStringGraphWorkConsumer
+      22: dup
+      23: aload         8
+      25: invokespecial #224                // Method io/johnsonlee/graphite/cypher/PreferredRawStringGraphWorkConsumer."<init>":(Lkotlin/jvm/functions/Function1;)V
+      28: nop
+      29: goto          36
+      32: pop
+      33: getstatic     #228                // Field noOpPreferredRawStringGraphWorkConsumer:Lio/johnsonlee/graphite/cypher/PreferredRawStringGraphWorkConsumer;
+      36: checkcast     #230                // class io/johnsonlee/graphite/graph/GraphWorkConsumer
+      39: goto          241
+      42: iload_3
+      43: ifeq          83
+      46: aload         6
+      48: dup
+      49: ifnull        73
+      52: astore        8
+      54: iconst_0
+      55: istore        9
+      57: iconst_0
+      58: istore        10
+      60: new           #232                // class io/johnsonlee/graphite/cypher/PreferredPersistedStringIndexGraphWorkConsumer
+      63: dup
+      64: aload         8
+      66: invokespecial #233                // Method io/johnsonlee/graphite/cypher/PreferredPersistedStringIndexGraphWorkConsumer."<init>":(Lkotlin/jvm/functions/Function1;)V
+      69: nop
+      70: goto          77
+      73: pop
+      74: getstatic     #237                // Field noOpPreferredPersistedStringIndexGraphWorkConsumer:Lio/johnsonlee/graphite/cypher/PreferredPersistedStringIndexGraphWorkConsumer;
+      77: checkcast     #230                // class io/johnsonlee/graphite/graph/GraphWorkConsumer
+      80: goto          241
+      83: iload_0
+      84: iconst_1
+      85: if_icmpne     125
+      88: aload         6
+      90: dup
+      91: ifnull        115
+      94: astore        8
+      96: iconst_0
+      97: istore        9
+      99: new           #239                // class io/johnsonlee/graphite/cypher/QueryPipelineKt$sam$io_johnsonlee_graphite_graph_ParallelGraphWorkBatchConsumer$0
+     102: dup
+     103: aload         8
+     105: invokespecial #240                // Method io/johnsonlee/graphite/cypher/QueryPipelineKt$sam$io_johnsonlee_graphite_graph_ParallelGraphWorkBatchConsumer$0."<init>":(Lkotlin/jvm/functions/Function1;)V
+     108: checkcast     #242                // class io/johnsonlee/graphite/graph/ParallelGraphWorkBatchConsumer
+     111: nop
+     112: goto          119
+     115: pop
+     116: getstatic     #246                // Field noOpParallelGraphWorkConsumer:Lio/johnsonlee/graphite/graph/ParallelGraphWorkBatchConsumer;
+     119: checkcast     #230                // class io/johnsonlee/graphite/graph/GraphWorkConsumer
+     122: goto          241
+     125: aload_2
+     126: ifnonnull     172
+     129: iload_0
+     130: bipush        40
+     132: if_icmpge     172
+     135: aload         6
+     137: dup
+     138: ifnull        162
+     141: astore        8
+     143: iconst_0
+     144: istore        9
+     146: iconst_0
+     147: istore        10
+     149: new           #248                // class io/johnsonlee/graphite/cypher/SerialStringGraphWorkConsumer
+     152: dup
+     153: aload         8
+     155: invokespecial #249                // Method io/johnsonlee/graphite/cypher/SerialStringGraphWorkConsumer."<init>":(Lkotlin/jvm/functions/Function1;)V
+     158: nop
+     159: goto          166
+     162: pop
+     163: getstatic     #253                // Field noOpSerialStringGraphWorkConsumer:Lio/johnsonlee/graphite/cypher/SerialStringGraphWorkConsumer;
+     166: checkcast     #230                // class io/johnsonlee/graphite/graph/GraphWorkConsumer
+     169: goto          241
+     172: iload_1
+     173: aload_2
+     174: invokestatic  #153                // Method resolveDirectStringParallelismPlan:(ILjava/lang/String;)Lio/johnsonlee/graphite/graph/GraphScanParallelismPlan;
+     177: invokevirtual #256                // Method io/johnsonlee/graphite/graph/GraphScanParallelismPlan.getSegmentWorkerCount:()I
+     180: istore        7
+     182: iload         5
+     184: ifeq          214
+     187: new           #258                // class io/johnsonlee/graphite/cypher/PreferredMappedStringIndexViewGraphWorkConsumer
+     190: dup
+     191: iload         7
+     193: aload         6
+     195: dup
+     196: ifnonnull     205
+     199: pop
+     200: invokedynamic #278,  0            // InvokeDynamic #0:invoke:()Lkotlin/jvm/functions/Function1;
+     205: invokespecial #281                // Method io/johnsonlee/graphite/cypher/PreferredMappedStringIndexViewGraphWorkConsumer."<init>":(ILkotlin/jvm/functions/Function1;)V
+     208: checkcast     #283                // class io/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer
+     211: goto          238
+     214: new           #285                // class io/johnsonlee/graphite/cypher/SplitStringGraphWorkConsumer
+     217: dup
+     218: iload         7
+     220: aload         6
+     222: dup
+     223: ifnonnull     232
+     226: pop
+     227: invokedynamic #290,  0            // InvokeDynamic #1:invoke:()Lkotlin/jvm/functions/Function1;
+     232: invokespecial #291                // Method io/johnsonlee/graphite/cypher/SplitStringGraphWorkConsumer."<init>":(ILkotlin/jvm/functions/Function1;)V
+     235: checkcast     #283                // class io/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer
+     238: checkcast     #230                // class io/johnsonlee/graphite/graph/GraphWorkConsumer
+     241: areturn
+
+  public static io.johnsonlee.graphite.graph.GraphWorkConsumer directStringStorageWorkConsumer$default(int, int, java.lang.String, boolean, boolean, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object);
+    Code:
+       0: iload         7
+       2: iconst_2
+       3: iand
+       4: ifeq          14
+       7: invokestatic  #140                // Method java/lang/Runtime.getRuntime:()Ljava/lang/Runtime;
+      10: invokevirtual #143                // Method java/lang/Runtime.availableProcessors:()I
+      13: istore_1
+      14: iload         7
+      16: iconst_4
+      17: iand
+      18: ifeq          27
+      21: ldc           #145                // String graphite.cypher.directStringParallelism
+      23: invokestatic  #151                // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+      26: astore_2
+      27: iload         7
+      29: bipush        8
+      31: iand
+      32: ifeq          37
+      35: iconst_0
+      36: istore_3
+      37: iload         7
+      39: bipush        16
+      41: iand
+      42: ifeq          48
+      45: iconst_0
+      46: istore        4
+      48: iload         7
+      50: bipush        32
+      52: iand
+      53: ifeq          59
+      56: iconst_0
+      57: istore        5
+      59: iload         7
+      61: bipush        64
+      63: iand
+      64: ifeq          70
+      67: aconst_null
+      68: astore        6
+      70: iload_0
+      71: iload_1
+      72: aload_2
+      73: iload_3
+      74: iload         4
+      76: iload         5
+      78: aload         6
+      80: invokestatic  #311                // Method directStringStorageWorkConsumer:(IILjava/lang/String;ZZZLkotlin/jvm/functions/Function1;)Lio/johnsonlee/graphite/graph/GraphWorkConsumer;
+      83: areturn
+
+  private static final int toCypherInt(java.lang.Number);
+    Code:
+       0: aload_0
+       1: invokevirtual #317                // Method java/lang/Number.longValue:()J
+       4: ldc2_w        #318                // long -2147483648l
+       7: ldc2_w        #320                // long 2147483647l
+      10: invokestatic  #324                // Method kotlin/ranges/RangesKt.coerceIn:(JJJ)J
+      13: l2i
+      14: ireturn
+
+  public static final java.util.Set<java.lang.String> variables(io.johnsonlee.graphite.cypher.CypherPattern);
+    Code:
+       0: aload_0
+       1: ldc_w         #331                // String <this>
+       4: invokestatic  #337                // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       7: new           #339                // class java/util/LinkedHashSet
+      10: dup
+      11: invokespecial #341                // Method java/util/LinkedHashSet."<init>":()V
+      14: checkcast     #343                // class java/util/Set
+      17: astore_1
+      18: aload_0
+      19: invokevirtual #348                // Method io/johnsonlee/graphite/cypher/CypherPattern.getPathVariable:()Ljava/lang/String;
+      22: dup
+      23: ifnull        43
+      26: astore        4
+      28: iconst_0
+      29: istore        5
+      31: aload_1
+      32: aload         4
+      34: invokeinterface #352,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      39: pop
+      40: goto          45
+      43: pop
+      44: nop
+      45: aload_0
+      46: invokevirtual #356                // Method io/johnsonlee/graphite/cypher/CypherPattern.getElements:()Ljava/util/List;
+      49: invokeinterface #360,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      54: astore_2
+      55: aload_2
+      56: invokeinterface #365,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      61: ifeq          165
+      64: aload_2
+      65: invokeinterface #368,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      70: checkcast     #370                // class io/johnsonlee/graphite/cypher/PatternElement
+      73: astore_3
+      74: aload_3
+      75: astore        4
+      77: aload         4
+      79: instanceof    #372                // class io/johnsonlee/graphite/cypher/PatternElement$NodePattern
+      82: ifeq          117
+      85: aload_3
+      86: checkcast     #372                // class io/johnsonlee/graphite/cypher/PatternElement$NodePattern
+      89: invokevirtual #375                // Method io/johnsonlee/graphite/cypher/PatternElement$NodePattern.getVariable:()Ljava/lang/String;
+      92: dup
+      93: ifnull        113
+      96: astore        6
+      98: iconst_0
+      99: istore        7
+     101: aload_1
+     102: aload         6
+     104: invokeinterface #352,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     109: pop
+     110: goto          55
+     113: pop
+     114: goto          55
+     117: aload         4
+     119: instanceof    #377                // class io/johnsonlee/graphite/cypher/PatternElement$RelationshipPattern
+     122: ifeq          157
+     125: aload_3
+     126: checkcast     #377                // class io/johnsonlee/graphite/cypher/PatternElement$RelationshipPattern
+     129: invokevirtual #378                // Method io/johnsonlee/graphite/cypher/PatternElement$RelationshipPattern.getVariable:()Ljava/lang/String;
+     132: dup
+     133: ifnull        153
+     136: astore        6
+     138: iconst_0
+     139: istore        7
+     141: aload_1
+     142: aload         6
+     144: invokeinterface #352,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     149: pop
+     150: goto          55
+     153: pop
+     154: goto          55
+     157: new           #380                // class kotlin/NoWhenBranchMatchedException
+     160: dup
+     161: invokespecial #381                // Method kotlin/NoWhenBranchMatchedException."<init>":()V
+     164: athrow
+     165: aload_1
+     166: areturn
+
+  private static final void noOpParallelGraphWorkConsumer$lambda$0(long);
+    Code:
+       0: return
+
+  private static final java.lang.Boolean directStringWorkerActive$lambda$2();
+    Code:
+       0: iconst_0
+       1: invokestatic  #400                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+       4: areturn
+
+  private static final java.lang.String configuredDirectStringParallelism_delegate$lambda$5();
+    Code:
+       0: ldc           #145                // String graphite.cypher.directStringParallelism
+       2: invokestatic  #151                // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+       5: areturn
+
+  private static final int directStringExecutorParallelism_delegate$lambda$6();
+    Code:
+       0: iconst_0
+       1: invokestatic  #208                // Method getConfiguredDirectStringParallelism:()Ljava/lang/String;
+       4: iconst_1
+       5: aconst_null
+       6: invokestatic  #404                // Method resolveDirectStringExecutorParallelism$default:(ILjava/lang/String;ILjava/lang/Object;)I
+       9: ireturn
+
+  private static final java.lang.Thread directStringExecutor_delegate$lambda$9$lambda$8(java.lang.Runnable);
+    Code:
+       0: new           #408                // class java/lang/Thread
+       3: dup
+       4: aload_0
+       5: getstatic     #411                // Field directStringWorkerNumber:Ljava/util/concurrent/atomic/AtomicInteger;
+       8: invokevirtual #414                // Method java/util/concurrent/atomic/AtomicInteger.incrementAndGet:()I
+      11: invokedynamic #426,  0            // InvokeDynamic #2:makeConcatWithConstants:(I)Ljava/lang/String;
+      16: invokespecial #429                // Method java/lang/Thread."<init>":(Ljava/lang/Runnable;Ljava/lang/String;)V
+      19: astore_1
+      20: aload_1
+      21: astore_2
+      22: iconst_0
+      23: istore_3
+      24: aload_2
+      25: iconst_1
+      26: invokevirtual #433                // Method java/lang/Thread.setDaemon:(Z)V
+      29: nop
+      30: aload_1
+      31: areturn
+
+  private static final java.util.concurrent.ExecutorService directStringExecutor_delegate$lambda$9();
+    Code:
+       0: invokestatic  #441                // Method getDirectStringExecutorParallelism:()I
+       3: invokedynamic #449,  0            // InvokeDynamic #3:newThread:()Ljava/util/concurrent/ThreadFactory;
+       8: invokestatic  #455                // Method java/util/concurrent/Executors.newFixedThreadPool:(ILjava/util/concurrent/ThreadFactory;)Ljava/util/concurrent/ExecutorService;
+      11: areturn
+
+  private static final kotlin.Unit noOpSerialStringGraphWorkConsumer$lambda$10(long);
+    Code:
+       0: getstatic     #461                // Field kotlin/Unit.INSTANCE:Lkotlin/Unit;
+       3: areturn
+
+  private static final kotlin.Unit noOpPreferredPersistedStringIndexGraphWorkConsumer$lambda$11(long);
+    Code:
+       0: getstatic     #461                // Field kotlin/Unit.INSTANCE:Lkotlin/Unit;
+       3: areturn
+
+  private static final kotlin.Unit noOpPreferredRawStringGraphWorkConsumer$lambda$12(long);
+    Code:
+       0: getstatic     #461                // Field kotlin/Unit.INSTANCE:Lkotlin/Unit;
+       3: areturn
+
+  private static final kotlin.Unit directStringStorageWorkConsumer$lambda$17(long);
+    Code:
+       0: getstatic     #461                // Field kotlin/Unit.INSTANCE:Lkotlin/Unit;
+       3: areturn
+
+  private static final kotlin.Unit directStringStorageWorkConsumer$lambda$18(long);
+    Code:
+       0: getstatic     #461                // Field kotlin/Unit.INSTANCE:Lkotlin/Unit;
+       3: areturn
+
+  public static final java.lang.Class access$resolveNodeClass(java.util.List);
+    Code:
+       0: aload_0
+       1: invokestatic  #466                // Method resolveNodeClass:(Ljava/util/List;)Ljava/lang/Class;
+       4: areturn
+
+  public static final int access$toCypherInt(java.lang.Number);
+    Code:
+       0: aload_0
+       1: invokestatic  #469                // Method toCypherInt:(Ljava/lang/Number;)I
+       4: ireturn
+
+  public static final java.util.Set access$getQUALIFIED_NODE_PROPERTIES$p();
+    Code:
+       0: getstatic     #475                // Field QUALIFIED_NODE_PROPERTIES:Ljava/util/Set;
+       3: areturn
+
+  public static final java.lang.ThreadLocal access$getDirectStringWorkerActive$p();
+    Code:
+       0: getstatic     #481                // Field directStringWorkerActive:Ljava/lang/ThreadLocal;
+       3: areturn
+
+  public static final java.util.List access$getDIRECT_STRING_NODE_PROPERTIES$p();
+    Code:
+       0: getstatic     #485                // Field DIRECT_STRING_NODE_PROPERTIES:Ljava/util/List;
+       3: areturn
+
+  public static final boolean access$usesBalancedStringSplit(int);
+    Code:
+       0: iload_0
+       1: invokestatic  #488                // Method usesBalancedStringSplit:(I)Z
+       4: ireturn
+
+  public static final java.util.concurrent.ExecutorService access$getDirectStringExecutor();
+    Code:
+       0: invokestatic  #491                // Method getDirectStringExecutor:()Ljava/util/concurrent/ExecutorService;
+       3: areturn
+
+  public static final java.lang.String access$getConfiguredDirectStringParallelism();
+    Code:
+       0: invokestatic  #208                // Method getConfiguredDirectStringParallelism:()Ljava/lang/String;
+       3: areturn
+
+  public static final java.util.Set access$getCALL_SITE_DIRECT_STRING_PROPERTIES$p();
+    Code:
+       0: getstatic     #496                // Field CALL_SITE_DIRECT_STRING_PROPERTIES:Ljava/util/Set;
+       3: areturn
+
+  public static final java.util.Set access$getCALL_SITE_NULL_STRING_PROPERTIES$p();
+    Code:
+       0: getstatic     #500                // Field CALL_SITE_NULL_STRING_PROPERTIES:Ljava/util/Set;
+       3: areturn
+
+  public static final java.util.concurrent.atomic.AtomicInteger access$getDirectStringActiveWorkers$p();
+    Code:
+       0: getstatic     #61                 // Field directStringActiveWorkers:Ljava/util/concurrent/atomic/AtomicInteger;
+       3: areturn
+
+  public static final java.util.concurrent.atomic.AtomicInteger access$getDirectStringPeakActiveWorkers$p();
+    Code:
+       0: getstatic     #51                 // Field directStringPeakActiveWorkers:Ljava/util/concurrent/atomic/AtomicInteger;
+       3: areturn
+
+  static {};
+    Code:
+       0: invokedynamic #511,  0            // InvokeDynamic #4:consume:()Lio/johnsonlee/graphite/graph/ParallelGraphWorkBatchConsumer;
+       5: putstatic     #246                // Field noOpParallelGraphWorkConsumer:Lio/johnsonlee/graphite/graph/ParallelGraphWorkBatchConsumer;
+       8: new           #53                 // class java/util/concurrent/atomic/AtomicInteger
+      11: dup
+      12: invokespecial #512                // Method java/util/concurrent/atomic/AtomicInteger."<init>":()V
+      15: putstatic     #411                // Field directStringWorkerNumber:Ljava/util/concurrent/atomic/AtomicInteger;
+      18: invokedynamic #520,  0            // InvokeDynamic #5:get:()Ljava/util/function/Supplier;
+      23: invokestatic  #526                // Method java/lang/ThreadLocal.withInitial:(Ljava/util/function/Supplier;)Ljava/lang/ThreadLocal;
+      26: putstatic     #481                // Field directStringWorkerActive:Ljava/lang/ThreadLocal;
+      29: new           #53                 // class java/util/concurrent/atomic/AtomicInteger
+      32: dup
+      33: invokespecial #512                // Method java/util/concurrent/atomic/AtomicInteger."<init>":()V
+      36: putstatic     #61                 // Field directStringActiveWorkers:Ljava/util/concurrent/atomic/AtomicInteger;
+      39: new           #53                 // class java/util/concurrent/atomic/AtomicInteger
+      42: dup
+      43: invokespecial #512                // Method java/util/concurrent/atomic/AtomicInteger."<init>":()V
+      46: putstatic     #51                 // Field directStringPeakActiveWorkers:Ljava/util/concurrent/atomic/AtomicInteger;
+      49: invokedynamic #533,  0            // InvokeDynamic #6:invoke:()Lkotlin/jvm/functions/Function0;
+      54: invokestatic  #539                // Method kotlin/LazyKt.lazy:(Lkotlin/jvm/functions/Function0;)Lkotlin/Lazy;
+      57: putstatic     #187                // Field configuredDirectStringParallelism$delegate:Lkotlin/Lazy;
+      60: invokedynamic #545,  0            // InvokeDynamic #7:invoke:()Lkotlin/jvm/functions/Function0;
+      65: invokestatic  #539                // Method kotlin/LazyKt.lazy:(Lkotlin/jvm/functions/Function0;)Lkotlin/Lazy;
+      68: putstatic     #197                // Field directStringExecutorParallelism$delegate:Lkotlin/Lazy;
+      71: invokedynamic #550,  0            // InvokeDynamic #8:invoke:()Lkotlin/jvm/functions/Function0;
+      76: invokestatic  #539                // Method kotlin/LazyKt.lazy:(Lkotlin/jvm/functions/Function0;)Lkotlin/Lazy;
+      79: putstatic     #202                // Field directStringExecutor$delegate:Lkotlin/Lazy;
+      82: new           #248                // class io/johnsonlee/graphite/cypher/SerialStringGraphWorkConsumer
+      85: dup
+      86: invokedynamic #554,  0            // InvokeDynamic #9:invoke:()Lkotlin/jvm/functions/Function1;
+      91: invokespecial #249                // Method io/johnsonlee/graphite/cypher/SerialStringGraphWorkConsumer."<init>":(Lkotlin/jvm/functions/Function1;)V
+      94: putstatic     #253                // Field noOpSerialStringGraphWorkConsumer:Lio/johnsonlee/graphite/cypher/SerialStringGraphWorkConsumer;
+      97: new           #232                // class io/johnsonlee/graphite/cypher/PreferredPersistedStringIndexGraphWorkConsumer
+     100: dup
+     101: invokedynamic #558,  0            // InvokeDynamic #10:invoke:()Lkotlin/jvm/functions/Function1;
+     106: invokespecial #233                // Method io/johnsonlee/graphite/cypher/PreferredPersistedStringIndexGraphWorkConsumer."<init>":(Lkotlin/jvm/functions/Function1;)V
+     109: putstatic     #237                // Field noOpPreferredPersistedStringIndexGraphWorkConsumer:Lio/johnsonlee/graphite/cypher/PreferredPersistedStringIndexGraphWorkConsumer;
+     112: new           #221                // class io/johnsonlee/graphite/cypher/PreferredRawStringGraphWorkConsumer
+     115: dup
+     116: invokedynamic #562,  0            // InvokeDynamic #11:invoke:()Lkotlin/jvm/functions/Function1;
+     121: invokespecial #224                // Method io/johnsonlee/graphite/cypher/PreferredRawStringGraphWorkConsumer."<init>":(Lkotlin/jvm/functions/Function1;)V
+     124: putstatic     #228                // Field noOpPreferredRawStringGraphWorkConsumer:Lio/johnsonlee/graphite/cypher/PreferredRawStringGraphWorkConsumer;
+     127: iconst_3
+     128: anewarray     #15                 // class java/lang/String
+     131: astore_0
+     132: aload_0
+     133: iconst_0
+     134: ldc_w         #564                // String graphId
+     137: aastore
+     138: aload_0
+     139: iconst_1
+     140: ldc_w         #566                // String elementId
+     143: aastore
+     144: aload_0
+     145: iconst_2
+     146: ldc_w         #568                // String qualifiedId
+     149: aastore
+     150: aload_0
+     151: invokestatic  #574                // Method kotlin/collections/SetsKt.setOf:([Ljava/lang/Object;)Ljava/util/Set;
+     154: putstatic     #475                // Field QUALIFIED_NODE_PROPERTIES:Ljava/util/Set;
+     157: iconst_5
+     158: anewarray     #576                // class kotlin/Pair
+     161: astore_0
+     162: aload_0
+     163: iconst_0
+     164: ldc_w         #578                // class io/johnsonlee/graphite/core/EnumConstant
+     167: ldc_w         #580                // String name
+     170: invokestatic  #583                // Method kotlin/collections/SetsKt.setOf:(Ljava/lang/Object;)Ljava/util/Set;
+     173: invokestatic  #589                // Method kotlin/TuplesKt.to:(Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
+     176: aastore
+     177: aload_0
+     178: iconst_1
+     179: ldc_w         #591                // class io/johnsonlee/graphite/core/LocalVariable
+     182: ldc_w         #580                // String name
+     185: invokestatic  #583                // Method kotlin/collections/SetsKt.setOf:(Ljava/lang/Object;)Ljava/util/Set;
+     188: invokestatic  #589                // Method kotlin/TuplesKt.to:(Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
+     191: aastore
+     192: aload_0
+     193: iconst_2
+     194: ldc_w         #593                // class io/johnsonlee/graphite/core/FieldNode
+     197: iconst_2
+     198: anewarray     #15                 // class java/lang/String
+     201: astore_1
+     202: aload_1
+     203: iconst_0
+     204: ldc_w         #595                // String class
+     207: aastore
+     208: aload_1
+     209: iconst_1
+     210: ldc_w         #580                // String name
+     213: aastore
+     214: aload_1
+     215: invokestatic  #574                // Method kotlin/collections/SetsKt.setOf:([Ljava/lang/Object;)Ljava/util/Set;
+     218: invokestatic  #589                // Method kotlin/TuplesKt.to:(Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
+     221: aastore
+     222: aload_0
+     223: iconst_3
+     224: ldc_w         #597                // class io/johnsonlee/graphite/core/CallSiteNode
+     227: iconst_4
+     228: anewarray     #15                 // class java/lang/String
+     231: astore_1
+     232: aload_1
+     233: iconst_0
+     234: ldc_w         #599                // String caller_class
+     237: aastore
+     238: aload_1
+     239: iconst_1
+     240: ldc_w         #601                // String caller_name
+     243: aastore
+     244: aload_1
+     245: iconst_2
+     246: ldc_w         #603                // String callee_class
+     249: aastore
+     250: aload_1
+     251: iconst_3
+     252: ldc_w         #605                // String callee_name
+     255: aastore
+     256: aload_1
+     257: invokestatic  #574                // Method kotlin/collections/SetsKt.setOf:([Ljava/lang/Object;)Ljava/util/Set;
+     260: invokestatic  #589                // Method kotlin/TuplesKt.to:(Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
+     263: aastore
+     264: aload_0
+     265: iconst_4
+     266: ldc_w         #607                // class io/johnsonlee/graphite/core/AnnotationNode
+     269: bipush        6
+     271: anewarray     #15                 // class java/lang/String
+     274: astore_1
+     275: aload_1
+     276: iconst_0
+     277: ldc_w         #595                // String class
+     280: aastore
+     281: aload_1
+     282: iconst_1
+     283: ldc_w         #580                // String name
+     286: aastore
+     287: aload_1
+     288: iconst_2
+     289: ldc_w         #599                // String caller_class
+     292: aastore
+     293: aload_1
+     294: iconst_3
+     295: ldc_w         #601                // String caller_name
+     298: aastore
+     299: aload_1
+     300: iconst_4
+     301: ldc_w         #603                // String callee_class
+     304: aastore
+     305: aload_1
+     306: iconst_5
+     307: ldc_w         #605                // String callee_name
+     310: aastore
+     311: aload_1
+     312: invokestatic  #574                // Method kotlin/collections/SetsKt.setOf:([Ljava/lang/Object;)Ljava/util/Set;
+     315: invokestatic  #589                // Method kotlin/TuplesKt.to:(Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;
+     318: aastore
+     319: aload_0
+     320: invokestatic  #611                // Method kotlin/collections/CollectionsKt.listOf:([Ljava/lang/Object;)Ljava/util/List;
+     323: putstatic     #485                // Field DIRECT_STRING_NODE_PROPERTIES:Ljava/util/List;
+     326: iconst_4
+     327: anewarray     #15                 // class java/lang/String
+     330: astore_0
+     331: aload_0
+     332: iconst_0
+     333: ldc_w         #599                // String caller_class
+     336: aastore
+     337: aload_0
+     338: iconst_1
+     339: ldc_w         #601                // String caller_name
+     342: aastore
+     343: aload_0
+     344: iconst_2
+     345: ldc_w         #603                // String callee_class
+     348: aastore
+     349: aload_0
+     350: iconst_3
+     351: ldc_w         #605                // String callee_name
+     354: aastore
+     355: aload_0
+     356: invokestatic  #574                // Method kotlin/collections/SetsKt.setOf:([Ljava/lang/Object;)Ljava/util/Set;
+     359: putstatic     #496                // Field CALL_SITE_DIRECT_STRING_PROPERTIES:Ljava/util/Set;
+     362: iconst_2
+     363: anewarray     #15                 // class java/lang/String
+     366: astore_0
+     367: aload_0
+     368: iconst_0
+     369: ldc_w         #595                // String class
+     372: aastore
+     373: aload_0
+     374: iconst_1
+     375: ldc_w         #580                // String name
+     378: aastore
+     379: aload_0
+     380: invokestatic  #574                // Method kotlin/collections/SetsKt.setOf:([Ljava/lang/Object;)Ljava/util/Set;
+     383: putstatic     #500                // Field CALL_SITE_NULL_STRING_PROPERTIES:Ljava/util/Set;
+     386: return
+}

@@ -1,0 +1,6 @@
+The initial PATH-resolved cp -cRp failed before any test execution:
+cp: invalid option -- 'c'
+Try 'cp --help' for more information.
+
+PATH resolves GNU cp; /bin/cp is the macOS clone-capable implementation.
+The final runner explicitly uses /bin/cp -cRp and creates a fresh unique directory.

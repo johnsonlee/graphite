@@ -111,8 +111,18 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 		}
 	}
 	yielded := 0
+	var matchers []*boundedStringMatcher
+	boundedRaw := raw && plan.boundedSerialRawMatcher(limit)
+	readRawString := func(sid int32) (string, error) {
+		text, err := source.Store.ProjectionString(e.ctx, sid)
+		failMainStringRead(err)
+		return text, nil
+	}
 	callsite := func(ctx context.Context) (store.Node, bool) {
 		e.ctx = ctx
+		if boundedRaw && matchers == nil {
+			matchers = sharedStringMatchers(plan.atoms, len(source.Store.Strings), serialRawMatcherCapacity)
+		}
 		for {
 			if raw && yielded >= limit {
 				return store.Node{}, false
@@ -126,8 +136,15 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 				sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
 				failMainStringRead(err)
 				matched := false
-				for _, atom := range plan.atoms {
+				for i, atom := range plan.atoms {
 					p := distinctCallSiteProperties[atom.property]
+					if boundedRaw {
+						if matchers[i].matches(e, sids[p], readRawString) {
+							matched = true
+							break
+						}
+						continue
+					}
 					var text string
 					var err error
 					if len(source.Store.Strings) <= 1<<16 {

@@ -1,0 +1,148 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "startedUtc": "2026-09-08T02:30:58.754619+00:00",
+  "endedUtc": "2026-09-08T02:31:00.588323+00:00",
+  "jar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "jarSha256BeforeAndAfter": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "classByteSha256": {
+    "io.johnsonlee.graphite.webgraph.BoundedStringMatcher": "e499bac00614c2b957b9ec53bbd4204ddd0e4b4495436fe8bbf38330785230e4",
+    "io.johnsonlee.graphite.webgraph.StringPredicateKey": "3e415e9f6518d89aef7a5adb6322ad64f9187c8a01dbd97b283ba608fd9aa66d",
+    "io.johnsonlee.graphite.webgraph.StringTable": "2ad6a59ff083863f7f5642065a387b282c9641152fa3245e1fb7a9e1ea5dea77",
+    "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+    "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt": "06d3d6de54b2962cbfe97b7fd36589b89a9271a782184193ee44c1c5c672b43f",
+    "io.johnsonlee.graphite.cypher.QueryPipelineKt": "a89e1dba1d805fbdb514fbc3d3c666ca0633cf81dd75b9ce0688d1db72e0bd28",
+    "it.unimi.dsi.util.FrontCodedStringList": "aef8d606a9d9cb5ad62aa2a8cb05d70e790ed7b229da463bf6ca54b0bf23c756"
+  },
+  "oracleSourceSha256": {
+    "BoundedStringMatcherOracle.java": "afa33332630cbc55686fbd92568c275606c2221875f233aac33a9d43ddcb9bee",
+    "run.py": "6de2305c4306e63281740ae2fc0108d4c8f4939c7fcf371b81246533b0d4ee69"
+  },
+  "commands": [
+    {
+      "argv": [
+        "java",
+        "-version"
+      ],
+      "exitCode": 0,
+      "stdout": "java-version.txt",
+      "stderr": "java-version.txt.stderr"
+    },
+    {
+      "argv": [
+        "javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-bounded-string-matcher/main-oracle/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-bounded-string-matcher/main-oracle/BoundedStringMatcherOracle.java"
+      ],
+      "exitCode": 0,
+      "stdout": "compile.log",
+      "stderr": "compile.log.stderr"
+    },
+    {
+      "argv": [
+        "java",
+        "-cp",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-bounded-string-matcher/main-oracle/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "BoundedStringMatcherOracle"
+      ],
+      "exitCode": 0,
+      "stdout": "responses.jsonl",
+      "stderr": "responses.jsonl.stderr"
+    },
+    {
+      "argv": [
+        "javap",
+        "-c",
+        "-p",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.webgraph.BoundedStringMatcher"
+      ],
+      "exitCode": 0,
+      "stdout": "BoundedStringMatcher.javap.txt",
+      "stderr": "BoundedStringMatcher.javap.txt.stderr"
+    },
+    {
+      "argv": [
+        "javap",
+        "-c",
+        "-p",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.webgraph.StringPredicateKey"
+      ],
+      "exitCode": 0,
+      "stdout": "StringPredicateKey.javap.txt",
+      "stderr": "StringPredicateKey.javap.txt.stderr"
+    },
+    {
+      "argv": [
+        "javap",
+        "-c",
+        "-p",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.webgraph.StringTable"
+      ],
+      "exitCode": 0,
+      "stdout": "StringTable.javap.txt",
+      "stderr": "StringTable.javap.txt.stderr"
+    },
+    {
+      "argv": [
+        "javap",
+        "-c",
+        "-p",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph"
+      ],
+      "exitCode": 0,
+      "stdout": "MappedWebGraphBackedGraph.javap.txt",
+      "stderr": "MappedWebGraphBackedGraph.javap.txt.stderr"
+    },
+    {
+      "argv": [
+        "javap",
+        "-c",
+        "-p",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt"
+      ],
+      "exitCode": 0,
+      "stdout": "MappedWebGraphBackedGraphKt.javap.txt",
+      "stderr": "MappedWebGraphBackedGraphKt.javap.txt.stderr"
+    },
+    {
+      "argv": [
+        "javap",
+        "-c",
+        "-p",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "io.johnsonlee.graphite.cypher.QueryPipelineKt"
+      ],
+      "exitCode": 0,
+      "stdout": "QueryPipelineKt.javap.txt",
+      "stderr": "QueryPipelineKt.javap.txt.stderr"
+    },
+    {
+      "argv": [
+        "javap",
+        "-c",
+        "-p",
+        "-classpath",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "it.unimi.dsi.util.FrontCodedStringList"
+      ],
+      "exitCode": 0,
+      "stdout": "FrontCodedStringList.javap.txt",
+      "stderr": "FrontCodedStringList.javap.txt.stderr"
+    }
+  ],
+  "verified": true,
+  "performanceMeasurement": false
+}

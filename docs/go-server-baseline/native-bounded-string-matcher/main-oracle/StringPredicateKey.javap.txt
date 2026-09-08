@@ -1,0 +1,192 @@
+Compiled from "MappedWebGraphBackedGraph.kt"
+final class io.johnsonlee.graphite.webgraph.StringPredicateKey {
+  private final io.johnsonlee.graphite.graph.StringValueTransform transform;
+
+  private final io.johnsonlee.graphite.graph.StringMatchMode mode;
+
+  private final java.lang.String expected;
+
+  public io.johnsonlee.graphite.webgraph.StringPredicateKey(io.johnsonlee.graphite.graph.StringValueTransform, io.johnsonlee.graphite.graph.StringMatchMode, java.lang.String);
+    Code:
+       0: aload_2
+       1: ldc           #10                 // String mode
+       3: invokestatic  #16                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       6: aload_3
+       7: ldc           #18                 // String expected
+       9: invokestatic  #16                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      12: aload_0
+      13: invokespecial #21                 // Method java/lang/Object."<init>":()V
+      16: aload_0
+      17: aload_1
+      18: putfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+      21: aload_0
+      22: aload_2
+      23: putfield      #28                 // Field mode:Lio/johnsonlee/graphite/graph/StringMatchMode;
+      26: aload_0
+      27: aload_3
+      28: putfield      #31                 // Field expected:Ljava/lang/String;
+      31: return
+
+  public final io.johnsonlee.graphite.graph.StringValueTransform getTransform();
+    Code:
+       0: aload_0
+       1: getfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+       4: areturn
+
+  public final io.johnsonlee.graphite.graph.StringMatchMode getMode();
+    Code:
+       0: aload_0
+       1: getfield      #28                 // Field mode:Lio/johnsonlee/graphite/graph/StringMatchMode;
+       4: areturn
+
+  public final java.lang.String getExpected();
+    Code:
+       0: aload_0
+       1: getfield      #31                 // Field expected:Ljava/lang/String;
+       4: areturn
+
+  public final io.johnsonlee.graphite.graph.StringValueTransform component1();
+    Code:
+       0: aload_0
+       1: getfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+       4: areturn
+
+  public final io.johnsonlee.graphite.graph.StringMatchMode component2();
+    Code:
+       0: aload_0
+       1: getfield      #28                 // Field mode:Lio/johnsonlee/graphite/graph/StringMatchMode;
+       4: areturn
+
+  public final java.lang.String component3();
+    Code:
+       0: aload_0
+       1: getfield      #31                 // Field expected:Ljava/lang/String;
+       4: areturn
+
+  public final io.johnsonlee.graphite.webgraph.StringPredicateKey copy(io.johnsonlee.graphite.graph.StringValueTransform, io.johnsonlee.graphite.graph.StringMatchMode, java.lang.String);
+    Code:
+       0: aload_2
+       1: ldc           #10                 // String mode
+       3: invokestatic  #16                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       6: aload_3
+       7: ldc           #18                 // String expected
+       9: invokestatic  #16                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      12: new           #2                  // class io/johnsonlee/graphite/webgraph/StringPredicateKey
+      15: dup
+      16: aload_1
+      17: aload_2
+      18: aload_3
+      19: invokespecial #46                 // Method "<init>":(Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;)V
+      22: areturn
+
+  public static io.johnsonlee.graphite.webgraph.StringPredicateKey copy$default(io.johnsonlee.graphite.webgraph.StringPredicateKey, io.johnsonlee.graphite.graph.StringValueTransform, io.johnsonlee.graphite.graph.StringMatchMode, java.lang.String, int, java.lang.Object);
+    Code:
+       0: iload         4
+       2: iconst_1
+       3: iand
+       4: ifeq          12
+       7: aload_0
+       8: getfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+      11: astore_1
+      12: iload         4
+      14: iconst_2
+      15: iand
+      16: ifeq          24
+      19: aload_0
+      20: getfield      #28                 // Field mode:Lio/johnsonlee/graphite/graph/StringMatchMode;
+      23: astore_2
+      24: iload         4
+      26: iconst_4
+      27: iand
+      28: ifeq          36
+      31: aload_0
+      32: getfield      #31                 // Field expected:Ljava/lang/String;
+      35: astore_3
+      36: aload_0
+      37: aload_1
+      38: aload_2
+      39: aload_3
+      40: invokevirtual #50                 // Method copy:(Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;)Lio/johnsonlee/graphite/webgraph/StringPredicateKey;
+      43: areturn
+
+  public java.lang.String toString();
+    Code:
+       0: aload_0
+       1: getfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+       4: aload_0
+       5: getfield      #28                 // Field mode:Lio/johnsonlee/graphite/graph/StringMatchMode;
+       8: aload_0
+       9: getfield      #31                 // Field expected:Ljava/lang/String;
+      12: invokedynamic #63,  0             // InvokeDynamic #0:makeConcatWithConstants:(Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;)Ljava/lang/String;
+      17: areturn
+
+  public int hashCode();
+    Code:
+       0: aload_0
+       1: getfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+       4: ifnonnull     11
+       7: iconst_0
+       8: goto          18
+      11: aload_0
+      12: getfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+      15: invokevirtual #69                 // Method io/johnsonlee/graphite/graph/StringValueTransform.hashCode:()I
+      18: istore_1
+      19: iload_1
+      20: bipush        31
+      22: imul
+      23: aload_0
+      24: getfield      #28                 // Field mode:Lio/johnsonlee/graphite/graph/StringMatchMode;
+      27: invokevirtual #72                 // Method io/johnsonlee/graphite/graph/StringMatchMode.hashCode:()I
+      30: iadd
+      31: istore_1
+      32: iload_1
+      33: bipush        31
+      35: imul
+      36: aload_0
+      37: getfield      #31                 // Field expected:Ljava/lang/String;
+      40: invokevirtual #75                 // Method java/lang/String.hashCode:()I
+      43: iadd
+      44: istore_1
+      45: iload_1
+      46: ireturn
+
+  public boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: if_acmpne     7
+       5: iconst_1
+       6: ireturn
+       7: aload_1
+       8: instanceof    #2                  // class io/johnsonlee/graphite/webgraph/StringPredicateKey
+      11: ifne          16
+      14: iconst_0
+      15: ireturn
+      16: aload_1
+      17: checkcast     #2                  // class io/johnsonlee/graphite/webgraph/StringPredicateKey
+      20: astore_2
+      21: aload_0
+      22: getfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+      25: aload_2
+      26: getfield      #25                 // Field transform:Lio/johnsonlee/graphite/graph/StringValueTransform;
+      29: if_acmpeq     34
+      32: iconst_0
+      33: ireturn
+      34: aload_0
+      35: getfield      #28                 // Field mode:Lio/johnsonlee/graphite/graph/StringMatchMode;
+      38: aload_2
+      39: getfield      #28                 // Field mode:Lio/johnsonlee/graphite/graph/StringMatchMode;
+      42: if_acmpeq     47
+      45: iconst_0
+      46: ireturn
+      47: aload_0
+      48: getfield      #31                 // Field expected:Ljava/lang/String;
+      51: aload_2
+      52: getfield      #31                 // Field expected:Ljava/lang/String;
+      55: invokestatic  #83                 // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+      58: ifne          63
+      61: iconst_0
+      62: ireturn
+      63: iconst_1
+      64: ireturn
+}

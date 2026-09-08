@@ -1,0 +1,567 @@
+Compiled from "FrontCodedStringList.java"
+public class it.unimi.dsi.util.FrontCodedStringList extends it.unimi.dsi.fastutil.objects.AbstractObjectList<it.unimi.dsi.lang.MutableString> implements java.util.RandomAccess, java.io.Serializable {
+  public static final long serialVersionUID;
+
+  protected final it.unimi.dsi.fastutil.bytes.ByteArrayFrontCodedList byteFrontCodedList;
+
+  protected final it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList charFrontCodedList;
+
+  protected final boolean utf8;
+
+  public it.unimi.dsi.util.FrontCodedStringList(java.util.Iterator<? extends java.lang.CharSequence>, int, boolean);
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method it/unimi/dsi/fastutil/objects/AbstractObjectList."<init>":()V
+       4: aload_0
+       5: iload_3
+       6: putfield      #7                  // Field utf8:Z
+       9: iload_3
+      10: ifeq          42
+      13: aload_0
+      14: new           #13                 // class it/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList
+      17: dup
+      18: new           #15                 // class it/unimi/dsi/util/FrontCodedStringList$1
+      21: dup
+      22: aload_0
+      23: aload_1
+      24: invokespecial #17                 // Method it/unimi/dsi/util/FrontCodedStringList$1."<init>":(Lit/unimi/dsi/util/FrontCodedStringList;Ljava/util/Iterator;)V
+      27: iload_2
+      28: invokespecial #20                 // Method it/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList."<init>":(Ljava/util/Iterator;I)V
+      31: putfield      #23                 // Field byteFrontCodedList:Lit/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList;
+      34: aload_0
+      35: aconst_null
+      36: putfield      #27                 // Field charFrontCodedList:Lit/unimi/dsi/fastutil/chars/CharArrayFrontCodedList;
+      39: goto          68
+      42: aload_0
+      43: new           #31                 // class it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList
+      46: dup
+      47: new           #33                 // class it/unimi/dsi/util/FrontCodedStringList$2
+      50: dup
+      51: aload_0
+      52: aload_1
+      53: invokespecial #35                 // Method it/unimi/dsi/util/FrontCodedStringList$2."<init>":(Lit/unimi/dsi/util/FrontCodedStringList;Ljava/util/Iterator;)V
+      56: iload_2
+      57: invokespecial #36                 // Method it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList."<init>":(Ljava/util/Iterator;I)V
+      60: putfield      #27                 // Field charFrontCodedList:Lit/unimi/dsi/fastutil/chars/CharArrayFrontCodedList;
+      63: aload_0
+      64: aconst_null
+      65: putfield      #23                 // Field byteFrontCodedList:Lit/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList;
+      68: return
+
+  public it.unimi.dsi.util.FrontCodedStringList(java.util.Collection<? extends java.lang.CharSequence>, int, boolean);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokeinterface #37,  1           // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+       7: iload_2
+       8: iload_3
+       9: invokespecial #43                 // Method "<init>":(Ljava/util/Iterator;IZ)V
+      12: return
+
+  public boolean utf8();
+    Code:
+       0: aload_0
+       1: getfield      #7                  // Field utf8:Z
+       4: ireturn
+
+  public int ratio();
+    Code:
+       0: aload_0
+       1: getfield      #7                  // Field utf8:Z
+       4: ifeq          17
+       7: aload_0
+       8: getfield      #23                 // Field byteFrontCodedList:Lit/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList;
+      11: invokevirtual #46                 // Method it/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList.ratio:()I
+      14: goto          24
+      17: aload_0
+      18: getfield      #27                 // Field charFrontCodedList:Lit/unimi/dsi/fastutil/chars/CharArrayFrontCodedList;
+      21: invokevirtual #50                 // Method it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList.ratio:()I
+      24: ireturn
+
+  public it.unimi.dsi.lang.MutableString get(int);
+    Code:
+       0: aload_0
+       1: getfield      #7                  // Field utf8:Z
+       4: ifeq          22
+       7: aload_0
+       8: getfield      #23                 // Field byteFrontCodedList:Lit/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList;
+      11: iload_1
+      12: invokevirtual #51                 // Method it/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList.getArray:(I)[B
+      15: aconst_null
+      16: invokestatic  #55                 // Method byte2Char:([B[C)[C
+      19: goto          30
+      22: aload_0
+      23: getfield      #27                 // Field charFrontCodedList:Lit/unimi/dsi/fastutil/chars/CharArrayFrontCodedList;
+      26: iload_1
+      27: invokevirtual #59                 // Method it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList.getArray:(I)[C
+      30: invokestatic  #62                 // Method it/unimi/dsi/lang/MutableString.wrap:([C)Lit/unimi/dsi/lang/MutableString;
+      33: areturn
+
+  public void get(int, it.unimi.dsi.lang.MutableString);
+    Code:
+       0: aload_0
+       1: getfield      #7                  // Field utf8:Z
+       4: ifeq          37
+       7: aload_0
+       8: getfield      #23                 // Field byteFrontCodedList:Lit/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList;
+      11: iload_1
+      12: invokevirtual #51                 // Method it/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList.getArray:(I)[B
+      15: astore_3
+      16: aload_2
+      17: aload_3
+      18: invokestatic  #68                 // Method countUTF8Chars:([B)I
+      21: invokevirtual #72                 // Method it/unimi/dsi/lang/MutableString.length:(I)Lit/unimi/dsi/lang/MutableString;
+      24: pop
+      25: aload_3
+      26: aload_2
+      27: invokevirtual #76                 // Method it/unimi/dsi/lang/MutableString.array:()[C
+      30: invokestatic  #55                 // Method byte2Char:([B[C)[C
+      33: pop
+      34: goto          98
+      37: aload_2
+      38: aload_2
+      39: invokevirtual #76                 // Method it/unimi/dsi/lang/MutableString.array:()[C
+      42: arraylength
+      43: invokevirtual #72                 // Method it/unimi/dsi/lang/MutableString.length:(I)Lit/unimi/dsi/lang/MutableString;
+      46: pop
+      47: aload_0
+      48: getfield      #27                 // Field charFrontCodedList:Lit/unimi/dsi/fastutil/chars/CharArrayFrontCodedList;
+      51: iload_1
+      52: aload_2
+      53: invokevirtual #76                 // Method it/unimi/dsi/lang/MutableString.array:()[C
+      56: invokevirtual #80                 // Method it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList.get:(I[C)I
+      59: istore_3
+      60: iload_3
+      61: ifge          92
+      64: aload_2
+      65: aload_2
+      66: invokevirtual #76                 // Method it/unimi/dsi/lang/MutableString.array:()[C
+      69: arraylength
+      70: iload_3
+      71: isub
+      72: invokevirtual #72                 // Method it/unimi/dsi/lang/MutableString.length:(I)Lit/unimi/dsi/lang/MutableString;
+      75: pop
+      76: aload_0
+      77: getfield      #27                 // Field charFrontCodedList:Lit/unimi/dsi/fastutil/chars/CharArrayFrontCodedList;
+      80: iload_1
+      81: aload_2
+      82: invokevirtual #76                 // Method it/unimi/dsi/lang/MutableString.array:()[C
+      85: invokevirtual #80                 // Method it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList.get:(I[C)I
+      88: istore_3
+      89: goto          98
+      92: aload_2
+      93: iload_3
+      94: invokevirtual #72                 // Method it/unimi/dsi/lang/MutableString.length:(I)Lit/unimi/dsi/lang/MutableString;
+      97: pop
+      98: return
+
+  protected static int countUTF8Chars(byte[]);
+    Code:
+       0: aload_0
+       1: arraylength
+       2: istore_1
+       3: iconst_0
+       4: istore_2
+       5: iconst_0
+       6: istore        4
+       8: iload         4
+      10: iload_1
+      11: if_icmpge     79
+      14: aload_0
+      15: iload         4
+      17: baload
+      18: sipush        255
+      21: iand
+      22: iconst_4
+      23: ishr
+      24: istore_3
+      25: iload_3
+      26: bipush        8
+      28: if_icmpge     37
+      31: iinc          2, 1
+      34: goto          73
+      37: iload_3
+      38: bipush        14
+      40: if_icmpge     52
+      43: iinc          2, 1
+      46: iinc          4, 1
+      49: goto          73
+      52: iload_3
+      53: bipush        15
+      55: if_icmpge     67
+      58: iinc          2, 1
+      61: iinc          4, 2
+      64: goto          73
+      67: iinc          2, 2
+      70: iinc          4, 4
+      73: iinc          4, 1
+      76: goto          8
+      79: iload_2
+      80: ireturn
+
+  protected static char[] byte2Char(byte[], char[]);
+    Code:
+       0: aload_0
+       1: arraylength
+       2: istore_2
+       3: aload_1
+       4: ifnonnull     14
+       7: aload_0
+       8: invokestatic  #68                 // Method countUTF8Chars:([B)I
+      11: newarray       char
+      13: astore_1
+      14: iconst_0
+      15: istore        7
+      17: iconst_0
+      18: istore        8
+      20: iload         7
+      22: iload_2
+      23: if_icmpge     274
+      26: aload_0
+      27: iload         7
+      29: baload
+      30: sipush        255
+      33: iand
+      34: istore_3
+      35: iload_3
+      36: iconst_4
+      37: ishr
+      38: istore        6
+      40: iload         6
+      42: bipush        8
+      44: if_icmpge     59
+      47: aload_1
+      48: iload         8
+      50: iinc          8, 1
+      53: iload_3
+      54: i2c
+      55: castore
+      56: goto          268
+      59: iload         6
+      61: bipush        14
+      63: if_icmpge     125
+      66: aload_0
+      67: iinc          7, 1
+      70: iload         7
+      72: baload
+      73: sipush        255
+      76: iand
+      77: istore        4
+      79: iload         4
+      81: sipush        192
+      84: iand
+      85: sipush        128
+      88: if_icmpeq     101
+      91: new           #84                 // class java/lang/IllegalStateException
+      94: dup
+      95: ldc           #86                 // String Malformed internal UTF-8 encoding
+      97: invokespecial #88                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     100: athrow
+     101: aload_1
+     102: iload         8
+     104: iinc          8, 1
+     107: iload_3
+     108: bipush        31
+     110: iand
+     111: bipush        6
+     113: ishl
+     114: iload         4
+     116: bipush        63
+     118: iand
+     119: ior
+     120: i2c
+     121: castore
+     122: goto          268
+     125: iload         6
+     127: bipush        15
+     129: if_icmpge     223
+     132: aload_0
+     133: iinc          7, 1
+     136: iload         7
+     138: baload
+     139: sipush        255
+     142: iand
+     143: istore        4
+     145: aload_0
+     146: iinc          7, 1
+     149: iload         7
+     151: baload
+     152: istore        5
+     154: iload         4
+     156: sipush        192
+     159: iand
+     160: sipush        128
+     163: if_icmpne     178
+     166: iload         5
+     168: sipush        192
+     171: iand
+     172: sipush        128
+     175: if_icmpeq     188
+     178: new           #84                 // class java/lang/IllegalStateException
+     181: dup
+     182: ldc           #86                 // String Malformed internal UTF-8 encoding
+     184: invokespecial #88                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     187: athrow
+     188: aload_1
+     189: iload         8
+     191: iinc          8, 1
+     194: iload_3
+     195: bipush        15
+     197: iand
+     198: bipush        12
+     200: ishl
+     201: iload         4
+     203: bipush        63
+     205: iand
+     206: bipush        6
+     208: ishl
+     209: ior
+     210: iload         5
+     212: bipush        63
+     214: iand
+     215: iconst_0
+     216: ishl
+     217: ior
+     218: i2c
+     219: castore
+     220: goto          268
+     223: new           #91                 // class java/lang/String
+     226: dup
+     227: aload_0
+     228: iload         7
+     230: iconst_4
+     231: getstatic     #93                 // Field com/google/common/base/Charsets.UTF_8:Ljava/nio/charset/Charset;
+     234: invokespecial #99                 // Method java/lang/String."<init>":([BIILjava/nio/charset/Charset;)V
+     237: astore        9
+     239: aload_1
+     240: iload         8
+     242: iinc          8, 1
+     245: aload         9
+     247: iconst_0
+     248: invokevirtual #102                // Method java/lang/String.charAt:(I)C
+     251: castore
+     252: aload_1
+     253: iload         8
+     255: iinc          8, 1
+     258: aload         9
+     260: iconst_1
+     261: invokevirtual #102                // Method java/lang/String.charAt:(I)C
+     264: castore
+     265: iinc          7, 3
+     268: iinc          7, 1
+     271: goto          20
+     274: aload_1
+     275: areturn
+
+  public it.unimi.dsi.fastutil.objects.ObjectListIterator<it.unimi.dsi.lang.MutableString> listIterator(int);
+    Code:
+       0: new           #106                // class it/unimi/dsi/util/FrontCodedStringList$3
+       3: dup
+       4: aload_0
+       5: iload_1
+       6: invokespecial #108                // Method it/unimi/dsi/util/FrontCodedStringList$3."<init>":(Lit/unimi/dsi/util/FrontCodedStringList;I)V
+       9: areturn
+
+  public int size();
+    Code:
+       0: aload_0
+       1: getfield      #7                  // Field utf8:Z
+       4: ifeq          17
+       7: aload_0
+       8: getfield      #23                 // Field byteFrontCodedList:Lit/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList;
+      11: invokevirtual #111                // Method it/unimi/dsi/fastutil/bytes/ByteArrayFrontCodedList.size:()I
+      14: goto          24
+      17: aload_0
+      18: getfield      #27                 // Field charFrontCodedList:Lit/unimi/dsi/fastutil/chars/CharArrayFrontCodedList;
+      21: invokevirtual #114                // Method it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList.size:()I
+      24: ireturn
+
+  public static void main(java.lang.String[]) throws java.io.IOException, com.martiansoftware.jsap.JSAPException, java.lang.NoSuchMethodException;
+    Code:
+       0: new           #115                // class com/martiansoftware/jsap/SimpleJSAP
+       3: dup
+       4: ldc           #8                  // class it/unimi/dsi/util/FrontCodedStringList
+       6: invokevirtual #117                // Method java/lang/Class.getName:()Ljava/lang/String;
+       9: ldc           #123                // String Builds a front-coded string list reading from standard input a newline-separated ordered list of strings.
+      11: bipush        6
+      13: anewarray     #125                // class com/martiansoftware/jsap/Parameter
+      16: dup
+      17: iconst_0
+      18: new           #127                // class com/martiansoftware/jsap/FlaggedOption
+      21: dup
+      22: ldc           #129                // String bufferSize
+      24: invokestatic  #131                // Method com/martiansoftware/jsap/stringparsers/IntSizeStringParser.getParser:()Lcom/martiansoftware/jsap/stringparsers/IntSizeStringParser;
+      27: ldc           #137                // String 64Ki
+      29: iconst_0
+      30: bipush        98
+      32: ldc           #141                // String buffer-size
+      34: ldc           #143                // String The size of the I/O buffer used to read strings.
+      36: invokespecial #145                // Method com/martiansoftware/jsap/FlaggedOption."<init>":(Ljava/lang/String;Lcom/martiansoftware/jsap/StringParser;Ljava/lang/String;ZCLjava/lang/String;Ljava/lang/String;)V
+      39: aastore
+      40: dup
+      41: iconst_1
+      42: new           #127                // class com/martiansoftware/jsap/FlaggedOption
+      45: dup
+      46: ldc           #148                // String encoding
+      48: ldc           #150                // class java/nio/charset/Charset
+      50: invokestatic  #152                // Method com/martiansoftware/jsap/stringparsers/ForNameStringParser.getParser:(Ljava/lang/Class;)Lcom/martiansoftware/jsap/stringparsers/ForNameStringParser;
+      53: ldc           #157                // String UTF-8
+      55: iconst_0
+      56: bipush        101
+      58: ldc           #148                // String encoding
+      60: ldc           #159                // String The file encoding.
+      62: invokespecial #145                // Method com/martiansoftware/jsap/FlaggedOption."<init>":(Ljava/lang/String;Lcom/martiansoftware/jsap/StringParser;Ljava/lang/String;ZCLjava/lang/String;Ljava/lang/String;)V
+      65: aastore
+      66: dup
+      67: iconst_2
+      68: new           #127                // class com/martiansoftware/jsap/FlaggedOption
+      71: dup
+      72: ldc           #161                // String ratio
+      74: invokestatic  #131                // Method com/martiansoftware/jsap/stringparsers/IntSizeStringParser.getParser:()Lcom/martiansoftware/jsap/stringparsers/IntSizeStringParser;
+      77: ldc           #162                // String 4
+      79: iconst_0
+      80: bipush        114
+      82: ldc           #161                // String ratio
+      84: ldc           #164                // String The compression ratio.
+      86: invokespecial #145                // Method com/martiansoftware/jsap/FlaggedOption."<init>":(Ljava/lang/String;Lcom/martiansoftware/jsap/StringParser;Ljava/lang/String;ZCLjava/lang/String;Ljava/lang/String;)V
+      89: aastore
+      90: dup
+      91: iconst_3
+      92: new           #166                // class com/martiansoftware/jsap/Switch
+      95: dup
+      96: ldc           #168                // String utf8
+      98: bipush        117
+     100: ldc           #168                // String utf8
+     102: ldc           #169                // String Store the strings as UTF-8 byte arrays.
+     104: invokespecial #171                // Method com/martiansoftware/jsap/Switch."<init>":(Ljava/lang/String;CLjava/lang/String;Ljava/lang/String;)V
+     107: aastore
+     108: dup
+     109: iconst_4
+     110: new           #166                // class com/martiansoftware/jsap/Switch
+     113: dup
+     114: ldc           #174                // String zipped
+     116: bipush        122
+     118: ldc           #174                // String zipped
+     120: ldc           #176                // String The string list is compressed in gzip format.
+     122: invokespecial #171                // Method com/martiansoftware/jsap/Switch."<init>":(Ljava/lang/String;CLjava/lang/String;Ljava/lang/String;)V
+     125: aastore
+     126: dup
+     127: iconst_5
+     128: new           #178                // class com/martiansoftware/jsap/UnflaggedOption
+     131: dup
+     132: ldc           #180                // String frontCodedList
+     134: getstatic     #182                // Field com/martiansoftware/jsap/JSAP.STRING_PARSER:Lcom/martiansoftware/jsap/stringparsers/StringStringParser;
+     137: getstatic     #186                // Field com/martiansoftware/jsap/JSAP.NO_DEFAULT:Ljava/lang/String;
+     140: iconst_1
+     141: iconst_0
+     142: ldc           #190                // String The filename for the serialised front-coded list.
+     144: invokespecial #192                // Method com/martiansoftware/jsap/UnflaggedOption."<init>":(Ljava/lang/String;Lcom/martiansoftware/jsap/StringParser;Ljava/lang/String;ZZLjava/lang/String;)V
+     147: aastore
+     148: invokespecial #195                // Method com/martiansoftware/jsap/SimpleJSAP."<init>":(Ljava/lang/String;Ljava/lang/String;[Lcom/martiansoftware/jsap/Parameter;)V
+     151: astore_1
+     152: aload_1
+     153: aload_0
+     154: invokevirtual #198                // Method com/martiansoftware/jsap/SimpleJSAP.parse:([Ljava/lang/String;)Lcom/martiansoftware/jsap/JSAPResult;
+     157: astore_2
+     158: aload_1
+     159: invokevirtual #202                // Method com/martiansoftware/jsap/SimpleJSAP.messagePrinted:()Z
+     162: ifeq          166
+     165: return
+     166: aload_2
+     167: ldc           #129                // String bufferSize
+     169: invokevirtual #206                // Method com/martiansoftware/jsap/JSAPResult.getInt:(Ljava/lang/String;)I
+     172: istore_3
+     173: aload_2
+     174: ldc           #161                // String ratio
+     176: invokevirtual #206                // Method com/martiansoftware/jsap/JSAPResult.getInt:(Ljava/lang/String;)I
+     179: istore        4
+     181: aload_2
+     182: ldc           #168                // String utf8
+     184: invokevirtual #212                // Method com/martiansoftware/jsap/JSAPResult.getBoolean:(Ljava/lang/String;)Z
+     187: istore        5
+     189: aload_2
+     190: ldc           #174                // String zipped
+     192: invokevirtual #212                // Method com/martiansoftware/jsap/JSAPResult.getBoolean:(Ljava/lang/String;)Z
+     195: istore        6
+     197: aload_2
+     198: ldc           #180                // String frontCodedList
+     200: invokevirtual #216                // Method com/martiansoftware/jsap/JSAPResult.getString:(Ljava/lang/String;)Ljava/lang/String;
+     203: astore        7
+     205: aload_2
+     206: ldc           #148                // String encoding
+     208: invokevirtual #220                // Method com/martiansoftware/jsap/JSAPResult.getObject:(Ljava/lang/String;)Ljava/lang/Object;
+     211: checkcast     #150                // class java/nio/charset/Charset
+     214: astore        8
+     216: ldc           #8                  // class it/unimi/dsi/util/FrontCodedStringList
+     218: invokestatic  #224                // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;
+     221: astore        9
+     223: new           #230                // class it/unimi/dsi/logging/ProgressLogger
+     226: dup
+     227: aload         9
+     229: invokespecial #232                // Method it/unimi/dsi/logging/ProgressLogger."<init>":(Lorg/slf4j/Logger;)V
+     232: astore        10
+     234: aload         10
+     236: iconst_1
+     237: putfield      #235                // Field it/unimi/dsi/logging/ProgressLogger.displayFreeMemory:Z
+     240: aload         10
+     242: iconst_1
+     243: putfield      #238                // Field it/unimi/dsi/logging/ProgressLogger.displayLocalSpeed:Z
+     246: aload         10
+     248: ldc           #241                // String strings
+     250: putfield      #243                // Field it/unimi/dsi/logging/ProgressLogger.itemsName:Ljava/lang/String;
+     253: aload         10
+     255: ldc           #246                // String Reading strings...
+     257: invokevirtual #248                // Method it/unimi/dsi/logging/ProgressLogger.start:(Ljava/lang/CharSequence;)V
+     260: new           #8                  // class it/unimi/dsi/util/FrontCodedStringList
+     263: dup
+     264: new           #252                // class it/unimi/dsi/io/LineIterator
+     267: dup
+     268: new           #254                // class it/unimi/dsi/io/FastBufferedReader
+     271: dup
+     272: new           #256                // class java/io/InputStreamReader
+     275: dup
+     276: iload         6
+     278: ifeq          294
+     281: new           #258                // class java/util/zip/GZIPInputStream
+     284: dup
+     285: getstatic     #260                // Field java/lang/System.in:Ljava/io/InputStream;
+     288: invokespecial #266                // Method java/util/zip/GZIPInputStream."<init>":(Ljava/io/InputStream;)V
+     291: goto          297
+     294: getstatic     #260                // Field java/lang/System.in:Ljava/io/InputStream;
+     297: aload         8
+     299: invokespecial #269                // Method java/io/InputStreamReader."<init>":(Ljava/io/InputStream;Ljava/nio/charset/Charset;)V
+     302: iload_3
+     303: invokespecial #272                // Method it/unimi/dsi/io/FastBufferedReader."<init>":(Ljava/io/Reader;I)V
+     306: aload         10
+     308: invokespecial #275                // Method it/unimi/dsi/io/LineIterator."<init>":(Lit/unimi/dsi/io/FastBufferedReader;Lit/unimi/dsi/logging/ProgressLogger;)V
+     311: iload         4
+     313: iload         5
+     315: invokespecial #43                 // Method "<init>":(Ljava/util/Iterator;IZ)V
+     318: astore        11
+     320: aload         10
+     322: invokevirtual #278                // Method it/unimi/dsi/logging/ProgressLogger.done:()V
+     325: aload         9
+     327: ldc_w         #281                // String Writing front-coded list to file...
+     330: invokeinterface #283,  2          // InterfaceMethod org/slf4j/Logger.info:(Ljava/lang/String;)V
+     335: aload         11
+     337: aload         7
+     339: invokestatic  #288                // Method it/unimi/dsi/fastutil/io/BinIO.storeObject:(Ljava/lang/Object;Ljava/lang/CharSequence;)V
+     342: aload         9
+     344: ldc_w         #294                // String Completed.
+     347: invokeinterface #283,  2          // InterfaceMethod org/slf4j/Logger.info:(Ljava/lang/String;)V
+     352: return
+
+  public java.util.ListIterator listIterator(int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokevirtual #296                // Method listIterator:(I)Lit/unimi/dsi/fastutil/objects/ObjectListIterator;
+       5: areturn
+
+  public java.lang.Object get(int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokevirtual #300                // Method get:(I)Lit/unimi/dsi/lang/MutableString;
+       5: areturn
+}

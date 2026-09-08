@@ -44,6 +44,8 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 			return rows, true
 		}
 		matchedIDs := []int32{}
+		matchers := sharedStringMatchers(plan.atoms, len(source.Store.Strings), rawProjectionMatcherCapacity)
+		readString := func(sid int32) (string, error) { return source.Store.ProjectionString(e.ctx, sid) }
 		ids := source.Store.NodesOfKind("CallSiteNode")
 		maximum := min(1024, max(64, plan.limit*4))
 		rows := []map[string]any{}
@@ -55,10 +57,8 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 			sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
 			failProjectionRead(err)
 			matched := false
-			for _, atom := range plan.atoms {
-				text, err := source.Store.ProjectionString(e.ctx, sids[distinctCallSiteProperties[atom.property]])
-				failProjectionRead(err)
-				if e.distinctAtomMatches(atom, text) {
+			for i, atom := range plan.atoms {
+				if matchers[i].matches(e, sids[distinctCallSiteProperties[atom.property]], readString) {
 					matched = true
 					break
 				}
