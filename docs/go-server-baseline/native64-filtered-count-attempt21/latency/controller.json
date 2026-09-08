@@ -1,0 +1,58 @@
+[
+  {
+    "runtime": "main",
+    "state": "cold",
+    "directory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/attempt21-main-cold-run1",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-tooling/run-main.py",
+      "--state",
+      "cold",
+      "--output",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/attempt21-main-cold-run1"
+    ],
+    "exitCode": 1
+  },
+  {
+    "runtime": "native",
+    "state": "cold",
+    "directory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/attempt21-native-cold-run1",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-latency.py",
+      "--state",
+      "cold",
+      "--output",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/attempt21-native-cold-run1"
+    ],
+    "exitCode": 1
+  },
+  {
+    "runtime": "native",
+    "state": "startup-prepared",
+    "directory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/attempt21-native-startup-prepared-run1",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/run-latency.py",
+      "--state",
+      "startup-prepared",
+      "--output",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/attempt21-native-startup-prepared-run1"
+    ],
+    "exitCode": 1
+  },
+  {
+    "runtime": "main",
+    "state": "startup-prepared",
+    "directory": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/attempt21-main-startup-prepared-run1",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/main-tooling/run-main.py",
+      "--state",
+      "startup-prepared",
+      "--output",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/attempt21-main-startup-prepared-run1"
+    ],
+    "exitCode": 1
+  }
+]

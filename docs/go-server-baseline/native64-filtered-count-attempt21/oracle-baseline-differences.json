@@ -1,0 +1,710 @@
+[
+  {
+    "name": "duplicate-source-ids-117",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-117",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-118",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-118",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-119",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-119",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-unknown-label-1",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-unknown-label-1",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-bad-return-type-0",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-bad-return-type-0",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-bad-return-type-1",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-bad-return-type-1",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-bad-return-type-2",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-bad-return-type-2",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-bad-return-type-7",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-bad-return-type-7",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-0",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-0",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-1",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-1",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-2",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-2",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-3",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-3",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-4",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-4",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-5",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-5",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-6",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-6",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-7",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-max-7",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-0",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-0",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-1",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-1",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-2",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-2",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-3",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-3",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-4",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-4",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-5",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-5",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-6",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-6",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-7",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-caller-name-negative-7",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-3",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-3",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-4",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-4",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-5",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-5",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-6",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-6",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "provenance-order-190",
+    "repetition": 0,
+    "fields": [
+      "rows"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "provenance-order-190",
+    "repetition": 1,
+    "fields": [
+      "rows"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "provenance-order-191",
+    "repetition": 0,
+    "fields": [
+      "rows"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "provenance-order-191",
+    "repetition": 1,
+    "fields": [
+      "rows"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "provenance-order-192",
+    "repetition": 0,
+    "fields": [
+      "rows"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "provenance-order-192",
+    "repetition": 1,
+    "fields": [
+      "rows"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "provenance-order-193",
+    "repetition": 0,
+    "fields": [
+      "rows"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "provenance-order-193",
+    "repetition": 1,
+    "fields": [
+      "rows"
+    ],
+    "knownGap": null
+  }
+]

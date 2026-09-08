@@ -1,0 +1,38 @@
+{
+  "status": "exited",
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/graphite-benchmark-profile",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/fixture/graphs-relocated.tsv",
+    "--state",
+    "cold",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/source/graphite-server/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-profile/run1/observations.jsonl"
+  ],
+  "buildCommand": [
+    "go",
+    "build",
+    "-o",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/graphite-benchmark-profile",
+    "./cmd/graphite-benchmark-latency"
+  ],
+  "baseRevision": "9237131f",
+  "sourceArchiveSHA256": "44b0f8b7cf767695a63b6ffae3247bcc99f7ae57a03b3b7730a1abf3475b8f61",
+  "binarySHA256": "288df74ea88117b90c42fd75801f3f1a386aac021656b32199c5495d80151fdf",
+  "sourceCopy": "/Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/source/graphite-server",
+  "clone": "/Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/fixture",
+  "caseID": "filtered-count-zero",
+  "caseIndex": 838,
+  "workloadCaseCount": 1267,
+  "performanceMeasurement": false,
+  "cpuProfiling": true,
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "pid": 62001,
+  "startedAt": "2026-09-08T03:22:37.510682+00:00",
+  "exitCode": 1,
+  "finishedAt": "2026-09-08T03:24:30.178111+00:00",
+  "inputsUnchanged": true,
+  "fixtureAuditPassed": true
+}

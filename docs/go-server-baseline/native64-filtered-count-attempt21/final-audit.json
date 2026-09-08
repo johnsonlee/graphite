@@ -1,0 +1,13 @@
+{
+  "finalModuleFilesVerified": 2517,
+  "oracleArtifactsVerified": 27,
+  "testEvidenceHashesVerified": true,
+  "profileEvidenceHashesVerified": true,
+  "allFourRuntimeInputHashesVerified": true,
+  "fourRuntimeIntervalsSerial": true,
+  "nativeBinarySHA256": "b49ffae0ab98c09c453d726af334df4e9b1234496debbffa79b43391aafcdee4",
+  "finalThreeStateComparisonsVerified": true,
+  "bothLatencyComparisonsVerified": true,
+  "perCaseP95Available": false,
+  "overallGoalComplete": false
+}

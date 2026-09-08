@@ -1,0 +1,144 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "files": [
+    {
+      "file": "contract.md",
+      "bytes": 16486,
+      "sha256": "0af0666c3c4338b99105f913347024f1ab1794a804085db10701bf404967d5bd"
+    },
+    {
+      "file": "FilteredCountOracle.java",
+      "bytes": 4418,
+      "sha256": "5ebe9323952c9824756bc539e9143fc96d32ce89ba791d31a58faa9d1f35f71b"
+    },
+    {
+      "file": "PostingAggregateOracle.java",
+      "bytes": 3997,
+      "sha256": "b562d4ae6c8d072f9f14b6696c8e9074aa6dcedd8c703aedee9b9f839699d745"
+    },
+    {
+      "file": "prepare-oracle.py",
+      "bytes": 7595,
+      "sha256": "5e4cf391354ba55bab4910b32d1739ac385f0a6952d0e287f36a44f1bf878a17"
+    },
+    {
+      "file": "verify-oracle.py",
+      "bytes": 4526,
+      "sha256": "d0cc0ca954d509be14856c562bfff5a2a2cdf8e20b7b454a5d9c45ab620e0f38"
+    },
+    {
+      "file": "cases.json",
+      "bytes": 39024,
+      "sha256": "ceefdd3406209e9cd3e04e124ee81d683eb1359ab000ff8478ed6f5872ab19d2"
+    },
+    {
+      "file": "main.json",
+      "bytes": 812718,
+      "sha256": "3c22a6d90b46509e9b4e91ae2346f50d501410b2ab37bad9712f31bf46d87416"
+    },
+    {
+      "file": "posting-main.json",
+      "bytes": 1913,
+      "sha256": "9b0d1c2bbdf9c9ce0e907ea403ef06a6a51e062ea131fde458aa1aff07bcc710"
+    },
+    {
+      "file": "oracle-readme.md",
+      "bytes": 8460,
+      "sha256": "bfef5d3200115067739ad8e3a4f9be112e3cfc7c3acdda3fcdf13094999e03bf"
+    },
+    {
+      "file": "oracle-receipt.json",
+      "bytes": 1452,
+      "sha256": "cfdea67157dba1b8e08a417c2e232e3e6ecf5adf6f8d1842490f07185ca10bea"
+    },
+    {
+      "file": "oracle-inputs.json",
+      "bytes": 1944,
+      "sha256": "b7a163c8839e53bc784f12d3cb08ff7e33bc604aac6957a58c4e622b8a9a53ce"
+    },
+    {
+      "file": "oracle-verification.json",
+      "bytes": 802,
+      "sha256": "a85e8a69424740a23c958027f801c9277b251c9cc87a322ee702a6f03b79f700"
+    },
+    {
+      "file": "fixture-before.json.gz",
+      "bytes": 71142,
+      "sha256": "6872a8dadd884287dab0aef3e3c4f89f374e6d3f2542a8a6186a8bf1aaf6d439"
+    },
+    {
+      "file": "fixture-after.json.gz",
+      "bytes": 72392,
+      "sha256": "94cdd86478c3173129bf8fd03bf3c9d60366798ec32cab42538f970153b034e3"
+    },
+    {
+      "file": "fixture-audit.json",
+      "bytes": 13531,
+      "sha256": "ee918028c13184ae677f9f7c62eeff26cbdfccbf9fe590686e179dd8cbe8d8c7"
+    },
+    {
+      "file": "run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "posting.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "posting.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "compile.stderr",
+      "bytes": 178,
+      "sha256": "ab802cd5de5bebcf3d98e98fc086b29194ba8fc514709d8416b65b95572cd2e5"
+    },
+    {
+      "file": "error-scheduling-cases.json",
+      "bytes": 45953,
+      "sha256": "d310a9b23967b37712eb103cc8f534873760eca2361a9d5748070cb3e1142ec6"
+    },
+    {
+      "file": "error-scheduling-main.json",
+      "bytes": 951765,
+      "sha256": "e35d8691e5b48df6953477b8c29c3969a3e69c9e161dde8754ad8df77617d58a"
+    },
+    {
+      "file": "error-scheduling.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "error-scheduling.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "store-primitive-race.stdout",
+      "bytes": 74,
+      "sha256": "a4ea7a978ca16f11da8d8314bc098786f776cf2f81725c6f1b0b29c6e9895782"
+    },
+    {
+      "file": "store-primitive-race.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "nativeTest": {
+    "file": "graphite-server/internal/store/string_aggregation_test.go",
+    "sha256": "8ebba87104043e0fc838a7a3a076d5091320edadd6ed5e79554ad99d4d60ad3e"
+  }
+}

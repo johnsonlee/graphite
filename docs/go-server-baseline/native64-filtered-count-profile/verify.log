@@ -1,0 +1,22 @@
+{
+  "completeOrderedCasesVerified": 1267,
+  "successCount": 1266,
+  "originalFailureRetained": true,
+  "noNewErrorsOrTimeouts": true,
+  "originalGraphFilesUnchanged": 1152,
+  "inputsUnchanged": true,
+  "cpuProfiledCase": "filtered-count-zero",
+  "cpuProfiledIndex": 838,
+  "performanceMeasurement": false,
+  "acceptanceEvidence": false,
+  "profilingMemoryCounterDeltas": {
+    "TotalAlloc": 2184529752,
+    "Mallocs": 49620709,
+    "Frees": 11171850,
+    "NumGC": 0,
+    "PauseTotalNs": 0
+  },
+  "memoryCaveat": "Counter interval includes profiler start/stop overhead; not an uninstrumented allocation benchmark",
+  "nativeReferenceRevision": "9237131f",
+  "originalMainReferenceArchive": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-fullcase-replay/main-cold-complete/responses.jsonl.gz"
+}

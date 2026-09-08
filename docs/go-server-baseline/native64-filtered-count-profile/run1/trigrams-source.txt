@@ -1,0 +1,28 @@
+Total: 9.74s
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).certifyCallSiteTrigrams in native64-filtered-count-profile-9237131f-run1/source/graphite-server/internal/store/trigram_certificate.go
+      10ms      4.03s (flat, cum) 41.38% of Total
+         .          .     76:func (s *Store) certifyCallSiteTrigrams(ctx context.Context, view *CallSiteStringIndex) (bool, error) {
+         .          .     77:	seen := make(map[int32]bool)
+         .          .     78:	for property := CallerClass; property <= CalleeName; property++ {
+         .       10ms     79:		directory, err := view.Directory(ctx, property)
+         .          .     80:		if err != nil {
+         .          .     81:			return certificateFailure(err)
+         .          .     82:		}
+         .          .     83:		for _, entry := range directory {
+         .       20ms     84:			if err := ctx.Err(); err != nil {
+         .          .     85:				return false, err
+         .          .     86:			}
+         .       10ms     87:			if seen[entry.StringID] {
+         .          .     88:				continue
+         .          .     89:			}
+         .       20ms     90:			seen[entry.StringID] = true
+      10ms      2.52s     91:			hashes, err := lowerTrigramHashes(ctx, s.Strings[entry.StringID])
+         .          .     92:			if err != nil {
+         .          .     93:				return false, err
+         .          .     94:			}
+         .      1.45s     95:			valid, err := view.containsTrigrams(ctx, entry.StringID, hashes)
+         .          .     96:			if err != nil {
+         .          .     97:				return certificateFailure(err)
+         .          .     98:			}
+         .          .     99:			if !valid {
+         .          .    100:				return false, nil

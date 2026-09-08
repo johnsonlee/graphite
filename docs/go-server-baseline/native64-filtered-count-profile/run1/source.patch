@@ -1,0 +1,63 @@
+--- baseline/main.go
++++ profile/main.go
+@@ -11,6 +11,7 @@
+ 	"os"
+ 	"os/signal"
+ 	"runtime"
++	"runtime/pprof"
+ 	"strings"
+ 	"syscall"
+ 	"time"
+@@ -180,7 +181,43 @@
+ 			return records, err
+ 		}
+ 		c := r.w.Cases[i]
++
++		var cpu *os.File
++		var before runtime.MemStats
++		if c.ID == "filtered-count-zero" {
++			var err error
++			cpu, err = os.OpenFile(os.Getenv("GRAPHITE_CASE_CPU_PROFILE"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
++			if err != nil {
++				return records, err
++			}
++			runtime.ReadMemStats(&before)
++			if err := pprof.StartCPUProfile(cpu); err != nil {
++				cpu.Close()
++				return records, err
++			}
++		}
+ 		response, elapsed, timedOut, err := r.measure(ctx, input)
++		if cpu != nil {
++			pprof.StopCPUProfile()
++			if closeErr := cpu.Close(); closeErr != nil {
++				return records, closeErr
++			}
++			var after runtime.MemStats
++			runtime.ReadMemStats(&after)
++			memory, openErr := os.OpenFile(os.Getenv("GRAPHITE_CASE_MEMORY"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
++			if openErr != nil {
++				return records, openErr
++			}
++			encodeErr := json.NewEncoder(memory).Encode(map[string]any{"case": c.ID, "index": i, "diagnosticOnly": true, "cpuProfiled": true, "before": before, "after": after})
++			closeErr := memory.Close()
++			if encodeErr != nil {
++				return records, encodeErr
++			}
++			if closeErr != nil {
++				return records, closeErr
++			}
++		}
++
+ 		if err != nil {
+ 			return records, fmt.Errorf("%s: %w", c.ID, err)
+ 		}
+@@ -321,7 +358,7 @@
+ 	// the entire replay, including when the original all-success gate fails.
+ 	enc := json.NewEncoder(f)
+ 	enc.SetEscapeHTML(false)
+-	header := map[string]any{"kind": "header", "protocol": "real64-dispatch-inclusive-pilot-v1", "state": *state, "caseCount": len(w.Cases), "graphCount": len(r.graphs), "sourceOrder": w.SourceOrder, "workloadSHA256": main64SHA256, "mainRevision": w.MainRevision, "performanceMeasurement": true, "diagnosticOnly": true, "sampleCountPerCase": 1, "timingBoundary": "context-source-selection-worker-dispatch-parse-execute-materialize-reply", "workTrackingEnabled": true, "workBudget": "unlimited", "cancellationGraceMillis": cancellationGrace.Milliseconds(), "runtime": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "gomaxprocs": runtime.GOMAXPROCS(0), "unavailableParity": []string{"finite work accounting", "main resource sampler and execution metrics"}}
++	header := map[string]any{"kind": "header", "protocol": "real64-dispatch-inclusive-pilot-v1", "state": *state, "caseCount": len(w.Cases), "graphCount": len(r.graphs), "sourceOrder": w.SourceOrder, "workloadSHA256": main64SHA256, "mainRevision": w.MainRevision, "performanceMeasurement": false, "cpuProfiledCase": "filtered-count-zero", "diagnosticOnly": true, "sampleCountPerCase": 1, "timingBoundary": "context-source-selection-worker-dispatch-parse-execute-materialize-reply", "workTrackingEnabled": true, "workBudget": "unlimited", "cancellationGraceMillis": cancellationGrace.Milliseconds(), "runtime": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "gomaxprocs": runtime.GOMAXPROCS(0), "unavailableParity": []string{"finite work accounting", "main resource sampler and execution metrics"}}
+ 	if err := enc.Encode(header); err != nil {
+ 		return err
+ 	}

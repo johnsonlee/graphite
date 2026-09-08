@@ -1,0 +1,34 @@
+{
+  "publicScenarios": 194,
+  "publicResponses": 388,
+  "outcomes": {
+    "success": 338,
+    "IllegalArgumentException": 10,
+    "IndexOutOfBoundsException": 24,
+    "ArrayIndexOutOfBoundsException": 16
+  },
+  "publicRepeatResponseMismatches": 0,
+  "aggregationPrimitiveObservations": 9,
+  "originalFixtureFilesUnchanged": 21561,
+  "generatedSidecars": 280,
+  "errorSchedulingResponses": 400,
+  "observedSiblingRetainedStates": {
+    "malformed-offset-negative-2-0": {
+      "true": 91,
+      "false": 9
+    },
+    "malformed-offset-negative-2-1": {
+      "false": 10,
+      "true": 90
+    },
+    "malformed-offset-negative-2-2": {
+      "true": 91,
+      "false": 9
+    },
+    "malformed-offset-negative-2-7": {
+      "true": 94,
+      "false": 6
+    }
+  },
+  "syntheticPerformanceMeasurements": 0
+}

@@ -1,0 +1,769 @@
+{
+  "states": {
+    "cold": {
+      "samplesPerCasePerRuntime": 1,
+      "perCaseP95Available": false,
+      "successfulCasesSlowerThanFreshMain": 1180,
+      "successfulCasesAtLeastTenfoldSingleSample": 1,
+      "selectedCountCases": [
+        {
+          "index": 838,
+          "id": "filtered-count-zero",
+          "outcome": "success",
+          "oldMainMs": 1.564,
+          "oldGoMs": 11055.763375,
+          "mainMs": 1.776709,
+          "goMs": 0.9045,
+          "goDeltaMs": -11054.858875
+        },
+        {
+          "index": 839,
+          "id": "filtered-count-targeted",
+          "outcome": "success",
+          "oldMainMs": 24.88225,
+          "oldGoMs": 1958.953041,
+          "mainMs": 20.4365,
+          "goMs": 85.955375,
+          "goDeltaMs": -1872.997666
+        },
+        {
+          "index": 840,
+          "id": "filtered-count-dense",
+          "outcome": "success",
+          "oldMainMs": 18.264583,
+          "oldGoMs": 885.804584,
+          "mainMs": 17.314292,
+          "goMs": 88.713958,
+          "goDeltaMs": -797.090626
+        },
+        {
+          "index": 841,
+          "id": "filtered-distinct-count-zero",
+          "outcome": "success",
+          "oldMainMs": 0.672917,
+          "oldGoMs": 2.191333,
+          "mainMs": 0.919708,
+          "goMs": 1.104958,
+          "goDeltaMs": -1.086375
+        },
+        {
+          "index": 842,
+          "id": "filtered-distinct-count-targeted",
+          "outcome": "success",
+          "oldMainMs": 30.581125,
+          "oldGoMs": 3567.049083,
+          "mainMs": 28.15675,
+          "goMs": 143.484958,
+          "goDeltaMs": -3423.564125
+        },
+        {
+          "index": 843,
+          "id": "filtered-distinct-count-dense",
+          "outcome": "success",
+          "oldMainMs": 44.055833,
+          "oldGoMs": 3362.055875,
+          "mainMs": 48.199375,
+          "goMs": 95.242917,
+          "goDeltaMs": -3266.812958
+        }
+      ],
+      "largestGoIncreases": [
+        {
+          "index": 892,
+          "id": "regex-or-zero",
+          "outcome": "success",
+          "oldMainMs": 14298.176375,
+          "oldGoMs": 24444.92275,
+          "mainMs": 15289.3735,
+          "goMs": 24873.146666,
+          "goDeltaMs": 428.223916
+        },
+        {
+          "index": 893,
+          "id": "regex-or-targeted",
+          "outcome": "success",
+          "oldMainMs": 4344.074583,
+          "oldGoMs": 7374.729917,
+          "mainMs": 4782.394541,
+          "goMs": 7456.730666,
+          "goDeltaMs": 82.000749
+        },
+        {
+          "index": 883,
+          "id": "global-six-or-zero",
+          "outcome": "success",
+          "oldMainMs": 335.426458,
+          "oldGoMs": 2627.679125,
+          "mainMs": 366.757125,
+          "goMs": 2695.51725,
+          "goDeltaMs": 67.838125
+        },
+        {
+          "index": 26,
+          "id": "ends-or-wrapped-targeted",
+          "outcome": "success",
+          "oldMainMs": 30.278208,
+          "oldGoMs": 619.873916,
+          "mainMs": 30.8065,
+          "goMs": 667.045959,
+          "goDeltaMs": 47.172043
+        },
+        {
+          "index": 875,
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "outcome": "success",
+          "oldMainMs": 1.194125,
+          "oldGoMs": 265.964792,
+          "mainMs": 1.094292,
+          "goMs": 296.896625,
+          "goDeltaMs": 30.931833
+        },
+        {
+          "index": 876,
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "outcome": "success",
+          "oldMainMs": 7.302875,
+          "oldGoMs": 318.086916,
+          "mainMs": 7.052709,
+          "goMs": 332.920167,
+          "goDeltaMs": 14.833251
+        },
+        {
+          "index": 827,
+          "id": "ordered-projection-targeted",
+          "outcome": "success",
+          "oldMainMs": 838.886291,
+          "oldGoMs": 1462.459125,
+          "mainMs": 865.461667,
+          "goMs": 1477.175667,
+          "goDeltaMs": 14.716542
+        },
+        {
+          "index": 0,
+          "id": "request-selected-set-wrapped-contains-k64-group-00-zero",
+          "outcome": "success",
+          "oldMainMs": 183.979625,
+          "oldGoMs": 269.590417,
+          "mainMs": 170.05075,
+          "goMs": 280.811166,
+          "goDeltaMs": 11.220749
+        },
+        {
+          "index": 25,
+          "id": "ends-or-wrapped-zero",
+          "outcome": "success",
+          "oldMainMs": 31.52675,
+          "oldGoMs": 613.545166,
+          "mainMs": 28.992584,
+          "goMs": 624.001958,
+          "goDeltaMs": 10.456792
+        },
+        {
+          "index": 17,
+          "id": "starts-or-raw-targeted",
+          "outcome": "success",
+          "oldMainMs": 40.468125,
+          "oldGoMs": 61.068916,
+          "mainMs": 20.67675,
+          "goMs": 71.391625,
+          "goDeltaMs": 10.322709
+        },
+        {
+          "index": 878,
+          "id": "exact-name-in-targeted",
+          "outcome": "success",
+          "oldMainMs": 13.000083,
+          "oldGoMs": 274.339042,
+          "mainMs": 13.210542,
+          "goMs": 278.8385,
+          "goDeltaMs": 4.499458
+        },
+        {
+          "index": 836,
+          "id": "large-limit-targeted",
+          "outcome": "success",
+          "oldMainMs": 16.624,
+          "oldGoMs": 26.852625,
+          "mainMs": 181.322042,
+          "goMs": 31.054083,
+          "goDeltaMs": 4.201458
+        },
+        {
+          "index": 834,
+          "id": "distinct-skip-dense",
+          "outcome": "success",
+          "oldMainMs": 148.652916,
+          "oldGoMs": 605.965708,
+          "mainMs": 322.940333,
+          "goMs": 610.080042,
+          "goDeltaMs": 4.114334
+        },
+        {
+          "index": 76,
+          "id": "graph-id-property-wrapped-contains-target-15-zero",
+          "outcome": "success",
+          "oldMainMs": 21.196625,
+          "oldGoMs": 12.274792,
+          "mainMs": 20.846792,
+          "goMs": 15.862417,
+          "goDeltaMs": 3.587625
+        },
+        {
+          "index": 24,
+          "id": "starts-or-wrapped-dense",
+          "outcome": "success",
+          "oldMainMs": 136.359542,
+          "oldGoMs": 595.069583,
+          "mainMs": 200.949833,
+          "goMs": 597.541875,
+          "goDeltaMs": 2.472292
+        }
+      ],
+      "largestGoReductions": [
+        {
+          "index": 838,
+          "id": "filtered-count-zero",
+          "outcome": "success",
+          "oldMainMs": 1.564,
+          "oldGoMs": 11055.763375,
+          "mainMs": 1.776709,
+          "goMs": 0.9045,
+          "goDeltaMs": -11054.858875
+        },
+        {
+          "index": 842,
+          "id": "filtered-distinct-count-targeted",
+          "outcome": "success",
+          "oldMainMs": 30.581125,
+          "oldGoMs": 3567.049083,
+          "mainMs": 28.15675,
+          "goMs": 143.484958,
+          "goDeltaMs": -3423.564125
+        },
+        {
+          "index": 843,
+          "id": "filtered-distinct-count-dense",
+          "outcome": "success",
+          "oldMainMs": 44.055833,
+          "oldGoMs": 3362.055875,
+          "mainMs": 48.199375,
+          "goMs": 95.242917,
+          "goDeltaMs": -3266.812958
+        },
+        {
+          "index": 839,
+          "id": "filtered-count-targeted",
+          "outcome": "success",
+          "oldMainMs": 24.88225,
+          "oldGoMs": 1958.953041,
+          "mainMs": 20.4365,
+          "goMs": 85.955375,
+          "goDeltaMs": -1872.997666
+        },
+        {
+          "index": 840,
+          "id": "filtered-count-dense",
+          "outcome": "success",
+          "oldMainMs": 18.264583,
+          "oldGoMs": 885.804584,
+          "mainMs": 17.314292,
+          "goMs": 88.713958,
+          "goDeltaMs": -797.090626
+        },
+        {
+          "index": 830,
+          "id": "ordered-skip-targeted",
+          "outcome": "success",
+          "oldMainMs": 833.667875,
+          "oldGoMs": 4746.892792,
+          "mainMs": 815.527375,
+          "goMs": 4503.192417,
+          "goDeltaMs": -243.700375
+        },
+        {
+          "index": 831,
+          "id": "ordered-skip-dense",
+          "outcome": "success",
+          "oldMainMs": 613.232458,
+          "oldGoMs": 3719.767875,
+          "mainMs": 616.078584,
+          "goMs": 3497.92275,
+          "goDeltaMs": -221.845125
+        },
+        {
+          "index": 886,
+          "id": "global-six-or-wrapped-zero",
+          "outcome": "success",
+          "oldMainMs": 54.547666,
+          "oldGoMs": 3142.100708,
+          "mainMs": 55.376334,
+          "goMs": 2927.134292,
+          "goDeltaMs": -214.966416
+        },
+        {
+          "index": 887,
+          "id": "global-six-or-wrapped-targeted",
+          "outcome": "success",
+          "oldMainMs": 128.91175,
+          "oldGoMs": 3276.729125,
+          "mainMs": 96.52525,
+          "goMs": 3145.23025,
+          "goDeltaMs": -131.498875
+        },
+        {
+          "index": 884,
+          "id": "global-six-or-targeted",
+          "outcome": "success",
+          "oldMainMs": 325.683042,
+          "oldGoMs": 2631.881292,
+          "mainMs": 466.446666,
+          "goMs": 2543.22525,
+          "goDeltaMs": -88.656042
+        },
+        {
+          "index": 885,
+          "id": "global-six-or-dense",
+          "outcome": "success",
+          "oldMainMs": 273.491333,
+          "oldGoMs": 2753.065459,
+          "mainMs": 229.84025,
+          "goMs": 2673.008166,
+          "goDeltaMs": -80.057293
+        },
+        {
+          "index": 888,
+          "id": "global-six-or-wrapped-dense",
+          "outcome": "success",
+          "oldMainMs": 60.479209,
+          "oldGoMs": 3416.965708,
+          "mainMs": 65.408833,
+          "goMs": 3368.096416,
+          "goDeltaMs": -48.869292
+        },
+        {
+          "index": 6,
+          "id": "class-contains-or-unlabeled-dense",
+          "outcome": "success",
+          "oldMainMs": 81.968708,
+          "oldGoMs": 963.899958,
+          "mainMs": 86.12075,
+          "goMs": 923.271542,
+          "goDeltaMs": -40.628416
+        },
+        {
+          "index": 19,
+          "id": "ends-or-raw-zero",
+          "outcome": "success",
+          "oldMainMs": 140.554834,
+          "oldGoMs": 217.996791,
+          "mainMs": 180.573583,
+          "goMs": 183.900459,
+          "goDeltaMs": -34.096332
+        },
+        {
+          "index": 27,
+          "id": "ends-or-wrapped-dense",
+          "outcome": "success",
+          "oldMainMs": 144.326833,
+          "oldGoMs": 997.446833,
+          "mainMs": 146.707834,
+          "goMs": 963.875,
+          "goDeltaMs": -33.571833
+        }
+      ],
+      "sumOfSuccessfulCaseTimesMs": {
+        "oldMainMs": 26362.343897,
+        "oldGoMs": 95192.340061,
+        "mainMs": 28354.176801999998,
+        "goMs": 74240.423173
+      },
+      "sumInterpretation": "Sum of this one ordered invocation, excluding the original failure; neither P95 nor a causal estimate from repeated trials"
+    },
+    "startup-prepared": {
+      "samplesPerCasePerRuntime": 1,
+      "perCaseP95Available": false,
+      "successfulCasesSlowerThanFreshMain": 1184,
+      "successfulCasesAtLeastTenfoldSingleSample": 66,
+      "selectedCountCases": [
+        {
+          "index": 838,
+          "id": "filtered-count-zero",
+          "outcome": "success",
+          "oldMainMs": 1.56375,
+          "oldGoMs": 11150.092833,
+          "mainMs": 1.64775,
+          "goMs": 0.856541,
+          "goDeltaMs": -11149.236292
+        },
+        {
+          "index": 839,
+          "id": "filtered-count-targeted",
+          "outcome": "success",
+          "oldMainMs": 21.254667,
+          "oldGoMs": 1926.774,
+          "mainMs": 23.094042,
+          "goMs": 82.942542,
+          "goDeltaMs": -1843.831458
+        },
+        {
+          "index": 840,
+          "id": "filtered-count-dense",
+          "outcome": "success",
+          "oldMainMs": 15.929375,
+          "oldGoMs": 901.136667,
+          "mainMs": 17.783333,
+          "goMs": 89.302333,
+          "goDeltaMs": -811.834334
+        },
+        {
+          "index": 841,
+          "id": "filtered-distinct-count-zero",
+          "outcome": "success",
+          "oldMainMs": 0.748875,
+          "oldGoMs": 2.186958,
+          "mainMs": 0.716125,
+          "goMs": 1.09575,
+          "goDeltaMs": -1.091208
+        },
+        {
+          "index": 842,
+          "id": "filtered-distinct-count-targeted",
+          "outcome": "success",
+          "oldMainMs": 29.56575,
+          "oldGoMs": 3567.600333,
+          "mainMs": 30.089584,
+          "goMs": 144.298417,
+          "goDeltaMs": -3423.301916
+        },
+        {
+          "index": 843,
+          "id": "filtered-distinct-count-dense",
+          "outcome": "success",
+          "oldMainMs": 39.023125,
+          "oldGoMs": 3373.309917,
+          "mainMs": 31.658042,
+          "goMs": 91.655834,
+          "goDeltaMs": -3281.654083
+        }
+      ],
+      "largestGoIncreases": [
+        {
+          "index": 892,
+          "id": "regex-or-zero",
+          "outcome": "success",
+          "oldMainMs": 14250.663417,
+          "oldGoMs": 24465.607208,
+          "mainMs": 13566.604209,
+          "goMs": 24777.075125,
+          "goDeltaMs": 311.467917
+        },
+        {
+          "index": 893,
+          "id": "regex-or-targeted",
+          "outcome": "success",
+          "oldMainMs": 4548.908042,
+          "oldGoMs": 7357.46175,
+          "mainMs": 4315.170333,
+          "goMs": 7583.947084,
+          "goDeltaMs": 226.485334
+        },
+        {
+          "index": 883,
+          "id": "global-six-or-zero",
+          "outcome": "success",
+          "oldMainMs": 411.894875,
+          "oldGoMs": 2514.753,
+          "mainMs": 198.097292,
+          "goMs": 2721.27575,
+          "goDeltaMs": 206.52275
+        },
+        {
+          "index": 30,
+          "id": "contains-or-wrapped-dense",
+          "outcome": "success",
+          "oldMainMs": 28.502125,
+          "oldGoMs": 1038.725334,
+          "mainMs": 26.504625,
+          "goMs": 1159.034584,
+          "goDeltaMs": 120.30925
+        },
+        {
+          "index": 884,
+          "id": "global-six-or-targeted",
+          "outcome": "success",
+          "oldMainMs": 311.985334,
+          "oldGoMs": 2566.819625,
+          "mainMs": 267.437292,
+          "goMs": 2640.3235,
+          "goDeltaMs": 73.503875
+        },
+        {
+          "index": 27,
+          "id": "ends-or-wrapped-dense",
+          "outcome": "success",
+          "oldMainMs": 38.643084,
+          "oldGoMs": 1009.6195,
+          "mainMs": 34.265417,
+          "goMs": 1043.667666,
+          "goDeltaMs": 34.048166
+        },
+        {
+          "index": 25,
+          "id": "ends-or-wrapped-zero",
+          "outcome": "success",
+          "oldMainMs": 30.9315,
+          "oldGoMs": 615.336375,
+          "mainMs": 28.650042,
+          "goMs": 646.431,
+          "goDeltaMs": 31.094625
+        },
+        {
+          "index": 22,
+          "id": "starts-or-wrapped-zero",
+          "outcome": "success",
+          "oldMainMs": 161.391084,
+          "oldGoMs": 565.7125,
+          "mainMs": 154.2855,
+          "goMs": 594.058333,
+          "goDeltaMs": 28.345833
+        },
+        {
+          "index": 875,
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "outcome": "success",
+          "oldMainMs": 1.338125,
+          "oldGoMs": 279.458041,
+          "mainMs": 1.206333,
+          "goMs": 305.691417,
+          "goDeltaMs": 26.233376
+        },
+        {
+          "index": 5,
+          "id": "class-contains-or-unlabeled-targeted",
+          "outcome": "success",
+          "oldMainMs": 140.654834,
+          "oldGoMs": 783.816375,
+          "mainMs": 173.675584,
+          "goMs": 809.334958,
+          "goDeltaMs": 25.518583
+        },
+        {
+          "index": 29,
+          "id": "contains-or-wrapped-targeted",
+          "outcome": "success",
+          "oldMainMs": 16.488208,
+          "oldGoMs": 258.835708,
+          "mainMs": 13.336042,
+          "goMs": 282.678666,
+          "goDeltaMs": 23.842958
+        },
+        {
+          "index": 831,
+          "id": "ordered-skip-dense",
+          "outcome": "success",
+          "oldMainMs": 624.157,
+          "oldGoMs": 3557.511084,
+          "mainMs": 570.625791,
+          "goMs": 3572.062625,
+          "goDeltaMs": 14.551541
+        },
+        {
+          "index": 827,
+          "id": "ordered-projection-targeted",
+          "outcome": "success",
+          "oldMainMs": 858.945042,
+          "oldGoMs": 1428.732375,
+          "mainMs": 419.642042,
+          "goMs": 1442.718875,
+          "goDeltaMs": 13.9865
+        },
+        {
+          "index": 26,
+          "id": "ends-or-wrapped-targeted",
+          "outcome": "success",
+          "oldMainMs": 31.978875,
+          "oldGoMs": 614.002833,
+          "mainMs": 30.078625,
+          "goMs": 624.308625,
+          "goDeltaMs": 10.305792
+        },
+        {
+          "index": 877,
+          "id": "exact-name-in-zero",
+          "outcome": "success",
+          "oldMainMs": 0.885,
+          "oldGoMs": 123.976292,
+          "mainMs": 0.934459,
+          "goMs": 133.337417,
+          "goDeltaMs": 9.361125
+        }
+      ],
+      "largestGoReductions": [
+        {
+          "index": 838,
+          "id": "filtered-count-zero",
+          "outcome": "success",
+          "oldMainMs": 1.56375,
+          "oldGoMs": 11150.092833,
+          "mainMs": 1.64775,
+          "goMs": 0.856541,
+          "goDeltaMs": -11149.236292
+        },
+        {
+          "index": 842,
+          "id": "filtered-distinct-count-targeted",
+          "outcome": "success",
+          "oldMainMs": 29.56575,
+          "oldGoMs": 3567.600333,
+          "mainMs": 30.089584,
+          "goMs": 144.298417,
+          "goDeltaMs": -3423.301916
+        },
+        {
+          "index": 843,
+          "id": "filtered-distinct-count-dense",
+          "outcome": "success",
+          "oldMainMs": 39.023125,
+          "oldGoMs": 3373.309917,
+          "mainMs": 31.658042,
+          "goMs": 91.655834,
+          "goDeltaMs": -3281.654083
+        },
+        {
+          "index": 839,
+          "id": "filtered-count-targeted",
+          "outcome": "success",
+          "oldMainMs": 21.254667,
+          "oldGoMs": 1926.774,
+          "mainMs": 23.094042,
+          "goMs": 82.942542,
+          "goDeltaMs": -1843.831458
+        },
+        {
+          "index": 840,
+          "id": "filtered-count-dense",
+          "outcome": "success",
+          "oldMainMs": 15.929375,
+          "oldGoMs": 901.136667,
+          "mainMs": 17.783333,
+          "goMs": 89.302333,
+          "goDeltaMs": -811.834334
+        },
+        {
+          "index": 886,
+          "id": "global-six-or-wrapped-zero",
+          "outcome": "success",
+          "oldMainMs": 55.819917,
+          "oldGoMs": 3030.45575,
+          "mainMs": 54.404541,
+          "goMs": 2853.197792,
+          "goDeltaMs": -177.257958
+        },
+        {
+          "index": 887,
+          "id": "global-six-or-wrapped-targeted",
+          "outcome": "success",
+          "oldMainMs": 95.925625,
+          "oldGoMs": 3309.859125,
+          "mainMs": 66.168959,
+          "goMs": 3167.013166,
+          "goDeltaMs": -142.845959
+        },
+        {
+          "index": 879,
+          "id": "exact-name-in-dense",
+          "outcome": "success",
+          "oldMainMs": 23.092542,
+          "oldGoMs": 293.710875,
+          "mainMs": 21.011208,
+          "goMs": 232.740458,
+          "goDeltaMs": -60.970417
+        },
+        {
+          "index": 885,
+          "id": "global-six-or-dense",
+          "outcome": "success",
+          "oldMainMs": 287.998084,
+          "oldGoMs": 2702.055458,
+          "mainMs": 191.654375,
+          "goMs": 2656.203458,
+          "goDeltaMs": -45.852
+        },
+        {
+          "index": 23,
+          "id": "starts-or-wrapped-targeted",
+          "outcome": "success",
+          "oldMainMs": 106.38475,
+          "oldGoMs": 669.833875,
+          "mainMs": 89.492792,
+          "goMs": 630.461916,
+          "goDeltaMs": -39.371959
+        },
+        {
+          "index": 876,
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "outcome": "success",
+          "oldMainMs": 7.718167,
+          "oldGoMs": 310.450375,
+          "mainMs": 7.068083,
+          "goMs": 279.759625,
+          "goDeltaMs": -30.69075
+        },
+        {
+          "index": 6,
+          "id": "class-contains-or-unlabeled-dense",
+          "outcome": "success",
+          "oldMainMs": 89.361875,
+          "oldGoMs": 646.363875,
+          "mainMs": 45.119333,
+          "goMs": 618.368791,
+          "goDeltaMs": -27.995084
+        },
+        {
+          "index": 880,
+          "id": "positive-and-not-zero",
+          "outcome": "success",
+          "oldMainMs": 0.865667,
+          "oldGoMs": 24.804709,
+          "mainMs": 0.821292,
+          "goMs": 3.55525,
+          "goDeltaMs": -21.249459
+        },
+        {
+          "index": 888,
+          "id": "global-six-or-wrapped-dense",
+          "outcome": "success",
+          "oldMainMs": 63.120667,
+          "oldGoMs": 3331.214,
+          "mainMs": 59.824209,
+          "goMs": 3315.245833,
+          "goDeltaMs": -15.968167
+        },
+        {
+          "index": 881,
+          "id": "positive-and-not-targeted",
+          "outcome": "success",
+          "oldMainMs": 4.569625,
+          "oldGoMs": 13.888,
+          "mainMs": 4.510208,
+          "goMs": 3.08075,
+          "goDeltaMs": -10.80725
+        }
+      ],
+      "sumOfSuccessfulCaseTimesMs": {
+        "oldMainMs": 26220.698226,
+        "oldGoMs": 93918.578534,
+        "mainMs": 24110.066745,
+        "goMs": 74007.307411
+      },
+      "sumInterpretation": "Sum of this one ordered invocation, excluding the original failure; neither P95 nor a causal estimate from repeated trials"
+    }
+  },
+  "inputsSHA256": {
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/cold-comparison.tsv": "3af659988696178a7d2655ffe36752bac9caaac86fcf1b4e742085a4e0aa9452",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/cold-comparison.tsv": "dfa7f07e7126f377426baf2e38da06a051c512262585c856140fe1256d6b1e4b",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-latency-pilot/startup-prepared-comparison.tsv": "59b2bde99a9a4bb5e7de36d624fe4ffa62b11b5b6d0c0681b63d24accd216ae8",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-attempt21/latency/startup-prepared-comparison.tsv": "bdbb39a058c3b239f0f7cb6f7234a399c7c50b606be26732fbcb7946211853a3"
+  },
+  "acceptanceProven": false
+}

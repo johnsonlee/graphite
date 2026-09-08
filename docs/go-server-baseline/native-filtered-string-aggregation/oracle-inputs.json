@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "bytes": 26940017,
+    "sha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+    "bytes": 241874,
+    "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+    "bytes": 145024,
+    "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+    "bytes": 115191,
+    "sha256": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77"
+  },
+  {
+    "path": "/private/tmp/graphite-filtered-count-oracle-9237131f-run1/classes/FilteredCountOracle.class",
+    "bytes": 7821,
+    "sha256": "6de0a8dbe5c802f86945902723fe8df2aeb4439d84c169eb845ef0d492f43e32"
+  },
+  {
+    "path": "/private/tmp/graphite-filtered-count-oracle-9237131f-run1/classes/PostingAggregateOracle.class",
+    "bytes": 6638,
+    "sha256": "acad836918d709679e68dd8f50c62e4e79012282885e994c4ec176f6b84b7a6a"
+  },
+  {
+    "path": "/private/tmp/graphite-filtered-count-oracle-9237131f-run1/classes/PostingAggregateOracle$1.class",
+    "bytes": 776,
+    "sha256": "df336e8863f28a5bc51ef743729e2e23d3beb11e2520977b9b23b551a0a215e5"
+  },
+  {
+    "path": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutor.kt",
+    "bytes": 25235,
+    "sha256": "2de0ff1f84fc67fd76f3d4c3335c406ed440c625e29f3911aa73d2aa04cf2586"
+  }
+]

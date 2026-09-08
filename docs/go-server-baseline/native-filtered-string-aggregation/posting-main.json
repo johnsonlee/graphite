@@ -1,0 +1,129 @@
+[
+  {
+    "postingCount": 11,
+    "failRaw": false,
+    "count": 3,
+    "values": [
+      "caller"
+    ],
+    "reads": [],
+    "workBatches": [
+      4,
+      1
+    ]
+  },
+  {
+    "postingCount": 11,
+    "failRaw": true,
+    "count": 3,
+    "values": [
+      "caller"
+    ],
+    "reads": [],
+    "workBatches": [
+      4,
+      1
+    ]
+  },
+  {
+    "postingCount": 12,
+    "failRaw": false,
+    "count": 3,
+    "values": [
+      "caller",
+      "example.Other"
+    ],
+    "reads": [
+      [
+        1,
+        1
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        65,
+        1
+      ]
+    ],
+    "workBatches": [
+      4,
+      3
+    ]
+  },
+  {
+    "postingCount": 12,
+    "failRaw": true,
+    "error": "java.lang.IllegalStateException",
+    "message": "deliberate raw read",
+    "reads": [
+      [
+        1,
+        1
+      ]
+    ],
+    "workBatches": [
+      4,
+      1
+    ]
+  },
+  {
+    "postingCount": 13,
+    "failRaw": false,
+    "count": 3,
+    "values": [
+      "caller",
+      "example.Other"
+    ],
+    "reads": [
+      [
+        1,
+        1
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        65,
+        1
+      ]
+    ],
+    "workBatches": [
+      4,
+      3
+    ]
+  },
+  {
+    "postingCount": 13,
+    "failRaw": true,
+    "error": "java.lang.IllegalStateException",
+    "message": "deliberate raw read",
+    "reads": [
+      [
+        1,
+        1
+      ]
+    ],
+    "workBatches": [
+      4,
+      1
+    ]
+  },
+  {
+    "invalidPostingID": -1,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 67108863 out of bounds for length 2"
+  },
+  {
+    "invalidPostingID": 128,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 2 out of bounds for length 2"
+  },
+  {
+    "invalidPostingID": 2147483647,
+    "error": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 33554431 out of bounds for length 2"
+  }
+]

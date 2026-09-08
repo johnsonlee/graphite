@@ -1,0 +1,1321 @@
+[
+  {
+    "name": "types-000",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(*) AS x"
+  },
+  {
+    "name": "types-001",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(n.name) AS x"
+  },
+  {
+    "name": "types-002",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(DISTINCT n.name) AS x"
+  },
+  {
+    "name": "types-003",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(n.missing) AS x"
+  },
+  {
+    "name": "types-004",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(DISTINCT n.missing) AS x"
+  },
+  {
+    "name": "types-005",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "types-006",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "types-007",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(n) AS x"
+  },
+  {
+    "name": "types-008",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(DISTINCT n) AS x"
+  },
+  {
+    "name": "types-009",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(1) AS x"
+  },
+  {
+    "name": "types-010",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:EnumConstant) WHERE n.name CONTAINS 'RED' RETURN count(null) AS x"
+  },
+  {
+    "name": "types-011",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(*) AS x"
+  },
+  {
+    "name": "types-012",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(n.name) AS x"
+  },
+  {
+    "name": "types-013",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(DISTINCT n.name) AS x"
+  },
+  {
+    "name": "types-014",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(n.missing) AS x"
+  },
+  {
+    "name": "types-015",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(DISTINCT n.missing) AS x"
+  },
+  {
+    "name": "types-016",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "types-017",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "types-018",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(n) AS x"
+  },
+  {
+    "name": "types-019",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(DISTINCT n) AS x"
+  },
+  {
+    "name": "types-020",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(1) AS x"
+  },
+  {
+    "name": "types-021",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:LocalVariable) WHERE n.name CONTAINS 'x' RETURN count(null) AS x"
+  },
+  {
+    "name": "types-022",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(*) AS x"
+  },
+  {
+    "name": "types-023",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(n.name) AS x"
+  },
+  {
+    "name": "types-024",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(DISTINCT n.name) AS x"
+  },
+  {
+    "name": "types-025",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(n.missing) AS x"
+  },
+  {
+    "name": "types-026",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(DISTINCT n.missing) AS x"
+  },
+  {
+    "name": "types-027",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "types-028",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "types-029",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(n) AS x"
+  },
+  {
+    "name": "types-030",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(DISTINCT n) AS x"
+  },
+  {
+    "name": "types-031",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(1) AS x"
+  },
+  {
+    "name": "types-032",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN count(null) AS x"
+  },
+  {
+    "name": "types-033",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(*) AS x"
+  },
+  {
+    "name": "types-034",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(n.caller_name) AS x"
+  },
+  {
+    "name": "types-035",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(DISTINCT n.caller_name) AS x"
+  },
+  {
+    "name": "types-036",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(n.missing) AS x"
+  },
+  {
+    "name": "types-037",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(DISTINCT n.missing) AS x"
+  },
+  {
+    "name": "types-038",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "types-039",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "types-040",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(n) AS x"
+  },
+  {
+    "name": "types-041",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(DISTINCT n) AS x"
+  },
+  {
+    "name": "types-042",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(1) AS x"
+  },
+  {
+    "name": "types-043",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'run' RETURN count(null) AS x"
+  },
+  {
+    "name": "types-044",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(*) AS x"
+  },
+  {
+    "name": "types-045",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(n.name) AS x"
+  },
+  {
+    "name": "types-046",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(DISTINCT n.name) AS x"
+  },
+  {
+    "name": "types-047",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(n.missing) AS x"
+  },
+  {
+    "name": "types-048",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(DISTINCT n.missing) AS x"
+  },
+  {
+    "name": "types-049",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "types-050",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "types-051",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(n) AS x"
+  },
+  {
+    "name": "types-052",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(DISTINCT n) AS x"
+  },
+  {
+    "name": "types-053",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(1) AS x"
+  },
+  {
+    "name": "types-054",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n:Annotation) WHERE n.name CONTAINS 'Audit' RETURN count(null) AS x"
+  },
+  {
+    "name": "types-055",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(*) AS x"
+  },
+  {
+    "name": "types-056",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(n.name) AS x"
+  },
+  {
+    "name": "types-057",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(DISTINCT n.name) AS x"
+  },
+  {
+    "name": "types-058",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(n.missing) AS x"
+  },
+  {
+    "name": "types-059",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(DISTINCT n.missing) AS x"
+  },
+  {
+    "name": "types-060",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "types-061",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "types-062",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(n) AS x"
+  },
+  {
+    "name": "types-063",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(DISTINCT n) AS x"
+  },
+  {
+    "name": "types-064",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(1) AS x"
+  },
+  {
+    "name": "types-065",
+    "sources": 2,
+    "fixture": "all-types",
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN count(null) AS x"
+  },
+  {
+    "name": "expression-000",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-001",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x"
+  },
+  {
+    "name": "expression-002",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x"
+  },
+  {
+    "name": "expression-003",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.line) AS x"
+  },
+  {
+    "name": "expression-004",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.line) AS x"
+  },
+  {
+    "name": "expression-005",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "expression-006",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "expression-007",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.line > 5 RETURN count(n.caller_name) AS x"
+  },
+  {
+    "name": "expression-008",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.line < 0 RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-009",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT toLower(n.caller_name)) AS x"
+  },
+  {
+    "name": "expression-010",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-011",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.graphId = 'g01' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-012",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name IN ['other','other','missing'] RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-013",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-014",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name =~ '.*\\\\Qother\\\\E.*' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-015",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE toLower(n.caller_name) CONTAINS 'other' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-016",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-017",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-018",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name STARTS WITH 'oth' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-019",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name ENDS WITH 'her' RETURN count(*) AS x"
+  },
+  {
+    "name": "expression-020",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n:NoSuchType) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.name,'bad') AS x"
+  },
+  {
+    "name": "expression-021",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x LIMIT 1"
+  },
+  {
+    "name": "expression-022",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x, count(n.caller_name) AS y"
+  },
+  {
+    "name": "expression-023",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT count(*) AS x"
+  },
+  {
+    "name": "sources-1-0",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x"
+  },
+  {
+    "name": "sources-1-1",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x"
+  },
+  {
+    "name": "sources-1-2",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x"
+  },
+  {
+    "name": "sources-1-3",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.line) AS x"
+  },
+  {
+    "name": "sources-1-4",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.line) AS x"
+  },
+  {
+    "name": "sources-1-5",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "sources-1-6",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "sources-64-0",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x"
+  },
+  {
+    "name": "sources-64-1",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x"
+  },
+  {
+    "name": "sources-64-2",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x"
+  },
+  {
+    "name": "sources-64-3",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.line) AS x"
+  },
+  {
+    "name": "sources-64-4",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.line) AS x"
+  },
+  {
+    "name": "sources-64-5",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "sources-64-6",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "parameter-104",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN count(*) AS x",
+    "parameters": {
+      "term": "other"
+    }
+  },
+  {
+    "name": "parameter-105",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN count(*) AS x",
+    "parameters": {
+      "term": 42
+    }
+  },
+  {
+    "name": "parameter-106",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN count(*) AS x",
+    "parameters": {
+      "term": null
+    }
+  },
+  {
+    "name": "annotation-positive-107",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(*) AS x"
+  },
+  {
+    "name": "annotation-positive-108",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(n.name) AS x"
+  },
+  {
+    "name": "annotation-positive-109",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(DISTINCT n.name) AS x"
+  },
+  {
+    "name": "annotation-positive-110",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(n.caller_name) AS x"
+  },
+  {
+    "name": "annotation-positive-111",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(DISTINCT n.caller_name) AS x"
+  },
+  {
+    "name": "annotation-positive-112",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(n.callee_name) AS x"
+  },
+  {
+    "name": "annotation-positive-113",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(DISTINCT n.callee_name) AS x"
+  },
+  {
+    "name": "annotation-positive-114",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(n.missing) AS x"
+  },
+  {
+    "name": "annotation-positive-115",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(n.class) AS x"
+  },
+  {
+    "name": "annotation-positive-116",
+    "sources": 2,
+    "fixture": "annotation",
+    "query": "MATCH (n:Annotation) WHERE n.name = 'Audit' RETURN count(DISTINCT n.class) AS x"
+  },
+  {
+    "name": "duplicate-source-ids-117",
+    "sources": 3,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "graphIDs": [
+      "same",
+      "same",
+      "last"
+    ]
+  },
+  {
+    "name": "duplicate-source-ids-118",
+    "sources": 3,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x",
+    "graphIDs": [
+      "same",
+      "same",
+      "last"
+    ]
+  },
+  {
+    "name": "duplicate-source-ids-119",
+    "sources": 3,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "graphIDs": [
+      "same",
+      "same",
+      "last"
+    ]
+  },
+  {
+    "name": "malformed-unknown-label-0",
+    "sources": 1,
+    "fixture": "traversal",
+    "query": "MATCH (n) WHERE false RETURN n",
+    "mutation": "traversal-bad-tag"
+  },
+  {
+    "name": "malformed-unknown-label-1",
+    "sources": 1,
+    "fixture": "traversal",
+    "query": "MATCH (n:NoSuchLabel) WHERE true RETURN n",
+    "mutation": "traversal-bad-tag"
+  },
+  {
+    "name": "malformed-unknown-label-2",
+    "sources": 1,
+    "fixture": "traversal",
+    "query": "MATCH (n) WHERE 1/0=0 RETURN n",
+    "mutation": "traversal-bad-tag"
+  },
+  {
+    "name": "malformed-bad-return-type-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "bad-return-type"
+  },
+  {
+    "name": "malformed-bad-return-type-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "bad-return-type"
+  },
+  {
+    "name": "malformed-bad-return-type-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "bad-return-type"
+  },
+  {
+    "name": "malformed-bad-return-type-3",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.line) AS x",
+    "mutation": "bad-return-type"
+  },
+  {
+    "name": "malformed-bad-return-type-4",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.line) AS x",
+    "mutation": "bad-return-type"
+  },
+  {
+    "name": "malformed-bad-return-type-5",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x",
+    "mutation": "bad-return-type"
+  },
+  {
+    "name": "malformed-bad-return-type-6",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.class) AS x",
+    "mutation": "bad-return-type"
+  },
+  {
+    "name": "malformed-bad-return-type-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "bad-return-type"
+  },
+  {
+    "name": "malformed-caller-name-max-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "caller-name-max"
+  },
+  {
+    "name": "malformed-caller-name-max-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "caller-name-max"
+  },
+  {
+    "name": "malformed-caller-name-max-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "caller-name-max"
+  },
+  {
+    "name": "malformed-caller-name-max-3",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.line) AS x",
+    "mutation": "caller-name-max"
+  },
+  {
+    "name": "malformed-caller-name-max-4",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.line) AS x",
+    "mutation": "caller-name-max"
+  },
+  {
+    "name": "malformed-caller-name-max-5",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x",
+    "mutation": "caller-name-max"
+  },
+  {
+    "name": "malformed-caller-name-max-6",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.class) AS x",
+    "mutation": "caller-name-max"
+  },
+  {
+    "name": "malformed-caller-name-max-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "caller-name-max"
+  },
+  {
+    "name": "malformed-caller-name-negative-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "caller-name-negative"
+  },
+  {
+    "name": "malformed-caller-name-negative-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "caller-name-negative"
+  },
+  {
+    "name": "malformed-caller-name-negative-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "caller-name-negative"
+  },
+  {
+    "name": "malformed-caller-name-negative-3",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.line) AS x",
+    "mutation": "caller-name-negative"
+  },
+  {
+    "name": "malformed-caller-name-negative-4",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.line) AS x",
+    "mutation": "caller-name-negative"
+  },
+  {
+    "name": "malformed-caller-name-negative-5",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x",
+    "mutation": "caller-name-negative"
+  },
+  {
+    "name": "malformed-caller-name-negative-6",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.class) AS x",
+    "mutation": "caller-name-negative"
+  },
+  {
+    "name": "malformed-caller-name-negative-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "caller-name-negative"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-3",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.line) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-4",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.line) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-5",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-6",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.class) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-missing-index-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "missing-index"
+  },
+  {
+    "name": "malformed-missing-index-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "missing-index"
+  },
+  {
+    "name": "malformed-missing-index-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "missing-index"
+  },
+  {
+    "name": "malformed-missing-index-3",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.line) AS x",
+    "mutation": "missing-index"
+  },
+  {
+    "name": "malformed-missing-index-4",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.line) AS x",
+    "mutation": "missing-index"
+  },
+  {
+    "name": "malformed-missing-index-5",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.class) AS x",
+    "mutation": "missing-index"
+  },
+  {
+    "name": "malformed-missing-index-6",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.class) AS x",
+    "mutation": "missing-index"
+  },
+  {
+    "name": "malformed-missing-index-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "missing-index"
+  },
+  {
+    "name": "root-scope-163",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-164",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId IN ['g00','g01'] RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-165",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.graphId = 'g01' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-166",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.line >= 0 RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-167",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-168",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId IN ['g00','g01'] RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-169",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.graphId = 'g01' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-170",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.line >= 0 RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-171",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-172",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId IN ['g00','g01'] RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-173",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.graphId = 'g01' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-174",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.line >= 0 RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-175",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-176",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId IN ['g00','g01'] RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-177",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.graphId = 'g01' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-178",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.line >= 0 RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-179",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-180",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId IN ['g00','g01'] RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-181",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.graphId = 'g01' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-182",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.line >= 0 RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": false
+  },
+  {
+    "name": "root-scope-183",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-184",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId IN ['g00','g01'] RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-185",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.graphId = 'g01' RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "root-scope-186",
+    "sources": 64,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' AND n.line >= 0 RETURN count(DISTINCT n.caller_name) AS x",
+    "qualified": true,
+    "scoped": true
+  },
+  {
+    "name": "single-graph-guard-187",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g00' RETURN count(*) AS x"
+  },
+  {
+    "name": "single-graph-guard-188",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'single' RETURN count(*) AS x"
+  },
+  {
+    "name": "single-graph-guard-189",
+    "sources": 1,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = '' RETURN count(*) AS x"
+  },
+  {
+    "name": "provenance-order-190",
+    "sources": 8,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "graphIDs": [
+      "z",
+      "tika",
+      "\ue000",
+      "\ud800\udc00",
+      "hive",
+      "android",
+      "a",
+      "\ud83d\ude00"
+    ]
+  },
+  {
+    "name": "provenance-order-191",
+    "sources": 8,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.missing) AS x",
+    "graphIDs": [
+      "z",
+      "tika",
+      "\ue000",
+      "\ud800\udc00",
+      "hive",
+      "android",
+      "a",
+      "\ud83d\ude00"
+    ]
+  },
+  {
+    "name": "provenance-order-192",
+    "sources": 8,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "graphIDs": [
+      "z",
+      "tika",
+      "\ue000",
+      "\ud800\udc00",
+      "hive",
+      "android",
+      "a",
+      "\ud83d\ude00"
+    ]
+  },
+  {
+    "name": "provenance-order-193",
+    "sources": 8,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(toLower(n.caller_name)) AS x",
+    "graphIDs": [
+      "z",
+      "tika",
+      "\ue000",
+      "\ud800\udc00",
+      "hive",
+      "android",
+      "a",
+      "\ud83d\ude00"
+    ]
+  }
+]

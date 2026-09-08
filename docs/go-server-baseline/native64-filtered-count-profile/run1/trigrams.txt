@@ -1,0 +1,4 @@
+Total: 9.74s
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).certifyCallSiteTrigrams in /Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/source/graphite-server/internal/store/trigram_certificate.go
+      10ms      4.03s (flat, cum) 41.38% of Total
+ Error: could not find file native64-filtered-count-profile-9237131f-run1/source/graphite-server/internal/store/trigram_certificate.go on path /Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite

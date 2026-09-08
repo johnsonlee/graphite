@@ -1,0 +1,1 @@
+{"originalGatePassed":false,"stage":"replayBroadQueries","exceptionClass":"java.lang.IllegalStateException","exceptionMessage":"A correctness oracle requires every query to succeed; incomplete results: four-or-graph-id-targeted=failed","queryExecutorIdentityUnchanged":true,"correctnessManifestWritten":true,"observationsWritten":true,"launcherSucceeded":false}

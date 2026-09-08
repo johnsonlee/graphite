@@ -1,0 +1,1402 @@
+[
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-0",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-1",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-2",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(DISTINCT n.caller_name) AS x",
+    "mutation": "offset-negative-2"
+  },
+  {
+    "name": "malformed-offset-negative-2-7",
+    "sources": 2,
+    "fixture": "clean",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'NeverPresentCountOracleTerm' RETURN count(*) AS x",
+    "mutation": "offset-negative-2"
+  }
+]

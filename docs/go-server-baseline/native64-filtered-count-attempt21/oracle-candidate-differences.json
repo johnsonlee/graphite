@@ -1,0 +1,78 @@
+[
+  {
+    "name": "duplicate-source-ids-117",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-117",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-118",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-118",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-119",
+    "repetition": 0,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "duplicate-source-ids-119",
+    "repetition": 1,
+    "fields": [
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-unknown-label-1",
+    "repetition": 0,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  },
+  {
+    "name": "malformed-unknown-label-1",
+    "repetition": 1,
+    "fields": [
+      "columns",
+      "rows",
+      "error",
+      "message"
+    ],
+    "knownGap": null
+  }
+]

@@ -1,0 +1,39 @@
+Total: 9.74s
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).certifyCallSiteCandidates in native64-filtered-count-profile-9237131f-run1/source/graphite-server/internal/store/candidate_certificate.go
+     600ms      5.16s (flat, cum) 52.98% of Total
+         .          .     97:func (s *Store) certifyCallSiteCandidates(ctx context.Context, view *CallSiteStringIndex) (bool, error) {
+         .          .     98:	previousCallSiteOffset := int64(-1)
+     600ms      600ms     99:	for _, id := range s.ids {
+         .      3.21s    100:		node, err := s.CandidateNode(ctx, id)
+         .          .    101:		if err != nil {
+         .          .    102:			return certificateFailure(err)
+         .          .    103:		}
+         .          .    104:		if node.Kind == "CallSiteNode" {
+         .       10ms    105:			offset := s.locations[id].offset
+         .          .    106:			if offset <= previousCallSiteOffset {
+         .          .    107:				return false, nil
+         .          .    108:			}
+         .          .    109:			previousCallSiteOffset = offset
+         .          .    110:		}
+         .          .    111:	}
+         .          .    112:	// Directory keys are unique, and each posting row has strictly increasing
+         .          .    113:	// offsets (reader validation). Correct SID association plus total membership
+         .          .    114:	// count therefore also proves no cross-row duplicates or omitted CallSites.
+         .          .    115:	for property := CallerClass; property <= CalleeName; property++ {
+         .          .    116:		directory, err := view.Directory(ctx, property)
+         .          .    117:		if err != nil {
+         .          .    118:			return certificateFailure(err)
+         .          .    119:		}
+         .          .    120:		total := 0
+         .          .    121:		for _, entry := range directory {
+         .      890ms    122:			ids, err := view.Postings(ctx, property, entry.StringID)
+         .          .    123:			if err != nil {
+         .          .    124:				return certificateFailure(err)
+         .          .    125:			}
+         .          .    126:			for _, id := range ids {
+         .      450ms    127:				raw, err := s.RawCallSiteStringIDs(ctx, id)
+         .          .    128:				if err != nil {
+         .          .    129:					return certificateFailure(err)
+         .          .    130:				}
+         .          .    131:				if raw.StringIDs[property] != entry.StringID {
+         .          .    132:					return false, nil

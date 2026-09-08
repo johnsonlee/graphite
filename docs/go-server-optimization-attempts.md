@@ -801,3 +801,31 @@ rebuild, cancellation and first-loader joining checks. Evidence is in
 `docs/go-server-baseline/native-index-lifecycle-implementation/`. These are
 functional prerequisites only: full1,267 real64 state replay and per-case P95
 acceptance remain unfinished; no performance measurement was run.
+
+
+## 2026-09-08 — Attempt 21: main filtered-string COUNT aggregation
+
+| Item | Evidence / status |
+| --- | --- |
+| Hypothesis | Port actual main filtered COUNT admission, source routing and posting aggregation so eligible queries avoid the generic full-node/trigram certificates; retain those certificates for existing consumers |
+| Native base / candidate | 9237131f; five implementation/test files in the attempt manifest; identical measured native binary b49ffae0ab98c09c453d726af334df4e9b1234496debbffa79b43391aafcdee4 |
+| Main reference | 4e328b0109e13c896b74004823fb049fcb19251a, original Explore JAR and full 1,267 ordered case definitions |
+| Real dataset | 64 persisted graphs; 1,152 original files; 10,338,207,518 bytes; immutable reference and separate cloned runtime fixtures |
+| Functional evidence | 194 actual-main scenarios/388 observations: old dispatch has 72 public differences, candidate has eight existing gaps; nine actual posting primitive observations and 400 canceled-sibling scheduling observations |
+| Real64 correctness | Cold and startup replay plus warm prewarm each cover 1,267 cases; 1,266 exact successful results and same original error per state; seven fields match over 486,848 graph observations; all original files unchanged |
+| Initial rejection and correction | First cold/warm captures each had two dense COUNT provenance-order mismatches; four actual-main Unicode/source-order cases yielded eight pre-fix failures; Java UTF-16 result ordering fixes them without changing task order |
+| Tests | Final go test -race ./... exit 0, query actually ran 52.516s while some unaffected packages were cached; go vet ./... exit 0; exact commands and source hashes retained |
+| Baseline CPU / memory | Full ordered profile brackets case 838: generic preparation 9.25s/94.97% sampled CPU; candidate certification 5.16s/52.98%, trigram certification 4.03s/41.38% (overlapping cumulative paths); 2,184,529,752 allocated bytes, GC count/pause deltas zero, including profiler overhead |
+| Cold COUNT, old Go → candidate / fresh main | zero 11,055.763 → 0.905 / 1.777ms; targeted 1,958.953 → 85.955 / 20.437ms; dense 885.805 → 88.714 / 17.314ms |
+| Cold DISTINCT COUNT, old Go → candidate / fresh main | zero 2.191 → 1.105 / 0.920ms; targeted 3,567.049 → 143.485 / 28.157ms; dense 3,362.056 → 95.243 / 48.199ms |
+| Whole ordered pilot | Successful-case Go time sum cold 95.192 → 74.240s, startup 93.919 → 74.007s; n=1 per case, not P95; largest later-case increases regex-or-zero +428.224/+311.468ms, all deltas retained |
+| Fresh-main comparison | Candidate slower on 1,180/1,266 cold and 1,184/1,266 startup successes; observed ratio >=10 on 1 cold and 66 startup cases; these are single-sample counts, not acceptance |
+| Input/process verification | Four serial processes terminal; 554 main and 1,008 native frozen inputs unchanged; no new errors/timeouts; every runtime preserves all 1,152 original files |
+| Decision | Keep the public-main COUNT path and its demonstrated local improvement; no comparable later 11s increase in these runs; no candidate CPU/allocation reduction claim without measurement |
+| Outstanding | Eight original oracle gaps, main's original failed case/all-success gate, formal warm replay, configured workers/work metrics, full server fidelity, repeated per-case P95/10x and required PR benchmark gates remain open |
+
+Evidence is in `docs/go-server-baseline/native64-filtered-count-attempt21/`,
+with actual-main contract/oracles in `native-filtered-string-aggregation/` and
+baseline CPU attribution in `native64-filtered-count-profile/` alongside it.
+Initial failed captures and strict-state test failures remain archived. This
+attempt does not change the pinned main reference or remove its failing case.

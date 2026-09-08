@@ -1,0 +1,28 @@
+[
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-source_path",
+      "/Users/johnsonlee/.codex/benchmarks/graphite",
+      "-list=certifyCallSiteCandidates",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-profile/run1/cpu.pprof"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-source_path",
+      "/Users/johnsonlee/.codex/benchmarks/graphite",
+      "-list=certifyCallSiteTrigrams",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/native64-filtered-count-profile-9237131f-run1/graphite-benchmark-profile",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-filtered-count-profile/run1/cpu.pprof"
+    ],
+    "exitCode": 0
+  }
+]

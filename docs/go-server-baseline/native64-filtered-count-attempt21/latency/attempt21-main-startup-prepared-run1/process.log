@@ -1,0 +1,5 @@
+Exception in thread "main" java.lang.IllegalStateException: A correctness oracle requires every query to succeed; incomplete results: four-or-graph-id-targeted=failed
+	at io.johnsonlee.graphite.webgraph.QueryCorrectnessManifest.requireRecordable(QueryCorrectnessManifest.kt:127)
+	at io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.enforceCorrectness(LargeBroadQueryPressureBenchmark.kt:222)
+	at io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries(LargeBroadQueryPressureBenchmark.kt:188)
+	at MainLatencyPilot.main(MainLatencyPilot.java:74)
