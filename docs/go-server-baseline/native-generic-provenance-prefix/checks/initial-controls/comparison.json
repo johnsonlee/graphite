@@ -1,0 +1,439 @@
+{
+  "performanceMeasurements": 0,
+  "inputsUnchanged": true,
+  "comparisons": {
+    "baseline": {
+      "cases": 13,
+      "matches": 4,
+      "differences": [
+        {
+          "name": "raw-complete-first-nonselected",
+          "main": {
+            "name": "raw-complete-first-nonselected",
+            "columns": [
+              "n.name"
+            ],
+            "rows": [
+              {
+                "n.name": null,
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                }
+              }
+            ]
+          },
+          "go": {
+            "error": "ArrayIndexOutOfBoundsException",
+            "message": "Index 2147483647 out of bounds for length 4",
+            "name": "raw-complete-first-nonselected"
+          }
+        },
+        {
+          "name": "raw-plus-generic-completes",
+          "main": {
+            "name": "raw-plus-generic-completes",
+            "columns": [
+              "n.name"
+            ],
+            "rows": [
+              {
+                "n.name": null,
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                }
+              },
+              {
+                "n.name": "hit-A",
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                }
+              }
+            ]
+          },
+          "go": {
+            "error": "ArrayIndexOutOfBoundsException",
+            "message": "Index 2147483647 out of bounds for length 4",
+            "name": "raw-plus-generic-completes"
+          }
+        },
+        {
+          "name": "raw-plus-nonselected-then-selected",
+          "main": {
+            "name": "raw-plus-nonselected-then-selected",
+            "columns": [
+              "n.name"
+            ],
+            "rows": [
+              {
+                "n.name": null,
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                }
+              },
+              {
+                "n.name": "hit-A",
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                }
+              }
+            ]
+          },
+          "go": {
+            "error": "ArrayIndexOutOfBoundsException",
+            "message": "Index 2147483647 out of bounds for length 5",
+            "name": "raw-plus-nonselected-then-selected"
+          }
+        },
+        {
+          "name": "no-raw-hit-generic-completes",
+          "main": {
+            "name": "no-raw-hit-generic-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-generic-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-callsite-generic-completes",
+          "main": {
+            "name": "no-callsite-generic-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-callsite-generic-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-raw-hit-duplicate-then-completes",
+          "main": {
+            "name": "no-raw-hit-duplicate-then-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-duplicate-then-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-raw-hit-duplicate-then-bad",
+          "main": {
+            "name": "no-raw-hit-duplicate-then-bad",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "error": "ArrayIndexOutOfBoundsException",
+            "message": "Index 2147483647 out of bounds for length 4",
+            "name": "no-raw-hit-duplicate-then-bad"
+          }
+        },
+        {
+          "name": "no-raw-hit-nonselected-then-completes",
+          "main": {
+            "name": "no-raw-hit-nonselected-then-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-nonselected-then-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "incomplete-exhaustion",
+          "main": {
+            "name": "incomplete-exhaustion",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "incomplete-exhaustion",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "candidate": {
+      "cases": 13,
+      "matches": 7,
+      "differences": [
+        {
+          "name": "no-raw-hit-generic-completes",
+          "main": {
+            "name": "no-raw-hit-generic-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-generic-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-callsite-generic-completes",
+          "main": {
+            "name": "no-callsite-generic-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-callsite-generic-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-raw-hit-duplicate-then-completes",
+          "main": {
+            "name": "no-raw-hit-duplicate-then-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-duplicate-then-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-raw-hit-duplicate-then-bad",
+          "main": {
+            "name": "no-raw-hit-duplicate-then-bad",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "error": "ArrayIndexOutOfBoundsException",
+            "message": "Index 2147483647 out of bounds for length 4",
+            "name": "no-raw-hit-duplicate-then-bad"
+          }
+        },
+        {
+          "name": "no-raw-hit-nonselected-then-completes",
+          "main": {
+            "name": "no-raw-hit-nonselected-then-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-nonselected-then-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "incomplete-exhaustion",
+          "main": {
+            "name": "incomplete-exhaustion",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "incomplete-exhaustion",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

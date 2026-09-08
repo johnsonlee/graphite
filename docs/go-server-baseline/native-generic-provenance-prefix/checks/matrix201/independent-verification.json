@@ -1,0 +1,14 @@
+{
+  "cases": 201,
+  "comparedPublicOutputErrorStateChangesFromPrior": [],
+  "publicMatchesPerReference": 166,
+  "publicCases": 181,
+  "providerMatchesPerReference": 19,
+  "providerControls": 20,
+  "retainedDifferencesPerReference": 16,
+  "sourceArchiveFilesVerified": 2537,
+  "originalFixtureFilesUnchanged": 3036,
+  "performanceMeasurements": 0,
+  "controllerExitCode": 1,
+  "compileAndCaptureExitCode": 0
+}

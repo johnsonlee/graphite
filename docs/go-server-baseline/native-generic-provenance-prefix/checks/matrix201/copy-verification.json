@@ -1,0 +1,141 @@
+{
+  "allOriginalBytesRetained": true,
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/inputs.json",
+      "archive": "inputs.json",
+      "sourceSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "archiveSHA256": "a36ba09bd13fefad6e6ddfcb738c021ef0a3a2d565f521fe91ccbaee5163b331",
+      "sourceBytes": 2153,
+      "storedBytes": 2153
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/input.json",
+      "archive": "input.json",
+      "sourceSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "archiveSHA256": "273db7a896677440330483f22314406fe6c62aa718889688c2db3928aa962637",
+      "sourceBytes": 177552,
+      "storedBytes": 177552
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/source-before.json",
+      "archive": "source-before.json",
+      "sourceSHA256": "568faf110299bbe7f1a03e6083fb374228cbb673a628f5c744d3f7347e6c6162",
+      "archiveSHA256": "568faf110299bbe7f1a03e6083fb374228cbb673a628f5c744d3f7347e6c6162",
+      "sourceBytes": 485876,
+      "storedBytes": 485876
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/compiled-source.json",
+      "archive": "compiled-source.json",
+      "sourceSHA256": "63c8b684278cde710c675782037cc79e2860524dab4480f22562daa1d7cfea22",
+      "archiveSHA256": "63c8b684278cde710c675782037cc79e2860524dab4480f22562daa1d7cfea22",
+      "sourceBytes": 486053,
+      "storedBytes": 486053
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/source-after.json",
+      "archive": "source-after.json",
+      "sourceSHA256": "63c8b684278cde710c675782037cc79e2860524dab4480f22562daa1d7cfea22",
+      "archiveSHA256": "63c8b684278cde710c675782037cc79e2860524dab4480f22562daa1d7cfea22",
+      "sourceBytes": 486053,
+      "storedBytes": 486053
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/source.tar.gz",
+      "archive": "source.tar.gz",
+      "sourceSHA256": "51251e4bafda2a5a8f05c773a8a0f5adc3664f0172758788cc0d854b7ab64931",
+      "archiveSHA256": "51251e4bafda2a5a8f05c773a8a0f5adc3664f0172758788cc0d854b7ab64931",
+      "sourceBytes": 9156104,
+      "storedBytes": 9156104
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/compile.stdout",
+      "archive": "compile.stdout",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "storedBytes": 0
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/compile.stderr",
+      "archive": "compile.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "storedBytes": 0
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/capture.stdout",
+      "archive": "capture.stdout",
+      "sourceSHA256": "3d23c4512d5bb390ea1b22bd9f6da83c5c95064ef1b76d0d1c3ca26e353c6db0",
+      "archiveSHA256": "3d23c4512d5bb390ea1b22bd9f6da83c5c95064ef1b76d0d1c3ca26e353c6db0",
+      "sourceBytes": 113,
+      "storedBytes": 113
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/capture.stderr",
+      "archive": "capture.stderr",
+      "sourceSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "storedBytes": 0
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/commands.json",
+      "archive": "commands.json",
+      "sourceSHA256": "484e159e1bd2e3748b50820966a7a3d69cd289c7f31de117149bd2bfff05816b",
+      "archiveSHA256": "484e159e1bd2e3748b50820966a7a3d69cd289c7f31de117149bd2bfff05816b",
+      "sourceBytes": 585,
+      "storedBytes": 585
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/go.json",
+      "archive": "go.json",
+      "sourceSHA256": "51e9988fe1d0bab665d5b5272261aecd1eab9458bc499be9b5c47e44cb2b2640",
+      "archiveSHA256": "51e9988fe1d0bab665d5b5272261aecd1eab9458bc499be9b5c47e44cb2b2640",
+      "sourceBytes": 373891,
+      "storedBytes": 373891
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/comparison.json",
+      "archive": "comparison.json",
+      "sourceSHA256": "2fb4cdf2617384d4ee1fbf821a296ca061f0c3bcc1422fa8906dd500034f714d",
+      "archiveSHA256": "2fb4cdf2617384d4ee1fbf821a296ca061f0c3bcc1422fa8906dd500034f714d",
+      "sourceBytes": 130000,
+      "storedBytes": 130000
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/artifact-manifest.json",
+      "archive": "artifact-manifest.json",
+      "sourceSHA256": "aa093bb6a28e3798f8834bb1afe2794a9a108081857ee6d141e49d8843d773f8",
+      "archiveSHA256": "aa093bb6a28e3798f8834bb1afe2794a9a108081857ee6d141e49d8843d773f8",
+      "sourceBytes": 647091,
+      "storedBytes": 647091
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/fixtures-before.json",
+      "archive": "fixtures-before.json.gz",
+      "sourceSHA256": "678613037c05bf4070b36839058c0b0a3fcbb0d11b4ca5b90332b70f9d4b824d",
+      "archiveSHA256": "2f8fdc84008f5e92e5c4a94b58c96a82687452c49ba77799ce94430a37f450ed",
+      "sourceBytes": 516283,
+      "storedBytes": 15391
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/fixtures-after.json",
+      "archive": "fixtures-after.json.gz",
+      "sourceSHA256": "0f4fcc9793ac0d6cfa5c65f604532132c9230db91e5e242340d69b0e81b89b1e",
+      "archiveSHA256": "cd75a514c3462c68692628cd8edd41bd5c1e627365085af37ad463aff7044f92",
+      "sourceBytes": 520231,
+      "storedBytes": 15878
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-matrix-v1/diagnostic.test",
+      "archive": "diagnostic.test.gz",
+      "sourceSHA256": "38405c799b10376025718033097f932096b94aeb77eb15412d26271a7bc9cd29",
+      "archiveSHA256": "79473ceb9aef9cec2e16750af5dc73c4652737754f656318225c53439f5a0a6e",
+      "sourceBytes": 13442274,
+      "storedBytes": 5691678
+    }
+  ]
+}

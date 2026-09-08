@@ -1252,3 +1252,56 @@ full performance or server goal; no acceptance requirement is waived.
 The full goal and required benchmark gates remain open. Exact commands, source
 archives, raw outcomes and limitations are under
 `docs/go-server-baseline/native-generic-string-disjunction/`.
+
+### 2026-09-08 — Functional follow-up: bound generic DISTINCT provenance consumption
+
+Baseline Go is `6d061b525a91d844f5c22a7231af6e18c61c0c3a`; original main remains
+`4e328b0109e13c896b74004823fb049fcb19251a`. Main stops generic provenance scanning
+when the cumulative CallSite plus generic hit set covers the selected tuples,
+checking after every consumed candidate. Go previously collected generic hits
+separately up to the projection limit and could reach a corrupt suffix that
+main never reads. A separate generic hit probe now implements the original
+boundary; ordinary prefix projection keeps its existing DISTINCT limit.
+
+Two independent actual-JVM captures establish 13 public cases on small persisted
+correctness graphs with 40 sources. The baseline matches 10; the candidate
+matches all 13, including three required atomic failures. Three former failures
+become the exact main success responses. A test-only Go overlay supplies the
+exact baseline production file, and complete outputs are retained. Full-module
+race tests and vet pass with unchanged inputs. An independent source/test
+review finds no issue within this consumption-boundary scope.
+
+The existing full 201-case oracle has no compared result/error/state changes:
+166/181 public cases and 19/20 scoped provider controls agree with each main
+reference; all 16 known mismatches remain visible. Initial oracle construction
+also records main's capability-unavailable error when the first graph has only
+generic nodes. Those 13 original controls are retained separately: baseline
+matches 4 and candidate 7, leaving six pre-existing capability-boundary gaps.
+Adding a nonmatching CallSite in the final prefix fixtures reaches the intended
+phase; it does not waive the earlier observations or redefine their validity.
+
+| Evidence | Result |
+| --- | --- |
+| New public prefix cases | 10/13 baseline; 13/13 candidate |
+| Full module race / vet | Passed |
+| Complete previous 201-case matrix | No new compared differences; 16 remain |
+| Initial capability-absence cases | Six mismatches remain |
+| Real64 cold | 1,267 cases; 162,304 state observations align |
+| Real64 warm prewarm | 1,267 cases; 162,240 state observations align |
+| Real64 startup-prepared | 1,267 cases; 162,304 state observations align |
+| New latency / CPU / memory measurements | None; correctness correction only |
+| Per-case P95 / 10x acceptance | Unproven |
+| Keep/revert | Keep the proven consumption-boundary correction |
+
+All real64 runtimes execute serially on fresh clones after correctness checks and
+JVM captures terminate. The same 64 real graphs, 1,152 unchanged files and every
+original testcase are retained. The original case821 failure and all-success
+gate exit 1 remain; formal warm only reaches its failed prewarm boundary. Prior
+contended cache-state differences are not erased by the new isolated matches.
+There is no new performance claim, and earlier n=1 timings are not measurements
+of this changed engine. Full fidelity, equivalent resource/work accounting,
+required benchmark gates and the 10x per-case P95 goal remain open.
+
+Exact commands, runtime/source identities, raw outputs, retained failures and
+verification receipts are under
+`docs/go-server-baseline/native-generic-provenance-prefix/`.

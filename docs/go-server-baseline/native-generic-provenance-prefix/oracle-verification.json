@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "docs/go-server-baseline/native-generic-provenance-prefix/verify.py"
+  ],
+  "exitCode": 0,
+  "stdout": "{\"verifiedArtifacts\": 73, \"verifiedVariantFilesAcrossCaptures\": 1365, \"cases\": 13, \"exactRepeatedPublicOutputs\": 13, \"performanceMeasurements\": 0}\n",
+  "stderr": "",
+  "manifestSha256": "b624b10d0eb8be8cf582b8475a7d121959a85e3de7b3b165abc969ec1313e8b7",
+  "verifiedUTC": "2026-09-08T08:33:50.265234+00:00"
+}

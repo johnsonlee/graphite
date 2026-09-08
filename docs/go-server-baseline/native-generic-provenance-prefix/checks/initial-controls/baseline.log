@@ -1,0 +1,40 @@
+=== RUN   TestGenericProvenanceMainPrefix
+=== RUN   TestGenericProvenanceMainPrefix/raw-complete-first-nonselected
+    generic_provenance_prefix_test.go:84: main outcome SUCCESS; Go error Index 2147483647 out of bounds for length 4
+=== RUN   TestGenericProvenanceMainPrefix/raw-complete-first-duplicate
+=== RUN   TestGenericProvenanceMainPrefix/raw-complete-first-bad
+=== RUN   TestGenericProvenanceMainPrefix/raw-complete-no-generic
+=== RUN   TestGenericProvenanceMainPrefix/raw-plus-generic-completes
+    generic_provenance_prefix_test.go:84: main outcome SUCCESS; Go error Index 2147483647 out of bounds for length 4
+=== RUN   TestGenericProvenanceMainPrefix/raw-plus-nonselected-then-selected
+    generic_provenance_prefix_test.go:84: main outcome SUCCESS; Go error Index 2147483647 out of bounds for length 5
+=== RUN   TestGenericProvenanceMainPrefix/raw-plus-nonselected-then-bad
+=== RUN   TestGenericProvenanceMainPrefix/no-raw-hit-generic-completes
+    generic_provenance_prefix_test.go:69: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestGenericProvenanceMainPrefix/no-callsite-generic-completes
+    generic_provenance_prefix_test.go:69: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestGenericProvenanceMainPrefix/no-raw-hit-duplicate-then-completes
+    generic_provenance_prefix_test.go:69: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestGenericProvenanceMainPrefix/no-raw-hit-duplicate-then-bad
+    generic_provenance_prefix_test.go:76: main error IllegalStateException / "Distinct projection capability became unavailable"; Go ArrayIndexOutOfBoundsException / "Index 2147483647 out of bounds for length 4"
+=== RUN   TestGenericProvenanceMainPrefix/no-raw-hit-nonselected-then-completes
+    generic_provenance_prefix_test.go:69: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestGenericProvenanceMainPrefix/incomplete-exhaustion
+    generic_provenance_prefix_test.go:69: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+--- FAIL: TestGenericProvenanceMainPrefix (0.93s)
+    --- FAIL: TestGenericProvenanceMainPrefix/raw-complete-first-nonselected (0.07s)
+    --- PASS: TestGenericProvenanceMainPrefix/raw-complete-first-duplicate (0.07s)
+    --- PASS: TestGenericProvenanceMainPrefix/raw-complete-first-bad (0.07s)
+    --- PASS: TestGenericProvenanceMainPrefix/raw-complete-no-generic (0.07s)
+    --- FAIL: TestGenericProvenanceMainPrefix/raw-plus-generic-completes (0.07s)
+    --- FAIL: TestGenericProvenanceMainPrefix/raw-plus-nonselected-then-selected (0.07s)
+    --- PASS: TestGenericProvenanceMainPrefix/raw-plus-nonselected-then-bad (0.07s)
+    --- FAIL: TestGenericProvenanceMainPrefix/no-raw-hit-generic-completes (0.07s)
+    --- FAIL: TestGenericProvenanceMainPrefix/no-callsite-generic-completes (0.07s)
+    --- FAIL: TestGenericProvenanceMainPrefix/no-raw-hit-duplicate-then-completes (0.08s)
+    --- FAIL: TestGenericProvenanceMainPrefix/no-raw-hit-duplicate-then-bad (0.07s)
+    --- FAIL: TestGenericProvenanceMainPrefix/no-raw-hit-nonselected-then-completes (0.07s)
+    --- FAIL: TestGenericProvenanceMainPrefix/incomplete-exhaustion (0.07s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	1.265s
+FAIL

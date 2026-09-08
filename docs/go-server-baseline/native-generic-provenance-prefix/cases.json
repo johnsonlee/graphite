@@ -1,0 +1,2758 @@
+[
+  {
+    "name": "raw-complete-first-nonselected",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "raw-complete-first-nonselected-first",
+      "raw-complete-first-nonselected-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "raw-complete-first-nonselected-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "raw-complete-first-nonselected-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "raw-complete-first-duplicate",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.class LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "raw-complete-first-duplicate-first",
+      "raw-complete-first-duplicate-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "raw-complete-first-duplicate-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "raw-complete-first-duplicate-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "raw-complete-first-bad",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "raw-complete-first-bad-first",
+      "raw-complete-first-bad-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "raw-complete-first-bad-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "raw-complete-first-bad-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "raw-complete-no-generic",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "raw-complete-no-generic-first",
+      "raw-complete-no-generic-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "raw-complete-no-generic-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "raw-complete-no-generic-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "raw-plus-generic-completes",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "raw-plus-generic-completes-first",
+      "raw-plus-generic-completes-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "raw-plus-generic-completes-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "raw-plus-generic-completes-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "raw-plus-nonselected-then-selected",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "raw-plus-nonselected-then-selected-first",
+      "raw-plus-nonselected-then-selected-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "raw-plus-nonselected-then-selected-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "raw-plus-nonselected-then-selected-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "raw-plus-nonselected-then-bad",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "raw-plus-nonselected-then-bad-first",
+      "raw-plus-nonselected-then-bad-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "raw-plus-nonselected-then-bad-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "raw-plus-nonselected-then-bad-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "no-raw-hit-generic-completes",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "no-raw-hit-generic-completes-first",
+      "no-raw-hit-generic-completes-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "no-raw-hit-generic-completes-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "no-raw-hit-generic-completes-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "no-callsite-generic-completes",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "no-callsite-generic-completes-first",
+      "no-callsite-generic-completes-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "no-callsite-generic-completes-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "no-callsite-generic-completes-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "no-raw-hit-duplicate-then-completes",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "no-raw-hit-duplicate-then-completes-first",
+      "no-raw-hit-duplicate-then-completes-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "no-raw-hit-duplicate-then-completes-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "no-raw-hit-duplicate-then-completes-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "no-raw-hit-duplicate-then-bad",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "no-raw-hit-duplicate-then-bad-first",
+      "no-raw-hit-duplicate-then-bad-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "no-raw-hit-duplicate-then-bad-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "no-raw-hit-duplicate-then-bad-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "no-raw-hit-nonselected-then-completes",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "no-raw-hit-nonselected-then-completes-first",
+      "no-raw-hit-nonselected-then-completes-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "no-raw-hit-nonselected-then-completes-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "no-raw-hit-nonselected-then-completes-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  },
+  {
+    "name": "incomplete-exhaustion",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "incomplete-exhaustion-first",
+      "incomplete-exhaustion-probe",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "incomplete-exhaustion-first",
+        "id": "g00"
+      },
+      {
+        "fixture": "incomplete-exhaustion-probe",
+        "id": "g01"
+      },
+      {
+        "fixture": "empty",
+        "id": "g02"
+      },
+      {
+        "fixture": "empty",
+        "id": "g03"
+      },
+      {
+        "fixture": "empty",
+        "id": "g04"
+      },
+      {
+        "fixture": "empty",
+        "id": "g05"
+      },
+      {
+        "fixture": "empty",
+        "id": "g06"
+      },
+      {
+        "fixture": "empty",
+        "id": "g07"
+      },
+      {
+        "fixture": "empty",
+        "id": "g08"
+      },
+      {
+        "fixture": "empty",
+        "id": "g09"
+      },
+      {
+        "fixture": "empty",
+        "id": "g10"
+      },
+      {
+        "fixture": "empty",
+        "id": "g11"
+      },
+      {
+        "fixture": "empty",
+        "id": "g12"
+      },
+      {
+        "fixture": "empty",
+        "id": "g13"
+      },
+      {
+        "fixture": "empty",
+        "id": "g14"
+      },
+      {
+        "fixture": "empty",
+        "id": "g15"
+      },
+      {
+        "fixture": "empty",
+        "id": "g16"
+      },
+      {
+        "fixture": "empty",
+        "id": "g17"
+      },
+      {
+        "fixture": "empty",
+        "id": "g18"
+      },
+      {
+        "fixture": "empty",
+        "id": "g19"
+      },
+      {
+        "fixture": "empty",
+        "id": "g20"
+      },
+      {
+        "fixture": "empty",
+        "id": "g21"
+      },
+      {
+        "fixture": "empty",
+        "id": "g22"
+      },
+      {
+        "fixture": "empty",
+        "id": "g23"
+      },
+      {
+        "fixture": "empty",
+        "id": "g24"
+      },
+      {
+        "fixture": "empty",
+        "id": "g25"
+      },
+      {
+        "fixture": "empty",
+        "id": "g26"
+      },
+      {
+        "fixture": "empty",
+        "id": "g27"
+      },
+      {
+        "fixture": "empty",
+        "id": "g28"
+      },
+      {
+        "fixture": "empty",
+        "id": "g29"
+      },
+      {
+        "fixture": "empty",
+        "id": "g30"
+      },
+      {
+        "fixture": "empty",
+        "id": "g31"
+      },
+      {
+        "fixture": "empty",
+        "id": "g32"
+      },
+      {
+        "fixture": "empty",
+        "id": "g33"
+      },
+      {
+        "fixture": "empty",
+        "id": "g34"
+      },
+      {
+        "fixture": "empty",
+        "id": "g35"
+      },
+      {
+        "fixture": "empty",
+        "id": "g36"
+      },
+      {
+        "fixture": "empty",
+        "id": "g37"
+      },
+      {
+        "fixture": "empty",
+        "id": "g38"
+      },
+      {
+        "fixture": "empty",
+        "id": "g39"
+      }
+    ]
+  }
+]

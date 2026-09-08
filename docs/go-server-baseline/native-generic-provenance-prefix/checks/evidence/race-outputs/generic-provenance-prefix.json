@@ -1,0 +1,231 @@
+[
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "raw-complete-first-nonselected",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": null
+      }
+    ]
+  },
+  {
+    "columns": [
+      "n.class"
+    ],
+    "name": "raw-complete-first-duplicate",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.class": null
+      }
+    ]
+  },
+  {
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 2147483647 out of bounds for length 3",
+    "name": "raw-complete-first-bad"
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "raw-complete-no-generic",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": null
+      }
+    ]
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "raw-plus-generic-completes",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": null
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-A"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "raw-plus-nonselected-then-selected",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": null
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-A"
+      }
+    ]
+  },
+  {
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 2147483647 out of bounds for length 4",
+    "name": "raw-plus-nonselected-then-bad"
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "no-raw-hit-generic-completes",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-A"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "no-callsite-generic-completes",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-A"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "no-raw-hit-duplicate-then-completes",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-A"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-B"
+      }
+    ]
+  },
+  {
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 2147483647 out of bounds for length 4",
+    "name": "no-raw-hit-duplicate-then-bad"
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "no-raw-hit-nonselected-then-completes",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-A"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-B"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "incomplete-exhaustion",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00",
+            "g01"
+          ]
+        },
+        "n.name": "hit-A"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00"
+          ]
+        },
+        "n.name": "hit-B"
+      }
+    ]
+  }
+]

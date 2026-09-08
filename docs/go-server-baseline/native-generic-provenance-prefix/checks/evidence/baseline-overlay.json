@@ -1,0 +1,5 @@
+{
+  "Replace": {
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/indexed_distinct.go": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-checks-v1/baseline-indexed_distinct.go"
+  }
+}

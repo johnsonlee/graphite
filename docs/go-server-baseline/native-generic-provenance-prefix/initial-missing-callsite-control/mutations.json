@@ -1,0 +1,90 @@
+[
+  {
+    "fixture": "raw-complete-first-nonselected-probe",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 20,
+    "offset": 91,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "raw-complete-first-duplicate-probe",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 20,
+    "offset": 91,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "raw-complete-first-bad-probe",
+    "after": 2147483647,
+    "before": 1,
+    "nodeID": 10,
+    "offset": 62,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "raw-plus-generic-completes-probe",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 20,
+    "offset": 91,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "raw-plus-nonselected-then-selected-probe",
+    "after": 2147483647,
+    "before": 3,
+    "nodeID": 30,
+    "offset": 120,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "raw-plus-nonselected-then-bad-probe",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 20,
+    "offset": 91,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "no-raw-hit-generic-completes-probe",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 20,
+    "offset": 91,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "no-callsite-generic-completes-probe",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 20,
+    "offset": 42,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "no-raw-hit-duplicate-then-completes-probe",
+    "after": 2147483647,
+    "before": 3,
+    "nodeID": 40,
+    "offset": 149,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "no-raw-hit-duplicate-then-bad-probe",
+    "after": 2147483647,
+    "before": 2,
+    "nodeID": 30,
+    "offset": 120,
+    "file": "graph.nodedata"
+  },
+  {
+    "fixture": "no-raw-hit-nonselected-then-completes-probe",
+    "after": 2147483647,
+    "before": 4,
+    "nodeID": 40,
+    "offset": 149,
+    "file": "graph.nodedata"
+  }
+]

@@ -1,0 +1,73 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "inputsUnchanged": true,
+  "commands": [
+    {
+      "phase": "compile",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/classes",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-provenance-prefix/PrefixFixture.java",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-provenance-prefix/PrefixOracle.java"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T08:28:27.190643+00:00",
+      "endUTC": "2026-09-08T08:28:27.634267+00:00"
+    },
+    {
+      "phase": "generate",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "PrefixFixture",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-provenance-prefix/fixture-specs.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/variants",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/mutations.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T08:28:27.634642+00:00",
+      "endUTC": "2026-09-08T08:28:27.947944+00:00"
+    },
+    {
+      "phase": "run",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx512m",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "PrefixOracle",
+        "run",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-provenance-prefix/cases.json",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/fixtures",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/main.json"
+      ],
+      "exitCode": 0,
+      "startUTC": "2026-09-08T08:28:29.260618+00:00",
+      "endUTC": "2026-09-08T08:28:29.639370+00:00"
+    }
+  ],
+  "classes": [
+    {
+      "file": "PrefixFixture.class",
+      "bytes": 7574,
+      "sha256": "4b12b46bdf06c18736001cc9055ff54e6bc6f1da91520ed45146deabc2e9def3"
+    },
+    {
+      "file": "PrefixOracle.class",
+      "bytes": 14765,
+      "sha256": "b4fd887949ac1f2c81e68fed13e406542f1fbfacb937dfe06d8fba6b7e0c9954"
+    }
+  ],
+  "fixtureAudit": {
+    "originalFiles": 8339,
+    "changed": [],
+    "added": [],
+    "missing": []
+  },
+  "performanceMeasurements": 0
+}

@@ -1,0 +1,16 @@
+{
+  "baseline": {
+    "count": 13,
+    "matches": 10,
+    "differences": [
+      "raw-complete-first-nonselected",
+      "raw-plus-generic-completes",
+      "raw-plus-nonselected-then-selected"
+    ]
+  },
+  "candidate": {
+    "count": 13,
+    "matches": 13,
+    "differences": []
+  }
+}

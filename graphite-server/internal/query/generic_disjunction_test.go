@@ -41,7 +41,7 @@ func TestGenericDisjunctionMainReadSemantics(t *testing.T) {
 	if len(oracle.Cases) != 201 {
 		t.Fatalf("original Java oracle denominator = %d, want 201", len(oracle.Cases))
 	}
-	fixtures := genericDisjunctionFixtures(t, filepath.Join(oracleDir, "fixtures.tar.gz"))
+	fixtures := genericDisjunctionFixtures(t, filepath.Join(oracleDir, "fixtures.tar.gz"), 588)
 	wanted := map[string]bool{}
 	for _, name := range []string{"original-886", "original-887", "original-888"} {
 		wanted[name] = true
@@ -170,7 +170,7 @@ func TestGenericDisjunctionMainReadSemantics(t *testing.T) {
 	}
 }
 
-func genericDisjunctionFixtures(t *testing.T, archive string) string {
+func genericDisjunctionFixtures(t *testing.T, archive string, expectedFiles int) string {
 	t.Helper()
 	file, err := os.Open(archive)
 	if err != nil {
@@ -210,8 +210,8 @@ func genericDisjunctionFixtures(t *testing.T, archive string) string {
 		}
 		files++
 	}
-	if files != 588 {
-		t.Fatalf("fixture archive denominator = %d, want 588", files)
+	if files != expectedFiles {
+		t.Fatalf("fixture archive denominator = %d, want %d", files, expectedFiles)
 	}
 	return dir
 }

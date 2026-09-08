@@ -1,0 +1,144 @@
+{
+  "caseCount": 13,
+  "completeOutputExact": true,
+  "fixtureFilesPerCapture": 457,
+  "byteIdenticalFixtureFiles": 430,
+  "writerTimestampOnlyDifferences": [
+    {
+      "file": "empty/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "incomplete-exhaustion-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "incomplete-exhaustion-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "no-callsite-generic-completes-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "no-callsite-generic-completes-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "no-raw-hit-duplicate-then-bad-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "no-raw-hit-duplicate-then-bad-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "no-raw-hit-duplicate-then-completes-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "no-raw-hit-duplicate-then-completes-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "no-raw-hit-generic-completes-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "no-raw-hit-generic-completes-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "no-raw-hit-nonselected-then-completes-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "no-raw-hit-nonselected-then-completes-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:52 KST 2026"
+    },
+    {
+      "file": "raw-complete-first-bad-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-complete-first-bad-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-complete-first-duplicate-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-complete-first-duplicate-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-complete-first-nonselected-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-complete-first-nonselected-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-complete-no-generic-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-complete-no-generic-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-plus-generic-completes-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-plus-generic-completes-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-plus-nonselected-then-bad-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-plus-nonselected-then-bad-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-plus-nonselected-then-selected-first/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    },
+    {
+      "file": "raw-plus-nonselected-then-selected-probe/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:29:23 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:29:51 KST 2026"
+    }
+  ],
+  "performanceMeasurements": 0
+}

@@ -1,0 +1,275 @@
+{
+  "copied": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/classes/PrefixFixture.class",
+      "file": "initial-missing-callsite-control/classes/PrefixFixture.class",
+      "sha256": "4b12b46bdf06c18736001cc9055ff54e6bc6f1da91520ed45146deabc2e9def3"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/classes/PrefixOracle.class",
+      "file": "initial-missing-callsite-control/classes/PrefixOracle.class",
+      "sha256": "b4fd887949ac1f2c81e68fed13e406542f1fbfacb937dfe06d8fba6b7e0c9954"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/commands.json",
+      "file": "initial-missing-callsite-control/commands.json",
+      "sha256": "48a3b0cfe2a11da23ad180a249777484a71ec58a5be207d668fe0c3cc5666c1b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/compile.stderr",
+      "file": "initial-missing-callsite-control/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/compile.stdout",
+      "file": "initial-missing-callsite-control/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/fixture-after.json.gz",
+      "file": "initial-missing-callsite-control/fixture-after.json.gz",
+      "sha256": "35a4d2bd8f123b38c1d311fca19281f85da786a83f01d7a7c327b34c791759fb"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/fixture-audit.json",
+      "file": "initial-missing-callsite-control/fixture-audit.json",
+      "sha256": "80f78ae56390c136bc54a3cabb2bd183428beb88fac0e849e4475a6897c213b2"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/fixture-before.json.gz",
+      "file": "initial-missing-callsite-control/fixture-before.json.gz",
+      "sha256": "9c3d17308bebe91894f90d0da5637e15e0850f5fdeead2d239a30130b58f864a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/fixture-variants.json",
+      "file": "initial-missing-callsite-control/fixture-variants.json",
+      "sha256": "324a9a9d214871b760b10db420f61aab346794e3d1f4fd233ed7e1362a58d301"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/fixtures.tar.gz",
+      "file": "initial-missing-callsite-control/fixtures.tar.gz",
+      "sha256": "df843091d8b2b6903c6c67b6aaef0731207d16bc49e8b19adff690171d93546c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/generate.stderr",
+      "file": "initial-missing-callsite-control/generate.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/generate.stdout",
+      "file": "initial-missing-callsite-control/generate.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/inputs.json",
+      "file": "initial-missing-callsite-control/inputs.json",
+      "sha256": "19314e0db9f32241c842149d704a7f0ac2b7dfd15195a44011e9adce9a76c6e4"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/main.json",
+      "file": "initial-missing-callsite-control/main.json",
+      "sha256": "5fe7b915f9fb5ca4866e7048efc95a2cf810660c3c5ca8454ea065a6c0fe02f8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/mutations.json",
+      "file": "initial-missing-callsite-control/mutations.json",
+      "sha256": "9373763a86f2c198afc839dcac3e6e47707a11e2c9d924b06912d53bef2c55fa"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/receipt.json",
+      "file": "initial-missing-callsite-control/receipt.json",
+      "sha256": "b481d957ced597c2ed09d9de18c02888f6d391be2e98c123a55ec2ec5a9596bf"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/run.stderr",
+      "file": "initial-missing-callsite-control/run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v1/run.stdout",
+      "file": "initial-missing-callsite-control/run.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/classes/PrefixFixture.class",
+      "file": "main-capture/classes/PrefixFixture.class",
+      "sha256": "6c72d237d7584a3cb2f0fa449cc14c3b3c3c208dadc2be94259d640bd5659ba1"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/classes/PrefixOracle.class",
+      "file": "main-capture/classes/PrefixOracle.class",
+      "sha256": "b4fd887949ac1f2c81e68fed13e406542f1fbfacb937dfe06d8fba6b7e0c9954"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/commands.json",
+      "file": "main-capture/commands.json",
+      "sha256": "d0ac7402c4bc80d42703967dcfa20bfdfd6965f470526bcb7c0a029d5aa0eb48"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/fixture-after.json.gz",
+      "file": "main-capture/fixture-after.json.gz",
+      "sha256": "122e6d06a9fa636a9fd6b94c3e0d40d4ea490793d0932649335ef6cc8df20a21"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/fixture-audit.json",
+      "file": "main-capture/fixture-audit.json",
+      "sha256": "318d3434ab1df651764e5bbb598074eb67c90d7200b5fb20136a06b5ca982cd0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/fixture-before.json.gz",
+      "file": "main-capture/fixture-before.json.gz",
+      "sha256": "0c957c6c63cabe4275198ab41f4cae03c1f004faead2ae2051b229cbf5b55d58"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/fixture-variants.json",
+      "file": "main-capture/fixture-variants.json",
+      "sha256": "5b8a63c798dc9cafaa5c95fce0dd793db6f477b7935716d3017a756a18c37e11"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/fixtures.tar.gz",
+      "file": "main-capture/fixtures.tar.gz",
+      "sha256": "70ff0b21db15f10f78699ac9ba32e3ae45e81e390b872436b0daa4886df92c8d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/generate.stderr",
+      "file": "main-capture/generate.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/generate.stdout",
+      "file": "main-capture/generate.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/inputs.json",
+      "file": "main-capture/inputs.json",
+      "sha256": "b9d0310747ee3a5ca90756134adedde0f49c8b044cf5829ca47343b833d81041"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/main.json",
+      "file": "main-capture/main.json",
+      "sha256": "0c8106d1b7e42e7ee8b9da667ffaa781bcf86148a8308bf60bb0073acf3d96d8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/mutations.json",
+      "file": "main-capture/mutations.json",
+      "sha256": "dd7fa5508fcf39869f7151b76f52cc95fbfacaf54c2683e9c83540e601d10ccd"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/receipt.json",
+      "file": "main-capture/receipt.json",
+      "sha256": "6c5ff9f33f6e9ab584f6af6bd0cf6eed372c511c86e3bd13e97be0fa68caa316"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/run.stderr",
+      "file": "main-capture/run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v2/run.stdout",
+      "file": "main-capture/run.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/classes/PrefixFixture.class",
+      "file": "repeat-capture/classes/PrefixFixture.class",
+      "sha256": "6c72d237d7584a3cb2f0fa449cc14c3b3c3c208dadc2be94259d640bd5659ba1"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/classes/PrefixOracle.class",
+      "file": "repeat-capture/classes/PrefixOracle.class",
+      "sha256": "b4fd887949ac1f2c81e68fed13e406542f1fbfacb937dfe06d8fba6b7e0c9954"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/commands.json",
+      "file": "repeat-capture/commands.json",
+      "sha256": "0289ddc229d129c4a6222cd31b77501c41c141838802fa54f1398be215798d94"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/fixture-after.json.gz",
+      "file": "repeat-capture/fixture-after.json.gz",
+      "sha256": "6c30f8578da27fd3d9fa667f44be6fe6b8283f5be955b93d9307a9141b0edbe9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/fixture-audit.json",
+      "file": "repeat-capture/fixture-audit.json",
+      "sha256": "318d3434ab1df651764e5bbb598074eb67c90d7200b5fb20136a06b5ca982cd0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/fixture-before.json.gz",
+      "file": "repeat-capture/fixture-before.json.gz",
+      "sha256": "5d70a5c22207db90f90b54b75ec4e4c62a9cd0743425423a7861bf1388582d6c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/fixture-variants.json",
+      "file": "repeat-capture/fixture-variants.json",
+      "sha256": "b3cbe8187f15388f620e8018d51a4ea4d71ec2c8c2d0bdcae32a9f78ddd823e5"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/fixtures.tar.gz",
+      "file": "repeat-capture/fixtures.tar.gz",
+      "sha256": "786feed78f1376b37097ac12bbb068f390da35034104ee004aeb206993ebb763"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/generate.stderr",
+      "file": "repeat-capture/generate.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/generate.stdout",
+      "file": "repeat-capture/generate.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "sha256": "b9d0310747ee3a5ca90756134adedde0f49c8b044cf5829ca47343b833d81041"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/main.json",
+      "file": "repeat-capture/main.json",
+      "sha256": "f24fe3444fc4ac1a4c1757d9d0b6ca35057ce5ffc575e8cab30b1cd64507b7d1"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/mutations.json",
+      "file": "repeat-capture/mutations.json",
+      "sha256": "43e122717c5c8f638417679f2ffe42afb3360ec34eeaeb21e9d5346e3b7ca1d8"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "sha256": "80900355d72038f00251e522cc36d9364949e91abad9ebdbbfa9a013e4bee6e9"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/run.stderr",
+      "file": "repeat-capture/run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/run.stdout",
+      "file": "repeat-capture/run.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "allCopiedBytesVerified": true
+}

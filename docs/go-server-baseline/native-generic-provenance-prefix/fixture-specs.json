@@ -1,0 +1,198 @@
+{
+  "empty": {
+    "call": false,
+    "locals": []
+  },
+  "raw-complete-first-nonselected-first": {
+    "call": true,
+    "matchingCall": true,
+    "locals": []
+  },
+  "raw-complete-first-nonselected-probe": {
+    "call": true,
+    "locals": [
+      "hit-C",
+      "hit-bad"
+    ],
+    "badIndex": 1
+  },
+  "raw-complete-first-duplicate-first": {
+    "call": true,
+    "matchingCall": true,
+    "locals": []
+  },
+  "raw-complete-first-duplicate-probe": {
+    "call": true,
+    "locals": [
+      "hit-C",
+      "hit-bad"
+    ],
+    "badIndex": 1
+  },
+  "raw-complete-first-bad-first": {
+    "call": true,
+    "matchingCall": true,
+    "locals": []
+  },
+  "raw-complete-first-bad-probe": {
+    "call": true,
+    "locals": [
+      "hit-bad"
+    ],
+    "badIndex": 0
+  },
+  "raw-complete-no-generic-first": {
+    "call": true,
+    "matchingCall": true,
+    "locals": []
+  },
+  "raw-complete-no-generic-probe": {
+    "call": true,
+    "locals": [],
+    "badIndex": null
+  },
+  "raw-plus-generic-completes-first": {
+    "call": true,
+    "matchingCall": true,
+    "locals": [
+      "hit-A"
+    ]
+  },
+  "raw-plus-generic-completes-probe": {
+    "call": true,
+    "locals": [
+      "hit-A",
+      "hit-bad"
+    ],
+    "badIndex": 1
+  },
+  "raw-plus-nonselected-then-selected-first": {
+    "call": true,
+    "matchingCall": true,
+    "locals": [
+      "hit-A"
+    ]
+  },
+  "raw-plus-nonselected-then-selected-probe": {
+    "call": true,
+    "locals": [
+      "hit-C",
+      "hit-A",
+      "hit-bad"
+    ],
+    "badIndex": 2
+  },
+  "raw-plus-nonselected-then-bad-first": {
+    "call": true,
+    "matchingCall": true,
+    "locals": [
+      "hit-A"
+    ]
+  },
+  "raw-plus-nonselected-then-bad-probe": {
+    "call": true,
+    "locals": [
+      "hit-C",
+      "hit-bad"
+    ],
+    "badIndex": 1
+  },
+  "no-raw-hit-generic-completes-first": {
+    "call": true,
+    "matchingCall": false,
+    "locals": [
+      "hit-A"
+    ]
+  },
+  "no-raw-hit-generic-completes-probe": {
+    "call": true,
+    "locals": [
+      "hit-A",
+      "hit-bad"
+    ],
+    "badIndex": 1
+  },
+  "no-callsite-generic-completes-first": {
+    "call": true,
+    "matchingCall": false,
+    "locals": [
+      "hit-A"
+    ]
+  },
+  "no-callsite-generic-completes-probe": {
+    "call": false,
+    "locals": [
+      "hit-A",
+      "hit-bad"
+    ],
+    "badIndex": 1
+  },
+  "no-raw-hit-duplicate-then-completes-first": {
+    "call": true,
+    "matchingCall": false,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ]
+  },
+  "no-raw-hit-duplicate-then-completes-probe": {
+    "call": true,
+    "locals": [
+      "hit-A",
+      "hit-A",
+      "hit-B",
+      "hit-bad"
+    ],
+    "badIndex": 3
+  },
+  "no-raw-hit-duplicate-then-bad-first": {
+    "call": true,
+    "matchingCall": false,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ]
+  },
+  "no-raw-hit-duplicate-then-bad-probe": {
+    "call": true,
+    "locals": [
+      "hit-A",
+      "hit-A",
+      "hit-bad"
+    ],
+    "badIndex": 2
+  },
+  "no-raw-hit-nonselected-then-completes-first": {
+    "call": true,
+    "matchingCall": false,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ]
+  },
+  "no-raw-hit-nonselected-then-completes-probe": {
+    "call": true,
+    "locals": [
+      "hit-C",
+      "hit-A",
+      "hit-B",
+      "hit-bad"
+    ],
+    "badIndex": 3
+  },
+  "incomplete-exhaustion-first": {
+    "call": true,
+    "matchingCall": false,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ]
+  },
+  "incomplete-exhaustion-probe": {
+    "call": true,
+    "locals": [
+      "hit-A"
+    ],
+    "badIndex": null
+  }
+}

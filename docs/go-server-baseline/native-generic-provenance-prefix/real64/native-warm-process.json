@@ -1,0 +1,37 @@
+{
+  "runtime": "native",
+  "state": "warm",
+  "performanceMeasurement": false,
+  "buildCommand": [
+    "go",
+    "build",
+    "-o",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-warm-64-filtered-count-attempt21-generic-provenance-6d061b52-v1/graphite-benchmark-replay",
+    "./cmd/graphite-benchmark-replay"
+  ],
+  "binarySHA256": "1739c00996c84ac8a31ced88f6946950e4c332861d46e84e95eaee6a4b123008",
+  "goEnvironment": [
+    "go1.22.0",
+    "/opt/homebrew/Cellar/go/1.22.0/libexec",
+    "darwin",
+    "arm64"
+  ],
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-warm-64-filtered-count-attempt21-generic-provenance-6d061b52-v1/graphite-benchmark-replay",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-warm-64-filtered-count-attempt21-generic-provenance-6d061b52-v1/fixture/graphs-relocated.tsv",
+    "--state",
+    "warm",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-real64-source-v1/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-real64-v1/native-warm/responses.jsonl"
+  ],
+  "status": "exited",
+  "pid": 7680,
+  "startedAt": "2026-09-08T08:33:07.739046+00:00",
+  "exitCode": 1,
+  "finishedAt": "2026-09-08T08:34:12.632914+00:00",
+  "inputsUnchanged": true,
+  "binaryUnchanged": true
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "runtime": "baseline",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "test",
+      "-overlay",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-initial-controls-v1/baseline-overlay.json",
+      "-count=1",
+      "-v",
+      "-run",
+      "^TestGenericProvenanceMainPrefix$",
+      "./internal/query"
+    ],
+    "exitCode": 1
+  },
+  {
+    "runtime": "candidate",
+    "command": [
+      "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+      "test",
+      "-overlay",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-provenance-6d061b52-initial-controls-v1/candidate-overlay.json",
+      "-count=1",
+      "-v",
+      "-run",
+      "^TestGenericProvenanceMainPrefix$",
+      "./internal/query"
+    ],
+    "exitCode": 1
+  }
+]

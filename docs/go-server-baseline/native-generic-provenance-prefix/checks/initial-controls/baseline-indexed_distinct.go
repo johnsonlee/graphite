@@ -432,7 +432,7 @@ func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan)
 			}
 		}
 	}
-	rows = append(rows, e.distinctGenericRows(source, plan)...)
+	rows = append(rows, e.distinctGenericRows(source, plan, nil)...)
 	sort.SliceStable(rows, func(a, b int) bool { return rows[a].order < rows[b].order })
 	state := distinctSourceResult{rows: []map[string]any{}, known: map[string]bool{}, index: index}
 	byKey := map[string]map[string]any{}
@@ -448,22 +448,7 @@ func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan)
 	}
 	return state
 }
-func distinctGenericRow(source Graph, plan *indexedDistinctPlan, node store.Node) map[string]any {
-	row := map[string]any{}
-	for i, property := range plan.properties {
-		var value any
-		if property == "graphId" {
-			value = source.ID
-		} else {
-			value = NodeProperty(node, property)
-		}
-		row[plan.columns[i]] = value
-	}
-	addProvenance(row, source.ID)
-	return row
-}
-
-func (e evaluator) distinctGenericRows(source Graph, plan *indexedDistinctPlan) []distinctProjectedRow {
+func (e evaluator) distinctGenericRows(source Graph, plan *indexedDistinctPlan, selected map[string]bool) []distinctProjectedRow {
 	if !plan.generic {
 		return nil
 	}
@@ -476,9 +461,19 @@ func (e evaluator) distinctGenericRows(source Graph, plan *indexedDistinctPlan) 
 		if !present {
 			break
 		}
-		row := distinctGenericRow(source, plan, node)
+		row := map[string]any{}
+		for i, property := range plan.properties {
+			var value any
+			if property == "graphId" {
+				value = source.ID
+			} else {
+				value = NodeProperty(node, property)
+			}
+			row[plan.columns[i]] = value
+		}
+		addProvenance(row, source.ID)
 		k := distinctVisibleKey(row)
-		if seen[k] {
+		if seen[k] || selected != nil && !selected[k] {
 			continue
 		}
 		seen[k] = true
@@ -490,30 +485,6 @@ func (e evaluator) distinctGenericRows(source Graph, plan *indexedDistinctPlan) 
 		}
 	}
 	return rows
-}
-
-// Provenance probes stop against the complete selected set, including hits
-// already supplied by CallSite storage. Main checks only after consuming a
-// generic candidate, even if storage found every selected tuple beforehand.
-func (e evaluator) distinctGenericHits(source Graph, plan *indexedDistinctPlan, selected, hits map[string]bool) {
-	if !plan.generic {
-		return
-	}
-	next := e.mainGenericStringCandidates(source, plan.atoms, plan.sourceCount)
-	for {
-		e.check()
-		node, present := next(e.ctx)
-		if !present {
-			return
-		}
-		k := distinctVisibleKey(distinctGenericRow(source, plan, node))
-		if selected[k] {
-			hits[k] = true
-		}
-		if len(hits) >= len(selected) {
-			return
-		}
-	}
 }
 
 // Selected-value provenance probes mirror main's exact-property anchor. They
@@ -548,13 +519,17 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
 		}
 	}
 	if len(rawTargets) == 0 {
-		e.distinctGenericHits(source, plan, selectedKeys, hits)
+		for _, generic := range e.distinctGenericRows(source, plan, selectedKeys) {
+			hits[distinctVisibleKey(generic.row)] = true
+		}
 		return hits
 	}
 	selectedRows = rawTargets
 	index, empty := e.prepareDistinctSourceIndex(source, plan)
 	if empty {
-		e.distinctGenericHits(source, plan, selectedKeys, hits)
+		for _, generic := range e.distinctGenericRows(source, plan, selectedKeys) {
+			hits[distinctVisibleKey(generic.row)] = true
+		}
 		return hits
 	}
 	if index.Raw || index.ParallelRaw {
@@ -656,7 +631,9 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
 			}
 		}
 	}
-	e.distinctGenericHits(source, plan, selectedKeys, hits)
+	for _, generic := range e.distinctGenericRows(source, plan, selectedKeys) {
+		hits[distinctVisibleKey(generic.row)] = true
+	}
 	return hits
 }
 

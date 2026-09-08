@@ -1,0 +1,50 @@
+[
+  {
+    "phase": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-provenance-prefix/PrefixFixture.java",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-provenance-prefix/PrefixOracle.java"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T08:29:51.358076+00:00",
+    "endUTC": "2026-09-08T08:29:51.761346+00:00"
+  },
+  {
+    "phase": "generate",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PrefixFixture",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-provenance-prefix/fixture-specs.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/variants",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/mutations.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T08:29:51.761697+00:00",
+    "endUTC": "2026-09-08T08:29:52.046752+00:00"
+  },
+  {
+    "phase": "run",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PrefixOracle",
+      "run",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-generic-provenance-prefix/cases.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/fixtures",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/generic-prefix-main-v3/main.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T08:29:53.227365+00:00",
+    "endUTC": "2026-09-08T08:29:53.606224+00:00"
+  }
+]
