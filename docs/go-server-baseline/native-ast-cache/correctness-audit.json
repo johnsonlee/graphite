@@ -1,0 +1,59 @@
+{
+  "states": [
+    {
+      "state": "cold",
+      "caseCount": 1267,
+      "graphStateObservations": 162304,
+      "publicDifferences": 0,
+      "stateDifferences": 0,
+      "originalError": [
+        {
+          "phase": "replay",
+          "index": 821,
+          "id": "four-or-graph-id-targeted",
+          "error": "IllegalStateException",
+          "message": "Unsafe expression reached parallel string projection"
+        }
+      ],
+      "mainManifestSuccessfulDigestsVerified": 1266
+    },
+    {
+      "state": "warm",
+      "caseCount": 1267,
+      "graphStateObservations": 162240,
+      "publicDifferences": 0,
+      "stateDifferences": 0,
+      "originalError": [
+        {
+          "phase": "warmup",
+          "index": 821,
+          "id": "four-or-graph-id-targeted",
+          "error": "IllegalStateException",
+          "message": "Unsafe expression reached parallel string projection"
+        }
+      ],
+      "mainManifestSuccessfulDigestsVerified": 0
+    },
+    {
+      "state": "startup-prepared",
+      "caseCount": 1267,
+      "graphStateObservations": 162304,
+      "publicDifferences": 0,
+      "stateDifferences": 0,
+      "originalError": [
+        {
+          "phase": "replay",
+          "index": 821,
+          "id": "four-or-graph-id-targeted",
+          "error": "IllegalStateException",
+          "message": "Unsafe expression reached parallel string projection"
+        }
+      ],
+      "mainManifestSuccessfulDigestsVerified": 1266
+    }
+  ],
+  "graphStateObservations": 486848,
+  "moduleFilesUnchanged": 2529,
+  "performanceMeasurements": 0,
+  "auditNote": "Warm has a complete canonical prewarm comparison but no formal correctness manifest; the first audit assertion incorrectly required the formal-manifest count in warm and was corrected."
+}

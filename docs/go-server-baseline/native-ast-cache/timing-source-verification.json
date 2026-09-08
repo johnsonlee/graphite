@@ -1,0 +1,9 @@
+{
+  "measurementSourceRevision": "6182822983971ab1ec9dbee1023665a60c36e465",
+  "internalGoFilesMatchedFrozenBuildAndCommit": 279,
+  "binarySHA256": "ca32e9f9bd200524e2a5ccbb36e870777acb5b708a2653f8b5cf1432d26d4936",
+  "buildSHA256": "cc1dbf45f859ead7e4eddb023b6ba6a09124aab2a0f1674aeef669179c8c2c4b",
+  "inputsSHA256": "c917b9e194086bb29eaad787404b4654f9a4e2e8223ed2465fc78a29e18cfcca",
+  "sourceBundle": "/Users/johnsonlee/.codex/benchmarks/graphite/ast-cache-61828229-source.bundle",
+  "sourceBundleSHA256": "3dcc1877934a69e9c7828000600eb6ee9a45319ecdd01c006837cfe712a7cc98"
+}

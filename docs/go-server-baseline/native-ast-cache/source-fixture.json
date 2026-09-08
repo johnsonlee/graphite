@@ -1,0 +1,55 @@
+{
+  "root": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/testdata/main-string-source/all-types",
+  "files": [
+    {
+      "file": "forward.graph",
+      "bytes": 8,
+      "sha256": "3679d417c7945e591afd5c0c09645bb9ea654fccc52438c7dc79ed0e0a8e9241"
+    },
+    {
+      "file": "forward.offsets",
+      "bytes": 13,
+      "sha256": "d63273006a3020247605960f168572e50a4e3eda33cff2763dd81aae020351ad"
+    },
+    {
+      "file": "forward.properties",
+      "bytes": 706,
+      "sha256": "b6c52a66cf7bf62d3ffeac8e6c34272251446f4d64d10a757f4712f24c367036"
+    },
+    {
+      "file": "graph.comparisons",
+      "bytes": 24,
+      "sha256": "99649b1c79a1a984dbaf78c3d77038852cf186e8b0adb7ecc97da5add24ab749"
+    },
+    {
+      "file": "graph.labels",
+      "bytes": 4,
+      "sha256": "2c44818b3b600deba7bd6170bbc097269c98946e94ccb45541d46c8231f7597e"
+    },
+    {
+      "file": "graph.metadata",
+      "bytes": 240,
+      "sha256": "4c8c47a145fea5dd4a37b858ace718f27587e02d37874e38e8d4c5ca53d04ad4"
+    },
+    {
+      "file": "graph.nodedata",
+      "bytes": 423,
+      "sha256": "a1cd445e7bac375fd6aa73f1d282267d5ea4328633130fbc5c954dd9cfd4bdcb"
+    },
+    {
+      "file": "graph.nodeindex",
+      "bytes": 216,
+      "sha256": "54cf522486908aa55f75f165bda0117cd48c5e3a57863f23714fcdf2740d5296"
+    },
+    {
+      "file": "graph.resources",
+      "bytes": 150,
+      "sha256": "fbe4481a9f205005bb0a8a6dbd944499310287ea7188f5443ddd1611a6a31ca3"
+    },
+    {
+      "file": "graph.strings",
+      "bytes": 669,
+      "sha256": "a7e12e7636a6396f8adb3e64999c7d72d63b132ebb436df5873bfa4f6975d717"
+    }
+  ]
+}

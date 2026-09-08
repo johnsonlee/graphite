@@ -1,0 +1,667 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Frozen n=1 smoke baseline for later candidate comparison; no new performance run",
+  "baselineEngineRevision": "3b5ecae5c9a4c1425f18a3b5af3e373b41a184eb",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "samplesPerCasePerRuntimePerState": 1,
+  "perCaseP95Available": false,
+  "tenfoldP95AcceptanceProven": false,
+  "ratioDefinition": "main latencyNanos / Go latencyNanos for the same successful case and state",
+  "ratioDistributionInterpretation": "Distribution of 1266 different case ratios, each based on one observation per runtime. Ratio quantiles are not per-case latency percentiles, pooled latency P95, or P95 acceptance evidence.",
+  "successfulLatencySumInterpretation": "Arithmetic sum of 1266 successful case timing observations per runtime; excludes case821 time-to-failure and all setup, output and other time outside the recorded query timer. It is not process wall time.",
+  "ratioQuantileMethod": "Nearest rank ceil(p*n), with arithmetic median for median; across ratios only",
+  "sourceController": {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-p95-sampling/evidence/smoke-3b5ecae5-v1/controller.json",
+    "sha256": "16838e8454fe9c98008b605921a31bbbf82ef3ec2ba13b4850a87d086715ffca"
+  },
+  "sourceArchiveManifest": {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-p95-sampling/evidence/smoke-3b5ecae5-v1/archive-manifest.json",
+    "sha256": "5e00bbfb6cd43de81b1af1fe454a6d1ff057a84ba03cb18779fd634d1d4a9bd8"
+  },
+  "workload": {
+    "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json",
+    "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023"
+  },
+  "graphManifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "states": [
+    {
+      "state": "cold",
+      "trialId": "cold-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-p95-sampling/evidence/smoke-3b5ecae5-v1/cold-0001/records.json.gz",
+        "archiveSHA256": "fcce98fea1e247959589f060dfefabcd448bfe7bfa8746fe395ddaa6f78b0c54",
+        "archiveBytes": 93587,
+        "uncompressedSHA256": "7ea79830b188ea7c515ce10708681eedd9e9d59e6d698767795a47e9c2df03f7",
+        "uncompressedBytes": 1195997
+      },
+      "orderedCaseCount": 1267,
+      "successfulCaseCount": 1266,
+      "failureCount": 1,
+      "censoredTimeoutCount": 0,
+      "samplesPerCasePerRuntime": 1,
+      "successfulLatencySumNanos": {
+        "main": 26501437837,
+        "go": 74279762420
+      },
+      "mainOverGoSingleSampleRatioDistribution": {
+        "count": 1266,
+        "min": 0.0018298551024043248,
+        "median": 0.13518736664700565,
+        "max": 152.6093803873731,
+        "nearestRankQuantiles": {
+          "0.05": 0.047830892353114045,
+          "0.25": 0.097709977827051,
+          "0.75": 0.2121760778544755,
+          "0.95": 1.554559203115922,
+          "0.99": 1.7703372263211352
+        }
+      },
+      "goSlowerThanMainCount": 1182,
+      "equalLatencyCount": 0,
+      "singleSampleRatioAtLeastTenCount": 1,
+      "top20ByGoLatencyNanos": [
+        {
+          "index": 892,
+          "id": "regex-or-zero",
+          "querySHA256": "8b9aa142b1e94c124dcda31ba21ad4ee20f605467b1ef171aa5666cb1feb374d",
+          "mainLatencyNanos": 14492806917,
+          "goLatencyNanos": 24903731834,
+          "mainOverGoSingleSampleRatio": 0.5819532194453519
+        },
+        {
+          "index": 893,
+          "id": "regex-or-targeted",
+          "querySHA256": "5a8d3d49ae7cf5e8559294af449bd4f051d0a60eb4047d7c2a409c01fd842f91",
+          "mainLatencyNanos": 4597418667,
+          "goLatencyNanos": 7487312209,
+          "mainOverGoSingleSampleRatio": 0.6140279099719855
+        },
+        {
+          "index": 830,
+          "id": "ordered-skip-targeted",
+          "querySHA256": "1e83be6e7b98bbe9feeda45fdbb2059d85e45305265078ff2df6460829057ddd",
+          "mainLatencyNanos": 800837875,
+          "goLatencyNanos": 4502170667,
+          "mainOverGoSingleSampleRatio": 0.17787816905076023
+        },
+        {
+          "index": 831,
+          "id": "ordered-skip-dense",
+          "querySHA256": "9a46b4ca6571825541b7e718180da59da9374225d11c4abe9f1a56634b5ccfc7",
+          "mainLatencyNanos": 602213916,
+          "goLatencyNanos": 3492320875,
+          "mainOverGoSingleSampleRatio": 0.17243945718475825
+        },
+        {
+          "index": 888,
+          "id": "global-six-or-wrapped-dense",
+          "querySHA256": "afb4aa1d5be5a9c80d4c074b65f290698b3df2537ff2288405ec81d00190bff2",
+          "mainLatencyNanos": 63723167,
+          "goLatencyNanos": 3388983542,
+          "mainOverGoSingleSampleRatio": 0.018803032298703327
+        },
+        {
+          "index": 887,
+          "id": "global-six-or-wrapped-targeted",
+          "querySHA256": "37428056dcdb5d5d1df14b6cc20189ed8ce1371f5f88eb0f39f8ad6dfba956c1",
+          "mainLatencyNanos": 144484417,
+          "goLatencyNanos": 3251784292,
+          "mainOverGoSingleSampleRatio": 0.04443234975808783
+        },
+        {
+          "index": 886,
+          "id": "global-six-or-wrapped-zero",
+          "querySHA256": "854db243f4f14be2d7a6b3b08d819ae49ff6367100690803ad2e9a8de19ebdf2",
+          "mainLatencyNanos": 59260542,
+          "goLatencyNanos": 3077100542,
+          "mainOverGoSingleSampleRatio": 0.019258565390093775
+        },
+        {
+          "index": 883,
+          "id": "global-six-or-zero",
+          "querySHA256": "98fd293897fa55c3de75ddde3347dec8cd8a0bc775518ff118e1a7af7baf678b",
+          "mainLatencyNanos": 316464208,
+          "goLatencyNanos": 2724540250,
+          "mainOverGoSingleSampleRatio": 0.11615325117696462
+        },
+        {
+          "index": 885,
+          "id": "global-six-or-dense",
+          "querySHA256": "91a39c997a7058a0c715fa7a8a4fd37a0140358ec8be57f7e4114dfc1844cf97",
+          "mainLatencyNanos": 264543083,
+          "goLatencyNanos": 2636633958,
+          "mainOverGoSingleSampleRatio": 0.10033364024510527
+        },
+        {
+          "index": 884,
+          "id": "global-six-or-targeted",
+          "querySHA256": "3795f71b8f9fc4ed20b469e1246a968819d2f8ee4f36c3dd247aa4d4c9305ac4",
+          "mainLatencyNanos": 315806000,
+          "goLatencyNanos": 2603071709,
+          "mainOverGoSingleSampleRatio": 0.12132051487790957
+        },
+        {
+          "index": 827,
+          "id": "ordered-projection-targeted",
+          "querySHA256": "fcadabd4e05a786e218dd2bce633f1d6ad0eb5140de75858d3d76f7e28a8b5e7",
+          "mainLatencyNanos": 692282459,
+          "goLatencyNanos": 1477619042,
+          "mainOverGoSingleSampleRatio": 0.46851213968045224
+        },
+        {
+          "index": 30,
+          "id": "contains-or-wrapped-dense",
+          "querySHA256": "bd0fd6cb9ad32b1bdb44805a7d8c0b9a4f3d868709133e0126b2444d52aad980",
+          "mainLatencyNanos": 39075250,
+          "goLatencyNanos": 998542125,
+          "mainOverGoSingleSampleRatio": 0.03913230000186522
+        },
+        {
+          "index": 27,
+          "id": "ends-or-wrapped-dense",
+          "querySHA256": "f8394412473d54476651abba9ef53af5344982600a8c8abcc490b70c4537b72b",
+          "mainLatencyNanos": 139367000,
+          "goLatencyNanos": 947364042,
+          "mainOverGoSingleSampleRatio": 0.14711029110391335
+        },
+        {
+          "index": 6,
+          "id": "class-contains-or-unlabeled-dense",
+          "querySHA256": "131239ec41aeaa6fb4a3f4d6ddc8ae0d7b381f4976d5b57732b7a07599375fcf",
+          "mainLatencyNanos": 97071292,
+          "goLatencyNanos": 923095792,
+          "mainOverGoSingleSampleRatio": 0.10515841675508364
+        },
+        {
+          "index": 26,
+          "id": "ends-or-wrapped-targeted",
+          "querySHA256": "0308db5dc5a86313fb3727aa4c1f8b6edc680797566072b6f9af084130e5cafc",
+          "mainLatencyNanos": 31522042,
+          "goLatencyNanos": 618567792,
+          "mainOverGoSingleSampleRatio": 0.05095972083848815
+        },
+        {
+          "index": 23,
+          "id": "starts-or-wrapped-targeted",
+          "querySHA256": "64d8e02933aa9fa1f778e3b1cf45c4cd8519d0fe4037420f2ca54cf322d6308f",
+          "mainLatencyNanos": 169830125,
+          "goLatencyNanos": 615502208,
+          "mainOverGoSingleSampleRatio": 0.2759212278894051
+        },
+        {
+          "index": 25,
+          "id": "ends-or-wrapped-zero",
+          "querySHA256": "7e67af9cf1afcd7e87480ee96bc9ce2b0c541a7ae409230f6232b454ddef2a5a",
+          "mainLatencyNanos": 28951958,
+          "goLatencyNanos": 611754291,
+          "mainOverGoSingleSampleRatio": 0.04732612165690555
+        },
+        {
+          "index": 834,
+          "id": "distinct-skip-dense",
+          "querySHA256": "580597493389224c5d5491eb7d826a949d834240c51bd41a484d2b8c3fed4677",
+          "mainLatencyNanos": 144432084,
+          "goLatencyNanos": 611715833,
+          "mainOverGoSingleSampleRatio": 0.23610976896195524
+        },
+        {
+          "index": 24,
+          "id": "starts-or-wrapped-dense",
+          "querySHA256": "63e5f65ef2e49ea7e85495a22e40542621a7cb0985855895f2add0df669a7628",
+          "mainLatencyNanos": 72997667,
+          "goLatencyNanos": 578383375,
+          "mainOverGoSingleSampleRatio": 0.1262098292503653
+        },
+        {
+          "index": 22,
+          "id": "starts-or-wrapped-zero",
+          "querySHA256": "0e07df1f1875031f111c62637f82959f3969fd6457c3d622140141ef4beea608",
+          "mainLatencyNanos": 161195167,
+          "goLatencyNanos": 574716750,
+          "mainOverGoSingleSampleRatio": 0.280477586567644
+        }
+      ],
+      "excludedOriginalFailure": {
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "querySHA256": "4115c248bcfa6ac6b18bc46e8f4d8c57ba9f253b4d16ac94134ba87aa876f047",
+        "mainLatencyNanos": 87692542,
+        "goLatencyNanos": 1876000,
+        "mainOverGoSingleSampleRatio": 46.74442537313433,
+        "measurementKind": "time-to-failure",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection",
+        "mainMessageSource": "reference-derived",
+        "goMessageSource": "observed"
+      }
+    },
+    {
+      "state": "startup-prepared",
+      "trialId": "startup-prepared-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-p95-sampling/evidence/smoke-3b5ecae5-v1/startup-prepared-0001/records.json.gz",
+        "archiveSHA256": "dc29f88139fff1789b20d7441457a57233eb155cd90b7a3b9d1e3ff1b8e5d463",
+        "archiveBytes": 93500,
+        "uncompressedSHA256": "352a2843e30953ac17d5bd9a0856c1720d5a27e3f081c2efbeab45bdb191f9f5",
+        "uncompressedBytes": 1195868
+      },
+      "orderedCaseCount": 1267,
+      "successfulCaseCount": 1266,
+      "failureCount": 1,
+      "censoredTimeoutCount": 0,
+      "samplesPerCasePerRuntime": 1,
+      "successfulLatencySumNanos": {
+        "main": 23181534392,
+        "go": 73782395592
+      },
+      "mainOverGoSingleSampleRatioDistribution": {
+        "count": 1266,
+        "min": 0.0021687257560302924,
+        "median": 0.12172301054971504,
+        "max": 125.15083040756605,
+        "nearestRankQuantiles": {
+          "0.05": 0.03985466742318874,
+          "0.25": 0.0952100919404269,
+          "0.75": 0.19882438894792773,
+          "0.95": 26.005812874395,
+          "0.99": 37.46335329939658
+        }
+      },
+      "goSlowerThanMainCount": 1183,
+      "equalLatencyCount": 0,
+      "singleSampleRatioAtLeastTenCount": 66,
+      "top20ByGoLatencyNanos": [
+        {
+          "index": 892,
+          "id": "regex-or-zero",
+          "querySHA256": "8b9aa142b1e94c124dcda31ba21ad4ee20f605467b1ef171aa5666cb1feb374d",
+          "mainLatencyNanos": 12376614958,
+          "goLatencyNanos": 24540835167,
+          "mainOverGoSingleSampleRatio": 0.5043273741002426
+        },
+        {
+          "index": 893,
+          "id": "regex-or-targeted",
+          "querySHA256": "5a8d3d49ae7cf5e8559294af449bd4f051d0a60eb4047d7c2a409c01fd842f91",
+          "mainLatencyNanos": 3849760875,
+          "goLatencyNanos": 7541027292,
+          "mainOverGoSingleSampleRatio": 0.5105088107934671
+        },
+        {
+          "index": 830,
+          "id": "ordered-skip-targeted",
+          "querySHA256": "1e83be6e7b98bbe9feeda45fdbb2059d85e45305265078ff2df6460829057ddd",
+          "mainLatencyNanos": 798140250,
+          "goLatencyNanos": 4494683250,
+          "mainOverGoSingleSampleRatio": 0.17757430404022354
+        },
+        {
+          "index": 831,
+          "id": "ordered-skip-dense",
+          "querySHA256": "9a46b4ca6571825541b7e718180da59da9374225d11c4abe9f1a56634b5ccfc7",
+          "mainLatencyNanos": 584593959,
+          "goLatencyNanos": 3561402958,
+          "mainOverGoSingleSampleRatio": 0.16414709761691618
+        },
+        {
+          "index": 887,
+          "id": "global-six-or-wrapped-targeted",
+          "querySHA256": "37428056dcdb5d5d1df14b6cc20189ed8ce1371f5f88eb0f39f8ad6dfba956c1",
+          "mainLatencyNanos": 67481625,
+          "goLatencyNanos": 3313481417,
+          "mainOverGoSingleSampleRatio": 0.02036577741277853
+        },
+        {
+          "index": 888,
+          "id": "global-six-or-wrapped-dense",
+          "querySHA256": "afb4aa1d5be5a9c80d4c074b65f290698b3df2537ff2288405ec81d00190bff2",
+          "mainLatencyNanos": 59245041,
+          "goLatencyNanos": 3190573167,
+          "mainOverGoSingleSampleRatio": 0.01856877679934428
+        },
+        {
+          "index": 886,
+          "id": "global-six-or-wrapped-zero",
+          "querySHA256": "854db243f4f14be2d7a6b3b08d819ae49ff6367100690803ad2e9a8de19ebdf2",
+          "mainLatencyNanos": 53043125,
+          "goLatencyNanos": 3025288584,
+          "mainOverGoSingleSampleRatio": 0.017533244689624625
+        },
+        {
+          "index": 883,
+          "id": "global-six-or-zero",
+          "querySHA256": "98fd293897fa55c3de75ddde3347dec8cd8a0bc775518ff118e1a7af7baf678b",
+          "mainLatencyNanos": 240180084,
+          "goLatencyNanos": 2739530750,
+          "mainOverGoSingleSampleRatio": 0.08767197958993525
+        },
+        {
+          "index": 885,
+          "id": "global-six-or-dense",
+          "querySHA256": "91a39c997a7058a0c715fa7a8a4fd37a0140358ec8be57f7e4114dfc1844cf97",
+          "mainLatencyNanos": 281433583,
+          "goLatencyNanos": 2662038458,
+          "mainOverGoSingleSampleRatio": 0.10572108083346105
+        },
+        {
+          "index": 884,
+          "id": "global-six-or-targeted",
+          "querySHA256": "3795f71b8f9fc4ed20b469e1246a968819d2f8ee4f36c3dd247aa4d4c9305ac4",
+          "mainLatencyNanos": 290750959,
+          "goLatencyNanos": 2629479000,
+          "mainOverGoSingleSampleRatio": 0.11057359994128114
+        },
+        {
+          "index": 827,
+          "id": "ordered-projection-targeted",
+          "querySHA256": "fcadabd4e05a786e218dd2bce633f1d6ad0eb5140de75858d3d76f7e28a8b5e7",
+          "mainLatencyNanos": 910668583,
+          "goLatencyNanos": 1407845084,
+          "mainOverGoSingleSampleRatio": 0.6468528344131363
+        },
+        {
+          "index": 30,
+          "id": "contains-or-wrapped-dense",
+          "querySHA256": "bd0fd6cb9ad32b1bdb44805a7d8c0b9a4f3d868709133e0126b2444d52aad980",
+          "mainLatencyNanos": 28098875,
+          "goLatencyNanos": 1114227541,
+          "mainOverGoSingleSampleRatio": 0.02521825566686473
+        },
+        {
+          "index": 27,
+          "id": "ends-or-wrapped-dense",
+          "querySHA256": "f8394412473d54476651abba9ef53af5344982600a8c8abcc490b70c4537b72b",
+          "mainLatencyNanos": 39237333,
+          "goLatencyNanos": 954342375,
+          "mainOverGoSingleSampleRatio": 0.041114524543668096
+        },
+        {
+          "index": 5,
+          "id": "class-contains-or-unlabeled-targeted",
+          "querySHA256": "35ccaa627157fcd37783b7144c2436e6356277b866aa5c4ba67b937304b5d04c",
+          "mainLatencyNanos": 163618250,
+          "goLatencyNanos": 770031125,
+          "mainOverGoSingleSampleRatio": 0.21248264477620954
+        },
+        {
+          "index": 6,
+          "id": "class-contains-or-unlabeled-dense",
+          "querySHA256": "131239ec41aeaa6fb4a3f4d6ddc8ae0d7b381f4976d5b57732b7a07599375fcf",
+          "mainLatencyNanos": 34714000,
+          "goLatencyNanos": 648513208,
+          "mainOverGoSingleSampleRatio": 0.05352859366898199
+        },
+        {
+          "index": 23,
+          "id": "starts-or-wrapped-targeted",
+          "querySHA256": "64d8e02933aa9fa1f778e3b1cf45c4cd8519d0fe4037420f2ca54cf322d6308f",
+          "mainLatencyNanos": 175930209,
+          "goLatencyNanos": 632856292,
+          "mainOverGoSingleSampleRatio": 0.27799393199364764
+        },
+        {
+          "index": 834,
+          "id": "distinct-skip-dense",
+          "querySHA256": "580597493389224c5d5491eb7d826a949d834240c51bd41a484d2b8c3fed4677",
+          "mainLatencyNanos": 161011042,
+          "goLatencyNanos": 611193750,
+          "mainOverGoSingleSampleRatio": 0.26343699031608225
+        },
+        {
+          "index": 25,
+          "id": "ends-or-wrapped-zero",
+          "querySHA256": "7e67af9cf1afcd7e87480ee96bc9ce2b0c541a7ae409230f6232b454ddef2a5a",
+          "mainLatencyNanos": 28635875,
+          "goLatencyNanos": 610796041,
+          "mainOverGoSingleSampleRatio": 0.04688287591569376
+        },
+        {
+          "index": 22,
+          "id": "starts-or-wrapped-zero",
+          "querySHA256": "0e07df1f1875031f111c62637f82959f3969fd6457c3d622140141ef4beea608",
+          "mainLatencyNanos": 117618959,
+          "goLatencyNanos": 606833292,
+          "mainOverGoSingleSampleRatio": 0.1938241697523741
+        },
+        {
+          "index": 26,
+          "id": "ends-or-wrapped-targeted",
+          "querySHA256": "0308db5dc5a86313fb3727aa4c1f8b6edc680797566072b6f9af084130e5cafc",
+          "mainLatencyNanos": 30014542,
+          "goLatencyNanos": 604354625,
+          "mainOverGoSingleSampleRatio": 0.04966379135428971
+        }
+      ],
+      "excludedOriginalFailure": {
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "querySHA256": "4115c248bcfa6ac6b18bc46e8f4d8c57ba9f253b4d16ac94134ba87aa876f047",
+        "mainLatencyNanos": 174643250,
+        "goLatencyNanos": 1821500,
+        "mainOverGoSingleSampleRatio": 95.87880867416965,
+        "measurementKind": "time-to-failure",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection",
+        "mainMessageSource": "reference-derived",
+        "goMessageSource": "observed"
+      }
+    },
+    {
+      "state": "warm-after-failed-prewarm",
+      "trialId": "warm-after-failed-prewarm-0001",
+      "source": {
+        "path": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-p95-sampling/evidence/smoke-3b5ecae5-v1/warm-after-failed-prewarm-0001/records.json.gz",
+        "archiveSHA256": "a5f10a14ffd4bc7f8d5821aed143cfec13bb1e52b820017b15e873d3a4a9966d",
+        "archiveBytes": 93269,
+        "uncompressedSHA256": "cff93aeffe1c4d89940865dada46cb872fcc3c33bf580fcfe71ad7db45a5bcc3",
+        "uncompressedBytes": 1195602
+      },
+      "orderedCaseCount": 1267,
+      "successfulCaseCount": 1266,
+      "failureCount": 1,
+      "censoredTimeoutCount": 0,
+      "samplesPerCasePerRuntime": 1,
+      "successfulLatencySumNanos": {
+        "main": 22164447087,
+        "go": 67536682790
+      },
+      "mainOverGoSingleSampleRatioDistribution": {
+        "count": 1266,
+        "min": 0.0017009644406128313,
+        "median": 0.07132616747761647,
+        "max": 147.85741864313292,
+        "nearestRankQuantiles": {
+          "0.05": 0.023561369219427253,
+          "0.25": 0.06053722954353224,
+          "0.75": 0.11421752265861027,
+          "0.95": 0.270838781469534,
+          "0.99": 0.7783801396431342
+        }
+      },
+      "goSlowerThanMainCount": 1261,
+      "equalLatencyCount": 0,
+      "singleSampleRatioAtLeastTenCount": 1,
+      "top20ByGoLatencyNanos": [
+        {
+          "index": 892,
+          "id": "regex-or-zero",
+          "querySHA256": "8b9aa142b1e94c124dcda31ba21ad4ee20f605467b1ef171aa5666cb1feb374d",
+          "mainLatencyNanos": 14389020833,
+          "goLatencyNanos": 24454532000,
+          "mainOverGoSingleSampleRatio": 0.5883989451525795
+        },
+        {
+          "index": 893,
+          "id": "regex-or-targeted",
+          "querySHA256": "5a8d3d49ae7cf5e8559294af449bd4f051d0a60eb4047d7c2a409c01fd842f91",
+          "mainLatencyNanos": 4674990208,
+          "goLatencyNanos": 7540685000,
+          "mainOverGoSingleSampleRatio": 0.6199689030903691
+        },
+        {
+          "index": 830,
+          "id": "ordered-skip-targeted",
+          "querySHA256": "1e83be6e7b98bbe9feeda45fdbb2059d85e45305265078ff2df6460829057ddd",
+          "mainLatencyNanos": 752481083,
+          "goLatencyNanos": 4457765875,
+          "mainOverGoSingleSampleRatio": 0.16880228888198395
+        },
+        {
+          "index": 831,
+          "id": "ordered-skip-dense",
+          "querySHA256": "9a46b4ca6571825541b7e718180da59da9374225d11c4abe9f1a56634b5ccfc7",
+          "mainLatencyNanos": 591900875,
+          "goLatencyNanos": 3457575458,
+          "mainOverGoSingleSampleRatio": 0.17118957552480407
+        },
+        {
+          "index": 888,
+          "id": "global-six-or-wrapped-dense",
+          "querySHA256": "afb4aa1d5be5a9c80d4c074b65f290698b3df2537ff2288405ec81d00190bff2",
+          "mainLatencyNanos": 56743917,
+          "goLatencyNanos": 3208899125,
+          "mainOverGoSingleSampleRatio": 0.017683297227362983
+        },
+        {
+          "index": 887,
+          "id": "global-six-or-wrapped-targeted",
+          "querySHA256": "37428056dcdb5d5d1df14b6cc20189ed8ce1371f5f88eb0f39f8ad6dfba956c1",
+          "mainLatencyNanos": 61678500,
+          "goLatencyNanos": 3082985625,
+          "mainOverGoSingleSampleRatio": 0.02000609393045743
+        },
+        {
+          "index": 886,
+          "id": "global-six-or-wrapped-zero",
+          "querySHA256": "854db243f4f14be2d7a6b3b08d819ae49ff6367100690803ad2e9a8de19ebdf2",
+          "mainLatencyNanos": 53776541,
+          "goLatencyNanos": 2995051917,
+          "mainOverGoSingleSampleRatio": 0.017955128154795188
+        },
+        {
+          "index": 885,
+          "id": "global-six-or-dense",
+          "querySHA256": "91a39c997a7058a0c715fa7a8a4fd37a0140358ec8be57f7e4114dfc1844cf97",
+          "mainLatencyNanos": 148991958,
+          "goLatencyNanos": 2696127959,
+          "mainOverGoSingleSampleRatio": 0.055261456527924385
+        },
+        {
+          "index": 883,
+          "id": "global-six-or-zero",
+          "querySHA256": "98fd293897fa55c3de75ddde3347dec8cd8a0bc775518ff118e1a7af7baf678b",
+          "mainLatencyNanos": 48074500,
+          "goLatencyNanos": 2691467000,
+          "mainOverGoSingleSampleRatio": 0.01786182033812787
+        },
+        {
+          "index": 884,
+          "id": "global-six-or-targeted",
+          "querySHA256": "3795f71b8f9fc4ed20b469e1246a968819d2f8ee4f36c3dd247aa4d4c9305ac4",
+          "mainLatencyNanos": 121715375,
+          "goLatencyNanos": 2599774333,
+          "mainOverGoSingleSampleRatio": 0.04681766930883843
+        },
+        {
+          "index": 827,
+          "id": "ordered-projection-targeted",
+          "querySHA256": "fcadabd4e05a786e218dd2bce633f1d6ad0eb5140de75858d3d76f7e28a8b5e7",
+          "mainLatencyNanos": 225263125,
+          "goLatencyNanos": 1406129042,
+          "mainOverGoSingleSampleRatio": 0.16020089072308627
+        },
+        {
+          "index": 834,
+          "id": "distinct-skip-dense",
+          "querySHA256": "580597493389224c5d5491eb7d826a949d834240c51bd41a484d2b8c3fed4677",
+          "mainLatencyNanos": 44725042,
+          "goLatencyNanos": 609726417,
+          "mainOverGoSingleSampleRatio": 0.07335263940187785
+        },
+        {
+          "index": 803,
+          "id": "contains-and-or-targeted",
+          "querySHA256": "df92471474437af3cd9cd5130b0b41a98c3cba45ac4eea645048b72420f283db",
+          "mainLatencyNanos": 159147291,
+          "goLatencyNanos": 385151084,
+          "mainOverGoSingleSampleRatio": 0.41320743368334906
+        },
+        {
+          "index": 30,
+          "id": "contains-or-wrapped-dense",
+          "querySHA256": "bd0fd6cb9ad32b1bdb44805a7d8c0b9a4f3d868709133e0126b2444d52aad980",
+          "mainLatencyNanos": 10073667,
+          "goLatencyNanos": 339545041,
+          "mainOverGoSingleSampleRatio": 0.029668131716286794
+        },
+        {
+          "index": 876,
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "querySHA256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+          "mainLatencyNanos": 5876417,
+          "goLatencyNanos": 333450417,
+          "mainOverGoSingleSampleRatio": 0.017623060882242053
+        },
+        {
+          "index": 28,
+          "id": "contains-or-wrapped-zero",
+          "querySHA256": "0b0ca2bac063cf812a4c178e1a303531093976a8308a27e6be14be6e5c4905bd",
+          "mainLatencyNanos": 866791,
+          "goLatencyNanos": 287419458,
+          "mainOverGoSingleSampleRatio": 0.003015770073576577
+        },
+        {
+          "index": 874,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "querySHA256": "0efeb86c9616508a5015bbbe1da0cc614b95a7af764ded9330a3eaf6caf8b0a8",
+          "mainLatencyNanos": 485834,
+          "goLatencyNanos": 285622667,
+          "mainOverGoSingleSampleRatio": 0.0017009644406128313
+        },
+        {
+          "index": 29,
+          "id": "contains-or-wrapped-targeted",
+          "querySHA256": "08e816aa1b9d2de7863f18ea9b4f84f8f9d2957e31b60cc720e77178873c4c48",
+          "mainLatencyNanos": 3265291,
+          "goLatencyNanos": 285352000,
+          "mainOverGoSingleSampleRatio": 0.011443028259833468
+        },
+        {
+          "index": 878,
+          "id": "exact-name-in-targeted",
+          "querySHA256": "7d218e56df35c5b88938d577f3df82af01cdd499cf8c87e3960b4e080b50737f",
+          "mainLatencyNanos": 19777542,
+          "goLatencyNanos": 284924625,
+          "mainOverGoSingleSampleRatio": 0.06941324218642035
+        },
+        {
+          "index": 833,
+          "id": "distinct-skip-targeted",
+          "querySHA256": "0c31e9e54a71839daed730a39c0d4db54f732f11d85c46acbb2c713f80cc8eb4",
+          "mainLatencyNanos": 22998084,
+          "goLatencyNanos": 282355542,
+          "mainOverGoSingleSampleRatio": 0.08145079723634396
+        }
+      ],
+      "excludedOriginalFailure": {
+        "index": 821,
+        "id": "four-or-graph-id-targeted",
+        "querySHA256": "4115c248bcfa6ac6b18bc46e8f4d8c57ba9f253b4d16ac94134ba87aa876f047",
+        "mainLatencyNanos": 2692875,
+        "goLatencyNanos": 1903708,
+        "mainOverGoSingleSampleRatio": 1.414542041111347,
+        "measurementKind": "time-to-failure",
+        "error": "IllegalStateException",
+        "message": "Unsafe expression reached parallel string projection",
+        "mainMessageSource": "reference-derived",
+        "goMessageSource": "observed"
+      }
+    }
+  ],
+  "limitations": [
+    "Original all-success benchmark gate fails on case821",
+    "warm-after-failed-prewarm is diagnostic continuation, not formal original warm",
+    "Go lacks main-equivalent resource sampler and work metrics; full server fidelity unfinished"
+  ],
+  "warmStateMeaning": "warm-after-failed-prewarm is a diagnostic continuation after the full original prewarm gate failed; it is not formal original warm."
+}

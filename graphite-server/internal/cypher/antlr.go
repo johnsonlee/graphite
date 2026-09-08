@@ -87,6 +87,10 @@ func ParseContext(ctx context.Context, source string) (query *Query, err error) 
 	return parseContext(ctx, source), nil
 }
 func parseContext(ctx context.Context, source string) *Query {
+	return parsedQueries.parse(ctx, source)
+}
+
+func (cache *parsedQueryCache) parseUncached(ctx context.Context, source string) *Query {
 	if err := ctx.Err(); err != nil {
 		panic(err)
 	}
@@ -110,7 +114,7 @@ func parseContext(ctx context.Context, source string) *Query {
 		if len(parts) > 1 {
 			query := &Query{Branches: []SingleQuery{{}}}
 			for _, part := range parts {
-				appendQuery(query, parseContext(ctx, part))
+				appendQuery(query, cache.parse(ctx, part))
 			}
 			return query
 		}

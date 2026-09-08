@@ -1,0 +1,13 @@
+{
+  "eventsPerRun": 35,
+  "runs": 3,
+  "repeat512mFullOutputDifferences": 0,
+  "heapCapBytes512m": 4194304,
+  "heapCapBytes8g": 16777216,
+  "deepMutationRejectionsPerRun": 31,
+  "publicParameterGraphExecutionControlsPerRun": 4,
+  "explicitFixtureMutations": 0,
+  "originalFilesUnchangedPerRun": 20,
+  "generatedMappedIndexFilesPerRun": 4,
+  "performanceMeasurements": 0
+}

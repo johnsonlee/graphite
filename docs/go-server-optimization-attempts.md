@@ -954,3 +954,69 @@ environment, raw timing/CPU/GC counter records, build closure and limitations ar
 in `docs/go-server-baseline/native64-p95-sampling/`. The three-pair capture and
 summary are retained under its evidence directory; no 200-sample campaign has
 been run or attributed to this follow-up. Keep the measurement tooling.
+
+
+### 2026-09-08 — Attempt 22: retain successful parsed-query ASTs
+
+Hypothesis: main's real64 setup fills its process-wide parsed-AST cache, while Go
+repeated lexer/parser/adapter work inside every execution. Retaining the same raw
+queries should remove that repeated work across the complete workload. Baseline
+Go is `bdcbd969917529f31b8ade101bae1ee15d89fa93` (same engine as `3b5ecae5`);
+reference main remains `4e328b0109e13c896b74004823fb049fcb19251a`.
+
+Port the 1,024-entry access-order cache, successful nonblank/raw-string keys,
+semicolon child entries, partial-failure behavior and original retained-byte
+estimate. The runtime uses min(16 MiB, Go soft memory limit / 128), with the
+16 MiB ceiling in this benchmark configuration. Go soft memory limit and JVM max
+heap are explicitly different settings. Cache trees stay private; public parsing
+returns owned deep copies, including nested maps/slices and hop pointers. Query
+parameters and results remain request-specific. Execution parse/error/cancel
+ordering is unchanged, and ParseContext polls within cached-expression copies.
+This adapts Java immutable identity to owned mutable Go values, rather than
+claiming identical Java reference identity or mutation exceptions.
+
+Actual pinned JVM runs capture 35 cache events at 512 MiB twice and 8 GiB once;
+the repeated smaller-heap output is identical. They verify raw keys, exact LRU
+and byte-budget boundaries, errors, partial semicolon success, 31 deep mutation
+rejections and four parameter/graph execution controls per run. Go tests compare
+actual main state transitions plus cache isolation, concurrency, cancellation,
+error precedence, and all 750 unique queries in the complete real64 case matrix.
+
+Full-module go test -race -count=1 ./... and go vet ./... pass; 2,535 inputs remain
+unchanged. Three correctness captures use a separate immutable 2,529-file module
+and the same 64 real persisted graphs / 1,152 files. Each covers all 1,267 cases,
+1,266 successful results and the one original error, with zero public differences.
+Seven graph-state fields match across 486,848 observations. Comparator exits are
+zero while the original all-success runtime gate exits one. Raw response archives
+have independently verified decompressed hashes. The small oracle fixtures were
+used only for correctness, never performance.
+
+A frozen measurement source commit, `6182822983971ab1ec9dbee1023665a60c36e465`,
+then completes three serial main/native paired timing runs. Its incremental Git
+bundle is retained; all 279 internal Go files match that commit and the binary's
+frozen source. All three pairs preserve every signature and original error,
+including both full prewarm ledgers in the diagnostic third state. There are no
+timeouts or new differences. This is n=1 per case/runtime/state, not P95.
+
+| State | Previous Go success sum (s) | Candidate Go success sum (s) | Paired main success sum (s) | Go slower than main cases |
+| --- | ---: | ---: | ---: | ---: |
+| cold | 74.280 | 74.301 | 24.640 | 981 / 1266 |
+| startup-prepared | 73.782 | 73.715 | 24.990 | 910 / 1266 |
+| warm-after-failed-prewarm (diagnostic) | 67.537 | 67.763 | 19.441 | 1221 / 1266 |
+
+Across cases, the median old-Go / candidate-Go single-observation ratios are
+2.288, 2.256 and 2.262. These are point-ratio distributions, not latency P95.
+Total successful-query time is effectively unchanged in these observations;
+no statistical regression/no-regression conclusion is established. The dominant
+native regex cases remain roughly 24.5s and 7.4s. Main's original process CPU,
+heap/RSS and GC counters are retained; comparable sampled native resource
+accounting is still unavailable, so no native CPU/memory gain is claimed.
+
+Keep AST caching: it reproduces the original successful-AST lifecycle and removes
+repeated parser work, with better point estimates for many cases and strict
+correctness/state parity. The one-sample summary retains all 3,801 state/case rows
+as insufficient, and its nonzero exit preserves unproven acceptance. The original
+failed query, formal warm gate, full work/resource/configuration equivalence,
+remaining server features and 10x per-case P95 remain open. Full commands,
+environment, raw captures and limitations are in
+`docs/go-server-baseline/native-ast-cache/`.
