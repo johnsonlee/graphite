@@ -377,7 +377,11 @@ open class ExplorerMemoryBenchmark {
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Measurement(iterations = 1)
-@Fork(1, jvmArgs = ["-Xmx8g"])
+// http.keepAlive=false stops the JDK's HttpURLConnection client (used by rawRequest) from spawning a
+// Keep-Alive-Timer daemon thread. That thread is present at a measured window's start and exits when
+// the keep-alive cache idles (~seconds later), which on the longer 17/36-graph scenarios lands inside
+// the window and makes RequestCpuAccounting fail closed on a non-request client-lifecycle thread.
+@Fork(1, jvmArgs = ["-Xmx8g", "-Dhttp.keepAlive=false"])
 open class MethodDiscoveryCompatibilityBenchmark {
 
     @Param("4", "17", "36")
