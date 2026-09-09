@@ -3460,3 +3460,70 @@ test("historical known-bad latency proof runs only in the scheduled workflow", (
     assert.ok(cacheHashInputs.length >= 2);
     for (const hashInput of cacheHashInputs) assert.match(hashInput, /'current\//);
 });
+
+test("base-owned Explorer harness installation includes its CPU accounting dependency", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const start = workflow.indexOf("    - name: Install base-owned Explorer harnesses");
+    const end = workflow.indexOf("    - name: Build comparable Explorer JMH JAR", start);
+    assert.ok(start > 0 && end > start, "the shared Explorer overlay must precede its JMH build");
+    const overlay = workflow.slice(start, end);
+    const harnesses = overlay.match(/for HARNESS in ([^;]+); do/)?.[1].trim().split(/\s+/);
+    assert.deepEqual(harnesses, [
+        "ExplorerMemoryBenchmark.kt",
+        "CypherCapacityBenchmark.kt",
+        "RequestCpuAccounting.kt",
+    ], "both revisions must install the whole base-owned harness, including its CPU helper and contract");
+    assert.match(overlay, /SOURCE="graphite-explore\/src\/jmh\/kotlin\/io\/johnsonlee\/graphite\/cli\/\$\{HARNESS\}"/);
+    assert.match(overlay, /test ! -L "source\/\$\{SOURCE\}"/);
+    assert.match(overlay, /install -m 0644 "gate\/\$\{SOURCE\}" "source\/\$\{SOURCE\}"/);
+    assert.match(overlay, /cmp "gate\/\$\{SOURCE\}" "source\/\$\{SOURCE\}"/);
+});
+
+test("method-compatibility shards run the CPU accounting contract in its own JVM before any fork", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const contract = workflow.indexOf(
+        'java -cp "${CANDIDATE_JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract'
+    );
+    const firstFork = workflow.indexOf(
+        "'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate'"
+    );
+    assert.ok(contract > 0, "the contract must run in its own JVM");
+    assert.ok(contract < firstFork, "the contract must run before the first measured fork");
+});
+
+test("a candidate-owned smoke exercises the new CPU accounting harness in a real fork", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    assert.match(workflow, /^  validate-cpu-accounting:$/m, "a candidate-owned CPU-accounting smoke job must exist");
+    const start = workflow.indexOf("\n  validate-cpu-accounting:");
+    const rest = workflow.slice(start + 1);
+    const job = rest.slice(0, rest.indexOf("\n  method-compatibility:"));
+    // Builds the candidate's own harness (no base-owned gate install), so the new RequestCpuAccounting
+    // integration actually runs -- unlike the paired gate, which installs the base harness over both trees.
+    assert.match(job, /Build candidate-owned Explorer JMH JAR/);
+    assert.doesNotMatch(job, /Install base-owned Explorer harnesses/, "the smoke must not install the base harness");
+    // A real graphCount=4 fork over all four corpora.
+    assert.match(job, /-p graphCount=4 -p scenario=count/);
+    // And the worst-case graph count over the scenarios that tripped the accounting, with
+    // fail-on-error so an abort in measure() fails the step -- proving the matrix, not just 4/count.
+    assert.match(job, /-p graphCount=36 -p scenario=prefix,contains/);
+    assert.match(job, /-foe true/);
+    assert.match(job, /\["contains", "prefix"\]/, "the long-scenario assert must require both named scenarios");
+    // Asserts the fork published a valid javaThreadCpuNanos row with nonnegative accounting diagnostics.
+    assert.match(job, /secondaryMetrics\.requestsSucceeded\.score == 1/);
+    assert.match(job, /secondaryMetrics\.javaThreadCpuNanos\.score > 0/);
+    assert.match(job, /secondaryMetrics\.jvmInternalCpuNanos\.score >= 0/);
+    // The smoke artifact is distinct from the base-owned paired artifacts so the trusted gate cannot consume it.
+    assert.match(job, /name: benchmark-cpu-accounting-smoke-/);
+    assert.doesNotMatch(job, /name: jmh-explore-/, "the smoke must not reuse the paired gate artifacts");
+});
+
+test("the authoritative aggregate depends on and enforces the CPU-accounting smoke", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const gate = workflow.slice(workflow.indexOf("\n  benchmark-regression-gate:"));
+    const needsLine = gate.slice(gate.indexOf("needs:"), gate.indexOf("\n", gate.indexOf("needs:")));
+    assert.match(needsLine, /validate-cpu-accounting/, "the aggregate gate must depend on the smoke job");
+    assert.match(gate, /CPU_ACCOUNTING_SMOKE_JOB: \$\{\{ needs\.validate-cpu-accounting\.result \}\}/,
+        "the enforce step must expose the smoke job's result");
+    assert.match(gate, /\[ "\$\{CPU_ACCOUNTING_SMOKE_JOB\}" != success \]/,
+        "the enforce step must fail unless the smoke succeeded");
+});
