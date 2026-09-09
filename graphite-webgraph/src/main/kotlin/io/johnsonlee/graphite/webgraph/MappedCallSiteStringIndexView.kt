@@ -1,11 +1,24 @@
-@file:Suppress("MagicNumber", "ReturnCount", "TooGenericExceptionCaught")
+@file:Suppress(
+    "CyclomaticComplexMethod",
+    "LongParameterList",
+    "LoopWithTooManyJumpStatements",
+    "MagicNumber",
+    "NestedBlockDepth",
+    "ReturnCount",
+    "TooGenericExceptionCaught",
+    "TooManyFunctions"
+)
 
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
+import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
+import io.johnsonlee.graphite.graph.StringPropertyTupleSet
 import io.johnsonlee.graphite.graph.StringValueTransform
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.lang.MutableString
 import java.io.Closeable
 import java.io.IOException
@@ -18,24 +31,22 @@ import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import java.util.PriorityQueue
 import java.util.concurrent.CancellationException
 import java.util.zip.CRC32
 
-internal interface CallSiteStringIdMembership {
-    fun containsPropertyStringId(
-        propertyIndex: Int,
-        stringId: Int,
-        workConsumer: GraphWorkConsumer?
-    ): Boolean
+/** Reads the four CallSite string ids of one node from raw mapped node data into [target]. */
+internal fun interface CallSiteRawStringIds {
+    fun read(nodeId: Int, target: IntArray)
 }
 
 /**
  * Integrity-checked, read-only view over the existing `graph.callsite-string-index` format.
  *
- * The complete retained index materializes every posting into heap arrays. Broad cold scans only
- * need the already-persisted property directories, node postings, and trigram postings, so this
- * view validates the existing file once and maps those regions without defining another format.
+ * The complete retained index materializes every posting into heap arrays. Cold queries only need
+ * the already-persisted property directories, node postings, and trigram postings, so this view
+ * validates the existing file once on the requesting thread and then serves bounded ordered
+ * projections, distinct projections, and selected-tuple provenance lookups directly from the
+ * mapped regions. No thread pool participates: every lookup runs on the caller.
  */
 internal class MappedCallSiteStringIndexView private constructor(
     private val propertyStringIds: Array<IntBuffer>,
@@ -45,129 +56,584 @@ internal class MappedCallSiteStringIndexView private constructor(
     private val callSiteCount: Int,
     private val stringCount: Int,
     private val stringTable: StringTable,
-    private val nodeOrder: (Int) -> Long
-) : CallSiteStringIdMembership, Closeable {
+    private val nodeOrder: (Int) -> Long,
+    private val rawStringIds: CallSiteRawStringIds,
+    private val trigramDirectory: TrigramDirectory?,
+    private val directoryHashes: CallSiteDirectoryHashes?
+) : Closeable {
     private val validatedPostingRanges = BoundedPostingRangeValidationCache.create()
+    private val matchCache = BoundedMatchingStringIdCache.create()
+    private val postingCounts = PlanPostingCountCache()
 
     override fun close() {
         validatedPostingRanges?.close()
+        matchCache?.close()
+        postingCounts.clear()
+        trigramDirectory?.close()
     }
 
     internal fun validatedPostingRangeCount(): Int = validatedPostingRanges?.size() ?: 0
 
     internal fun validatedPostingRangeBytes(): Long = validatedPostingRanges?.retainedBytes ?: 0L
 
-    override fun containsPropertyStringId(
-        propertyIndex: Int,
-        stringId: Int,
-        workConsumer: GraphWorkConsumer?
-    ): Boolean {
-        val values = propertyStringIds.getOrNull(propertyIndex) ?: return false
-        return binarySearch(values, stringId, workConsumer) >= 0
-    }
+    // ------------------------------------------------------------------ predicate matching
 
-    fun exactMatchingStringIds(
-        predicates: List<StringPropertyPredicate>,
-        workConsumer: GraphWorkConsumer?
-    ): List<IntArray>? {
-        if (predicates.any { predicate -> !predicate.canUseMappedCallSiteIndexView() }) return null
-        val matchesByPredicate = mutableMapOf<MappedPredicateKey, IntArray>()
-        return predicates.map { predicate ->
-            if (callSiteStringPropertyIndex(predicate.property) < 0) return null
+    /**
+     * Plans every predicate against the persisted trigram postings, string table, and property
+     * directories. Planning is cheap and lazy: an absent trigram proves a predicate matches nothing
+     * without decoding any string, a rare trigram bounds the candidates that later verification
+     * decodes, and a term whose rarest probed trigram is still common is reported as likely dense so
+     * the caller can answer from a bounded raw prefix before paying for verification. Returns null
+     * when a predicate targets an unsupported property.
+     */
+    fun matchPlan(predicates: List<StringPropertyPredicate>, workConsumer: GraphWorkConsumer?): MatchPlan? {
+        if (predicates.any { predicate -> callSiteStringPropertyIndex(predicate.property) < 0 }) return null
+        val probes = LinkedHashMap<MappedPredicateKey, PredicateProbe>(predicates.size * 2)
+        predicates.forEach { predicate ->
             val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
-            matchesByPredicate[key] ?: exactMatchingStringIds(predicate, workConsumer)
-                ?.also { matches -> matchesByPredicate[key] = matches }
+            if (key !in probes) {
+                val probe = probe(predicate, workConsumer)
+                // A proven-absent term is remembered like a verified one so repeated shapes of the
+                // same request skip the trigram probe.
+                if (probe is PredicateProbe.Absent) matchCache?.put(key, EMPTY_INTS)
+                probes[key] = probe
+            }
+        }
+        return MatchPlan(predicates, probes, workConsumer)
+    }
+
+    internal sealed class PredicateProbe {
+        /** A dictionary or trigram lookup proved the predicate matches no string. */
+        object Absent : PredicateProbe()
+
+        /** Matching string ids resolved exactly by the string table or a cached verification. */
+        class Exact(val stringIds: IntArray) : PredicateProbe()
+
+        /** Candidates bounded by the rarest probed trigram; verification decodes only that span. */
+        class Trigram(val anchor: IntRange) : PredicateProbe() {
+            val spanSize: Int
+                get() = anchor.last - anchor.first + 1
+        }
+
+        /** Short or non-ASCII terms scan the property dictionaries. */
+        object Scan : PredicateProbe()
+    }
+
+    /**
+     * True when the presence bits prove that no predicate of the disjunction matches any string
+     * of this graph, so a caller can answer an empty result before it builds cache keys, a plan
+     * or a cached empty row list: a cross-graph request finds its term in a few graphs and
+     * those per-graph objects are the bulk of what the other graphs cost on the interpreted code
+     * a first execution runs. A term is rejected by the first missing trigram from its absent
+     * hint, and a term whose first [REJECTION_CHECK_LIMIT] trigrams are all present is left to
+     * the plan, so a graph that does hold the term pays a handful of bit tests here and not a
+     * second full pass. Consecutive predicates with one key are decided once; a proven-absent
+     * term is remembered and the work is consumed exactly as [probe] does.
+     */
+    @Suppress("ReturnCount")
+    fun rejectsAllPredicates(predicates: List<StringPropertyPredicate>, workConsumer: GraphWorkConsumer?): Boolean {
+        val directory = trigramDirectory ?: return false
+        if (predicates.isEmpty()) return false
+        var checks = 0L
+        var previous: StringPropertyPredicate? = null
+        try {
+            for (predicate in predicates) {
+                if (previous != null && sameKey(previous, predicate)) continue
+                if (callSiteStringPropertyIndex(predicate.property) < 0) return false
+                val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+                val cached = matchCache?.get(key)
+                if (cached != null) {
+                    if (cached.isNotEmpty()) return false
+                } else {
+                    val term = TrigramTerm.of(predicate) ?: return false
+                    val trigrams = term.trigrams
+                    val start = term.absentHint
+                    val limit = minOf(trigrams.size, REJECTION_CHECK_LIMIT)
+                    var missing = -1
+                    for (offset in 0 until limit) {
+                        val index = (start + offset) % trigrams.size
+                        checks++
+                        if (!directory.contains(trigrams[index])) {
+                            missing = index
+                            break
+                        }
+                    }
+                    if (missing < 0) return false
+                    term.absentHint = missing
+                    matchCache?.put(key, EMPTY_INTS)
+                }
+                previous = predicate
+            }
+        } finally {
+            if (checks > 0L) consumeGraphWork(workConsumer, checks)
+        }
+        return true
+    }
+
+    private fun sameKey(left: StringPropertyPredicate, right: StringPropertyPredicate): Boolean =
+        left.transform == right.transform && left.mode == right.mode && left.expected == right.expected
+
+    private fun probe(predicate: StringPropertyPredicate, workConsumer: GraphWorkConsumer?): PredicateProbe {
+        val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+        matchCache?.get(key)?.let { cached ->
+            return if (cached.isEmpty()) PredicateProbe.Absent else PredicateProbe.Exact(cached)
+        }
+        val lowercase = predicate.transform == StringValueTransform.LOWERCASE
+        if (!lowercase && predicate.mode == StringMatchMode.EQUALS) {
+            consumeGraphWork(workConsumer, 1L)
+            val stringId = stringTable.findId(predicate.expected)
+            return if (stringId < 0) PredicateProbe.Absent else PredicateProbe.Exact(intArrayOf(stringId))
+        }
+        if (!lowercase && predicate.mode == StringMatchMode.STARTS_WITH) {
+            val range = stringTable.prefixRange(predicate.expected, workConsumer)
+            if (range.isEmpty()) return PredicateProbe.Absent
+            return PredicateProbe.Exact(IntArray(range.last - range.first + 1) { offset -> range.first + offset })
+        }
+        val term = TrigramTerm.of(predicate) ?: return PredicateProbe.Scan
+        val trigrams = term.trigrams
+        var anchor: IntRange? = null
+        var anchorSize = Int.MAX_VALUE
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            trigramDirectory?.let { directory ->
+                // A term is usually foreign to most graphs of a cross-graph request: one pass over
+                // the cache-resident presence bits rejects it before any mapped binary search,
+                // starting from the trigram that proved the previous graph absent.
+                val start = term.absentHint
+                for (offset in trigrams.indices) {
+                    val index = (start + offset) % trigrams.size
+                    accounting.consume()
+                    if (!directory.contains(trigrams[index])) {
+                        term.absentHint = index
+                        return PredicateProbe.Absent
+                    }
+                }
+            }
+            // The trigram that anchored the previous graph is usually rare here too, so the range
+            // walk starts there and stops as soon as a span small enough to verify is found.
+            val start = term.rarestHint
+            var anchorIndex = start
+            for (offset in trigrams.indices) {
+                val index = (start + offset) % trigrams.size
+                accounting.consume()
+                val span = trigramPostingRange(trigrams[index]) ?: return PredicateProbe.Absent
+                val size = span.last - span.first + 1
+                if (size < anchorSize) {
+                    anchor = span
+                    anchorSize = size
+                    anchorIndex = index
+                }
+                // A rare trigram already bounds verification; probing the remaining positions only
+                // costs mapped binary searches without shrinking the decoded candidate set further.
+                if (anchorSize <= SMALL_TRIGRAM_SPAN) break
+            }
+            term.rarestHint = anchorIndex
+        } finally {
+            accounting.flush()
+        }
+        return anchor?.let { PredicateProbe.Trigram(it) } ?: PredicateProbe.Scan
+    }
+
+    inner class MatchPlan internal constructor(
+        private val predicates: List<StringPropertyPredicate>,
+        private val probes: Map<MappedPredicateKey, PredicateProbe>,
+        private val workConsumer: GraphWorkConsumer?
+    ) {
+        private var rowsByProperty: Array<IntArray?>? = null
+
+        /** Every predicate proved zero matches without decoding a single string. */
+        val knownEmpty: Boolean = probes.values.all { probe -> probe is PredicateProbe.Absent }
+
+        /** Some predicate's rarest probed trigram or exact range still covers many strings. */
+        val likelyDense: Boolean = probes.values.any { probe ->
+            when (probe) {
+                is PredicateProbe.Trigram -> probe.spanSize >= DENSE_TRIGRAM_SPAN
+                is PredicateProbe.Exact -> probe.stringIds.size >= DENSE_TRIGRAM_SPAN
+                else -> false
+            }
+        }
+
+        val isEmpty: Boolean
+            get() = knownEmpty || resolve().all { rows -> rows == null || rows.isEmpty() }
+
+        /**
+         * Total posting entries selected by the plan; an upper bound of matching nodes. The count
+         * is remembered per predicate set so a repeated dense plan decides on the raw prefix
+         * without resolving its directory rows again.
+         */
+        val postingCount: Long by lazy {
+            val key = predicates.map { predicate ->
+                callSiteStringPropertyIndex(predicate.property) to
+                    MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+            }
+            postingCounts.get(key) ?: run {
+                var total = 0L
+                resolve().forEachIndexed { propertyIndex, rows ->
+                    rows?.forEach { row -> total += postingSize(propertyIndex, row) }
+                }
+                postingCounts.put(key, total)
+                total
+            }
+        }
+
+        internal fun rows(propertyIndex: Int): IntArray = resolve()[propertyIndex] ?: EMPTY_INTS
+
+        /** Number of the plan's posting ranges that hold at least one posting. */
+        internal fun nonEmptyRangeCount(): Int {
+            var count = 0
+            repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                rows(propertyIndex).forEach { row ->
+                    if (postingStart(propertyIndex, row) < propertyPostingEnds[propertyIndex].get(row)) count++
+                }
+            }
+            return count
+        }
+
+        // The k-way merge of the plan's posting ranges in encounter order keeps one cursor per
+        // range in parallel arrays and a binary min-heap of cursor indexes, so a cold request
+        // loads no cursor or heap class before its first merged row.
+        private var mergeProperty = EMPTY_INTS
+        private var mergePosition = EMPTY_INTS
+        private var mergeFirst = EMPTY_INTS
+        private var mergeLast = EMPTY_INTS
+        private var mergeValidated: Array<LongArray?> = NO_VALIDATED_ORDERS
+        private var mergeNode = EMPTY_INTS
+        private var mergeOrder = EMPTY_LONGS
+        private var mergeHeap = EMPTY_INTS
+        private var mergeSize = 0
+
+        /**
+         * Opens one cursor per non-empty posting range ([count] of them) on its validated
+         * encounter orders; false when a range fails validation and the caller must use raw
+         * storage.
+         */
+        internal fun openPostingMerge(count: Int): Boolean {
+            mergeProperty = IntArray(count)
+            mergePosition = IntArray(count)
+            mergeFirst = IntArray(count)
+            mergeLast = IntArray(count)
+            mergeValidated = arrayOfNulls(count)
+            mergeNode = IntArray(count)
+            mergeOrder = LongArray(count)
+            mergeHeap = IntArray(count)
+            var cursor = 0
+            repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                rows(propertyIndex).forEach { row ->
+                    val start = postingStart(propertyIndex, row)
+                    val end = propertyPostingEnds[propertyIndex].get(row)
+                    if (start < end) {
+                        val orders = validatedPostingOrders(propertyIndex, row, start until end, workConsumer)
+                            ?: return false
+                        mergeProperty[cursor] = propertyIndex
+                        mergeFirst[cursor] = start
+                        mergePosition[cursor] = start
+                        mergeLast[cursor] = end - 1
+                        mergeValidated[cursor] = if (orders === KNOWN_VALID_ORDERS) null else orders
+                        mergeNode[cursor] = propertyPostingNodeIds[propertyIndex].get(start)
+                        mergeOrder[cursor] = mergeOrderAt(cursor, start)
+                        mergeHeap[cursor] = cursor
+                        cursor++
+                    }
+                }
+            }
+            mergeSize = cursor
+            for (index in cursor / 2 - 1 downTo 0) mergeSiftDown(index)
+            return true
+        }
+
+        internal fun mergeHasNext(): Boolean = mergeSize > 0
+
+        /** Node id at the head of the merge: the smallest encounter order, then node id. */
+        internal fun mergeNodeId(): Int = mergeNode[mergeHeap[0]]
+
+        internal fun mergeOrder(): Long = mergeOrder[mergeHeap[0]]
+
+        /** Moves the head cursor to its next posting, or drops it when its range is exhausted. */
+        internal fun mergeAdvance() {
+            val cursor = mergeHeap[0]
+            val position = mergePosition[cursor] + 1
+            if (position <= mergeLast[cursor]) {
+                mergePosition[cursor] = position
+                mergeNode[cursor] = propertyPostingNodeIds[mergeProperty[cursor]].get(position)
+                mergeOrder[cursor] = mergeOrderAt(cursor, position)
+                mergeSiftDown(0)
+            } else {
+                mergeSize--
+                if (mergeSize > 0) {
+                    mergeHeap[0] = mergeHeap[mergeSize]
+                    mergeSiftDown(0)
+                }
+            }
+        }
+
+        private fun mergeOrderAt(cursor: Int, position: Int): Long =
+            mergeValidated[cursor]?.get(position - mergeFirst[cursor]) ?: nodeOrder(mergeNode[cursor])
+
+        private fun mergeLess(left: Int, right: Int): Boolean =
+            mergeOrder[left] < mergeOrder[right] ||
+                mergeOrder[left] == mergeOrder[right] && mergeNode[left] < mergeNode[right]
+
+        private fun mergeSiftDown(start: Int) {
+            val heap = mergeHeap
+            var parent = start
+            while (true) {
+                val left = parent * 2 + 1
+                if (left >= mergeSize) return
+                val right = left + 1
+                val child = if (right < mergeSize && mergeLess(heap[right], heap[left])) right else left
+                if (!mergeLess(heap[child], heap[parent])) return
+                val swapped = heap[parent]
+                heap[parent] = heap[child]
+                heap[child] = swapped
+                parent = child
+            }
+        }
+
+        /** True when the raw string ids of one node satisfy at least one planned predicate. */
+        internal fun matchesNode(stringIds: IntArray): Boolean {
+            val resolved = resolve()
+            repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                val rows = resolved[propertyIndex]
+                if (rows != null && rows.isNotEmpty()) {
+                    val directory = propertyStringIds[propertyIndex]
+                    val row = binarySearch(directory, stringIds[propertyIndex], 0, directory.limit() - 1)
+                    if (row >= 0 && java.util.Arrays.binarySearch(rows, row) >= 0) return true
+                }
+            }
+            return false
+        }
+
+        /**
+         * The plan's probe of [predicate] when it yields a necessary condition on raw string ids:
+         * an absent term, the sorted ids of an exact term, or the anchor trigram's posting range in
+         * [trigramPostings]; null when the plan learned nothing about it. Raw prefix probes of
+         * dense plans reject most ids through that condition before decoding any string.
+         */
+        internal fun candidateProbe(predicate: StringPropertyPredicate): PredicateProbe? =
+            when (val probe = probes[MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)]) {
+                is PredicateProbe.Absent, is PredicateProbe.Exact, is PredicateProbe.Trigram -> probe
+                else -> null
+            }
+
+        /** The persisted trigram postings, string id in the low word, sorted by trigram then id. */
+        internal fun trigramPostings(): LongBuffer = this@MappedCallSiteStringIndexView.trigramPostings
+
+        private fun resolve(): Array<IntArray?> {
+            rowsByProperty?.let { return it }
+            val resolved = arrayOfNulls<IntArray>(CALL_SITE_STRING_PROPERTY_COUNT)
+            val stringIdsByKey = HashMap<MappedPredicateKey, IntArray?>(probes.size * 2)
+            predicates.forEach { predicate ->
+                val propertyIndex = callSiteStringPropertyIndex(predicate.property)
+                val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+                val stringIds = if (stringIdsByKey.containsKey(key)) {
+                    stringIdsByKey[key]
+                } else {
+                    resolveStringIds(key, checkNotNull(probes[key]), predicate).also { stringIdsByKey[key] = it }
+                }
+                val rows = stringIds?.let { directoryRows(propertyIndex, it, workConsumer) }
+                    ?: scanDirectoryRows(propertyIndex, predicate, workConsumer)
+                resolved[propertyIndex] = resolved[propertyIndex]?.let { existing -> unionRows(existing, rows) } ?: rows
+            }
+            rowsByProperty = resolved
+            return resolved
+        }
+
+        private fun resolveStringIds(
+            key: MappedPredicateKey,
+            probe: PredicateProbe,
+            predicate: StringPropertyPredicate
+        ): IntArray? = when (probe) {
+            is PredicateProbe.Absent -> EMPTY_INTS
+            is PredicateProbe.Exact -> probe.stringIds
+            is PredicateProbe.Trigram -> verifyAnchor(probe.anchor, predicate, workConsumer).also { verified ->
+                matchCache?.put(key, verified)
+            }
+            is PredicateProbe.Scan -> null
+        }
+    }
+
+    /** Decodes every string of the anchor span and keeps the ids matching [predicate], ascending. */
+    private fun verifyAnchor(
+        anchor: IntRange,
+        predicate: StringPropertyPredicate,
+        workConsumer: GraphWorkConsumer?
+    ): IntArray {
+        val actual = MutableString()
+        val matched = IntArray(anchor.last - anchor.first + 1)
+        var size = 0
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            for (postingIndex in anchor) {
+                if ((postingIndex and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                accounting.consume()
+                val stringId = trigramPostings.get(postingIndex).toInt()
+                if (stringId !in 0 until stringCount) continue
+                stringTable.get(stringId, actual)
+                if (reusableMatches(actual, predicate)) matched[size++] = stringId
+            }
+        } finally {
+            accounting.flush()
+        }
+        return matched.copyOf(size)
+    }
+
+    /** Directory rows of [propertyIndex] whose string ids are members of the sorted [stringIds]. */
+    private fun directoryRows(propertyIndex: Int, stringIds: IntArray, workConsumer: GraphWorkConsumer?): IntArray {
+        if (stringIds.isEmpty()) return EMPTY_INTS
+        val directory = propertyStringIds[propertyIndex]
+        val directorySize = directory.limit()
+        if (directorySize == 0) return EMPTY_INTS
+        val rows = IntArray(minOf(stringIds.size, directorySize))
+        var size = 0
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            if (stringIds.size.toLong() * DIRECTORY_SCAN_RATIO >= directorySize) {
+                // Dense candidate set: one linear merge over the directory is cheaper than a search per id.
+                var candidateIndex = 0
+                var row = 0
+                while (candidateIndex < stringIds.size && row < directorySize) {
+                    if (((candidateIndex + row) and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                    accounting.consume()
+                    val candidate = stringIds[candidateIndex]
+                    val current = directory.get(row)
+                    when {
+                        candidate < current -> candidateIndex++
+                        candidate > current -> row++
+                        else -> {
+                            rows[size++] = row
+                            candidateIndex++
+                            row++
+                        }
+                    }
+                }
+            } else {
+                var row = 0
+                stringIds.forEach { stringId ->
+                    accounting.consume()
+                    val found = binarySearch(directory, stringId, row, directorySize - 1)
+                    if (found >= 0) {
+                        rows[size++] = found
+                        row = found + 1
+                    } else {
+                        row = -found - 1
+                    }
+                }
+            }
+        } finally {
+            accounting.flush()
+        }
+        return rows.copyOf(size)
+    }
+
+    /** Decodes every string used by [propertyIndex] and keeps the rows matching [predicate]. */
+    private fun scanDirectoryRows(
+        propertyIndex: Int,
+        predicate: StringPropertyPredicate,
+        workConsumer: GraphWorkConsumer?
+    ): IntArray {
+        val directory = propertyStringIds[propertyIndex]
+        val rows = IntArrayList()
+        val actual = MutableString()
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            for (row in 0 until directory.limit()) {
+                if ((row and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                accounting.consume()
+                stringTable.get(directory.get(row), actual)
+                if (reusableMatches(actual, predicate)) rows.add(row)
+            }
+        } finally {
+            accounting.flush()
+        }
+        return rows.toIntArray()
+    }
+
+    // ------------------------------------------------------------------ ordered node access
+
+    private fun postingSize(propertyIndex: Int, row: Int): Int {
+        val ends = propertyPostingEnds[propertyIndex]
+        val end = ends.get(row)
+        val start = if (row == 0) 0 else ends.get(row - 1)
+        return end - start
+    }
+
+    private fun postingStart(propertyIndex: Int, row: Int): Int =
+        if (row == 0) 0 else propertyPostingEnds[propertyIndex].get(row - 1)
+
+    /**
+     * Matching node ids in canonical encounter order, at most [limit], or null when a selected
+     * posting range fails its semantic order validation and the caller must use raw storage.
+     */
+    fun orderedMatchingNodeIds(plan: MatchPlan, limit: Int, workConsumer: GraphWorkConsumer?): IntArray? {
+        if (limit <= 0 || plan.isEmpty) return EMPTY_INTS
+        var rangeCount = 0
+        var singleProperty = 0
+        var singleRow = 0
+        var singleStart = 0
+        var singleEnd = 0
+        repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+            plan.rows(propertyIndex).forEach { row ->
+                val start = postingStart(propertyIndex, row)
+                val end = propertyPostingEnds[propertyIndex].get(row)
+                if (start < end) {
+                    rangeCount++
+                    singleProperty = propertyIndex
+                    singleRow = row
+                    singleStart = start
+                    singleEnd = end
+                }
+            }
+        }
+        if (rangeCount == 0) return EMPTY_INTS
+        if (rangeCount == 1) {
+            // One validated range is already in encounter order with distinct nodes: copy its head
+            // without a cursor or a heap, which a cold request would otherwise load and interpret.
+            validatedPostingOrders(singleProperty, singleRow, singleStart until singleEnd, workConsumer)
                 ?: return null
+            val postings = propertyPostingNodeIds[singleProperty]
+            val head = IntArray(minOf(limit, singleEnd - singleStart))
+            for (index in head.indices) head[index] = postings.get(singleStart + index)
+            consumeGraphWork(workConsumer, head.size.toLong())
+            return head
         }
-    }
-
-    fun exactMatchesCanFillLimit(
-        predicates: List<StringPropertyPredicate>,
-        exactMatchingStringIds: List<IntArray>,
-        limit: Int,
-        workConsumer: GraphWorkConsumer?
-    ): Boolean {
-        if (limit <= 0) return true
-        if (predicates.size != exactMatchingStringIds.size) return false
-        var occurrences = 0L
-        predicates.indices.forEach { predicateIndex ->
-            val propertyIndex = callSiteStringPropertyIndex(predicates[predicateIndex].property)
-            if (propertyIndex < 0) return false
-            val stringIds = propertyStringIds[propertyIndex]
-            val postingEnds = propertyPostingEnds[propertyIndex]
-            exactMatchingStringIds[predicateIndex].forEach { stringId ->
-                val row = binarySearch(stringIds, stringId, workConsumer)
-                if (row < 0) return@forEach
-                val end = postingEnds.get(row)
-                val start = if (row == 0) 0 else postingEnds.get(row - 1)
-                if (start !in 0..end || end > callSiteCount) return false
-                occurrences += end - start
-                if (occurrences >= limit) return true
-            }
-        }
-        return false
-    }
-
-    fun matchingNodeIds(
-        predicates: List<StringPropertyPredicate>,
-        exactMatchingStringIds: List<IntArray>,
-        workConsumer: GraphWorkConsumer?
-    ): Sequence<Int>? {
-        if (predicates.size != exactMatchingStringIds.size) return null
-        val ranges = mutableListOf<MappedPostingCursor>()
-        predicates.indices.forEach { predicateIndex ->
-            val propertyIndex = callSiteStringPropertyIndex(predicates[predicateIndex].property)
-            if (propertyIndex < 0) return null
-            exactMatchingStringIds[predicateIndex].forEach { stringId ->
-                val range = postingRange(propertyIndex, stringId, workConsumer) ?: return@forEach
-                val cursor = validatedPostingCursor(
-                    propertyIndex,
-                    range.row,
-                    propertyPostingNodeIds[propertyIndex],
-                    range.positions,
-                    workConsumer
-                ) ?: return null
-                ranges += cursor
-            }
-        }
-        return sequence {
-            val accounting = BufferedGraphWorkConsumer(workConsumer)
-            val pending = PriorityQueue<MappedPostingCursor>(
-                compareBy<MappedPostingCursor> { cursor -> cursor.order }
-                    .thenBy { cursor -> cursor.nodeId }
-            )
-            ranges.filterTo(pending, MappedPostingCursor::hasCurrent)
+        if (!plan.openPostingMerge(rangeCount)) return null
+        val result = IntArrayList(minOf(limit, MAX_INITIAL_RESULT_CAPACITY))
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
             var previousNodeId = -1
             var visited = 0
-            try {
-                while (pending.isNotEmpty()) {
-                    if ((visited++ and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
-                    val cursor = pending.remove()
-                    accounting.consume()
-                    val nodeId = cursor.nodeId
-                    if (nodeId != previousNodeId) {
-                        accounting.flush()
-                        yield(nodeId)
-                        previousNodeId = nodeId
-                    }
-                    if (cursor.advance()) pending.add(cursor)
+            while (plan.mergeHasNext()) {
+                if ((visited++ and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                val nodeId = plan.mergeNodeId()
+                accounting.consume()
+                if (nodeId != previousNodeId) {
+                    result.add(nodeId)
+                    previousNodeId = nodeId
+                    if (result.size >= limit) break
                 }
-            } finally {
-                accounting.flush()
+                plan.mergeAdvance()
             }
+        } finally {
+            accounting.flush()
         }
+        return result.toIntArray()
     }
 
-    private fun validatedPostingCursor(
+    /**
+     * The encounter orders of the postings in [range] when they are strictly ascending, the shared
+     * [KNOWN_VALID_ORDERS] when an earlier validation already accepted the range, or null when the
+     * range was rejected and the caller must use raw storage.
+     */
+    private fun validatedPostingOrders(
         propertyIndex: Int,
         row: Int,
-        postings: IntBuffer,
         range: IntRange,
         workConsumer: GraphWorkConsumer?
-    ): MappedPostingCursor? {
+    ): LongArray? {
+        val postings = propertyPostingNodeIds[propertyIndex]
         val key = propertyIndex.toLong() shl Int.SIZE_BITS or (row.toLong() and UINT_MASK)
         validatedPostingRanges?.get(key)?.let { valid ->
-            return if (valid) MappedPostingCursor(postings, range, nodeOrder) else null
+            return if (valid) KNOWN_VALID_ORDERS else null
         }
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         val orders = LongArray(range.last - range.first + 1)
@@ -186,60 +652,433 @@ internal class MappedCallSiteStringIndexView private constructor(
             accounting.flush()
         }
         val accepted = validatedPostingRanges?.putIfAbsent(key, valid) ?: valid
-        if (!accepted) return null
-        return MappedPostingCursor(postings, range, nodeOrder, orders)
+        return if (accepted) orders else null
     }
 
-    private fun postingRange(
-        propertyIndex: Int,
-        stringId: Int,
-        workConsumer: GraphWorkConsumer?
-    ): IndexedPostingRange? {
-        val row = binarySearch(propertyStringIds[propertyIndex], stringId, workConsumer)
-        if (row < 0) return null
-        val end = propertyPostingEnds[propertyIndex].get(row)
-        val start = if (row == 0) 0 else propertyPostingEnds[propertyIndex].get(row - 1)
-        return IndexedPostingRange(row, start until end)
-    }
-
-    private fun exactMatchingStringIds(
-        predicate: StringPropertyPredicate,
-        workConsumer: GraphWorkConsumer?
-    ): IntArray? {
-        val expected = if (predicate.transform == null) predicate.expected.lowercase() else predicate.expected
-        val spans = mutableListOf<IntRange>()
-        val seen = HashSet<Int>()
+    /** Number of distinct nodes selected by [plan]; every selected posting is charged as work. */
+    fun countMatchingNodes(plan: MatchPlan, nodeIdCapacity: Int, workConsumer: GraphWorkConsumer?): Long {
+        if (plan.isEmpty) return 0L
+        val wordCount = ((nodeIdCapacity.toLong() + BITSET_WORD_MASK) ushr BITSET_WORD_SHIFT).toInt()
+        val matched = LongArray(wordCount)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         try {
-            for (position in 0..expected.length - TRIGRAM_LENGTH) {
-                val trigram = mappedTrigramHash(expected, position)
-                if (!seen.add(trigram)) continue
-                accounting.consume()
-                val span = trigramPostingRange(trigram) ?: return IntArray(0)
-                spans += span
-            }
-            if (spans.isEmpty()) return null
-            val anchor = spans.minBy { range -> range.last - range.first }
-            val actual = MutableString()
-            val matches = IntArray(anchor.last - anchor.first + 1)
-            var size = 0
-            for (postingIndex in anchor) {
-                if ((postingIndex and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
-                accounting.consume()
-                val stringId = trigramPostings.get(postingIndex).toInt()
-                if (stringId !in 0 until stringCount) return null
-                stringTable.get(stringId, actual)
-                if (reusableContains(actual, predicate.transform, predicate.expected)) {
-                    matches[size++] = stringId
+            repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                val postings = propertyPostingNodeIds[propertyIndex]
+                plan.rows(propertyIndex).forEach { row ->
+                    val end = propertyPostingEnds[propertyIndex].get(row)
+                    for (position in postingStart(propertyIndex, row) until end) {
+                        if ((position and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                        accounting.consume()
+                        val nodeId = postings.get(position)
+                        if (nodeId !in 0 until nodeIdCapacity) continue
+                        matched[nodeId ushr BITSET_WORD_SHIFT] =
+                            matched[nodeId ushr BITSET_WORD_SHIFT] or (1L shl (nodeId and BITSET_WORD_MASK))
+                    }
                 }
             }
-            return matches.copyOf(size)
         } finally {
             accounting.flush()
         }
+        return matched.sumOf { word -> java.lang.Long.bitCount(word).toLong() }
     }
 
+    // ------------------------------------------------------------------ projections
+
+    /** Bounded duplicate-preserving projection in encounter order; null when a range is invalid. */
+    fun projectRows(
+        plan: MatchPlan,
+        projectedPropertyIndexes: IntArray,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): List<StringPropertyProjectionRow>? {
+        val nodeIds = orderedMatchingNodeIds(plan, limit, workConsumer) ?: return null
+        if (nodeIds.isEmpty()) return emptyList()
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val rows = ArrayList<StringPropertyProjectionRow>(nodeIds.size)
+        nodeIds.forEach { nodeId ->
+            rawStringIds.read(nodeId, stringIds)
+            rows += StringPropertyProjectionRow(projectValues(stringIds, projectedPropertyIndexes))
+        }
+        return rows
+    }
+
+    /**
+     * Bounded distinct projection in encounter order. A result shorter than [limit] proves the
+     * complete match set was enumerated. Returns null when a range is invalid.
+     */
+    fun distinctRows(
+        plan: MatchPlan,
+        projectedPropertyIndexes: IntArray,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): List<StringPropertyDistinctRow>? {
+        if (limit <= 0 || plan.isEmpty) return emptyList()
+        if (!plan.openPostingMerge(plan.nonEmptyRangeCount())) return null
+        val rows = ArrayList<StringPropertyDistinctRow>(minOf(limit, MAX_INITIAL_RESULT_CAPACITY))
+        val seen = HashSet<IntTupleKey>()
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            var previousNodeId = -1
+            var visited = 0
+            while (plan.mergeHasNext()) {
+                if ((visited++ and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                val nodeId = plan.mergeNodeId()
+                accounting.consume()
+                if (nodeId != previousNodeId) {
+                    previousNodeId = nodeId
+                    rawStringIds.read(nodeId, stringIds)
+                    val key = IntTupleKey(IntArray(projectedPropertyIndexes.size) { index ->
+                        projectedPropertyIndexes[index].let { propertyIndex ->
+                            if (propertyIndex < 0) -1 else stringIds[propertyIndex]
+                        }
+                    })
+                    if (seen.add(key)) {
+                        rows += StringPropertyDistinctRow(plan.mergeOrder(), projectValues(stringIds, projectedPropertyIndexes))
+                        if (rows.size >= limit) break
+                    }
+                }
+                plan.mergeAdvance()
+            }
+        } finally {
+            accounting.flush()
+        }
+        return rows
+    }
+
+    /**
+     * Returns the [selectedValues] tuples that occur in this graph's match set. Each tuple is
+     * anchored on its smallest exact property posting so absent tuples reject on the first missing
+     * dictionary string, and dictionary lookups run before any predicate evaluation because a
+     * foreign tuple almost always fails its first lookup. A tuple whose projected values already
+     * satisfy a predicate needs no per-node check; predicates on non-projected properties are
+     * verified per candidate node.
+     */
+    fun selectedTupleHits(
+        predicates: List<StringPropertyPredicate>,
+        projectedPropertyIndexes: IntArray,
+        selectedValues: Collection<List<String?>>,
+        workConsumer: GraphWorkConsumer?
+    ): List<StringPropertyDistinctRow> {
+        if (selectedValues.isEmpty()) return emptyList()
+        val setup = if (selectedValues is StringPropertyTupleSet) {
+            (selectedValues.scratch(TUPLE_LOOKUP_SETUP_SLOT) as? TupleLookupSetup)
+                ?.takeIf { shared -> shared.matches(predicates, projectedPropertyIndexes) }
+                ?: TupleLookupSetup(predicates, projectedPropertyIndexes).also { created ->
+                    selectedValues.scratch(TUPLE_LOOKUP_SETUP_SLOT, created)
+                }
+        } else {
+            TupleLookupSetup(predicates, projectedPropertyIndexes)
+        }
+        val lookup = tupleLookup(setup, projectedPropertyIndexes, workConsumer) ?: return emptyList()
+        if (lookup.lookupOrder.isEmpty()) return lookup.nullTupleHits(selectedValues)
+        val hits = ArrayList<StringPropertyDistinctRow>()
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        var visited = 0
+        try {
+            if (selectedValues is StringPropertyTupleSet) {
+                // Tuples sharing an absent leading value are rejected together by one lookup, and
+                // the leading values are visited in dictionary order so each directory search
+                // gallops from the previous position instead of bisecting the whole directory.
+                val leadingColumn = lookup.lookupOrder[0]
+                val grouped = selectedValues.groupedBy(leadingColumn)
+                val leadingValues = selectedValues.sortedValues(leadingColumn)
+                setup.leadingValues(leadingColumn, leadingValues)
+                for (index in leadingValues.indices) {
+                    if ((index and TUPLE_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                    val value = leadingValues[index]
+                    if (!lookup.leadingValuePresent(value, index, accounting)) continue
+                    for (values in grouped[value] ?: continue) {
+                        val order = lookup.hit(values, accounting)
+                        if (order >= 0L) hits += StringPropertyDistinctRow(order, values)
+                    }
+                }
+            } else {
+                for (values in selectedValues) {
+                    if ((visited++ and TUPLE_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                    val order = lookup.hit(values, accounting)
+                    if (order >= 0L) hits += StringPropertyDistinctRow(order, values)
+                }
+            }
+        } finally {
+            accounting.flush()
+        }
+        return hits
+    }
+
+    /** Per-request state of [selectedTupleHits]: predicate split, lookup order, and dictionary caches. */
+    private inner class TupleLookup(
+        private val setup: TupleLookupSetup,
+        private val projectedPropertyIndexes: IntArray,
+        val lookupOrder: IntArray,
+        private val projectedPredicates: List<StringPropertyPredicate>,
+        private val residualPlan: MatchPlan?,
+        private val workConsumer: GraphWorkConsumer?
+    ) {
+        private val ids = IntArray(projectedPropertyIndexes.size)
+        private val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        private val rowCaches = arrayOfNulls<HashMap<String, Int>>(CALL_SITE_STRING_PROPERTY_COUNT)
+        private val decoded = MutableString()
+
+        /**
+         * The directory search a graph without load-time tables falls back to, created on first
+         * use so a graph with tables never loads its class.
+         */
+        private var directorySearch: TupleDirectorySearch? = null
+
+        private fun directorySearch(): TupleDirectorySearch =
+            directorySearch ?: TupleDirectorySearch(setup).also { directorySearch = it }
+
+        /**
+         * Directory row of [value] in [propertyIndex], or -1 when no CallSite carries it there.
+         * Every string used by a CallSite property has all of its lowercase trigrams indexed, so
+         * a value with an absent trigram is rejected from a cache-resident bit set before any
+         * string is decoded; the remaining values binary search the property's own sorted
+         * directory, which is far smaller than the whole dictionary.
+         */
+        private fun directoryRow(propertyIndex: Int, value: String, accounting: BufferedGraphWorkConsumer): Int {
+            val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
+            rowCache[value]?.let { return it }
+            accounting.consume()
+            val hashes = directoryHashes
+            val row = if (hashes != null) {
+                hashes.row(propertyIndex, value, stringTable, decoded)
+            } else {
+                directorySearch().row(propertyIndex, value, accounting)
+            }
+            rowCache[value] = row
+            return row
+        }
+
+        /**
+         * Directory row of the leading lookup property for [value], the [index]th sorted leading
+         * value, searched from the row reached by the previous value. Misses move the cursor to the
+         * insertion point.
+         */
+        private fun leadingDirectoryRow(value: String, index: Int, accounting: BufferedGraphWorkConsumer): Int {
+            val propertyIndex = projectedPropertyIndexes[lookupOrder[0]]
+            accounting.consume()
+            val hashes = directoryHashes
+            val found = if (hashes != null) {
+                hashes.row(propertyIndex, value, stringTable, decoded)
+            } else {
+                directorySearch().leadingRow(propertyIndex, value, index, accounting)
+            }
+            if (found < 0) return -1
+            // Each sorted leading value is visited once per graph, so only a hit is worth caching:
+            // the tuple lookups that follow it read the row back through [directoryRow].
+            val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
+            rowCache[value] = found
+            return found
+        }
+
+        /** True when [value], the [index]th sorted leading value, is used by the leading lookup property. */
+        fun leadingValuePresent(value: String, index: Int, accounting: BufferedGraphWorkConsumer): Boolean =
+            leadingDirectoryRow(value, index, accounting) >= 0
+
+        /** Encounter order of the first node carrying [values], or -1 when the graph has none. */
+        @Suppress("ReturnCount")
+        fun hit(values: List<String?>, accounting: BufferedGraphWorkConsumer): Long {
+            if (values.size != projectedPropertyIndexes.size) return -1L
+            for (index in projectedPropertyIndexes.indices) {
+                if (projectedPropertyIndexes[index] < 0 && values[index] != null) return -1L
+            }
+            var anchorProperty = -1
+            var anchorRow = -1
+            var anchorSize = Int.MAX_VALUE
+            for (index in lookupOrder) {
+                val propertyIndex = projectedPropertyIndexes[index]
+                val value = values[index] ?: return -1L
+                val row = directoryRow(propertyIndex, value, accounting)
+                if (row < 0) return -1L
+                ids[index] = propertyStringIds[propertyIndex].get(row)
+                val size = postingSize(propertyIndex, row)
+                if (size < anchorSize) {
+                    anchorSize = size
+                    anchorProperty = propertyIndex
+                    anchorRow = row
+                }
+            }
+            val projectedMatch = projectedPredicates.any { predicate ->
+                val valueIndex = projectedPropertyIndexes.indexOf(callSiteStringPropertyIndex(predicate.property))
+                val value = values[valueIndex]
+                value != null && stringMatches(value, predicate.transform, predicate.mode, predicate.expected)
+            }
+            if (!projectedMatch && residualPlan == null) return -1L
+            return firstNodeOrder(anchorProperty, anchorRow, projectedMatch, accounting)
+        }
+
+        private fun firstNodeOrder(
+            anchorProperty: Int,
+            anchorRow: Int,
+            projectedMatch: Boolean,
+            accounting: BufferedGraphWorkConsumer
+        ): Long {
+            val end = propertyPostingEnds[anchorProperty].get(anchorRow)
+            val postings = propertyPostingNodeIds[anchorProperty]
+            for (position in postingStart(anchorProperty, anchorRow) until end) {
+                if ((position and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                accounting.consume()
+                val nodeId = postings.get(position)
+                rawStringIds.read(nodeId, stringIds)
+                if (!tupleEquals(stringIds)) continue
+                if (!projectedMatch && !checkNotNull(residualPlan).matchesNode(stringIds)) continue
+                return nodeOrder(nodeId)
+            }
+            return -1L
+        }
+
+        private fun tupleEquals(stringIds: IntArray): Boolean {
+            for (index in projectedPropertyIndexes.indices) {
+                val propertyIndex = projectedPropertyIndexes[index]
+                if (propertyIndex >= 0 && stringIds[propertyIndex] != ids[index]) return false
+            }
+            return true
+        }
+
+        /**
+         * A projection of only null-valued columns hits when any node matches, mirroring the
+         * retained index: the tuple of nulls is reported once with the first matching node's order.
+         */
+        fun nullTupleHits(selectedValues: Collection<List<String?>>): List<StringPropertyDistinctRow> {
+            val nullTuple = selectedValues.firstOrNull { values ->
+                values.size == projectedPropertyIndexes.size && values.all { value -> value == null }
+            } ?: return emptyList()
+            val plan = residualPlan ?: return emptyList()
+            val nodeIds = orderedMatchingNodeIds(plan, 1, workConsumer) ?: return emptyList()
+            if (nodeIds.isEmpty()) return emptyList()
+            return listOf(StringPropertyDistinctRow(nodeOrder(nodeIds[0]), nullTuple))
+        }
+    }
+
+    /**
+     * The directory search of a graph without load-time tables: every string used by a CallSite
+     * property has all of its lowercase trigrams indexed, so a value with an absent trigram is
+     * rejected from the cache-resident bit set before any string is decoded, and the remaining
+     * values binary search the property's own sorted directory. The sorted leading values gallop
+     * from the row the previous value reached.
+     */
+    private inner class TupleDirectorySearch(private val setup: TupleLookupSetup) {
+        private val decoded = MutableString()
+
+        /** Directory position reached by the ascending leading-value walk of [selectedTupleHits]. */
+        private var leadingCursor = 0
+
+        /** Directory row of [value] in [propertyIndex], or -1 when no CallSite carries it there. */
+        fun row(propertyIndex: Int, value: String, accounting: BufferedGraphWorkConsumer): Int =
+            if (mayContain(value)) maxOf(-1, searchDirectory(propertyIndex, value, accounting, 0)) else -1
+
+        /**
+         * Directory row of the [index]th sorted leading value, searched from the row reached by the
+         * previous value; a miss moves the cursor to the insertion point.
+         */
+        fun leadingRow(propertyIndex: Int, value: String, index: Int, accounting: BufferedGraphWorkConsumer): Int {
+            if (!mayContainLeading(index)) return -1
+            val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
+            leadingCursor = if (found < 0) -(found + 1) else found
+            return found
+        }
+
+        /**
+         * Presence check of the [index]th leading value through its request-shared trigram hashes,
+         * starting from the trigram that proved the previous graph absent.
+         */
+        private fun mayContainLeading(index: Int): Boolean {
+            val directory = trigramDirectory ?: return true
+            val hashes = setup.leadingTrigramHashes(index)
+            if (hashes.isEmpty()) return true
+            val start = setup.leadingAbsentHint(index)
+            for (offset in hashes.indices) {
+                val position = (start + offset) % hashes.size
+                if (!directory.contains(hashes[position])) {
+                    setup.rememberLeadingAbsent(index, position)
+                    return false
+                }
+            }
+            return true
+        }
+
+        private fun mayContain(value: String): Boolean {
+            val directory = trigramDirectory ?: return true
+            if (value.length < TRIGRAM_LENGTH) return true
+            val lowercase = value.lowercase()
+            for (position in lowercase.length - TRIGRAM_LENGTH downTo 0) {
+                if (!directory.contains(mappedTrigramHash(lowercase, position))) return false
+            }
+            return true
+        }
+
+        /**
+         * Row of [value] in the property directory, or `-(insertion point + 1)` when absent. The
+         * search gallops from [fromRow] first, so an ascending sequence of values costs a number of
+         * decodes proportional to the log of the distance between hits rather than of the directory.
+         */
+        private fun searchDirectory(
+            propertyIndex: Int,
+            value: String,
+            accounting: BufferedGraphWorkConsumer,
+            fromRow: Int
+        ): Int {
+            val directory = propertyStringIds[propertyIndex]
+            val size = directory.limit()
+            var low = fromRow.coerceIn(0, size)
+            var high = size - 1
+            if (fromRow > 0) {
+                var step = 1
+                var probe = low
+                while (probe < size) {
+                    accounting.consume()
+                    stringTable.get(directory.get(probe), decoded)
+                    val comparison = decoded.compareTo(value)
+                    if (comparison == 0) return probe
+                    if (comparison > 0) {
+                        high = probe - 1
+                        break
+                    }
+                    low = probe + 1
+                    probe += step
+                    step = step shl 1
+                }
+                if (probe >= size) high = size - 1
+            }
+            while (low <= high) {
+                accounting.consume()
+                val middle = (low + high).ushr(1)
+                stringTable.get(directory.get(middle), decoded)
+                val comparison = decoded.compareTo(value)
+                if (comparison < 0) {
+                    low = middle + 1
+                } else if (comparison > 0) {
+                    high = middle - 1
+                } else {
+                    return middle
+                }
+            }
+            return -(low + 1)
+        }
+    }
+
+    private fun tupleLookup(
+        setup: TupleLookupSetup,
+        projectedPropertyIndexes: IntArray,
+        workConsumer: GraphWorkConsumer?
+    ): TupleLookup? {
+        val residualPlan = if (setup.residualPredicates.isEmpty()) {
+            null
+        } else {
+            matchPlan(setup.residualPredicates, workConsumer) ?: return null
+        }
+        return TupleLookup(setup, projectedPropertyIndexes, setup.lookupOrder, setup.projectedPredicates, residualPlan, workConsumer)
+    }
+
+    private fun projectValues(stringIds: IntArray, projectedPropertyIndexes: IntArray): List<String?> =
+        List(projectedPropertyIndexes.size) { index ->
+            val propertyIndex = projectedPropertyIndexes[index]
+            if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex])
+        }
+
     private fun trigramPostingRange(trigram: Int): IntRange? {
+        trigramDirectory?.let { directory -> return directory.range(trigram) }
         var low = 0
         var high = trigramPostings.limit()
         while (low < high) {
@@ -268,7 +1107,9 @@ internal class MappedCallSiteStringIndexView private constructor(
             stringTable: StringTable,
             nodeIdCapacity: Int,
             nodeOrder: (Int) -> Long,
-            workConsumer: GraphWorkConsumer?
+            rawStringIds: CallSiteRawStringIds,
+            workConsumer: GraphWorkConsumer?,
+            directoryHashes: CallSiteDirectoryHashes? = null
         ): MappedCallSiteStringIndexView? {
             if (!Files.isRegularFile(path) ||
                 expectedContentIdentity.size != CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES
@@ -293,18 +1134,13 @@ internal class MappedCallSiteStringIndexView private constructor(
                     require(uniqueCounts.all { count -> count in 0..stringCount })
                     val postingCount = header.int
                     require(postingCount > 0)
-                    require(header.long > 0L)
+                    val retainedBytes = header.long
+                    require(retainedBytes > 0L)
 
                     var offset = CALL_SITE_STRING_INDEX_HEADER_BYTES.toLong()
-                    val propertyStrings = Array(CALL_SITE_STRING_PROPERTY_COUNT) {
-                        IntBuffer.allocate(0).asReadOnlyBuffer()
-                    }
-                    val propertyEnds = Array(CALL_SITE_STRING_PROPERTY_COUNT) {
-                        IntBuffer.allocate(0).asReadOnlyBuffer()
-                    }
-                    val propertyPostings = Array(CALL_SITE_STRING_PROPERTY_COUNT) {
-                        IntBuffer.allocate(0).asReadOnlyBuffer()
-                    }
+                    val propertyStrings = Array(CALL_SITE_STRING_PROPERTY_COUNT) { EMPTY_INT_BUFFER }
+                    val propertyEnds = Array(CALL_SITE_STRING_PROPERTY_COUNT) { EMPTY_INT_BUFFER }
+                    val propertyPostings = Array(CALL_SITE_STRING_PROPERTY_COUNT) { EMPTY_INT_BUFFER }
                     repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
                         val count = uniqueCounts[propertyIndex]
                         val directoryBytes = count.toLong() * Int.SIZE_BYTES
@@ -315,28 +1151,37 @@ internal class MappedCallSiteStringIndexView private constructor(
                         propertyPostings[propertyIndex] = mappedInts(mapped, offset, callSiteCount)
                         offset += callSiteCount.toLong() * Int.SIZE_BYTES
                     }
-                    val signaturesOffset = offset
+                    val signatures = mappedLongs(mapped, offset, stringCount)
                     offset += stringCount.toLong() * Long.SIZE_BYTES
                     val expectedBytes = offset + postingCount.toLong() * Long.SIZE_BYTES + Long.SIZE_BYTES
                     require(expectedBytes == fileBytes)
                     val postings = mappedLongs(mapped, offset, postingCount)
+                    val expectedChecksum = mapped.getLong(Math.toIntExact(offset + postingCount.toLong() * Long.SIZE_BYTES))
+                    val scratch = ViewLoadScratch.borrow()
+                    val directoryTrigrams = scratch.directoryTrigrams
+                    val directoryStarts = scratch.directoryStarts
                     require(
                         validatePersistentIndex(
-                            mapped,
+                            PersistentIndexViewValidator(workConsumer, scratch),
+                            directoryTrigrams,
+                            directoryStarts,
                             propertyStrings,
                             propertyEnds,
                             propertyPostings,
-                            signaturesOffset,
-                            offset,
+                            signatures,
+                            postings,
                             uniqueCounts,
                             stringCount,
                             callSiteCount,
                             nodeIdCapacity,
                             postingCount,
+                            retainedBytes,
                             expectedContentIdentity,
-                            workConsumer
+                            expectedChecksum
                         )
                     )
+                    val directory = TrigramDirectory.create(directoryTrigrams, directoryStarts, postingCount)
+                    ViewLoadScratch.release(scratch)
                     MappedCallSiteStringIndexView(
                         propertyStrings,
                         propertyEnds,
@@ -345,7 +1190,10 @@ internal class MappedCallSiteStringIndexView private constructor(
                         callSiteCount,
                         stringCount,
                         stringTable,
-                        nodeOrder
+                        nodeOrder,
+                        rawStringIds,
+                        directory,
+                        directoryHashes?.takeIf { hashes -> hashes.matches(identity, stringCount, uniqueCounts) }
                     )
                 }
             } catch (error: Exception) {
@@ -360,21 +1208,23 @@ internal class MappedCallSiteStringIndexView private constructor(
 
         @Suppress("LongParameterList")
         private fun validatePersistentIndex(
-            mapped: ByteBuffer,
+            validator: PersistentIndexViewValidator,
+            directoryTrigrams: IntArrayList,
+            directoryStarts: IntArrayList,
             propertyStrings: Array<IntBuffer>,
             propertyEnds: Array<IntBuffer>,
             propertyPostings: Array<IntBuffer>,
-            signaturesOffset: Long,
-            postingsOffset: Long,
+            signatures: LongBuffer,
+            postings: LongBuffer,
             uniqueCounts: IntArray,
             stringCount: Int,
             callSiteCount: Int,
             nodeIdCapacity: Int,
             postingCount: Int,
+            retainedBytes: Long,
             contentIdentity: ByteArray,
-            workConsumer: GraphWorkConsumer?
+            expectedChecksum: Long
         ): Boolean {
-            val validator = PersistentIndexViewValidator(mapped, workConsumer)
             validator.updateInt(CALL_SITE_STRING_INDEX_MAGIC)
             validator.updateInt(CALL_SITE_STRING_INDEX_VERSION)
             validator.updateInt(stringCount)
@@ -382,36 +1232,53 @@ internal class MappedCallSiteStringIndexView private constructor(
             validator.updateBytes(contentIdentity)
             uniqueCounts.forEach(validator::updateInt)
             validator.updateInt(postingCount)
-            validator.updateLong(mapped.getLong(CALL_SITE_STRING_INDEX_HEADER_BYTES - Long.SIZE_BYTES))
+            validator.updateLong(retainedBytes)
 
             repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
                 var previousStringId = -1
-                validator.updateInts(propertyStrings[propertyIndex]) { stringId ->
-                    require(stringId in 0 until stringCount && stringId > previousStringId)
-                    previousStringId = stringId
-                }
+                if (!validator.updateInts(propertyStrings[propertyIndex]) { stringId ->
+                        val valid = stringId in 0 until stringCount && stringId > previousStringId
+                        previousStringId = stringId
+                        valid
+                    }
+                ) return false
                 var previousEnd = 0
-                validator.updateInts(propertyEnds[propertyIndex]) { end ->
-                    require(end > previousEnd && end <= callSiteCount)
-                    previousEnd = end
-                }
-                require(previousEnd == callSiteCount)
-                validator.updateInts(propertyPostings[propertyIndex]) { nodeId ->
-                    require(nodeId in 0 until nodeIdCapacity)
-                }
+                if (!validator.updateInts(propertyEnds[propertyIndex]) { end ->
+                        val valid = end > previousEnd && end <= callSiteCount
+                        previousEnd = end
+                        valid
+                    }
+                ) return false
+                if (previousEnd != callSiteCount) return false
+                if (!validator.updateInts(propertyPostings[propertyIndex]) { nodeId ->
+                        nodeId in 0 until nodeIdCapacity
+                    }
+                ) return false
             }
-            validator.updateLongs(signaturesOffset, stringCount)
+            if (!validator.updateLongs(signatures) { true }) return false
             var previousPosting = Long.MIN_VALUE
-            validator.updateLongs(postingsOffset, postingCount) { posting ->
-                require(posting >= previousPosting && posting.toInt() in 0 until stringCount)
-                previousPosting = posting
-            }
-            val expectedChecksum = mapped.getLong(Math.toIntExact(postingsOffset + postingCount.toLong() * Long.SIZE_BYTES))
+            var previousTrigram = 0
+            var postingIndex = 0
+            if (!validator.updateLongs(postings) { posting ->
+                    val valid = posting >= previousPosting && posting.toInt() in 0 until stringCount
+                    val trigram = (posting ushr Int.SIZE_BITS).toInt()
+                    if (postingIndex == 0 || trigram != previousTrigram) {
+                        directoryTrigrams.add(trigram)
+                        directoryStarts.add(postingIndex)
+                        previousTrigram = trigram
+                    }
+                    postingIndex++
+                    previousPosting = posting
+                    valid
+                }
+            ) return false
             return validator.value == expectedChecksum
         }
 
+        private val EMPTY_INT_BUFFER: IntBuffer = IntBuffer.allocate(0).asReadOnlyBuffer()
+
         private fun mappedInts(mapped: ByteBuffer, offset: Long, count: Int): IntBuffer {
-            if (count == 0) return IntBuffer.allocate(0).asReadOnlyBuffer()
+            if (count == 0) return EMPTY_INT_BUFFER
             val bytes = Math.multiplyExact(count, Int.SIZE_BYTES)
             return mappedSlice(mapped, offset, bytes).asIntBuffer().asReadOnlyBuffer()
         }
@@ -433,27 +1300,35 @@ internal class MappedCallSiteStringIndexView private constructor(
     }
 }
 
+/**
+ * Streams the persisted little-endian value checksum through primitive chunks. Values are pulled
+ * from the mapped big-endian regions with one bulk copy, validated as a plain array loop, and
+ * re-encoded through a little-endian view of the same scratch with a second bulk copy, so the
+ * per-value cost stays at a few nanoseconds during a cold multi-graph request.
+ */
 private class PersistentIndexViewValidator(
-    private val mapped: ByteBuffer,
-    private val workConsumer: GraphWorkConsumer?
+    val workConsumer: GraphWorkConsumer?,
+    loadScratch: ViewLoadScratch
 ) {
-    private val checksum = CRC32()
-    private val scratch = ByteBuffer.allocate(CHECKSUM_CHUNK_BYTES).order(ByteOrder.BIG_ENDIAN)
+    val checksum = CRC32()
+    val intChunk = loadScratch.intChunk
+    val longChunk = loadScratch.longChunk
+    val scratch = loadScratch.bytes
+    val scratchInts: IntBuffer = ByteBuffer.wrap(scratch).order(ByteOrder.LITTLE_ENDIAN).asIntBuffer()
+    val scratchLongs: LongBuffer = ByteBuffer.wrap(scratch).order(ByteOrder.LITTLE_ENDIAN).asLongBuffer()
 
     val value: Long
         get() = checksum.value
 
     fun updateInt(value: Int) {
-        scratch.clear()
-        scratch.putInt(Integer.reverseBytes(value))
-        checksum.update(scratch.array(), 0, Int.SIZE_BYTES)
+        scratchInts.put(0, value)
+        checksum.update(scratch, 0, Int.SIZE_BYTES)
         consumeGraphWork(workConsumer, 1L)
     }
 
     fun updateLong(value: Long) {
-        scratch.clear()
-        scratch.putLong(java.lang.Long.reverseBytes(value))
-        checksum.update(scratch.array(), 0, Long.SIZE_BYTES)
+        scratchLongs.put(0, value)
+        checksum.update(scratch, 0, Long.SIZE_BYTES)
         consumeGraphWork(workConsumer, 1L)
     }
 
@@ -462,88 +1337,380 @@ private class PersistentIndexViewValidator(
         consumeGraphWork(workConsumer, values.size.toLong())
     }
 
-    fun updateInts(values: IntBuffer, validate: (Int) -> Unit = {}) {
+    inline fun updateInts(values: IntBuffer, validate: (Int) -> Boolean): Boolean {
         var index = 0
-        while (index < values.limit()) {
+        val limit = values.limit()
+        while (index < limit) {
             checkViewInterrupted()
-            scratch.clear()
-            val start = index
-            val end = minOf(values.limit(), index + scratch.capacity() / Int.SIZE_BYTES)
-            while (index < end) {
-                val value = values.get(index++)
-                validate(value)
-                scratch.putInt(Integer.reverseBytes(value))
+            val count = minOf(CHECKSUM_CHUNK_VALUES, limit - index)
+            values.get(index, intChunk, 0, count)
+            for (chunkIndex in 0 until count) {
+                if (!validate(intChunk[chunkIndex])) return false
             }
-            checksum.update(scratch.array(), 0, scratch.position())
-            consumeGraphWork(workConsumer, (end - start).toLong())
+            scratchInts.clear()
+            scratchInts.put(intChunk, 0, count)
+            checksum.update(scratch, 0, count * Int.SIZE_BYTES)
+            consumeGraphWork(workConsumer, count.toLong())
+            index += count
         }
+        return true
     }
 
-    fun updateInts(offset: Long, count: Int) {
-        updateInts(mappedSlice(offset, count, Int.SIZE_BYTES).asIntBuffer())
-    }
-
-    fun updateLongs(offset: Long, count: Int, validate: (Long) -> Unit = {}) {
-        val values = mappedSlice(offset, count, Long.SIZE_BYTES).asLongBuffer()
+    inline fun updateLongs(values: LongBuffer, validate: (Long) -> Boolean): Boolean {
         var index = 0
-        while (index < values.limit()) {
+        val limit = values.limit()
+        while (index < limit) {
             checkViewInterrupted()
-            scratch.clear()
-            val start = index
-            val end = minOf(values.limit(), index + scratch.capacity() / Long.SIZE_BYTES)
-            while (index < end) {
-                val value = values.get(index++)
-                validate(value)
-                scratch.putLong(java.lang.Long.reverseBytes(value))
+            val count = minOf(CHECKSUM_CHUNK_VALUES, limit - index)
+            values.get(index, longChunk, 0, count)
+            for (chunkIndex in 0 until count) {
+                if (!validate(longChunk[chunkIndex])) return false
             }
-            checksum.update(scratch.array(), 0, scratch.position())
-            consumeGraphWork(workConsumer, (end - start).toLong())
+            scratchLongs.clear()
+            scratchLongs.put(longChunk, 0, count)
+            checksum.update(scratch, 0, count * Long.SIZE_BYTES)
+            consumeGraphWork(workConsumer, count.toLong())
+            index += count
         }
-    }
-
-    private fun mappedSlice(offset: Long, count: Int, width: Int): ByteBuffer {
-        val start = Math.toIntExact(offset)
-        val bytes = Math.multiplyExact(count, width)
-        val end = Math.addExact(start, bytes)
-        require(end <= mapped.limit())
-        return mapped.duplicate().order(ByteOrder.BIG_ENDIAN).apply {
-            position(start)
-            limit(end)
-        }.slice().order(ByteOrder.BIG_ENDIAN)
+        return true
     }
 }
 
-private fun StringPropertyPredicate.canUseMappedCallSiteIndexView(): Boolean =
-    mode == StringMatchMode.CONTAINS && expected.length >= TRIGRAM_LENGTH &&
+/**
+ * Transient buffers of one sidecar load: the checksum chunks and the growable directory lists.
+ * A cold multi-graph request loads every sidecar back to back on one thread, so the buffers are
+ * pooled softly instead of allocated per graph, which keeps the young generation quiet while
+ * the following queries run.
+ */
+private class ViewLoadScratch {
+    val intChunk = IntArray(CHECKSUM_CHUNK_VALUES)
+    val longChunk = LongArray(CHECKSUM_CHUNK_VALUES)
+    val bytes = ByteArray(CHECKSUM_CHUNK_VALUES * Long.SIZE_BYTES)
+    val directoryTrigrams = IntArrayList(INITIAL_DIRECTORY_CAPACITY)
+    val directoryStarts = IntArrayList(INITIAL_DIRECTORY_CAPACITY)
+
+    companion object {
+        private val pool = ArrayDeque<java.lang.ref.WeakReference<ViewLoadScratch>>()
+
+        fun borrow(): ViewLoadScratch {
+            synchronized(pool) {
+                while (pool.isNotEmpty()) {
+                    pool.removeLast().get()?.let { return it }
+                }
+            }
+            return ViewLoadScratch()
+        }
+
+        fun release(scratch: ViewLoadScratch) {
+            scratch.directoryTrigrams.clear()
+            scratch.directoryStarts.clear()
+            synchronized(pool) {
+                if (pool.size < MAX_POOLED_LOAD_SCRATCH) pool.addLast(java.lang.ref.WeakReference(scratch))
+            }
+        }
+    }
+}
+
+/**
+ * The distinct lowercase trigram hashes of one predicate term in probe order, computed once per
+ * term and shared by every graph view of a request. [absentHint] remembers the trigram that last
+ * proved a graph absent so the next graph's presence pass usually stops at its first check, and
+ * [rarestHint] the trigram that last anchored a present graph so the next graph's range walk
+ * usually finds a small enough span at its first lookup instead of ranging every trigram.
+ */
+internal class TrigramTerm private constructor(val trigrams: IntArray) {
+    @Volatile
+    var absentHint: Int = 0
+
+    @Volatile
+    var rarestHint: Int = 0
+
+    companion object {
+        private val terms = java.util.concurrent.ConcurrentHashMap<MappedPredicateKey, TrigramTerm>()
+
+        /** Trigrams of [predicate], or null when the predicate cannot use trigram postings. */
+        fun of(predicate: StringPropertyPredicate): TrigramTerm? {
+            if (!predicate.canUseTrigramPostings()) return null
+            val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+            terms[key]?.let { return it }
+            val expected = predicate.expected.lowercase()
+            val mode = predicate.mode
+            val positions = if (mode == StringMatchMode.STARTS_WITH) {
+                0..0
+            } else if (mode == StringMatchMode.ENDS_WITH) {
+                expected.length - TRIGRAM_LENGTH..expected.length - TRIGRAM_LENGTH
+            } else {
+                0..expected.length - TRIGRAM_LENGTH
+            }
+            val distinct = LinkedHashSet<Int>()
+            for (position in positions) distinct += mappedTrigramHash(expected, position)
+            val term = TrigramTerm(distinct.toIntArray())
+            if (terms.size >= MAX_CACHED_TRIGRAM_TERMS) terms.clear()
+            return terms.putIfAbsent(key, term) ?: term
+        }
+    }
+}
+
+/**
+ * The graph-independent part of a tuple lookup: the property order in which tuples are looked up
+ * and the split of the predicates into those the projected values answer and those a candidate
+ * node must be checked against. Computed once per request and shared by every graph view through
+ * the selected tuples' scratch slot; [matches] tells a view whether the stored setup is its own.
+ */
+internal class TupleLookupSetup(
+    private val predicates: List<StringPropertyPredicate>,
+    private val projectedPropertyIndexes: IntArray
+) {
+    /** True for the same predicate list instance and projection this setup was derived from. */
+    fun matches(predicates: List<StringPropertyPredicate>, projectedPropertyIndexes: IntArray): Boolean =
+        this.predicates === predicates && this.projectedPropertyIndexes.contentEquals(projectedPropertyIndexes)
+
+    // Caller classes are the most graph-specific tuple component, so an absent caller class
+    // rejects a foreign tuple after a single dictionary lookup shared by all of its call sites.
+    val lookupOrder: IntArray = lookupOrder(projectedPropertyIndexes)
+    val projectedPredicates = ArrayList<StringPropertyPredicate>()
+    val residualPredicates = ArrayList<StringPropertyPredicate>()
+
+    private var leadingColumn = -1
+    private var leadingValues: List<String> = emptyList()
+    private var leadingHashes: Array<IntArray?> = NO_LEADING_HASHES
+    private var leadingAbsentHints: IntArray = EMPTY_INTS
+
+    /**
+     * Registers the sorted leading values of [column] that every graph of the request visits.
+     * Their trigram hashes are computed lazily, per value, by the first graph that has to search
+     * a directory for the value; graphs with load-time tables never need them.
+     */
+    fun leadingValues(column: Int, values: List<String>) {
+        if (column == leadingColumn && values === leadingValues) return
+        leadingColumn = column
+        leadingValues = values
+        leadingHashes = arrayOfNulls(values.size)
+        leadingAbsentHints = IntArray(values.size)
+    }
+
+    /** Distinct lowercase trigram hashes of the [index]th leading value, in probe order. */
+    fun leadingTrigramHashes(index: Int): IntArray =
+        leadingHashes[index] ?: distinctTrigramHashes(leadingValues[index]).also { leadingHashes[index] = it }
+
+    /** The trigram that last proved the [index]th leading value absent, so the next graph starts there. */
+    fun leadingAbsentHint(index: Int): Int = leadingAbsentHints[index]
+
+    fun rememberLeadingAbsent(index: Int, position: Int) {
+        leadingAbsentHints[index] = position
+    }
+
+    init {
+        predicates.forEach { predicate ->
+            val propertyIndex = callSiteStringPropertyIndex(predicate.property)
+            if (propertyIndex >= 0 && projectedPropertyIndexes.contains(propertyIndex)) {
+                projectedPredicates += predicate
+            } else {
+                residualPredicates += predicate
+            }
+        }
+    }
+}
+
+/**
+ * Projected column indexes in [TUPLE_LOOKUP_PREFERENCE] order, skipping columns no CallSite
+ * property serves; a plain loop so a first execution loads no comparator or sort classes.
+ */
+private fun lookupOrder(projectedPropertyIndexes: IntArray): IntArray {
+    val order = IntArray(projectedPropertyIndexes.size)
+    var size = 0
+    for (preferred in TUPLE_LOOKUP_PREFERENCE) {
+        for (index in projectedPropertyIndexes.indices) {
+            if (projectedPropertyIndexes[index] == preferred) order[size++] = index
+        }
+    }
+    return order.copyOf(size)
+}
+
+/** Distinct lowercase trigram hashes of [value] in probe order; empty for values shorter than a trigram. */
+private fun distinctTrigramHashes(value: String): IntArray {
+    if (value.length < TRIGRAM_LENGTH) return EMPTY_INTS
+    val lowercase = value.lowercase()
+    val distinct = LinkedHashSet<Int>()
+    for (position in lowercase.length - TRIGRAM_LENGTH downTo 0) distinct += mappedTrigramHash(lowercase, position)
+    return distinct.toIntArray()
+}
+
+/**
+ * Heap directory of the distinct trigrams in the persisted postings: the posting index where each
+ * trigram's run begins in ascending hash order, a presence bit set over the ASCII hash range, the
+ * number of present hashes before each word of that bit set, and the few hashes above the range.
+ * A probe resolves a trigram with two array reads and a population count: the bit proves presence
+ * and its rank among the set bits is the trigram's position, so the directory keeps no sorted
+ * copy of the hashes below the range. It is collected for free by the single validation pass and
+ * replaces two binary searches over the mapped postings per probed trigram, so a cold multi-graph
+ * request never faults posting pages in only to learn that a term is absent. The arrays are
+ * charged to the shared index budget; a graph that cannot reserve them searches the mapped
+ * postings directly.
+ */
+private class TrigramDirectory private constructor(
+    private val starts: IntArray,
+    private val asciiBits: LongArray,
+    private val asciiRanks: IntArray,
+    private val tailTrigrams: IntArray,
+    private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
+) : Closeable {
+    @Volatile
+    private var closed = false
+
+    private val asciiCount = starts.size - 1 - tailTrigrams.size
+
+    fun range(trigram: Int): IntRange? {
+        val index = indexOf(trigram)
+        if (index < 0) return null
+        return starts[index] until starts[index + 1]
+    }
+
+    /**
+     * Presence test through the bit set for the ASCII hash range, which stays cache-resident, so
+     * rejecting a value whose trigrams are not all indexed touches almost no memory.
+     */
+    fun contains(trigram: Int): Boolean = indexOf(trigram) >= 0
+
+    /** The position of [trigram] in ascending hash order, or -1 when the postings do not have it. */
+    private fun indexOf(trigram: Int): Int {
+        if (trigram < 0) return -1
+        if (trigram >= ASCII_TRIGRAM_HASH_LIMIT) {
+            val position = java.util.Arrays.binarySearch(tailTrigrams, trigram)
+            return if (position < 0) -1 else asciiCount + position
+        }
+        val word = trigram ushr BITSET_WORD_SHIFT
+        val bits = asciiBits[word]
+        val bit = 1L shl (trigram and BITSET_WORD_MASK)
+        if (bits and bit == 0L) return -1
+        return asciiRanks[word] + java.lang.Long.bitCount(bits and (bit - 1))
+    }
+
+    override fun close() {
+        if (closed) return
+        closed = true
+        reservation.close()
+    }
+
+    companion object {
+        fun create(trigrams: IntArrayList, starts: IntArrayList, postingCount: Int): TrigramDirectory? {
+            require(trigrams.isEmpty || trigrams.getInt(0) >= 0) { "Trigram hashes are non-negative" }
+            val wordCount = (ASCII_TRIGRAM_HASH_LIMIT + BITSET_WORD_MASK) ushr BITSET_WORD_SHIFT
+            var asciiCount = 0
+            while (asciiCount < trigrams.size && trigrams.getInt(asciiCount) < ASCII_TRIGRAM_HASH_LIMIT) asciiCount++
+            val tailCount = trigrams.size - asciiCount
+            val bytes = (trigrams.size.toLong() + 1 + wordCount + tailCount) * Int.SIZE_BYTES +
+                wordCount.toLong() * Long.SIZE_BYTES + TRIGRAM_DIRECTORY_HEADER_BYTES
+            val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(bytes) ?: return null
+            val ends = IntArray(starts.size + 1)
+            starts.getElements(0, ends, 0, starts.size)
+            ends[starts.size] = postingCount
+            val bits = LongArray(wordCount)
+            for (index in 0 until asciiCount) {
+                val trigram = trigrams.getInt(index)
+                bits[trigram ushr BITSET_WORD_SHIFT] = bits[trigram ushr BITSET_WORD_SHIFT] or (1L shl (trigram and BITSET_WORD_MASK))
+            }
+            val ranks = IntArray(wordCount)
+            var rank = 0
+            for (word in 0 until wordCount) {
+                ranks[word] = rank
+                rank += java.lang.Long.bitCount(bits[word])
+            }
+            val tail = IntArray(tailCount) { offset -> trigrams.getInt(asciiCount + offset) }
+            return TrigramDirectory(ends, bits, ranks, tail, reservation)
+        }
+    }
+}
+
+private fun StringPropertyPredicate.canUseTrigramPostings(): Boolean =
+    expected.length >= TRIGRAM_LENGTH &&
         (transform == StringValueTransform.LOWERCASE || transform == null && expected.all { it.code <= ASCII_MAX })
+
+/**
+ * Matches one decoded string; lowercase transforms reuse the buffer for ASCII values. A string
+ * shorter than the expected value cannot equal, start with, end with or contain it, so an
+ * untransformed or ASCII-only candidate is rejected before its buffer is lowercased: a long term
+ * such as a full class name meets mostly shorter candidates, and lowercasing them was the bulk of
+ * the verification cost. A non-ASCII candidate is measured after its Unicode lowercasing, which
+ * can expand a code point (U+0130 lowercases to two chars).
+ */
+internal fun reusableMatches(actual: MutableString, predicate: StringPropertyPredicate): Boolean {
+    if (predicate.transform == StringValueTransform.LOWERCASE) {
+        var index = 0
+        while (index < actual.length) {
+            if (actual[index].code > ASCII_MAX) {
+                return stringMatches(actual.toString(), predicate.transform, predicate.mode, predicate.expected)
+            }
+            index++
+        }
+        if (actual.length < predicate.expected.length) return false
+        actual.toLowerCase()
+    } else if (actual.length < predicate.expected.length) {
+        return false
+    }
+    // Compared by identity rather than switched on, so a cold request never loads a when-mapping class.
+    val mode = predicate.mode
+    return if (mode == StringMatchMode.EQUALS) {
+        actual.equals(predicate.expected)
+    } else if (mode == StringMatchMode.STARTS_WITH) {
+        actual.startsWith(predicate.expected)
+    } else if (mode == StringMatchMode.ENDS_WITH) {
+        actual.endsWith(predicate.expected)
+    } else {
+        actual.indexOf(predicate.expected) >= 0
+    }
+}
 
 private fun mappedTrigramHash(value: String, position: Int): Int =
     (value[position].code * STRING_HASH_FACTOR + value[position + 1].code) * STRING_HASH_FACTOR +
         value[position + 2].code
 
-private fun binarySearch(
-    values: IntBuffer,
-    target: Int,
-    workConsumer: GraphWorkConsumer?
-): Int {
-    val accounting = BufferedGraphWorkConsumer(workConsumer)
-    try {
-        var low = 0
-        var high = values.limit() - 1
-        while (low <= high) {
-            accounting.consume()
-            val middle = (low + high).ushr(1)
-            val value = values.get(middle)
-            when {
-                value < target -> low = middle + 1
-                value > target -> high = middle - 1
-                else -> return middle
+/** Returns the index of [target] or `-(insertion point) - 1` like [java.util.Arrays.binarySearch]. */
+private fun binarySearch(values: IntBuffer, target: Int, fromIndex: Int, toIndex: Int): Int {
+    var low = fromIndex
+    var high = toIndex
+    while (low <= high) {
+        val middle = (low + high).ushr(1)
+        val value = values.get(middle)
+        when {
+            value < target -> low = middle + 1
+            value > target -> high = middle - 1
+            else -> return middle
+        }
+    }
+    return -(low + 1)
+}
+
+/** Merges two ascending row arrays into one ascending array without duplicates. */
+private fun unionRows(left: IntArray, right: IntArray): IntArray {
+    if (left.isEmpty()) return right
+    if (right.isEmpty()) return left
+    val merged = IntArray(left.size + right.size)
+    var leftIndex = 0
+    var rightIndex = 0
+    var size = 0
+    while (leftIndex < left.size && rightIndex < right.size) {
+        val leftValue = left[leftIndex]
+        val rightValue = right[rightIndex]
+        when {
+            leftValue < rightValue -> {
+                merged[size++] = leftValue
+                leftIndex++
+            }
+            leftValue > rightValue -> {
+                merged[size++] = rightValue
+                rightIndex++
+            }
+            else -> {
+                merged[size++] = leftValue
+                leftIndex++
+                rightIndex++
             }
         }
-        return -1
-    } finally {
-        accounting.flush()
     }
+    while (leftIndex < left.size) merged[size++] = left[leftIndex++]
+    while (rightIndex < right.size) merged[size++] = right[rightIndex++]
+    return merged.copyOf(size)
 }
 
 private fun checkViewInterrupted() {
@@ -552,13 +1719,19 @@ private fun checkViewInterrupted() {
     }
 }
 
-private data class MappedPredicateKey(
+internal data class MappedPredicateKey(
     val transform: StringValueTransform?,
     val mode: StringMatchMode,
     val expected: String
 )
 
-private data class IndexedPostingRange(val row: Int, val positions: IntRange)
+internal class IntTupleKey(private val values: IntArray) {
+    private val hash = values.contentHashCode()
+
+    override fun hashCode(): Int = hash
+
+    override fun equals(other: Any?): Boolean = other is IntTupleKey && values.contentEquals(other.values)
+}
 
 /**
  * Fixed-size direct-mapped cache for immutable posting-range validation results.
@@ -571,8 +1744,10 @@ private data class IndexedPostingRange(val row: Int, val positions: IntRange)
 private class BoundedPostingRangeValidationCache private constructor(
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : Closeable {
-    private val keys = LongArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
-    private val states = ByteArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
+    // Allocated on the first insert so a view that only answers absent or dense terms retains
+    // nothing for validation state.
+    private var keys = EMPTY_LONGS
+    private var states = EMPTY_BYTES
     private var entries = 0
     private var closed = false
 
@@ -581,6 +1756,7 @@ private class BoundedPostingRangeValidationCache private constructor(
 
     @Synchronized
     operator fun get(key: Long): Boolean? {
+        if (states.isEmpty()) return null
         if (closed) return null
         val slot = slot(key)
         if (states[slot] == VALIDATION_EMPTY || keys[slot] != key) return null
@@ -589,6 +1765,10 @@ private class BoundedPostingRangeValidationCache private constructor(
 
     @Synchronized
     fun putIfAbsent(key: Long, valid: Boolean): Boolean {
+        if (keys.isEmpty()) {
+            keys = LongArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
+            states = ByteArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
+        }
         if (closed) return valid
         val slot = slot(key)
         if (states[slot] != VALIDATION_EMPTY && keys[slot] == key) {
@@ -632,46 +1812,126 @@ private class BoundedPostingRangeValidationCache private constructor(
     }
 }
 
-private class MappedPostingCursor(
-    private val postings: IntBuffer,
-    range: IntRange,
-    private val nodeOrder: (Int) -> Long,
-    private val validatedOrders: LongArray? = null
-) {
-    private val firstPosition = range.first
-    private var position = range.first
-    private val lastPosition = range.last
+/**
+ * Small LRU of verified matching string ids per predicate, charged to the shared index budget.
+ * Repeated broad terms on one graph skip the trigram candidate walk; entries larger than the
+ * fixed reservation are served without being retained.
+ */
+private class BoundedMatchingStringIdCache private constructor(
+    private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
+) : Closeable {
+    private val entries = LinkedHashMap<MappedPredicateKey, IntArray>(MATCH_CACHE_ENTRIES + 1, 0.75f, true)
+    private var usedBytes = 0L
+    private var closed = false
 
-    var nodeId: Int = postings.get(position)
-        private set
-    var order: Long = orderAt(position)
-        private set
+    @Synchronized
+    fun get(key: MappedPredicateKey): IntArray? = if (closed) null else entries[key]
 
-    fun hasCurrent(): Boolean = position <= lastPosition
-
-    fun advance(): Boolean {
-        if (++position > lastPosition) return false
-        nodeId = postings.get(position)
-        order = orderAt(position)
-        return true
+    @Synchronized
+    fun put(key: MappedPredicateKey, value: IntArray) {
+        if (closed || entries.containsKey(key)) return
+        val bytes = MATCH_CACHE_ENTRY_ESTIMATED_BYTES + value.size.toLong() * Int.SIZE_BYTES
+        if (bytes > MATCH_CACHE_RETAINED_BYTES) return
+        val iterator = entries.entries.iterator()
+        while (iterator.hasNext() && (entries.size >= MATCH_CACHE_ENTRIES || usedBytes + bytes > MATCH_CACHE_RETAINED_BYTES)) {
+            val eldest = iterator.next()
+            usedBytes -= MATCH_CACHE_ENTRY_ESTIMATED_BYTES + eldest.value.size.toLong() * Int.SIZE_BYTES
+            iterator.remove()
+        }
+        entries[key] = value
+        usedBytes += bytes
     }
 
-    private fun orderAt(index: Int): Long = validatedOrders?.get(index - firstPosition) ?: nodeOrder(nodeId)
+
+    @Synchronized
+    override fun close() {
+        if (closed) return
+        closed = true
+        entries.clear()
+        usedBytes = 0L
+        reservation.close()
+    }
+
+    companion object {
+        fun create(): BoundedMatchingStringIdCache? {
+            val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(MATCH_CACHE_RETAINED_BYTES)
+                ?: return null
+            return BoundedMatchingStringIdCache(reservation)
+        }
+    }
 }
+
+/** Access-ordered posting counts of recently planned predicate sets; a few dozen longs at most. */
+private class PlanPostingCountCache {
+    private val entries = LinkedHashMap<List<Pair<Int, MappedPredicateKey>>, Long>(PLAN_POSTING_COUNT_ENTRIES + 1, 0.75f, true)
+
+    @Synchronized
+    fun get(key: List<Pair<Int, MappedPredicateKey>>): Long? = entries[key]
+
+    @Synchronized
+    fun put(key: List<Pair<Int, MappedPredicateKey>>, postingCount: Long) {
+        if (entries.containsKey(key)) return
+        val iterator = entries.entries.iterator()
+        while (iterator.hasNext() && entries.size >= PLAN_POSTING_COUNT_ENTRIES) {
+            iterator.next()
+            iterator.remove()
+        }
+        entries[key] = postingCount
+    }
+
+    @Synchronized
+    fun clear() = entries.clear()
+}
+
+private val EMPTY_INTS = IntArray(0)
+private val NO_LEADING_HASHES = arrayOfNulls<IntArray>(0)
+
+/** Marker for a posting range whose ascending order was accepted by an earlier validation. */
+private val KNOWN_VALID_ORDERS = LongArray(0)
+private val EMPTY_LONGS = LongArray(0)
+private val NO_VALIDATED_ORDERS = arrayOfNulls<LongArray>(0)
+private val EMPTY_BYTES = ByteArray(0)
 
 internal const val MAPPED_POSTING_RANGE_VALIDATION_CACHE_CAPACITY = 1 shl 10
 internal const val MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES = 16L * 1024
+internal const val MAPPED_MATCHING_STRING_ID_CACHE_RETAINED_BYTES = 64L * 1024
 private const val VALIDATED_POSTING_RANGE_CACHE_CAPACITY = MAPPED_POSTING_RANGE_VALIDATION_CACHE_CAPACITY
 private const val VALIDATED_POSTING_RANGE_CACHE_RETAINED_BYTES =
     MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES
+private const val MATCH_CACHE_RETAINED_BYTES = MAPPED_MATCHING_STRING_ID_CACHE_RETAINED_BYTES
+private const val MATCH_CACHE_ENTRIES = 8
+private const val PLAN_POSTING_COUNT_ENTRIES = 32
+private const val MATCH_CACHE_ENTRY_ESTIMATED_BYTES = 128L
 private const val VALIDATION_CACHE_HASH_SHIFT = 16
 private const val VALIDATION_EMPTY: Byte = 0
 private const val VALIDATION_VALID: Byte = 1
 private const val VALIDATION_INVALID: Byte = 2
 private const val TRIGRAM_LENGTH = 3
+private const val REJECTION_CHECK_LIMIT = 8
 private const val STRING_HASH_FACTOR = 31
 private const val ASCII_MAX = 0x7f
 private const val UINT_MASK = 0xffff_ffffL
 private const val VIEW_INTERRUPTION_POLL_MASK = 1_023
-private const val CHECKSUM_CHUNK_BYTES = 1 shl 20
+private const val TUPLE_INTERRUPTION_POLL_MASK = 63
+private const val CHECKSUM_CHUNK_VALUES = 1 shl 13
+private const val TRIGRAM_DIRECTORY_HEADER_BYTES = 64L
+
+/** Every trigram of ASCII text hashes below this bound, so those hashes index a direct table. */
+private const val ASCII_TRIGRAM_HASH_LIMIT = (ASCII_MAX * STRING_HASH_FACTOR + ASCII_MAX) * STRING_HASH_FACTOR + ASCII_MAX + 1
+private const val INITIAL_DIRECTORY_CAPACITY = 1 shl 15
+private const val MAX_POOLED_LOAD_SCRATCH = 4
+private const val DIRECTORY_SCAN_RATIO = 8
+private const val SMALL_TRIGRAM_SPAN = 32
+private const val MAX_CACHED_TRIGRAM_TERMS = 256
+private const val DENSE_TRIGRAM_SPAN = 1_024
+private const val TUPLE_LOOKUP_SETUP_SLOT = 1
+private val TUPLE_LOOKUP_PREFERENCE = intArrayOf(
+    CALLER_CLASS_PROPERTY_INDEX,
+    CALLEE_CLASS_PROPERTY_INDEX,
+    CALLER_NAME_PROPERTY_INDEX,
+    CALLEE_NAME_PROPERTY_INDEX
+)
+private const val BITSET_WORD_SHIFT = 6
+private const val BITSET_WORD_MASK = Long.SIZE_BITS - 1
+private const val MAX_INITIAL_RESULT_CAPACITY = 1_024
 private const val MIN_INDEX_VIEW_BYTES = CALL_SITE_STRING_INDEX_HEADER_BYTES + Long.SIZE_BYTES

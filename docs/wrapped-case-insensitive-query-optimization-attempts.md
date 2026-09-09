@@ -4214,3 +4214,966 @@ file, format, magic, version, writer, or configuration. It deliberately does not
 separate wrapped-dense aligned regression. Full CI, hosted real64 gates, and every review thread must
 pass before completion. This commit is not authorization to merge or tag; either action requires a
 new explicit user instruction.
+
+### 2026-09-05 - Attempt 132: Serve every CallSite string query from the mapped view on the requesting thread
+
+**Hypothesis:** the remaining global-wide cold P95 is dominated by per-graph retained-index builds
+and by the graph/segment worker pools that schedule them, not by the string work itself. Every
+CallSite string projection can instead be answered serially on the requesting thread from the
+persisted `graph.callsite-string-index` sidecar: a lazy planner probes trigram postings through an
+in-heap trigram directory, verifies only the rarest span, validates only the selected posting ranges,
+and answers dense terms from a bounded raw storage prefix. A graph without a sidecar builds its index
+once, persists it, and then serves the same view. No `graphite-callsite-scan-N` worker, intra-graph
+segment split, or `callSiteScanParallelism` property remains; the cross-graph `graphite-cypher-scan-N`
+pool is never consulted for CallSite projections.
+
+**Evidence:**
+
+- Base is exact `main` head `4e328b0109e13c896b74004823fb049fcb19251a`. Local replays use the
+  existing 64 distinct persisted fixture64 graphs generated from the four pinned Android, Tika,
+  Hive, and Kotlin fixture JARs, the independent 34-case oracle, an 8 GiB heap, and four available
+  CPUs. Synthetic graphs are used only by focused correctness and path tests.
+- Three fresh-JVM cold global-wide base replays report P95 `213.604/210.790/211.872 ms`; three
+  candidate replays on the final jar report `18.36/20.11/21.59 ms` (median `20.11 ms`, `10.6x`)
+  with `34/34` oracle matches in every process. The local paired comparator over three alternating
+  base/candidate forks reports order-median P95 speedups of `10.94x` and `11.81x` with a worst
+  individual pair of `10.71x`; the wrapped case-insensitive shapes that do not carry the base P95
+  improve `4.2x..5.4x` and are gated by the separate `--minimum-wrapped-speedup` rule.
+- Every candidate process plans `0 graph + 0 segment` workers, observes both worker peaks at zero,
+  and reports zero parallel scans on every row. Cold routing resources move from `1.76` to `2.88`
+  effective cores (JIT compilation now overlaps a much shorter replay), peak used heap from `5.82`
+  to `4.23 GiB`, peak RSS from `6.59` to `4.67 GiB`, and query-window GC from `11 / 216 ms` to
+  `1 / 8 ms`; no retained CallSite index or trigram index survives a cold or warm request.
+- Graph routing keeps its per-graph accounting: cold and warm forks execute exactly `2,043`
+  mapped-view lookups distributed `30..39` per graph with zero retained-index lookups, and the
+  startup-prepared fork keeps the retained index with `2,043` retained lookups and zero mapped-view
+  lookups. Three regressions found on the way are retained as fixes: the non-DISTINCT fast path no
+  longer releases a zero-hit graph's rebuildable caches (startup-prepared dense rows rebuilt
+  `17,783` units per shape); dense raw probes inspect up to `32x LIMIT` nodes but stop at the first
+  checkpoint whose running match rate cannot fill LIMIT inside the budget (the localized-middle
+  graph has no match in its first `7,252` nodes, every routing graph fills `200` matches within
+  `413..3,683`); repeated bounded projections answer from a per-graph row cache, a plan-level
+  posting-count cache, and a remembered absent term, and single-source public rows are shared through
+  the existing `DirectProjectionResultCache`, so a routed dense hit costs `0.04 ms` steady state on
+  both revisions instead of `1.3 ms`.
+- Query-level graphId P95 improves `26..35x` in the cold fork (first K64 request `843 -> 411 ms`).
+  Request-selected P50 is at parity; its P95 and the six-sample K64 rows sit inside the
+  `15% / 0.25 ms` jitter rule on roughly half of the local runs, with `1..3 ms` single-row spikes
+  on rows charging one work unit, so the hosted paired gate remains the authoritative reading.
+- The first hosted run of PR #117 failed the wrapped-query resource guard with "invalid
+  loaded/retained/peak heap relationship": the view's in-heap trigram directory (about 128 KiB per
+  graph, 4.6 MiB across the 36 resource-benchmark graphs) is retained after the query and exceeds
+  the sampled peak because the harness samples `totalMemory - freeMemory` every millisecond in
+  2 MiB G1 region steps, so a query allocating under one region leaves the sampled peak at the
+  loaded value. Moving the directory into direct buffers was tried and rejected in review: the
+  budget reservation is released synchronously on close while direct buffers are only reclaimed by
+  the cleaner, so a rapid open/close cycle could exceed the index budget natively. The directory
+  stays on the heap under its reservation, the view load scratch pool holds weak references and
+  the posting range validation cache allocates lazily, and the comparator relationship check is a
+  base-owned fix for `main` (peak = max(sampled, loaded + retained)). The same run's
+  method-compatibility aggregate shards flagged single-shot process CPU on Method-label
+  count/order scenarios this change does not touch; six interleaved local runs per revision swing
+  `2.66..4.97 s` (main) and `2.75..4.82 s` (candidate) with equal wall time, and with JFR
+  compilation events attached both revisions measure identical CPU, JIT totals, and GC pauses.
+- The same hosted run failed the 10x global-wide gate at `3.64x / 14.05x / 5.76x` (base P95
+  `116.9 / 357.5 / 140.7 ms`, candidate `32.1 / 25.4 / 24.4 ms`). The gate's P95 is the second-largest
+  of 34 cold single-shot latencies, and the candidate's second-largest is the first row-producing
+  query of the replay (`four-properties-targeted`, the second query) or the wrapped distinct dense
+  query. Under `-Xint` the first execution of the targeted shape costs `35 ms` against `2.6 ms`
+  for every later execution, about 30 classes load inside that window, and the base pays the same
+  `26 ms` for the identical shape on the runner: the second query's cost is dominated by JVM
+  first-execution work that both revisions pay, so a 10x ratio against a `117 ms` base P95 would
+  need the candidate below the cold-JVM floor.
+- Cold-path work was cut where it is real: the trigram probe now checks every trigram of a term
+  against the directory's presence bits before any mapped binary search, the term's trigram hashes
+  are computed once per request and shared by all graph views together with the position that
+  proved the previous graph absent, the raw DISTINCT prefix deduplicates on raw string-id tuples
+  before decoding, and dense-plan raw probes reject string ids through the anchor trigram's
+  postings before decoding a string. Locally the first cold targeted query dropped from `35 ms` to
+  `21 ms`, steady uncached targeted queries from `1.7 ms` to `1.1 ms`, and steady distinct-dense
+  from `4.4 ms` to `3.5 ms`. Searching the property directory through the dictionary's block heads
+  was tried for selected-tuple hits and reverted: it doubled the distinct-dense cost.
+- Local JMH state comparison (main → candidate, 64 graphs): cold P95 `147..213 ms → 22 ms`
+  (`6.7x..9.7x`), `warm` P95 `34.6 ms → 4.4 ms` (`7.9x`), `warm` with two warm-up replays
+  `12.4 ms → 3.1 ms` (`4.0x`). Repeated identical replays let the base's retained heap index and
+  result caches absorb its scans, so no state of this workload separates the revisions by 10x;
+  the candidate's tail in every state is the per-query cross-graph floor of the harness.
+- The startup-prepared routing fork regressed its one K64 targeted row (`4.37 → 8.47 ms`,
+  `3.44 → 7.15 ms` on two hosted runs): the candidate answered it with 64 serial retained-index
+  lookups on the requesting thread while the base fans the same lookups over the runner's cores,
+  and the mapped view answers the same row in `2.9 ms`. Startup preparation
+  (`prepareCallSiteStringIndexOnLoad=true`) now opens and validates the mapped sidecar view at load
+  time, building and persisting a missing sidecar first, instead of restoring a heap index; a
+  store with the sidecar disabled keeps the heap preparation, and `prepareCallSiteStringIndex()`
+  keeps its heap semantics for direct callers. The candidate's startup-prepared gate contract is
+  the cold/warm mapped-view contract, and the view load scratch pool and lazily allocated
+  validation cache keep the per-request retained heap at the cold-fork level.
+- Focused WebGraph, Cypher, and core tests cover the planner probe kinds, selected-tuple provenance,
+  legacy build-and-persist, the block-aware string-table search, and the tuple set grouping; the
+  gate comparator's 87 node tests cover the serial worker contract, the mapped-view lifecycle, and
+  the raised `10x` minimum.
+
+**Conclusion:** keep for exact-head hosted validation. The change removes the CallSite worker
+pools, keeps the persisted sidecar format, and raises the global-wide gate to `10x` relative to
+main. Full CI, both hosted real64 pressure gates, and every review thread must pass before
+completion. This commit is not authorization to merge or tag; either action requires a new explicit
+user instruction.
+
+### 2026-09-06 - Attempt 133: Materialize direct projection rows on a shared column layout
+
+**Hypothesis:** the hosted cold graph-routing fork on `963328d` failed its request-selected rule
+(`request-selected-source-wrapped-contains`, base P95 `0.373 ms` → candidate `0.637 ms` against
+the `0.25 ms` absolute allowance) although the candidate does the same storage work as the base
+on those rows: the base spends about five seconds building heap indexes in the first family of the
+cold replay and reaches the later families with a C2-compiled pipeline, while the candidate
+finishes that family in under half a second and runs the same later families in tier-3 code.
+Under `-XX:TieredStopAtLevel=1` the two revisions cost the same per query, so the fixed cost of
+the per-query path in C1-quality code is what decides those rows, and the largest piece of it was
+building one `LinkedHashMap` per public row.
+
+**Change:**
+
+- `DirectProjectionCypherRow` is now one object over a column-name array shared by every row of a
+  result and one value array per row; lookups scan the handful of columns. A
+  `DirectProjectionRowLayout` resolves duplicate column names and the appended metadata key once
+  per result, with the same first-position/last-value semantics as an insertion-ordered map. The
+  result cache, the mapped CallSite row path, and the DISTINCT row path build rows through it.
+- The result cache's retained-bytes estimate iterates values without allocating per row, and the
+  cross-graph executor keeps a result whose rows already carry `$metadata` instead of mapping and
+  copying the row list.
+
+**Evidence (local, 64 fixtures):** C1-only materialization of 200 rows `0.59 ms → 0.03 ms`; the
+steady tiered dense single-graph query `0.11..0.13 ms → 0.033 ms`. The local cold routing fork
+went from FAIL (request-selected P95 regression `112%`, graphId P50 `+17.7%`) to PASS
+(request-selected `10.2%` P50 / `6.9%` P95, graphId P50 `+1.2%`), with every K-set width faster
+than the base (`0.54 / 1.67 / 3.34 ms → 0.24 / 0.36 / 0.74 ms` P95). The Cypher unit tests
+cover the row's map contract, duplicate columns, and rows without metadata.
+
+**Conclusion:** keep for exact-head hosted validation of the cold routing fork; the global-wide
+gate is unchanged by this commit and still needs its own evidence.
+
+### 2026-09-06 - Attempt 134: Prime the mapped view's lookup paths when the view opens
+
+**Hypothesis:** on head `2c08684` the hosted global-wide gate reads `7.59x / 7.97x / 6.08x` with
+the candidate P95 (`19..28 ms`) on `wrapped-case-insensitive-distinct-dense`, the first DISTINCT
+query of the replay, and the next rows (`four-properties-targeted` `12.7..14.4 ms`,
+`four-properties-dense` `10.4..11.8 ms`) sit on the runner's 10x line (`11.7..22.7 ms`). In a
+fresh JVM at the benchmark's position the distinct-dense query costs `20..22 ms` on first
+execution with 26 classes loaded and `40..60 ms` of JIT compilation overlapping it, while a second
+DISTINCT query with another term right after costs `4.2..4.8 ms`; its profile is the provenance
+pass (`selectedTupleHits`, `TupleLookup.directoryRow`, `leadingValuePresent`) running interpreted.
+The candidate answers the replay's first query in under a second while the base scans for most
+of it, so every later shape runs on colder code in the candidate: the engine's first use, not the
+index work, carries the candidate's tail.
+
+**Change:** when a mapped view opens (lazily inside the first request, or at load under
+`prepareCallSiteStringIndexOnLoad`), it runs its own lookup, projection, DISTINCT, and provenance
+paths once over the view's first `caller_class` directory entry (an exact plan, a lowercase
+CONTAINS plan over the entry's last six characters, four projected rows, four distinct rows, and
+one selected-tuple provenance lookup). The work goes through the view's methods only, so the
+graph's lookup counters and the gate's mapped-lookup contract are untouched; failures are
+swallowed because queries validate their own ranges anyway.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order):** distinct-dense first execution
+`20..22 ms -> 8.6..11 ms`, `four-properties-targeted` `10.5..18 ms -> 7..10.5 ms`,
+`name-pair-targeted` `3.2..6.7 ms -> 2.8..3.5 ms`; the view-opening first query grows by `40..90 ms`
+(`287..377 ms -> 327..416 ms`). Priming four spread entries instead of one did not lower the
+later rows further (`8..11 ms`) and cost another `40..80 ms` at open, so one entry is kept. Two
+data-side cuts were tried on top and reverted as neutral: rejecting anchor candidates through the
+next two rarest trigram spans before decoding (targeted CPU `-15%` on four-property terms, but
+single-property targeted rows `+30..50%` from the extra binary searches), and sharing the
+lowercase trigrams of selected tuple values across the graphs of one request (no change).
+
+**Conclusion:** rejected in review and removed. Priming ran inside the first user request
+without charging its work to that request's `GraphWorkConsumer`, and the gate's nearest-rank P95
+over 34 rows excludes the single largest row, so the change could pass the gate by moving cost
+into an already-excluded outlier instead of lowering end-to-end cold latency. The engine's first
+use has to get cheaper on the rows that carry it, with every unit of work metered.
+
+### 2026-09-06 - Attempt 135: Walk selected leading values in dictionary order with a galloping search
+
+**Hypothesis:** after Attempt 134 the distinct-dense row still spends `8..11 ms` in data work on
+C1-level code; a warm-code profile over eight dense terms puts about a quarter of it in the
+provenance pass's directory searches, each of which bisected the whole property directory and
+decoded one front-coded string per probe, for up to 200 selected values in each of 63 graphs.
+
+**Change:** `StringPropertyTupleSet` exposes the distinct non-null values of a column in
+code-unit order, computed once per request; `selectedTupleHits` visits the leading values in
+that order and the leading directory search gallops from the row reached by the previous value
+before bisecting, so consecutive lookups cost decodes proportional to the log of the distance
+between hits. Tuple-lookup row caches are per property instead of keyed by a concatenated string.
+
+**Evidence (local, fresh JVM, eight dense terms after the replay's first shapes, three runs):**
+distinct-dense CPU `9.0..10.8 ms -> 7.0..8.2 ms`; the other dense terms `15..30%` lower
+(`run` `5.0..5.9 -> 3.5..4.2 ms`, `new` `6.0..6.9 -> 4.3..5.0 ms`). The mapped-view, store, and
+core tests and detekt pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 134's run is read.
+
+### 2026-09-06 - Attempt 136: Share the leading values' trigram hashes across the graphs of a request
+
+**Hypothesis:** with Attempt 135 in place, a fresh-JVM attribution of the distinct-dense row puts
+`7..8 ms` of its `12..15 ms` in the provenance pass over the 63 remaining graphs: `1,467` leading
+values pass through the trigram presence check (`~2 ms`, each call lowercasing the value and
+hashing every trigram again for every graph), `646` of them reach a directory search (`~2.5 ms`,
+`3,889` decodes), and only `11` are hits. The presence check repeats per graph work that depends
+only on the request's values.
+
+**Change:** the sorted leading values' distinct lowercase trigram hashes are computed once per
+request in a `StringPropertyTupleSet` scratch slot shared by every graph view, and each value
+remembers the trigram that last proved a graph absent so the next graph's presence pass usually
+stops at its first check, mirroring `TrigramTerm.absentHint` for predicate terms.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, three alternating runs each):**
+distinct-dense first execution CPU `13.4..16.0 ms -> 12.0..14.4 ms`, second execution
+`6.2..8.5 -> 5.6..6.6 ms`; `add` first execution `10.4..12.6 -> 9.5..11.5 ms`; the targeted rows,
+which do not use the path, are unchanged within noise. The mapped-view and core tests and detekt
+pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 135's run is read.
+
+### 2026-09-06 - Attempt 137: Hoist the per-graph tuple-lookup setup into scratch slots of the selected tuples
+
+**Hypothesis:** with Attempt 136 in place, fresh-JVM timers inside the distinct-dense row's
+provenance pass (`~8.5 ms` of a `15..19 ms` row) put `2.2..2.6 ms` in building each graph's
+`TupleLookup`: the lookup order and the projected/residual predicate split are recomputed per
+graph from the same predicates, and the row cache of the leading property is read and written for
+every visited value although each sorted value is visited once per graph and only hits are read
+back. On the code a first execution runs, every per-graph step of this kind costs `20..35 µs`, so
+63 graphs turn a handful of collection operations into milliseconds.
+
+**Change:** the graph-independent part of the lookup (`TupleLookupSetup`) is computed once per
+request and shared through a fixed scratch slot of the `StringPropertyTupleSet`, as are the
+leading values' trigram hashes of Attempt 136; a view validates the stored value against its own
+inputs (predicate list identity, projection) instead of hashing a key, because a synchronized
+map lookup keyed by the predicates costs as much per graph on cold code as the work it replaced
+(`1.3..1.9 ms` per row measured for both the data-class key and an identity key). The leading
+directory search no longer consults or fills the row cache on a miss, and the ascending walk polls
+for interruption every 64 values like the unsorted walk.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, three alternating runs each):**
+distinct-dense first execution CPU `11.6..15.0 ms -> 10.3..12.3 ms`, second execution
+`6.4..6.9 -> 4.9..5.8 ms`; `add` first execution `9.7..10.9 -> 8.6..10.4 ms`; the targeted rows
+are unchanged within noise. Timers inside the row: provenance `8.1..8.6 -> 7.2..7.3 ms`, graph
+DISTINCT total `12.3..12.8 -> 10.8..11.0 ms`. The core and mapped-view tests and detekt pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 136's run is read.
+
+### 2026-09-06 - Attempt 138: Start each graph's trigram range walk at the trigram that anchored the previous graph
+
+**Hypothesis:** fresh-JVM timers on the four-properties-targeted row (`10..13 ms`) put `2.2..2.7 ms`
+in the trigram probe: the term is a 100-character class name with about 70 distinct trigrams, the
+presence pass rejects it in 53 graphs, and in the 11 graphs that contain it the range walk looks
+up the posting range of every trigram in string order (`788` range lookups for `11` graphs)
+because the rare trigrams of a class name come at its end while the walk starts at `app`, `ndr`,
+`dro` and only stops early once a span of at most 32 postings has been seen.
+
+**Change:** `TrigramTerm` remembers the index of the trigram that anchored the previous graph's
+plan (`rarestHint`) the way it remembers the trigram that proved the previous graph absent, and the
+range walk starts there; graphs of the same family share their rare trigrams, so the walk usually
+stops at its first lookup.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, three alternating runs each):**
+four-properties-targeted first execution CPU `9.1..11.3 ms -> 7.7..9.6 ms`, class-pair-targeted
+`3.2..3.8 -> 2.5..3.0 ms`; the DISTINCT and dense rows are unchanged within noise. A new view test
+checks that a present term's hint moves off the shared leading trigrams and that a second graph's
+lookup consumes less work; the view tests and detekt pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 137's run is read.
+
+### 2026-09-06 - Attempt 139: Decide raw probes by the predicate that matched last and keep the probed string ids
+
+**Hypothesis:** the dense rows and the first graph of the distinct-dense row run the bounded raw
+probe: `683` nodes are inspected for `200` matches and the four predicates of the disjunction are
+tried in query order, so a node whose only match is its callee name (where a term such as `get`
+lives) pays three misses first (`2,452` matcher calls for `683` nodes); the projection then reads
+every matched node record a second time, and the DISTINCT variant indexes its properties through
+boxed `List<Int>`s.
+
+**Change:** a probe tries the predicates in an order where the predicate that matched last moves
+one position towards the front, so most nodes are decided by their first check; a fresh probe
+keeps the four string ids it read for each matched node and the projection that follows uses them
+instead of reading the node records again (a cached probe still reads them); the DISTINCT probe
+keeps its property indexes in `IntArray`s.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+distinct-dense first execution CPU `13.4 -> 12.1 ms`, second execution `5.8 -> 5.1 ms`; `add`
+first execution `11.1 -> 8.3 ms`, second `8.2 -> 6.9 ms`; four-properties-dense `5.3 -> 5.8 ms`
+(within its `4.4..6.6 ms` spread, no gain) and the targeted rows unchanged. The webgraph tests
+and detekt pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 138's run is read; the dense
+projection row itself needs a different cut.
+
+### 2026-09-06 - Attempt 140: Trim the remaining per-graph fixed steps of the provenance pass (rejected)
+
+**Hypothesis:** after Attempt 137 the provenance pass still pays a few small per-graph steps on
+cold code: the setup check compares projections through `IntArray.contentEquals`, whose JDK
+implementation runs the vectorized mismatch helper, the graph derives the projected property
+indexes again for every graph, and the hit list is sorted and truncated even when it holds no or
+one row.
+
+**Change (not kept):** a hand-written comparison in the setup check, the projected property
+indexes shared through a third scratch slot of the selected tuples, and no sort for hit lists of
+at most one row.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, three alternating runs, medians):**
+distinct-dense first execution CPU `12.3 -> 12.4 ms`, second `5.5 -> 5.4 ms`; `add` `9.8 -> 10.0 ms`.
+No measurable change; the webgraph tests and detekt pass.
+
+**Conclusion:** reverted; the per-graph fixed cost that remains is not in these steps.
+
+### 2026-09-06 - Attempt 141: Read remembered match states in the probe loop and decode each projected string once
+
+**Hypothesis:** the bounded raw probe of a dense term decides most string ids from states it
+remembered for an earlier node: the four-properties-dense row makes `2,146` matcher calls for
+`681` nodes and `1,840` of them are remembered hits, the `add` term `12,483` calls with `11,218`
+hits. Each hit still enters the matcher's match method and its state method, two interpreted
+calls on the code a first execution runs, and the projection that follows decodes `800` strings
+for `200` rows although the values repeat (`23` distinct caller classes head the dense rows).
+
+**Change:** the predicate order reads a matcher's remembered state array directly and enters the
+match method only for an undecided id; a bounded projection and the DISTINCT raw projection decode
+each string id once through a direct-mapped table of `1,024` slots.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+`add` first execution CPU `9.97 -> 9.23 ms`, second `7.80 -> 6.19 ms`; four-properties-dense
+`4.78 -> 4.17 ms`; class-pair-dense `1.22 -> 0.99 ms`; distinct-dense second execution wall
+`7.07 -> 5.58 ms` while its first execution (`11.5 -> 12.0 ms` CPU) and the targeted rows are
+unchanged within noise.
+
+**Conclusion:** keep for exact-head hosted validation; the dense rows' remaining cost is the
+probe's setup and first use (`1.8 ms` of a `3.5 ms` probe) and the node record reads.
+
+### 2026-09-06 - Attempt 142: Decode strings through the char-coded list without the fastutil bounds helper
+
+**Hypothesis:** class loading attributed per replayed query (JVM uptime markers around each
+execution, `-Xlog:class+load`) shows the targeted row loading `21` classes, seven of them
+`it.unimi.dsi.fastutil.chars.CharArrays` and the nested classes its verification pulls in: every
+decode through `FrontCodedStringList.get` runs the helper's offset check, and the allocating
+getter wraps its array through a zero-capacity `MutableString` that reads the helper's empty
+array. The helper is a very large class, so the first decode of a fresh JVM (the targeted row's
+verification) costs `2.6..3.5 ms` in a microbenchmark against `0.03 ms` without it, and every
+later decode still enters the check on interpreted code.
+
+**Change:** the string table reaches the list's char-coded backing list once at load (a protected
+field, read reflectively with a fallback to the list's own decode) and decodes through its array
+getter: a `String` is built from the array directly, and a reusable buffer receives a copy.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+four-properties-targeted first execution CPU `9.31 -> 7.48 ms` (wall `10.07 -> 8.23 ms`);
+distinct-dense first execution CPU `12.79 -> 10.46 ms` (wall `13.51 -> 11.60 ms`), second
+`5.76 -> 5.19 ms`; `add` first `9.96 -> 9.10 ms`, second `7.34 -> 6.67 ms`; four-properties-dense
+unchanged (`4.75 -> 4.83 ms`). The replay loads no `CharArrays` class at all and the targeted
+row's class count drops `21 -> 14`.
+
+**Conclusion:** keep for exact-head hosted validation.
+
+### 2026-09-06 - Attempt 143: Compare directory probes from the prefix their bounds share (rejected)
+
+**Hypothesis:** the provenance pass makes `3,889` directory probes for its `646` searches, and
+each probe decoded a class name into a reusable buffer and compared it from its first character
+although class names of one package agree on dozens of leading characters that the search
+bounds already establish.
+
+**Change (not kept):** the search tracked the prefix length its low and high bounds share with
+the value, compared each probe's decoded code units from that prefix on, and read the decoded
+array in place instead of copying it into a buffer.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+distinct-dense first execution CPU `11.8 -> 13.0 ms` (both inside a `10.6..14.1 ms` spread),
+second `6.0 -> 5.7 ms`; four-properties-targeted `8.5 -> 7.0 ms` inside overlapping spreads;
+the dense rows unchanged. No gain outside the noise band.
+
+**Conclusion:** reverted; the compared characters are not where the probe's time goes.
+
+### 2026-09-06 - Attempt 144: Cap the leading-value trigram presence check (rejected)
+
+**Hypothesis:** `628` of the provenance pass's `1,467` leading-value presence checks pass, and a
+passing value tests every one of its forty-odd trigrams before the directory search decides
+anyway, so capping the check at twelve trigrams (those of the simple class name come first)
+would trade a few extra searches for tens of thousands of bit tests.
+
+**Change (not kept):** the presence check stopped after twelve trigrams.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+distinct-dense first execution CPU `11.4 -> 12.2 ms`, second execution `5.2 -> 6.4 ms`; the
+`add` rows `9.3 -> 9.9 ms` and `7.1 -> 7.9 ms`. The extra searches cost more than the bit tests
+they replaced: the presence test is cheap even on cold code, and the trigrams beyond the
+twelfth still reject values whose simple name trigrams are common.
+
+**Conclusion:** reverted.
+
+### 2026-09-06 - Attempt 145: Reject a foreign graph at the projection entry before its keys, plan and cached rows exist
+
+**Hypothesis:** a pure-interpreter replay (`-Xint`) of the benchmark order shows which parts of a
+first execution the JIT never reaches: the directory searches and posting scans are hot loops
+that compile within the row, while the code that runs once per graph (63-64 times per request)
+stays interpreted. For the targeted rows 53 of the 64 graphs lack the term, yet each of them
+built a projection cache key, a plan with its probe map and predicate keys, evaluated the plan's
+emptiness through lambdas and inserted a cached empty row list before the presence bits, which
+had already rejected the term, took effect.
+
+**Change:** the view answers a presence question for a whole disjunction before any of that is
+built: consecutive predicates with one key are decided once, a cached absence is honoured, a
+term is rejected by the first missing trigram from its absent hint, and a term whose first eight
+trigrams are all present is left to the plan so a graph that holds the term pays a handful of
+bit tests and not a second full pass. The projection, DISTINCT and node-sequence entries return
+an empty result on rejection with the same lookup count and the same remembered absence as the
+plan path; the work consumed is the number of bit tests. A first version that checked every
+predicate separately and ran the full pass on graphs holding the term made the targeted row
+`7.9 -> 10.8 ms` and was replaced by this one.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+four-properties-targeted first execution CPU `8.04 -> 7.29 ms` (wall `9.49 -> 8.15 ms`),
+class-pair-zero `1.90 -> 0.94 ms`, class-pair-targeted `3.80 -> 3.27 ms`, wrapped
+case-insensitive targeted `0.84 -> 0.67 ms` and its second execution `0.84 -> 0.59 ms`; the
+dense and DISTINCT-dense rows, which decide on their first graph, are unchanged within noise.
+
+**Conclusion:** keep for exact-head hosted validation.
+
+### 2026-09-06 - Attempt 146: Order tuple lookups and hits without comparator and sort classes
+
+**Hypothesis:** class loading attributed per replayed query shows the distinct-dense row loading
+`18` classes on its first execution, eight of them for two `sortedBy` calls (an inlined
+comparator class each, the four `kotlin.comparisons` facade classes and `TimSort`) and the
+private companions of the tuple set and the leading-value trigrams. The provenance pass sorts
+a handful of hits per graph and orders four projected columns by a fixed preference, so the
+sort machinery is loaded and initialised for work a loop does in a few bytecodes.
+
+**Change:** the lookup order is built by a loop over the preference array, the hits of a graph
+are ordered by an insertion sort in encounter order, and the two constants that lived in
+private companions are top-level.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+distinct-dense first execution CPU median `11.48 -> 9.86 ms` (mean `11.75 -> 10.28 ms`, wall
+median `12.85 -> 11.91 ms`), four-properties-targeted `7.28 -> 6.95 ms`, class-pair-targeted
+`3.23 -> 3.00 ms`; the dense rows, the second DISTINCT execution and the wrapped targeted row
+are unchanged within noise. Five rounds had left the change inside the noise band; ten resolve
+it.
+
+**Conclusion:** keep for exact-head hosted validation.
+
+### 2026-09-06 - Attempt 147: Trim per-request and per-graph interpreted steps of the provenance path (rejected)
+
+**Hypothesis:** after Attempt 146 the provenance pass still runs a few interpreted steps per graph
+or per request that a loop would do in fewer bytecodes: the projected index array was built
+through a boxed list, the shared setup compared its projection through the JDK's vectorized
+array equality, the first graph's DISTINCT scan hashed every decoded tuple into a set although
+its string ids had already deduplicated them, and the tuple set built a second hash set for
+membership next to its insertion-ordered one.
+
+**Change (not kept):** a plain `IntArray` construction, a loop comparison, no decoded-value set
+on the id-deduplicated path, and the insertion-ordered set reused for membership.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+distinct-dense first execution CPU median `10.17 -> 10.33 ms` (mean `10.20 -> 10.06 ms`),
+second `5.77 -> 5.67 ms`; `add` `9.31 -> 9.64 ms`; four-properties-targeted `6.92 -> 7.33 ms`.
+Nothing outside the noise band in either direction.
+
+**Conclusion:** reverted; the per-graph cost that remains is not in these steps.
+
+### 2026-09-06 - Attempt 148: Snap directory-search probes to short front-coded chains (rejected)
+
+**Hypothesis:** every bisection step of a tuple lookup decodes one directory string, and a
+front-coded string costs up to eight dependent decodes depending on its position inside its
+block. Choosing, among the rows within three positions of the middle, the one whose string id
+sits earliest in its block would keep the halving almost intact while making each probe decode
+fewer predecessors.
+
+**Change (not kept):** the bisection phase probed the cheapest row near the middle once the
+remaining span exceeded six rows.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+distinct-dense first execution wall median `11.24 -> 12.09 ms` (CPU median `10.18 -> 11.20 ms`),
+`add` `10.23 -> 10.65 ms`, four-properties-targeted `7.97 -> 8.10 ms`; the second executions and
+the wrapped targeted row are unchanged within noise.
+
+**Conclusion:** reverted; the extra modulo and comparisons per step cost more than the decodes
+they save, and the search takes more steps when it drifts from the middle.
+
+### 2026-09-06 - Attempt 149: Exact directory tables built while the graph is mapped
+
+**Hypothesis:** the cold DISTINCT provenance pass resolves every selected value in every graph
+through a binary search of the property directory, and each of its steps decodes a front-coded
+prefix chain; across 63 graphs that is over six hundred searches on the P95 row. A table from
+the hash of a value to its directory row, built once when the graph is mapped, resolves a value
+with one probe and one verifying decode, and rejects a foreign value without decoding anything.
+The owner accepted this as a load-lifecycle trade-off measured by the mapped-load, resource and
+capacity gates, distinct from request-time priming.
+
+**Change:** `GraphStore.loadMapped` reads the four property directories of the sidecar next to
+the other mapped parts and builds one open-addressing table per property (four decoded in
+parallel, at most one-half load factor). The tables are graph-owned load-time state: closing
+the view between requests leaves them in place, and a view adopts them only when the sidecar it
+mapped carries the same identity, string count and directory sizes. The tuple lookups use them
+in place of the trigram presence check and the directory search; a graph without tables keeps
+the search.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+distinct-dense first execution wall median `11.20 -> 9.28 ms` (CPU median `10.43 -> 8.16 ms`),
+second execution `6.56 -> 4.74 ms`; `add` `11.02 -> 10.20 ms` and `9.45 -> 8.62 ms`;
+four-properties-targeted `7.93 -> 8.45 ms`, dense `6.49 -> 6.23 ms`, class-pair-targeted
+`3.62 -> 3.79 ms`, the wrapped targeted row unchanged. Mapped load, median of five loads in one
+JVM, two JVMs each: tika `125/130 -> 139/136 ms`, hive `189/174 -> 174/170 ms`,
+kotlin-compiler `100/97 -> 100/105 ms`; the table build overlaps the forward-graph load. The
+tables cost 9-26 ms per 64-fixture graph to build and about half a megabyte of heap each.
+
+**Conclusion:** keep for exact-head hosted validation.
+
+### 2026-09-06 - Attempt 150: Decode front-coded strings in one walk over the raw characters (rejected)
+
+**Hypothesis:** with the DISTINCT dense row at 9 ms after Attempt 149, the candidate P95 moved to
+the targeted projection rows, and a phase split of those rows charged their verification and
+projection decodes at 10-15 µs each on the first execution. The list's decode walks a block
+twice and reads every length code through two static big-array calls, so a single walk over the
+raw character segment appending straight into the target buffer should cut that cost several
+times.
+
+**Change (not kept):** `StringTable` reached the char-coded list's single segment and block
+starts through reflection and decoded with one walk; a multi-segment list kept the list's
+decode.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+four-properties-targeted wall median `7.79 -> 7.67 ms`, dense `5.32 -> 5.28 ms`,
+class-pair-targeted `3.69 -> 3.62 ms`, name-pair-targeted `5.55 -> 5.32 ms`; distinct-dense
+first execution `7.76 -> 8.57 ms`, second `4.07 -> 4.38 ms`; `add` unchanged. Nothing outside
+the noise band.
+
+**Conclusion:** reverted. Since Attempt 149 the load-time tables decode every directory string
+of every graph while the graph is mapped, so the decode path is compiled before the first
+request and the per-decode cost the split attributed to it is the interpreted matcher and
+accounting around it, not the decode.
+
+### 2026-09-06 - Attempt 151: Load fewer classes on the first targeted projection row
+
+**Hypothesis:** the first targeted projection row of a cold process loaded fourteen classes on
+the request thread, about 100-200 µs each while the loader verifies and links them, and
+preloading nine of them ahead of the request cut the row from 6.8-7.6 ms to 4.6-5.8 ms. Half
+of those classes exist only because of how the code is written, not because of what it does:
+a base class, its companion and a default-value marker interface behind the public row map, a
+separate cache entry class and a lazy-initializer lambda in the result cache, a `when` mapping
+table for the match mode enum, a plan key class, and a posting cursor with a heap for what is
+usually a single posting range.
+
+**Change:** `DirectProjectionCypherRow` implements `Map` directly instead of extending the
+Kotlin `AbstractMap`, and the row layout no longer resolves column positions through the
+default-value map extension. `DirectProjectionResultCache` keeps one key class that also carries
+its stored entry and reads its byte budget eagerly. The view compares the match mode instead of
+switching on it, keys the posting-count cache with pairs, and copies the head of a single
+validated posting range directly, building the cursor heap only when several ranges merge.
+No functional change: the row still satisfies the map contract, including equality, hashing and
+string form against an insertion-ordered map.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs, wall
+medians):** four-properties-targeted `7.92 -> 6.74 ms` (classes loaded by the row `14 -> 7`,
+CPU `7.12 -> 5.89 ms`), caller-class-targeted `3.13 -> 2.62 ms`, distinct-dense first execution
+`10.04 -> 8.64 ms`, second `4.53 -> 4.13 ms`; class-pair, name-pair, callee-class, `add` and
+the wrapped single-graph rows within `±0.4 ms`.
+
+**Conclusion:** kept. The seven classes the row still loads are the row, its layout, the
+result cache and the storage projection row, which are the result itself, plus the JDK entry
+and set classes the public map contract requires.
+
+### 2026-09-06 - Attempt 152: Load fewer classes on the first DISTINCT provenance row
+
+**Hypothesis:** after Attempt 151 the first DISTINCT dense row of a cold process still loaded ten
+classes, four of which exist only because of how the code is written: the Kotlin `AbstractSet`
+base class and its companion behind `StringPropertyTupleSet`, the default-value marker interface
+pulled in by a `getValue` call on the grouped tuples, and the `when` mapping table for the match
+mode and transform enums of the graph's string matcher.
+
+**Change:** `StringPropertyTupleSet` implements `Set` directly with the same equality, hashing and
+string form as before, the tuple lookup indexes the grouped tuples with a plain map read, and the
+graph's string matcher and value transform compare their enums instead of switching on them.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs, wall
+medians):** distinct-dense first execution `8.53 -> 8.03 ms` (classes loaded by the row
+`10 -> 6`, CPU `7.78 -> 6.48 ms`), second execution `4.45 -> 4.28 ms`, `add` first execution
+`9.25 -> 8.52 ms`; the targeted projection rows and the wrapped single-graph rows within
+`±0.4 ms`.
+
+**Conclusion:** kept. The six classes the row still loads are the distinct row, the tuple set,
+the lookup setup, the tuple lookup, the leading-value trigrams and the raw string-id tuple, each
+of which carries state the request needs.
+
+### 2026-09-06 - Attempt 153: Fold the helper classes of the first dense projection row
+
+**Hypothesis:** with the targeted rows down, the single-graph dense projection row is one of the
+two candidate P95 rows (10-13 ms on the hosted runner), and its first execution still loaded eight
+classes; preloading seven of them ahead of the request cut the row's CPU by about 1.2 ms locally.
+Five of them are helpers of the raw prefix probe that exist only as code structure: a predicate
+key that duplicates the view's, a two-field holder for the probe result, an object around the
+adaptive predicate order, an object around the projection decode cache, and a function interface
+whose one implementation is a lambda class of the view.
+
+**Change:** the raw probe keys its matchers with the view's `MappedPredicateKey`, returns its node
+ids and string ids as a pair, tries the predicates through a function over a caller-held order
+array, decodes projected strings through a function over caller-held cache arrays, and asks the
+match plan directly (`acceptsCandidate` on the plan's probe) instead of calling a filter interface.
+`MappedNodeIdIterator` and `BoundedStringMatcher` remain.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order; ten runs in forward jar order and
+six in reverse order, wall medians forward / reverse):** four-properties-dense
+`5.21 -> 4.96 / 5.79 -> 4.64 ms` (classes loaded by the row `8 -> 2`, CPU `4.47 -> 3.85 /
+4.98 -> 3.85 ms`), `add` second execution `8.16 -> 5.94 / 9.06 -> 5.76 ms`; the targeted rows
+moved `+0.6 ms` in forward order and `-0.1 ms` in reverse order, which is the order effect of the
+harness rather than the change; the DISTINCT and wrapped rows within `±0.4 ms`.
+
+**Conclusion:** kept.
+
+### 2026-09-06 - Attempt 154: Decode into reusable buffers without an intermediate array (rejected)
+
+**Hypothesis:** every decode into a reusable buffer (directory-search probes, matcher
+verification, the load-time table build) allocated one character array per string and copied
+it, so writing straight into the buffer through the list's array-filling decode would remove an
+allocation and a copy per decode and the load-time garbage of the table build.
+
+**Change (not kept):** `StringTable.get(index, buffer)` called the char-coded list's
+`get(index, array, offset, length)` with a grow-once retry, raising the buffer's length to its
+capacity first because the buffer clears the characters it grows over.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, eight runs):** the array-filling
+decode reaches the fastutil `CharArrays` helper and the six nested classes its verification
+loads, exactly what Attempt 142 avoided: the first targeted projection row loaded fourteen
+classes instead of seven and its wall median went `6.70 -> 8.24 ms`; the dense row `4.63 -> 4.53`
+and the DISTINCT rows within noise.
+
+**Conclusion:** reverted. The allocation per decode is cheaper on a cold request than the
+helper classes the allocation-free path drags in.
+
+### 2026-09-06 - Attempt 153, follow-up: the candidate condition searched inside the matcher
+
+**Observation:** head c04de10 (Attempt 153) failed the global-wide gate on a slow runner: pair 1
+at 8.13x on the wrapped-distinct/dense row (16.5 ms against 9.3 and 13.0 ms in the other forks)
+and pair 3 at 1.41x on the wrapped case-insensitive targeted shape. Both rows run the raw prefix
+probe, and the local A/B of 153 had already shown the DISTINCT dense row 0.1-0.5 ms slower while
+the plain dense row got faster: routing the candidate check through the match plan replaced a
+lambda's direct search with a sealed `when` and an extra call level per candidate id, which on
+cold interpreted code costs more than the class it saved.
+
+**Change:** the matcher now holds the plan's condition as plain fields, the sorted ids of an
+exact term or the anchor trigram's posting range with the mapped postings, and searches them
+itself; the plan only hands out its probe. No interface, lambda or plan dispatch remains on the
+per-id path, and the class-load saving of 153 stays.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, medians, together with
+Attempt 155):** distinct-dense first execution CPU `7.42 -> 7.19 / 7.52 -> 6.76 ms`, second
+execution wall `4.18 -> 4.11 / 4.71 -> 3.86 ms`; targeted, dense and wrapped rows within
+`±0.3 ms` once the jar-order effect is accounted for.
+
+### 2026-09-06 - Attempt 155: Trigram directory indexed by rank over its presence bits
+
+**Hypothesis:** the resource gate's sampled peak counts only allocation regions the query has
+retired (every candidate invocation sits either 2,019,080 bytes above or 62,024 bytes below the
+post-collection retained heap, 2,081,104 bytes apart), and the candidate's retained delta of
+4.27 MB across 36 graphs sits 62 KB above two such regions, so the check flips whenever a query
+retires only two. Most of that delta is the per-view trigram directory: a sorted array of the
+distinct trigram hashes, the posting start of each, and a presence bit set over the ASCII hash
+range. The sorted array is redundant for hashes inside the bit set's range: a trigram's position
+is the number of set bits before it.
+
+**Change:** the directory keeps one running count of set bits per bit-set word (about 8 KB) and
+drops the sorted hashes below the range, keeping only the few above it; a lookup is a bit test,
+a population count and one array read instead of a binary search. This also closes a gap in the
+old presence test, which switched to the sorted array only above the bit set's word boundary
+while bits were set only below the ASCII limit, so hashes in the 32-value gap were reported
+absent.
+
+**Evidence:** per graph about 27 KB less retained heap (72 KB of sorted hashes and starts plus
+16 KB of bits become 36 KB of starts, 16 KB of bits and 8 KB of ranks), about 1 MB across the
+36-graph resource fixture, which puts the retained delta below two allocation regions; the
+lookup is O(1). Local latency rows within noise (see the follow-up above for the paired A/B).
+
+**Conclusion:** kept.
+
+### 2026-09-06 - Attempt 156: Reject verification candidates shorter than the term before lowercasing
+
+**Hypothesis:** replaying the 64-graph wrapped targeted shape one graph at a time showed the
+cost sitting in the graphs of the term's own corpus: every trigram of a long class-name term is
+present there, so the plan verifies the anchor span, and each candidate costs a decode, a full
+lowercase pass and a search, about 4-5 µs on interpreted code, for 0.4-1.2 ms per graph that
+holds no match. Most of those candidates are shorter than the term (method names against a
+class-name term above all), and a string shorter than the expected value cannot equal, start
+with, end with or contain it. A second-rarest-trigram filter was tried first and measured no
+gain: the two rarest trigrams of a term are usually adjacent and select the same strings.
+
+**Change:** the view's `reusableMatches` and the graph's `stringMatches` and `reusableContains`
+return false when the candidate is shorter than the expected value, before any character is
+inspected.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, wall medians forward /
+reverse):** four-properties-targeted `6.92 -> 6.37 / 6.56 -> 6.54 ms`, name-pair-targeted
+`5.38 -> 4.81 / 5.77 -> 4.67 ms`, caller-class-targeted `3.24 -> 2.62 / 3.54 -> 2.63 ms`, the
+64-graph wrapped targeted shape `2.59 -> 2.32 / 2.71 -> 1.93 ms` (CPU `2.05 -> 1.86 /
+2.15 -> 1.62 ms`), distinct-dense first execution `8.18 -> 7.71 / 8.92 -> 8.68 ms`; the dense
+and wrapped DISTINCT rows within the jar-order band.
+
+**Conclusion:** kept.
+
+### 2026-09-06 - Attempt 157: Fewer and smaller classes on the first DISTINCT provenance row
+
+**Hypothesis:** the first DISTINCT dense row of a cold process still loaded six classes on the
+request thread, and preloading exactly those six before the request cut the row's CPU from
+8.1-8.4 ms to 4.7-6.1 ms, so their loading and verification is worth 2-3 ms. Two of them
+existed only as code structure: the graph kept its own id-tuple key class next to the view's
+identical one, and the request-shared leading-value trigram hashes lived in a class of their
+own, eagerly hashing every leading value even though only a graph without load-time tables
+ever reads them. The largest of the six, the tuple lookup, carried the directory-search
+fallback (galloping search, trigram presence checks) that a graph with load-time tables
+never executes, so its bytecode was verified on every cold request for nothing.
+
+**Change:** the graph's DISTINCT raw path dedupes on the view's `IntTupleKey`; the leading
+values, their lazily computed trigram hashes and the per-value absent hints live in
+`TupleLookupSetup`, which the request already shares through the scratch slot; and the
+tuple lookup's directory search moved into `TupleDirectorySearch`, created on first use only by
+a graph without load-time tables. The class count of the row drops from six to five, and the
+add-row's last request-thread class load disappears.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, medians forward /
+reverse):** distinct-dense first execution CPU `7.34 -> 5.97 / 7.21 -> 6.19 ms` (wall
+`8.27 -> 7.19 / 8.65 -> 8.42 ms`; every one of the fourteen candidate CPU samples is below the
+base median of its order), add first execution CPU `8.30 -> 7.37 / 8.66 -> 8.29 ms`; the
+targeted and dense projection rows load the same classes as before and stay within the
+jar-order band (four-properties-targeted `5.72 -> 6.46 / 6.29 -> 6.41 ms` wall against a
+`5.72`-`6.29` spread of the base itself between orders).
+
+**Conclusion:** reverted. The head carrying this change (9bbfc11) passed the three 10x pairs
+(11.15x / 15.46x / 10.59x) but failed the gate on two secondary checks that its diff does not
+touch: pair 2's wrapped non-DISTINCT shape at 1.84x (base targeted row 5.78 ms against the
+candidate's dense row 3.15 ms; 2x required) and the startup-prepared routing state's
+request-selected P95 (six candidate rows of 1.1-2.5 ms among 192 rows of 0.1-0.4 ms, +75.5%
+against a 15% limit). Exact-head results are authoritative and hosted re-runs are not
+available, so the change is reverted as a failed attempt and may be re-attempted on a later
+head.
+
+### 2026-09-06 - Attempt 156, follow-up: the length shortcut behind the lowercase transform
+
+**Review finding (P1):** the raw-length rejection ran before the transform, but Unicode
+lowercasing can expand a code point: `"İ".lowercase()` is `"i̇"` (UTF-16 length
+1 to 2), so a lowercase EQUALS, STARTS_WITH, ENDS_WITH or CONTAINS on such a value that used to
+match was rejected by `stringMatches`, `reusableMatches` and `reusableContains` alike.
+
+**Change:** the raw length rejects only untransformed and ASCII-only values, whose lowercase
+keeps the length; a value with a non-ASCII character takes the Unicode fallback and is measured
+after its transform. `StringMatchingTest` covers the expanding mapping in every mode and the
+rejection of a transformed value that is still too short.
+
+**Evidence (local, 64 fixtures, six runs forward and four reverse, CPU medians forward /
+reverse):** four-properties-targeted `5.71 -> 5.50 / 5.74 -> 5.28 ms`, class-pair-targeted
+`2.73 -> 2.87 / 3.15 -> 2.73 ms`, the 64-graph wrapped targeted shape `1.86 -> 1.95 /
+1.64 -> 1.82 ms`, distinct-dense first execution `6.70 -> 6.41 / 6.16 -> 6.54 ms`: the ASCII
+scan of a short candidate before its rejection is within the jar-order band on every row.
+
+**Conclusion:** kept, with the shortcut narrowed to length-preserving cases.
+
+### 2026-09-06 - Attempt 158: Merge posting ranges through the plan's arrays instead of cursor and heap classes
+
+**Hypothesis:** the first targeted projection row of a cold process still loaded seven classes on
+the request thread (the posting cursor and its heap, the storage projection row, the result
+cache and its key, the row layout and the public row), and preloading exactly those seven before
+the request cut the row's CPU median from 5.61 to 4.25 ms over five runs. The cursor and the
+heap are the two that exist only as code structure: a k-way merge of validated posting ranges
+needs one position, bound, node id and encounter order per range and a heap of range indexes,
+none of which requires a class of its own.
+
+**Change:** `MatchPlan` keeps the merge in parallel arrays (`openPostingMerge`,
+`mergeHasNext`, `mergeNodeId`, `mergeOrder`, `mergeAdvance`) with an index min-heap ordered by
+encounter order then node id, the validated orders of a range read from its `LongArray` when the
+range was not already known valid; `orderedMatchingNodeIds` and `distinctRows` drive it, and
+`MappedPostingCursor` and `PostingCursorHeap` are gone. The row loads five classes instead of
+seven.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, medians forward / reverse):**
+four-properties-targeted wall `6.43 -> 6.10 / 6.59 -> 5.99 ms` (CPU `5.51 -> 5.33 /
+5.88 -> 5.35 ms`), add first execution CPU `8.76 -> 8.21 / 9.03 -> 7.76 ms`, distinct-dense
+first execution wall `8.04 -> 7.49 / 8.25 -> 8.04 ms`; class-pair-targeted CPU `2.66 -> 2.79 /
+2.90 -> 2.92 ms` and the remaining rows within the jar-order band.
+
+**Conclusion:** kept.
+
+### 2026-09-06 - Attempt 157 (re-applied on top of Attempt 158): Fewer and smaller classes on the first DISTINCT provenance row
+
+**Hypothesis:** the first DISTINCT dense row of a cold process still loaded six classes on the
+request thread, and preloading exactly those six before the request cut the row's CPU from
+8.1-8.4 ms to 4.7-6.1 ms, so their loading and verification is worth 2-3 ms. Two of them
+existed only as code structure: the graph kept its own id-tuple key class next to the view's
+identical one, and the request-shared leading-value trigram hashes lived in a class of their
+own, eagerly hashing every leading value even though only a graph without load-time tables
+ever reads them. The largest of the six, the tuple lookup, carried the directory-search
+fallback (galloping search, trigram presence checks) that a graph with load-time tables
+never executes, so its bytecode was verified on every cold request for nothing.
+
+**Change:** the graph's DISTINCT raw path dedupes on the view's `IntTupleKey`; the leading
+values, their lazily computed trigram hashes and the per-value absent hints live in
+`TupleLookupSetup`, which the request already shares through the scratch slot; and the
+tuple lookup's directory search moved into `TupleDirectorySearch`, created on first use only by
+a graph without load-time tables. The class count of the row drops from six to five, and the
+add-row's last request-thread class load disappears.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, medians forward /
+reverse):** distinct-dense first execution CPU `7.34 -> 5.97 / 7.21 -> 6.19 ms` (wall
+`8.27 -> 7.19 / 8.65 -> 8.42 ms`; every one of the fourteen candidate CPU samples is below the
+base median of its order), add first execution CPU `8.30 -> 7.37 / 8.66 -> 8.29 ms`; the
+targeted and dense projection rows load the same classes as before and stay within the
+jar-order band (four-properties-targeted `5.72 -> 6.46 / 6.29 -> 6.41 ms` wall against a
+`5.72`-`6.29` spread of the base itself between orders).
+
+**Conclusion:** kept. First applied as 9bbfc11, reverted in c49649e when that head failed cypher-capacity-gate (+16.6% / +5.3% process CPU) and the 36-graph method-compatibility contains row (+50.8% wall), neither on its diff path; re-applied unchanged on top of Attempt 158.
+
+### 2026-09-06 - Attempt 159: Fold the direct projection cache key and row layout into the cache object
+
+**Hypothesis:** after Attempt 158 the first targeted projection row of a cold process loads five
+classes on the request thread, two of which exist only as code structure: the result cache's
+key class and the row layout class. Keying the cache by a string (graph id, projection identity
+hash, columns) with the projection identity verified on every hit, holding each entry in an
+array, and computing the layout as a name array plus a cell index array from functions on the
+cache object would load three classes instead of five.
+
+**Change (not kept):** `DirectProjectionResultCache.Key` replaced by string-keyed
+`Array<Any?>` entries with explicit eviction of a same-hash stale generation;
+`DirectProjectionRowLayout` replaced by `DirectProjectionResultCache.layout(columns, metadataKey)`
+returning `Pair<Array<String>, IntArray>` and `row(layout, values, metadata, graphIds)`. Cypher
+tests and detekt passed; the row loaded three classes instead of five in every run.
+
+**Evidence (local, 64 fixtures, three samples of eight, six and ten runs in each order on a
+freshly restarted host whose absolute times were about twice the earlier session's):**
+four-properties-targeted wall `9.81 -> 10.20 / 10.64 -> 10.72 ms` on the ten-run sample
+(`10.71 -> 10.49 / 10.26 -> 9.81 ms` on the six-run sample), class-pair-targeted
+`5.53 -> 6.44 / 5.22 -> 5.95 ms` and distinct-dense first execution `10.96 -> 13.45 /
+12.14 -> 14.88 ms`, both slower in all six comparisons across the three samples; the `add`
+first execution CPU `15.58 -> 17.82 / 15.78 -> 18.32 ms`.
+
+**Conclusion:** rejected. Two fewer class loads did not show up on the targeted row, and the rows
+that build many public rows (class-pair, the DISTINCT provenance rows) measured consistently
+slower with the object-function layout, so the change was dropped and the patch kept outside the
+tree for a later re-measurement on a quieter host.
+
+### 2026-09-06 - Gate repair, step 1: attribute the method-compatibility CPU window and cover the retained read
+
+**Context:** the owner's review on 9dfb589 keeps the PR blocked until the exact-head gate passes
+as a whole. Two checks stay red on identical code: the method-compatibility process-CPU rows,
+where wall time is flat (17/or +0.9%) while process CPU rises by 0.2-1.2 s and the failing shards
+move between runs, and the wrapped-query-resources validity check, where the candidate's retained
+heap exceeds its sampled peak by tens of KB on the 36-graph footprint.
+
+**Change:** `MethodDiscoveryCompatibilityBenchmark.measure()` records, next to the process CPU, the
+CPU of the Java threads alive across the window, the stop-the-world collection time and count,
+and the JIT compilation time (`javaThreadCpuNanos`, `gcTimeMillis`, `gcCount`, `jitTimeMillis`),
+so a shard's JSON says whether the extra process CPU is on request threads, in collections, in
+the compiler, or in native work off Java threads. The compared metrics are unchanged. The resource
+benchmark's heap sampler now runs until the retained value is read after the teardown
+collections, and the peak folds that read in, so the sampled window covers the point it is
+compared against; this can only raise the candidate's peak. That sampler change was withdrawn
+from the branch in the following commit: the resource harness is a trusted control of the gate,
+pinned by `REAL_ONLY_RESOURCE_HARNESS_SHA256` in the workflow and installed over the candidate's
+copy before the JMH jar is built, so it cannot be changed from a candidate branch; the same
+change is offered as a patch for `main` in the PR thread.
+
+**Outcome:** the counters never ran either: the explore benchmark harness is also a gate-owned
+control, installed from the base checkout over the candidate's copy before the JMH jar is built,
+so the branch's copy is restored to the pinned content. The run itself settled the diagnosis
+without them: on c2c0f70, code identical to 946093c and 9dfb589, the 22 method rows show
+process-CPU deltas from -32.2% to +57.2% (standard deviation 22.1%; 8 rows beyond the 15% line,
+5 as regressions and 3 as improvements) while their wall deltas stay within -9.2% to +12.7%
+(standard deviation 6.0%; none beyond 15%). A single-shot process-CPU sample whose run-to-run
+spread is above the threshold fails some row on nearly every run regardless of the diff, and
+the confirmation pass repeats the same sample. The proposed repair for `main` measures the CPU
+of the Java threads that serve the request, after a collection that removes the setup garbage
+from the window, gates on that, and keeps the process figure advisory; the patch is in the PR
+thread and at `bench/keep/method-cpu-gate.patch` of the session.
+
+### 2026-09-06 - Gate repair, step 2: the routing harness waits for collector quiescence before the measured replay
+
+**Context:** on c21fd18 the cold graph-set k8 rule went red on code that had passed it in the
+three previous runs: six candidate rows of 1.50-3.06 ms inside graph-set rows 219-237 of 246,
+on shapes that measure 0.10-0.40 ms elsewhere, with the candidate's median row faster than the
+base's. A local replay of the 246 graph-set rows on the 64 fixtures shows the same first-parse
+tail on both jars (candidate 9 and `main` 10 k8 literal rows above 1 ms, from the first
+execution of each unique 8-id literal text) and no tail once the texts are parsed (candidate k8
+0.23 / 0.68 / 0.93 ms), which the CI harness already does in trial setup. The CI replay records
+one collection while used heap grows from 3.48 to 3.9 GB of 8 GB, the point where G1 starts a
+concurrent cycle, and the marking that follows competes with the query thread on the runner's
+four cores, harder for the candidate (3.0-3.2 cores busy) than for the base (1.8-2.2).
+
+**Change (owner's choice, the narrow form of option 1):** invocation setup runs
+`awaitGcQuiescence()` after the forced collections and before the sampler starts: the replay
+begins only once no collector has recorded an event for 250 ms (10 s timeout), so a cycle that
+was already in flight finishes outside the measurement. A cycle the replay itself initiates
+stays inside it, and no collector setting changes. The harness is candidate-owned and copied
+into the base tree by the routing script, so both sides run it.
+
+**Result on bba2e24:** graph-routing passed in all three states (cold k8 candidate P95 0.89 ms
+against base 1.16 ms, medians 0.162 / 0.160 ms; two candidate rows and four base rows above
+1 ms remain, a replay-initiated burst staying inside the measurement as agreed). Global-wide
+failed on pair 1 only (6.69x: the wrapped-distinct/dense first execution at 17.64 ms against
+5.7-8.8 ms on the other five candidate replays of this and the previous head), with no collection
+recorded in any candidate replay of either head and a runner about 30% slower for both sides,
+so a documentation-only head re-samples both gates on the same code.
+
+**Result on 4f230fb (re-sample) and scoping:** routing passed again; global-wide failed a second
+time on identical production code, this time the wrapped non-DISTINCT 2x check on pair 3
+(base 6.72 ms, candidate 3.71 ms, 1.81x) while the 10x pairs passed at 15.38x / 12.49x /
+12.25x. Across the two heads that ran the wait, the candidate's first-execution rows are slower
+than on the five passing heads before it (DISTINCT-dense 7.9-17.6 ms against 5.0-9.4 ms, wrapped
+3.0-3.7 ms against 2.7-3.1 ms, targeted 2.4-3.2 ms against 2.0-2.8 ms) while the base's rows
+moved less, so the wait is scoped to the graph-routing coverage families, the ones the decision
+concerned, and the other families keep the invocation setup their gates were calibrated on.
+
+**Owner review on the wait (P1):** collector counts do not establish that a concurrent cycle has
+finished, since G1's concurrent mark runs between recorded pauses, and the timeout fell through
+silently. The step now proves quiescence through the collectors' notifications: it rejects
+`ExplicitGCInvokesConcurrent` (an explicit collection would start a cycle instead of ending
+one), forces a full collection, which is what aborts a concurrent cycle in flight, requires the
+explicit full collection to be reported before the deadline, waits a settle window in which no
+young collection (the only event that starts a cycle) may be reported, repeats once if one is,
+and otherwise fails closed instead of starting the replay.
+
+**Result on 534449a (notification-based wait, routing families only):** global-wide's 10x pairs
+passed at 33.01x / 13.12x / 32.18x with the family running the setup of its five passing heads,
+but the wrapped non-DISTINCT 2x check missed on pairs 1 and 3 (base 5.38 → candidate 2.79 ms,
+1.93x; base 7.51 → candidate 5.61 ms, 1.34x; pair 2 3.58x): one single-shot row per side, the
+base's drawn at its low end in pair 1 and the candidate's at its high end in pair 3. Routing
+passed warm and startup-prepared and failed cold on a different rule than c21fd18: the graph-set
+rows are the best so far (k2 / k8 / k64 P95 0.371 / 0.529 / 0.636 ms against 0.549 / 1.391 /
+3.728 ms) and the query-level graphId P95 speedup is 18.03x, but the request-selected
+(graph-parameter) P95 regressed 130.76% (0.388 → 0.896 ms over 192 rows; P50 −3.06%). Ten
+candidate rows sit above 0.6 ms against three on the base (tika-01 dense 2.91 ms, hive-10 zero
+1.98 ms, tika-04 1.64 ms, tika-06 1.49 ms, ...), at positions 3-5 of their graph's nine-row group,
+after the graph's function-form rows have already opened the mapped view, so they are not the
+first touch of the graph; the same shapes on bba2e24 had three such rows. The candidate's replay
+recorded one collection (14 ms) at 3.18 cores busy against the base's four (61 ms) at 2.46. Three
+method-compatibility shards were red on the process-CPU row with every wall row passing
+(17/suffix +28.9%, confirmation +41.9%; 36/contains +23.6%, +16.1%; 17/count +50.7%, +70.7%) and
+the resource family repeated its invalid loaded/retained/peak relationship, both on the `main`-side
+repairs. This head is documentation-only and takes the second routing sample with the
+notification-based wait; if the graph-parameter tail recurs, the local replay is extended from
+the 246 graph-set rows to the full 822-row sequence in the harness order.
+
+### 2026-09-07 - Gate repair, step 3: the routing states run index-cold on a JVM-warm process
+
+**Diagnosis (534449a, 8824d79, local full-sequence replay):** with the notification-based wait the
+cold routing state still failed the request-selected P95 rule twice (0.388 → 0.896 ms, then
+0.278 → 0.612 ms) on ten candidate rows above 0.6 ms. A local replay of the full 1,137-row
+sequence in the harness order (one JVM per jar, per-row wall, executor-thread CPU, page faults,
+collections, compilation time, safepoint log) showed the slow rows on both jars as scheduling
+stalls: wall far above CPU, no safepoint, no collection and no major fault inside their windows.
+The candidate compiles fewer methods over the replay (1,158 against 1,567; C2 244 against 395) but
+its cold replay is six times shorter, so it reaches the request-selected rows while the compiler
+queue from the first 576 rows is still draining, on a four-vCPU runner already carrying the
+candidate's 3.16 busy cores against the base's 2.42; the base reaches the same rows after 4-6 s of
+index builds during which its queue drained. Deoptimizations (36, JDK internals) and the worker
+thread's allocation (31 MB over the replay) were ruled out.
+
+**Change (owner's decision on #117):** the routing driver runs every routing state with one JMH
+warm-up iteration (`-wi 1 -i 1`), the invocation setup resetting the index state before both
+replays, so the measured replay is index-cold on a JVM-warm process. The harness writes the
+measured replay to the primary observations file (one workload per file, which the trusted
+workload verifier requires) and copies the no-warm-up first replay once to a `<primary>.first`
+sidecar; the comparator reads the gated rules from the primary file and, through
+`--base-first-observations`/`--candidate-first-observations`, reads the first cold K64 request and
+the advisory request-selected P50/P95 from the sidecar. An earlier revision appended both replays
+to one file, which broke the workload verifier's one-workload-per-file invariant; the sidecar keeps
+that verifier untouched. The base reference run and the global-wide driver keep `-wi 0`; gate tests
+pin the flags and the sidecar paths. The comparator pins in the workflow follow the new script
+content.

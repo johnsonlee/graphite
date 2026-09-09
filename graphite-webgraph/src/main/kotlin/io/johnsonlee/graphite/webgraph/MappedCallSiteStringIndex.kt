@@ -10,8 +10,6 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
-import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
@@ -25,18 +23,7 @@ import java.io.DataInput
 import java.io.DataOutput
 import java.util.Arrays
 import java.util.Collections
-import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.ExecutorCompletionService
-import java.util.concurrent.Future
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.CRC32
 
 /** Compact CSR indexes for the four strings searched by broad CallSite queries. */
@@ -50,7 +37,7 @@ internal class MappedCallSiteStringIndex(
     private val contentIdentity: () -> ByteArray,
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation,
     prepareExactProjectionTupleIndex: Boolean = false
-) : Closeable, CallSiteStringIdMembership {
+) : Closeable {
 
     private val persistedContentIdentity: ByteArray by lazy(contentIdentity)
 
@@ -256,11 +243,6 @@ internal class MappedCallSiteStringIndex(
         predicates: List<StringPropertyPredicate>,
         workConsumer: GraphWorkConsumer?
     ): PostingRanges {
-        if (workConsumer is SplitGraphWorkBatchConsumer &&
-            workConsumer.segmentWorkerCount > 0 && predicates.size > 1
-        ) {
-            return matchingRangesInParallel(predicates, workConsumer)
-        }
         val ranges = PostingRanges(properties)
         val sharedStates = mutableMapOf<CallSitePredicateKey, ByteArray?>()
         val sharedMatches = mutableMapOf<CallSitePredicateKey, IntArray?>()
@@ -289,53 +271,6 @@ internal class MappedCallSiteStringIndex(
         return ranges
     }
 
-    private fun matchingRangesInParallel(
-        predicates: List<StringPropertyPredicate>,
-        workConsumer: SplitGraphWorkBatchConsumer
-    ): PostingRanges {
-        if (predicates.any(StringPropertyPredicate::requiresTrigramSignature)) {
-            ensureTrigramMetadata(workConsumer)
-        }
-        val sharedMatches = mutableMapOf<CallSitePredicateKey, IntArray?>()
-        val matches = predicates.map { predicate ->
-            val key = CallSitePredicateKey(predicate.transform, predicate.mode, predicate.expected)
-            if (sharedMatches.containsKey(key)) {
-                sharedMatches[key]
-            } else {
-                matchingStringIds(predicate, workConsumer).also { sharedMatches[key] = it }
-            }
-        }
-        val workerCount = minOf(predicates.size, workConsumer.segmentWorkerCount + 1)
-        val chunkSize = (predicates.size + workerCount - 1) / workerCount
-        val tasks = (0 until workerCount).mapNotNull { workerIndex ->
-            val start = workerIndex * chunkSize
-            val end = minOf(predicates.size, start + chunkSize)
-            if (start >= end) return@mapNotNull null
-            Callable {
-                val local = PostingRanges(properties)
-                val states = mutableMapOf<CallSitePredicateKey, ByteArray?>()
-                for (predicateIndex in start until end) {
-                    val predicate = predicates[predicateIndex]
-                    val propertyIndex = callSiteStringPropertyIndex(predicate.property)
-                    if (propertyIndex < 0) continue
-                    val matchedStringIds = matches[predicateIndex]
-                    properties[propertyIndex].collectMatchingRanges(
-                        propertyIndex,
-                        PredicateRuntime(predicate, states, stringTable, trigramSignatures),
-                        matchedStringIds,
-                        candidatesAreKnownMatches = matchedStringIds != null,
-                        local,
-                        workConsumer
-                    )
-                }
-                local
-            }
-        }
-        return PostingRanges(properties).also { combined ->
-            executeSplitCallSiteTasks(tasks, workConsumer.segmentWorkerCount).forEach(combined::addAll)
-        }
-    }
-
     private fun matchingStringIds(
         predicate: StringPropertyPredicate,
         workConsumer: GraphWorkConsumer?
@@ -352,35 +287,10 @@ internal class MappedCallSiteStringIndex(
         }
         val candidates = candidateStringIds(predicate, workConsumer) ?: return null
         val runtime = PredicateRuntime(predicate, mutableMapOf(), stringTable, trigramSignatures)
-        val result = if (workConsumer is SplitGraphWorkBatchConsumer &&
-            candidates.size >= MIN_PARALLEL_CALL_SITE_MATCH_CANDIDATES
-        ) {
-            matchingCandidateStringIdsInParallel(candidates, runtime, workConsumer)
-        } else {
-            matchingCandidateStringIds(candidates, runtime, workConsumer)
-        }
+        val result = matchingCandidateStringIds(candidates, runtime, workConsumer)
         cacheMatchingStringIds(key, result)
         return result
     }
-
-    internal fun exactMatchingStringIds(
-        predicates: List<StringPropertyPredicate>,
-        workConsumer: GraphWorkConsumer?
-    ): List<IntArray>? {
-        if (predicates.any { predicate ->
-                !predicate.canUseLowercaseTrigramPostings() ||
-                    predicate.mode == StringMatchMode.EQUALS ||
-                    predicate.expected.length < MIN_CALL_SITE_TRIGRAM_LENGTH
-            }
-        ) return null
-        return predicates.map { predicate -> matchingStringIds(predicate, workConsumer) ?: return null }
-    }
-
-    override fun containsPropertyStringId(
-        propertyIndex: Int,
-        stringId: Int,
-        workConsumer: GraphWorkConsumer?
-    ): Boolean = properties.getOrNull(propertyIndex)?.containsStringId(stringId, workConsumer) == true
 
     private fun matchingCandidateStringIds(
         candidates: IntArray,
@@ -405,29 +315,6 @@ internal class MappedCallSiteStringIndex(
             accounting.flush()
         }
         return matched.copyOf(size)
-    }
-
-    @Suppress("ThrowsCount", "TooGenericExceptionCaught")
-    private fun matchingCandidateStringIdsInParallel(
-        candidates: IntArray,
-        runtime: PredicateRuntime,
-        workConsumer: SplitGraphWorkBatchConsumer
-    ): IntArray {
-        val workerCount = minOf(
-            candidates.size,
-            workConsumer.segmentWorkerCount + 1,
-            callSiteScanParallelism + 1
-        )
-        val chunkSize = (candidates.size + workerCount - 1) / workerCount
-        val tasks = (0 until workerCount).mapNotNull { workerIndex ->
-            val start = workerIndex * chunkSize
-            val end = minOf(candidates.size, start + chunkSize)
-            if (start >= end) return@mapNotNull null
-            Callable {
-                matchingCandidateStringIds(candidates, runtime, workConsumer, start, end)
-            }
-        }
-        return executeSplitCallSiteCandidateTasks(tasks, workConsumer.segmentWorkerCount)
     }
 
     @Synchronized
@@ -495,11 +382,6 @@ internal class MappedCallSiteStringIndex(
             val candidates = IntArray(shortest.size) { offset ->
                 postings[shortest.start + offset].toInt()
             }
-            if (workConsumer is SplitGraphWorkBatchConsumer && ranges.size > 1 &&
-                candidates.size >= MIN_PARALLEL_CALL_SITE_MATCH_CANDIDATES
-            ) {
-                return intersectCandidateStringIdsInParallel(postings, ranges, candidates, workConsumer)
-            }
             var candidateCount = candidates.size
             for (rangeIndex in 1 until ranges.size) {
                 val range = ranges[rangeIndex]
@@ -527,58 +409,6 @@ internal class MappedCallSiteStringIndex(
         } finally {
             accounting.flush()
         }
-    }
-
-    private fun intersectCandidateStringIdsInParallel(
-        postings: LongArray,
-        ranges: List<CallSiteTrigramPostingRange>,
-        candidates: IntArray,
-        workConsumer: SplitGraphWorkBatchConsumer
-    ): IntArray {
-        val workerCount = minOf(
-            candidates.size,
-            workConsumer.segmentWorkerCount + 1,
-            callSiteScanParallelism + 1
-        )
-        val chunkSize = (candidates.size + workerCount - 1) / workerCount
-        val tasks = (0 until workerCount).mapNotNull { workerIndex ->
-            val start = workerIndex * chunkSize
-            val end = minOf(candidates.size, start + chunkSize)
-            if (start >= end) return@mapNotNull null
-            Callable {
-                val retained = IntArray(end - start)
-                var retainedCount = 0
-                val accounting = BufferedGraphWorkConsumer(workConsumer)
-                try {
-                    for (candidateIndex in start until end) {
-                        if ((candidateIndex and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
-                            checkCallSiteIndexInterrupted()
-                        }
-                        val stringId = candidates[candidateIndex]
-                        var matched = true
-                        for (rangeIndex in 1 until ranges.size) {
-                            accounting.consume()
-                            val range = ranges[rangeIndex]
-                            if (Arrays.binarySearch(
-                                    postings,
-                                    range.start,
-                                    range.end,
-                                    trigramKey(range.trigram, stringId)
-                                ) < 0
-                            ) {
-                                matched = false
-                                break
-                            }
-                        }
-                        if (matched) retained[retainedCount++] = stringId
-                    }
-                } finally {
-                    accounting.flush()
-                }
-                retained.copyOf(retainedCount)
-            }
-        }
-        return executeSplitCallSiteCandidateTasks(tasks, workConsumer.segmentWorkerCount)
     }
 
     @Synchronized
@@ -629,26 +459,13 @@ internal class MappedCallSiteStringIndex(
             val result = LongArray(postingCount.toInt())
             var postingsCompleted = false
             try {
-                if (workConsumer is ParallelGraphWorkBatchConsumer &&
-                    stringTable.size() >= MIN_PARALLEL_CALL_SITE_TRIGRAM_STRINGS &&
-                    callSiteScanParallelism > 1
-                ) {
-                    populateCallSiteTrigramPostingsInParallel(
-                        stringIds,
-                        result,
-                        postingCounts,
-                        stringTable,
-                        workConsumer
-                    )
-                } else {
-                    populateCallSiteTrigramPostings(
-                        stringIds,
-                        result,
-                        postingCounts,
-                        stringTable,
-                        workConsumer
-                    )
-                }
+                populateCallSiteTrigramPostings(
+                    stringIds,
+                    result,
+                    postingCounts,
+                    stringTable,
+                    workConsumer
+                )
                 if (!sortCallSiteTrigramPostings(result, reservation)) {
                     buildCompleted = true
                     return null
@@ -674,26 +491,13 @@ internal class MappedCallSiteStringIndex(
         return try {
             val stringIds = usedCallSiteTrigramStringIds(properties, stringTable.size())
             val postingCounts = IntArray(stringTable.size())
-            val postingCount = if (workConsumer is ParallelGraphWorkBatchConsumer &&
-                stringTable.size() >= MIN_PARALLEL_CALL_SITE_TRIGRAM_STRINGS &&
-                callSiteScanParallelism > 1
-            ) {
-                populateCallSiteTrigramMetadataInParallel(
-                    stringIds,
-                    trigramSignatures,
-                    postingCounts,
-                    stringTable,
-                    workConsumer
-                )
-            } else {
-                populateCallSiteTrigramMetadata(
-                    stringIds,
-                    trigramSignatures,
-                    postingCounts,
-                    stringTable,
-                    workConsumer
-                )
-            }
+            val postingCount = populateCallSiteTrigramMetadata(
+                stringIds,
+                trigramSignatures,
+                postingCounts,
+                stringTable,
+                workConsumer
+            )
             trigramPostingCount = postingCount
             trigramPostingCounts = postingCounts
             trigramStringIds = stringIds
@@ -1174,14 +978,6 @@ internal class MappedCallSiteStringIndex(
             return start until postingEnds[row]
         }
 
-        fun containsStringId(stringId: Int, workConsumer: GraphWorkConsumer?): Boolean {
-            val accounting = BufferedGraphWorkConsumer(workConsumer)
-            return try {
-                findStringRow(stringId, accounting) >= 0
-            } finally {
-                accounting.flush()
-            }
-        }
 
         fun postingNodeId(position: Int): Int = postingNodeIds[position]
 
@@ -1904,150 +1700,6 @@ private data class CallSiteTrigramPostingRange(
         get() = end - start
 }
 
-private class SplitCallSiteTask<T>(private val task: Callable<T>) {
-    private val state = AtomicInteger(NEW)
-    private val exited = CountDownLatch(1)
-    lateinit var future: Future<T>
-
-    val callable = Callable {
-        if (!state.compareAndSet(NEW, RUNNING)) throw CancellationException()
-        try {
-            task.call()
-        } finally {
-            state.set(FINISHED)
-            exited.countDown()
-        }
-    }
-
-    fun cancel() {
-        future.cancel(true)
-        if (state.compareAndSet(NEW, FINISHED)) exited.countDown()
-    }
-
-    fun awaitExit(): InterruptedException? {
-        var interruption: InterruptedException? = null
-        while (true) {
-            try {
-                exited.await()
-                return interruption
-            } catch (error: InterruptedException) {
-                if (interruption == null) interruption = error
-            }
-        }
-    }
-
-    private companion object {
-        const val NEW = 0
-        const val RUNNING = 1
-        const val FINISHED = 2
-    }
-}
-
-private fun <T> cancelAndJoinSplitCallSiteTasks(
-    tasks: List<SplitCallSiteTask<T>>
-): InterruptedException? {
-    tasks.forEach { task -> task.cancel() }
-    var interruption: InterruptedException? = null
-    tasks.forEach { task ->
-        task.awaitExit()?.let { error -> if (interruption == null) interruption = error }
-    }
-    return interruption
-}
-
-@Suppress("ThrowsCount", "TooGenericExceptionCaught")
-internal fun executeSplitCallSiteCandidateTasks(
-    tasks: List<Callable<IntArray>>,
-    backgroundParallelism: Int
-): IntArray {
-    val results = executeSplitCallSiteTasks(tasks, backgroundParallelism)
-    val size = results.sumOf(IntArray::size)
-    val combined = IntArray(size)
-    var offset = 0
-    results.forEach { result ->
-        result.copyInto(combined, offset)
-        offset += result.size
-    }
-    return combined
-}
-
-private val splitCallSiteWorkerNumber = AtomicInteger()
-private val splitCallSiteActiveWorkers = AtomicInteger()
-private val splitCallSitePeakActiveWorkers = AtomicInteger()
-private val splitCallSiteExecutors = ConcurrentHashMap<Int, ThreadPoolExecutor>()
-
-internal fun splitCallSitePeakActiveWorkers(): Int = splitCallSitePeakActiveWorkers.get()
-
-internal fun resetSplitCallSiteWorkerMetrics() {
-    check(splitCallSiteActiveWorkers.get() == 0) { "Cannot reset active split CallSite worker metrics" }
-    splitCallSitePeakActiveWorkers.set(0)
-}
-
-internal fun splitCallSiteExecutor(backgroundParallelism: Int) =
-    splitCallSiteExecutors.computeIfAbsent(backgroundParallelism) { parallelism ->
-        ThreadPoolExecutor(
-            parallelism,
-            parallelism,
-            0L,
-            TimeUnit.MILLISECONDS,
-            LinkedBlockingQueue(),
-            { runnable ->
-                Thread(
-                    runnable,
-                    "graphite-callsite-segment-${splitCallSiteWorkerNumber.incrementAndGet()}"
-                ).apply { isDaemon = true }
-            }
-        )
-    }
-
-internal fun <T> trackedSplitCallSiteTask(task: Callable<T>): Callable<T> = Callable {
-    val activeWorkers = splitCallSiteActiveWorkers.incrementAndGet()
-    splitCallSitePeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
-    try {
-        task.call()
-    } finally {
-        // Keep teardown inside the Future's callable. Future.get() must not return while this
-        // worker is still counted active; ThreadPoolExecutor.afterExecute runs too late for that.
-        splitCallSiteActiveWorkers.decrementAndGet()
-    }
-}
-
-@Suppress("ThrowsCount", "TooGenericExceptionCaught")
-private fun <T> executeSplitCallSiteTasks(
-    tasks: List<Callable<T>>,
-    backgroundParallelism: Int
-): List<T> {
-    require(tasks.isNotEmpty())
-    require(backgroundParallelism >= 0)
-    require(tasks.size <= backgroundParallelism + 1)
-    if (tasks.size == 1) return listOf(tasks.single().call())
-    val executor = splitCallSiteExecutor(backgroundParallelism)
-    val backgroundTasks = tasks.drop(1).map { task -> SplitCallSiteTask(task) }
-    backgroundTasks.forEach { task -> task.future = executor.submit(trackedSplitCallSiteTask(task.callable)) }
-    val results = arrayOfNulls<Any?>(tasks.size)
-    try {
-        results[0] = tasks.first().call()
-        backgroundTasks.forEachIndexed { index, task -> results[index + 1] = task.future.get() }
-    } catch (error: InterruptedException) {
-        cancelAndJoinSplitCallSiteTasks(backgroundTasks)
-        Thread.currentThread().interrupt()
-        throw CancellationException(CALL_SITE_STRING_MATCH_INTERRUPTED).apply { initCause(error) }
-    } catch (error: ExecutionException) {
-        cancelAndJoinSplitCallSiteTasks(backgroundTasks)?.let { interruption ->
-            Thread.currentThread().interrupt()
-            throw CancellationException(CALL_SITE_STRING_MATCH_INTERRUPTED).apply { initCause(interruption) }
-        }
-        throw error.cause ?: error
-    } catch (error: Throwable) {
-        cancelAndJoinSplitCallSiteTasks(backgroundTasks)?.let { interruption ->
-            Thread.currentThread().interrupt()
-            throw CancellationException(CALL_SITE_STRING_MATCH_INTERRUPTED).apply { initCause(interruption) }
-        }
-        throw error
-    }
-    @Suppress("UNCHECKED_CAST")
-    return results.map { result -> result as T }
-}
-
 internal data class CallSitePredicateKey(
     val transform: StringValueTransform?,
     val mode: StringMatchMode,
@@ -2268,11 +1920,10 @@ private fun checkCallSiteIndexInterrupted() {
 
 internal fun sortCallSiteTrigramPostings(
     postings: LongArray,
-    reservation: MappedCallSiteStringIndexMemoryBudget.Reservation? = null,
-    onParallelWorkerStarted: (() -> Unit)? = null
+    reservation: MappedCallSiteStringIndexMemoryBudget.Reservation? = null
 ): Boolean {
     checkCallSiteIndexInterrupted()
-    if (postings.size < MIN_PARALLEL_CALL_SITE_TRIGRAM_SORT_SIZE) {
+    if (postings.size < MIN_RADIX_CALL_SITE_TRIGRAM_SORT_SIZE) {
         Arrays.sort(postings)
         checkCallSiteIndexInterrupted()
         return true
@@ -2294,59 +1945,39 @@ internal fun sortCallSiteTrigramPostings(
 
     try {
         val temporary = LongArray(postings.size)
-        parallelCallSiteTrigramRadixSort(postings, temporary, onParallelWorkerStarted)
+        callSiteTrigramRadixSort(postings, temporary)
         return true
     } finally {
         if (reservation != null) reservation.shrinkTo(checkNotNull(retainedBefore))
     }
 }
 
-private fun parallelCallSiteTrigramRadixSort(
-    postings: LongArray,
-    temporary: LongArray,
-    onParallelWorkerStarted: (() -> Unit)?
-) {
-    val workerCount = minOf(callSiteScanParallelism, postings.size)
-    val chunkSize = ((postings.size.toLong() + workerCount - 1L) / workerCount).toInt()
+/** Serial LSD radix sort on the requesting thread; large posting arrays avoid comparison sorting. */
+private fun callSiteTrigramRadixSort(postings: LongArray, temporary: LongArray) {
     var source = postings
     var target = temporary
     repeat(Long.SIZE_BYTES) { byteIndex ->
         val shift = byteIndex * Byte.SIZE_BITS
-        val counts = Array(workerCount) { IntArray(RADIX_BUCKET_COUNT) }
-        runCallSiteTrigramSortPhase(workerCount, onParallelWorkerStarted) { workerIndex, abort ->
-            val start = workerIndex * chunkSize
-            val end = minOf(postings.size, start + chunkSize)
-            val workerCounts = counts[workerIndex]
-            var index = start
-            while (index < end) {
-                checkCallSiteTrigramSortWorker(index, abort)
-                workerCounts[callSiteTrigramRadixBucket(source[index], shift)]++
-                index++
-            }
+        val counts = IntArray(RADIX_BUCKET_COUNT)
+        var index = 0
+        while (index < source.size) {
+            if ((index and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) checkCallSiteIndexInterrupted()
+            counts[callSiteTrigramRadixBucket(source[index], shift)]++
+            index++
         }
-
-        val offsets = Array(workerCount) { IntArray(RADIX_BUCKET_COUNT) }
-        var offset = 0L
+        var offset = 0
         for (bucket in 0 until RADIX_BUCKET_COUNT) {
-            for (workerIndex in 0 until workerCount) {
-                offsets[workerIndex][bucket] = offset.toInt()
-                offset += counts[workerIndex][bucket]
-            }
+            val count = counts[bucket]
+            counts[bucket] = offset
+            offset += count
         }
-        check(offset == postings.size.toLong())
-
-        runCallSiteTrigramSortPhase(workerCount, onParallelWorkerStarted) { workerIndex, abort ->
-            val start = workerIndex * chunkSize
-            val end = minOf(postings.size, start + chunkSize)
-            val workerOffsets = offsets[workerIndex]
-            var index = start
-            while (index < end) {
-                checkCallSiteTrigramSortWorker(index, abort)
-                val value = source[index]
-                val bucket = callSiteTrigramRadixBucket(value, shift)
-                target[workerOffsets[bucket]++] = value
-                index++
-            }
+        check(offset == postings.size)
+        index = 0
+        while (index < source.size) {
+            if ((index and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) checkCallSiteIndexInterrupted()
+            val value = source[index]
+            target[counts[callSiteTrigramRadixBucket(value, shift)]++] = value
+            index++
         }
         val previousSource = source
         source = target
@@ -2355,26 +1986,6 @@ private fun parallelCallSiteTrigramRadixSort(
     check(source === postings)
 }
 
-private fun runCallSiteTrigramSortPhase(
-    workerCount: Int,
-    onParallelWorkerStarted: (() -> Unit)?,
-    work: (Int, AtomicBoolean) -> Unit
-) {
-    val abort = AtomicBoolean()
-    val tasks = List(workerCount) { workerIndex ->
-        Callable {
-            onParallelWorkerStarted?.invoke()
-            work(workerIndex, abort)
-        }
-    }
-    awaitCallSiteTrigramTasks(tasks, abort)
-}
-
-private fun checkCallSiteTrigramSortWorker(index: Int, abort: AtomicBoolean) {
-    if ((index and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) != 0) return
-    if (abort.get()) throw CancellationException(CALL_SITE_TRIGRAM_SORT_ABORTED)
-    checkCallSiteIndexInterrupted()
-}
 
 private fun callSiteTrigramRadixBucket(value: Long, shift: Int): Int {
     val bucket = ((value ushr shift) and RADIX_BUCKET_MASK).toInt()
@@ -2478,135 +2089,6 @@ private fun populateCallSiteTrigramPostings(
         accounting.flush()
     }
     check(resultIndex == target.size)
-}
-
-private fun populateCallSiteTrigramMetadataInParallel(
-    stringIds: IntArray,
-    signatures: LongArray,
-    postingCounts: IntArray,
-    stringTable: StringTable,
-    workConsumer: ParallelGraphWorkBatchConsumer
-): Long {
-    if (stringIds.isEmpty()) return 0L
-    val abort = AtomicBoolean()
-    val workerCount = minOf(callSiteScanParallelism, stringIds.size)
-    val chunkSize = (stringIds.size + workerCount - 1) / workerCount
-    val tasks = (0 until workerCount).mapNotNull { workerIndex ->
-        val start = workerIndex * chunkSize
-        val end = minOf(stringIds.size, start + chunkSize)
-        if (start >= end) return@mapNotNull null
-        Callable {
-            val seenTrigrams = IntOpenHashSet()
-            val accounting = BufferedGraphWorkConsumer(workConsumer)
-            var postingCount = 0L
-            try {
-                for (index in start until end) {
-                    checkCallSiteTrigramWorker(index, abort)
-                    accounting.consume()
-                    postingCount += populateCallSiteTrigramMetadata(
-                        signatures,
-                        postingCounts,
-                        stringIds[index],
-                        stringTable,
-                        seenTrigrams
-                    )
-                }
-                postingCount
-            } finally {
-                accounting.flush()
-            }
-        }
-    }
-    return awaitCallSiteTrigramTasks(tasks, abort).sum()
-}
-
-private fun populateCallSiteTrigramPostingsInParallel(
-    stringIds: IntArray,
-    target: LongArray,
-    postingCounts: IntArray,
-    stringTable: StringTable,
-    workConsumer: ParallelGraphWorkBatchConsumer
-) {
-    if (stringIds.isEmpty()) return
-    val offsets = IntArray(stringIds.size)
-    var postingOffset = 0
-    for (index in stringIds.indices) {
-        offsets[index] = postingOffset
-        postingOffset += postingCounts[stringIds[index]]
-    }
-    check(postingOffset == target.size)
-
-    val abort = AtomicBoolean()
-    val workerCount = minOf(callSiteScanParallelism, stringIds.size)
-    val chunkSize = (stringIds.size + workerCount - 1) / workerCount
-    val tasks = (0 until workerCount).mapNotNull { workerIndex ->
-        val start = workerIndex * chunkSize
-        val end = minOf(stringIds.size, start + chunkSize)
-        if (start >= end) return@mapNotNull null
-        Callable {
-            val seenTrigrams = IntOpenHashSet()
-            val accounting = BufferedGraphWorkConsumer(workConsumer)
-            var written = 0
-            try {
-                for (index in start until end) {
-                    checkCallSiteTrigramWorker(index, abort)
-                    accounting.consume()
-                    val stringId = stringIds[index]
-                    val nextOffset = populateCallSiteTrigramPostings(
-                        target,
-                        offsets[index],
-                        postingCounts[stringId],
-                        stringId,
-                        stringTable,
-                        seenTrigrams
-                    )
-                    written += nextOffset - offsets[index]
-                }
-                written
-            } finally {
-                accounting.flush()
-            }
-        }
-    }
-    check(awaitCallSiteTrigramTasks(tasks, abort).sum() == target.size)
-}
-
-private fun checkCallSiteTrigramWorker(index: Int, abort: AtomicBoolean) {
-    if ((index and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) != 0) return
-    if (abort.get()) throw CancellationException(CALL_SITE_TRIGRAM_BUILD_ABORTED)
-    checkCallSiteIndexInterrupted()
-}
-
-@Suppress("CyclomaticComplexMethod", "NestedBlockDepth", "ThrowsCount")
-private fun <T> awaitCallSiteTrigramTasks(tasks: List<Callable<T>>, abort: AtomicBoolean): List<T> {
-    val completion = ExecutorCompletionService<T>(callSiteScanExecutor)
-    tasks.forEach(completion::submit)
-    val results = ArrayList<T>(tasks.size)
-    var received = 0
-    var failure: Throwable? = null
-    var interruption: InterruptedException? = null
-    while (received < tasks.size) {
-        try {
-            results += completion.take().get()
-            received++
-        } catch (error: InterruptedException) {
-            abort.set(true)
-            if (interruption == null) interruption = error
-        } catch (error: ExecutionException) {
-            abort.set(true)
-            val cause = error.cause ?: error
-            if (failure == null || failure is CancellationException && cause !is CancellationException) {
-                failure = cause
-            }
-            received++
-        }
-    }
-    interruption?.let { error ->
-        Thread.currentThread().interrupt()
-        throw CancellationException(CALL_SITE_TRIGRAM_BUILD_INTERRUPTED).apply { initCause(error) }
-    }
-    failure?.let { throw it }
-    return results
 }
 
 private fun populateCallSiteTrigramMetadata(
@@ -2716,7 +2198,7 @@ internal fun checkCallSiteIndexPersistenceInterrupted() {
     }
 }
 private const val CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK = 1_023
-private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_SORT_SIZE = 1 shl 20
+private const val MIN_RADIX_CALL_SITE_TRIGRAM_SORT_SIZE = 1 shl 20
 private const val RADIX_BUCKET_COUNT = 1 shl Byte.SIZE_BITS
 private const val RADIX_BUCKET_MASK = RADIX_BUCKET_COUNT - 1L
 private const val SIGNED_LONG_RADIX_SHIFT = (Long.SIZE_BYTES - 1) * Byte.SIZE_BITS
@@ -2742,17 +2224,11 @@ private const val BITSET_WORD_SHIFT = 6
 private const val BITSET_WORD_MASK = Long.SIZE_BITS - 1
 private const val SPARSE_DISTINCT_RANDOM_READ_FACTOR = 4L
 private const val MIN_CALL_SITE_TRIGRAM_LENGTH = 3
-private const val MIN_PARALLEL_CALL_SITE_MATCH_CANDIDATES = 4_096
-private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_STRINGS = 4_096
 private const val MIN_EXACT_CALL_SITE_PROJECTION_TUPLES = 4_096
 private const val MIN_SELECTED_VALUES_FOR_EXACT_PROJECTION_INDEX = 256
 private const val EXACT_CALL_SITE_PROJECTION_TUPLE_INDEX_ESTIMATED_BYTES = 128L
 private const val CALL_SITE_PROJECTION_TUPLE_HASH_SEED = -3750763034362895579L
 private const val CALL_SITE_PROJECTION_TUPLE_HASH_FACTOR = 1099511628211L
-private const val CALL_SITE_STRING_MATCH_INTERRUPTED = "CallSite string candidate match interrupted"
-private const val CALL_SITE_TRIGRAM_BUILD_ABORTED = "CallSite trigram metadata build aborted"
-private const val CALL_SITE_TRIGRAM_BUILD_INTERRUPTED = "CallSite trigram metadata build interrupted"
-private const val CALL_SITE_TRIGRAM_SORT_ABORTED = "CallSite trigram posting sort aborted"
 private const val ASCII_LIMIT = 128
 private const val STRING_HASH_FACTOR = 31
 private const val TRIGRAM_SIGNATURE_MASK = Long.SIZE_BITS - 1

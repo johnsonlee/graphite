@@ -205,7 +205,7 @@ run_revision() {
   fi
   java -jar "${JAR}" "${FILTER}" \
     -p graphCount=64 -p coverageFamily=graph-routing -p indexState="${INDEX_STATE}" \
-    -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -rf json \
+    -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 1 -i 1 -f 1 -to 30m -foe true -prof gc -rf json \
     -rff "${RESULT_PREFIX}.json" \
     -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} ${CORRECTNESS_ARGS} \
       -Dgraphite.broad.pressure.output=${RESULT_PREFIX}.correctness \
@@ -246,6 +246,8 @@ for INDEX_STATE in cold warm startup-prepared; do
     --candidate "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.json" \
     --base-observations "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.tsv" \
     --candidate-observations "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.tsv" \
+    --base-first-observations "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.tsv.first" \
+    --candidate-first-observations "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.tsv.first" \
     --base-correctness "${BASE_CORRECTNESS_ORACLE}" \
     --candidate-correctness "${ORACLE}" \
     --minimum-speedup 10 \

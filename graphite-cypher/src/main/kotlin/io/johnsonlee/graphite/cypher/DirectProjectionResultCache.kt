@@ -13,6 +13,7 @@ import java.util.Collections
  */
 internal object DirectProjectionResultCache {
 
+    /** A cache key that also carries its entry once stored, so one class serves both roles. */
     private class Key(
         val projectedRows: List<StringPropertyProjectionRow>,
         val columns: List<String>,
@@ -21,18 +22,16 @@ internal object DirectProjectionResultCache {
         private val hash = (System.identityHashCode(projectedRows) * HASH_FACTOR + columns.hashCode()) *
             HASH_FACTOR + graphId.hashCode()
 
+        lateinit var result: CypherResult
+        var retainedBytes = 0L
+
         override fun equals(other: Any?): Boolean = other is Key &&
             projectedRows === other.projectedRows && columns == other.columns && graphId == other.graphId
 
         override fun hashCode(): Int = hash
     }
 
-    private data class Entry(
-        val result: CypherResult,
-        val retainedBytes: Long
-    )
-
-    private val results = LinkedHashMap<Key, Entry>(
+    private val results = LinkedHashMap<Key, Key>(
         MAX_DIRECT_PROJECTION_CACHE_ENTRIES + 1,
         DIRECT_PROJECTION_CACHE_LOAD_FACTOR,
         true
@@ -64,8 +63,10 @@ internal object DirectProjectionResultCache {
                 results.remove(eldest.key)
                 retainedBytes -= eldest.value.retainedBytes
             }
-            val retainedColumns = result.columns
-            results[Key(projectedRows, retainedColumns, graphId)] = Entry(result, entryBytes)
+            val stored = Key(projectedRows, result.columns, graphId)
+            stored.result = result
+            stored.retainedBytes = entryBytes
+            results[stored] = stored
             retainedBytes += entryBytes
         }
         return result
@@ -93,27 +94,23 @@ internal object DirectProjectionResultCache {
             RESULT_GRAPH_IDS_KEY,
             Collections.singletonList(graphId)
         )
+        val layout = DirectProjectionRowLayout(immutableColumns, RESULT_METADATA_KEY)
         val rows = projectedRows.map { projected ->
             check(projected.values.size == immutableColumns.size) {
                 "Storage projection width ${projected.values.size} does not match ${immutableColumns.size} columns"
             }
-            val values = LinkedHashMap<String, Any?>(immutableColumns.size * 2 + 1)
-            immutableColumns.forEachIndexed { index, column -> values[column] = projected.values[index] }
-            values[RESULT_METADATA_KEY] = metadata
-            DirectProjectionCypherRow(Collections.unmodifiableMap(values), graphIds)
+            layout.row(projected.values, metadata, graphIds)
         }
         return CypherResult(immutableColumns, Collections.unmodifiableList(rows))
     }
 
-    private val maxRetainedBytes: Long by lazy {
-        System.getProperty(DIRECT_PROJECTION_CACHE_BUDGET_PROPERTY)
-            ?.toLongOrNull()
-            ?.coerceAtLeast(0L)
-            ?: minOf(
-                MAX_DIRECT_PROJECTION_CACHE_BYTES,
-                Runtime.getRuntime().maxMemory() / DIRECT_PROJECTION_CACHE_HEAP_DIVISOR
-            )
-    }
+    private val maxRetainedBytes: Long = System.getProperty(DIRECT_PROJECTION_CACHE_BUDGET_PROPERTY)
+        ?.toLongOrNull()
+        ?.coerceAtLeast(0L)
+        ?: minOf(
+            MAX_DIRECT_PROJECTION_CACHE_BYTES,
+            Runtime.getRuntime().maxMemory() / DIRECT_PROJECTION_CACHE_HEAP_DIVISOR
+        )
 
     private fun estimatedRetainedBytes(
         projectedRows: List<StringPropertyProjectionRow>,
@@ -149,8 +146,10 @@ internal object DirectProjectionResultCache {
 
     private fun estimatedProjectedStringBytes(rows: List<StringPropertyProjectionRow>): Long {
         var bytes = 0L
-        rows.forEach { row ->
-            row.values.filterNotNull().forEach { value ->
+        for (row in rows) {
+            val values = row.values
+            for (index in values.indices) {
+                val value = values[index] ?: continue
                 bytes = Math.addExact(
                     bytes,
                     Math.addExact(

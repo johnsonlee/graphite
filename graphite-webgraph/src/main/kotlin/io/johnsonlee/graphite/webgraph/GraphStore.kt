@@ -904,6 +904,46 @@ object GraphStore {
         val metadataFile = dir.resolve(METADATA_FILE)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
         val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
+        // The exact directory tables of the sidecar are load-time state of the graph: they are
+        // decoded here, next to the other mapped parts, and never inside a request.
+        val directoryHashesFuture: CompletableFuture<CallSiteDirectoryHashes?> = if (persistentCallSiteStringIndex) {
+            stringTableFuture.thenApplyAsync { stringTable ->
+                CallSiteDirectoryHashes.load(dir.resolve(CALL_SITE_STRING_INDEX_FILE), stringTable)
+            }
+        } else {
+            CompletableFuture.completedFuture(null)
+        }
+        var tablesOwned = false
+        try {
+            return loadMappedParts(
+                dir,
+                nodeDataVersion,
+                metadataFile,
+                forwardFuture,
+                stringTableFuture,
+                directoryHashesFuture,
+                prepareCallSiteStringIndex,
+                persistentCallSiteStringIndex
+            ) { tablesOwned = true }
+        } finally {
+            // Any failure before the graph owns the tables releases their reservation once the
+            // build has finished; a graph that failed to prepare released them when it closed.
+            if (!tablesOwned) directoryHashesFuture.thenAccept { hashes -> hashes?.close() }
+        }
+    }
+
+    @Suppress("LongParameterList", "TooGenericExceptionCaught")
+    private fun loadMappedParts(
+        dir: Path,
+        nodeDataVersion: Int,
+        metadataFile: Path,
+        forwardFuture: CompletableFuture<out ImmutableGraph>,
+        stringTableFuture: CompletableFuture<StringTable>,
+        directoryHashesFuture: CompletableFuture<CallSiteDirectoryHashes?>,
+        prepareCallSiteStringIndex: Boolean,
+        persistentCallSiteStringIndex: Boolean,
+        onTablesOwned: () -> Unit
+    ): Graph {
         val nodeIndexFuture = CompletableFuture.supplyAsync { readMappedNodeIndex(dir) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
         val methodCountFuture = CompletableFuture.supplyAsync { readMetadataMethodCount(metadataFile) }
@@ -922,6 +962,7 @@ object GraphStore {
         val nodeIndex = joinLoad(nodeIndexFuture)
         val methodCount = joinLoad(methodCountFuture)
         val comparisonLookup = joinLoad(comparisonFuture)
+        val directoryHashes = joinLoad(directoryHashesFuture)
         val backward = lazy { loadBackward(dir, forward) }
         val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
         val metadata = lazy {
@@ -945,15 +986,22 @@ object GraphStore {
             metadataFile = metadataFile.toFile(),
             callSiteStringIndexFile = dir.resolve(CALL_SITE_STRING_INDEX_FILE),
             persistentCallSiteStringIndexEnabled = persistentCallSiteStringIndex,
+            callSiteDirectoryHashes = directoryHashes,
             methodCount = methodCount,
             comparisonLookup = comparisonLookup,
             metadata = metadata,
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
+        // From here the graph releases the tables when it closes.
+        onTablesOwned()
         if (prepareCallSiteStringIndex) {
             try {
-                if (graph.prepareCallSiteStringIndex()) graph.persistPreparedCallSiteStringIndex()
+                // Startup preparation opens the validated mapped sidecar view (persisting it first
+                // for a legacy store); only a store with the sidecar disabled retains a heap index.
+                if (!graph.prepareMappedCallSiteStringIndexView() && graph.prepareCallSiteStringIndex()) {
+                    graph.persistPreparedCallSiteStringIndex()
+                }
             } catch (error: Exception) {
                 graph.close()
                 throw error
