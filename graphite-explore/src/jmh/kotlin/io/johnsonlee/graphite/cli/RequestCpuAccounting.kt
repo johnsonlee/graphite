@@ -60,6 +60,9 @@ internal object RequestCpuAccounting {
         val threads = ManagementFactory.getThreadMXBean()
         val beforeStarted = threads.totalStartedThreadCount
         val beforeCpu = threadCpuSnapshot(threads, threads.allThreadIds, unreadable = null)
+        // Names captured at the start so a thread gone by the end can still be identified in the
+        // failure message. Names are only ever reported, never used for an accounting decision.
+        val beforeNames = threadNames(threads, beforeCpu.keys)
         // The process figure is read innermost so its interval is contained in the thread
         // snapshots; the request-serving Java sum can then exceed it only by snapshot overhead.
         val beforeProcess = processCpuTimeNanos()
@@ -72,10 +75,11 @@ internal object RequestCpuAccounting {
         // enumerated at the end but gone before its read returns -1 and is absent from afterCpu, so
         // it counts as vanished rather than present-with-no-CPU -- otherwise a worker exiting during
         // the end snapshot would balance the started count and hide its CPU.
-        val vanished = beforeCpu.keys.count { it !in afterCpu }
-        check(vanished == 0) {
-            "$vanished Java thread(s) present at the start of the window were gone at the end; " +
-                "their in-window CPU cannot be accounted"
+        val vanishedIds = beforeCpu.keys.filter { it !in afterCpu }
+        check(vanishedIds.isEmpty()) {
+            val described = vanishedIds.sorted().joinToString { id -> "${beforeNames[id] ?: "?"}#$id" }
+            "${vanishedIds.size} Java thread(s) present at the start of the window were gone at the " +
+                "end ($described); their in-window CPU cannot be accounted"
         }
         val appeared = afterCpu.keys.count { it !in beforeCpu }
         val transientWorkers = (afterStarted - beforeStarted) - appeared
@@ -118,6 +122,16 @@ internal object RequestCpuAccounting {
         }
         return snapshot
     }
+
+    /** Thread names for [ids], captured up front so a thread gone by the end can still be named. */
+    private fun threadNames(threads: ThreadMXBean, ids: Set<Long>): Map<Long, String> {
+        if (ids.isEmpty()) return emptyMap()
+        val names = HashMap<Long, String>(ids.size * 2)
+        for (info in threads.getThreadInfo(ids.toLongArray())) {
+            if (info != null) names[info.threadId] = info.threadName
+        }
+        return names
+    }
 }
 
 /**
@@ -135,6 +149,7 @@ object MethodCompatibilityCpuAccountingContract {
             checkCollidingNameWorkerIsCharged(failures)
             checkTransientWorkerFailsClosed(failures)
             checkEndSnapshotReadRaceFailsClosed(failures)
+            checkPresentThenGoneFailsClosed(failures)
             checkProcessBound("idle action", failures) { 0L }
             checkProcessBound("collector-loaded action", failures) { collectorLoad() }
         } catch (@Suppress("TooGenericExceptionCaught") failure: RuntimeException) {
@@ -237,6 +252,42 @@ object MethodCompatibilityCpuAccountingContract {
     }
 
     /**
+     * A Java thread present at the window start that exits inside the window is in the before
+     * snapshot but not the after snapshot; the accounting must fail closed rather than drop the CPU
+     * it accrued before exiting, and the failure must name the vanished thread so the offending
+     * lifecycle can be identified (a JDK `Keep-Alive-Timer` from the harness's HttpURLConnection
+     * client was the one that tripped it on the longer method scenarios). The repair keeps this
+     * tripwire and removes that non-request thread at its source (`http.keepAlive=false`) rather
+     * than weakening the guarantee.
+     */
+    private fun checkPresentThenGoneFailsClosed(failures: MutableList<String>) {
+        val release = java.util.concurrent.CountDownLatch(1)
+        val worker = Thread {
+            runCatching { release.await() }
+        }.apply { isDaemon = true; name = PRESENT_THEN_GONE_WORKER_NAME; start() }
+        // The worker is parked and present in the before snapshot; releasing and joining it inside
+        // the window makes it exit before the end snapshot is taken.
+        val outcome = runCatching {
+            RequestCpuAccounting.measure {
+                release.countDown()
+                worker.join()
+                0L
+            }
+        }
+        val message = outcome.exceptionOrNull()?.message ?: ""
+        val failedClosed = outcome.isFailure
+        val named = message.contains(PRESENT_THEN_GONE_WORKER_NAME)
+        println("cpu-accounting-contract: present-then-gone worker failed closed = $failedClosed, " +
+            "named = $named")
+        if (!failedClosed) {
+            failures.add("a thread present at the window start that exited inside it was not caught; " +
+                "the row would drop its pre-exit CPU")
+        } else if (!named) {
+            failures.add("the vanished-thread failure did not name the offending thread: $message")
+        }
+    }
+
+    /**
      * The request-serving Java sum is per-thread on-CPU time over an interval the process figure
      * contains, so it can exceed the process figure only by snapshot overhead, whatever the JVM's
      * own threads did around the action. A larger overshoot means the intervals are not nested.
@@ -265,6 +316,10 @@ object MethodCompatibilityCpuAccountingContract {
 }
 
 private const val CPU_ACCOUNTING_WORKER_NANOS = 200_000_000L
+
+/** A distinctive name the present-then-gone contract asserts appears in the vanished-thread failure. */
+private const val PRESENT_THEN_GONE_WORKER_NAME = "cpu-accounting-present-then-gone"
+
 private const val CPU_ACCOUNTING_GARBAGE_CHUNKS = 512
 private const val CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES = 1 shl 20
 private const val CPU_ACCOUNTING_GARBAGE_RETAINED = 64

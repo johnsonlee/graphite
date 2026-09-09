@@ -3465,6 +3465,11 @@ test("a candidate-owned smoke exercises the new CPU accounting harness in a real
     assert.doesNotMatch(job, /Install base-owned Explorer harnesses/, "the smoke must not install the base harness");
     // A real graphCount=4 fork over all four corpora.
     assert.match(job, /-p graphCount=4 -p scenario=count/);
+    // And the worst-case graph count over the scenarios that tripped the accounting, with
+    // fail-on-error so an abort in measure() fails the step -- proving the matrix, not just 4/count.
+    assert.match(job, /-p graphCount=36 -p scenario=prefix,contains/);
+    assert.match(job, /-foe true/);
+    assert.match(job, /\["contains", "prefix"\]/, "the long-scenario assert must require both named scenarios");
     // Asserts the fork published a valid javaThreadCpuNanos row with nonnegative accounting diagnostics.
     assert.match(job, /secondaryMetrics\.requestsSucceeded\.score == 1/);
     assert.match(job, /secondaryMetrics\.javaThreadCpuNanos\.score > 0/);

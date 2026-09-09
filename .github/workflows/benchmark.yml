@@ -761,7 +761,7 @@ jobs:
     name: validate-cpu-accounting
     needs: [prepare-latency-fixtures]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
     - name: Checkout PR
@@ -848,6 +848,46 @@ jobs:
             .secondaryMetrics.jitTimeMillis.score >= 0
           )' "${FILE}" >/dev/null
         echo "cpu-accounting smoke: candidate fork published a valid javaThreadCpuNanos row"
+
+    # The 4-graph/count smoke alone did not establish the accounting across the gate matrix: the
+    # tripwire fired on the longer 17/36-graph scenarios (prefix, contains) where the JDK
+    # HttpURLConnection client's Keep-Alive-Timer thread exits inside the window. Run the worst-case
+    # graph count over both named scenarios on the candidate harness (which runs with
+    # http.keepAlive=false) with fail-on-error, so an abort in measure() fails this step. Completion
+    # proves the fix keeps the accounting usable across the matrix.
+    - name: Exercise the long method scenarios that tripped the accounting
+      run: |
+        JAR=jmh-candidate-native/candidate-native-explore-jmh.jar
+        GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        java -jar "${JAR}" \
+          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' \
+          -wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
+          -p graphCount=36 -p scenario=prefix,contains \
+          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-cpu-accounting-longscan.txt" \
+          -rff "${PWD}/benchmark-results/candidate-cpu-accounting-longscan.json"
+
+    - name: Assert the long scenarios completed without aborting the accounting
+      run: |
+        FILE=benchmark-results/candidate-cpu-accounting-longscan.json
+        EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate'
+        jq -e --arg expected "${EXPECTED}" '
+          length == 2 and
+          ([.[].params.scenario] | sort) == ["contains", "prefix"] and
+          all(.[];
+            .benchmark == $expected and
+            .params.graphCount == "36" and
+            .mode == "ss" and
+            .primaryMetric.score > 0 and
+            .secondaryMetrics.requestsSucceeded.score == 1 and
+            .secondaryMetrics.javaThreadCpuNanos.score > 0 and
+            .secondaryMetrics.processCpuNanos.score > 0 and
+            .secondaryMetrics.jvmInternalCpuNanos.score >= 0 and
+            .secondaryMetrics.cpuAccountingUnderflowNanos.score >= 0
+          )' "${FILE}" >/dev/null
+        echo "cpu-accounting smoke: 36-graph prefix and contains completed on the pinned harness"
 
     - name: Upload CPU accounting smoke result
       if: always()
