@@ -3,6 +3,23 @@ package io.johnsonlee.graphite.cli
 import java.lang.management.ManagementFactory
 import java.lang.management.ThreadMXBean
 import kotlin.system.exitProcess
+import org.eclipse.jetty.util.thread.QueuedThreadPool
+
+/**
+ * A Jetty pool that keeps every server thread for the life of the trial. Jetty's default
+ * [QueuedThreadPool] reaps idle worker threads on their idle timeout and idle reserved threads via
+ * its `ReservedThreadExecutor`; on the longer 17/36-graph method scenarios that reaping lands
+ * inside a measured window, and [RequestCpuAccounting] then fails closed because a Java thread
+ * present at the window start is gone at the end. Disabling the idle timeout (and reserved threads)
+ * removes that benign churn without weakening the tripwire: a genuine request worker that vanishes
+ * still trips it. Defined here (the candidate keeps this file, while the benchmark harness is
+ * base-installed over both trees) so the caller and the contract share one definition.
+ */
+internal fun pinnedServerThreadPool(): QueuedThreadPool =
+    QueuedThreadPool(SERVER_MAX_THREADS, SERVER_MIN_THREADS, NO_IDLE_TIMEOUT_MILLIS).apply {
+        name = "graphite-method-bench-jetty"
+        reservedThreads = 0
+    }
 
 /** One measured window of the request-serving CPU accounting. */
 internal data class RequestCpuSample(
@@ -337,6 +354,12 @@ private const val CPU_ACCOUNTING_WORKER_NANOS = 200_000_000L
  * default Jetty idle timeout, so an unpinned pool would have reaped inside it. */
 private const val CPU_ACCOUNTING_PINNED_POOL_JOBS = 4
 private const val CPU_ACCOUNTING_PINNED_WINDOW_MILLIS = 300L
+
+// A very large idle timeout keeps the benchmark server's Jetty threads from being reaped inside a
+// measured window; Int.MAX_VALUE ms is ~24 days, far beyond any trial.
+private const val NO_IDLE_TIMEOUT_MILLIS = Int.MAX_VALUE
+private const val SERVER_MIN_THREADS = 8
+private const val SERVER_MAX_THREADS = 64
 
 private const val CPU_ACCOUNTING_GARBAGE_CHUNKS = 512
 private const val CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES = 1 shl 20
