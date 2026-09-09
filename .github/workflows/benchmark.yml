@@ -850,10 +850,11 @@ jobs:
         echo "cpu-accounting smoke: candidate fork published a valid javaThreadCpuNanos row"
 
     # The 4-graph/count smoke alone did not establish the accounting across the gate matrix: the
-    # tripwire fired on the longer 17/36-graph scenarios (prefix, contains) where a benign idle
-    # server thread was reaped inside the window. Run the worst-case graph count over both named
-    # scenarios on the candidate (pinned) harness with fail-on-error, so an abort in measure() fails
-    # this step. Completion proves the pinned pool keeps the accounting usable across the matrix.
+    # tripwire fired on the longer 17/36-graph scenarios (prefix, contains) where the JDK
+    # HttpURLConnection client's Keep-Alive-Timer thread exits inside the window. Run the worst-case
+    # graph count over both named scenarios on the candidate harness (which runs with
+    # http.keepAlive=false) with fail-on-error, so an abort in measure() fails this step. Completion
+    # proves the fix keeps the accounting usable across the matrix.
     - name: Exercise the long method scenarios that tripped the accounting
       run: |
         JAR=jmh-candidate-native/candidate-native-explore-jmh.jar

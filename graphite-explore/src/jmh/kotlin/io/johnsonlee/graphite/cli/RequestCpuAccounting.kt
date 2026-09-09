@@ -3,23 +3,6 @@ package io.johnsonlee.graphite.cli
 import java.lang.management.ManagementFactory
 import java.lang.management.ThreadMXBean
 import kotlin.system.exitProcess
-import org.eclipse.jetty.util.thread.QueuedThreadPool
-
-/**
- * A Jetty pool that keeps every server thread for the life of the trial. Jetty's default
- * [QueuedThreadPool] reaps idle worker threads on their idle timeout and idle reserved threads via
- * its `ReservedThreadExecutor`; on the longer 17/36-graph method scenarios that reaping lands
- * inside a measured window, and [RequestCpuAccounting] then fails closed because a Java thread
- * present at the window start is gone at the end. Disabling the idle timeout (and reserved threads)
- * removes that benign churn without weakening the tripwire: a genuine request worker that vanishes
- * still trips it. Defined here (the candidate keeps this file, while the benchmark harness is
- * base-installed over both trees) so the caller and the contract share one definition.
- */
-internal fun pinnedServerThreadPool(): QueuedThreadPool =
-    QueuedThreadPool(SERVER_MAX_THREADS, SERVER_MIN_THREADS, NO_IDLE_TIMEOUT_MILLIS).apply {
-        name = "graphite-method-bench-jetty"
-        reservedThreads = 0
-    }
 
 /** One measured window of the request-serving CPU accounting. */
 internal data class RequestCpuSample(
@@ -77,6 +60,9 @@ internal object RequestCpuAccounting {
         val threads = ManagementFactory.getThreadMXBean()
         val beforeStarted = threads.totalStartedThreadCount
         val beforeCpu = threadCpuSnapshot(threads, threads.allThreadIds, unreadable = null)
+        // Names captured at the start so a thread gone by the end can still be identified in the
+        // failure message. Names are only ever reported, never used for an accounting decision.
+        val beforeNames = threadNames(threads, beforeCpu.keys)
         // The process figure is read innermost so its interval is contained in the thread
         // snapshots; the request-serving Java sum can then exceed it only by snapshot overhead.
         val beforeProcess = processCpuTimeNanos()
@@ -89,10 +75,11 @@ internal object RequestCpuAccounting {
         // enumerated at the end but gone before its read returns -1 and is absent from afterCpu, so
         // it counts as vanished rather than present-with-no-CPU -- otherwise a worker exiting during
         // the end snapshot would balance the started count and hide its CPU.
-        val vanished = beforeCpu.keys.count { it !in afterCpu }
-        check(vanished == 0) {
-            "$vanished Java thread(s) present at the start of the window were gone at the end; " +
-                "their in-window CPU cannot be accounted"
+        val vanishedIds = beforeCpu.keys.filter { it !in afterCpu }
+        check(vanishedIds.isEmpty()) {
+            val described = vanishedIds.sorted().joinToString { id -> "${beforeNames[id] ?: "?"}#$id" }
+            "${vanishedIds.size} Java thread(s) present at the start of the window were gone at the " +
+                "end ($described); their in-window CPU cannot be accounted"
         }
         val appeared = afterCpu.keys.count { it !in beforeCpu }
         val transientWorkers = (afterStarted - beforeStarted) - appeared
@@ -135,6 +122,16 @@ internal object RequestCpuAccounting {
         }
         return snapshot
     }
+
+    /** Thread names for [ids], captured up front so a thread gone by the end can still be named. */
+    private fun threadNames(threads: ThreadMXBean, ids: Set<Long>): Map<Long, String> {
+        if (ids.isEmpty()) return emptyMap()
+        val names = HashMap<Long, String>(ids.size * 2)
+        for (info in threads.getThreadInfo(ids.toLongArray())) {
+            if (info != null) names[info.threadId] = info.threadName
+        }
+        return names
+    }
 }
 
 /**
@@ -153,7 +150,6 @@ object MethodCompatibilityCpuAccountingContract {
             checkTransientWorkerFailsClosed(failures)
             checkEndSnapshotReadRaceFailsClosed(failures)
             checkPresentThenGoneFailsClosed(failures)
-            checkPinnedServerPoolHoldsThreadsAcrossWindow(failures)
             checkProcessBound("idle action", failures) { 0L }
             checkProcessBound("collector-loaded action", failures) { collectorLoad() }
         } catch (@Suppress("TooGenericExceptionCaught") failure: RuntimeException) {
@@ -258,65 +254,36 @@ object MethodCompatibilityCpuAccountingContract {
     /**
      * A Java thread present at the window start that exits inside the window is in the before
      * snapshot but not the after snapshot; the accounting must fail closed rather than drop the CPU
-     * it accrued before exiting. This is the branch a benign idle server thread was tripping on the
-     * longer method scenarios: the repair keeps the tripwire and stops the server pool from reaping
-     * mid-window (see the pinned-pool check below), rather than weakening this guarantee.
+     * it accrued before exiting, and the failure must name the vanished thread so the offending
+     * lifecycle can be identified (a JDK `Keep-Alive-Timer` from the harness's HttpURLConnection
+     * client was the one that tripped it on the longer method scenarios). The repair keeps this
+     * tripwire and removes that non-request thread at its source (`http.keepAlive=false`) rather
+     * than weakening the guarantee.
      */
     private fun checkPresentThenGoneFailsClosed(failures: MutableList<String>) {
         val release = java.util.concurrent.CountDownLatch(1)
         val worker = Thread {
             runCatching { release.await() }
-        }.apply { isDaemon = true; start() }
+        }.apply { isDaemon = true; name = PRESENT_THEN_GONE_WORKER_NAME; start() }
         // The worker is parked and present in the before snapshot; releasing and joining it inside
         // the window makes it exit before the end snapshot is taken.
-        val failedClosed = runCatching {
+        val outcome = runCatching {
             RequestCpuAccounting.measure {
                 release.countDown()
                 worker.join()
                 0L
             }
-        }.isFailure
-        println("cpu-accounting-contract: present-then-gone worker failed closed = $failedClosed")
+        }
+        val message = outcome.exceptionOrNull()?.message ?: ""
+        val failedClosed = outcome.isFailure
+        val named = message.contains(PRESENT_THEN_GONE_WORKER_NAME)
+        println("cpu-accounting-contract: present-then-gone worker failed closed = $failedClosed, " +
+            "named = $named")
         if (!failedClosed) {
             failures.add("a thread present at the window start that exited inside it was not caught; " +
                 "the row would drop its pre-exit CPU")
-        }
-    }
-
-    /**
-     * The benchmark server's pool is pinned ([pinnedServerThreadPool]) so no idle server thread is
-     * reaped inside a measured window and trips [checkPresentThenGoneFailsClosed]. Its threads must
-     * stay present across a window longer than a default idle timeout, and the accounting must
-     * complete. Only Java threads count toward liveness, so the JVM's own native threads are
-     * irrelevant here.
-     */
-    private fun checkPinnedServerPoolHoldsThreadsAcrossWindow(failures: MutableList<String>) {
-        val pool = pinnedServerThreadPool()
-        if (pool.idleTimeout != Int.MAX_VALUE || pool.reservedThreads != 0) {
-            failures.add("the pinned server pool is not configured to hold threads: " +
-                "idleTimeout=${pool.idleTimeout}, reservedThreads=${pool.reservedThreads}")
-            return
-        }
-        pool.start()
-        val release = java.util.concurrent.CountDownLatch(1)
-        try {
-            val busy = java.util.concurrent.CountDownLatch(CPU_ACCOUNTING_PINNED_POOL_JOBS)
-            repeat(CPU_ACCOUNTING_PINNED_POOL_JOBS) {
-                pool.execute { busy.countDown(); runCatching { release.await() } }
-            }
-            busy.await()
-            val outcome = runCatching {
-                RequestCpuAccounting.measure { Thread.sleep(CPU_ACCOUNTING_PINNED_WINDOW_MILLIS); 0L }
-            }
-            val held = outcome.isSuccess
-            println("cpu-accounting-contract: pinned pool held its threads across the window = $held")
-            if (!held) {
-                failures.add("the pinned server pool lost a thread inside the window: " +
-                    (outcome.exceptionOrNull()?.message ?: "unknown"))
-            }
-        } finally {
-            release.countDown()
-            pool.stop()
+        } else if (!named) {
+            failures.add("the vanished-thread failure did not name the offending thread: $message")
         }
     }
 
@@ -350,16 +317,8 @@ object MethodCompatibilityCpuAccountingContract {
 
 private const val CPU_ACCOUNTING_WORKER_NANOS = 200_000_000L
 
-/** Enough pinned-pool workers to hold threads present across the window; a window longer than a
- * default Jetty idle timeout, so an unpinned pool would have reaped inside it. */
-private const val CPU_ACCOUNTING_PINNED_POOL_JOBS = 4
-private const val CPU_ACCOUNTING_PINNED_WINDOW_MILLIS = 300L
-
-// A very large idle timeout keeps the benchmark server's Jetty threads from being reaped inside a
-// measured window; Int.MAX_VALUE ms is ~24 days, far beyond any trial.
-private const val NO_IDLE_TIMEOUT_MILLIS = Int.MAX_VALUE
-private const val SERVER_MIN_THREADS = 8
-private const val SERVER_MAX_THREADS = 64
+/** A distinctive name the present-then-gone contract asserts appears in the vanished-thread failure. */
+private const val PRESENT_THEN_GONE_WORKER_NAME = "cpu-accounting-present-then-gone"
 
 private const val CPU_ACCOUNTING_GARBAGE_CHUNKS = 512
 private const val CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES = 1 shl 20

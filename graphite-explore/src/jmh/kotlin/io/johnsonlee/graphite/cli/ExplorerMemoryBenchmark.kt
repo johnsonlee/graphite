@@ -377,7 +377,11 @@ open class ExplorerMemoryBenchmark {
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Measurement(iterations = 1)
-@Fork(1, jvmArgs = ["-Xmx8g"])
+// http.keepAlive=false stops the JDK's HttpURLConnection client (used by rawRequest) from spawning a
+// Keep-Alive-Timer daemon thread. That thread is present at a measured window's start and exits when
+// the keep-alive cache idles (~seconds later), which on the longer 17/36-graph scenarios lands inside
+// the window and makes RequestCpuAccounting fail closed on a non-request client-lifecycle thread.
+@Fork(1, jvmArgs = ["-Xmx8g", "-Dhttp.keepAlive=false"])
 open class MethodDiscoveryCompatibilityBenchmark {
 
     @Param("4", "17", "36")
@@ -424,13 +428,6 @@ open class MethodDiscoveryCompatibilityBenchmark {
         topology = TopologyService(registry, emptyList(), root).also { it.rebuild() }
         app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
-            // Pin the embedded Jetty pool so no idle server thread is reaped inside a measured
-            // window. RequestCpuAccounting fails closed when a Java thread present at the window
-            // start is gone at the end; Jetty's default QueuedThreadPool reaps idle worker and
-            // reserved threads on their idle timeout, which on the longer 17/36-graph scenarios
-            // lands inside the window and trips the tripwire on identical code. See
-            // pinnedServerThreadPool.
-            config.jetty.threadPool = pinnedServerThreadPool()
         }.start(0)
         cypherGuard = CypherQueryGuard(TARGET_CYPHER_CONCURRENCY, TARGET_CYPHER_WORK_BUDGET)
         ExploreRoutes(cypherGuard).register(app, registry, topology)
