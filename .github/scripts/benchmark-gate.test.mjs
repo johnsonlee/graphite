@@ -3310,6 +3310,32 @@ test("method-compatibility shards run the CPU accounting contract in its own JVM
     assert.ok(contract < firstFork, "the contract must run before the first measured fork");
 });
 
+test("the method-compatibility shard gates CPU on javaThreadCpuNanos and keeps processCpuNanos advisory", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const start = workflow.indexOf("\n  method-compatibility-shard:");
+    const job = workflow.slice(start + 1, workflow.indexOf("\n  validate-cpu-accounting:"));
+    assert.ok(start > 0 && job.length > 0, "the method-compatibility-shard job must exist");
+
+    // The blocking CPU gate now measures request-serving Java-thread CPU, not whole-process CPU.
+    assert.match(job, /gate_metric cpu javaThreadCpuNanos '[^']*' false/,
+        "cpu must gate on javaThreadCpuNanos as a blocking metric");
+    assert.match(job, /'cpu:javaThreadCpuNanos:[^:]*:false'/,
+        "the final-enforcement spec must gate cpu on javaThreadCpuNanos (blocking)");
+    // Whole-process CPU is retained only as an advisory row so a swing can still be attributed.
+    assert.match(job, /gate_metric process-cpu processCpuNanos '[^']*' true/,
+        "processCpuNanos must be an advisory (non-blocking) metric");
+    assert.match(job, /'process-cpu:processCpuNanos:[^:]*:true'/,
+        "the final-enforcement spec must keep processCpuNanos advisory");
+    // The blocking gate must no longer be whole-process CPU.
+    assert.doesNotMatch(job, /gate_metric cpu processCpuNanos [^\n]* false/,
+        "processCpuNanos must not remain the blocking cpu gate");
+    assert.doesNotMatch(job, /'cpu:processCpuNanos:[^:]*:false'/,
+        "the spec must not keep processCpuNanos as the blocking cpu metric");
+    // The advisory process-CPU report and status join the shard aggregation.
+    assert.match(job, /-process-cpu-report\.md/, "the advisory process-CPU report must be aggregated into the shard report");
+    assert.match(job, /-process-cpu-status\.json/, "the advisory process-CPU status must be aggregated into the shard status");
+});
+
 test("a candidate-owned smoke exercises the new CPU accounting harness in a real fork", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     assert.match(workflow, /^  validate-cpu-accounting:$/m, "a candidate-owned CPU-accounting smoke job must exist");
