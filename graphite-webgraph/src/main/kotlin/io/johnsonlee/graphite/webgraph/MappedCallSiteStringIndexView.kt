@@ -621,6 +621,7 @@ private fun checkViewInterrupted() {
     if (Thread.currentThread().isInterrupted) {
         throw CancellationException("Mapped CallSite string index view interrupted")
     }
+    GraphTaskContext.current?.checkCancelled()
 }
 
 private data class MappedPredicateKey(

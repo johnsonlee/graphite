@@ -163,6 +163,44 @@ class MappedExactStringIdsSplitTest {
         }
     }
 
+    @Test
+    fun `serial discovery observes task cancellation without interrupting a running callback`() {
+        withView(8_192) { fixture ->
+            val entered = CountDownLatch(1)
+            val release = CountDownLatch(1)
+            val work = AtomicInteger()
+            val callbackInterrupted = AtomicReference<Boolean?>()
+            val group = GraphTaskScheduler.shared.newRootGroup<List<IntArray>?>()
+            val consumer = object : GraphWorkBatchConsumer {
+                override fun consume() = consume(1L)
+                override fun consume(workUnits: Long) {
+                    work.addAndGet(workUnits.toInt())
+                    if (entered.count != 0L && workUnits >= 1_024L) {
+                        entered.countDown()
+                        release.await()
+                        callbackInterrupted.set(Thread.currentThread().isInterrupted)
+                    }
+                }
+            }
+            val task = group.submit(Callable {
+                fixture.view.exactMatchingStringIds(listOf(predicate()), consumer)
+            })
+            try {
+                assertTrue(entered.await(5, TimeUnit.SECONDS))
+                assertTrue(task.cancel(false))
+                assertFalse(task.isDone)
+                release.countDown()
+                assertFailsWith<CancellationException> { task.get(5, TimeUnit.SECONDS) }
+                assertEquals(false, callbackInterrupted.get())
+                assertTrue(work.get() in 1_024 until 8_193, "Cancellation must stop the remaining scan")
+            } finally {
+                release.countDown()
+                group.cancelAndJoin()
+                group.close()
+            }
+        }
+    }
+
     private class BudgetConsumer(
         private val blocker: SegmentBlocker,
         private val failure: IllegalStateException

@@ -5701,3 +5701,79 @@ is false with9 target errors and10x remains unmet.
 candidate; not an automatic continuation of the driver's no-CI stop branch, not a
 local strict pass, and not acceptance. No new local fork or retry-to-green. No CI
 has run at this snapshot. [Local evidence and boundaries](profiling/attempt146/README.md).
+
+
+### 2026-09-09 - Attempt146 follow-up: honor cancellation in mapped-index polling
+
+This is one correctness refinement of the shared-scheduling direction, submitted
+as an unaccepted CI candidate. Against official parent5e05242a8f1a9cc3ae07959d387af77adabf4705,
+only the existing checkViewInterrupted helper adds GraphTaskContext.current?.checkCancelled().
+Serial/parallel matching loops, task lifetime, worker caps and explicit parallel
+context polls remain unchanged. No sparse-posting, compound-OR, type sorting or
+additional optimization is bundled. Existing parallel polls can check context twice.
+
+Four added regressions reproduce non-interrupting task cancellation continuing
+remaining work on the old production source. They cover serial exact filtering,
+checksum loading, posting validation and lazy merge, distinguish Future state from
+actual callback/task exit, and verify complete subsequent reuse. The candidate's
+nine focused cancellation tests pass. Four-module check/lint/JMH validation has
+2,132 passing XML test results (including ten additional-suite tests); core/cypher
+ordinary tests are cached, other relevant tasks execute. Command:
+`./gradlew --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx2g -Pkotlin.compiler.execution.strategy=in-process :core:check :cypher:check :webgraph:check :explore:check :webgraph:jmhJar`.
+The three copied source hashes equal the checked artifacts. Measured candidate JAR
+SHA177d9c15cd07181766abbbc5ce275ab0da403c149a8a54e609857ae26eb91996;
+9 class payloads differ, but only one of their83 symbolic methods changes.
+Debug/frames/class metadata are outside that comparison; no JIT equivalence claim.
+
+**Fixed three-version original34 diagnosis.** Starting main4e328b0109e13c896b74004823fb049fcb19251a
+(JARa5c2db2b), official5e05242a (04ae90ec) and helper177d9c15 each run three times,
+in fixed main/official/helper, official/helper/main, helper/main/official blocks.
+The exact pressure benchmark and generated/nested12 class payloads are identical
+across the three JARs. Original JMH parameters, full34 order/oracle,0warmup,gc profiler
+and resource sampler are retained. HostmacOS14.3/arm64/Java17.0.18, benchmarkP4/-Xmx8g.
+Data is the authenticated realCI64: Android14,Tika2.9.2,Hive4.0.0,Kotlin compiler2.0.21,
+16 class shards each,5,046,935CallSites; not64 independent applications.
+
+| Group | Starting-main P95 ms | Official P95 ms | Helper P95 ms | Helper/main process CPU delta |
+|---|---:|---:|---:|---:|
+|1 main/official/helper|57.346|65.539|42.322|+7.95%|
+|2 official/helper/main|40.624|39.107|45.167|+10.99%|
+|3 helper/main/official|39.564|47.507|43.252|+12.59%|
+
+All306 unique full14 signatures/order and allTSV non-latency fields match; all9
+private groups exit normally and allinput/fixture hashes remain unchanged. Three
+unaltered comparator reports and actual pair orders are independently recomputed.
+Official/main regressionFAIL (CPU groups1/3 and q29 repeated latency); helper/main
+and helper/official regressionPASS in this batch, all10x targetsFAIL. The helper
+has no stable P95 improvement. q5's main/official/helper ms are4.465/5.023/5.081,
+4.354/4.716/5.277,4.290/5.133/5.343; work2674 throughout. Its helper increment over
+official is0.058/0.560/0.210ms, but this neither proves zero cost nor explains the
+prior repeated failure. All9 current workloadP95 values selectq30; q29 remains
+another slow query. P95 is rank33 across34 heterogeneous queries, not repeated
+queryP95, and processCPU includes inter-query work. Latin position balance is not
+full predecessor balance; pair reports reuse the same306 outputs.
+
+**Adverse evidence retained.** Prior helper original34/main failedq5 twice. Prior
+full38 helper comparison preserves456 exact value/order/provenance results but has
+repeatedq21 latency flags in both reset states. A new full38 post-output type-order
+diagnostic verifies12 forks/768 actualmaps and independently derives current
+CallSite prefix45297, explaining all12 of its ownq21 work identities; its other3
+repeat flags remain. It does not reconstruct oldfork orders or erase old failures.
+The diagnostic adapter itself may perturb classloading/JIT. Reusing three old
+native records confirms the officialq5 trigram/exact-filter path plus scheduler
+and result waits; wall samples are notCPU or exact waiting durations, and no
+current helper runtime cost is inferred.
+
+**Decision:** submit this exact cancellation fix for requiredCI verification,
+not accept/promote it. Current-head Method/end-to-end/whole-graphCI evidence remains
+pending; prior official Method/wrapped-queryCI regressed. No gate or10x requirement
+is relaxed, and the conditional+15%CPU tradeoff is not invoked. No new optimization
+direction starts before evaluating this candidate'sCI. Do not merge.
+
+Evidence: [helper correctness and prior failed comparisons](profiling/attempt146/view-cancellation-helper/README.md),
+[complete-prefix type-order diagnosis](profiling/attempt146/helper-type-prefix/README.md),
+[three-version observations, resources, exact commands and independent audit](profiling/attempt146/q5-three-version/README.md).
+All archives were read back and source/member hashes rechecked. The three-version
+archive has86 members/1,178,358bytes/SHA256ef08fb95c9fcc3eeaf5a67ba01eb045afb535204f48908e071923db2c7a9b6aa.
+External originalJARs/graphs/native streams are not embedded; their exact identities
+and paths plus selected profiling extracts are retained.
