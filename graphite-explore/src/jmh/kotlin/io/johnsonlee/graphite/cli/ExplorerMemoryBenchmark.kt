@@ -12,6 +12,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import io.johnsonlee.graphite.webgraph.GraphStore
+import org.eclipse.jetty.util.thread.QueuedThreadPool
 import org.openjdk.jmh.annotations.AuxCounters
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
@@ -366,6 +367,21 @@ open class ExplorerMemoryBenchmark {
 }
 
 /**
+ * A Jetty pool that keeps every server thread for the life of the trial. Jetty's default
+ * [QueuedThreadPool] reaps idle worker threads on their idle timeout and idle reserved threads via
+ * its [org.eclipse.jetty.util.thread.ReservedThreadExecutor]; on the longer 17/36-graph method
+ * scenarios that reaping lands inside a measured window, and [RequestCpuAccounting] then fails
+ * closed because a Java thread present at the window start is gone at the end. Disabling the idle
+ * timeout (and reserved threads) removes that benign churn without weakening the tripwire: a genuine
+ * request worker that vanishes still trips it.
+ */
+internal fun pinnedServerThreadPool(): QueuedThreadPool =
+    QueuedThreadPool(SERVER_MAX_THREADS, SERVER_MIN_THREADS, NO_IDLE_TIMEOUT_MILLIS).apply {
+        name = "graphite-method-bench-jetty"
+        reservedThreads = 0
+    }
+
+/**
  * Paired migration gate for the method-discovery HTTP surface.
  *
  * The candidate copy of this source is compiled into both revisions. A base server is therefore
@@ -424,6 +440,13 @@ open class MethodDiscoveryCompatibilityBenchmark {
         topology = TopologyService(registry, emptyList(), root).also { it.rebuild() }
         app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
+            // Pin the embedded Jetty pool so no idle server thread is reaped inside a measured
+            // window. RequestCpuAccounting fails closed when a Java thread present at the window
+            // start is gone at the end; Jetty's default QueuedThreadPool reaps idle worker and
+            // reserved threads on their idle timeout, which on the longer 17/36-graph scenarios
+            // lands inside the window and trips the tripwire on identical code. See
+            // pinnedServerThreadPool.
+            config.jetty.threadPool = pinnedServerThreadPool()
         }.start(0)
         cypherGuard = CypherQueryGuard(TARGET_CYPHER_CONCURRENCY, TARGET_CYPHER_WORK_BUDGET)
         ExploreRoutes(cypherGuard).register(app, registry, topology)
@@ -1681,6 +1704,12 @@ private fun forceTopologyHeapGc() {
         Thread.sleep(TOPOLOGY_HEAP_GC_PAUSE_MS)
     }
 }
+
+// A very large idle timeout keeps the benchmark server's Jetty threads from being reaped inside a
+// measured window; Int.MAX_VALUE ms is ~24 days, far beyond any trial.
+private const val NO_IDLE_TIMEOUT_MILLIS = Int.MAX_VALUE
+private const val SERVER_MIN_THREADS = 8
+private const val SERVER_MAX_THREADS = 64
 
 private const val TOPOLOGY_HEAP_GRAPH_COUNT = 3
 private const val TOPOLOGY_HEAP_GC_ATTEMPTS = 3

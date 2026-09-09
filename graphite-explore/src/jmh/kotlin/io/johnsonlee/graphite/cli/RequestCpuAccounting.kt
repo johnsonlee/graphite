@@ -135,6 +135,8 @@ object MethodCompatibilityCpuAccountingContract {
             checkCollidingNameWorkerIsCharged(failures)
             checkTransientWorkerFailsClosed(failures)
             checkEndSnapshotReadRaceFailsClosed(failures)
+            checkPresentThenGoneFailsClosed(failures)
+            checkPinnedServerPoolHoldsThreadsAcrossWindow(failures)
             checkProcessBound("idle action", failures) { 0L }
             checkProcessBound("collector-loaded action", failures) { collectorLoad() }
         } catch (@Suppress("TooGenericExceptionCaught") failure: RuntimeException) {
@@ -237,6 +239,71 @@ object MethodCompatibilityCpuAccountingContract {
     }
 
     /**
+     * A Java thread present at the window start that exits inside the window is in the before
+     * snapshot but not the after snapshot; the accounting must fail closed rather than drop the CPU
+     * it accrued before exiting. This is the branch a benign idle server thread was tripping on the
+     * longer method scenarios: the repair keeps the tripwire and stops the server pool from reaping
+     * mid-window (see the pinned-pool check below), rather than weakening this guarantee.
+     */
+    private fun checkPresentThenGoneFailsClosed(failures: MutableList<String>) {
+        val release = java.util.concurrent.CountDownLatch(1)
+        val worker = Thread {
+            runCatching { release.await() }
+        }.apply { isDaemon = true; start() }
+        // The worker is parked and present in the before snapshot; releasing and joining it inside
+        // the window makes it exit before the end snapshot is taken.
+        val failedClosed = runCatching {
+            RequestCpuAccounting.measure {
+                release.countDown()
+                worker.join()
+                0L
+            }
+        }.isFailure
+        println("cpu-accounting-contract: present-then-gone worker failed closed = $failedClosed")
+        if (!failedClosed) {
+            failures.add("a thread present at the window start that exited inside it was not caught; " +
+                "the row would drop its pre-exit CPU")
+        }
+    }
+
+    /**
+     * The benchmark server's pool is pinned ([pinnedServerThreadPool]) so no idle server thread is
+     * reaped inside a measured window and trips [checkPresentThenGoneFailsClosed]. Its threads must
+     * stay present across a window longer than a default idle timeout, and the accounting must
+     * complete. Only Java threads count toward liveness, so the JVM's own native threads are
+     * irrelevant here.
+     */
+    private fun checkPinnedServerPoolHoldsThreadsAcrossWindow(failures: MutableList<String>) {
+        val pool = pinnedServerThreadPool()
+        if (pool.idleTimeout != Int.MAX_VALUE || pool.reservedThreads != 0) {
+            failures.add("the pinned server pool is not configured to hold threads: " +
+                "idleTimeout=${pool.idleTimeout}, reservedThreads=${pool.reservedThreads}")
+            return
+        }
+        pool.start()
+        val release = java.util.concurrent.CountDownLatch(1)
+        try {
+            val busy = java.util.concurrent.CountDownLatch(CPU_ACCOUNTING_PINNED_POOL_JOBS)
+            repeat(CPU_ACCOUNTING_PINNED_POOL_JOBS) {
+                pool.execute { busy.countDown(); runCatching { release.await() } }
+            }
+            busy.await()
+            val outcome = runCatching {
+                RequestCpuAccounting.measure { Thread.sleep(CPU_ACCOUNTING_PINNED_WINDOW_MILLIS); 0L }
+            }
+            val held = outcome.isSuccess
+            println("cpu-accounting-contract: pinned pool held its threads across the window = $held")
+            if (!held) {
+                failures.add("the pinned server pool lost a thread inside the window: " +
+                    (outcome.exceptionOrNull()?.message ?: "unknown"))
+            }
+        } finally {
+            release.countDown()
+            pool.stop()
+        }
+    }
+
+    /**
      * The request-serving Java sum is per-thread on-CPU time over an interval the process figure
      * contains, so it can exceed the process figure only by snapshot overhead, whatever the JVM's
      * own threads did around the action. A larger overshoot means the intervals are not nested.
@@ -265,6 +332,12 @@ object MethodCompatibilityCpuAccountingContract {
 }
 
 private const val CPU_ACCOUNTING_WORKER_NANOS = 200_000_000L
+
+/** Enough pinned-pool workers to hold threads present across the window; a window longer than a
+ * default Jetty idle timeout, so an unpinned pool would have reaped inside it. */
+private const val CPU_ACCOUNTING_PINNED_POOL_JOBS = 4
+private const val CPU_ACCOUNTING_PINNED_WINDOW_MILLIS = 300L
+
 private const val CPU_ACCOUNTING_GARBAGE_CHUNKS = 512
 private const val CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES = 1 shl 20
 private const val CPU_ACCOUNTING_GARBAGE_RETAINED = 64
