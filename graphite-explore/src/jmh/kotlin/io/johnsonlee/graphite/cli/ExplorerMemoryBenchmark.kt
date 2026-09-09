@@ -430,6 +430,10 @@ open class MethodDiscoveryCompatibilityBenchmark {
         port = app.port()
         legacyMethodsRoute = rawRequest(legacyPath(services.first().fixture.className, 0)).code == HTTP_OK
         writeCompatibilityManifest()
+        quiesceBeforeMeasurement()
+        // The accounting contract runs in a JVM of its own (MethodCompatibilityCpuAccountingContract);
+        // here only its availability is required, without touching the heap the trial measures.
+        RequestCpuAccounting.requireAvailable()
     }
 
     @TearDown
@@ -784,13 +788,22 @@ open class MethodDiscoveryCompatibilityBenchmark {
     }
 
     private fun measure(counters: MethodCompatibilityCounters, action: () -> Long): Long {
-        val beforeCpu = processCpuTimeNanos()
         val beforeRss = residentSetBytes()
-        val bytes = action()
+        val beforeGcTime = gcTimeMillis()
+        val beforeJit = jitTimeMillis()
+        // Request-serving CPU: the sum of each Java thread's own on-CPU time over the window,
+        // by thread identity rather than by native name; see RequestCpuAccounting.
+        val (bytes, cpu) = RequestCpuAccounting.measure(action)
         val afterRss = residentSetBytes()
         counters.requestsSucceeded++
         counters.responseBytes += bytes
-        counters.processCpuNanos = (processCpuTimeNanos() - beforeCpu).coerceAtLeast(0L)
+        counters.processCpuNanos = cpu.processCpuNanos
+        counters.jvmInternalCpuNanos = cpu.jvmInternalCpuNanos
+        counters.jvmInternalThreadsEnded = cpu.jvmInternalThreadsEnded
+        counters.cpuAccountingUnderflowNanos = cpu.underflowNanos
+        counters.javaThreadCpuNanos = cpu.javaThreadCpuNanos
+        counters.gcTimeMillis = (gcTimeMillis() - beforeGcTime).coerceAtLeast(0L)
+        counters.jitTimeMillis = (jitTimeMillis() - beforeJit).coerceAtLeast(0L)
         counters.residentSetBeforeBytes = beforeRss
         counters.residentSetAfterBytes = afterRss
         counters.residentSetDeltaBytes = (afterRss - beforeRss).coerceAtLeast(0L)
@@ -836,9 +849,65 @@ open class MethodDiscoveryCompatibilityBenchmark {
         )
     }
 
-    private fun processCpuTimeNanos(): Long =
-        (java.lang.management.ManagementFactory.getOperatingSystemMXBean()
-            as? com.sun.management.OperatingSystemMXBean)?.processCpuTime ?: 0L
+    /**
+     * One quiescence step after the graphs and the server are up and before the measured request
+     * sequence, proven through the collectors' notifications rather than their counters: an
+     * explicit full collection is what aborts a concurrent cycle in flight, so the step forces one,
+     * requires it to be reported, and then requires a settle window in which no young collection
+     * (the only event that can start a new cycle) is reported. Every path that cannot prove
+     * quiescence before the deadline fails closed. Nothing runs inside `measure()` itself.
+     */
+    private fun quiesceBeforeMeasurement() {
+        val diagnostics = java.lang.management.ManagementFactory
+            .getPlatformMXBean(com.sun.management.HotSpotDiagnosticMXBean::class.java)
+        check(diagnostics.getVMOption(EXPLICIT_GC_CONCURRENT_OPTION).value == "false") {
+            "$EXPLICIT_GC_CONCURRENT_OPTION must be off: an explicit collection would start a concurrent cycle"
+        }
+        val events = java.util.concurrent.ConcurrentLinkedQueue<com.sun.management.GarbageCollectionNotificationInfo>()
+        val listener = javax.management.NotificationListener { notification, _ ->
+            if (notification.type == com.sun.management.GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION) {
+                events.add(
+                    com.sun.management.GarbageCollectionNotificationInfo.from(
+                        notification.userData as javax.management.openmbean.CompositeData
+                    )
+                )
+            }
+        }
+        val emitters = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans()
+            .map { it as javax.management.NotificationEmitter }
+        emitters.forEach { it.addNotificationListener(listener, null, null) }
+        try {
+            val deadline = System.nanoTime() + QUIESCENCE_TIMEOUT_MILLIS * NANOS_PER_MILLISECOND
+            repeat(QUIESCENCE_GC_ATTEMPTS) {
+                events.clear()
+                System.gc()
+                while (events.none { it.isExplicitFullCollection() }) {
+                    check(System.nanoTime() < deadline) {
+                        "Explicit full collection was not reported within $QUIESCENCE_TIMEOUT_MILLIS ms"
+                    }
+                    Thread.sleep(QUIESCENCE_POLL_MILLIS)
+                }
+                val settleUntil = System.nanoTime() + QUIESCENCE_STABLE_MILLIS * NANOS_PER_MILLISECOND
+                while (System.nanoTime() < settleUntil) Thread.sleep(QUIESCENCE_POLL_MILLIS)
+                if (events.none { it.isYoungCollection() }) return
+            }
+            error("A young collection followed each of $QUIESCENCE_GC_ATTEMPTS explicit full collections; quiescence not proven")
+        } finally {
+            emitters.forEach { it.removeNotificationListener(listener) }
+        }
+    }
+
+    private fun com.sun.management.GarbageCollectionNotificationInfo.isExplicitFullCollection(): Boolean =
+        gcAction == END_OF_MAJOR_GC && gcCause == EXPLICIT_GC_CAUSE
+
+    private fun com.sun.management.GarbageCollectionNotificationInfo.isYoungCollection(): Boolean =
+        gcAction == END_OF_MINOR_GC
+
+    private fun gcTimeMillis(): Long = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans()
+        .sumOf { it.collectionTime.coerceAtLeast(0L) }
+
+    private fun jitTimeMillis(): Long = java.lang.management.ManagementFactory.getCompilationMXBean()
+        ?.takeIf { it.isCompilationTimeMonitoringSupported }?.totalCompilationTime ?: 0L
 
     private fun residentSetBytes(): Long {
         val status = Path.of("/proc/self/status")
@@ -885,6 +954,24 @@ open class MethodBenchmarkCompatibilityCounters {
 
     @JvmField
     var processCpuNanos: Long = 0
+
+    @JvmField
+    var javaThreadCpuNanos: Long = 0
+
+    @JvmField
+    var jvmInternalCpuNanos: Long = 0
+
+    @JvmField
+    var jvmInternalThreadsEnded: Long = 0
+
+    @JvmField
+    var cpuAccountingUnderflowNanos: Long = 0
+
+    @JvmField
+    var gcTimeMillis: Long = 0
+
+    @JvmField
+    var jitTimeMillis: Long = 0
 
     @JvmField
     var residentSetBeforeBytes: Long = 0
@@ -1819,3 +1906,14 @@ internal object ExplorerBenchmarkCorpus {
     private const val KOTLIN_COMPILER_CORPUS = "kotlin-compiler"
     private const val MAX_CACHE_WALK_DEPTH = 12
 }
+
+private const val QUIESCENCE_GC_ATTEMPTS = 2
+private const val QUIESCENCE_STABLE_MILLIS = 250L
+private const val QUIESCENCE_POLL_MILLIS = 10L
+private const val QUIESCENCE_TIMEOUT_MILLIS = 10_000L
+private const val NANOS_PER_MILLISECOND = 1_000_000L
+private const val EXPLICIT_GC_CONCURRENT_OPTION = "ExplicitGCInvokesConcurrent"
+private const val EXPLICIT_GC_CAUSE = "System.gc()"
+private const val END_OF_MAJOR_GC = "end of major GC"
+private const val END_OF_MINOR_GC = "end of minor GC"
+

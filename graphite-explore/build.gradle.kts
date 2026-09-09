@@ -99,7 +99,12 @@ kover {
                     "*Benchmark*",
                     "io.johnsonlee.graphite.cli.ExplorerMemoryCounters",
                     "io.johnsonlee.graphite.cli.MemorySample",
-                    "io.johnsonlee.graphite.cli.ExploreMainKt"
+                    "io.johnsonlee.graphite.cli.ExploreMainKt",
+                    // Benchmark-harness CPU accounting and its standalone CI contract; exercised by
+                    // the benchmark workflow, not the unit tests, like the excluded benchmarks above.
+                    "*RequestCpuAccounting*",
+                    "io.johnsonlee.graphite.cli.RequestCpuSample",
+                    "*CpuAccountingContract*"
                 )
             }
         }
