@@ -1,0 +1,479 @@
+{
+  "scenarios": [
+    {
+      "scenario": "global-wide-four-properties",
+      "kotlin": {
+        "p50": 30.912,
+        "p95": 50.274,
+        "max": 202.173,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 7.104,
+        "p95": 7.896,
+        "max": 8.037,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 6.37,
+      "p50_speedup": 4.35,
+      "rows_match": true
+    },
+    {
+      "scenario": "global-wide-class-pair",
+      "kotlin": {
+        "p50": 29.708,
+        "p95": 32.925,
+        "max": 32.953,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 6.45,
+        "p95": 7.154,
+        "max": 7.913,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 4.6,
+      "p50_speedup": 4.61,
+      "rows_match": true
+    },
+    {
+      "scenario": "global-wide-callee-class",
+      "kotlin": {
+        "p50": 29.962,
+        "p95": 141.59,
+        "max": 215.608,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 7.16,
+        "p95": 9.104,
+        "max": 10.652,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 15.55,
+      "p50_speedup": 4.18,
+      "rows_match": true
+    },
+    {
+      "scenario": "wrapped-case-insensitive",
+      "kotlin": {
+        "p50": 33.057,
+        "p95": 214.198,
+        "max": 221.4,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 8.294,
+        "p95": 8.877,
+        "max": 11.76,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 24.13,
+      "p50_speedup": 3.99,
+      "rows_match": true
+    },
+    {
+      "scenario": "zero-hit-term",
+      "kotlin": {
+        "p50": 30.377,
+        "p95": 38.426,
+        "max": 64.138,
+        "status": 200,
+        "rowCount": 0
+      },
+      "rust": {
+        "p50": 20.537,
+        "p95": 22.199,
+        "max": 22.864,
+        "status": 200,
+        "rowCount": 0
+      },
+      "p95_speedup": 1.73,
+      "p50_speedup": 1.48,
+      "rows_match": true
+    },
+    {
+      "scenario": "dense-term-get",
+      "kotlin": {
+        "p50": 31.704,
+        "p95": 36.87,
+        "max": 37.557,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 3.902,
+        "p95": 4.541,
+        "max": 6.609,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 8.12,
+      "p50_speedup": 8.13,
+      "rows_match": true
+    },
+    {
+      "scenario": "prefix-package-scan",
+      "kotlin": {
+        "p50": 1.756,
+        "p95": 2.077,
+        "max": 2.367,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 2.065,
+        "p95": 2.323,
+        "max": 2.667,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 0.89,
+      "p50_speedup": 0.85,
+      "rows_match": true
+    },
+    {
+      "scenario": "suffix-scan",
+      "kotlin": {
+        "p50": 1.933,
+        "p95": 2.628,
+        "max": 3.332,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 2.606,
+        "p95": 3.367,
+        "max": 3.879,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 0.78,
+      "p50_speedup": 0.74,
+      "rows_match": true
+    },
+    {
+      "scenario": "exact-name-match",
+      "kotlin": {
+        "p50": 1.715,
+        "p95": 2.911,
+        "max": 2.989,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 3.41,
+        "p95": 4.405,
+        "max": 4.575,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 0.66,
+      "p50_speedup": 0.5,
+      "rows_match": true
+    },
+    {
+      "scenario": "count-star",
+      "kotlin": {
+        "p50": 448.558,
+        "p95": 601.911,
+        "max": 755.295,
+        "status": 200,
+        "rowCount": 1
+      },
+      "rust": {
+        "p50": 0.363,
+        "p95": 0.68,
+        "max": 0.761,
+        "status": 200,
+        "rowCount": 1
+      },
+      "p95_speedup": 885.16,
+      "p50_speedup": 1235.7,
+      "rows_match": true
+    },
+    {
+      "scenario": "ordered-distinct-limit",
+      "kotlin": {
+        "p50": 29.674,
+        "p95": 37.931,
+        "max": 38.49,
+        "status": 200,
+        "rowCount": 100
+      },
+      "rust": {
+        "p50": 7.679,
+        "p95": 8.487,
+        "max": 8.884,
+        "status": 200,
+        "rowCount": 100
+      },
+      "p95_speedup": 4.47,
+      "p50_speedup": 3.86,
+      "rows_match": true
+    },
+    {
+      "scenario": "group-by-callee-class",
+      "kotlin": {
+        "p50": 633.039,
+        "p95": 889.815,
+        "max": 945.393,
+        "status": 200,
+        "rowCount": 20
+      },
+      "rust": {
+        "p50": 22.558,
+        "p95": 24.571,
+        "max": 24.872,
+        "status": 200,
+        "rowCount": 20
+      },
+      "p95_speedup": 36.21,
+      "p50_speedup": 28.06,
+      "rows_match": true
+    },
+    {
+      "scenario": "method-discovery",
+      "kotlin": {
+        "p50": 1.171,
+        "p95": 1.434,
+        "max": 1.534,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 1.438,
+        "p95": 1.91,
+        "max": 2.222,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 0.75,
+      "p50_speedup": 0.81,
+      "rows_match": true
+    },
+    {
+      "scenario": "single-hop-relationship",
+      "kotlin": {
+        "p50": 1.924,
+        "p95": 2.437,
+        "max": 2.47,
+        "status": 200,
+        "rowCount": 200
+      },
+      "rust": {
+        "p50": 1.594,
+        "p95": 1.758,
+        "max": 2.114,
+        "status": 200,
+        "rowCount": 200
+      },
+      "p95_speedup": 1.39,
+      "p50_speedup": 1.21,
+      "rows_match": true
+    },
+    {
+      "scenario": "node-scan-limit",
+      "kotlin": {
+        "p50": 1.412,
+        "p95": 1.909,
+        "max": 3.643,
+        "status": 200,
+        "rowCount": 100
+      },
+      "rust": {
+        "p50": 1.321,
+        "p95": 1.6,
+        "max": 1.757,
+        "status": 200,
+        "rowCount": 100
+      },
+      "p95_speedup": 1.19,
+      "p50_speedup": 1.07,
+      "rows_match": true
+    },
+    {
+      "scenario": "rest-graphs",
+      "kotlin": {
+        "p50": 0.517,
+        "p95": 0.649,
+        "max": 0.942,
+        "status": 200,
+        "rowCount": null
+      },
+      "rust": {
+        "p50": 0.447,
+        "p95": 0.679,
+        "max": 0.698,
+        "status": 200,
+        "rowCount": null
+      },
+      "p95_speedup": 0.96,
+      "p50_speedup": 1.16,
+      "rows_match": true
+    },
+    {
+      "scenario": "rest-overview",
+      "kotlin": {
+        "p50": 9.538,
+        "p95": 12.105,
+        "max": 12.273,
+        "status": 200,
+        "rowCount": null
+      },
+      "rust": {
+        "p50": 10.449,
+        "p95": 11.201,
+        "max": 11.336,
+        "status": 200,
+        "rowCount": null
+      },
+      "p95_speedup": 1.08,
+      "p50_speedup": 0.91,
+      "rows_match": true
+    },
+    {
+      "scenario": "rest-node",
+      "kotlin": {
+        "p50": 0.299,
+        "p95": 0.897,
+        "max": 1.787,
+        "status": 200,
+        "rowCount": null
+      },
+      "rust": {
+        "p50": 0.366,
+        "p95": 0.562,
+        "max": 0.562,
+        "status": 200,
+        "rowCount": null
+      },
+      "p95_speedup": 1.6,
+      "p50_speedup": 0.82,
+      "rows_match": true
+    },
+    {
+      "scenario": "rest-node-outgoing",
+      "kotlin": {
+        "p50": 0.514,
+        "p95": 1.947,
+        "max": 4.416,
+        "status": 200,
+        "rowCount": null
+      },
+      "rust": {
+        "p50": 0.489,
+        "p95": 0.718,
+        "max": 0.771,
+        "status": 200,
+        "rowCount": null
+      },
+      "p95_speedup": 2.71,
+      "p50_speedup": 1.05,
+      "rows_match": true
+    },
+    {
+      "scenario": "rest-subgraph-depth2",
+      "kotlin": {
+        "p50": 0.47,
+        "p95": 0.632,
+        "max": 0.743,
+        "status": 200,
+        "rowCount": null
+      },
+      "rust": {
+        "p50": 0.591,
+        "p95": 0.767,
+        "max": 0.843,
+        "status": 200,
+        "rowCount": null
+      },
+      "p95_speedup": 0.82,
+      "p50_speedup": 0.8,
+      "rows_match": true
+    },
+    {
+      "scenario": "rest-endpoints",
+      "kotlin": {
+        "p50": 77.469,
+        "p95": 94.925,
+        "max": 108.59,
+        "status": 200,
+        "rowCount": null
+      },
+      "rust": {
+        "p50": 0.758,
+        "p95": 0.841,
+        "max": 0.928,
+        "status": 200,
+        "rowCount": null
+      },
+      "p95_speedup": 112.87,
+      "p50_speedup": 102.2,
+      "rows_match": true
+    },
+    {
+      "scenario": "rest-c4-context-json",
+      "kotlin": {
+        "p50": 1048.827,
+        "p95": 1241.542,
+        "max": 1352.014,
+        "status": 200,
+        "rowCount": null
+      },
+      "rust": {
+        "p50": 0.792,
+        "p95": 0.991,
+        "max": 1.046,
+        "status": 200,
+        "rowCount": null
+      },
+      "p95_speedup": 1252.82,
+      "p50_speedup": 1324.28,
+      "rows_match": true
+    },
+    {
+      "scenario": "rest-c4-context-mermaid",
+      "kotlin": {
+        "p50": 1127.573,
+        "p95": 1280.081,
+        "max": 1484.965,
+        "status": 200,
+        "rowCount": null
+      },
+      "rust": {
+        "p50": 0.504,
+        "p95": 0.805,
+        "max": 0.831,
+        "status": 200,
+        "rowCount": null
+      },
+      "p95_speedup": 1590.16,
+      "p50_speedup": 2237.25,
+      "rows_match": true
+    }
+  ],
+  "aggregate": {
+    "kotlin_aggregate_p95": 1241.542,
+    "rust_aggregate_p95": 22.199,
+    "kotlin_p95_sum": 4690.114,
+    "rust_p95_sum": 125.436,
+    "aggregate_p95_speedup": 55.93,
+    "total_p95_speedup": 37.39,
+    "median_scenario_speedup": 2.71,
+    "min_scenario_speedup": 0.66,
+    "correctness_mismatches": []
+  },
+  "config": {
+    "warmup": 5,
+    "iters": 25
+  }
+}
