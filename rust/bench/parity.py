@@ -155,6 +155,48 @@ for method, path, body in CASES:
         failed += 1
         failures.append((label, "body differs", kd, rd))
 
+# The web UI. These are served straight from the binary on one side and out of the jar
+# on the other, so both the bytes and the caching contract are worth checking: without
+# a validator a browser re-downloads all four assets on every load.
+UI_ASSETS = ["/", "/index.html", "/app.js", "/ui-state.js", "/style.css"]
+
+def head(base, path):
+    req = urllib.request.Request(base + path, method="HEAD")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return r.status, {k.lower(): v for k, v in r.headers.items()}
+    except Exception as e:
+        return -1, {"error": str(e)}
+
+for path in UI_ASSETS:
+    ks, kb = fetch(KOTLIN, "GET", path)
+    rs, rb = fetch(RUST, "GET", path)
+    if (ks, kb) == (rs, rb):
+        passed += 1
+    else:
+        failed += 1
+        failures.append((f"GET {path}", f"status {ks} != {rs}" if ks != rs else "body differs",
+                         kb[:200], rb[:200]))
+    kh, rh = head(KOTLIN, path)[1], head(RUST, path)[1]
+    # Content-Type must match exactly; the ETag value is opaque, so only its presence
+    # and the 304 it enables are compared.
+    if kh.get("content-type") == rh.get("content-type"):
+        passed += 1
+    else:
+        failed += 1
+        failures.append((f"HEAD {path}", "content-type differs",
+                         str(kh.get("content-type")), str(rh.get("content-type"))))
+    codes = []
+    for base, hdrs in ((KOTLIN, kh), (RUST, rh)):
+        etag = hdrs.get("etag")
+        codes.append(fetch(base, "GET", path, None, {"If-None-Match": etag})[0] if etag else None)
+    if codes[0] == codes[1] == 304:
+        passed += 1
+    else:
+        failed += 1
+        failures.append((f"GET {path} If-None-Match", "revalidation differs",
+                         f"kotlin {codes[0]}", f"rust {codes[1]}"))
+
 print(f"parity: {passed} passed, {failed} failed of {passed+failed}")
 if placeholder_hits:
     print(f'note: ignored {placeholder_hits} rows carrying the baseline\'s '

@@ -1304,26 +1304,55 @@ const APP_JS: &str = include_str!("../web/app.js");
 const UI_STATE_JS: &str = include_str!("../web/ui-state.js");
 const STYLE_CSS: &str = include_str!("../web/style.css");
 
-fn asset(content_type: &'static str, body: &'static str) -> Response {
-    Response::builder()
-        .status(StatusCode::OK)
+/// A weak validator for an embedded asset, derived from its bytes.
+///
+/// Ktor serves these from the jar with an ETag and `Cache-Control: max-age=0`, so a
+/// browser revalidates on every load and gets a 304 rather than the body. Without one
+/// the same reload re-downloads all four assets, about 58 KB. The value is opaque, so
+/// it need not — and cannot — match Ktor's; only the revalidation behaviour matters.
+fn asset_etag(body: &'static str) -> String {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    let mut h = DefaultHasher::new();
+    body.hash(&mut h);
+    format!("W/\"{:x}-{:x}\"", body.len(), h.finish())
+}
+
+fn asset(headers: &HeaderMap, content_type: &'static str, body: &'static str) -> Response {
+    let etag = asset_etag(body);
+    // `If-None-Match` may carry a list; a match on any entry means unchanged.
+    let unchanged = headers
+        .get(header::IF_NONE_MATCH)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.split(',').any(|c| c.trim() == etag));
+    let builder = Response::builder()
+        // No charset: Ktor sends a bare `text/html`, `text/javascript`, `text/css`.
         .header(header::CONTENT_TYPE, content_type)
         .header(header::CACHE_CONTROL, "max-age=0")
+        .header(header::ETAG, &etag);
+    if unchanged {
+        return builder
+            .status(StatusCode::NOT_MODIFIED)
+            .body(Body::empty())
+            .unwrap();
+    }
+    builder
+        .status(StatusCode::OK)
         .body(Body::from(body))
         .unwrap()
 }
 
-async fn index() -> Response {
-    asset("text/html; charset=utf-8", INDEX_HTML)
+async fn index(headers: HeaderMap) -> Response {
+    asset(&headers, "text/html", INDEX_HTML)
 }
-async fn app_js() -> Response {
-    asset("text/javascript; charset=utf-8", APP_JS)
+async fn app_js(headers: HeaderMap) -> Response {
+    asset(&headers, "text/javascript", APP_JS)
 }
-async fn ui_state_js() -> Response {
-    asset("text/javascript; charset=utf-8", UI_STATE_JS)
+async fn ui_state_js(headers: HeaderMap) -> Response {
+    asset(&headers, "text/javascript", UI_STATE_JS)
 }
-async fn style_css() -> Response {
-    asset("text/css; charset=utf-8", STYLE_CSS)
+async fn style_css(headers: HeaderMap) -> Response {
+    asset(&headers, "text/css", STYLE_CSS)
 }
 
 #[cfg(test)]

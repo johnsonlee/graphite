@@ -3,7 +3,7 @@
 A Rust reimplementation of `graphite-explore`. It reads the same on-disk graph format
 and serves the same HTTP API, so it is a drop-in replacement for the Kotlin server.
 
-It matches the Kotlin server on all 101 differential checks, and on the 64-graph gate
+It matches the Kotlin server on all 116 differential checks, and on the 64-graph gate
 corpus all 34 query results are byte-identical.
 
 Against the repository's real baseline — 64 graphs, 19.4M nodes, cold, P95 taken across

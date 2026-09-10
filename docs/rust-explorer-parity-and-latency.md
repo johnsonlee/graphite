@@ -28,6 +28,13 @@ Both servers were started on the same graph (built from the `graphite-explore` s
 jar with the current `graphite build`) and driven by `rust/bench/bench.py`. Each
 scenario is warmed up 5 times, then measured over 25 requests.
 
+The web UI is compiled into the binary with `include_str!` from `rust/graphite-explore-rs/web/`,
+which holds byte-identical copies of `graphite-explore/src/main/resources/web/`. The
+served bytes, the `Content-Type`, and the `If-None-Match` → 304 revalidation are all
+compared. Three header deviations remain, all from Ktor's static-file serving and none
+affecting what the browser renders: Kotlin also sends `Accept-Ranges: bytes` and
+`Last-Modified`, and chunks the response where the Rust server sends `Content-Length`.
+
 Correctness is enforced before timing: every scenario compares status and row count
 across the two servers, and a mismatch fails the run.
 
