@@ -49,8 +49,14 @@ struct Cli {
     max_concurrent_cypher: usize,
 
     /// Deprecated and ignored; Cypher execution is limited by timeout instead
-    #[arg(long = "cypher-work-budget", default_value_t = 1_000_000)]
-    cypher_work_budget: i64,
+    ///
+    /// Kept because the Kotlin binary still accepts it: a deployment that passes it
+    /// today must keep starting after the swap. The value is parsed — so a malformed
+    /// one is still rejected, as it is there — and then discarded. No default is
+    /// declared, so `--help` does not advertise one for a setting that does nothing.
+    #[arg(long = "cypher-work-budget")]
+    #[allow(dead_code)]
+    cypher_work_budget: Option<i64>,
 
     /// Maximum Cypher request timeout in milliseconds
     #[arg(long = "cypher-max-timeout-ms", default_value_t = DEFAULT_CYPHER_MAX_TIMEOUT_MILLIS)]
@@ -73,7 +79,6 @@ fn main() -> std::process::ExitCode {
 }
 
 fn run(cli: Cli) -> Result<(), String> {
-    let _ = cli.cypher_work_budget;
     if cli.max_concurrent_cypher == 0 || cli.cypher_max_timeout_ms == 0 {
         return Err("Cypher concurrency and maximum timeout must be positive".into());
     }
