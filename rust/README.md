@@ -8,10 +8,12 @@ corpus all 34 query results are byte-identical.
 
 Against the repository's real baseline — 64 graphs, 19.4M nodes, cold, P95 taken across
 queries — **P95 is 16.7x lower than the Kotlin server** (10.9x pairing Kotlin's best
-repetition against Rust's worst), and P50 is 5.3x lower. Most of that is algorithmic
-rather than linguistic: the port now reads the `graph.callsite-string-index` accelerator
-the Kotlin build already writes, and plans each graph only when the scan reaches it
-instead of planning all 64 up front. See
+repetition against Rust's worst), and P50 is 5.3x lower.
+
+That number rests almost entirely on one query shape: Kotlin's P95 *is*
+`global-wide-wrapped-case-insensitive-distinct`, the only shape where it exceeds 30 ms.
+Neutralise it and the gap is about 3x, of which roughly 1–2x is language-level. Rust's
+edge there is a hand-written fast path, not a property of the language. See
 [docs/rust-explorer-fixture64-p95.md](../docs/rust-explorer-fixture64-p95.md) for the
 method, the per-query numbers and an honest attribution, and
 [docs/rust-explorer-parity-and-latency.md](../docs/rust-explorer-parity-and-latency.md)

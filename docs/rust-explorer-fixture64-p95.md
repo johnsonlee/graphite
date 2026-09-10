@@ -7,6 +7,10 @@ than the Kotlin server. That has been fixed, and the numbers below replace it.
 **Result: P95 is 16.7x lower than the Kotlin baseline (10.9x in the worst pairing of
 three repetitions), with all results byte-identical.**
 
+That headline number rests almost entirely on one query shape, and the "Attribution"
+section below takes it apart: neutralise that shape and the gap is about 3x. Read both
+before quoting either.
+
 ## Setup
 
 The corpus is built by the repository's own `Fixture64GraphPreparation` from the four
@@ -99,12 +103,40 @@ skipped outright.
 
 ### Attribution, honestly
 
-Most of this is algorithmic, not linguistic. The largest single factor is reading an
-index the Kotlin build already produces and the Kotlin server already uses; the second
-is not doing 64 graphs' worth of planning to answer a query that stops after 200 rows.
-Both are changes Kotlin could make, and one of them is a bug that only this port had.
-An earlier measurement on a single graph put the language-level component — the same
-work, no fast paths on either side — at roughly 1–2x. Nothing here contradicts that.
+**Both of the changes above were fixes to this port's own defects, not exploits of a
+Kotlin weakness.** The Kotlin server has always read `graph.callsite-string-index`; this
+port simply ignored a file sitting in the directory it was already reading. And planning
+all 64 graphs up front for a query that `LIMIT 200` satisfies from the first one was a
+bug that only this port had. Together they took the port from *slower than Kotlin* to
+competitive. They do not explain why it now wins.
+
+**What explains the 16.7x is one query shape.** Kotlin's P95 is
+`global-wide-wrapped-case-insensitive-distinct`, and that shape is the only one where it
+exceeds 30 ms:
+
+| Kotlin's slowest | |
+|---:|---|
+| 883.0 ms | zero `four-properties` — each server's first query of the run, so the maximum, not the P95 |
+| **151.2 ms** | dense `wrapped-case-insensitive-distinct` — *this is the P95* |
+| **113.3 ms** | targeted `wrapped-case-insensitive-distinct` |
+| 28.7 ms | targeted `four-properties` |
+| 27.9 ms | localized-late `four-properties` |
+
+Substitute, for those two rows, Kotlin's own timing for the same query *without* the
+`DISTINCT` — same predicate, same selectivity, one keyword apart — and Kotlin's P95 falls
+from 151.2 ms to 28.7 ms. **The ratio drops from 16.7x to 3.2x.**
+
+So the honest reading is: if the Kotlin server got a fast path for the wrapped
+case-insensitive `DISTINCT` shape, most of this result would go away. Rust's advantage on
+that shape is not a language advantage either — it is `fastpath.rs`'s
+`distinct_string_property`, a hand-written special case that Kotlin could equally write.
+That shape is a known, actively-worked hot spot on the Kotlin side; see
+`docs/wrapped-case-insensitive-query-optimization-attempts.md`.
+
+What is left after neutralising it — roughly 3x — is the part that is about the
+implementation rather than one query family, and an earlier single-graph measurement put
+the purely language-level component (same work, no fast paths on either side) at roughly
+1–2x. Those two figures are consistent with each other.
 
 ## Every query
 
