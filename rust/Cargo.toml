@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["graphite-storage", "graphite-cypher-rs", "graphite-explore-rs"]
+members = ["graphite-storage", "graphite-cypher-rs", "graphite-explore-rs", "graphite-cli-rs"]
 
 [workspace.package]
 version = "0.1.0"

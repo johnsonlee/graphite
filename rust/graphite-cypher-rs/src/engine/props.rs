@@ -347,10 +347,20 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
 /// `CypherExecutor.nodeToMap` — the shape a node takes in a query result.
 /// Signature fields are excluded and null values are dropped, as Gson does.
 pub fn node_result_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
+    let mut m = node_display_properties(g, node);
+    m.retain(|_, v| !v.is_null());
+    m
+}
+
+/// The same map before null-valued keys are dropped.
+///
+/// JSON output never shows those keys, because Gson omits nulls — but `toString()` does,
+/// so `graphite query` prints `line=null` in its text and CSV output. The two views come
+/// apart only here.
+pub fn node_display_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
     let mut m = node_properties(g, node);
     m.shift_remove("caller_signature");
     m.shift_remove("callee_signature");
-    m.retain(|_, v| !v.is_null());
     m
 }
 

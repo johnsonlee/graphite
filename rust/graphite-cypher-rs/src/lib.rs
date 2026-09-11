@@ -15,9 +15,11 @@ pub mod render;
 // Evaluation
 pub mod eval;
 pub mod functions;
+pub mod gson;
 pub mod materialize;
 pub mod ordering;
 pub mod semantics;
+pub mod tostring;
 
 // Execution
 pub mod engine;

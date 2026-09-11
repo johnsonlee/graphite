@@ -227,8 +227,13 @@ impl GraphContext for Executor {
         m
     }
     fn node_result_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
+        let mut m = self.node_display_properties(node);
+        m.retain(|_, v| !v.is_null());
+        m
+    }
+    fn node_display_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
         let mut m = match self.node(node) {
-            Some(n) => props::node_result_properties(self.graph(node.source), &n),
+            Some(n) => props::node_display_properties(self.graph(node.source), &n),
             None => IndexMap::new(),
         };
         if self.cross {
@@ -238,6 +243,11 @@ impl GraphContext for Executor {
             m.insert("qualifiedId".into(), Value::str(eid));
         }
         m
+    }
+    fn edge_comparison(&self, rel: EdgeRef) -> Option<(String, u32)> {
+        self.graph(rel.source)
+            .comparison(&rel.edge)
+            .map(|c| (format!("{:?}", c.op), c.comparand))
     }
     fn node_labels(&self, node: NodeRef) -> Vec<&'static str> {
         match self.graph(node.source).node_tag(node.id) {

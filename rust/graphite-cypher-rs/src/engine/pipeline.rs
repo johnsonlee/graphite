@@ -399,7 +399,7 @@ impl Executor {
         if aggregated {
             // Streaming group-by.
             let items = items.unwrap();
-            let plan = AggPlan::new(items);
+            let plan = AggPlan::new(items)?;
             let columns: Vec<String> = items
                 .iter()
                 .map(|it| it.alias.clone().unwrap_or_else(|| to_cypher_string(&it.expr)))
@@ -724,23 +724,67 @@ struct AggPlan {
 }
 
 impl AggPlan {
-    fn new(items: &[ReturnItem]) -> AggPlan {
+    fn new(items: &[ReturnItem]) -> CypherResult<AggPlan> {
         let mut aggs = Vec::new();
         let mut rewritten = Vec::new();
         let mut group_exprs = Vec::new();
         for it in items {
             if contains_aggregation(&it.expr) {
+                // An aggregate is only a projection when it *is* the projected
+                // expression. Nested inside a larger one — `count(*) * 2` — the
+                // baseline evaluates the outer expression generically, and the
+                // evaluator refuses the aggregate it finds there. Substituting the
+                // aggregate's value instead would answer a query the baseline rejects.
+                if let Some(name) = nested_aggregation_name(&it.expr) {
+                    return Err(CypherError::Aggregation(name));
+                }
                 rewritten.push(rewrite_aggs(&it.expr, &mut aggs));
             } else {
                 rewritten.push(it.expr.clone());
                 group_exprs.push(it.expr.clone());
             }
         }
-        AggPlan {
+        Ok(AggPlan {
             rewritten,
             aggs,
             group_exprs,
+        })
+    }
+}
+
+/// The aggregate that would reach the generic evaluator, if this expression carries one
+/// anywhere other than at its root.
+fn nested_aggregation_name(e: &Expr) -> Option<String> {
+    match e {
+        // At the root an aggregate is a projection, not an error.
+        Expr::CountStar => None,
+        Expr::FunctionCall { name, .. } if is_aggregation_name(name) => None,
+        other => first_aggregation_name(other),
+    }
+}
+
+fn first_aggregation_name(e: &Expr) -> Option<String> {
+    match e {
+        Expr::CountStar => Some("count".to_string()),
+        Expr::FunctionCall { name, args, .. } => {
+            if is_aggregation_name(name) {
+                Some(name.to_ascii_lowercase())
+            } else {
+                args.iter().find_map(first_aggregation_name)
+            }
         }
+        Expr::Property { expr, .. } => first_aggregation_name(expr),
+        Expr::Binary { left, right, .. } => {
+            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
+        }
+        Expr::Unary { expr, .. } => first_aggregation_name(expr),
+        Expr::Comparison { left, right, .. } => {
+            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
+        }
+        Expr::StringOp { left, right, .. } => {
+            first_aggregation_name(left).or_else(|| first_aggregation_name(right))
+        }
+        _ => None,
     }
 }
 
@@ -904,7 +948,7 @@ fn project(
     let aggregated = items.iter().any(|it| contains_aggregation(&it.expr));
     let mut out: Vec<Row>;
     if aggregated {
-        let plan = AggPlan::new(items);
+        let plan = AggPlan::new(items)?;
         let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
         for row in rows {
             let mut keyv = Vec::with_capacity(plan.group_exprs.len());

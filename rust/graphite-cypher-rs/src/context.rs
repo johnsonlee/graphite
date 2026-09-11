@@ -23,6 +23,9 @@ pub trait GraphContext {
     /// `node_properties`: signatures are omitted and null-valued keys are dropped,
     /// matching `CypherExecutor.nodeToMap` and Gson's null handling.
     fn node_result_properties(&self, node: NodeRef) -> IndexMap<String, Value>;
+    /// `node_result_properties` before null-valued keys are dropped, for `toString()`
+    /// rendering, which shows them where JSON does not.
+    fn node_display_properties(&self, node: NodeRef) -> IndexMap<String, Value>;
     /// `labels(n)` list, in Kotlin order (e.g. ["IntConstant","Constant"]).
     fn node_labels(&self, node: NodeRef) -> Vec<&'static str>;
     /// Concrete node type name (e.g. "CallSiteNode").
@@ -30,6 +33,9 @@ pub trait GraphContext {
 
     /// Relationship property (`kind`, `virtual`, `dynamic`, `type`, `graphId`), else Null.
     fn rel_property(&self, rel: EdgeRef, key: &str) -> Value;
+    /// The branch comparison a ControlFlowEdge carries, as (operator, comparand node id).
+    /// `None` for every other family, and for a branch edge that records none.
+    fn edge_comparison(&self, rel: EdgeRef) -> Option<(String, u32)>;
     /// `type(r)` string, e.g. "DATAFLOW".
     fn rel_type(&self, rel: EdgeRef) -> &'static str;
 

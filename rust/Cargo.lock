@@ -394,6 +394,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "graphite-cli"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "graphite-cypher",
+ "graphite-storage",
+ "serde_json",
+]
+
+[[package]]
 name = "graphite-cypher"
 version = "0.1.0"
 dependencies = [

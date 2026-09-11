@@ -54,7 +54,7 @@ ported but unverified — the table says which. Neither is evidence of equivalen
 
 | | |
 |---|---|
-| **The `graphite` CLI** | `graphite-query`'s `build` and `query` subcommands are **not ported at all**. The suite is HTTP-only and says nothing about them. |
+| **`graphite build`** | The `build` subcommand is **not ported at all** — it runs the SootUp bytecode analysis, which this port does not implement. `graphite serve` is not ported either; the Explorer ships as its own `graphite-explore` binary. |
 | **The Explorer's own CLI** | Flags are one-for-one with the Kotlin binary and were exercised by hand, but no automated check compares them. `--help`, `--version` and error text are known to differ: picocli and clap format differently. |
 | **Cross-graph variants of four routes** | `/api/endpoints`, `/api/resources`, `/api/annotations`, `/api/architecture/c4` — only their single-graph counterparts are checked. |
 | **`/api/resources/{*path}`** | Resource body serving is never requested. |
@@ -65,6 +65,38 @@ ported but unverified — the table says which. Neither is evidence of equivalen
 | **`TopologyStore`'s binary snapshot** | The persisted format is not read by the Rust server. |
 | **Corpus breadth** | Everything runs against one graph built from the `graphite-explore` shadow jar. A second corpus could surface encoding paths this one never exercises. |
 | **Concurrency** | Every request is issued serially. Behaviour under concurrent load, and the request guard's queuing and timeout behaviour, are not compared. |
+
+### `graphite query` has its own byte-level suite
+
+`rust/bench/parity-cli.py` runs both CLIs and compares **raw stdout, raw stderr and the
+exit code**, byte for byte — not parsed output. That is the only way to check what a
+command-line tool actually promises: column widths and padding, Gson's escaping, and the
+exact error text a script might match on. 148 checks: 28 queries across all five format
+spellings (`text`, `json`, `csv`, `CSV`, and an unrecognised one, which falls through to
+the table), plus the flag forms, the verbose lines, and the two directory failures.
+
+It reaches things the HTTP suite structurally cannot:
+
+- **Gson's HTML escaping.** `<init>` serialises as `"\u003cinit\u003e"`. The HTTP suite
+  parses JSON before comparing, so it can never see this; a byte comparison can.
+- **`toString()` rather than JSON.** A node prints `line=null` in the table and has no
+  `line` key in the JSON of the same query, because Gson omits nulls and `toString()`
+  does not. A relationship is not a map at all: it prints as the Kotlin data class,
+  `DataFlowEdge(from=node#4101, to=node#4102, kind=PARAMETER_PASS)`, and serialises to
+  that class's declared fields — no `type` key, unlike the HTTP API's relationship shape.
+- **Table geometry.** Column widths are `max(header, widest value, 4)`, measured in
+  UTF-16 code units, and every column including the last is padded, so trailing spaces
+  are part of the output.
+
+Two divergences are accepted rather than reproduced, both artefacts of the baseline:
+
+- **`CREATE` leaks a stack trace.** Kotlin's `NotImplementedError` is an `Error`, so it
+  escapes the command's `catch (e: Exception)`; the JVM prints a stack trace and mangles
+  the message's em-dash through the platform encoding. Only the exit code is compared.
+- **Unconstrained relationship traversal is not deterministic.** `MATCH (a)-[r]->(b)
+  RETURN r LIMIT 2` returns different edges on consecutive runs *of the baseline itself*,
+  so it is no oracle for a byte comparison. The suite pins the source node and orders the
+  result.
 
 ### The 64-graph run is a separate, narrower check
 
@@ -86,6 +118,12 @@ These are differences that exist and are not treated as failures:
   None affects what the browser renders.
 - The benchmark's parameterized query shape is run in its literal form, because the HTTP
   API takes no query parameters.
+- **The HTTP API's JSON is not byte-identical.** The Kotlin server serialises through
+  `GsonBuilder().setPrettyPrinting().create()`, so it HTML-escapes `<`, `>`, `&`, `=` and
+  `'`; the Rust server emits those characters raw. Parsed responses are identical, which
+  is why 116 structural checks never saw it — it was found while porting the CLI, whose
+  output *is* compared byte for byte. `graphite_cypher::gson` now implements the Gson
+  form and the CLI uses it; the server does not yet.
 
 ## Method
 
