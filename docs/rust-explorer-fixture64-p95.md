@@ -72,6 +72,10 @@ Correctness is compared, not assumed: each of the 34 queries is hashed over its 
 columns and rows in every repetition, and all 102 comparisons between the Kotlin and
 Rust runs agree, as do the digests across repetitions on each server.
 
+That is evidence about cross-graph query results on `/api/cypher`, and nothing else. The
+boundary of what has and has not been differentially tested is set out in
+[What the parity suite covers, and what it does not](rust-explorer-parity-and-latency.md#what-the-parity-suite-covers-and-what-it-does-not).
+
 ## What changed
 
 The port already read the same graph directory as the Kotlin server, but it ignored a

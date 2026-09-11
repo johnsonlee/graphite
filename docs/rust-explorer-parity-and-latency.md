@@ -22,6 +22,71 @@ results byte-identical. See
 [rust-explorer-fixture64-p95.md](rust-explorer-fixture64-p95.md) — that document, not
 this one, is the result against the gate.
 
+## What the parity suite covers, and what it does not
+
+The suite reports a single number ("116 passed"), and a number like that invites being
+read as "everything checked out". It does not mean that. This section is the boundary,
+so the count is never load-bearing for something it never touched.
+
+### Covered
+
+`rust/bench/parity.py` issues each request to both servers and compares **HTTP status and
+response body**. JSON bodies are parsed and compared structurally after normalising
+`loadedAt`, `builtAt` and `version`; everything else is compared as text.
+
+| | |
+|---|---|
+| Graph metadata | `/api/graphs`, `/api/graphs/{id}` — including a missing id and a malformed one |
+| Topology | `/api/topology` |
+| Overview | `/api/graphs/{id}/overview`, `/api/overview` |
+| Nodes | `/api/graphs/{id}/node/{id}` — valid, out-of-range, non-numeric — plus `outgoing` and `incoming` |
+| Subgraph | `/api/graphs/{id}/subgraph` — valid, missing `center`, invalid `direction` |
+| Endpoints, resources, annotations | the `/api/graphs/{id}/…` forms, annotations both with and without `member` |
+| C4 | `/api/graphs/{id}/architecture/c4` at **`level=context` only**, in all four formats, plus an invalid level and an invalid format |
+| OpenAPI | `/openapi.json`, `/swagger.json` |
+| Cypher | 37 queries, each sent to both `/api/graphs/{id}/cypher` and `/api/cypher` — 74 cases |
+| Web UI | `/`, `/index.html`, `/app.js`, `/ui-state.js`, `/style.css` — bytes, `Content-Type`, and `If-None-Match` → 304 |
+
+### Not covered
+
+Nothing below has been differentially tested. Some of it is not ported at all, some is
+ported but unverified — the table says which. Neither is evidence of equivalence.
+
+| | |
+|---|---|
+| **The `graphite` CLI** | `graphite-query`'s `build` and `query` subcommands are **not ported at all**. The suite is HTTP-only and says nothing about them. |
+| **The Explorer's own CLI** | Flags are one-for-one with the Kotlin binary and were exercised by hand, but no automated check compares them. `--help`, `--version` and error text are known to differ: picocli and clap format differently. |
+| **Cross-graph variants of four routes** | `/api/endpoints`, `/api/resources`, `/api/annotations`, `/api/architecture/c4` — only their single-graph counterparts are checked. |
+| **`/api/resources/{*path}`** | Resource body serving is never requested. |
+| **`/api/cypher/graphs`** | Never requested. |
+| **`/metrics`** | Never requested; the Prometheus exposition format is not compared. |
+| **C4 container and component levels** | Only `level=context` is compared. The other two levels produce diagram layout, which was never brought to parity. |
+| **API response headers** | For every route except the five UI assets, only status and body are compared. Content types, cache headers and error-response headers on the JSON API are unchecked. |
+| **`TopologyStore`'s binary snapshot** | The persisted format is not read by the Rust server. |
+| **Corpus breadth** | Everything runs against one graph built from the `graphite-explore` shadow jar. A second corpus could surface encoding paths this one never exercises. |
+| **Concurrency** | Every request is issued serially. Behaviour under concurrent load, and the request guard's queuing and timeout behaviour, are not compared. |
+
+### The 64-graph run is a separate, narrower check
+
+`fixture64.py` compares a SHA-256 over ordered columns and rows for its 34 benchmark
+queries, across 64 graphs, on `/api/cypher` only. It is evidence about cross-graph query
+results and nothing else — not about any other route, and not about response shape
+beyond columns and rows.
+
+### Known accepted deviations
+
+These are differences that exist and are not treated as failures:
+
+- On the single-graph route the Kotlin server tags some rows with
+  `{"$metadata": {"graphIds": ["single"]}}`. `"single"` is an internal placeholder, not
+  the id of any loaded graph, and it appears only for query shapes that take an
+  index-assisted path. The suite strips that exact value and reports how often it fired.
+- Three response headers on the UI assets: Kotlin also sends `Accept-Ranges: bytes` and
+  `Last-Modified`, and chunks the response where the Rust server sends `Content-Length`.
+  None affects what the browser renders.
+- The benchmark's parameterized query shape is run in its literal form, because the HTTP
+  API takes no query parameters.
+
 ## Method
 
 Both servers were started on the same graph (built from the `graphite-explore` shadow
@@ -122,15 +187,10 @@ scenarios that hit no fast path at all (single node lookup, edge listing, one-ho
 traversal, method listing) range from 0.75x to 2.7x, which is the scale of the
 language-and-runtime difference on its own.
 
-## Parity
+## Parity results
 
-`rust/bench/parity.py` issues 101 requests against both servers and compares status and
-normalised body: registry and topology routes, node, edge and subgraph lookups,
-overview, endpoints, resources, annotations, C4 in all four formats, the OpenAPI
-document, and 37 Cypher queries spanning scans, filters, aggregation, ordering,
-traversal, expressions, and error cases. All 101 match. Timestamps, absolute paths and
-the build version are normalised, since they identify the build rather than its
-behaviour.
+All **116** checks pass. What they do and do not reach is set out under "What the parity
+suite covers, and what it does not" above; this section records only the findings.
 
 Two baseline behaviours are reproduced deliberately rather than "fixed". `ORDER BY
 n.value` after a `RETURN DISTINCT n.value` does not sort, because the sort key resolves
@@ -149,7 +209,8 @@ harness strips that exact placeholder and reports how many rows carried it.
 **C4 container and component levels.** The context level matches byte-for-byte in JSON,
 Mermaid, PlantUML and Structurizr DSL. The container and component levels produce the
 same elements but not the same diagram layout: their edge-selection caps, fan-in
-reduction and layer splitting are not ported. Those levels are checked for status only.
+reduction and layer splitting are not ported. **Those two levels are not requested by
+the suite at all** — not even for status — so nothing here is evidence about them.
 
 **Persisted topology snapshots.** `TopologyStore`'s binary snapshot format is not
 ported. `/api/topology` is served from live registry state instead.
@@ -164,6 +225,6 @@ java -Xmx6g -jar ../graphite-explore/build/libs/graphite-explore.jar \
 ./target/release/graphite-explore --id app /path/to/graph --port 18080 --metrics
 
 cd bench
-python3 parity.py                       # 101 differential checks
+python3 parity.py                       # 116 differential checks
 python3 bench.py --warmup 5 --iters 25  # single-graph latency comparison
 ```
