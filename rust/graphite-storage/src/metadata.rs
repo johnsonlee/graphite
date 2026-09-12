@@ -1,6 +1,9 @@
 //! `graph.metadata`, `graph.comparisons`, `graph.classoverview`, `graph.resources`.
 
-use crate::io::{check_header, Cursor, Truncated, MAGIC_CLASS_OVERVIEW, MAGIC_COMPARISONS, MAGIC_METADATA, MAGIC_RESOURCES};
+use crate::io::{
+    check_header, Cursor, Truncated, MAGIC_CLASS_OVERVIEW, MAGIC_COMPARISONS, MAGIC_METADATA,
+    MAGIC_RESOURCES,
+};
 use crate::node::{AnyValue, MethodDesc, NodeId, StrId};
 use std::collections::HashMap;
 
@@ -86,7 +89,8 @@ pub struct Metadata {
 impl Metadata {
     pub fn parse(data: &[u8]) -> Result<Metadata, MetadataError> {
         let mut c = Cursor::new(data);
-        let version = check_header(c.i32()?, MAGIC_METADATA).ok_or(MetadataError::BadHeader("graph.metadata"))?;
+        let version = check_header(c.i32()?, MAGIC_METADATA)
+            .ok_or(MetadataError::BadHeader("graph.metadata"))?;
         if !(1..=3).contains(&version) {
             return Err(MetadataError::BadVersion(version, "graph.metadata"));
         }
@@ -211,7 +215,8 @@ pub struct Comparisons {
 impl Comparisons {
     pub fn parse(data: &[u8]) -> Result<Comparisons, MetadataError> {
         let mut c = Cursor::new(data);
-        check_header(c.i32()?, MAGIC_COMPARISONS).ok_or(MetadataError::BadHeader("graph.comparisons"))?;
+        check_header(c.i32()?, MAGIC_COMPARISONS)
+            .ok_or(MetadataError::BadHeader("graph.comparisons"))?;
         let n = c.i32()?.max(0) as usize;
         let mut keys = Vec::with_capacity(n);
         let mut values = Vec::with_capacity(n);
@@ -272,7 +277,8 @@ pub struct ClassOverview {
 impl ClassOverview {
     pub fn parse(data: &[u8]) -> Result<ClassOverview, MetadataError> {
         let mut c = Cursor::new(data);
-        check_header(c.i32()?, MAGIC_CLASS_OVERVIEW).ok_or(MetadataError::BadHeader("graph.classoverview"))?;
+        check_header(c.i32()?, MAGIC_CLASS_OVERVIEW)
+            .ok_or(MetadataError::BadHeader("graph.classoverview"))?;
         let call_site_count = c.i32()?;
         let n = c.i32()?.max(0) as usize;
         let mut classes = Vec::with_capacity(n);
@@ -308,7 +314,8 @@ pub struct Resources {
 impl Resources {
     pub fn parse(data: &[u8]) -> Result<Resources, MetadataError> {
         let mut c = Cursor::new(data);
-        let version = check_header(c.i32()?, MAGIC_RESOURCES).ok_or(MetadataError::BadHeader("graph.resources"))?;
+        let version = check_header(c.i32()?, MAGIC_RESOURCES)
+            .ok_or(MetadataError::BadHeader("graph.resources"))?;
         if version != 1 {
             return Err(MetadataError::BadVersion(version, "graph.resources"));
         }

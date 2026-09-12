@@ -25,7 +25,8 @@ pub struct StringTable {
 impl StringTable {
     pub fn load(dir: &Path) -> Result<Self, StringTableError> {
         let path = dir.join("graph.strings");
-        let data = std::fs::read(&path).map_err(|e| StringTableError::Io(path.display().to_string(), e))?;
+        let data = std::fs::read(&path)
+            .map_err(|e| StringTableError::Io(path.display().to_string(), e))?;
         let mut table = Self::from_serialized(&data)?;
         let id_path = dir.join("graph.strings.identity");
         if let Ok(bytes) = std::fs::read(&id_path) {
@@ -42,7 +43,8 @@ impl StringTable {
         let inner = if utf8 {
             root.field("byteFrontCodedList")
         } else {
-            root.field("charFrontCodedList").or_else(|| root.field("list"))
+            root.field("charFrontCodedList")
+                .or_else(|| root.field("list"))
         }
         .ok_or_else(|| StringTableError::Layout("missing front-coded list field".into()))?;
         let n = match inner.field("n") {
@@ -71,10 +73,17 @@ impl StringTable {
                 _ => return Err(StringTableError::Layout("missing array".into())),
             }
             let flat: Vec<u8> = segs.concat();
-            decode_front_coded(&flat, n, ratio, |v| v as usize, |_| 1, &mut |bytes: &[u8]| {
-                arena.extend_from_slice(bytes);
-                offsets.push(arena.len() as u32);
-            });
+            decode_front_coded(
+                &flat,
+                n,
+                ratio,
+                |v| v as usize,
+                |_| 1,
+                &mut |bytes: &[u8]| {
+                    arena.extend_from_slice(bytes);
+                    offsets.push(arena.len() as u32);
+                },
+            );
         } else {
             let mut segs: Vec<&[u16]> = Vec::new();
             match inner.field("array") {

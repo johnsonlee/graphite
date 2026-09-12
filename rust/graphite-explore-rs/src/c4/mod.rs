@@ -33,7 +33,9 @@ pub fn any_value_json(g: &Graph, v: &graphite_storage::AnyValue) -> J {
         A::Int(i) => J::Number(Number::from(*i as i64)),
         A::Long(l) => J::Number(Number::from(*l)),
         A::Str(s) => J::String(g.str(*s).to_string()),
-        A::Float(f) => Number::from_f64(*f as f64).map(J::Number).unwrap_or(J::Null),
+        A::Float(f) => Number::from_f64(*f as f64)
+            .map(J::Number)
+            .unwrap_or(J::Null),
         A::Double(d) => Number::from_f64(*d).map(J::Number).unwrap_or(J::Null),
         A::Bool(b) => J::Bool(*b),
         A::Null => J::Null,

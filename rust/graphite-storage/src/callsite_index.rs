@@ -438,7 +438,10 @@ mod tests {
                 out.extend_from_slice(&p.to_be_bytes());
             }
             out.extend_from_slice(&0i64.to_be_bytes()); // trailing checksum, not verified
-            std::fs::File::create(path).unwrap().write_all(&out).unwrap();
+            std::fs::File::create(path)
+                .unwrap()
+                .write_all(&out)
+                .unwrap();
         }
     }
 
@@ -502,7 +505,10 @@ mod tests {
         assert_eq!(t10.iter().collect::<Vec<_>>(), vec![0, 2]);
         assert!(t10.contains(0) && t10.contains(2));
         assert!(!t10.contains(1));
-        assert_eq!(idx.trigram_string_ids(11).iter().collect::<Vec<_>>(), vec![1]);
+        assert_eq!(
+            idx.trigram_string_ids(11).iter().collect::<Vec<_>>(),
+            vec![1]
+        );
         assert!(idx.trigram_string_ids(12).is_empty());
     }
 
@@ -548,9 +554,7 @@ mod tests {
     #[test]
     fn literal_trigrams_match_the_writers_hash() {
         // Hand-computed with the writer's own `(a * 31 + b) * 31 + c` over lowercase.
-        let h = |a: char, b: char, c: char| {
-            ((a as i32) * 31 + b as i32) * 31 + c as i32
-        };
+        let h = |a: char, b: char, c: char| ((a as i32) * 31 + b as i32) * 31 + c as i32;
         assert_eq!(literal_trigrams("abc"), Some(vec![h('a', 'b', 'c')]));
         // Case folds to the same trigrams the writer stored.
         assert_eq!(literal_trigrams("ABC"), literal_trigrams("abc"));
@@ -569,7 +573,11 @@ mod tests {
         assert_eq!(literal_signature("ab"), 0);
         let one = literal_signature("abc");
         assert_ne!(one, 0);
-        assert_eq!(one.count_ones() <= 2, true, "one trigram sets at most two bits");
+        assert_eq!(
+            one.count_ones() <= 2,
+            true,
+            "one trigram sets at most two bits"
+        );
         assert_eq!(literal_signature("ABC"), one);
         // A longer literal's signature covers its prefix's bits.
         assert_eq!(literal_signature("abcd") & one, one);

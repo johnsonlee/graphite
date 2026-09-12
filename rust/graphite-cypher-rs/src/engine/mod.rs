@@ -262,7 +262,12 @@ impl GraphContext for Executor {
         }
     }
     fn rel_property(&self, rel: EdgeRef, key: &str) -> Value {
-        props::rel_property(self.graph(rel.source), rel, key, self.graph_id_opt(rel.source))
+        props::rel_property(
+            self.graph(rel.source),
+            rel,
+            key,
+            self.graph_id_opt(rel.source),
+        )
     }
     fn rel_type(&self, rel: EdgeRef) -> &'static str {
         rel.edge.rel_type()

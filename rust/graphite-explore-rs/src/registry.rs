@@ -159,11 +159,19 @@ impl GraphRegistry {
         }
     }
 
-    pub fn load(&self, id: &str, path: &Path, mode: Option<LoadMode>) -> Result<Arc<ServedGraph>, String> {
+    pub fn load(
+        &self,
+        id: &str,
+        path: &Path,
+        mode: Option<LoadMode>,
+    ) -> Result<Arc<ServedGraph>, String> {
         let id = validate_graph_id(id)?;
         let resolved = self.resolve_path(path);
         if !resolved.is_dir() {
-            return Err(format!("Graph path is not a directory: {}", resolved.display()));
+            return Err(format!(
+                "Graph path is not a directory: {}",
+                resolved.display()
+            ));
         }
         let mode = mode.unwrap_or(self.default_mode);
         // Load before taking the lock so a slow load never blocks readers.
@@ -336,18 +344,35 @@ mod tests {
 
     #[test]
     fn stats_add_componentwise() {
-        let a = GraphStats { nodes: 1, edges: 2, methods: 3, call_sites: 4 };
-        let b = GraphStats { nodes: 10, edges: 20, methods: 30, call_sites: 40 };
+        let a = GraphStats {
+            nodes: 1,
+            edges: 2,
+            methods: 3,
+            call_sites: 4,
+        };
+        let b = GraphStats {
+            nodes: 10,
+            edges: 20,
+            methods: 30,
+            call_sites: 40,
+        };
         assert_eq!(
             a.plus(b),
-            GraphStats { nodes: 11, edges: 22, methods: 33, call_sites: 44 }
+            GraphStats {
+                nodes: 11,
+                edges: 22,
+                methods: 33,
+                call_sites: 44
+            }
         );
     }
 
     #[test]
     fn instant_formatting_trims_like_java() {
         use chrono::TimeZone;
-        let t = chrono::Utc.with_ymd_and_hms(2026, 9, 9, 13, 25, 19).unwrap();
+        let t = chrono::Utc
+            .with_ymd_and_hms(2026, 9, 9, 13, 25, 19)
+            .unwrap();
         assert_eq!(format_instant(t), "2026-09-09T13:25:19Z");
         let t = t + chrono::Duration::milliseconds(123);
         assert_eq!(format_instant(t), "2026-09-09T13:25:19.123Z");

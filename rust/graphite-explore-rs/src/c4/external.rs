@@ -35,7 +35,9 @@ impl DependencyKind {
             DependencyKind::ExternalSystem => {
                 "External software system candidate inferred from referenced-but-absent classes"
             }
-            DependencyKind::Runtime => "Language and platform runtime supporting the subject system",
+            DependencyKind::Runtime => {
+                "Language and platform runtime supporting the subject system"
+            }
         }
     }
     pub fn responsibility(self) -> &'static str {
@@ -76,7 +78,14 @@ pub fn artifact_key(origin: &str) -> Option<String> {
         .next()
         .unwrap_or("")
         .strip_suffix(".jar")
-        .unwrap_or_else(|| origin.trim().trim_end_matches('/').rsplit('/').next().unwrap_or(""));
+        .unwrap_or_else(|| {
+            origin
+                .trim()
+                .trim_end_matches('/')
+                .rsplit('/')
+                .next()
+                .unwrap_or("")
+        });
     if candidate.trim().is_empty() {
         None
     } else {
@@ -241,21 +250,33 @@ mod tests {
 
     #[test]
     fn artifact_key_strips_path_and_extension() {
-        assert_eq!(artifact_key("lib/postgresql-42.7.3.jar").unwrap(), "postgresql-42.7.3");
+        assert_eq!(
+            artifact_key("lib/postgresql-42.7.3.jar").unwrap(),
+            "postgresql-42.7.3"
+        );
         assert_eq!(artifact_key("BOOT-INF/classes/").unwrap(), "classes");
         assert!(artifact_key("").is_none());
     }
 
     #[test]
     fn namespace_group_stops_before_the_type_segment() {
-        assert_eq!(namespace_group("com.partner.payment.PaymentGateway"), "com.partner.payment");
-        assert_eq!(namespace_group("okhttp3.internal.connection.RealConnection"), "okhttp3");
+        assert_eq!(
+            namespace_group("com.partner.payment.PaymentGateway"),
+            "com.partner.payment"
+        );
+        assert_eq!(
+            namespace_group("okhttp3.internal.connection.RealConnection"),
+            "okhttp3"
+        );
     }
 
     #[test]
     fn dependency_kinds_follow_the_id_prefix() {
         assert_eq!(dependency_kind("artifact:x"), DependencyKind::Library);
         assert_eq!(dependency_kind("runtime:java"), DependencyKind::Runtime);
-        assert_eq!(dependency_kind("namespace:com.x"), DependencyKind::ExternalSystem);
+        assert_eq!(
+            dependency_kind("namespace:com.x"),
+            DependencyKind::ExternalSystem
+        );
     }
 }

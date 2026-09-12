@@ -53,7 +53,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         "graphid" => {
             if !ctx.is_cross_graph() {
                 match arg(args, 0)? {
-                    Value::Node(_) | Value::Rel(_) | Value::Method(_) | Value::Path(_) => Value::Null,
+                    Value::Node(_) | Value::Rel(_) | Value::Method(_) | Value::Path(_) => {
+                        Value::Null
+                    }
                     _ => Value::Null,
                 }
             } else {
@@ -88,7 +90,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         },
         "tofloat" => match arg(args, 0)? {
             v if v.is_number() => Value::Float(to_double(v)),
-            Value::Str(s) => java_parse_double(s).map(Value::Float).unwrap_or(Value::Null),
+            Value::Str(s) => java_parse_double(s)
+                .map(Value::Float)
+                .unwrap_or(Value::Null),
             _ => Value::Null,
         },
         "toboolean" => match arg(args, 0)? {
@@ -133,7 +137,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             _ => Value::Null,
         },
         "labels" => match arg(args, 0)? {
-            Value::Node(n) => Value::list(ctx.node_labels(*n).into_iter().map(Value::str).collect()),
+            Value::Node(n) => {
+                Value::list(ctx.node_labels(*n).into_iter().map(Value::str).collect())
+            }
             Value::Method(_) => Value::list(vec![Value::str("Method")]),
             _ => Value::list(vec![]),
         },
@@ -298,7 +304,9 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
                 1
             };
             if step == 0 {
-                return Err(CypherError::Runtime("Step cannot be zero in range()".into()));
+                return Err(CypherError::Runtime(
+                    "Step cannot be zero in range()".into(),
+                ));
             }
             let mut out = Vec::new();
             let mut i = start;
@@ -393,7 +401,9 @@ pub fn aggregate(name: &str, values: &[Value]) -> CypherResult<Value> {
             if non_null.is_empty() {
                 Value::Null
             } else {
-                Value::Float(non_null.iter().map(|v| to_double(v)).sum::<f64>() / non_null.len() as f64)
+                Value::Float(
+                    non_null.iter().map(|v| to_double(v)).sum::<f64>() / non_null.len() as f64,
+                )
             }
         }
         // min/max compare by toDouble() and return the ORIGINAL value; NaN sorts greatest.

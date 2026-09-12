@@ -21,7 +21,11 @@ pub fn glob_match(pattern: &str, path: &str) -> bool {
         if p[0] == b'*' {
             if p.len() > 1 && p[1] == b'*' {
                 // `**` matches any run of characters, separators included.
-                let rest = if p.len() > 2 && p[2] == b'/' { &p[3..] } else { &p[2..] };
+                let rest = if p.len() > 2 && p[2] == b'/' {
+                    &p[3..]
+                } else {
+                    &p[2..]
+                };
                 for i in 0..=t.len() {
                     if go(rest, &t[i..]) {
                         return true;
@@ -62,12 +66,11 @@ fn string_values(g: &Graph, v: Option<&AnyValue>) -> Vec<String> {
     }
 }
 
-fn attr<'a>(
-    g: &Graph,
-    attrs: &'a [(StrId, AnyValue)],
-    name: &str,
-) -> Option<&'a AnyValue> {
-    attrs.iter().find(|(k, _)| g.str(*k) == name).map(|(_, v)| v)
+fn attr<'a>(g: &Graph, attrs: &'a [(StrId, AnyValue)], name: &str) -> Option<&'a AnyValue> {
+    attrs
+        .iter()
+        .find(|(k, _)| g.str(*k) == name)
+        .map(|(_, v)| v)
 }
 
 /// Paths declared by a mapping annotation; `["/"]` when it declares none.
@@ -114,7 +117,11 @@ fn normalize_path(base: &str, method: &str) -> String {
 fn combine_paths(bases: &[String], methods: &[String]) -> Vec<String> {
     let default = vec!["/".to_string()];
     let bases = if bases.is_empty() { &default } else { bases };
-    let methods = if methods.is_empty() { &default } else { methods };
+    let methods = if methods.is_empty() {
+        &default
+    } else {
+        methods
+    };
     let mut out: Vec<String> = Vec::new();
     for b in bases {
         for m in methods {
@@ -176,7 +183,8 @@ pub fn extract_endpoints(g: &Graph) -> Vec<Map<String, J>> {
         if member.is_empty() {
             continue;
         }
-        let mut all_names: Vec<String> = member.iter().map(|(f, _)| g.str(*f).to_string()).collect();
+        let mut all_names: Vec<String> =
+            member.iter().map(|(f, _)| g.str(*f).to_string()).collect();
         all_names.sort();
         for (fqn_id, attrs) in member {
             let fqn = g.str(*fqn_id);
@@ -211,7 +219,10 @@ pub fn extract_endpoints(g: &Graph) -> Vec<Map<String, J>> {
     }
     out.sort_by(|a, b| {
         let k = |m: &Map<String, J>, key: &str| {
-            m.get(key).and_then(|v| v.as_str()).unwrap_or("").to_string()
+            m.get(key)
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string()
         };
         k(a, "path")
             .cmp(&k(b, "path"))

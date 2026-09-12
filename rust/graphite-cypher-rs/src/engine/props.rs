@@ -108,7 +108,10 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             enum_name,
             args,
         } => match key {
-            "value" => args.first().map(|a| any_to_value(g, a)).unwrap_or(Value::Null),
+            "value" => args
+                .first()
+                .map(|a| any_to_value(g, a))
+                .unwrap_or(Value::Null),
             "name" => s(g, *enum_name),
             "enum_type" => s(g, *enum_type),
             _ => Value::Null,
@@ -259,7 +262,9 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
         } => {
             put(
                 "value",
-                args.first().map(|a| any_to_value(g, a)).unwrap_or(Value::Null),
+                args.first()
+                    .map(|a| any_to_value(g, a))
+                    .unwrap_or(Value::Null),
             );
             put("name", s(g, *enum_name));
             put("enum_type", s(g, *enum_type));
@@ -435,7 +440,11 @@ pub fn rel_property(g: &Graph, rel: EdgeRef, key: &str, graph_id: Option<&str>) 
     }
 }
 
-pub fn method_properties(g: &Graph, m: &MethodDesc, graph_id: Option<&str>) -> IndexMap<String, Value> {
+pub fn method_properties(
+    g: &Graph,
+    m: &MethodDesc,
+    graph_id: Option<&str>,
+) -> IndexMap<String, Value> {
     let mut map = IndexMap::new();
     map.insert("signature".to_string(), sig(g, m));
     map.insert("class".to_string(), s(g, m.declaring_class));

@@ -96,7 +96,11 @@ fn ordered_edges(elements: &[Element]) -> Vec<(&str, &Relationship)> {
 fn view_order(workspace: &J) -> Option<Vec<String>> {
     let views = workspace.get("views")?;
     for key in ["systemContextViews", "containerViews", "componentViews"] {
-        if let Some(v) = views.get(key).and_then(|v| v.as_array()).and_then(|a| a.first()) {
+        if let Some(v) = views
+            .get(key)
+            .and_then(|v| v.as_array())
+            .and_then(|a| a.first())
+        {
             let ids: Vec<String> = v
                 .get("elements")?
                 .as_array()?
@@ -122,7 +126,11 @@ fn collect(workspace: &J) -> Vec<Element> {
             Some(i) => i.to_string(),
             None => return,
         };
-        let name = e.get("name").and_then(|v| v.as_str()).unwrap_or(&id).to_string();
+        let name = e
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or(&id)
+            .to_string();
         let at = architecture_type(e);
         let relationships = e
             .get("relationships")
@@ -140,7 +148,11 @@ fn collect(workspace: &J) -> Vec<Element> {
                         // all strings; an absent weight sorts as zero.
                         let weight = props
                             .and_then(|p| p.get("graphite.weight"))
-                            .and_then(|v| v.as_str().and_then(|s| s.parse().ok()).or_else(|| v.as_i64()))
+                            .and_then(|v| {
+                                v.as_str()
+                                    .and_then(|s| s.parse().ok())
+                                    .or_else(|| v.as_i64())
+                            })
                             .unwrap_or(0);
                         Some(Relationship {
                             destination,
@@ -166,7 +178,12 @@ fn collect(workspace: &J) -> Vec<Element> {
         }
     }
     if let Some(order) = view_order(workspace) {
-        out.sort_by_key(|e| order.iter().position(|id| *id == e.id).unwrap_or(usize::MAX));
+        out.sort_by_key(|e| {
+            order
+                .iter()
+                .position(|id| *id == e.id)
+                .unwrap_or(usize::MAX)
+        });
     }
     out
 }
@@ -293,7 +310,11 @@ pub fn render_dsl(workspace: &J) -> String {
             return v.clone();
         }
         let base = format!("g_{}", slugify(id).replace('-', "_"));
-        let base = if base == "g_" { "g_element".to_string() } else { base };
+        let base = if base == "g_" {
+            "g_element".to_string()
+        } else {
+            base
+        };
         let mut candidate = base.clone();
         let mut n = 1;
         while identifiers.iter().any(|(_, v)| *v == candidate) {
@@ -321,7 +342,10 @@ pub fn render_dsl(workspace: &J) -> String {
             for sys in systems {
                 let id = sys.get("id").and_then(|v| v.as_str()).unwrap_or("");
                 let name = sys.get("name").and_then(|v| v.as_str()).unwrap_or("");
-                let desc = sys.get("description").and_then(|v| v.as_str()).unwrap_or("");
+                let desc = sys
+                    .get("description")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
                 let sid = ident(id, &mut identifiers);
                 let containers = sys.get("containers").and_then(|v| v.as_array());
                 let has_containers = containers.map(|c| !c.is_empty()).unwrap_or(false);
@@ -360,8 +384,14 @@ pub fn render_dsl(workspace: &J) -> String {
                     for comp in comps.unwrap() {
                         let pid = comp.get("id").and_then(|v| v.as_str()).unwrap_or("");
                         let pname = comp.get("name").and_then(|v| v.as_str()).unwrap_or("");
-                        let pdesc = comp.get("description").and_then(|v| v.as_str()).unwrap_or("");
-                        let ptech = comp.get("technology").and_then(|v| v.as_str()).unwrap_or("");
+                        let pdesc = comp
+                            .get("description")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("");
+                        let ptech = comp
+                            .get("technology")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("");
                         lines.push(format!(
                             "                {} = component \"{}\" \"{}\" \"{}\"",
                             ident(pid, &mut identifiers),
@@ -384,13 +414,24 @@ pub fn render_dsl(workspace: &J) -> String {
                         Some((_, v)) => v.clone(),
                         None => continue,
                     };
-                    for r in e.get("relationships").and_then(|v| v.as_array()).into_iter().flatten() {
-                        let dest = r.get("destinationId").and_then(|v| v.as_str()).unwrap_or("");
+                    for r in e
+                        .get("relationships")
+                        .and_then(|v| v.as_array())
+                        .into_iter()
+                        .flatten()
+                    {
+                        let dest = r
+                            .get("destinationId")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("");
                         let dest_ident = match identifiers.iter().find(|(k, _)| k == dest) {
                             Some((_, v)) => v.clone(),
                             None => continue,
                         };
-                        let desc = r.get("description").and_then(|v| v.as_str()).unwrap_or("uses");
+                        let desc = r
+                            .get("description")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("uses");
                         lines.push(format!(
                             "        {src_ident} -> {dest_ident} \"{}\"",
                             dsl_string(desc)
@@ -412,7 +453,11 @@ pub fn render_dsl(workspace: &J) -> String {
             .and_then(|v| v.get(key))
             .and_then(|v| v.as_array());
         for v in views.into_iter().flatten() {
-            let scope_key = if kind == "component" { "containerId" } else { "softwareSystemId" };
+            let scope_key = if kind == "component" {
+                "containerId"
+            } else {
+                "softwareSystemId"
+            };
             let scope = match v.get(scope_key).and_then(|s| s.as_str()) {
                 Some(s) => s,
                 None => continue,
@@ -421,7 +466,10 @@ pub fn render_dsl(workspace: &J) -> String {
                 Some((_, i)) => i.clone(),
                 None => continue,
             };
-            let view_key = v.get("key").and_then(|s| s.as_str()).unwrap_or("graphite-view");
+            let view_key = v
+                .get("key")
+                .and_then(|s| s.as_str())
+                .unwrap_or("graphite-view");
             lines.push(format!("        {kind} {scope_ident} \"{view_key}\" {{"));
             lines.push("            include *".to_string());
             lines.push("            autolayout tb".to_string());
@@ -498,8 +546,17 @@ mod tests {
 
     #[test]
     fn labels_are_shortened_or_humanized_by_type() {
-        assert_eq!(diagram_label("com.acme.Controller", "application-component"), "Controller");
-        assert_eq!(diagram_label("lucene-core-9.12.0", "external-library"), "Lucene Core");
-        assert_eq!(diagram_label("Java Runtime", "runtime-platform"), "Java Runtime");
+        assert_eq!(
+            diagram_label("com.acme.Controller", "application-component"),
+            "Controller"
+        );
+        assert_eq!(
+            diagram_label("lucene-core-9.12.0", "external-library"),
+            "Lucene Core"
+        );
+        assert_eq!(
+            diagram_label("Java Runtime", "runtime-platform"),
+            "Java Runtime"
+        );
     }
 }

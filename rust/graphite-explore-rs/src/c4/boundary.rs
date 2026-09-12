@@ -8,7 +8,10 @@ pub fn is_synthetic_class(c: &str) -> bool {
 }
 
 pub fn is_java_runtime_class(c: &str) -> bool {
-    c.starts_with("java.") || c.starts_with("javax.") || c.starts_with("jakarta.") || c.starts_with("jdk.")
+    c.starts_with("java.")
+        || c.starts_with("javax.")
+        || c.starts_with("jakarta.")
+        || c.starts_with("jdk.")
 }
 
 pub fn is_runtime_class(c: &str) -> bool {
@@ -95,7 +98,9 @@ pub fn derive(primary_classes: &[String]) -> String {
             if depth == 0 {
                 continue;
             }
-            *prefix_weights.entry(segments[..depth].join(".")).or_insert(0) += weight;
+            *prefix_weights
+                .entry(segments[..depth].join("."))
+                .or_insert(0) += weight;
         }
     }
     let mut root_counts: IndexMap<String, usize> = IndexMap::new();
@@ -174,17 +179,25 @@ mod tests {
 
     #[test]
     fn boundary_descends_into_a_dominant_child() {
-        let classes: Vec<String> = ["com.acme.checkout.Api", "com.acme.checkout.api.A",
-            "com.acme.checkout.service.S", "com.acme.checkout.repository.R"]
-            .iter()
-            .map(|s| s.to_string())
-            .collect();
+        let classes: Vec<String> = [
+            "com.acme.checkout.Api",
+            "com.acme.checkout.api.A",
+            "com.acme.checkout.service.S",
+            "com.acme.checkout.repository.R",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
         assert_eq!(derive(&classes), "com.acme.checkout");
     }
 
     #[test]
     fn boundary_stops_at_a_non_reverse_dns_root() {
-        let classes: Vec<String> = ["okhttp3.internal.Foo".to_string(), "okhttp3.Bar".to_string()].into();
+        let classes: Vec<String> = [
+            "okhttp3.internal.Foo".to_string(),
+            "okhttp3.Bar".to_string(),
+        ]
+        .into();
         assert_eq!(derive(&classes), "okhttp3");
     }
 

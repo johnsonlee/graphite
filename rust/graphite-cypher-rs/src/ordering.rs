@@ -34,9 +34,7 @@ pub fn compare_order_values(a: &Value, b: &Value) -> Ordering {
         (Value::Str(x), Value::Str(y)) => return compare_utf16(x, y),
         (Value::Bool(x), Value::Bool(y)) => return x.cmp(y),
         (Value::Float(x), Value::Float(y)) => return java_double_compare(*x, *y),
-        (Value::Float32(x), Value::Float32(y)) => {
-            return java_double_compare(*x as f64, *y as f64)
-        }
+        (Value::Float32(x), Value::Float32(y)) => return java_double_compare(*x as f64, *y as f64),
         _ => {}
     }
     if a.is_number() && b.is_number() {
@@ -106,9 +104,18 @@ mod tests {
 
     #[test]
     fn null_sorts_greatest() {
-        assert_eq!(compare_order_values(&Value::Null, &Value::Int(1)), Ordering::Greater);
-        assert_eq!(compare_order_values(&Value::Int(1), &Value::Null), Ordering::Less);
-        assert_eq!(compare_order_values(&Value::Null, &Value::Null), Ordering::Equal);
+        assert_eq!(
+            compare_order_values(&Value::Null, &Value::Int(1)),
+            Ordering::Greater
+        );
+        assert_eq!(
+            compare_order_values(&Value::Int(1), &Value::Null),
+            Ordering::Less
+        );
+        assert_eq!(
+            compare_order_values(&Value::Null, &Value::Null),
+            Ordering::Equal
+        );
     }
 
     #[test]
@@ -138,14 +145,26 @@ mod tests {
 
     #[test]
     fn numbers_compare_across_types() {
-        assert_eq!(compare_order_values(&Value::Int(1), &Value::Float(1.0)), Ordering::Equal);
-        assert_eq!(compare_order_values(&Value::Int(1), &Value::Float(1.5)), Ordering::Less);
+        assert_eq!(
+            compare_order_values(&Value::Int(1), &Value::Float(1.0)),
+            Ordering::Equal
+        );
+        assert_eq!(
+            compare_order_values(&Value::Int(1), &Value::Float(1.5)),
+            Ordering::Less
+        );
     }
 
     #[test]
     fn strings_compare_by_utf16() {
-        assert_eq!(compare_order_values(&Value::str("a"), &Value::str("b")), Ordering::Less);
-        assert_eq!(compare_order_values(&Value::str("B"), &Value::str("a")), Ordering::Less);
+        assert_eq!(
+            compare_order_values(&Value::str("a"), &Value::str("b")),
+            Ordering::Less
+        );
+        assert_eq!(
+            compare_order_values(&Value::str("B"), &Value::str("a")),
+            Ordering::Less
+        );
     }
 
     #[test]

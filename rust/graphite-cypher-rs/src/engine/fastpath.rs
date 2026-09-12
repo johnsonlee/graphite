@@ -142,9 +142,7 @@ pub fn grouped_call_site_property(
     let descending_by_count = match (order, &count_alias) {
         (None, _) => false,
         (Some(o), Some(alias)) => {
-            o.len() == 1
-                && o[0].descending
-                && matches!(&o[0].expr, Expr::Variable(v) if v == alias)
+            o.len() == 1 && o[0].descending && matches!(&o[0].expr, Expr::Variable(v) if v == alias)
         }
         (Some(_), None) => return Ok(None),
     };
@@ -175,7 +173,12 @@ pub fn grouped_call_site_property(
                 None => continue,
             };
             let cs = read_call_site_strings(data, offset);
-            let key = [cs.caller_class, cs.caller_name, cs.callee_class, cs.callee_name][field];
+            let key = [
+                cs.caller_class,
+                cs.caller_name,
+                cs.callee_class,
+                cs.callee_name,
+            ][field];
             *counts.entry(key).or_insert(0) += 1;
         }
         let mut entries: Vec<(StrId, i64)> = counts.into_iter().collect();
@@ -392,11 +395,17 @@ enum StringField {
 fn read_string_field(data: &[u8], offset: usize, field: StringField) -> StrId {
     match field {
         StringField::Fixed(delta) => {
-            i32::from_be_bytes(data[offset + delta..offset + delta + 4].try_into().unwrap()) as StrId
+            i32::from_be_bytes(data[offset + delta..offset + delta + 4].try_into().unwrap())
+                as StrId
         }
         StringField::CallSite(i) => {
             let cs = read_call_site_strings(data, offset);
-            [cs.caller_class, cs.caller_name, cs.callee_class, cs.callee_name][i]
+            [
+                cs.caller_class,
+                cs.caller_name,
+                cs.callee_class,
+                cs.callee_name,
+            ][i]
         }
     }
 }
@@ -456,4 +465,3 @@ fn trailing_order_and_limit(rest: &[Clause]) -> (Option<&[OrderItem]>, Option<us
     }
     (order, limit)
 }
-

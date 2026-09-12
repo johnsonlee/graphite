@@ -61,7 +61,9 @@ pub fn infer_kind(endpoints: i64, inbound: i64, outbound: i64, external: i64) ->
 pub fn architecture_type(kind: &str) -> &'static str {
     match kind {
         "application-runtime" => "application-runtime",
-        "application-service" | "interface" | "orchestrator" | "integration" => "application-service",
+        "application-service" | "interface" | "orchestrator" | "integration" => {
+            "application-service"
+        }
         _ => "application-component",
     }
 }
@@ -84,7 +86,13 @@ pub fn operational_responsibility(kind: &str) -> Option<&'static str> {
     }
 }
 
-pub fn infer_responsibility(endpoints: i64, methods: i64, inbound: i64, outbound: i64, external: i64) -> String {
+pub fn infer_responsibility(
+    endpoints: i64,
+    methods: i64,
+    inbound: i64,
+    outbound: i64,
+    external: i64,
+) -> String {
     let dominant = inbound.max(outbound).max(external);
     if endpoints > 0 {
         "Provides an inbound system interface and coordinates downstream execution across internal capabilities".into()
@@ -93,7 +101,8 @@ pub fn infer_responsibility(endpoints: i64, methods: i64, inbound: i64, outbound
     } else if inbound > outbound {
         "Acts as a shared internal capability boundary that is consumed by multiple collaborating subsystems".into()
     } else if outbound > inbound {
-        "Acts as an orchestration boundary that fans out into several other internal capabilities".into()
+        "Acts as an orchestration boundary that fans out into several other internal capabilities"
+            .into()
     } else if methods > 0 && dominant > 0 {
         "Acts as a balanced internal collaboration boundary with both implementation depth and cross-capability traffic".into()
     } else {
@@ -106,7 +115,11 @@ fn cluster_units(units: &[String], traffic: &IndexMap<(String, String), i64>) ->
     if units.is_empty() {
         return Vec::new();
     }
-    let index: IndexMap<&str, usize> = units.iter().enumerate().map(|(i, u)| (u.as_str(), i)).collect();
+    let index: IndexMap<&str, usize> = units
+        .iter()
+        .enumerate()
+        .map(|(i, u)| (u.as_str(), i))
+        .collect();
     let mut adjacency: Vec<IndexMap<usize, i64>> = vec![IndexMap::new(); units.len()];
     for ((l, r), w) in traffic {
         if let (Some(&li), Some(&ri)) = (index.get(l.as_str()), index.get(r.as_str())) {
@@ -118,11 +131,12 @@ fn cluster_units(units: &[String], traffic: &IndexMap<(String, String), i64>) ->
     let strongest: Vec<Option<usize>> = adjacency
         .iter()
         .map(|nbrs| {
-            nbrs.iter().fold(None::<(usize, i64)>, |best, (&n, &w)| match best {
-                Some((bn, bw)) if bw > w || (bw == w && units[bn] <= units[n]) => best,
-                _ => Some((n, w)),
-            })
-            .map(|(n, _)| n)
+            nbrs.iter()
+                .fold(None::<(usize, i64)>, |best, (&n, &w)| match best {
+                    Some((bn, bw)) if bw > w || (bw == w && units[bn] <= units[n]) => best,
+                    _ => Some((n, w)),
+                })
+                .map(|(n, _)| n)
         })
         .collect();
     let mut parents: Vec<usize> = (0..units.len()).collect();
@@ -171,7 +185,12 @@ fn cluster_units(units: &[String], traffic: &IndexMap<(String, String), i64>) ->
             g
         })
         .collect();
-    out.sort_by(|a, b| a.first().cloned().unwrap_or_default().cmp(&b.first().cloned().unwrap_or_default()));
+    out.sort_by(|a, b| {
+        a.first()
+            .cloned()
+            .unwrap_or_default()
+            .cmp(&b.first().cloned().unwrap_or_default())
+    });
     out
 }
 
@@ -184,7 +203,10 @@ fn infer_name(
 ) -> String {
     let mut token_scores: IndexMap<String, f64> = IndexMap::new();
     for unit in package_units {
-        let suffix = unit.strip_prefix(boundary).unwrap_or(unit).trim_start_matches('.');
+        let suffix = unit
+            .strip_prefix(boundary)
+            .unwrap_or(unit)
+            .trim_start_matches('.');
         let weight = unit_scores.get(unit).copied().unwrap_or(1) as f64;
         for token in suffix.split('.').filter(|t| !t.is_empty()) {
             let rarity = 1.0 / token_df.get(token).copied().unwrap_or(1) as f64;
@@ -323,7 +345,10 @@ pub fn infer_layout(
     }
     let mut token_df: IndexMap<String, usize> = IndexMap::new();
     for unit in &all_units {
-        let suffix = unit.strip_prefix(boundary).unwrap_or(unit).trim_start_matches('.');
+        let suffix = unit
+            .strip_prefix(boundary)
+            .unwrap_or(unit)
+            .trim_start_matches('.');
         let mut seen: IndexSet<&str> = IndexSet::new();
         for t in suffix.split('.').filter(|t| !t.is_empty()) {
             seen.insert(t);
@@ -337,17 +362,30 @@ pub fn infer_layout(
     let mut scored: Vec<(Vec<String>, i64, i64)> = clusters
         .into_iter()
         .map(|units| {
-            let methods: i64 = units.iter().map(|u| method_counts.get(u).copied().unwrap_or(0)).sum();
-            let endpoints: i64 = units.iter().map(|u| endpoint_counts.get(u).copied().unwrap_or(0)).sum();
-            let calls: i64 = units.iter().map(|u| traffic_by_unit.get(u).copied().unwrap_or(0)).sum();
-            let score = methods * METHOD_WEIGHT + endpoints * ENDPOINT_WEIGHT + calls * TRAFFIC_WEIGHT;
+            let methods: i64 = units
+                .iter()
+                .map(|u| method_counts.get(u).copied().unwrap_or(0))
+                .sum();
+            let endpoints: i64 = units
+                .iter()
+                .map(|u| endpoint_counts.get(u).copied().unwrap_or(0))
+                .sum();
+            let calls: i64 = units
+                .iter()
+                .map(|u| traffic_by_unit.get(u).copied().unwrap_or(0))
+                .sum();
+            let score =
+                methods * METHOD_WEIGHT + endpoints * ENDPOINT_WEIGHT + calls * TRAFFIC_WEIGHT;
             (units, score, calls)
         })
         .collect();
     scored.sort_by(|a, b| {
-        b.1.cmp(&a.1)
-            .then(b.2.cmp(&a.2))
-            .then(a.0.first().cloned().unwrap_or_default().cmp(&b.0.first().cloned().unwrap_or_default()))
+        b.1.cmp(&a.1).then(b.2.cmp(&a.2)).then(
+            a.0.first()
+                .cloned()
+                .unwrap_or_default()
+                .cmp(&b.0.first().cloned().unwrap_or_default()),
+        )
     });
     scored.truncate(limit);
 
@@ -383,14 +421,21 @@ pub fn infer_layout(
         let mut entrypoints: Vec<String> = entrypoints.into_iter().collect();
         entrypoints.sort();
         entrypoints.truncate(MAX_ENTRYPOINTS_PER_CONTAINER);
-        let methods: i64 = units.iter().map(|u| method_counts.get(u).copied().unwrap_or(0)).sum();
-        let endpoints: i64 = units.iter().map(|u| endpoint_counts.get(u).copied().unwrap_or(0)).sum();
+        let methods: i64 = units
+            .iter()
+            .map(|u| method_counts.get(u).copied().unwrap_or(0))
+            .sum();
+        let endpoints: i64 = units
+            .iter()
+            .map(|u| endpoint_counts.get(u).copied().unwrap_or(0))
+            .sum();
         let name = infer_name(&units, &unit_scores, &token_df, boundary);
         let mut class_counts: IndexMap<&String, usize> = IndexMap::new();
         for c in &classes {
             *class_counts.entry(c).or_insert(0) += 1;
         }
-        let mut ranked: Vec<(&&String, usize)> = class_counts.iter().map(|(k, v)| (k, *v)).collect();
+        let mut ranked: Vec<(&&String, usize)> =
+            class_counts.iter().map(|(k, v)| (k, *v)).collect();
         ranked.sort_by(|a, b| b.1.cmp(&a.1));
         let primary_classes: Vec<String> = ranked
             .iter()
@@ -399,7 +444,11 @@ pub fn infer_layout(
             .collect();
         let id = format!(
             "{CONTAINER_ID_PREFIX}{}",
-            slugify(if name.trim().is_empty() { &representative } else { &name })
+            slugify(if name.trim().is_empty() {
+                &representative
+            } else {
+                &name
+            })
         );
         containers.push(Container {
             id,
@@ -442,10 +491,18 @@ pub fn infer_layout(
         let caller_internal = is_internal_class(caller, boundary);
         let callee_internal = is_internal_class(callee, boundary);
         let caller_container = caller_internal
-            .then(|| unit_to_container.get(&internal_package_unit(caller, boundary)).cloned())
+            .then(|| {
+                unit_to_container
+                    .get(&internal_package_unit(caller, boundary))
+                    .cloned()
+            })
             .flatten();
         let callee_container = callee_internal
-            .then(|| unit_to_container.get(&internal_package_unit(callee, boundary)).cloned())
+            .then(|| {
+                unit_to_container
+                    .get(&internal_package_unit(callee, boundary))
+                    .cloned()
+            })
             .flatten();
         if let Some(c) = &caller_container {
             *call_site_counts.entry(c.clone()).or_insert(0) += 1;
@@ -465,7 +522,10 @@ pub fn infer_layout(
         }
     }
     for c in &mut containers {
-        c.call_site_count = call_site_counts.get(&c.id).copied().unwrap_or(c.call_site_count);
+        c.call_site_count = call_site_counts
+            .get(&c.id)
+            .copied()
+            .unwrap_or(c.call_site_count);
         c.inbound = inbound.get(&c.id).copied().unwrap_or(0);
         c.outbound = outbound.get(&c.id).copied().unwrap_or(0);
         c.external_calls = external_calls.get(&c.id).copied().unwrap_or(0);
@@ -480,7 +540,11 @@ pub fn infer_layout(
 }
 
 /// The C4 runtime container. A library has no deployable runtime, so it gets none.
-pub fn infer_operational_layout(subject_role: &str, subject_name: &str, layout: &ContainerLayout) -> ContainerLayout {
+pub fn infer_operational_layout(
+    subject_role: &str,
+    subject_name: &str,
+    layout: &ContainerLayout,
+) -> ContainerLayout {
     if subject_role != "application" {
         return ContainerLayout {
             system_boundary: layout.system_boundary.clone(),
@@ -556,7 +620,9 @@ mod tests {
         let mut traffic = IndexMap::new();
         traffic.insert(("a".to_string(), "b".to_string()), 10);
         let clusters = cluster_units(&units, &traffic);
-        assert!(clusters.iter().any(|c| c.len() == 2 && c.contains(&"a".to_string())));
+        assert!(clusters
+            .iter()
+            .any(|c| c.len() == 2 && c.contains(&"a".to_string())));
     }
 
     #[test]
@@ -576,9 +642,13 @@ mod tests {
             unit_to_container: IndexMap::new(),
             external_dependencies: vec![],
         };
-        assert!(infer_operational_layout("library", "Foo", &layout).containers.is_empty());
+        assert!(infer_operational_layout("library", "Foo", &layout)
+            .containers
+            .is_empty());
         assert_eq!(
-            infer_operational_layout("application", "Foo", &layout).containers.len(),
+            infer_operational_layout("application", "Foo", &layout)
+                .containers
+                .len(),
             1
         );
     }

@@ -114,7 +114,10 @@ impl<'a> Parser<'a> {
     }
     fn bytes(&mut self, n: usize) -> R<&'a [u8]> {
         let end = self.pos.checked_add(n).ok_or(JavaSerError::Truncated)?;
-        let s = self.data.get(self.pos..end).ok_or(JavaSerError::Truncated)?;
+        let s = self
+            .data
+            .get(self.pos..end)
+            .ok_or(JavaSerError::Truncated)?;
         self.pos = end;
         Ok(s)
     }
@@ -264,7 +267,8 @@ impl<'a> Parser<'a> {
                     Value::Str(s) => s,
                     _ => return Err(JavaSerError::Other("bad enum".into())),
                 };
-                self.handles[(idx - BASE_HANDLE) as usize] = Handle::Value(Value::Str(name.clone()));
+                self.handles[(idx - BASE_HANDLE) as usize] =
+                    Handle::Value(Value::Str(name.clone()));
                 Ok(Value::Str(name))
             }
             TC_ARRAY => {

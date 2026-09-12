@@ -58,10 +58,7 @@ pub fn java_to_string(v: &Value, ctx: &dyn GraphContext) -> String {
                 .collect();
             // `NodeId.toString()` is `node#N`, so the endpoints do not print as bare
             // integers the way they serialise.
-            let mut parts = vec![
-                format!("from=node#{}", e.from),
-                format!("to=node#{}", e.to),
-            ];
+            let mut parts = vec![format!("from=node#{}", e.from), format!("to=node#{}", e.to)];
             parts.extend(body);
             format!("{}({})", e.class, parts.join(", "))
         }

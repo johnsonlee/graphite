@@ -81,8 +81,9 @@ pub mod namespace_heuristics {
     pub const DEFAULT_SEGMENTS: usize = 3;
     pub const REVERSE_DNS_ROOT_SEGMENTS: usize = 2;
     pub const NON_REVERSE_DNS_ROOT_SEGMENTS: usize = 1;
-    pub const REVERSE_DNS_PREFIXES: [&str; 12] =
-        ["app", "biz", "co", "com", "dev", "edu", "gov", "io", "me", "mil", "net", "org"];
+    pub const REVERSE_DNS_PREFIXES: [&str; 12] = [
+        "app", "biz", "co", "com", "dev", "edu", "gov", "io", "me", "mil", "net", "org",
+    ];
 }
 
 pub mod evidence_limits {

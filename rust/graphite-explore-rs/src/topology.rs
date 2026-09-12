@@ -342,17 +342,31 @@ mod tests {
     #[test]
     fn no_rules_yields_sorted_nodes_only() {
         let t = TopologyGraph::nodes_only(&stats());
-        assert_eq!(t.nodes.iter().map(|n| n.id.as_str()).collect::<Vec<_>>(), vec!["billing", "orders"]);
+        assert_eq!(
+            t.nodes.iter().map(|n| n.id.as_str()).collect::<Vec<_>>(),
+            vec!["billing", "orders"]
+        );
         assert!(t.edges.is_empty());
     }
 
     #[test]
     fn weights_are_summed_per_edge_key() {
-        let q = vec![TopologyQuery { name: "r.cypher".into(), cypher: "x".into() }];
+        let q = vec![TopologyQuery {
+            name: "r.cypher".into(),
+            cypher: "x".into(),
+        }];
         let t = build(&stats(), &q, |_, _| {
             Ok(rows(vec![
-                vec![("source", json!("orders")), ("target", json!("billing")), ("weight", json!(2))],
-                vec![("source", json!("orders")), ("target", json!("billing")), ("weight", json!(2))],
+                vec![
+                    ("source", json!("orders")),
+                    ("target", json!("billing")),
+                    ("weight", json!(2)),
+                ],
+                vec![
+                    ("source", json!("orders")),
+                    ("target", json!("billing")),
+                    ("weight", json!(2)),
+                ],
             ]))
         })
         .unwrap();
@@ -363,7 +377,10 @@ mod tests {
 
     #[test]
     fn self_relations_are_dropped() {
-        let q = vec![TopologyQuery { name: "r.cypher".into(), cypher: "x".into() }];
+        let q = vec![TopologyQuery {
+            name: "r.cypher".into(),
+            cypher: "x".into(),
+        }];
         let t = build(&stats(), &q, |_, _| {
             Ok(rows(vec![vec![
                 ("source", json!("orders")),
@@ -376,12 +393,21 @@ mod tests {
 
     #[test]
     fn missing_columns_and_bad_values_are_rejected() {
-        let q = vec![TopologyQuery { name: "bad.cypher".into(), cypher: "x".into() }];
+        let q = vec![TopologyQuery {
+            name: "bad.cypher".into(),
+            cypher: "x".into(),
+        }];
         let e = build(&stats(), &q, |_, _| {
-            Ok(QueryRows { columns: vec!["source".into()], rows: vec![] })
+            Ok(QueryRows {
+                columns: vec!["source".into()],
+                rows: vec![],
+            })
         })
         .unwrap_err();
-        assert_eq!(e, "Topology query 'bad.cypher' must return 'source' and 'target'");
+        assert_eq!(
+            e,
+            "Topology query 'bad.cypher' must return 'source' and 'target'"
+        );
 
         let e = build(&stats(), &q, |_, _| {
             Ok(rows(vec![vec![
@@ -403,7 +429,10 @@ mod tests {
         assert!(e.contains("fractional weight"), "{e}");
 
         let e = build(&stats(), &q, |_, _| {
-            Ok(rows(vec![vec![("source", json!("")), ("target", json!("billing"))]]))
+            Ok(rows(vec![vec![
+                ("source", json!("")),
+                ("target", json!("billing")),
+            ]]))
         })
         .unwrap_err();
         assert!(e.contains("blank 'source'"), "{e}");
@@ -411,7 +440,10 @@ mod tests {
 
     #[test]
     fn string_weights_are_accepted() {
-        let q = vec![TopologyQuery { name: "r.cypher".into(), cypher: "x".into() }];
+        let q = vec![TopologyQuery {
+            name: "r.cypher".into(),
+            cypher: "x".into(),
+        }];
         let t = build(&stats(), &q, |_, _| {
             Ok(rows(vec![vec![
                 ("source", json!("orders")),

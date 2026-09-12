@@ -181,7 +181,11 @@ impl BvGraph {
             acc += read_code(&mut r, props.offset_code);
             offsets.push(acc);
         }
-        Ok(BvGraph { props, graph, offsets })
+        Ok(BvGraph {
+            props,
+            graph,
+            offsets,
+        })
     }
 
     #[inline]

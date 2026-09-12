@@ -221,7 +221,10 @@ pub enum TokenKind {
 impl TokenKind {
     /// `symbolicName : ID | ESC_LITERAL | <every keyword>`
     pub fn is_symbolic_name(self) -> bool {
-        matches!(self, TokenKind::Ident | TokenKind::EscIdent | TokenKind::Keyword(_))
+        matches!(
+            self,
+            TokenKind::Ident | TokenKind::EscIdent | TokenKind::Keyword(_)
+        )
     }
 
     /// `integerLiteral : INTEGER_LITERAL | HEX_INTEGER | OCTAL_INTEGER`
@@ -289,7 +292,12 @@ impl Lexer {
 
     fn push(&mut self, kind: TokenKind, start: usize, line: usize, col: usize) {
         let text = self.text_from(start);
-        self.tokens.push(Token { kind, text, line, col });
+        self.tokens.push(Token {
+            kind,
+            text,
+            line,
+            col,
+        });
     }
 
     fn error(&self, start: usize, col: usize) -> CypherError {
@@ -375,7 +383,12 @@ impl Lexer {
                         Some(k) => TokenKind::Keyword(k),
                         Option::None => TokenKind::Ident,
                     };
-                    self.tokens.push(Token { kind, text, line, col });
+                    self.tokens.push(Token {
+                        kind,
+                        text,
+                        line,
+                        col,
+                    });
                 }
                 _ => {
                     let two = |l: &Self, second: char| l.peek(1) == Some(second);
@@ -533,11 +546,19 @@ mod tests {
     use super::*;
 
     fn kinds(text: &str) -> Vec<TokenKind> {
-        tokenize(text).unwrap().into_iter().map(|t| t.kind).collect()
+        tokenize(text)
+            .unwrap()
+            .into_iter()
+            .map(|t| t.kind)
+            .collect()
     }
 
     fn texts(text: &str) -> Vec<String> {
-        let mut v: Vec<String> = tokenize(text).unwrap().into_iter().map(|t| t.text).collect();
+        let mut v: Vec<String> = tokenize(text)
+            .unwrap()
+            .into_iter()
+            .map(|t| t.text)
+            .collect();
         v.pop(); // EOF
         v
     }
@@ -562,7 +583,10 @@ mod tests {
     #[test]
     fn identifiers_are_ascii_only() {
         assert_eq!(kinds("_a1"), vec![TokenKind::Ident, TokenKind::Eof]);
-        assert_eq!(err("RETURN é"), (7, "token recognition error at: 'é'".into()));
+        assert_eq!(
+            err("RETURN é"),
+            (7, "token recognition error at: 'é'".into())
+        );
     }
 
     #[test]
@@ -604,8 +628,14 @@ mod tests {
 
     #[test]
     fn arrows_split_into_operator_tokens() {
-        assert_eq!(texts("(a)<-[r]->(b)"), vec!["(", "a", ")", "<", "-", "[", "r", "]", "-", ">", "(", "b", ")"]);
-        assert_eq!(texts("(a)-->(b)"), vec!["(", "a", ")", "-", "-", ">", "(", "b", ")"]);
+        assert_eq!(
+            texts("(a)<-[r]->(b)"),
+            vec!["(", "a", ")", "<", "-", "[", "r", "]", "-", ">", "(", "b", ")"]
+        );
+        assert_eq!(
+            texts("(a)-->(b)"),
+            vec!["(", "a", ")", "-", "-", ">", "(", "b", ")"]
+        );
     }
 
     #[test]
@@ -627,7 +657,10 @@ mod tests {
         assert_eq!(texts("007"), vec!["0", "0", "7"]);
         assert_eq!(texts("007.5"), vec!["007.5"]);
         assert_eq!(texts("007e1"), vec!["007e1"]);
-        assert_eq!(kinds("0x"), vec![TokenKind::Int, TokenKind::Ident, TokenKind::Eof]);
+        assert_eq!(
+            kinds("0x"),
+            vec![TokenKind::Int, TokenKind::Ident, TokenKind::Eof]
+        );
     }
 
     #[test]
@@ -649,9 +682,18 @@ mod tests {
 
     #[test]
     fn unterminated_string_reports_start_column() {
-        assert_eq!(err("RETURN 'hello"), (7, "token recognition error at: ''hello'".into()));
-        assert_eq!(err("RETURN \"x"), (7, "token recognition error at: '\"x'".into()));
-        assert_eq!(err("RETURN 'ab\\"), (7, "token recognition error at: ''ab\\'".into()));
+        assert_eq!(
+            err("RETURN 'hello"),
+            (7, "token recognition error at: ''hello'".into())
+        );
+        assert_eq!(
+            err("RETURN \"x"),
+            (7, "token recognition error at: '\"x'".into())
+        );
+        assert_eq!(
+            err("RETURN 'ab\\"),
+            (7, "token recognition error at: ''ab\\'".into())
+        );
     }
 
     #[test]
@@ -667,35 +709,59 @@ mod tests {
 
     #[test]
     fn unexpected_character() {
-        assert_eq!(err("RETURN ~x"), (7, "token recognition error at: '~'".into()));
-        assert_eq!(err("RETURN !"), (7, "token recognition error at: '!'".into()));
+        assert_eq!(
+            err("RETURN ~x"),
+            (7, "token recognition error at: '~'".into())
+        );
+        assert_eq!(
+            err("RETURN !"),
+            (7, "token recognition error at: '!'".into())
+        );
     }
 
     #[test]
     fn comments_are_skipped() {
-        assert_eq!(texts("MATCH (n) // comment\nRETURN n"), vec!["MATCH", "(", "n", ")", "RETURN", "n"]);
-        assert_eq!(texts("MATCH (n) /* block\nmulti */ RETURN n"), vec!["MATCH", "(", "n", ")", "RETURN", "n"]);
+        assert_eq!(
+            texts("MATCH (n) // comment\nRETURN n"),
+            vec!["MATCH", "(", "n", ")", "RETURN", "n"]
+        );
+        assert_eq!(
+            texts("MATCH (n) /* block\nmulti */ RETURN n"),
+            vec!["MATCH", "(", "n", ")", "RETURN", "n"]
+        );
         assert_eq!(texts("RETURN 1 // no newline"), vec!["RETURN", "1"]);
     }
 
     #[test]
     fn unterminated_block_comment_lexes_as_operators() {
-        assert_eq!(texts("RETURN 1 /* oops"), vec!["RETURN", "1", "/", "*", "oops"]);
+        assert_eq!(
+            texts("RETURN 1 /* oops"),
+            vec!["RETURN", "1", "/", "*", "oops"]
+        );
     }
 
     #[test]
     fn columns_reset_per_line() {
         let t = tokenize("MATCH (n)\n  RETURN n").unwrap();
-        let ret = t.iter().find(|t| t.kind == TokenKind::Keyword(Keyword::Return)).unwrap();
+        let ret = t
+            .iter()
+            .find(|t| t.kind == TokenKind::Keyword(Keyword::Return))
+            .unwrap();
         assert_eq!((ret.line, ret.col), (2, 2));
-        assert_eq!(err("MATCH (n)\nRETURN ~"), (7, "token recognition error at: '~'".into()));
+        assert_eq!(
+            err("MATCH (n)\nRETURN ~"),
+            (7, "token recognition error at: '~'".into())
+        );
         // '\r' does not reset the column.
         assert_eq!(err("a\r~"), (2, "token recognition error at: '~'".into()));
     }
 
     #[test]
     fn columns_count_characters_not_bytes() {
-        assert_eq!(err("RETURN 'é' ~"), (11, "token recognition error at: '~'".into()));
+        assert_eq!(
+            err("RETURN 'é' ~"),
+            (11, "token recognition error at: '~'".into())
+        );
     }
 
     #[test]
@@ -725,11 +791,67 @@ mod tests {
     #[test]
     fn every_keyword_round_trips() {
         let words = [
-            "CALL", "YIELD", "FILTER", "EXTRACT", "COUNT", "ANY", "NONE", "SINGLE", "ALL", "ASC", "ASCENDING", "BY",
-            "CREATE", "DELETE", "DESC", "DESCENDING", "DETACH", "EXISTS", "LIMIT", "MATCH", "MERGE", "ON", "OPTIONAL",
-            "ORDER", "REMOVE", "RETURN", "SET", "SKIP", "WHERE", "WITH", "UNION", "UNWIND", "AND", "AS", "CONTAINS",
-            "DISTINCT", "ENDS", "IN", "IS", "NOT", "OR", "STARTS", "XOR", "FALSE", "TRUE", "NULL", "CONSTRAINT", "DO",
-            "FOR", "REQUIRE", "UNIQUE", "CASE", "WHEN", "THEN", "ELSE", "END", "MANDATORY", "SCALAR", "OF", "ADD", "DROP",
+            "CALL",
+            "YIELD",
+            "FILTER",
+            "EXTRACT",
+            "COUNT",
+            "ANY",
+            "NONE",
+            "SINGLE",
+            "ALL",
+            "ASC",
+            "ASCENDING",
+            "BY",
+            "CREATE",
+            "DELETE",
+            "DESC",
+            "DESCENDING",
+            "DETACH",
+            "EXISTS",
+            "LIMIT",
+            "MATCH",
+            "MERGE",
+            "ON",
+            "OPTIONAL",
+            "ORDER",
+            "REMOVE",
+            "RETURN",
+            "SET",
+            "SKIP",
+            "WHERE",
+            "WITH",
+            "UNION",
+            "UNWIND",
+            "AND",
+            "AS",
+            "CONTAINS",
+            "DISTINCT",
+            "ENDS",
+            "IN",
+            "IS",
+            "NOT",
+            "OR",
+            "STARTS",
+            "XOR",
+            "FALSE",
+            "TRUE",
+            "NULL",
+            "CONSTRAINT",
+            "DO",
+            "FOR",
+            "REQUIRE",
+            "UNIQUE",
+            "CASE",
+            "WHEN",
+            "THEN",
+            "ELSE",
+            "END",
+            "MANDATORY",
+            "SCALAR",
+            "OF",
+            "ADD",
+            "DROP",
         ];
         for w in words {
             assert!(Keyword::from_ident(w).is_some(), "{w}");

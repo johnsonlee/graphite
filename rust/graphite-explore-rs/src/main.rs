@@ -90,7 +90,11 @@ fn run(cli: Cli) -> Result<(), String> {
     let root = cli
         .data
         .clone()
-        .or_else(|| cli.graph_dir.as_ref().and_then(|d| d.parent().map(|p| p.to_path_buf())))
+        .or_else(|| {
+            cli.graph_dir
+                .as_ref()
+                .and_then(|d| d.parent().map(|p| p.to_path_buf()))
+        })
         .unwrap_or_else(|| PathBuf::from("."));
     let root = std::fs::canonicalize(&root).unwrap_or(root);
     std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
@@ -160,11 +164,7 @@ fn run(cli: Cli) -> Result<(), String> {
         }
         eprintln!("Data: {}", root.display());
         eprintln!("Loaded graphs: {}", registry.ids().join(", "));
-        eprintln!(
-            "Topology: {} graphs, {} relations",
-            registry.ids().len(),
-            0
-        );
+        eprintln!("Topology: {} graphs, {} relations", registry.ids().len(), 0);
         let _ = topology_queries;
         eprintln!(
             "Cypher limits: {} concurrent, {}ms maximum timeout",

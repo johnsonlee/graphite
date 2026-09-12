@@ -165,7 +165,11 @@ pub struct Decimal {
 
 impl Decimal {
     pub fn zero() -> Decimal {
-        Decimal { negative: false, digits: Vec::new(), exp: 0 }
+        Decimal {
+            negative: false,
+            digits: Vec::new(),
+            exp: 0,
+        }
     }
 
     pub fn is_zero(&self) -> bool {
@@ -178,7 +182,11 @@ impl Decimal {
         }
         let negative = v < 0;
         let s = v.unsigned_abs().to_string();
-        Decimal::from_parts(negative, s.as_bytes().iter().map(|b| b - b'0').collect(), s.len() as i32)
+        Decimal::from_parts(
+            negative,
+            s.as_bytes().iter().map(|b| b - b'0').collect(),
+            s.len() as i32,
+        )
     }
 
     /// Builds from the output of `format!("{:e}", x)` (shortest round-trip digits).
@@ -209,7 +217,11 @@ impl Decimal {
         if digits.is_empty() {
             return Decimal::zero();
         }
-        Decimal { negative, digits, exp }
+        Decimal {
+            negative,
+            digits,
+            exp,
+        }
     }
 
     /// `BigDecimal(double.toString())` — finite values only.
@@ -238,8 +250,20 @@ impl Decimal {
 
     /// Exact `BigDecimal.compareTo`.
     pub fn cmp_exact(&self, other: &Decimal) -> Ordering {
-        let sa = if self.is_zero() { 0 } else if self.negative { -1 } else { 1 };
-        let sb = if other.is_zero() { 0 } else if other.negative { -1 } else { 1 };
+        let sa = if self.is_zero() {
+            0
+        } else if self.negative {
+            -1
+        } else {
+            1
+        };
+        let sb = if other.is_zero() {
+            0
+        } else if other.negative {
+            -1
+        } else {
+            1
+        };
         if sa != sb {
             return sa.cmp(&sb);
         }
@@ -329,7 +353,10 @@ fn is_integral(value: &Value) -> bool {
 /// `cypherNumbersEqual`.
 pub fn cypher_numbers_equal(left: &Value, right: &Value) -> bool {
     let both_integral = is_integral(left) && is_integral(right);
-    let same_floating = matches!((left, right), (Value::Float(_), Value::Float(_)) | (Value::Float32(_), Value::Float32(_)));
+    let same_floating = matches!(
+        (left, right),
+        (Value::Float(_), Value::Float(_)) | (Value::Float32(_), Value::Float32(_))
+    );
     let ld = to_double(left);
     let rd = to_double(right);
     let either_non_finite = !ld.is_finite() || !rd.is_finite();
@@ -409,7 +436,10 @@ fn cypher_lists_equal(left: &[Value], right: &[Value]) -> Option<bool> {
     }
 }
 
-fn cypher_maps_equal(left: &IndexMap<String, Value>, right: &IndexMap<String, Value>) -> Option<bool> {
+fn cypher_maps_equal(
+    left: &IndexMap<String, Value>,
+    right: &IndexMap<String, Value>,
+) -> Option<bool> {
     if left.len() != right.len() || !left.keys().all(|k| right.contains_key(k)) {
         return Some(false);
     }
@@ -473,7 +503,8 @@ pub fn value_key(value: &Value) -> Key {
         Value::Str(s) => Key::Str(s.clone()),
         Value::List(l) => Key::List(l.iter().map(value_key).collect()),
         Value::Map(m) => {
-            let mut entries: Vec<(String, Key)> = m.iter().map(|(k, v)| (k.clone(), value_key(v))).collect();
+            let mut entries: Vec<(String, Key)> =
+                m.iter().map(|(k, v)| (k.clone(), value_key(v))).collect();
             entries.sort_by(|a, b| a.0.cmp(&b.0));
             Key::Map(entries)
         }
@@ -504,10 +535,18 @@ pub fn java_double_to_string(v: f64) -> String {
         return "NaN".to_string();
     }
     if v.is_infinite() {
-        return if v > 0.0 { "Infinity".to_string() } else { "-Infinity".to_string() };
+        return if v > 0.0 {
+            "Infinity".to_string()
+        } else {
+            "-Infinity".to_string()
+        };
     }
     if v == 0.0 {
-        return if v.is_sign_negative() { "-0.0".to_string() } else { "0.0".to_string() };
+        return if v.is_sign_negative() {
+            "-0.0".to_string()
+        } else {
+            "0.0".to_string()
+        };
     }
     let sci = format!("{:e}", v.abs());
     java_float_layout(v.is_sign_negative(), &sci)
@@ -519,10 +558,18 @@ pub fn java_float_to_string(v: f32) -> String {
         return "NaN".to_string();
     }
     if v.is_infinite() {
-        return if v > 0.0 { "Infinity".to_string() } else { "-Infinity".to_string() };
+        return if v > 0.0 {
+            "Infinity".to_string()
+        } else {
+            "-Infinity".to_string()
+        };
     }
     if v == 0.0 {
-        return if v.is_sign_negative() { "-0.0".to_string() } else { "0.0".to_string() };
+        return if v.is_sign_negative() {
+            "-0.0".to_string()
+        } else {
+            "0.0".to_string()
+        };
     }
     let sci = format!("{:e}", v.abs());
     java_float_layout(v.is_sign_negative(), &sci)
@@ -634,7 +681,10 @@ fn write_kotlin_string(out: &mut String, value: &Value, ctx: Option<&dyn GraphCo
                 out.push_str(&ctx.method_signature(*m));
                 out.push(')');
             }
-            None => out.push_str(&format!("MethodValue(source={}, index={})", m.source, m.index)),
+            None => out.push_str(&format!(
+                "MethodValue(source={}, index={})",
+                m.source, m.index
+            )),
         },
     }
 }
@@ -726,10 +776,30 @@ fn write_path_string(out: &mut String, p: &PathValue, ctx: Option<&dyn GraphCont
     } else {
         out.push_str("Path(nodes=");
     }
-    let nodes = Value::list(p.nodes.iter().map(|id| Value::Node(NodeRef { source: p.source, id: *id })).collect());
+    let nodes = Value::list(
+        p.nodes
+            .iter()
+            .map(|id| {
+                Value::Node(NodeRef {
+                    source: p.source,
+                    id: *id,
+                })
+            })
+            .collect(),
+    );
     write_kotlin_string(out, &nodes, ctx);
     out.push_str(", edges=");
-    let edges = Value::list(p.edges.iter().map(|e| Value::Rel(EdgeRef { source: p.source, edge: *e })).collect());
+    let edges = Value::list(
+        p.edges
+            .iter()
+            .map(|e| {
+                Value::Rel(EdgeRef {
+                    source: p.source,
+                    edge: *e,
+                })
+            })
+            .collect(),
+    );
     write_kotlin_string(out, &edges, ctx);
     out.push(')');
 }
@@ -747,7 +817,10 @@ pub fn edge_class_simple_name(rel_type: &str) -> &'static str {
 
 /// Fully qualified JVM class name of the edge implementing a relationship type.
 pub fn edge_class_name(rel_type: &str) -> String {
-    format!("io.johnsonlee.graphite.core.{}", edge_class_simple_name(rel_type))
+    format!(
+        "io.johnsonlee.graphite.core.{}",
+        edge_class_simple_name(rel_type)
+    )
 }
 
 // ============================================================================
@@ -861,19 +934,45 @@ mod tests {
         Value::list(v)
     }
     fn m(entries: Vec<(&str, Value)>) -> Value {
-        Value::map(entries.into_iter().map(|(k, v)| (k.to_string(), v)).collect())
+        Value::map(
+            entries
+                .into_iter()
+                .map(|(k, v)| (k.to_string(), v))
+                .collect(),
+        )
     }
 
     #[test]
     fn structural_equality_is_recursive_exact_and_three_valued() {
         assert_eq!(Some(true), cypher_equals(&l(vec![i(1)]), &l(vec![f(1.0)])));
         assert_eq!(Some(false), cypher_equals(&l(vec![i(1)]), &l(vec![i(2)])));
-        assert_eq!(None, cypher_equals(&l(vec![Value::Null]), &l(vec![Value::Null])));
-        assert_eq!(Some(true), cypher_equals(&m(vec![("value", i(1))]), &m(vec![("value", f(1.0))])));
-        assert_eq!(Some(false), cypher_equals(&m(vec![("value", i(1))]), &m(vec![("other", i(1))])));
-        assert_eq!(None, cypher_equals(&m(vec![("value", Value::Null)]), &m(vec![("value", Value::Null)])));
-        assert_eq!(Some(true), cypher_equals(&f(f64::INFINITY), &Value::Float32(f32::INFINITY)));
-        assert_eq!(Some(false), cypher_equals(&f(f64::INFINITY), &f(f64::NEG_INFINITY)));
+        assert_eq!(
+            None,
+            cypher_equals(&l(vec![Value::Null]), &l(vec![Value::Null]))
+        );
+        assert_eq!(
+            Some(true),
+            cypher_equals(&m(vec![("value", i(1))]), &m(vec![("value", f(1.0))]))
+        );
+        assert_eq!(
+            Some(false),
+            cypher_equals(&m(vec![("value", i(1))]), &m(vec![("other", i(1))]))
+        );
+        assert_eq!(
+            None,
+            cypher_equals(
+                &m(vec![("value", Value::Null)]),
+                &m(vec![("value", Value::Null)])
+            )
+        );
+        assert_eq!(
+            Some(true),
+            cypher_equals(&f(f64::INFINITY), &Value::Float32(f32::INFINITY))
+        );
+        assert_eq!(
+            Some(false),
+            cypher_equals(&f(f64::INFINITY), &f(f64::NEG_INFINITY))
+        );
     }
 
     #[test]
@@ -884,9 +983,18 @@ mod tests {
         assert_eq!(Some(true), cypher_equals(&i(2), &Value::Int(2)));
         assert_eq!(Some(false), cypher_equals(&f(f64::NAN), &f(f64::NAN)));
         assert_eq!(Some(true), cypher_equals(&Value::Float32(1.1), &f(1.1)));
-        assert_eq!(Some(false), cypher_equals(&i(9007199254740993), &f(9007199254740992.0)));
-        assert_eq!(Some(true), cypher_equals(&i(9007199254740992), &f(9007199254740992.0)));
-        assert_eq!(Some(true), cypher_equals(&Value::Bool(true), &Value::Bool(true)));
+        assert_eq!(
+            Some(false),
+            cypher_equals(&i(9007199254740993), &f(9007199254740992.0))
+        );
+        assert_eq!(
+            Some(true),
+            cypher_equals(&i(9007199254740992), &f(9007199254740992.0))
+        );
+        assert_eq!(
+            Some(true),
+            cypher_equals(&Value::Bool(true), &Value::Bool(true))
+        );
         assert_eq!(Some(false), cypher_equals(&Value::Bool(true), &i(1)));
     }
 
@@ -897,9 +1005,18 @@ mod tests {
             value_key(&l(vec![m(vec![("value", i(1))])])),
             value_key(&l(vec![m(vec![("value", f(1.0))])]))
         );
-        assert_ne!(value_key(&i(9007199254740993)), value_key(&f(9007199254740992.0)));
-        assert_eq!(value_key(&f(f64::INFINITY)), value_key(&Value::Float32(f32::INFINITY)));
-        assert_ne!(value_key(&f(f64::INFINITY)), value_key(&f(f64::NEG_INFINITY)));
+        assert_ne!(
+            value_key(&i(9007199254740993)),
+            value_key(&f(9007199254740992.0))
+        );
+        assert_eq!(
+            value_key(&f(f64::INFINITY)),
+            value_key(&Value::Float32(f32::INFINITY))
+        );
+        assert_ne!(
+            value_key(&f(f64::INFINITY)),
+            value_key(&f(f64::NEG_INFINITY))
+        );
         assert_eq!(value_key(&f(f64::NAN)), value_key(&f(f64::NAN)));
         assert_eq!(value_key(&f(0.0)), value_key(&f(-0.0)));
         assert_eq!(value_key(&f(1.10)), value_key(&Value::Float32(1.1)));
@@ -915,21 +1032,42 @@ mod tests {
 
     #[test]
     fn requires_normalization_detects_numbers() {
-        assert!(!requires_normalization(&l(vec![Value::str("value"), Value::Null])));
-        assert!(!requires_normalization(&m(vec![("key", l(vec![Value::str("value")]))])));
+        assert!(!requires_normalization(&l(vec![
+            Value::str("value"),
+            Value::Null
+        ])));
+        assert!(!requires_normalization(&m(vec![(
+            "key",
+            l(vec![Value::str("value")])
+        )])));
         assert!(requires_normalization(&l(vec![Value::str("value"), i(1)])));
         assert!(requires_normalization(&m(vec![("key", l(vec![i(1)]))])));
     }
 
     #[test]
     fn numeric_comparison_is_exact_and_orders_nonfinite_values_explicitly() {
-        assert_eq!(Ordering::Greater, compare_cypher_numbers(&i(9007199254740993), &i(9007199254740992)));
+        assert_eq!(
+            Ordering::Greater,
+            compare_cypher_numbers(&i(9007199254740993), &i(9007199254740992))
+        );
         assert_eq!(Ordering::Equal, compare_cypher_numbers(&i(1), &f(1.0)));
         assert_eq!(Ordering::Less, compare_cypher_numbers(&f(1.5), &i(2)));
-        assert_eq!(Ordering::Greater, compare_cypher_numbers(&f(f64::INFINITY), &i(i64::MAX)));
-        assert_eq!(Ordering::Less, compare_cypher_numbers(&f(f64::NEG_INFINITY), &i(i64::MIN)));
-        assert_eq!(Ordering::Greater, compare_cypher_numbers(&f(f64::NAN), &i(5)));
-        assert_eq!(Ordering::Greater, compare_cypher_numbers(&i(9007199254740993), &f(9007199254740992.0)));
+        assert_eq!(
+            Ordering::Greater,
+            compare_cypher_numbers(&f(f64::INFINITY), &i(i64::MAX))
+        );
+        assert_eq!(
+            Ordering::Less,
+            compare_cypher_numbers(&f(f64::NEG_INFINITY), &i(i64::MIN))
+        );
+        assert_eq!(
+            Ordering::Greater,
+            compare_cypher_numbers(&f(f64::NAN), &i(5))
+        );
+        assert_eq!(
+            Ordering::Greater,
+            compare_cypher_numbers(&i(9007199254740993), &f(9007199254740992.0))
+        );
         // BigDecimal has no signed zero, so -0.0 and 0.0 compare equal here
         // (unlike `java_double_compare`, which orders -0.0 first).
         assert_eq!(Ordering::Equal, compare_cypher_numbers(&f(-0.0), &f(0.0)));
@@ -967,14 +1105,23 @@ mod tests {
         assert_eq!("-Infinity", java_double_to_string(f64::NEG_INFINITY));
         assert_eq!("0.0", java_double_to_string(0.0));
         assert_eq!("-0.0", java_double_to_string(-0.0));
-        assert_eq!("9.007199254740992E15", java_double_to_string(9007199254740992.0));
+        assert_eq!(
+            "9.007199254740992E15",
+            java_double_to_string(9007199254740992.0)
+        );
         assert_eq!("1.1", java_float_to_string(1.1));
         assert_eq!("2.5", java_float_to_string(2.5));
     }
 
     #[test]
     fn kotlin_to_string_renders_collections_like_the_jvm() {
-        let v = l(vec![i(1), Value::str("a"), Value::Null, m(vec![("k", f(2.0))]), Value::Bool(true)]);
+        let v = l(vec![
+            i(1),
+            Value::str("a"),
+            Value::Null,
+            m(vec![("k", f(2.0))]),
+            Value::Bool(true),
+        ]);
         assert_eq!("[1, a, null, {k=2.0}, true]", kotlin_to_string_plain(&v));
     }
 
@@ -1025,18 +1172,33 @@ mod tests {
         assert_eq!(0, to_int_for_skip_limit(&Value::Null));
         assert_eq!(0, to_int_for_skip_limit(&Value::Bool(true)));
         assert_eq!(i32::MAX as i64, to_int_for_skip_limit(&i(i64::MAX)));
-        assert_eq!(i32::MIN as i64, to_int_for_skip_limit(&Value::str("-99999999999")));
+        assert_eq!(
+            i32::MIN as i64,
+            to_int_for_skip_limit(&Value::str("-99999999999"))
+        );
     }
 
     #[test]
     fn compare_values_fallbacks() {
-        assert_eq!(Ordering::Less, compare_values(&Value::str("abc"), &Value::str("def")));
-        assert_eq!(Ordering::Less, compare_values(&Value::Bool(false), &Value::Bool(true)));
+        assert_eq!(
+            Ordering::Less,
+            compare_values(&Value::str("abc"), &Value::str("def"))
+        );
+        assert_eq!(
+            Ordering::Less,
+            compare_values(&Value::Bool(false), &Value::Bool(true))
+        );
         // "true" vs "3" — toString fallback
         assert_eq!(Ordering::Greater, compare_values(&Value::Bool(true), &i(3)));
-        assert_eq!(Ordering::Less, compare_values(&l(vec![i(1)]), &l(vec![i(2)])));
+        assert_eq!(
+            Ordering::Less,
+            compare_values(&l(vec![i(1)]), &l(vec![i(2)]))
+        );
         // UTF-16 ordering: U+FFFF sorts before U+10000 on the JVM
-        assert_eq!(Ordering::Greater, compare_values(&Value::str("\u{FFFF}"), &Value::str("\u{10000}")));
+        assert_eq!(
+            Ordering::Greater,
+            compare_values(&Value::str("\u{FFFF}"), &Value::str("\u{10000}"))
+        );
     }
 
     #[test]

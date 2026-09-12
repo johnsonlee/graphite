@@ -17,7 +17,11 @@ fn main() {
         g.count_by_tag(TAG_CALL_SITE_NODE)
     );
     for tag in 0..16u8 {
-        println!("  tag {tag} {} = {}", tag_type_name(tag), g.count_by_tag(tag));
+        println!(
+            "  tag {tag} {} = {}",
+            tag_type_name(tag),
+            g.count_by_tag(tag)
+        );
     }
     // Decode every node to validate the record parser.
     let t = Instant::now();
@@ -31,7 +35,13 @@ fn main() {
     // Show a few call sites
     for &id in g.ids_by_tag(TAG_CALL_SITE_NODE).iter().take(3) {
         let node = g.node(id).unwrap();
-        if let NodeKind::CallSite { caller, callee, line, .. } = &node.kind {
+        if let NodeKind::CallSite {
+            caller,
+            callee,
+            line,
+            ..
+        } = &node.kind
+        {
             println!(
                 "  cs {id}: {} -> {} line={:?} out={} in={}",
                 caller.signature(&g.strings),
@@ -47,6 +57,8 @@ fn main() {
     }
     println!(
         "identity ok = {:?}",
-        g.strings.identity().map(|i| *i == g.strings.compute_identity())
+        g.strings
+            .identity()
+            .map(|i| *i == g.strings.compute_identity())
     );
 }

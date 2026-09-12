@@ -56,9 +56,11 @@ pub fn resolve_node_class(labels: &[String]) -> NodeClass {
 
 pub fn has_unknown_label(patterns: &[Pattern]) -> bool {
     patterns.iter().any(|p| {
-        p.nodes
-            .iter()
-            .any(|n| n.labels.iter().any(|l| !is_method_label(l) && label_tags(l).is_none()))
+        p.nodes.iter().any(|n| {
+            n.labels
+                .iter()
+                .any(|l| !is_method_label(l) && label_tags(l).is_none())
+        })
     })
 }
 
@@ -71,7 +73,9 @@ pub fn rel_type_matches(types: &[String], e: &Edge) -> bool {
     types.iter().any(|t| {
         let t = t.as_str();
         match fam {
-            EdgeFamily::DataFlow => t.eq_ignore_ascii_case("DATAFLOW") || t.eq_ignore_ascii_case("DATA_FLOW"),
+            EdgeFamily::DataFlow => {
+                t.eq_ignore_ascii_case("DATAFLOW") || t.eq_ignore_ascii_case("DATA_FLOW")
+            }
             EdgeFamily::Call => t.eq_ignore_ascii_case("CALL"),
             EdgeFamily::Type => t.eq_ignore_ascii_case("TYPE"),
             EdgeFamily::ControlFlow => {
@@ -103,7 +107,9 @@ pub fn rel_types_resolvable(types: &[String]) -> bool {
         "RESOURCE_LOOKUP",
         "RESOURCE_KEYS",
     ];
-    types.iter().any(|t| KNOWN.iter().any(|k| k.eq_ignore_ascii_case(t)))
+    types
+        .iter()
+        .any(|t| KNOWN.iter().any(|k| k.eq_ignore_ascii_case(t)))
 }
 
 pub struct Matcher<'a> {
@@ -175,7 +181,16 @@ impl<'a> Matcher<'a> {
             if pattern.path_variable.is_some() {
                 trail_nodes.push(cand.clone());
             }
-            this.extend(&r, pattern, 0, &cand, state, &mut trail_nodes, &mut trail_edges, next)
+            this.extend(
+                &r,
+                pattern,
+                0,
+                &cand,
+                state,
+                &mut trail_nodes,
+                &mut trail_edges,
+                next,
+            )
         };
         if let Some(v) = &first.variable {
             if let Some(existing) = row.get(v) {
@@ -318,8 +333,20 @@ impl<'a> Matcher<'a> {
             let max = rel.max_hops.map(|m| m as usize);
             let mut path: Vec<EdgeRef> = Vec::new();
             return self.extend_var(
-                row, pattern, hop, cur, rel, target, &target_tags, min, max, &mut path, state, trail_nodes,
-                trail_edges, next,
+                row,
+                pattern,
+                hop,
+                cur,
+                rel,
+                target,
+                &target_tags,
+                min,
+                max,
+                &mut path,
+                state,
+                trail_nodes,
+                trail_edges,
+                next,
             );
         }
         let edges = self.edges_of(cur, rel.direction);
@@ -328,12 +355,22 @@ impl<'a> Matcher<'a> {
             if !self.edge_ok(cur.source, &e, rel, row, state)? {
                 continue;
             }
-            let tgt_id = if e.from == cur.id && rel.direction != Direction::Incoming { e.to } else { e.from };
-            let tgt = NodeRef { source: cur.source, id: tgt_id };
+            let tgt_id = if e.from == cur.id && rel.direction != Direction::Incoming {
+                e.to
+            } else {
+                e.from
+            };
+            let tgt = NodeRef {
+                source: cur.source,
+                id: tgt_id,
+            };
             if !self.target_ok(tgt, &target_tags, target, row)? {
                 continue;
             }
-            let er = EdgeRef { source: cur.source, edge: e };
+            let er = EdgeRef {
+                source: cur.source,
+                edge: e,
+            };
             let mut r = row.clone();
             if let Some(v) = &rel.variable {
                 r.insert(v.clone(), Value::Rel(er));
@@ -352,7 +389,16 @@ impl<'a> Matcher<'a> {
                 trail_edges.push(er);
                 trail_nodes.push(tv.clone());
             }
-            let cont = self.extend(&r, pattern, hop + 1, &tv, state, trail_nodes, trail_edges, next)?;
+            let cont = self.extend(
+                &r,
+                pattern,
+                hop + 1,
+                &tv,
+                state,
+                trail_nodes,
+                trail_edges,
+                next,
+            )?;
             if pattern.path_variable.is_some() {
                 trail_edges.pop();
                 trail_nodes.pop();
@@ -406,7 +452,16 @@ impl<'a> Matcher<'a> {
                     state.used.push((e.source, e.edge));
                 }
             }
-            let cont = self.extend(&r, pattern, hop + 1, &tv, state, trail_nodes, trail_edges, next)?;
+            let cont = self.extend(
+                &r,
+                pattern,
+                hop + 1,
+                &tv,
+                state,
+                trail_nodes,
+                trail_edges,
+                next,
+            )?;
             state.used.truncate(before);
             if !cont {
                 return Ok(false);
@@ -426,17 +481,39 @@ impl<'a> Matcher<'a> {
             if !self.edge_ok(cur.source, &e, rel, row, state)? {
                 continue;
             }
-            let tgt_id = if e.from == cur.id && rel.direction != Direction::Incoming { e.to } else { e.from };
-            let tgt = NodeRef { source: cur.source, id: tgt_id };
-            let er = EdgeRef { source: cur.source, edge: e };
+            let tgt_id = if e.from == cur.id && rel.direction != Direction::Incoming {
+                e.to
+            } else {
+                e.from
+            };
+            let tgt = NodeRef {
+                source: cur.source,
+                id: tgt_id,
+            };
+            let er = EdgeRef {
+                source: cur.source,
+                edge: e,
+            };
             path.push(er);
             if pattern.path_variable.is_some() {
                 trail_edges.push(er);
                 trail_nodes.push(Value::Node(tgt));
             }
             let cont = self.extend_var(
-                row, pattern, hop, tgt, rel, target, target_tags, min, max, path, state, trail_nodes,
-                trail_edges, next,
+                row,
+                pattern,
+                hop,
+                tgt,
+                rel,
+                target,
+                target_tags,
+                min,
+                max,
+                path,
+                state,
+                trail_nodes,
+                trail_edges,
+                next,
             )?;
             if pattern.path_variable.is_some() {
                 trail_edges.pop();
@@ -482,7 +559,9 @@ impl<'a> Matcher<'a> {
             if let Some(existing) = row.get(v) {
                 let same = match existing {
                     Value::Rel(er) => er.source == source && er.edge == *e,
-                    Value::List(l) => l.iter().any(|x| matches!(x, Value::Rel(er) if er.source == source && er.edge == *e)),
+                    Value::List(l) => l.iter().any(
+                        |x| matches!(x, Value::Rel(er) if er.source == source && er.edge == *e),
+                    ),
                     _ => false,
                 };
                 if !same {
@@ -504,7 +583,13 @@ impl<'a> Matcher<'a> {
         Ok(true)
     }
 
-    fn target_ok(&self, tgt: NodeRef, tags: &[u8], np: &NodePattern, row: &Row) -> CypherResult<bool> {
+    fn target_ok(
+        &self,
+        tgt: NodeRef,
+        tags: &[u8],
+        np: &NodePattern,
+        row: &Row,
+    ) -> CypherResult<bool> {
         let tag = match self.ex.graph(tgt.source).node_tag(tgt.id) {
             Some(t) => t,
             None => return Ok(false),

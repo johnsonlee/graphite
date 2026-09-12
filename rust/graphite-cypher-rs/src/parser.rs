@@ -889,7 +889,10 @@ impl Parser {
                 Ok(Expr::CountStar)
             }
             T::LBrack => self.list_or_comprehension(),
-            T::Keyword(K::Any) | T::Keyword(K::All) | T::Keyword(K::None) | T::Keyword(K::Single)
+            T::Keyword(K::Any)
+            | T::Keyword(K::All)
+            | T::Keyword(K::None)
+            | T::Keyword(K::Single)
                 if self.peek_at(1) == T::LParen =>
             {
                 self.predicate_function()
@@ -980,31 +983,32 @@ impl Parser {
 
     fn literal(&mut self) -> CypherResult<Expr> {
         let t = self.bump();
-        let lit = match t.kind {
-            T::Int => {
-                let v: i64 = t.text.parse().map_err(|_| {
+        let lit =
+            match t.kind {
+                T::Int => {
+                    let v: i64 = t.text.parse().map_err(|_| {
+                        CypherError::Other(format!("For input string: \"{}\"", t.text))
+                    })?;
+                    Literal::Int(v)
+                }
+                T::Hex => {
+                    let v = i64::from_str_radix(&t.text[2..], 16).map_err(|_| {
+                        CypherError::Other(format!("For input string: \"{}\"", &t.text[2..]))
+                    })?;
+                    Literal::Int(v)
+                }
+                T::Octal => {
+                    let v = i64::from_str_radix(&t.text[2..], 8).map_err(|_| {
+                        CypherError::Other(format!("For input string: \"{}\"", &t.text[2..]))
+                    })?;
+                    Literal::Int(v)
+                }
+                T::Float => Literal::Float(t.text.parse::<f64>().map_err(|_| {
                     CypherError::Other(format!("For input string: \"{}\"", t.text))
-                })?;
-                Literal::Int(v)
-            }
-            T::Hex => {
-                let v = i64::from_str_radix(&t.text[2..], 16).map_err(|_| {
-                    CypherError::Other(format!("For input string: \"{}\"", &t.text[2..]))
-                })?;
-                Literal::Int(v)
-            }
-            T::Octal => {
-                let v = i64::from_str_radix(&t.text[2..], 8).map_err(|_| {
-                    CypherError::Other(format!("For input string: \"{}\"", &t.text[2..]))
-                })?;
-                Literal::Int(v)
-            }
-            T::Float => Literal::Float(t.text.parse::<f64>().map_err(|_| {
-                CypherError::Other(format!("For input string: \"{}\"", t.text))
-            })?),
-            T::Str => Literal::Str(decode_string_literal(&t.text)),
-            _ => return Err(self.err("Unknown literal type")),
-        };
+                })?),
+                T::Str => Literal::Str(decode_string_literal(&t.text)),
+                _ => return Err(self.err("Unknown literal type")),
+            };
         Ok(Expr::Literal(lit))
     }
 

@@ -30,7 +30,9 @@ mod tests {
         assert!(TEMPLATE.contains(VERSION_PLACEHOLDER));
         let doc = build_openapi("1.2.3");
         assert_eq!(doc["info"]["version"], json!("1.2.3"));
-        assert!(!serde_json::to_string(&doc).unwrap().contains(VERSION_PLACEHOLDER));
+        assert!(!serde_json::to_string(&doc)
+            .unwrap()
+            .contains(VERSION_PLACEHOLDER));
     }
 
     #[test]

@@ -261,7 +261,10 @@ mod tests {
     fn function_columns() {
         assert_eq!(col("RETURN count(*)"), "count(*)");
         assert_eq!(col("MATCH (n) RETURN count(n)"), "count(n)");
-        assert_eq!(col("MATCH (n) RETURN count(DISTINCT n)"), "count(DISTINCT n)");
+        assert_eq!(
+            col("MATCH (n) RETURN count(DISTINCT n)"),
+            "count(DISTINCT n)"
+        );
         assert_eq!(col("RETURN toLower('A')"), "toLower('A')");
     }
 
@@ -298,8 +301,14 @@ mod tests {
             col("RETURN CASE WHEN true THEN 1 ELSE 2 END"),
             "CASE WHEN true THEN 1 ELSE 2 END"
         );
-        assert_eq!(col("RETURN [x IN [1] WHERE x > 0 | x]"), "[x IN [1] WHERE x > 0 | x]");
-        assert_eq!(col("RETURN any(x IN [1] WHERE x > 0)"), "any(x IN [1] WHERE x > 0)");
+        assert_eq!(
+            col("RETURN [x IN [1] WHERE x > 0 | x]"),
+            "[x IN [1] WHERE x > 0 | x]"
+        );
+        assert_eq!(
+            col("RETURN any(x IN [1] WHERE x > 0)"),
+            "any(x IN [1] WHERE x > 0)"
+        );
     }
 
     #[test]

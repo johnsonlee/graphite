@@ -130,7 +130,10 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/graphs", get(list_graphs))
         .route(
             "/api/graphs/{graphId}",
-            get(describe_graph).put(load_graph).post(load_graph).delete(unload_graph),
+            get(describe_graph)
+                .put(load_graph)
+                .post(load_graph)
+                .delete(unload_graph),
         )
         .route("/api/topology", get(topology))
         // all-graph (grouped) routes
@@ -152,10 +155,19 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/graphs/{graphId}/endpoints", get(graph_endpoints))
         .route("/api/graphs/{graphId}/architecture/c4", get(graph_c4))
         .route("/api/graphs/{graphId}/overview", get(graph_overview))
-        .route("/api/graphs/{graphId}/cypher", get(cypher_one).post(cypher_one))
+        .route(
+            "/api/graphs/{graphId}/cypher",
+            get(cypher_one).post(cypher_one),
+        )
         .route("/api/graphs/{graphId}/node/{id}", get(node))
-        .route("/api/graphs/{graphId}/node/{id}/outgoing", get(node_outgoing))
-        .route("/api/graphs/{graphId}/node/{id}/incoming", get(node_incoming))
+        .route(
+            "/api/graphs/{graphId}/node/{id}/outgoing",
+            get(node_outgoing),
+        )
+        .route(
+            "/api/graphs/{graphId}/node/{id}/incoming",
+            get(node_incoming),
+        )
         .route("/api/graphs/{graphId}/subgraph", get(subgraph))
         // spec + static
         .route("/openapi.json", get(openapi))
@@ -323,12 +335,24 @@ fn node_edges(s: &AppState, gid: &str, id: &str, q: &Params, outgoing: bool) -> 
         Ok(v) => v,
         Err(_) => return text(StatusCode::BAD_REQUEST, "Invalid node ID"),
     };
-    let limit = bounded_limit(q.get("limit").map(|s| s.as_str()), DEFAULT_EDGE_LIMIT, MAX_EDGE_LIMIT)
-        .max(0) as usize;
+    let limit = bounded_limit(
+        q.get("limit").map(|s| s.as_str()),
+        DEFAULT_EDGE_LIMIT,
+        MAX_EDGE_LIMIT,
+    )
+    .max(0) as usize;
     let edges: Vec<J> = if outgoing {
-        l.graph.outgoing(node_id).take(limit).map(|e| edge_to_map(&e)).collect()
+        l.graph
+            .outgoing(node_id)
+            .take(limit)
+            .map(|e| edge_to_map(&e))
+            .collect()
     } else {
-        l.graph.incoming(node_id).take(limit).map(|e| edge_to_map(&e)).collect()
+        l.graph
+            .incoming(node_id)
+            .take(limit)
+            .map(|e| edge_to_map(&e))
+            .collect()
     };
     ok_json(J::Array(edges))
 }
@@ -451,7 +475,11 @@ async fn graph_endpoints(
         DEFAULT_ENDPOINT_LIMIT,
         MAX_ENDPOINT_LIMIT,
     );
-    ok_json(endpoints_payload(&l, limit, q.get("class").map(|s| s.as_str())))
+    ok_json(endpoints_payload(
+        &l,
+        limit,
+        q.get("class").map(|s| s.as_str()),
+    ))
 }
 
 async fn all_endpoints(State(s): St, Query(q): Query<Params>) -> Response {
@@ -541,7 +569,11 @@ async fn all_resources(State(s): St, Query(q): Query<Params>) -> Response {
 const RESOURCE_STORE_MISSING: &str =
     "Persisted resources are unavailable because graph.resources is missing; rebuild this graph with the current Graphite CLI";
 
-fn resources_payload(l: &GraphLease, q: &Params, limit_override: Option<i64>) -> Result<J, Response> {
+fn resources_payload(
+    l: &GraphLease,
+    q: &Params,
+    limit_override: Option<i64>,
+) -> Result<J, Response> {
     let store = match l.graph.resources.as_ref() {
         Some(r) => r,
         None => return Err(error_json(StatusCode::CONFLICT, RESOURCE_STORE_MISSING)),
@@ -656,7 +688,12 @@ const C4_FORMATS: [&str; 4] = ["json", "mermaid", "plantuml", "dsl"];
 /// `Accept` wins over `?format=`.
 fn resolve_c4_format(accept: Option<&str>, query_format: Option<&str>) -> String {
     for raw in accept.unwrap_or("").split(',') {
-        let m = raw.split(';').next().unwrap_or("").trim().to_ascii_lowercase();
+        let m = raw
+            .split(';')
+            .next()
+            .unwrap_or("")
+            .trim()
+            .to_ascii_lowercase();
         if m.is_empty() || m == "*/*" {
             continue;
         }
@@ -665,9 +702,9 @@ fn resolve_c4_format(accept: Option<&str>, query_format: Option<&str>) -> String
                 return "plantuml".into()
             }
             "text/vnd.mermaid" | "text/x-mermaid" => return "mermaid".into(),
-            "text/vnd.structurizr.dsl" | "text/x-structurizr" | "application/vnd.structurizr.dsl" => {
-                return "dsl".into()
-            }
+            "text/vnd.structurizr.dsl"
+            | "text/x-structurizr"
+            | "application/vnd.structurizr.dsl" => return "dsl".into(),
             "application/vnd.structurizr+json" | "application/json" => return "json".into(),
             _ => {}
         }
@@ -679,7 +716,11 @@ fn resolve_c4_format(accept: Option<&str>, query_format: Option<&str>) -> String
 }
 
 fn c4_params(headers: &HeaderMap, q: &Params) -> Result<(String, String), Response> {
-    let level = q.get("level").map(|s| s.as_str()).unwrap_or("all").to_string();
+    let level = q
+        .get("level")
+        .map(|s| s.as_str())
+        .unwrap_or("all")
+        .to_string();
     if !C4_LEVELS.contains(&level.as_str()) {
         return Err(json_response(
             StatusCode::BAD_REQUEST,
@@ -1032,7 +1073,11 @@ async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> R
     let include_rows = obj
         .and_then(|o| o.get("includeGraphRows"))
         .map(json_truthy)
-        .unwrap_or_else(|| q.get("includeGraphRows").map(|s| truthy(s)).unwrap_or(false));
+        .unwrap_or_else(|| {
+            q.get("includeGraphRows")
+                .map(|s| truthy(s))
+                .unwrap_or(false)
+        });
     run_fanout(s, leases, query, limit, per_graph, include_rows, timeout).await
 }
 
@@ -1044,7 +1089,10 @@ fn cypher_request_error(message: &str) -> Response {
 }
 
 fn truthy(v: &str) -> bool {
-    matches!(v.trim().to_ascii_lowercase().as_str(), "true" | "1" | "yes" | "on")
+    matches!(
+        v.trim().to_ascii_lowercase().as_str(),
+        "true" | "1" | "yes" | "on"
+    )
 }
 
 fn json_truthy(v: &J) -> bool {
@@ -1171,8 +1219,8 @@ async fn run_fanout(
                 truncated = true;
                 break;
             }
-            let ex = Executor::single(l.id.as_str(), l.graph.clone())
-                .with_cancel(permit.cancel.clone());
+            let ex =
+                Executor::single(l.id.as_str(), l.graph.clone()).with_cancel(permit.cancel.clone());
             let take = per_graph.min(remaining).max(0) as usize;
             let r = ex.execute(&query, Some(take))?;
             queried += 1;
@@ -1258,7 +1306,9 @@ async fn metrics(State(s): St) -> Response {
         "graphite_cypher_queries_rejected_total {}\n",
         m.rejected.load(std::sync::atomic::Ordering::Relaxed)
     ));
-    out.push_str("# HELP graphite_cypher_queries_active Accepted Cypher queries that have not completed\n");
+    out.push_str(
+        "# HELP graphite_cypher_queries_active Accepted Cypher queries that have not completed\n",
+    );
     out.push_str("# TYPE graphite_cypher_queries_active gauge\n");
     out.push_str(&format!(
         "graphite_cypher_queries_active {}\n",
@@ -1292,7 +1342,10 @@ async fn metrics(State(s): St) -> Response {
     ));
     (
         StatusCode::OK,
-        [(header::CONTENT_TYPE, "text/plain; version=0.0.4; charset=utf-8")],
+        [(
+            header::CONTENT_TYPE,
+            "text/plain; version=0.0.4; charset=utf-8",
+        )],
         out,
     )
         .into_response()
@@ -1361,7 +1414,10 @@ mod tests {
 
     #[test]
     fn accept_header_beats_the_format_parameter() {
-        assert_eq!(resolve_c4_format(Some("text/vnd.mermaid"), Some("json")), "mermaid");
+        assert_eq!(
+            resolve_c4_format(Some("text/vnd.mermaid"), Some("json")),
+            "mermaid"
+        );
         assert_eq!(resolve_c4_format(Some("*/*"), Some("dsl")), "dsl");
         assert_eq!(resolve_c4_format(None, None), "json");
         assert_eq!(resolve_c4_format(Some("text/html"), None), "json");
@@ -1392,7 +1448,10 @@ mod tests {
     fn query_is_read_from_body_then_query_string() {
         let mut q = Params::new();
         q.insert("query".into(), "RETURN 2".into());
-        assert_eq!(read_query(r#"{"query":"RETURN 1"}"#, &q).unwrap(), "RETURN 1");
+        assert_eq!(
+            read_query(r#"{"query":"RETURN 1"}"#, &q).unwrap(),
+            "RETURN 1"
+        );
         assert_eq!(read_query("", &q).unwrap(), "RETURN 2");
         assert_eq!(read_query("not json", &q).unwrap(), "RETURN 2");
         assert!(read_query("", &Params::new()).is_none());
@@ -1402,7 +1461,10 @@ mod tests {
     fn timeout_must_be_a_positive_integer() {
         let q = Params::new();
         assert_eq!(read_timeout("", &q).ok().unwrap(), None);
-        assert_eq!(read_timeout(r#"{"timeoutMs":25}"#, &q).ok().unwrap(), Some(25));
+        assert_eq!(
+            read_timeout(r#"{"timeoutMs":25}"#, &q).ok().unwrap(),
+            Some(25)
+        );
         assert!(read_timeout(r#"{"timeoutMs":0}"#, &q).is_err());
         assert!(read_timeout(r#"{"timeoutMs":"x"}"#, &q).is_err());
         assert!(read_timeout(r#"{"timeoutMs":true}"#, &q).is_err());

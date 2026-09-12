@@ -167,7 +167,8 @@ pub fn analyze_main_reachability(
         }
         visited_classes.insert(class_name);
         for (callee_sig, callee_class) in outgoing.get(&sig).into_iter().flatten() {
-            if is_internal_class(callee_class, boundary) && internal_signatures.contains(callee_sig) {
+            if is_internal_class(callee_class, boundary) && internal_signatures.contains(callee_sig)
+            {
                 queue.push_back((callee_sig.clone(), callee_class.clone()));
             } else if !is_synthetic_class(callee_class) {
                 external_targets.insert(callee_class.clone());
@@ -182,7 +183,12 @@ pub fn analyze_main_reachability(
     }
 }
 
-fn infer_name(g: &Graph, boundary: &str, start_class_origin: Option<&str>, start_class: Option<&str>) -> String {
+fn infer_name(
+    g: &Graph,
+    boundary: &str,
+    start_class_origin: Option<&str>,
+    start_class: Option<&str>,
+) -> String {
     if let Some(origin) = start_class_origin {
         if let Some(k) = super::external::artifact_key(origin) {
             return humanize_subject_artifact_label(&k);
@@ -204,7 +210,11 @@ fn infer_name(g: &Graph, boundary: &str, start_class_origin: Option<&str>, start
         }
     }
     let normalized = boundary.trim_start_matches('(').trim_end_matches(')');
-    let leaf = normalized.rsplit('.').next().filter(|s| !s.is_empty()).unwrap_or(normalized);
+    let leaf = normalized
+        .rsplit('.')
+        .next()
+        .filter(|s| !s.is_empty())
+        .unwrap_or(normalized);
     let mut chars = leaf.chars();
     match chars.next() {
         Some(c) if c.is_lowercase() => c.to_uppercase().collect::<String>() + chars.as_str(),
@@ -215,7 +225,10 @@ fn infer_name(g: &Graph, boundary: &str, start_class_origin: Option<&str>, start
 /// Infer the subject. Roles are decided by the first matching rule, in order.
 pub fn infer(g: &Graph, boundary: &str, endpoint_count: usize) -> Subject {
     let manifest = read_manifest(g);
-    let has_main_class = manifest.main_class.as_deref().is_some_and(|c| !c.trim().is_empty());
+    let has_main_class = manifest
+        .main_class
+        .as_deref()
+        .is_some_and(|c| !c.trim().is_empty());
     let has_boot_layout = g
         .resources
         .as_ref()
@@ -226,8 +239,13 @@ pub fn infer(g: &Graph, boundary: &str, endpoint_count: usize) -> Subject {
         })
         .unwrap_or(false);
     let has_main_method = g.methods().iter().any(|m| is_main_method(g, m));
-    let start_class = manifest.start_class.as_deref().filter(|s| !s.trim().is_empty());
-    let start_class_origin = start_class.and_then(|sc| g.class_origin(sc)).map(|s| s.to_string());
+    let start_class = manifest
+        .start_class
+        .as_deref()
+        .filter(|s| !s.trim().is_empty());
+    let start_class_origin = start_class
+        .and_then(|sc| g.class_origin(sc))
+        .map(|s| s.to_string());
     let has_boot_launcher_main = manifest
         .main_class
         .as_deref()
@@ -267,7 +285,12 @@ pub fn infer(g: &Graph, boundary: &str, endpoint_count: usize) -> Subject {
             responsibility:
                 "Owns the internal runtime containers and orchestrates the primary execution flows"
                     .into(),
-            actor_id: if http { "person:http-clients" } else { "person:operators" }.into(),
+            actor_id: if http {
+                "person:http-clients"
+            } else {
+                "person:operators"
+            }
+            .into(),
             actor_name: if http { "HTTP Clients" } else { "Operators" }.into(),
             actor_description: if http {
                 "External clients invoking detected HTTP endpoints"
@@ -323,7 +346,11 @@ mod tests {
 
     fn infer_name_for_test(boundary: &str) -> String {
         let normalized = boundary.trim_start_matches('(').trim_end_matches(')');
-        let leaf = normalized.rsplit('.').next().filter(|s| !s.is_empty()).unwrap_or(normalized);
+        let leaf = normalized
+            .rsplit('.')
+            .next()
+            .filter(|s| !s.is_empty())
+            .unwrap_or(normalized);
         let mut chars = leaf.chars();
         match chars.next() {
             Some(c) if c.is_lowercase() => c.to_uppercase().collect::<String>() + chars.as_str(),
@@ -348,8 +375,14 @@ mod tests {
             describe_invocation(&lib, 0),
             "Uses Foo from a host application context"
         );
-        let app = Subject { role: "application".into(), ..lib.clone() };
-        assert_eq!(describe_invocation(&app, 3), "Invokes Foo through its HTTP interface");
+        let app = Subject {
+            role: "application".into(),
+            ..lib.clone()
+        };
+        assert_eq!(
+            describe_invocation(&app, 3),
+            "Invokes Foo through its HTTP interface"
+        );
         assert_eq!(describe_invocation(&app, 0), "Starts and operates Foo");
     }
 }

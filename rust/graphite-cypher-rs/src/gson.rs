@@ -120,7 +120,10 @@ mod tests {
         assert_eq!(to_pretty(&json!("it's")), format!("\"it{}s\"", esc('\'')));
         // Ordinary JSON escapes are unaffected.
         assert_eq!(to_pretty(&json!("a\"b\\c\nd")), r#""a\"b\\c\nd""#);
-        assert_eq!(to_pretty(&json!("\u{0001}")), format!("\"{}\"", esc('\u{0001}')));
+        assert_eq!(
+            to_pretty(&json!("\u{0001}")),
+            format!("\"{}\"", esc('\u{0001}'))
+        );
     }
 
     #[test]

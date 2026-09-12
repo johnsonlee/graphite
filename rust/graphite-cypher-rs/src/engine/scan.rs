@@ -67,6 +67,9 @@ struct StringPredicate {
     op: PushOp,
     literal: String,
     transform: Transform,
+    /// The literal's trigrams, computed once for the query rather than once per graph.
+    /// They depend only on the literal, and there are sixty-four graphs.
+    trigrams: std::sync::Arc<Option<Vec<i32>>>,
 }
 
 impl StringPredicate {
@@ -90,8 +93,7 @@ impl StringPredicate {
     /// True when the dictionary's sort order lets us find matches without scanning.
     /// Only untransformed operators qualify: lowercasing destroys the ordering.
     fn is_seekable(&self) -> bool {
-        self.transform == Transform::None
-            && matches!(self.op, PushOp::Equals | PushOp::StartsWith)
+        self.transform == Transform::None && matches!(self.op, PushOp::Equals | PushOp::StartsWith)
     }
 }
 
@@ -212,61 +214,81 @@ impl ScanPlan {
         where_clause: Option<&Expr>,
         consume: &mut dyn FnMut(Row) -> CypherResult<bool>,
     ) -> CypherResult<bool> {
-        for source in 0..ex.sources.len() {
-            let source = source as SourceIdx;
-            let graph = ex.graph(source);
+        // Plans are built a batch at a time, in parallel, and consumed in source order.
+        //
+        // Resolving a term against one graph's dictionary is most of the cost of a broad
+        // query, and the sixty-four graphs are independent — but the rows must still be
+        // produced in order, and a satisfied LIMIT must still stop the scan. Batching
+        // gives both: order is preserved, and at most one batch of planning is wasted
+        // when the limit lands early.
+        let sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx).collect();
+        for batch in sources.chunks(PLAN_BATCH) {
             ex.cancel.check()?;
-            let sp = &build_source_plan(source, graph, &self.tree, &self.predicates);
-            let scan_tags: Vec<u8> = if sp.call_site_only {
-                self.tags
-                    .iter()
-                    .copied()
-                    .filter(|t| *t == TAG_CALL_SITE_NODE || *t == TAG_ANNOTATION_NODE)
+            let plans: Vec<SourcePlan> = if batch.len() > 1 {
+                batch
+                    .par_iter()
+                    .map(|s| build_source_plan(*s, ex.graph(*s), &self.tree, &self.predicates))
                     .collect()
             } else {
-                self.tags.clone()
+                batch
+                    .iter()
+                    .map(|s| build_source_plan(*s, ex.graph(*s), &self.tree, &self.predicates))
+                    .collect()
             };
-            for tag in scan_tags {
-                // When the accelerator resolved the CallSite candidates, those *are* the
-                // records to visit; nothing else needs looking at.
-                let indexed = match (tag, &sp.call_site_candidates) {
-                    (TAG_CALL_SITE_NODE, Some(nodes)) => Some(nodes.as_slice()),
-                    _ => None,
+            for sp in &plans {
+                let source = sp.source;
+                let graph = ex.graph(source);
+                let scan_tags: Vec<u8> = if sp.call_site_only {
+                    self.tags
+                        .iter()
+                        .copied()
+                        .filter(|t| *t == TAG_CALL_SITE_NODE || *t == TAG_ANNOTATION_NODE)
+                        .collect()
+                } else {
+                    self.tags.clone()
                 };
-                let ids = indexed.unwrap_or_else(|| graph.ids_by_tag(tag));
-                if ids.is_empty() {
-                    continue;
-                }
-                let mut hits: Vec<u32> = Vec::new();
-                for chunk in ids.chunks(SWEEP_CHUNK) {
-                    ex.cancel.check()?;
-                    hits.clear();
-                    if indexed.is_some() || sp.no_prefilter {
-                        // Already narrowed, or never narrowed: either way the WHERE
-                        // re-check below decides.
-                        hits.extend_from_slice(chunk);
-                    } else if tag == TAG_CALL_SITE_NODE {
-                        sweep_call_sites(graph, chunk, sp, &mut hits);
-                    } else {
-                        // No raw fast path for this tag: let WHERE decide.
-                        hits.extend_from_slice(chunk);
+                for tag in scan_tags {
+                    // When the accelerator resolved the CallSite candidates, those *are* the
+                    // records to visit; nothing else needs looking at.
+                    let indexed = match (tag, &sp.call_site_candidates) {
+                        (TAG_CALL_SITE_NODE, Some(nodes)) => Some(nodes.as_slice()),
+                        _ => None,
+                    };
+                    let ids = indexed.unwrap_or_else(|| graph.ids_by_tag(tag));
+                    if ids.is_empty() {
+                        continue;
                     }
-                    for &id in &hits {
-                        ex.tick()?;
-                        let value = Value::Node(NodeRef {
-                            source: sp.source,
-                            id,
-                        });
-                        let mut r = row.clone();
-                        r.insert(self.variable.clone(), value.clone());
-                        add_provenance(&mut r, ex, &value);
-                        if let Some(w) = where_clause {
-                            if ev.eval(w, &r)?.as_bool() != Some(true) {
-                                continue;
-                            }
+                    let mut hits: Vec<u32> = Vec::new();
+                    for chunk in ids.chunks(SWEEP_CHUNK) {
+                        ex.cancel.check()?;
+                        hits.clear();
+                        if indexed.is_some() || sp.no_prefilter {
+                            // Already narrowed, or never narrowed: either way the WHERE
+                            // re-check below decides.
+                            hits.extend_from_slice(chunk);
+                        } else if tag == TAG_CALL_SITE_NODE {
+                            sweep_call_sites(graph, chunk, sp, &mut hits);
+                        } else {
+                            // No raw fast path for this tag: let WHERE decide.
+                            hits.extend_from_slice(chunk);
                         }
-                        if !consume(r)? {
-                            return Ok(false);
+                        for &id in &hits {
+                            ex.tick()?;
+                            let value = Value::Node(NodeRef {
+                                source: sp.source,
+                                id,
+                            });
+                            let mut r = row.clone();
+                            r.insert(self.variable.clone(), value.clone());
+                            add_provenance(&mut r, ex, &value);
+                            if let Some(w) = where_clause {
+                                if ev.eval(w, &r)?.as_bool() != Some(true) {
+                                    continue;
+                                }
+                            }
+                            if !consume(r)? {
+                                return Ok(false);
+                            }
                         }
                     }
                 }
@@ -275,6 +297,9 @@ impl ScanPlan {
         Ok(true)
     }
 }
+
+/// Graphs planned together before any of their rows are consumed.
+const PLAN_BATCH: usize = 16;
 
 /// Candidates are examined in chunks this large, so a satisfied LIMIT stops the sweep.
 const SWEEP_CHUNK: usize = 65_536;
@@ -425,27 +450,47 @@ fn eval_tree(
             Some(nodes)
         }
         PredTree::And(children) => {
-            // A conjunct the index declines — a term so broad that walking its postings
-            // costs more than sweeping — contributes no information, and is skipped.
-            // Intersecting the conjuncts that *are* selective still yields a superset,
-            // so one dense term no longer forfeits the whole plan. That case is the
-            // common one: `caller_class CONTAINS 'com' AND (... narrow alternatives)`.
-            let mut acc: Option<Vec<u32>> = None;
+            // Only the cheapest conjunct is turned into node ids. The rest stay on the
+            // dictionary side as sets of string ids, and filter those nodes by reading
+            // the four raw ids out of each record — no postings walked, nothing unioned.
+            //
+            // It matters because the common shape is one broad term AND a handful of
+            // alternatives: materialising every branch costs the sum of all of them,
+            // while materialising the smallest costs the minimum and the rest become a
+            // membership test over a set that is usually tiny.
+            let mut sets: Vec<Option<PropertySets>> = Vec::with_capacity(children.len());
             for c in children {
-                let Some(next) = eval_tree(graph, idx, c, memo) else {
-                    continue;
-                };
-                acc = Some(match acc {
-                    None => next,
-                    Some(prev) => intersect_sorted(&prev, &next),
-                });
-                // Nothing can survive further conjuncts once the set is empty.
-                if acc.as_ref().is_some_and(|v| v.is_empty()) {
-                    return acc;
+                sets.push(property_sets(graph, idx, c, memo));
+            }
+            // A conjunct the index declines — a term so broad that walking its postings
+            // costs more than sweeping — says nothing, and is skipped. Intersecting only
+            // the conjuncts that are selective still yields a superset.
+            let mut best: Option<(usize, usize)> = None;
+            for (i, s) in sets.iter().enumerate() {
+                if let Some(s) = s {
+                    let cost = s.posting_cost(idx);
+                    if best.is_none_or(|(_, c)| cost < c) {
+                        best = Some((i, cost));
+                    }
                 }
             }
-            // Every conjunct declined: the index has nothing to say about this clause.
-            acc
+            let (chosen, cost) = best?;
+            // Past this the sweep is cheaper than the postings, as for a single leaf.
+            if cost * POSTING_SWEEP_RATIO > idx.call_site_count() {
+                return None;
+            }
+            let mut nodes = sets[chosen].as_ref()?.nodes(idx);
+            for (i, s) in sets.iter().enumerate() {
+                if i == chosen {
+                    continue;
+                }
+                let Some(s) = s else { continue };
+                nodes.retain(|id| s.matches_node(graph, *id));
+                if nodes.is_empty() {
+                    break;
+                }
+            }
+            Some(nodes)
         }
     }
 }
@@ -509,7 +554,7 @@ const POSTING_SWEEP_RATIO: usize = 8;
 /// Below this many surviving candidates, further trigram intersection is not worth it.
 const TRIGRAM_INTERSECT_FLOOR: usize = 256;
 /// At most this many of a literal's trigrams are sized and intersected.
-const MAX_TRIGRAM_PROBES: usize = 8;
+const MAX_TRIGRAM_PROBES: usize = 3;
 
 /// Exactly the string ids satisfying one predicate, via the accelerator.
 fn matching_string_ids(
@@ -532,7 +577,7 @@ fn matching_string_ids(
     if !p.literal.is_ascii() {
         return None;
     }
-    let trigrams = graphite_storage::callsite_index::literal_trigrams(&p.literal)?;
+    let trigrams = p.trigrams.as_ref().as_ref()?;
     if trigrams.is_empty() {
         return None;
     }
@@ -781,11 +826,14 @@ fn push_predicate(
     };
     match property_operand(left, variable) {
         Some((property, transform)) => {
+            let trigrams =
+                std::sync::Arc::new(graphite_storage::callsite_index::literal_trigrams(&literal));
             out.push(StringPredicate {
                 property,
                 op,
                 literal,
                 transform,
+                trigrams,
             });
             true
         }
@@ -823,3 +871,107 @@ fn property_operand(e: &Expr, variable: &str) -> Option<(&'static str, Transform
 
 #[allow(dead_code)]
 fn _strid_marker(_: StrId) {}
+
+/// Matching string ids per CallSite property, for a subtree that is a leaf or a
+/// disjunction of them. A node satisfies it when any one of its four string ids is in
+/// the corresponding set — the same "any property hits" test the sweep applies.
+struct PropertySets {
+    ids: [Vec<u32>; 4],
+}
+
+impl PropertySets {
+    /// Total postings behind these ids: what materialising this subtree would cost.
+    fn posting_cost(&self, idx: &graphite_storage::callsite_index::CallSiteStringIndex) -> usize {
+        let mut total = 0usize;
+        for (property, ids) in self.ids.iter().enumerate() {
+            for &s in ids {
+                total += idx.posting_len(property, s as usize);
+            }
+        }
+        total
+    }
+
+    /// Ascending node ids carrying any of these strings in its own property.
+    fn nodes(&self, idx: &graphite_storage::callsite_index::CallSiteStringIndex) -> Vec<u32> {
+        let mut nodes = Vec::with_capacity(self.posting_cost(idx));
+        for (property, ids) in self.ids.iter().enumerate() {
+            for &s in ids {
+                if let Some(postings) = idx.postings(property, s as usize) {
+                    nodes.extend(postings);
+                }
+            }
+        }
+        nodes.sort_unstable();
+        nodes.dedup();
+        nodes
+    }
+
+    /// Test one record directly, without touching the postings at all.
+    fn matches_node(&self, graph: &Graph, node: u32) -> bool {
+        let Some(offset) = graph.node_offset(node) else {
+            return false;
+        };
+        let s = read_call_site_strings(graph.nodedata(), offset);
+        let fields = [s.caller_class, s.caller_name, s.callee_class, s.callee_name];
+        for (property, ids) in self.ids.iter().enumerate() {
+            if ids.binary_search(&(fields[property] as u32)).is_ok() {
+                return true;
+            }
+        }
+        false
+    }
+}
+
+/// The per-property string id sets of a leaf or a disjunction of leaves.
+///
+/// `None` when the subtree is not that shape, or when any leaf's term is one the index
+/// declines: a partial set would wrongly exclude rows, since these sets are used to
+/// *filter*, not merely to narrow.
+fn property_sets(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    tree: &PredTree,
+    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+) -> Option<PropertySets> {
+    let mut ids: [Vec<u32>; 4] = Default::default();
+    if !collect_property_sets(graph, idx, tree, memo, &mut ids) {
+        return None;
+    }
+    for v in ids.iter_mut() {
+        v.sort_unstable();
+        v.dedup();
+    }
+    Some(PropertySets { ids })
+}
+
+fn collect_property_sets(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    tree: &PredTree,
+    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+    out: &mut [Vec<u32>; 4],
+) -> bool {
+    match tree {
+        PredTree::Leaf(p) => {
+            let Some(property) = CALL_SITE_PROPS.iter().position(|c| *c == p.property) else {
+                return false;
+            };
+            let strings = match memo.iter().find(|(q, _)| q.same_test(p)) {
+                Some((_, v)) => v.clone(),
+                None => match matching_string_ids(graph, idx, p) {
+                    Some(v) => {
+                        memo.push((p.clone(), v.clone()));
+                        v
+                    }
+                    None => return false,
+                },
+            };
+            out[property].extend(strings);
+            true
+        }
+        PredTree::Or(children) => children
+            .iter()
+            .all(|c| collect_property_sets(graph, idx, c, memo, out)),
+        PredTree::And(_) => false,
+    }
+}

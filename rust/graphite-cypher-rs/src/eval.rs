@@ -48,7 +48,9 @@ pub fn contains_aggregation(e: &Expr) -> bool {
         Expr::PredicateFunction {
             list, predicate, ..
         } => contains_aggregation(list) || predicate.as_deref().is_some_and(contains_aggregation),
-        Expr::Binary { left, right, .. } => contains_aggregation(left) || contains_aggregation(right),
+        Expr::Binary { left, right, .. } => {
+            contains_aggregation(left) || contains_aggregation(right)
+        }
         Expr::Comparison { left, right, .. } => {
             contains_aggregation(left) || contains_aggregation(right)
         }
@@ -389,10 +391,18 @@ impl<'a> Evaluator<'a> {
         // String concatenation wins for '+' when either side is a String.
         if op == BinOp::Add {
             if let (Value::Str(a), _) = (l, r) {
-                return Ok(Value::str(format!("{}{}", a, kotlin_to_string(r, self.ctx))));
+                return Ok(Value::str(format!(
+                    "{}{}",
+                    a,
+                    kotlin_to_string(r, self.ctx)
+                )));
             }
             if let (_, Value::Str(b)) = (l, r) {
-                return Ok(Value::str(format!("{}{}", kotlin_to_string(l, self.ctx), b)));
+                return Ok(Value::str(format!(
+                    "{}{}",
+                    kotlin_to_string(l, self.ctx),
+                    b
+                )));
             }
             if let (Value::List(a), Value::List(b)) = (l, r) {
                 let mut out = a.as_ref().clone();
@@ -649,7 +659,12 @@ impl<'a> Evaluator<'a> {
 fn slice_bounds(from: Option<&Value>, to: Option<&Value>, len: i64) -> (i64, i64) {
     let raw_start = from.and_then(|v| v.as_f64()).map(|f| f as i64).unwrap_or(0);
     let raw_end = to.and_then(|v| v.as_f64()).map(|f| f as i64).unwrap_or(len);
-    let start = if raw_start < 0 { len + raw_start } else { raw_start }.clamp(0, len);
+    let start = if raw_start < 0 {
+        len + raw_start
+    } else {
+        raw_start
+    }
+    .clamp(0, len);
     let end = if raw_end < 0 { len + raw_end } else { raw_end }.clamp(0, len);
     (start, end)
 }
@@ -674,9 +689,7 @@ fn class_cast(v: &Value, target: &str) -> CypherError {
         Value::Map(_) => "java.util.Map",
         _ => "java.lang.Object",
     };
-    CypherError::Other(format!(
-        "class {actual} cannot be cast to class {target}"
-    ))
+    CypherError::Other(format!("class {actual} cannot be cast to class {target}"))
 }
 
 #[allow(dead_code)]

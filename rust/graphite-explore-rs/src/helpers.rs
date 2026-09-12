@@ -33,7 +33,9 @@ fn any_json(g: &Graph, v: &AnyValue) -> J {
         AnyValue::Int(i) => J::Number(Number::from(*i as i64)),
         AnyValue::Long(l) => J::Number(Number::from(*l)),
         AnyValue::Str(s) => J::String(g.str(*s).to_string()),
-        AnyValue::Float(f) => Number::from_f64(*f as f64).map(J::Number).unwrap_or(J::Null),
+        AnyValue::Float(f) => Number::from_f64(*f as f64)
+            .map(J::Number)
+            .unwrap_or(J::Null),
         AnyValue::Double(d) => Number::from_f64(*d).map(J::Number).unwrap_or(J::Null),
         AnyValue::Bool(b) => J::Bool(*b),
         AnyValue::Null => J::Null,
@@ -113,11 +115,16 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             m.insert("id".into(), id);
             m.insert(
                 "value".into(),
-                Number::from_f64(*v as f64).map(J::Number).unwrap_or(J::Null),
+                Number::from_f64(*v as f64)
+                    .map(J::Number)
+                    .unwrap_or(J::Null),
             );
             m.insert(
                 "label".into(),
-                json!(format!("{}f", graphite_cypher::semantics::java_float_to_string(*v))),
+                json!(format!(
+                    "{}f",
+                    graphite_cypher::semantics::java_float_to_string(*v)
+                )),
             );
         }
         NodeKind::DoubleConstant(v) => {
@@ -129,7 +136,10 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             );
             m.insert(
                 "label".into(),
-                json!(format!("{}d", graphite_cypher::semantics::java_double_to_string(*v))),
+                json!(format!(
+                    "{}d",
+                    graphite_cypher::semantics::java_double_to_string(*v)
+                )),
             );
         }
         NodeKind::BooleanConstant(v) => {
@@ -304,7 +314,15 @@ pub fn build_subgraph(g: &Graph, center: NodeId, depth: i64, direction: Directio
     let mut nodes: Vec<J> = Vec::new();
     let mut edges: Vec<J> = Vec::new();
     let mut visited: std::collections::HashSet<NodeId> = std::collections::HashSet::new();
-    visit(g, center, depth, direction, &mut nodes, &mut edges, &mut visited);
+    visit(
+        g,
+        center,
+        depth,
+        direction,
+        &mut nodes,
+        &mut edges,
+        &mut visited,
+    );
     json!({ "nodes": nodes, "edges": edges })
 }
 
@@ -400,7 +418,11 @@ fn build_class_overview_from_call_sites(g: &Graph, limit: usize) -> J {
     use std::collections::HashMap;
     let mut class_counts: HashMap<String, i32> = HashMap::new();
     let mut edge_counts: HashMap<(String, String), i32> = HashMap::new();
-    for &id in g.ids_by_tag(TAG_CALL_SITE_NODE).iter().take(MAX_OVERVIEW_CALL_SITES) {
+    for &id in g
+        .ids_by_tag(TAG_CALL_SITE_NODE)
+        .iter()
+        .take(MAX_OVERVIEW_CALL_SITES)
+    {
         let s = match g.call_site_strings(id) {
             Some(s) => s,
             None => continue,

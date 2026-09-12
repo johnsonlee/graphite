@@ -41,7 +41,10 @@ pub fn sorted_set<I: IntoIterator<Item = String>>(values: I) -> Vec<String> {
 }
 
 /// Kotlin `maxByOrNull`: returns the FIRST element with the maximal key.
-pub fn first_max_by<T, K: Ord, F: Fn(&T) -> K>(items: impl IntoIterator<Item = T>, key: F) -> Option<T> {
+pub fn first_max_by<T, K: Ord, F: Fn(&T) -> K>(
+    items: impl IntoIterator<Item = T>,
+    key: F,
+) -> Option<T> {
     let mut best: Option<(T, K)> = None;
     for item in items {
         let k = key(&item);
@@ -172,7 +175,11 @@ pub fn kotlin_to_long(s: &str) -> Option<i64> {
     for b in digits.bytes() {
         let d = (b - b'0') as i64;
         value = value.checked_mul(10)?;
-        value = if neg { value.checked_sub(d)? } else { value.checked_add(d)? };
+        value = if neg {
+            value.checked_sub(d)?
+        } else {
+            value.checked_add(d)?
+        };
     }
     Some(value)
 }
@@ -193,10 +200,18 @@ pub fn java_double_to_string(d: f64) -> String {
         return "NaN".to_string();
     }
     if d.is_infinite() {
-        return if d > 0.0 { "Infinity".to_string() } else { "-Infinity".to_string() };
+        return if d > 0.0 {
+            "Infinity".to_string()
+        } else {
+            "-Infinity".to_string()
+        };
     }
     if d == 0.0 {
-        return if d.is_sign_negative() { "-0.0".to_string() } else { "0.0".to_string() };
+        return if d.is_sign_negative() {
+            "-0.0".to_string()
+        } else {
+            "0.0".to_string()
+        };
     }
     let sci = format!("{:e}", d.abs());
     let (mantissa, exp) = sci.split_once('e').unwrap_or((sci.as_str(), "0"));
@@ -254,7 +269,10 @@ pub fn kotlin_to_string(v: &Value) -> String {
             format!("[{}]", parts.join(", "))
         }
         Value::Object(map) => {
-            let parts: Vec<String> = map.iter().map(|(k, v)| format!("{k}={}", kotlin_to_string(v))).collect();
+            let parts: Vec<String> = map
+                .iter()
+                .map(|(k, v)| format!("{k}={}", kotlin_to_string(v)))
+                .collect();
             format!("{{{}}}", parts.join(", "))
         }
     }
@@ -417,7 +435,10 @@ mod tests {
             gson_json(&v, true, true),
             "{\n  \"a\": 1,\n  \"b\": [\n    \"x\",\n    \"y\"\n  ],\n  \"c\": {},\n  \"d\": [],\n  \"e\": \"\\u003c\\u003d\\u003e\\u0026\\u0027\"\n}"
         );
-        assert_eq!(gson_json(&v, false, false), "{\"a\":1,\"b\":[\"x\",\"y\"],\"c\":{},\"d\":[],\"e\":\"<=>&'\"}");
+        assert_eq!(
+            gson_json(&v, false, false),
+            "{\"a\":1,\"b\":[\"x\",\"y\"],\"c\":{},\"d\":[],\"e\":\"<=>&'\"}"
+        );
     }
 
     #[test]
@@ -429,7 +450,12 @@ mod tests {
         assert_eq!(kotlin_to_long("+3"), Some(3));
         assert_eq!(kotlin_to_long(" 3"), None);
         assert_eq!(kotlin_to_long("3.0"), None);
-        assert_eq!(first_max_by(vec![("a", 2), ("b", 3), ("c", 3)], |x| x.1).unwrap().0, "b");
+        assert_eq!(
+            first_max_by(vec![("a", 2), ("b", 3), ("c", 3)], |x| x.1)
+                .unwrap()
+                .0,
+            "b"
+        );
         assert_eq!(kotlin_lines("a\nb\r\nc\n"), vec!["a", "b", "c", ""]);
     }
 }
@@ -456,7 +482,13 @@ pub fn slugify(v: &str) -> String {
 /// `diagramId(v)` — every character outside `[A-Za-z0-9_]` becomes a single underscore.
 pub fn diagram_id(v: &str) -> String {
     v.chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect()
 }
 
@@ -517,7 +549,9 @@ pub fn humanize_artifact_label(name: &str) -> String {
             } else {
                 let mut cs = t.chars();
                 match cs.next() {
-                    Some(f) if f.is_lowercase() => f.to_uppercase().collect::<String>() + cs.as_str(),
+                    Some(f) if f.is_lowercase() => {
+                        f.to_uppercase().collect::<String>() + cs.as_str()
+                    }
                     _ => t.to_string(),
                 }
             }
@@ -549,7 +583,10 @@ mod added_tests {
     #[test]
     fn slugify_collapses_runs_and_trims() {
         assert_eq!(slugify("Order Service"), "order-service");
-        assert_eq!(slugify("container:application-runtime"), "container-application-runtime");
+        assert_eq!(
+            slugify("container:application-runtime"),
+            "container-application-runtime"
+        );
         assert_eq!(slugify("--a--"), "a");
         assert_eq!(slugify("!!!"), "");
     }
@@ -578,6 +615,9 @@ mod added_tests {
     #[test]
     fn short_tokens_become_acronyms_only_for_artifacts() {
         assert_eq!(humanize_artifact_label("api-gateway"), "API Gateway");
-        assert_eq!(humanize_subject_artifact_label("api-gateway"), "Api Gateway");
+        assert_eq!(
+            humanize_subject_artifact_label("api-gateway"),
+            "Api Gateway"
+        );
     }
 }

@@ -96,7 +96,11 @@ impl Executor {
         self.execute_clauses(&clauses, max_rows)
     }
 
-    pub fn execute_clauses(&self, clauses: &[Clause], max_rows: Option<usize>) -> CypherResult<QueryResult> {
+    pub fn execute_clauses(
+        &self,
+        clauses: &[Clause],
+        max_rows: Option<usize>,
+    ) -> CypherResult<QueryResult> {
         self.cancel.check()?;
         // Split on UNION markers.
         let mut segments: Vec<(Vec<Clause>, bool)> = vec![(Vec::new(), false)];
@@ -159,15 +163,15 @@ impl Executor {
     fn run_segment(&self, clauses: &[Clause]) -> CypherResult<QueryResult> {
         // Index-only shapes are answered before any row work begins.
         if !super::optimizations_disabled() {
-        if let Some(r) = super::fastpath::count_star(self, clauses)? {
-            return Ok(r);
-        }
-        if let Some(r) = super::fastpath::grouped_call_site_property(self, clauses)? {
-            return Ok(r);
-        }
-        if let Some(r) = super::fastpath::distinct_string_property(self, clauses)? {
-            return Ok(r);
-        }
+            if let Some(r) = super::fastpath::count_star(self, clauses)? {
+                return Ok(r);
+            }
+            if let Some(r) = super::fastpath::grouped_call_site_property(self, clauses)? {
+                return Ok(r);
+            }
+            if let Some(r) = super::fastpath::distinct_string_property(self, clauses)? {
+                return Ok(r);
+            }
         }
         let ev = Evaluator::new(self, &self.params);
         let matcher = Matcher { ex: self, ev: &ev };
@@ -189,7 +193,15 @@ impl Executor {
                         }
                     }
                     let early_limit = compute_early_limit(&clauses[i..]);
-                    rows = self.exec_match(&matcher, &ev, rows, patterns, *optional, where_clause.as_ref(), early_limit)?;
+                    rows = self.exec_match(
+                        &matcher,
+                        &ev,
+                        rows,
+                        patterns,
+                        *optional,
+                        where_clause.as_ref(),
+                        early_limit,
+                    )?;
                 }
                 Clause::Where(expr) => {
                     let mut out = Vec::with_capacity(rows.len());
@@ -292,12 +304,18 @@ impl Executor {
         }
         if columns.is_empty() {
             if let Some(first) = rows.first() {
-                columns = first.keys().filter(|k| !is_internal_key(k)).cloned().collect();
+                columns = first
+                    .keys()
+                    .filter(|k| !is_internal_key(k))
+                    .cloned()
+                    .collect();
             }
         }
         // Strip order stashes.
         for r in &mut rows {
-            r.retain(|k, _| !k.starts_with(ORDER_STASH_PREFIX) && !k.starts_with(AGG_PLACEHOLDER_PREFIX));
+            r.retain(|k, _| {
+                !k.starts_with(ORDER_STASH_PREFIX) && !k.starts_with(AGG_PLACEHOLDER_PREFIX)
+            });
         }
         Ok(QueryResult { columns, rows })
     }
@@ -370,7 +388,13 @@ impl Executor {
     ) -> CypherResult<QueryResult> {
         if has_unknown_label(patterns) {
             // No candidates: projection over zero rows.
-            let (cols, out) = project(ev, vec![], shape.items.as_deref(), shape.distinct, shape.order.as_deref())?;
+            let (cols, out) = project(
+                ev,
+                vec![],
+                shape.items.as_deref(),
+                shape.distinct,
+                shape.order.as_deref(),
+            )?;
             return Ok(finish_fused(ev, cols, out, shape)?);
         }
         let skip = match &shape.skip {
@@ -382,7 +406,9 @@ impl Executor {
             None => None,
         };
         if let Some(n) = skip.filter(|n| *n < 0).or(limit.filter(|n| *n < 0)) {
-            return Err(CypherError::Other(format!("Requested element count {n} is less than zero.")));
+            return Err(CypherError::Other(format!(
+                "Requested element count {n} is less than zero."
+            )));
         }
         let budget: Option<usize> = match (skip, limit) {
             (_, None) => None,
@@ -402,7 +428,11 @@ impl Executor {
             let plan = AggPlan::new(items)?;
             let columns: Vec<String> = items
                 .iter()
-                .map(|it| it.alias.clone().unwrap_or_else(|| to_cypher_string(&it.expr)))
+                .map(|it| {
+                    it.alias
+                        .clone()
+                        .unwrap_or_else(|| to_cypher_string(&it.expr))
+                })
                 .collect();
             let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
             let mut consume = |row: Row| -> CypherResult<bool> {
@@ -421,7 +451,12 @@ impl Executor {
                 for (ai, agg) in plan.aggs.iter().enumerate() {
                     let v = match &agg.arg {
                         Some(e) => ev.eval(e, &row)?,
-                        None => Value::map(row.iter().filter(|(k, _)| !is_internal_key(k)).map(|(k, v)| (k.clone(), v.clone())).collect()),
+                        None => Value::map(
+                            row.iter()
+                                .filter(|(k, _)| !is_internal_key(k))
+                                .map(|(k, v)| (k.clone(), v.clone()))
+                                .collect(),
+                        ),
                     };
                     acc.agg_inputs[ai].push(v);
                 }
@@ -429,7 +464,15 @@ impl Executor {
                 Ok(true)
             };
             for r in rows {
-                self.stream_match(matcher, ev, &r, patterns, shape.where_clause.as_ref(), &scan, &mut consume)?;
+                self.stream_match(
+                    matcher,
+                    ev,
+                    &r,
+                    patterns,
+                    shape.where_clause.as_ref(),
+                    &scan,
+                    &mut consume,
+                )?;
             }
             let out = finalize_groups(ev, &plan, items, groups, shape.order.as_deref())?;
             return finish_fused(ev, columns, out, shape);
@@ -440,22 +483,38 @@ impl Executor {
         let mut columns: Vec<String> = match items {
             Some(items) => items
                 .iter()
-                .map(|it| it.alias.clone().unwrap_or_else(|| to_cypher_string(&it.expr)))
+                .map(|it| {
+                    it.alias
+                        .clone()
+                        .unwrap_or_else(|| to_cypher_string(&it.expr))
+                })
                 .collect(),
             None => Vec::new(),
         };
-        let mut seen: std::collections::HashSet<Vec<Key>> = std::collections::HashSet::new();
+        // Index of each distinct key into `out`, not just the set of keys. Finding the
+        // row to merge provenance into by scanning `out` is linear, and it runs once per
+        // duplicate — quadratic on the shape that produces duplicates by the million.
+        let mut seen: std::collections::HashMap<Vec<Key>, usize> = std::collections::HashMap::new();
         let needs_all = shape.order.is_some();
         let mut consume = |row: Row| -> CypherResult<bool> {
-            let projected = project_row(ev, &row, items, shape.order.as_deref(), shape.distinct, &mut columns)?;
+            let projected = project_row(
+                ev,
+                &row,
+                items,
+                shape.order.as_deref(),
+                shape.distinct,
+                &mut columns,
+            )?;
             if shape.distinct {
                 let k = visible_key(&projected);
-                if !seen.insert(k) {
-                    // merge provenance into the existing row
-                    if let Some(existing) = out.iter_mut().find(|r| visible_key(r) == visible_key(&projected)) {
-                        merge_provenance(existing, &projected);
+                match seen.get(&k) {
+                    Some(&at) => {
+                        merge_provenance(&mut out[at], &projected);
+                        return Ok(true);
                     }
-                    return Ok(true);
+                    None => {
+                        seen.insert(k, out.len());
+                    }
                 }
             }
             out.push(projected);
@@ -469,7 +528,15 @@ impl Executor {
             Ok(true)
         };
         for r in rows {
-            let cont = self.stream_match(matcher, ev, &r, patterns, shape.where_clause.as_ref(), &scan, &mut consume)?;
+            let cont = self.stream_match(
+                matcher,
+                ev,
+                &r,
+                patterns,
+                shape.where_clause.as_ref(),
+                &scan,
+                &mut consume,
+            )?;
             if !cont {
                 break;
             }
@@ -506,32 +573,47 @@ impl Executor {
     }
 }
 
-fn finish_fused(ev: &Evaluator, columns: Vec<String>, mut rows: Vec<Row>, shape: &FusedShape) -> CypherResult<QueryResult> {
+fn finish_fused(
+    ev: &Evaluator,
+    columns: Vec<String>,
+    mut rows: Vec<Row>,
+    shape: &FusedShape,
+) -> CypherResult<QueryResult> {
     if let Some(order) = &shape.order {
         rows = order_rows(ev, rows, order)?;
     }
     if let Some(e) = &shape.skip {
         let n = eval_count(ev, e, rows.first())?;
         if n < 0 {
-            return Err(CypherError::Other(format!("Requested element count {n} is less than zero.")));
+            return Err(CypherError::Other(format!(
+                "Requested element count {n} is less than zero."
+            )));
         }
         rows = rows.into_iter().skip(n as usize).collect();
     }
     if let Some(e) = &shape.limit {
         let n = eval_count(ev, e, rows.first())?;
         if n < 0 {
-            return Err(CypherError::Other(format!("Requested element count {n} is less than zero.")));
+            return Err(CypherError::Other(format!(
+                "Requested element count {n} is less than zero."
+            )));
         }
         rows.truncate(n as usize);
     }
     let mut columns = columns;
     if columns.is_empty() {
         if let Some(first) = rows.first() {
-            columns = first.keys().filter(|k| !is_internal_key(k)).cloned().collect();
+            columns = first
+                .keys()
+                .filter(|k| !is_internal_key(k))
+                .cloned()
+                .collect();
         }
     }
     for r in &mut rows {
-        r.retain(|k, _| !k.starts_with(ORDER_STASH_PREFIX) && !k.starts_with(AGG_PLACEHOLDER_PREFIX));
+        r.retain(|k, _| {
+            !k.starts_with(ORDER_STASH_PREFIX) && !k.starts_with(AGG_PLACEHOLDER_PREFIX)
+        });
     }
     Ok(QueryResult { columns, rows })
 }
@@ -610,10 +692,42 @@ fn inject_limit(seg: &mut Vec<Clause>, max: usize) {
 }
 
 fn compute_early_limit(clauses: &[Clause]) -> Option<usize> {
-    // MATCH followed directly by RETURN (no aggregation/distinct) and LIMIT literal, nothing else in between.
+    // MATCH followed by RETURN (no aggregation/distinct) and a literal LIMIT.
+    //
+    // Any number of row-preserving WITH clauses may sit in between. A WITH that only
+    // renames or projects emits exactly one row per input row, so a LIMIT after it bounds
+    // the match just as tightly. One that filters, aggregates, de-duplicates, orders or
+    // pages does not: fewer rows may come out than went in, and stopping the match at n
+    // would return short. Those end the walk and the match stays unbounded.
     let mut i = 1;
+    while let Some(Clause::With {
+        distinct,
+        items,
+        where_clause,
+    }) = clauses.get(i)
+    {
+        if *distinct || where_clause.is_some() {
+            return None;
+        }
+        if let Some(items) = items {
+            if items.iter().any(|it| contains_aggregation(&it.expr)) {
+                return None;
+            }
+        }
+        i += 1;
+        // ORDER BY / SKIP / LIMIT attached to this WITH break the one-to-one mapping.
+        if matches!(
+            clauses.get(i),
+            Some(Clause::OrderBy(_)) | Some(Clause::Skip(_)) | Some(Clause::Limit(_))
+        ) {
+            return None;
+        }
+    }
     match clauses.get(i) {
-        Some(Clause::Return { distinct: false, items }) => {
+        Some(Clause::Return {
+            distinct: false,
+            items,
+        }) => {
             if let Some(items) = items {
                 if items.iter().any(|it| contains_aggregation(&it.expr)) {
                     return None;
@@ -660,7 +774,13 @@ fn visible_key(row: &Row) -> Vec<Key> {
 }
 
 /// Order-by expressions that are not bare projected columns get pre-evaluated on the pre-projection row.
-fn stash_order_values(ev: &Evaluator, pre: &Row, out: &mut Row, order: Option<&[OrderItem]>, columns: &[String]) -> CypherResult<()> {
+fn stash_order_values(
+    ev: &Evaluator,
+    pre: &Row,
+    out: &mut Row,
+    order: Option<&[OrderItem]>,
+    columns: &[String],
+) -> CypherResult<()> {
     if let Some(order) = order {
         for (i, item) in order.iter().enumerate() {
             let is_col = matches!(&item.expr, Expr::Variable(v) if columns.iter().any(|c| c == v));
@@ -695,7 +815,10 @@ fn project_row(
         }
         Some(items) => {
             for it in items {
-                let name = it.alias.clone().unwrap_or_else(|| to_cypher_string(&it.expr));
+                let name = it
+                    .alias
+                    .clone()
+                    .unwrap_or_else(|| to_cypher_string(&it.expr));
                 let v = ev.eval(&it.expr, row)?;
                 out.insert(name, v);
             }
@@ -798,7 +921,11 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
             });
             Expr::Variable(format!("{AGG_PLACEHOLDER_PREFIX}{}", aggs.len() - 1))
         }
-        Expr::FunctionCall { name, distinct, args } if is_aggregation_name(name) => {
+        Expr::FunctionCall {
+            name,
+            distinct,
+            args,
+        } if is_aggregation_name(name) => {
             let mut arg = args.first().cloned();
             let mut d = *distinct;
             if let Some(Expr::Distinct(inner)) = &arg {
@@ -812,7 +939,11 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
             });
             Expr::Variable(format!("{AGG_PLACEHOLDER_PREFIX}{}", aggs.len() - 1))
         }
-        Expr::FunctionCall { name, distinct, args } => Expr::FunctionCall {
+        Expr::FunctionCall {
+            name,
+            distinct,
+            args,
+        } => Expr::FunctionCall {
             name: name.clone(),
             distinct: *distinct,
             args: args.iter().map(|a| rewrite_aggs(a, aggs)).collect(),
@@ -862,7 +993,11 @@ fn finalize_groups(
 ) -> CypherResult<Vec<Row>> {
     let columns: Vec<String> = items
         .iter()
-        .map(|it| it.alias.clone().unwrap_or_else(|| to_cypher_string(&it.expr)))
+        .map(|it| {
+            it.alias
+                .clone()
+                .unwrap_or_else(|| to_cypher_string(&it.expr))
+        })
         .collect();
     let mut out = Vec::with_capacity(groups.len());
     let compute = |acc: GroupAcc| -> CypherResult<Row> {
@@ -943,7 +1078,11 @@ fn project(
     let items = items.unwrap();
     let columns: Vec<String> = items
         .iter()
-        .map(|it| it.alias.clone().unwrap_or_else(|| to_cypher_string(&it.expr)))
+        .map(|it| {
+            it.alias
+                .clone()
+                .unwrap_or_else(|| to_cypher_string(&it.expr))
+        })
         .collect();
     let aggregated = items.iter().any(|it| contains_aggregation(&it.expr));
     let mut out: Vec<Row>;
@@ -966,7 +1105,12 @@ fn project(
             for (ai, agg) in plan.aggs.iter().enumerate() {
                 let v = match &agg.arg {
                     Some(e) => ev.eval(e, &row)?,
-                    None => Value::map(row.iter().filter(|(k, _)| !is_internal_key(k)).map(|(k, v)| (k.clone(), v.clone())).collect()),
+                    None => Value::map(
+                        row.iter()
+                            .filter(|(k, _)| !is_internal_key(k))
+                            .map(|(k, v)| (k.clone(), v.clone()))
+                            .collect(),
+                    ),
                 };
                 acc.agg_inputs[ai].push(v);
             }
@@ -977,7 +1121,14 @@ fn project(
         out = Vec::with_capacity(rows.len());
         let mut cols = columns.clone();
         for row in &rows {
-            out.push(project_row(ev, row, Some(items), order, distinct, &mut cols)?);
+            out.push(project_row(
+                ev,
+                row,
+                Some(items),
+                order,
+                distinct,
+                &mut cols,
+            )?);
         }
     }
     if distinct {

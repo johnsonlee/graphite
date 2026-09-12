@@ -1,7 +1,9 @@
 //! Assembled persisted graph: nodes, edges, metadata, strings.
 
 use crate::bvgraph::{BvError, BvGraph};
-use crate::io::{check_header, read_i32_at, read_i64_at, MAGIC_NODEDATA, MAGIC_NODEOFFSETS, MAGIC_TYPEINDEX};
+use crate::io::{
+    check_header, read_i32_at, read_i64_at, MAGIC_NODEDATA, MAGIC_NODEOFFSETS, MAGIC_TYPEINDEX,
+};
 use crate::metadata::{
     BranchComparison, ClassOverview, Comparisons, Metadata, MetadataError, Resources,
 };
@@ -71,7 +73,8 @@ pub const CONTROL_FLOW_KINDS: [&str; 7] = [
     "EXCEPTION",
     "RETURN",
 ];
-pub const RESOURCE_KINDS: [&str; 5] = ["OPENS", "LOADS", "BUNDLE_CANDIDATE", "LOOKUP", "ENUMERATES"];
+pub const RESOURCE_KINDS: [&str; 5] =
+    ["OPENS", "LOADS", "BUNDLE_CANDIDATE", "LOOKUP", "ENUMERATES"];
 pub const RESOURCE_REL_TYPES: [&str; 5] = [
     "RESOURCE_OPEN",
     "RESOURCE_LOAD",
@@ -94,7 +97,11 @@ pub struct Edge {
 impl Edge {
     #[inline]
     pub fn family(&self) -> EdgeFamily {
-        let f = if self.v2 { self.label & 0x3 } else { self.label & 0x7 };
+        let f = if self.v2 {
+            self.label & 0x3
+        } else {
+            self.label & 0x7
+        };
         match f {
             0 => EdgeFamily::DataFlow,
             1 => EdgeFamily::Call,
@@ -230,15 +237,16 @@ impl Graph {
         if nodedata.len() < 8 {
             return Err(GraphError::BadHeader("graph.nodedata"));
         }
-        let node_version =
-            check_header(read_i32_at(&nodedata, 0), MAGIC_NODEDATA).ok_or(GraphError::BadHeader("graph.nodedata"))?;
+        let node_version = check_header(read_i32_at(&nodedata, 0), MAGIC_NODEDATA)
+            .ok_or(GraphError::BadHeader("graph.nodedata"))?;
         if !(1..=3).contains(&node_version) {
             return Err(GraphError::BadVersion(node_version, "graph.nodedata"));
         }
         let node_count = read_i32_at(&nodedata, 4).max(0) as usize;
 
         let node_offsets = mmap(&dir.join("graph.nodeoffsets"))?;
-        check_header(read_i32_at(&node_offsets, 0), MAGIC_NODEOFFSETS).ok_or(GraphError::BadHeader("graph.nodeoffsets"))?;
+        check_header(read_i32_at(&node_offsets, 0), MAGIC_NODEOFFSETS)
+            .ok_or(GraphError::BadHeader("graph.nodeoffsets"))?;
         let node_capacity = read_i32_at(&node_offsets, 4).max(0) as usize;
 
         let type_index = load_type_index(&mmap(&dir.join("graph.typeindex"))?)?;
@@ -269,9 +277,12 @@ impl Graph {
         let content_identity = std::fs::read(dir.join("graph.callsite-string-content.identity"))
             .ok()
             .and_then(|b| <[u8; 32]>::try_from(b.as_slice()).ok());
-        let call_site_index =
-            crate::callsite_index::CallSiteStringIndex::load(&dir, strings.len(), content_identity.as_ref())
-                .map_err(|e| GraphError::CallSiteIndex(e.to_string()))?;
+        let call_site_index = crate::callsite_index::CallSiteStringIndex::load(
+            &dir,
+            strings.len(),
+            content_identity.as_ref(),
+        )
+        .map_err(|e| GraphError::CallSiteIndex(e.to_string()))?;
 
         Ok(Graph {
             dir,
@@ -373,7 +384,10 @@ impl Graph {
     /// Node ids with the given tag, in nodedata write order.
     #[inline]
     pub fn ids_by_tag(&self, tag: u8) -> &[NodeId] {
-        self.type_index.get(tag as usize).map(|v| v.as_slice()).unwrap_or(&[])
+        self.type_index
+            .get(tag as usize)
+            .map(|v| v.as_slice())
+            .unwrap_or(&[])
     }
 
     pub fn count_by_tag(&self, tag: u8) -> usize {
@@ -466,10 +480,17 @@ impl Graph {
 
     pub fn class_origin(&self, class: &str) -> Option<&str> {
         let i = self.strings.index_of(class)? as u32;
-        self.metadata.class_origin_index.get(&i).map(|&s| self.str(s))
+        self.metadata
+            .class_origin_index
+            .get(&i)
+            .map(|&s| self.str(s))
     }
 
-    pub fn enum_values(&self, enum_class: &str, enum_name: &str) -> Option<&[crate::node::AnyValue]> {
+    pub fn enum_values(
+        &self,
+        enum_class: &str,
+        enum_name: &str,
+    ) -> Option<&[crate::node::AnyValue]> {
         let key = format!("{enum_class}#{enum_name}");
         let i = self.strings.index_of(&key)? as u32;
         self.metadata
@@ -483,7 +504,8 @@ fn load_type_index(data: &[u8]) -> Result<Vec<Vec<NodeId>>, GraphError> {
     if data.len() < 8 {
         return Err(GraphError::BadHeader("graph.typeindex"));
     }
-    check_header(read_i32_at(data, 0), MAGIC_TYPEINDEX).ok_or(GraphError::BadHeader("graph.typeindex"))?;
+    check_header(read_i32_at(data, 0), MAGIC_TYPEINDEX)
+        .ok_or(GraphError::BadHeader("graph.typeindex"))?;
     let entries = read_i32_at(data, 4).max(0) as usize;
     let mut out: Vec<Vec<NodeId>> = vec![Vec::new(); TAG_COUNT];
     for i in 0..entries {

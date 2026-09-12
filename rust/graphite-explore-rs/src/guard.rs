@@ -136,7 +136,10 @@ impl CypherGuard {
     }
 
     /// Take a permit without waiting. Returns `Err` when at capacity.
-    pub fn try_acquire(&self, requested_timeout: Option<u64>) -> Result<QueryPermit, ConcurrencyLimit> {
+    pub fn try_acquire(
+        &self,
+        requested_timeout: Option<u64>,
+    ) -> Result<QueryPermit, ConcurrencyLimit> {
         match self.permits.clone().try_acquire_owned() {
             Ok(permit) => {
                 let timeout_millis = self.effective_timeout(requested_timeout);
@@ -204,8 +207,14 @@ mod tests {
     #[test]
     fn timeout_outranks_cancellation_when_classifying() {
         assert_eq!(Outcome::of(None), Outcome::Success);
-        assert_eq!(Outcome::of(Some(&CypherError::Timeout(5))), Outcome::Timeout);
-        assert_eq!(Outcome::of(Some(&CypherError::Cancelled)), Outcome::Cancelled);
+        assert_eq!(
+            Outcome::of(Some(&CypherError::Timeout(5))),
+            Outcome::Timeout
+        );
+        assert_eq!(
+            Outcome::of(Some(&CypherError::Cancelled)),
+            Outcome::Cancelled
+        );
         assert_eq!(
             Outcome::of(Some(&CypherError::Runtime("x".into()))),
             Outcome::Failed

@@ -106,7 +106,10 @@ pub fn materialize(v: &Value, ctx: &dyn GraphContext) -> J {
                     "graphId".into(),
                     J::String(ctx.graph_id(p.source).to_string()),
                 );
-                out.insert("length".into(), J::Number(Number::from(p.edges.len() as i64)));
+                out.insert(
+                    "length".into(),
+                    J::Number(Number::from(p.edges.len() as i64)),
+                );
                 out.insert("nodes".into(), J::Array(nodes));
                 out.insert("relationships".into(), J::Array(rels));
                 J::Object(out)

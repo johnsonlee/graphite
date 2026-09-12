@@ -58,7 +58,11 @@ pub fn build_model(g: &Graph, level: &str) -> J {
     let endpoints = crate::endpoints::extract_endpoints(g);
     let endpoint_classes: Vec<String> = endpoints
         .iter()
-        .filter_map(|e| e.get("class").and_then(|v| v.as_str()).map(|s| s.to_string()))
+        .filter_map(|e| {
+            e.get("class")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        })
         .collect();
     let mut endpoint_paths: indexmap::IndexMap<String, Vec<String>> = indexmap::IndexMap::new();
     for e in &endpoints {
@@ -66,7 +70,10 @@ pub fn build_model(g: &Graph, level: &str) -> J {
             e.get("class").and_then(|v| v.as_str()),
             e.get("path").and_then(|v| v.as_str()),
         ) {
-            endpoint_paths.entry(c.to_string()).or_default().push(p.to_string());
+            endpoint_paths
+                .entry(c.to_string())
+                .or_default()
+                .push(p.to_string());
         }
     }
 
@@ -119,7 +126,10 @@ pub fn build_model(g: &Graph, level: &str) -> J {
                 ("graphite.type", json!("person")),
                 ("graphite.kind", json!("actor")),
                 ("graphite.architectureType", json!("actor")),
-                ("graphite.responsibility", json!(subject.actor_responsibility)),
+                (
+                    "graphite.responsibility",
+                    json!(subject.actor_responsibility),
+                ),
             ]),
         ));
     }
@@ -147,7 +157,10 @@ pub fn build_model(g: &Graph, level: &str) -> J {
             props(vec![
                 ("graphite.type", json!("softwareSystem")),
                 ("graphite.kind", json!(d.kind.wire())),
-                ("graphite.architectureType", json!(d.kind.architecture_type())),
+                (
+                    "graphite.architectureType",
+                    json!(d.kind.architecture_type()),
+                ),
                 ("graphite.responsibility", json!(d.responsibility)),
             ]),
         ));
@@ -174,7 +187,10 @@ pub fn build_model(g: &Graph, level: &str) -> J {
                                 props(vec![
                                     ("graphite.type", json!("component")),
                                     ("graphite.kind", json!(ck)),
-                                    ("graphite.architectureType", json!(containers::architecture_type(&ck))),
+                                    (
+                                        "graphite.architectureType",
+                                        json!(containers::architecture_type(&ck)),
+                                    ),
                                     (
                                         "graphite.responsibility",
                                         json!(containers::infer_responsibility(
@@ -213,7 +229,10 @@ pub fn build_model(g: &Graph, level: &str) -> J {
                     props(vec![
                         ("graphite.type", json!("container")),
                         ("graphite.kind", json!(kind)),
-                        ("graphite.architectureType", json!(containers::architecture_type(&kind))),
+                        (
+                            "graphite.architectureType",
+                            json!(containers::architecture_type(&kind)),
+                        ),
                         (
                             "graphite.responsibility",
                             containers::operational_responsibility(&kind)

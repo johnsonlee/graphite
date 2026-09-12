@@ -20,11 +20,7 @@ use std::sync::Arc;
 const MIN_COLUMN_WIDTH: usize = 4;
 
 #[derive(Parser, Debug)]
-#[command(
-    name = "graphite",
-    about = "Build and query Graphite graphs",
-    version
-)]
+#[command(name = "graphite", about = "Build and query Graphite graphs", version)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -78,10 +74,14 @@ fn query(args: QueryArgs) -> Result<(), String> {
     }
     let executor = Executor::single("standalone", Arc::new(graph));
     // The Kotlin command calls `execute(query)` with no row cap, so neither does this.
-    let result = executor.execute(&args.query, None).map_err(|e| e.to_string())?;
+    let result = executor
+        .execute(&args.query, None)
+        .map_err(|e| e.to_string())?;
     let columns = &result.columns;
     let value = |row: &graphite_cypher::engine::Row, col: &str| {
-        row.get(col).cloned().unwrap_or(graphite_cypher::value::Value::Null)
+        row.get(col)
+            .cloned()
+            .unwrap_or(graphite_cypher::value::Value::Null)
     };
 
     // An unrecognised format falls through to the table, as the `when` branch does.
@@ -99,7 +99,10 @@ fn query(args: QueryArgs) -> Result<(), String> {
                 })
                 .collect();
             let mut out = Map::new();
-            out.insert("columns".into(), J::Array(columns.iter().map(|c| J::String(c.clone())).collect()));
+            out.insert(
+                "columns".into(),
+                J::Array(columns.iter().map(|c| J::String(c.clone())).collect()),
+            );
             out.insert("rowCount".into(), J::Number(result.rows.len().into()));
             // Gson writes the map in insertion order: columns, rows, rowCount.
             let mut ordered = Map::new();

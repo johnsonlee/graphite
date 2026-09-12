@@ -134,7 +134,10 @@ mod tests {
     }
     impl W {
         fn new() -> Self {
-            Self { bytes: vec![], nbits: 0 }
+            Self {
+                bytes: vec![],
+                nbits: 0,
+            }
         }
         fn bit(&mut self, b: u64) {
             if self.nbits % 8 == 0 {
@@ -179,7 +182,19 @@ mod tests {
 
     #[test]
     fn roundtrip_codes() {
-        let vals = [0u64, 1, 2, 3, 7, 8, 100, 1000, 65535, 1 << 20, (1 << 33) + 5];
+        let vals = [
+            0u64,
+            1,
+            2,
+            3,
+            7,
+            8,
+            100,
+            1000,
+            65535,
+            1 << 20,
+            (1 << 33) + 5,
+        ];
         let mut w = W::new();
         for &v in &vals {
             w.gamma(v);
