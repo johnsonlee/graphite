@@ -76,6 +76,53 @@ That is evidence about cross-graph query results on `/api/cypher`, and nothing e
 boundary of what has and has not been differentially tested is set out in
 [What the parity suite covers, and what it does not](rust-explorer-parity-and-latency.md#what-the-parity-suite-covers-and-what-it-does-not).
 
+## Why P50 does not reach 10x, and what would have to change
+
+P95 clears 10x; P50 does not, and it is worth writing down why rather than leaving it as
+an open task. The reason is measurable and it is not the query engine.
+
+The `/metrics` histogram times only the engine — the `spawn_blocking` body — so a request
+can be split into engine and everything-else by bracketing it with two scrapes. Over the
+170-query backtest population, paired per request:
+
+| | |
+|---|---:|
+| P50 total | 2.18 ms |
+| P50 engine | 1.51 ms |
+| P50 outside the engine | 0.63 ms |
+| P50 response body | 63.5 KB |
+
+The median request is a `wide-or` returning 200 rows — about 75 KB of pretty-printed
+JSON. Measured against body size, the response path costs roughly **8.8 µs/KB**, so that
+body alone is about **0.66 ms** to serialize and write. An empty response
+(`RETURN 1`, 0.2 KB) costs 0.19 ms, which is the HTTP round trip and is not going
+anywhere.
+
+Kotlin's P50 on this corpus is 6.6 ms, so 10x means **0.66 ms total**. The median
+query's response body already costs that much on its own, before the engine plans a
+single graph — and the engine needs 0.88 ms just to prune and plan 64 graphs for a dense
+term before producing one row.
+
+So the target is not reachable by making the engine faster. It would need one of:
+
+* **A smaller response.** Dropping pretty-printing would cut the body roughly threefold,
+  but the baseline pretty-prints (Gson `setPrettyPrinting`), so this breaks byte parity
+  on every Cypher route. Returning fewer rows breaks the query's semantics.
+* **A cross-request cache** of resolved dictionary entries or whole results. The baseline
+  has one, which is why repeating an identical query set makes it look much faster than
+  it is — an earlier round of this work was misled by exactly that and the benchmark now
+  warms on a different seed deliberately. Introducing one here would be measuring a
+  cache, not an engine, and the comparison would have to be redone warm on both sides to
+  mean anything.
+* **A different index.** The remaining engine cost concentrates in the graphs that
+  actually contain the term — about 284 µs each — not in the 64-graph fan-out, which
+  pruning has already made nearly free for a miss (≈11 µs).
+
+What has been done instead is to take the reducible parts: the response path is down 41%
+(one-pass serialization), the WHERE re-check is skipped where the pushdown answer is
+exact, and a disjunction's postings are merged lazily rather than materialized. P50 on
+the backtest sits at 2.3–2.4 ms against Kotlin's 6.6 ms, about 2.9x.
+
 ## What changed
 
 The port already read the same graph directory as the Kotlin server, but it ignored a
