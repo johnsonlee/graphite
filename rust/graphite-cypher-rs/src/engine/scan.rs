@@ -138,6 +138,8 @@ struct SourcePlan {
     /// `Some(empty)` is the case that matters most across many graphs: the term reaches
     /// nothing here, so this graph contributes no CallSite work at all.
     call_site_candidates: Option<Vec<u32>>,
+    /// No Annotation node can satisfy the clause, so that tag is skipped.
+    skip_annotations: bool,
     /// No pre-filter could be built, so every record must reach the WHERE re-check.
     ///
     /// This is distinct from an empty plan. A `SourcePlan` whose bitsets are all `None`
@@ -241,7 +243,10 @@ impl ScanPlan {
                     self.tags
                         .iter()
                         .copied()
-                        .filter(|t| *t == TAG_CALL_SITE_NODE || *t == TAG_ANNOTATION_NODE)
+                        .filter(|t| {
+                            *t == TAG_CALL_SITE_NODE
+                                || (*t == TAG_ANNOTATION_NODE && !sp.skip_annotations)
+                        })
                         .collect()
                 } else {
                     self.tags.clone()
@@ -384,12 +389,23 @@ fn build_source_plan(
     preds: &[StringPredicate],
 ) -> SourcePlan {
     let call_site_only = preds.iter().all(|p| CALL_SITE_PROPS.contains(&p.property));
+    // An Annotation node exposes `name`, `class`, `member` and `values`, and then any
+    // key its own value pairs carry. A CallSite property name therefore reaches one only
+    // if that exact name exists in the graph's dictionary as a value-pair key — which for
+    // names like `caller_class` it essentially never does. Four binary searches settle
+    // whether the whole tag can be skipped, instead of decoding every annotation record
+    // to find out that none of them match.
+    let skip_annotations = call_site_only
+        && !preds
+            .iter()
+            .any(|p| graph.strings.index_of(p.property).is_some());
     let pruned = |candidates: Vec<u32>| SourcePlan {
         source,
         call_site: [None, None, None, None],
         call_site_only,
         call_site_candidates: Some(candidates),
         no_prefilter: false,
+        skip_annotations,
     };
     if let Some(idx) = usable_index(graph) {
         let mut memo: Vec<(StringPredicate, Vec<u32>)> = Vec::new();
@@ -415,9 +431,10 @@ fn build_source_plan(
             call_site_only: false,
             call_site_candidates: None,
             no_prefilter: true,
+            skip_annotations,
         };
     }
-    build_sweep_plan(source, graph, preds, call_site_only)
+    build_sweep_plan(source, graph, preds, call_site_only, skip_annotations)
 }
 
 /// Resolve CallSite candidates through `graph.callsite-string-index`.
@@ -675,6 +692,7 @@ fn build_sweep_plan(
     graph: &Graph,
     preds: &[StringPredicate],
     call_site_only: bool,
+    skip_annotations: bool,
 ) -> SourcePlan {
     let n = graph.strings.len();
     // Group predicates by property once, then make a single pass over the dictionary.
@@ -783,6 +801,7 @@ fn build_sweep_plan(
             call_site_only,
             call_site_candidates: Some(Vec::new()),
             no_prefilter: false,
+            skip_annotations,
         };
     }
     SourcePlan {
@@ -791,6 +810,7 @@ fn build_sweep_plan(
         call_site_only,
         call_site_candidates: None,
         no_prefilter: false,
+        skip_annotations,
     }
 }
 
