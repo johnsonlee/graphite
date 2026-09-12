@@ -115,6 +115,10 @@ QUERIES = [
     "MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS c ORDER BY c DESC LIMIT 10",
     "MATCH (n:IntConstant) RETURN count(n)",
     "MATCH (n) RETURN count(*)",
+    # A count over a broad predicate: the shape whose per-row input used to be a copy
+    # of the whole row, and the one that could exhaust memory on a large graph.
+    'MATCH (n) WHERE n.caller_class CONTAINS "a" OR n.callee_name CONTAINS "get" RETURN count(*)',
+    'MATCH (n) WHERE n.caller_class CONTAINS "a" RETURN count(*) AS total, count(DISTINCT n.callee_class) AS classes',
     "MATCH (n:Method) RETURN count(*)",
     "MATCH (n:NoSuchLabel) RETURN count(*)",
     "MATCH (n) WHERE n.callee_class CONTAINS 'javalin' RETURN n.callee_class, n.callee_name LIMIT 20",

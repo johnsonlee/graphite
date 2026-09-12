@@ -7,6 +7,14 @@ use graphite_explore::routes::{router, AppState};
 use std::path::PathBuf;
 use std::sync::Arc;
 
+/// Row production is thousands of small, short-lived allocations per request -- a row
+/// map, a key per column, a string per value -- and the system allocator's per-call
+/// cost shows up directly in P50. jemalloc's thread-local caches make those close to
+/// free, and it also returns memory to the OS on a schedule rather than on a whim,
+/// which matters for a process holding sixty-four memory-mapped graphs.
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const DEFAULT_PORT: u16 = 8080;
 

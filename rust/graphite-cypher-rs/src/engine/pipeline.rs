@@ -451,12 +451,7 @@ impl Executor {
                 for (ai, agg) in plan.aggs.iter().enumerate() {
                     let v = match &agg.arg {
                         Some(e) => ev.eval(e, &row)?,
-                        None => Value::map(
-                            row.iter()
-                                .filter(|(k, _)| !is_internal_key(k))
-                                .map(|(k, v)| (k.clone(), v.clone()))
-                                .collect(),
-                        ),
+                        None => star_input(agg, &row),
                     };
                     acc.agg_inputs[ai].push(v);
                 }
@@ -884,7 +879,9 @@ fn project_row(
     distinct: bool,
     columns: &mut Vec<String>,
 ) -> CypherResult<Row> {
-    let mut out = Row::new();
+    // Sized up front: a row holds every column plus its provenance, and an `IndexMap`
+    // that starts empty reallocates its table and its entries twice on the way there.
+    let mut out = Row::with_capacity(names.len().max(row.len()) + 1);
     match items {
         None => {
             for (k, v) in row.iter() {
@@ -1057,6 +1054,26 @@ fn rewrite_aggs(e: &Expr, aggs: &mut Vec<AggCall>) -> Expr {
     }
 }
 
+/// The per-row input of an aggregate called on `*`.
+///
+/// `count(*)` only ever counts non-null inputs, so what the input *is* does not matter
+/// -- and it was a copy of the whole row, kept alive per row until the group was
+/// finalised. Over a million matching records that was gigabytes of maps built to be
+/// counted and thrown away, and the reason `RETURN count(*)` over a broad predicate was
+/// the one query shape that could take the server down. A constant counts the same.
+/// Anything else called on `*` still sees the row, since it may look inside it.
+fn star_input(agg: &AggCall, row: &Row) -> Value {
+    if agg.name.eq_ignore_ascii_case("count") && !agg.distinct {
+        return Value::Bool(true);
+    }
+    Value::map(
+        row.iter()
+            .filter(|(k, _)| !is_internal_key(k))
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
+    )
+}
+
 struct GroupAcc {
     first_row: Row,
     group_values: Vec<Value>,
@@ -1184,12 +1201,7 @@ fn project(
             for (ai, agg) in plan.aggs.iter().enumerate() {
                 let v = match &agg.arg {
                     Some(e) => ev.eval(e, &row)?,
-                    None => Value::map(
-                        row.iter()
-                            .filter(|(k, _)| !is_internal_key(k))
-                            .map(|(k, v)| (k.clone(), v.clone()))
-                            .collect(),
-                    ),
+                    None => star_input(agg, &row),
                 };
                 acc.agg_inputs[ai].push(v);
             }

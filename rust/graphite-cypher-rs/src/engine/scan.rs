@@ -307,7 +307,21 @@ impl ScanPlan {
         let sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx)
             .filter(|s| may_match(ex.graph(*s), &self.tree))
             .collect();
-        for batch in sources.chunks(PLAN_BATCH) {
+        // Batches start at one graph per thread and double from there. A satisfied
+        // LIMIT usually lands in the first batch, and a dense term costs real planning
+        // per graph, so a first batch of sixteen on four cores meant four graphs
+        // planned serially per core before a single row could be produced -- half a
+        // millisecond on a query that then took one graph's rows and stopped.
+        let mut batches: Vec<&[SourceIdx]> = Vec::new();
+        let mut rest = sources.as_slice();
+        let mut size = rayon::current_num_threads().clamp(1, PLAN_BATCH);
+        while !rest.is_empty() {
+            let (head, tail) = rest.split_at(size.min(rest.len()));
+            batches.push(head);
+            rest = tail;
+            size = (size * 2).min(PLAN_BATCH);
+        }
+        for batch in batches {
             ex.cancel.check()?;
             let plans: Vec<SourcePlan> = if batch.len() > 1 {
                 batch
@@ -377,6 +391,10 @@ impl ScanPlan {
                     let mut hits: Vec<u32> = Vec::new();
                     let mut merged: Vec<u32> = Vec::new();
                     let mut offset = 0usize;
+                    // The merge is pulled a chunk at a time; the first chunk is small and
+                    // each one doubles. Pulling a full sweep chunk first meant merging
+                    // sixty-five thousand ids to satisfy a LIMIT of two hundred.
+                    let mut want = MERGE_FIRST_CHUNK;
                     loop {
                         let chunk: &[u32] = match slice {
                             Some(ids) => {
@@ -390,9 +408,10 @@ impl ScanPlan {
                             }
                             None => {
                                 match merge.as_mut() {
-                                    Some(m) => m.next_chunk(SWEEP_CHUNK, &mut merged),
+                                    Some(m) => m.next_chunk(want, &mut merged),
                                     None => break,
                                 }
+                                want = (want * 2).min(SWEEP_CHUNK);
                                 if merged.is_empty() {
                                     break;
                                 }
@@ -442,6 +461,8 @@ const PLAN_BATCH: usize = 16;
 
 /// Candidates are examined in chunks this large, so a satisfied LIMIT stops the sweep.
 const SWEEP_CHUNK: usize = 65_536;
+/// The lazy merge's first chunk; each following chunk doubles, up to `SWEEP_CHUNK`.
+const MERGE_FIRST_CHUNK: usize = 256;
 
 /// Raw sweep of CallSite records against the string-id bitsets, appending hits to `out`.
 fn sweep_call_sites(graph: &Graph, ids: &[u32], sp: &SourcePlan, out: &mut Vec<u32>) {

@@ -26,3 +26,4 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 uuid = { version = "1", features = ["v4"] }
 chrono = "0.4"
+tikv-jemallocator = "0.5"

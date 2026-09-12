@@ -97,6 +97,9 @@ impl CancelToken {
     }
 }
 
+/// Source of executor epochs; see `Executor::node`.
+static EPOCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
 pub struct Executor {
     pub sources: Vec<Source>,
     /// Cross-graph (qualified) mode.
@@ -105,7 +108,9 @@ pub struct Executor {
     pub cancel: Arc<CancelToken>,
     /// Kotlin `graphSourceScopeApplied`: sources were explicitly selected (affects nothing observable but kept).
     pub scoped: bool,
-    node_cache: Mutex<Option<(NodeRef, Arc<Node>)>>,
+    /// Distinguishes this executor's cached node decodes from any earlier executor's
+    /// on the same thread. Monotonic, so it never repeats the way an address can.
+    epoch: u64,
     poll: AtomicU64,
 }
 
@@ -127,7 +132,7 @@ impl Executor {
             params: IndexMap::new(),
             cancel: CancelToken::new(),
             scoped: false,
-            node_cache: Mutex::new(None),
+            epoch: EPOCH.fetch_add(1, Ordering::Relaxed),
             poll: AtomicU64::new(0),
         }
     }
@@ -147,18 +152,33 @@ impl Executor {
         &self.sources[source as usize].graph
     }
 
-    /// Decode a node with a one-entry cache (property projections hit the same node repeatedly).
+    /// Decode a node with a one-entry cache: a projection reads several properties of
+    /// the same node in a row, and decoding it once per property was most of the cost
+    /// of a wide `RETURN`.
+    ///
+    /// The cache is per thread, not per executor. Row production is serial on one
+    /// thread, and the planners on the other threads never read node properties, so a
+    /// shared slot behind a mutex bought nothing and cost two lock round trips per
+    /// property read. The executor's epoch is part of the key so a slot left behind by
+    /// an earlier query on this thread can never answer for a different executor --
+    /// an address could be reused by a later executor over a reloaded graph, an epoch
+    /// cannot.
     pub fn node(&self, r: NodeRef) -> Option<Arc<Node>> {
-        {
-            let c = self.node_cache.lock();
-            if let Some((k, n)) = c.as_ref() {
-                if *k == r {
-                    return Some(n.clone());
-                }
-            }
+        thread_local! {
+            static NODE: std::cell::RefCell<Option<(u64, NodeRef, Arc<Node>)>> =
+                const { std::cell::RefCell::new(None) };
+        }
+        let me = self.epoch;
+        if let Some(hit) = NODE.with(|c| {
+            c.borrow()
+                .as_ref()
+                .filter(|(owner, k, _)| *owner == me && *k == r)
+                .map(|(_, _, n)| n.clone())
+        }) {
+            return Some(hit);
         }
         let n = Arc::new(self.graph(r.source).node(r.id)?);
-        *self.node_cache.lock() = Some((r, n.clone()));
+        NODE.with(|c| *c.borrow_mut() = Some((me, r, n.clone())));
         Some(n)
     }
 
