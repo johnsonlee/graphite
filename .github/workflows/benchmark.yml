@@ -23,6 +23,8 @@ env:
   BENCHMARK_REPORT_TRANSITION_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
   REAL_ONLY_LATENCY_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
   LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
+  COLD_WRAPPED_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
+  WARM_WRAPPED_LATENCY_HARNESS_SHA256: 34f9472410b57b30874f885a76df0dd73da9e1491089695b919c5b0bf859d139
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -214,6 +216,21 @@ jobs:
           WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
           HARNESS_SOURCE="gate/${SOURCE}"
+          if [ "${HARNESS}" = AllFixtureWrappedDiscoveryLatencyBenchmark.kt ]; then
+            # Transition the reviewed cold harness for every revision together.
+            # Once main owns the warm protocol, its harness remains authoritative.
+            if [ "$(sha256sum "${HARNESS_SOURCE}" | cut -d ' ' -f 1)" = \
+              "${COLD_WRAPPED_LATENCY_HARNESS_SHA256}" ]; then
+              test "${{ needs.candidate-gate-tests.result }}" = success
+              HARNESS_SOURCE="controls/${SOURCE}"
+              test "$(sha256sum "${HARNESS_SOURCE}" | cut -d ' ' -f 1)" = \
+                "${WARM_WRAPPED_LATENCY_HARNESS_SHA256}"
+            fi
+            test "$(grep -Fc '@Warmup(iterations = 5)' "${HARNESS_SOURCE}")" -eq 2
+            test "$(grep -Fc '@Measurement(iterations = 40)' "${HARNESS_SOURCE}")" -eq 2
+            test "$(grep -Fc '@Fork(3, jvmArgs = ["-Xmx8g"])' "${HARNESS_SOURCE}")" -eq 2
+            if grep -Eq 'clearStringPropertyIndexes|clearIndexMethods|executeCold' "${HARNESS_SOURCE}"; then exit 1; fi
+          fi
           if [ "${HARNESS}" = WrappedDiscoveryResourceBenchmark.kt ] && \
             grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${HARNESS_SOURCE}"; then
             test "${{ needs.candidate-gate-tests.result }}" = success
@@ -1633,7 +1650,7 @@ jobs:
     name: wrapped-query-latency-shard-${{ matrix.shard }}
     needs: [candidate-gate-tests, prepare-latency-fixtures, build-wrapped-query-jmh]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:

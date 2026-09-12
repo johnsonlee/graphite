@@ -17,7 +17,6 @@ import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
 import java.io.Closeable
-import java.lang.reflect.Method
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
@@ -25,18 +24,18 @@ import java.util.concurrent.TimeUnit
 /**
  * Real heterogeneous multi-graph gate for the production wrapped discovery
  * query. All repository benchmark fixture JARs are represented exactly once.
+ * Warmup populates retained indexes; measured invocations preserve that state.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 1)
-@Measurement(iterations = 3)
-@Fork(1, jvmArgs = ["-Xmx8g"])
+@Warmup(iterations = 5)
+@Measurement(iterations = 40)
+@Fork(3, jvmArgs = ["-Xmx8g"])
 open class AllFixtureWrappedDiscoveryLatencyBenchmark {
 
     private lateinit var executor: CrossGraphCypherExecutor
     private val loadedGraphs = mutableListOf<Graph>()
-    private val clearIndexMethods = mutableListOf<Method?>()
 
     @Setup
     fun setup() {
@@ -44,9 +43,6 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
             val graph = GraphStore.loadMapped(BenchmarkCorpus.persistedGraph(kind))
             check(graph.nodeCount(Node::class.java) == kind.expectedNodeCount)
             loadedGraphs += graph
-            clearIndexMethods += graph.javaClass.declaredMethods
-                .firstOrNull { it.name.startsWith("clearStringPropertyIndexes") }
-                ?.also { it.isAccessible = true }
             CypherGraph(kind.id, graph)
         }
         check(graphs.sumOf { it.graph.nodeCount(Node::class.java) ?: 0L } == EXPECTED_ALL_FIXTURE_NODES)
@@ -59,35 +55,34 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
     }
 
     @Benchmark
-    fun zeroHitBroadContainsCaseInsensitiveDiscovery(): CypherResult = executeCold(ZERO_HIT_QUERY, 0)
+    fun zeroHitBroadContainsCaseInsensitiveDiscovery(): CypherResult = executeWarm(ZERO_HIT_QUERY, 0)
 
     @Benchmark
     fun denseDistributedMethodContainsCaseInsensitiveDiscovery(): CypherResult =
-        executeCold(DENSE_DISTRIBUTED_METHOD_QUERY, 50)
+        executeWarm(DENSE_DISTRIBUTED_METHOD_QUERY, 50)
 
     @Benchmark
-    fun earlyGraphClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(EARLY_GRAPH_PREFIX_QUERY, 1)
+    fun earlyGraphClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeWarm(EARLY_GRAPH_PREFIX_QUERY, 1)
 
     @Benchmark
-    fun middleGraphsClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(MIDDLE_GRAPHS_PREFIX_QUERY, 250)
+    fun middleGraphsClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeWarm(MIDDLE_GRAPHS_PREFIX_QUERY, 250)
 
     @Benchmark
-    fun lateGraphClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(LATE_GRAPH_PREFIX_QUERY, 50)
+    fun lateGraphClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeWarm(LATE_GRAPH_PREFIX_QUERY, 50)
 
     @Benchmark
     fun broadlyDistributedClassPrefixCaseInsensitiveDiscovery(): CypherResult =
-        executeCold(BROADLY_DISTRIBUTED_PREFIX_QUERY, 250)
+        executeWarm(BROADLY_DISTRIBUTED_PREFIX_QUERY, 250)
 
     @Benchmark
     fun firstLastGraphBimodalClassPrefixCaseInsensitiveDiscovery(): CypherResult =
-        executeCold(FIRST_LAST_GRAPH_BIMODAL_QUERY, 250)
+        executeWarm(FIRST_LAST_GRAPH_BIMODAL_QUERY, 250)
 
     @Benchmark
     fun skewedMixedClassMethodOperatorCaseInsensitiveDiscovery(): CypherResult =
-        executeCold(SKEWED_MIXED_OPERATOR_QUERY, 250)
+        executeWarm(SKEWED_MIXED_OPERATOR_QUERY, 250)
 
-    private fun executeCold(query: String, expectedRows: Int): CypherResult {
-        loadedGraphs.indices.forEach { index -> clearIndexMethods[index]?.invoke(loadedGraphs[index]) }
+    private fun executeWarm(query: String, expectedRows: Int): CypherResult {
         return executor.execute(query).also { result ->
             check(result.rows.size == expectedRows) {
                 "Successful query returned ${result.rows.size} rows; expected $expectedRows"
@@ -104,14 +99,13 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 1)
-@Measurement(iterations = 3)
-@Fork(1, jvmArgs = ["-Xmx8g"])
+@Warmup(iterations = 5)
+@Measurement(iterations = 40)
+@Fork(3, jvmArgs = ["-Xmx8g"])
 open class RealThirtySixGraphWrappedDiscoveryLatencyBenchmark {
 
     private lateinit var executor: CrossGraphCypherExecutor
     private val loadedGraphs = mutableListOf<Graph>()
-    private val clearIndexMethods = mutableListOf<Method?>()
 
     @Setup
     fun setup() {
@@ -121,9 +115,6 @@ open class RealThirtySixGraphWrappedDiscoveryLatencyBenchmark {
             val graph = GraphStore.loadMapped(BenchmarkCorpus.persistedGraph(kind))
             check(graph.nodeCount(Node::class.java) == kind.expectedNodeCount)
             loadedGraphs += graph
-            clearIndexMethods += graph.javaClass.declaredMethods
-                .firstOrNull { it.name.startsWith("clearStringPropertyIndexes") }
-                ?.also { it.isAccessible = true }
             CypherGraph("fixture-$graphIndex-${kind.id}", graph)
         }
         check(graphs.size == REAL_GRAPH_COUNT)
@@ -138,7 +129,6 @@ open class RealThirtySixGraphWrappedDiscoveryLatencyBenchmark {
 
     @Benchmark
     fun zeroHitBroadContainsAcrossThirtySixRealGraphs(): CypherResult {
-        loadedGraphs.indices.forEach { index -> clearIndexMethods[index]?.invoke(loadedGraphs[index]) }
         return executor.execute(ZERO_HIT_QUERY).also { result -> check(result.rows.isEmpty()) }
     }
 

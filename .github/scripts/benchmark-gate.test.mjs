@@ -3464,6 +3464,76 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.doesNotMatch(fixturePreparation, /:webgraph:jmhJar/);
 });
 
+test("historical known-bad diagnostics keep a bounded identical sample budget without overriding PR gates", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark-historical-latency.yml", import.meta.url), "utf8");
+    const prWorkflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    assert.match(workflow, /^  HISTORICAL_JMH_ITERATIONS: -wi 1 -i 3 -f 1$/m);
+    assert.equal((workflow.match(/read -r -a HISTORICAL_ARGS <<< "\$\{HISTORICAL_JMH_ITERATIONS\}"/g) ?? []).length, 2);
+    const commands = [...workflow.matchAll(/java -jar jmh-jars\/(fixed|current)\/[^\n]+\n([^\n]+)/g)];
+    assert.deepEqual(commands.map((match) => match[1]), ["fixed", "current", "current", "fixed"]);
+    for (const command of commands) {
+        assert.ok(command[2].includes('"${HISTORICAL_ARGS[@]}"'));
+    }
+    assert.doesNotMatch(prWorkflow, /HISTORICAL_JMH_ITERATIONS|HISTORICAL_ARGS/);
+});
+
+test("wrapped latency uses a warmed protocol and overlays it identically with a pinned transition", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const source = "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt";
+    const harness = fs.readFileSync(new URL(`../../${source}`, import.meta.url), "utf8");
+    const digest = (text) => crypto.createHash("sha256").update(text).digest("hex");
+    const pinnedWarm = workflow.match(/WARM_WRAPPED_LATENCY_HARNESS_SHA256: ([a-f0-9]{64})/)[1];
+    assert.equal(digest(harness), pinnedWarm, "transition must pin the actual warmed harness");
+    assert.equal((harness.match(/@Warmup\(iterations = 5\)/g) ?? []).length, 2);
+    assert.equal((harness.match(/@Measurement\(iterations = 40\)/g) ?? []).length, 2);
+    assert.equal((harness.match(/@Fork\(3, jvmArgs = \["-Xmx8g"\]\)/g) ?? []).length, 2);
+    assert.doesNotMatch(harness, /clearStringPropertyIndexes|clearIndexMethods|executeCold/);
+    assert.match(harness, /internal object AllFixtureBenchmarkQueryCorrectness/);
+    const begin = workflow.indexOf('          if [ "${HARNESS}" = AllFixtureWrappedDiscoveryLatencyBenchmark.kt ]; then');
+    const end = workflow.indexOf('          if [ "${HARNESS}" = WrappedDiscoveryResourceBenchmark.kt ]', begin);
+    assert.ok(begin > 0 && end > begin);
+    const transition = workflow.slice(begin, end).replace(/\$\{\{ needs.candidate-gate-tests.result \}\}/g, "$GATE_TEST_RESULT");
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "wrapped-warm-overlay-"));
+    // These fixtures exercise the actual shell transition, including its trust decisions.
+    const coldFixture = "@Warmup(iterations = 1)\nclearStringPropertyIndexes\n";
+    try {
+        for (const revision of ["reference", "base", "candidate"]) {
+            const run = (baseHarness, candidateHarness, gateResult = "success") => {
+                for (const [root, contents] of [["gate", baseHarness], ["controls", candidateHarness]]) {
+                    const file = path.join(directory, root, source);
+                    fs.mkdirSync(path.dirname(file), { recursive: true });
+                    fs.writeFileSync(file, contents);
+                }
+                return spawnSync("bash", ["-euc", `${transition}\nprintf '%s' "$HARNESS_SOURCE"`], {
+                    cwd: directory,
+                    encoding: "utf8",
+                    env: {
+                        ...process.env,
+                        HARNESS: "AllFixtureWrappedDiscoveryLatencyBenchmark.kt",
+                        SOURCE: source,
+                        HARNESS_SOURCE: `gate/${source}`,
+                        COLD_WRAPPED_LATENCY_HARNESS_SHA256: digest(coldFixture),
+                        WARM_WRAPPED_LATENCY_HARNESS_SHA256: pinnedWarm,
+                        GATE_TEST_RESULT: gateResult,
+                        REVISION: revision,
+                    },
+                });
+            };
+            const migrated = run(coldFixture, harness);
+            assert.equal(migrated.status, 0, migrated.stderr);
+            assert.equal(migrated.stdout, `controls/${source}`);
+            const futureBase = run(`${harness}\n// New trusted base revision.\n`, "untrusted candidate");
+            assert.equal(futureBase.status, 0, futureBase.stderr);
+            assert.equal(futureBase.stdout, `gate/${source}`);
+            assert.notEqual(run(coldFixture, `${harness}\n// Tampered candidate.\n`).status, 0);
+            assert.notEqual(run(coldFixture, harness, "failure").status, 0);
+            assert.notEqual(run(`${coldFixture}unknown`, harness).status, 0);
+        }
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
 test("latency workflow transitions when base has the anchor command but lacks point-estimate enforcement", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const start = workflow.indexOf("    - name: Enforce known-good anchor and current-base regression gate");
