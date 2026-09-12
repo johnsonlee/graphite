@@ -495,7 +495,18 @@ impl Executor {
         // row to merge provenance into by scanning `out` is linear, and it runs once per
         // duplicate — quadratic on the shape that produces duplicates by the million.
         let mut seen: std::collections::HashMap<Vec<Key>, usize> = std::collections::HashMap::new();
-        let needs_all = shape.order.is_some();
+        // A cross-graph DISTINCT cannot stop when it has enough rows. Each row carries the
+        // set of graphs it was seen in, and a graph reached after the limit can still hold
+        // a duplicate of a row already emitted — which belongs in that row's provenance.
+        // The baseline keeps scanning for exactly this reason; stopping early produced
+        // rows identical in every visible column but missing a contributing graph.
+        let distinct_provenance = shape.distinct && self.cross;
+        // Provenance completion runs as a targeted second pass where it can, so the
+        // first pass may stop at the limit like any other.
+        let targeted = distinct_provenance
+            .then(|| provenance_property(items))
+            .flatten();
+        let needs_all = shape.order.is_some() || (distinct_provenance && targeted.is_none());
         let mut consume = |row: Row| -> CypherResult<bool> {
             let projected = project_row(
                 ev,
@@ -513,6 +524,11 @@ impl Executor {
                         return Ok(true);
                     }
                     None => {
+                        // Past the limit the scan continues only to complete provenance,
+                        // so further distinct rows are not collected.
+                        if distinct_provenance && budget.is_some_and(|b| out.len() >= b) {
+                            return Ok(true);
+                        }
                         seen.insert(k, out.len());
                     }
                 }
@@ -527,6 +543,7 @@ impl Executor {
             }
             Ok(true)
         };
+        let seeds: Vec<Row> = rows.clone();
         for r in rows {
             let cont = self.stream_match(
                 matcher,
@@ -539,6 +556,51 @@ impl Executor {
             )?;
             if !cont {
                 break;
+            }
+        }
+        drop(consume);
+
+        // Second pass: complete the provenance of the rows already chosen.
+        //
+        // A cross-graph DISTINCT row carries the graphs it was seen in, and a graph
+        // reached after the limit can still hold a duplicate of a row already emitted.
+        // Scanning on to find those costs as much as the query itself. Instead the rows
+        // are now known, so their values become the filter: `<property> = one of these`
+        // is a disjunction of equalities, which the pushdown answers by binary search in
+        // each dictionary and an intersection with the original predicate. Nothing new is
+        // collected -- only the provenance of what is already there is merged.
+        if let Some((column, property, variable)) = targeted {
+            if let Some(filter) = selected_value_filter(&out, &column, &property, &variable) {
+                let combined = match shape.where_clause.clone() {
+                    Some(w) => Expr::And(Box::new(w), Box::new(filter)),
+                    None => filter,
+                };
+                let scan2 = super::scan::ScanPlan::build(patterns, Some(&combined));
+                let mut merge = |row: Row| -> CypherResult<bool> {
+                    let projected = project_row(
+                        ev,
+                        &row,
+                        items,
+                        shape.order.as_deref(),
+                        shape.distinct,
+                        &mut columns,
+                    )?;
+                    if let Some(&at) = seen.get(&visible_key(&projected)) {
+                        merge_provenance(&mut out[at], &projected);
+                    }
+                    Ok(true)
+                };
+                for r in &seeds {
+                    self.stream_match(
+                        matcher,
+                        ev,
+                        r,
+                        patterns,
+                        Some(&combined),
+                        &scan2,
+                        &mut merge,
+                    )?;
+                }
             }
         }
         finish_fused(ev, columns, out, shape)
@@ -1175,4 +1237,59 @@ fn order_rows(ev: &Evaluator, rows: Vec<Row>, items: &[OrderItem]) -> CypherResu
         Ordering::Equal
     });
     Ok(keyed.into_iter().map(|(_, r)| r).collect())
+}
+
+/// The projected column a provenance second pass can filter on: the first item that is
+/// a plain `<variable>.<property>`, with its output column name.
+///
+/// Anything else — a function, a literal, an expression — cannot be turned back into a
+/// predicate over the graph, and those queries complete provenance by scanning instead.
+fn provenance_property(items: Option<&[ReturnItem]>) -> Option<(String, String, String)> {
+    for it in items? {
+        if let Expr::Property { expr, key } = &it.expr {
+            if let Expr::Variable(v) = expr.as_ref() {
+                let column = it
+                    .alias
+                    .clone()
+                    .unwrap_or_else(|| to_cypher_string(&it.expr));
+                return Some((column, key.clone(), v.clone()));
+            }
+        }
+    }
+    None
+}
+
+/// `<variable>.<property> = v1 OR ... = vn` over the distinct values already selected.
+///
+/// `None` when a selected row has no string there: the filter would then exclude rows
+/// whose provenance still needs completing, and a wrong answer is not worth the speed.
+fn selected_value_filter(
+    out: &[Row],
+    column: &str,
+    property: &str,
+    variable: &str,
+) -> Option<Expr> {
+    let mut values: Vec<String> = Vec::with_capacity(out.len());
+    let mut seen: std::collections::HashSet<&str> = std::collections::HashSet::new();
+    for row in out {
+        match row.get(column) {
+            Some(Value::Str(s)) => {
+                if seen.insert(s.as_ref()) {
+                    values.push(s.to_string());
+                }
+            }
+            _ => return None,
+        }
+    }
+    let property_expr = Expr::Property {
+        expr: Box::new(Expr::Variable(variable.to_string())),
+        key: property.to_string(),
+    };
+    let mut iter = values.into_iter().map(|v| Expr::Comparison {
+        op: crate::ast::CmpOp::Eq,
+        left: Box::new(property_expr.clone()),
+        right: Box::new(Expr::Literal(Literal::Str(v))),
+    });
+    let first = iter.next()?;
+    Some(iter.fold(first, |acc, e| Expr::Or(Box::new(acc), Box::new(e))))
 }
