@@ -293,6 +293,19 @@ directly. Missing benchmarks, invalid scores, changed units, and execution error
 
 ## Method compatibility gate
 
+The measured Method server disables Javalin's startup watcher. Javalin otherwise creates an
+unnamed thread which sleeps for five seconds and exits even after successful startup; a long
+query can span that exit, invalidating the strict Java-thread CPU snapshots. This removes a
+startup diagnostic thread at its source without excluding any request worker from accounting.
+The fixture-free `MethodBenchmarkServerLifecycleContract` uses the same server factory and
+measures through the watcher's lifetime; the existing transient-worker and vanished-thread
+negative CPU contracts remain unchanged.
+
+While main still contains the known legacy Explorer harness, CI verifies its SHA and installs
+the reviewed, SHA-pinned fixed Explorer harness into both production revisions after candidate
+gate tests pass. CPU accounting and capacity harnesses remain base-owned. The transition and
+its failure paths are exercised by running the actual installation shell in contract tests.
+
 Method discovery covers the exact 11-scenario matrix at 4, 17, and 36 graphs: 33
 semantic/performance cases. The workflow partitions each graph count into four scenario groups
 (`position`, `string`, `scan`, and `aggregate`) for 12 independently scheduled shards. Each shard

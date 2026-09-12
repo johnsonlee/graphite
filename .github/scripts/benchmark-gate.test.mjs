@@ -3508,22 +3508,66 @@ test("historical known-bad latency proof runs only in the scheduled workflow", (
     for (const hashInput of cacheHashInputs) assert.match(hashInput, /'current\//);
 });
 
-test("base-owned Explorer harness installation includes its CPU accounting dependency", () => {
+test("Explorer overlay selects only the pinned repair and retains strict base CPU accounting", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const start = workflow.indexOf("    - name: Install base-owned Explorer harnesses");
+    const start = workflow.indexOf("    - name: Install trusted Explorer harnesses");
     const end = workflow.indexOf("    - name: Build comparable Explorer JMH JAR", start);
-    assert.ok(start > 0 && end > start, "the shared Explorer overlay must precede its JMH build");
+    assert.ok(start > 0 && end > start);
+    const build = workflow.slice(workflow.indexOf("\n  build-explore-jmh:"), start);
+    assert.match(build, /needs: \[candidate-gate-tests\]/);
+    assert.match(build, /revision: \[base, candidate\]/);
     const overlay = workflow.slice(start, end);
-    const harnesses = overlay.match(/for HARNESS in ([^;]+); do/)?.[1].trim().split(/\s+/);
-    assert.deepEqual(harnesses, [
-        "ExplorerMemoryBenchmark.kt",
-        "CypherCapacityBenchmark.kt",
-        "RequestCpuAccounting.kt",
-    ], "both revisions must install the whole base-owned harness, including its CPU helper and contract");
-    assert.match(overlay, /SOURCE="graphite-explore\/src\/jmh\/kotlin\/io\/johnsonlee\/graphite\/cli\/\$\{HARNESS\}"/);
-    assert.match(overlay, /test ! -L "source\/\$\{SOURCE\}"/);
-    assert.match(overlay, /install -m 0644 "gate\/\$\{SOURCE\}" "source\/\$\{SOURCE\}"/);
-    assert.match(overlay, /cmp "gate\/\$\{SOURCE\}" "source\/\$\{SOURCE\}"/);
+    assert.match(overlay, /CANDIDATE_GATE_TEST_JOB: \$\{\{ needs\.candidate-gate-tests\.result \}\}/);
+    const shell = overlay.slice(overlay.indexOf("      run: |\n") + "      run: |\n".length)
+        .split("\n").map(line => line.replace(/^        /, "")).join("\n");
+    const sha256 = contents => crypto.createHash("sha256").update(contents).digest("hex");
+    const relative = "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/";
+    const explorer = "ExplorerMemoryBenchmark.kt";
+    const helpers = ["CypherCapacityBenchmark.kt", "RequestCpuAccounting.kt"];
+    const currentHarness = fs.readFileSync(new URL(`../../${relative}${explorer}`, import.meta.url));
+    assert.match(workflow, new RegExp(`EXPLORER_TRANSITION_HARNESS_SHA256: ${sha256(currentHarness)}`));
+    assert.match(workflow, /EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e/);
+
+    for (const scenario of ["transition", "normal-base", "tampered", "failed-tests"]) {
+        const directory = fs.mkdtempSync(path.join(os.tmpdir(), "explorer-overlay-"));
+        try {
+            for (const checkout of ["gate", "controls", "source"]) {
+                fs.mkdirSync(path.join(directory, checkout, relative), { recursive: true });
+                for (const file of [explorer, ...helpers]) {
+                    const contents = checkout === "gate" && file === explorer
+                        ? (scenario === "normal-base" ? "future base harness" : "reviewed legacy harness")
+                        : checkout === "controls" && file === explorer
+                            ? (scenario === "tampered" ? "unreviewed repair" : "reviewed repair")
+                            : `${checkout} ${file}`;
+                    fs.writeFileSync(path.join(directory, checkout, relative, file), contents);
+                }
+            }
+            const result = spawnSync("bash", ["-c", shell], {
+                cwd: directory,
+                encoding: "utf8",
+                env: { ...process.env,
+                    CANDIDATE_GATE_TEST_JOB: scenario === "failed-tests" ? "failure" : "success",
+                    EXPLORER_LEGACY_HARNESS_SHA256: sha256("reviewed legacy harness"),
+                    EXPLORER_TRANSITION_HARNESS_SHA256: sha256("reviewed repair"),
+                },
+            });
+            if (["tampered", "failed-tests"].includes(scenario)) {
+                assert.notEqual(result.status, 0, `${scenario} must fail closed`);
+                assert.equal(fs.readFileSync(path.join(directory, "source", relative, explorer), "utf8"),
+                    `source ${explorer}`, "rejected controls must not mutate the target");
+                continue;
+            }
+            assert.equal(result.status, 0, `${scenario}: ${result.stderr}`);
+            assert.equal(fs.readFileSync(path.join(directory, "source", relative, explorer), "utf8"),
+                scenario === "normal-base" ? "future base harness" : "reviewed repair");
+            for (const file of helpers) {
+                assert.equal(fs.readFileSync(path.join(directory, "source", relative, file), "utf8"),
+                    `gate ${file}`, `${file} must always remain base-owned`);
+            }
+        } finally {
+            fs.rmSync(directory, { recursive: true, force: true });
+        }
+    }
 });
 
 test("method-compatibility shards run the CPU accounting contract in its own JVM before any fork", () => {
@@ -3544,10 +3588,13 @@ test("a candidate-owned smoke exercises the new CPU accounting harness in a real
     const start = workflow.indexOf("\n  validate-cpu-accounting:");
     const rest = workflow.slice(start + 1);
     const job = rest.slice(0, rest.indexOf("\n  method-compatibility:"));
-    // Builds the candidate's own harness (no base-owned gate install), so the new RequestCpuAccounting
-    // integration actually runs -- unlike the paired gate, which installs the base harness over both trees.
+    // Exercise the candidate-native integration separately from the paired trusted overlay.
     assert.match(job, /Build candidate-owned Explorer JMH JAR/);
-    assert.doesNotMatch(job, /Install base-owned Explorer harnesses/, "the smoke must not install the base harness");
+    const lifecycle = job.indexOf('java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodBenchmarkServerLifecycleContract');
+    const accounting = job.indexOf('java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract');
+    assert.ok(lifecycle > 0 && accounting > lifecycle,
+        "the actual server lifecycle must pass before CPU accounting contracts and real forks");
+    assert.doesNotMatch(job, /Install (?:base-owned|trusted) Explorer harnesses/, "the smoke must not install the base harness");
     // A real graphCount=4 fork over all four corpora.
     assert.match(job, /-p graphCount=4 -p scenario=count/);
     // And the worst-case graph count over the scenarios that tripped the accounting, with

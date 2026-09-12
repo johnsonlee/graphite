@@ -24,6 +24,8 @@ env:
   REAL_ONLY_LATENCY_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
   LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
+  EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
+  EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
@@ -60,6 +62,7 @@ jobs:
 
   build-explore-jmh:
     name: build-explore-jmh-${{ matrix.revision }}
+    needs: [candidate-gate-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -100,14 +103,30 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install base-owned Explorer harnesses
+    - name: Install trusted Explorer harnesses
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
+        set -euo pipefail
+        EXPLORER='graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt'
+        EXPLORER_OWNER=gate
+        # Retire only the reviewed legacy harness's transient Javalin startup watcher.
+        # The same pinned repair must measure both revisions; CPU accounting stays base-owned.
+        if [[ "$(sha256sum "gate/${EXPLORER}" | cut -d' ' -f1)" = "${EXPLORER_LEGACY_HARNESS_SHA256}" ]]; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test ! -L "controls/${EXPLORER}"
+          test "$(sha256sum "controls/${EXPLORER}" | cut -d' ' -f1)" = \
+            "${EXPLORER_TRANSITION_HARNESS_SHA256}"
+          EXPLORER_OWNER=controls
+        fi
         for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt RequestCpuAccounting.kt; do
           SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
+          OWNER=gate
+          if [[ "${HARNESS}" = ExplorerMemoryBenchmark.kt ]]; then OWNER="${EXPLORER_OWNER}"; fi
           test ! -L "source/${SOURCE}"
           rm -f -- "source/${SOURCE}"
-          install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
-          cmp "gate/${SOURCE}" "source/${SOURCE}"
+          install -m 0644 "${OWNER}/${SOURCE}" "source/${SOURCE}"
+          cmp "${OWNER}/${SOURCE}" "source/${SOURCE}"
         done
 
     - name: Build comparable Explorer JMH JAR
@@ -796,9 +815,9 @@ jobs:
         cache-read-only: true
 
     # The candidate's own Explorer harness is built WITHOUT the base-owned gate install, so this jar
-    # runs the new RequestCpuAccounting integration -- the real forks in the paired gate do not, since
-    # they install the base harness over both trees. This proves the accounting in a real fork; it is
-    # candidate-only and never feeds the trusted paired gate.
+    # exercises the candidate server lifecycle and CPU accounting together. The paired gate uses
+    # the reviewed pinned Explorer repair with base-owned accounting; this separate candidate-native
+    # artifact proves future helper changes too and never feeds the trusted paired gate.
     - name: Build candidate-owned Explorer JMH JAR
       run: |
         candidate/gradlew -p candidate :explore:testClasses :explore:jmhJar --no-daemon
@@ -831,6 +850,7 @@ jobs:
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
         # The accounting contract must still hold on this runner/JVM before the fork.
+        java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodBenchmarkServerLifecycleContract
         java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract
         java -jar "${JAR}" \
           'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' \
