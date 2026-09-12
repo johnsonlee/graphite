@@ -137,12 +137,20 @@ struct SourcePlan {
     /// `Some(empty)` is the case that matters most across many graphs: the term reaches
     /// nothing here, so this graph contributes no CallSite work at all.
     call_site_candidates: Option<Vec<u32>>,
+    /// No pre-filter could be built, so every record must reach the WHERE re-check.
+    ///
+    /// This is distinct from an empty plan. A `SourcePlan` whose bitsets are all `None`
+    /// matches *nothing* in the sweep, so it cannot stand in for "no opinion" — doing
+    /// that silently dropped every CallSite node.
+    no_prefilter: bool,
 }
 
 pub struct ScanPlan {
     variable: String,
     /// Node tags to sweep when the pushdown does not apply to a source.
     tags: Vec<u8>,
+    tree: PredTree,
+    /// Every leaf of `tree`, for the bitset fallback and for the CallSite-only test.
     predicates: Vec<StringPredicate>,
 }
 
@@ -172,8 +180,10 @@ impl ScanPlan {
             return None;
         }
         let where_clause = where_clause?;
+        let tree = collect_tree(where_clause, &variable)?;
         let mut preds = Vec::new();
-        if !collect_disjuncts(where_clause, &variable, &mut preds) || preds.is_empty() {
+        tree.leaves(&mut preds);
+        if preds.is_empty() {
             return None;
         }
         // Every predicate must target a CallSite string property for the fast sweep.
@@ -183,6 +193,7 @@ impl ScanPlan {
         Some(ScanPlan {
             variable,
             tags,
+            tree,
             predicates: preds,
         })
     }
@@ -205,7 +216,7 @@ impl ScanPlan {
             let source = source as SourceIdx;
             let graph = ex.graph(source);
             ex.cancel.check()?;
-            let sp = &build_source_plan(source, graph, &self.predicates);
+            let sp = &build_source_plan(source, graph, &self.tree, &self.predicates);
             let scan_tags: Vec<u8> = if sp.call_site_only {
                 self.tags
                     .iter()
@@ -230,8 +241,9 @@ impl ScanPlan {
                 for chunk in ids.chunks(SWEEP_CHUNK) {
                     ex.cancel.check()?;
                     hits.clear();
-                    if indexed.is_some() {
-                        // Already narrowed; the WHERE re-check below decides the rest.
+                    if indexed.is_some() || sp.no_prefilter {
+                        // Already narrowed, or never narrowed: either way the WHERE
+                        // re-check below decides.
                         hits.extend_from_slice(chunk);
                     } else if tag == TAG_CALL_SITE_NODE {
                         sweep_call_sites(graph, chunk, sp, &mut hits);
@@ -341,14 +353,31 @@ fn is_lowercase_ascii(s: &str) -> bool {
     s.bytes().all(|b| !b.is_ascii_uppercase() && b.is_ascii())
 }
 
-fn build_source_plan(source: SourceIdx, graph: &Graph, preds: &[StringPredicate]) -> SourcePlan {
+fn build_source_plan(
+    source: SourceIdx,
+    graph: &Graph,
+    tree: &PredTree,
+    preds: &[StringPredicate],
+) -> SourcePlan {
     let call_site_only = preds.iter().all(|p| CALL_SITE_PROPS.contains(&p.property));
-    if let Some(candidates) = indexed_candidates(graph, preds) {
+    if let Some(candidates) = indexed_candidates(graph, tree) {
         return SourcePlan {
             source,
             call_site: [None, None, None, None],
             call_site_only,
             call_site_candidates: Some(candidates),
+            no_prefilter: false,
+        };
+    }
+    // The bitset sweep can only express a disjunction. A conjunction the index could not
+    // answer therefore gets no pre-filter at all: every record goes to the WHERE clause.
+    if !tree.is_flat_or() {
+        return SourcePlan {
+            source,
+            call_site: [None, None, None, None],
+            call_site_only: false,
+            call_site_candidates: None,
+            no_prefilter: true,
         };
     }
     build_sweep_plan(source, graph, preds, call_site_only)
@@ -358,39 +387,88 @@ fn build_source_plan(source: SourceIdx, graph: &Graph, preds: &[StringPredicate]
 ///
 /// `None` means the accelerator cannot (or should not) answer this predicate set, and
 /// the caller must fall back to scanning the dictionary and sweeping records.
-fn indexed_candidates(graph: &Graph, preds: &[StringPredicate]) -> Option<Vec<u32>> {
+fn indexed_candidates(graph: &Graph, tree: &PredTree) -> Option<Vec<u32>> {
     let idx = graph.call_site_index()?;
     // The CSRs describe the graph's CallSite records; anything else is not ours.
     if idx.call_site_count() != graph.count_by_tag(TAG_CALL_SITE_NODE) {
         return None;
     }
-    // Matching string ids per property, unioned across predicates on that property.
-    //
-    // The wide queries repeat one literal across all four properties, and the matching
+    // The same literal is usually tested against all four properties, and the matching
     // string ids depend only on the literal, the operator and the transform — never on
     // which property is being tested. Resolving each distinct predicate once turns four
     // dictionary resolutions into one.
-    let mut resolved: Vec<(&StringPredicate, Vec<u32>)> = Vec::new();
-    let mut per_property: [Vec<u32>; 4] = Default::default();
-    for p in preds {
-        let slot = CALL_SITE_PROPS.iter().position(|c| *c == p.property)?;
-        match resolved.iter().find(|(q, _)| q.same_test(p)) {
-            Some((_, ids)) => per_property[slot].extend_from_slice(ids),
-            None => {
-                let ids = matching_string_ids(graph, idx, p)?;
-                per_property[slot].extend_from_slice(&ids);
-                resolved.push((p, ids));
+    let mut memo: Vec<(StringPredicate, Vec<u32>)> = Vec::new();
+    eval_tree(graph, idx, tree, &mut memo)
+}
+
+/// Ascending CallSite node ids that can satisfy this subtree.
+///
+/// Always a *superset* of the true matches, at every level: `OR` unions its children and
+/// `AND` intersects them, and a superset of each side intersects to a superset of the
+/// conjunction. Survivors are re-checked against the full WHERE clause, so a loose
+/// answer costs time and never correctness.
+fn eval_tree(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    tree: &PredTree,
+    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+) -> Option<Vec<u32>> {
+    match tree {
+        PredTree::Leaf(p) => leaf_candidates(graph, idx, p, memo),
+        PredTree::Or(children) => {
+            let mut nodes = Vec::new();
+            for c in children {
+                nodes.extend(eval_tree(graph, idx, c, memo)?);
             }
+            nodes.sort_unstable();
+            nodes.dedup();
+            Some(nodes)
+        }
+        PredTree::And(children) => {
+            // A conjunct the index declines — a term so broad that walking its postings
+            // costs more than sweeping — contributes no information, and is skipped.
+            // Intersecting the conjuncts that *are* selective still yields a superset,
+            // so one dense term no longer forfeits the whole plan. That case is the
+            // common one: `caller_class CONTAINS 'com' AND (... narrow alternatives)`.
+            let mut acc: Option<Vec<u32>> = None;
+            for c in children {
+                let Some(next) = eval_tree(graph, idx, c, memo) else {
+                    continue;
+                };
+                acc = Some(match acc {
+                    None => next,
+                    Some(prev) => intersect_sorted(&prev, &next),
+                });
+                // Nothing can survive further conjuncts once the set is empty.
+                if acc.as_ref().is_some_and(|v| v.is_empty()) {
+                    return acc;
+                }
+            }
+            // Every conjunct declined: the index has nothing to say about this clause.
+            acc
         }
     }
-    let mut postings_total = 0usize;
-    for ids in per_property.iter_mut().enumerate() {
-        let (property, ids) = ids;
-        ids.sort_unstable();
-        ids.dedup();
-        for &s in ids.iter() {
-            postings_total += idx.posting_len(property, s as usize);
+}
+
+/// Ascending node ids carrying a string that satisfies one predicate, in its property.
+fn leaf_candidates(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    p: &StringPredicate,
+    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+) -> Option<Vec<u32>> {
+    let property = CALL_SITE_PROPS.iter().position(|c| *c == p.property)?;
+    let strings = match memo.iter().find(|(q, _)| q.same_test(p)) {
+        Some((_, ids)) => ids.clone(),
+        None => {
+            let ids = matching_string_ids(graph, idx, p)?;
+            memo.push((p.clone(), ids.clone()));
+            ids
         }
+    };
+    let mut postings_total = 0usize;
+    for &s in &strings {
+        postings_total += idx.posting_len(property, s as usize);
         // A term this broad is cheaper to sweep: postings are random access into the
         // node ids, while the sweep reads the records in order.
         if postings_total * POSTING_SWEEP_RATIO > idx.call_site_count() {
@@ -398,18 +476,32 @@ fn indexed_candidates(graph: &Graph, preds: &[StringPredicate]) -> Option<Vec<u3
         }
     }
     let mut nodes: Vec<u32> = Vec::with_capacity(postings_total);
-    for (property, ids) in per_property.iter().enumerate() {
-        for &s in ids {
-            if let Some(postings) = idx.postings(property, s as usize) {
-                nodes.extend(postings);
-            }
+    for &s in &strings {
+        if let Some(postings) = idx.postings(property, s as usize) {
+            nodes.extend(postings);
         }
     }
-    // A node can match on more than one property, and the sweep visits each node once
-    // in ascending id order, which is the order the type index stores them in.
+    // Postings for one string are ascending, but different strings interleave.
     nodes.sort_unstable();
     nodes.dedup();
     Some(nodes)
+}
+
+fn intersect_sorted(a: &[u32], b: &[u32]) -> Vec<u32> {
+    let mut out = Vec::with_capacity(a.len().min(b.len()));
+    let (mut i, mut j) = (0usize, 0usize);
+    while i < a.len() && j < b.len() {
+        match a[i].cmp(&b[j]) {
+            std::cmp::Ordering::Less => i += 1,
+            std::cmp::Ordering::Greater => j += 1,
+            std::cmp::Ordering::Equal => {
+                out.push(a[i]);
+                i += 1;
+                j += 1;
+            }
+        }
+    }
+    out
 }
 
 /// Walking postings stops paying off once they cover this fraction of the records.
@@ -594,15 +686,68 @@ fn build_sweep_plan(
         call_site: sets,
         call_site_only,
         call_site_candidates: None,
+        no_prefilter: false,
     }
 }
 
-/// Flatten an OR tree into string predicates. Returns false if any leaf is unsupported.
-fn collect_disjuncts(e: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> bool {
-    match e {
-        Expr::Or(a, b) => {
-            collect_disjuncts(a, variable, out) && collect_disjuncts(b, variable, out)
+/// A WHERE clause reduced to the parts this pushdown understands.
+///
+/// The production queries are not flat disjunctions. They look like
+/// `(a CONTAINS X OR b CONTAINS X) AND (a CONTAINS Y OR b CONTAINS Y)` — two broad
+/// searches narrowed against each other. Treating only `OR` meant every one of those
+/// declined the pushdown entirely and fell to the generic evaluator, which is orders of
+/// magnitude slower. Keeping the tree lets `AND` do what it is there for: intersect.
+enum PredTree {
+    Leaf(StringPredicate),
+    Or(Vec<PredTree>),
+    And(Vec<PredTree>),
+}
+
+impl PredTree {
+    fn leaves(&self, out: &mut Vec<StringPredicate>) {
+        match self {
+            PredTree::Leaf(p) => out.push(p.clone()),
+            PredTree::Or(cs) | PredTree::And(cs) => cs.iter().for_each(|c| c.leaves(out)),
         }
+    }
+    /// True when the tree is a plain disjunction, the only shape the bitset sweep
+    /// fallback can express.
+    fn is_flat_or(&self) -> bool {
+        match self {
+            PredTree::Leaf(_) => true,
+            PredTree::Or(cs) => cs.iter().all(|c| c.is_flat_or()),
+            PredTree::And(_) => false,
+        }
+    }
+}
+
+/// Parse a WHERE clause into the tree. `None` when any leaf is unsupported — the whole
+/// clause is then left to the generic evaluator, since a partial reading of it could
+/// exclude rows that match.
+fn collect_tree(e: &Expr, variable: &str) -> Option<PredTree> {
+    match e {
+        Expr::Or(a, b) => Some(PredTree::Or(vec![
+            collect_tree(a, variable)?,
+            collect_tree(b, variable)?,
+        ])),
+        Expr::And(a, b) => Some(PredTree::And(vec![
+            collect_tree(a, variable)?,
+            collect_tree(b, variable)?,
+        ])),
+        _ => {
+            let mut out = Vec::new();
+            if collect_leaf(e, variable, &mut out) && out.len() == 1 {
+                Some(PredTree::Leaf(out.pop()?))
+            } else {
+                None
+            }
+        }
+    }
+}
+
+/// Recognise one `<property> <op> <literal>` leaf.
+fn collect_leaf(e: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> bool {
+    match e {
         Expr::StringOp { op, left, right } => {
             let op = match op {
                 StrOp::Contains => PushOp::Contains,
