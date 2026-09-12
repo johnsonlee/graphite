@@ -142,6 +142,10 @@ fn build_container_model(g: &Graph) -> J {
         .collect();
 
     let mut rel_id = 0usize;
+    let mut next_rel = || {
+        rel_id += 1;
+        format!("rel-{rel_id}")
+    };
     let mut containers_json: Vec<J> = Vec::new();
     for c in &runtime_layout.containers {
         let kind = containers::container_kind(c);
@@ -177,41 +181,7 @@ fn build_container_model(g: &Graph) -> J {
             json!(internal_capabilities),
         ));
 
-        let rels: Vec<J> = deps
-            .iter()
-            .map(|d| {
-                let runtime = d.kind == DependencyKind::Runtime;
-                let (rel_kind, verb) = if runtime {
-                    ("runs-on", "runs on")
-                } else {
-                    ("depends-on", "uses")
-                };
-                // The wire tag carries the relationship kind, but the technology field
-                // carries the verb -- they differ for a dependency edge, which is
-                // `depends-on` but reads as "uses".
-                let technology = if runtime { "runs-on" } else { "uses" };
-                let evidence = json!({
-                    "crossBoundaryCalls": d.weight,
-                    "source": d.source,
-                    "confidence": d.confidence,
-                });
-                rel_id += 1;
-                json!({
-                    "id": format!("rel-{rel_id}"),
-                    "destinationId": d.id,
-                    "description": format!("{} {verb} {}", c.name, d.name),
-                    "technology": technology,
-                    "tags": format!("Relationship,{GRAPHITE_TAG},{rel_kind}"),
-                    "properties": {
-                        "graphite.view": "container",
-                        "graphite.relationshipKind": rel_kind,
-                        "graphite.evidence": serde_json::to_string_pretty(&evidence)
-                            .unwrap_or_default(),
-                        "graphite.weight": d.weight.to_string(),
-                    },
-                })
-            })
-            .collect();
+        let rels = container_dependency_relationships(c, deps, &mut next_rel);
 
         let mut e = json!({
             "id": c.id,
@@ -290,6 +260,48 @@ fn build_container_model(g: &Graph) -> J {
         "model": { "people": [], "softwareSystems": all_systems },
         "views": J::Object(views),
     })
+}
+
+/// A runtime container's edges to the external dependencies around it.
+///
+/// One per dependency: the language runtime as `runs-on`, everything else as
+/// `depends-on`. The wire tag carries the relationship kind but the technology field
+/// carries the verb, and for a dependency those differ -- it is `depends-on` and reads
+/// as "uses".
+fn container_dependency_relationships(
+    c: &containers::Container,
+    deps: &[crate::c4::external::ExternalDependency],
+    next_rel: &mut dyn FnMut() -> String,
+) -> Vec<J> {
+    deps.iter()
+        .map(|d| {
+            let runtime = d.kind == DependencyKind::Runtime;
+            let (rel_kind, verb, technology) = if runtime {
+                ("runs-on", "runs on", "runs-on")
+            } else {
+                ("depends-on", "uses", "uses")
+            };
+            let evidence = json!({
+                "crossBoundaryCalls": d.weight,
+                "source": d.source,
+                "confidence": d.confidence,
+            });
+            json!({
+                "id": next_rel(),
+                "destinationId": d.id,
+                "description": format!("{} {verb} {}", c.name, d.name),
+                "technology": technology,
+                "tags": format!("Relationship,{GRAPHITE_TAG},{rel_kind}"),
+                "properties": {
+                    "graphite.view": "container",
+                    "graphite.relationshipKind": rel_kind,
+                    "graphite.evidence": serde_json::to_string_pretty(&evidence)
+                        .unwrap_or_default(),
+                    "graphite.weight": d.weight.to_string(),
+                },
+            })
+        })
+        .collect()
 }
 
 /// What every level's inference starts from, gathered once.
@@ -565,131 +577,29 @@ fn build_context_model(g: &Graph, level: &str) -> J {
                     json!(d.kind.architecture_type()),
                 ),
                 ("graphite.responsibility", json!(d.responsibility)),
+                // At `all` the container view's dependencies are merged onto the same
+                // elements, and they carry the evidence the context view leaves out.
+                (
+                    "graphite.source",
+                    if want_container { json!(d.source) } else { J::Null },
+                ),
+                (
+                    "graphite.confidence",
+                    if want_container {
+                        json!(d.confidence)
+                    } else {
+                        J::Null
+                    },
+                ),
             ]),
         ));
     }
 
-    // The subject system carries the containers.
-    let containers_json: Vec<J> = if want_container || want_component {
-        runtime_layout
-            .containers
-            .iter()
-            .map(|c| {
-                let kind = containers::container_kind(c);
-                let components: Vec<J> = if want_component {
-                    capability_layout
-                        .containers
-                        .iter()
-                        .map(|cap| {
-                            let ck = containers::container_kind(cap);
-                            let mut e = element(
-                                &format!("{COMPONENT_ID_PREFIX}{}", slugify(&cap.name)),
-                                &cap.name,
-                                "Internal capability evidence derived from code graph structure",
-                                tags("Component", &ck),
-                                props(vec![
-                                    ("graphite.type", json!("component")),
-                                    ("graphite.kind", json!(ck)),
-                                    (
-                                        "graphite.architectureType",
-                                        json!(containers::architecture_type(&ck)),
-                                    ),
-                                    (
-                                        "graphite.responsibility",
-                                        json!(containers::infer_responsibility(
-                                            cap.endpoint_count,
-                                            cap.method_count,
-                                            cap.inbound,
-                                            cap.outbound,
-                                            cap.external_calls
-                                        )),
-                                    ),
-                                    ("graphite.container", json!(c.name)),
-                                    ("graphite.containerId", json!(c.id)),
-                                    ("graphite.methods", json!(cap.method_count)),
-                                    ("graphite.callSites", json!(cap.call_site_count)),
-                                    ("graphite.endpoints", json!(cap.endpoint_count)),
-                                    ("graphite.packageUnits", json!(cap.package_units)),
-                                    ("graphite.classes", json!(cap.primary_classes)),
-                                    ("graphite.entrypoints", json!(cap.entrypoints)),
-                                    ("graphite.whySelected", json!(cap.rationale)),
-                                ]),
-                            );
-                            if let Some(o) = e.as_object_mut() {
-                                o.insert("technology".into(), json!(TECHNOLOGY_JVM_BYTECODE));
-                            }
-                            e
-                        })
-                        .collect()
-                } else {
-                    Vec::new()
-                };
-                let mut e = element(
-                    &c.id,
-                    &c.name,
-                    containers::description(&kind),
-                    tags("Container", &kind),
-                    props(vec![
-                        ("graphite.type", json!("container")),
-                        ("graphite.kind", json!(kind)),
-                        (
-                            "graphite.architectureType",
-                            json!(containers::architecture_type(&kind)),
-                        ),
-                        (
-                            "graphite.responsibility",
-                            containers::operational_responsibility(&kind)
-                                .map(|r| json!(r))
-                                .unwrap_or(J::Null),
-                        ),
-                        ("graphite.methods", json!(c.method_count)),
-                        ("graphite.callSites", json!(c.call_site_count)),
-                        ("graphite.endpoints", json!(c.endpoint_count)),
-                        ("graphite.entrypoints", json!(c.entrypoints)),
-                        ("graphite.primaryClasses", json!(c.primary_classes)),
-                        ("graphite.packageUnits", json!(c.package_units)),
-                        ("graphite.whySelected", json!(c.rationale)),
-                    ]),
-                );
-                if let Some(o) = e.as_object_mut() {
-                    o.insert("technology".into(), json!(TECHNOLOGY_JVM_BYTECODE));
-                    o.insert("components".into(), json!(components));
-                }
-                e
-            })
-            .collect()
-    } else {
-        Vec::new()
-    };
-
-    let mut subject_element = element(
-        &subject.id,
-        &subject.name,
-        &subject.description,
-        tags(
-            "Software System",
-            if subject.role == "application" { "application" } else { "library" },
-        ),
-        props(vec![
-            ("graphite.type", json!("softwareSystem")),
-            ("graphite.kind", json!(subject.role)),
-            (
-                "graphite.architectureType",
-                json!(if subject.role == "application" { "software-system" } else { "library" }),
-            ),
-            ("graphite.responsibility", json!(subject.responsibility)),
-            (
-                "graphite.whySelected",
-                json!("Dominant namespace boundary inferred from internal classes and call-site traffic"),
-            ),
-            ("graphite.methods", json!(g.method_count())),
-            ("graphite.endpoints", json!(endpoint_classes.len())),
-            ("graphite.classes", json!(distinct_class_count(g))),
-        ]),
-    );
-    if let Some(o) = subject_element.as_object_mut() {
-        o.insert("containers".into(), json!(containers_json));
-        // The actor and the dependencies hang off the subject.
+    // The actor and the dependencies hang off the subject. Computed before the
+    // containers, because relationship ids are handed out in view-registration order:
+    // at `level=all` the context view's edges are numbered before the container view's,
+    // and building the containers first would swap them.
+    let subject_rels: Vec<J> = {
         let mut rels: Vec<J> = Vec::new();
         for d in &ordered_deps {
             let runtime = d.kind == DependencyKind::Runtime;
@@ -733,7 +643,181 @@ fn build_context_model(g: &Graph, level: &str) -> J {
                 "properties": J::Object(properties),
             }));
         }
-        o.insert("relationships".into(), json!(rels));
+        rels
+    };
+
+    // The subject system carries the containers. At `all` this is the container view
+    // and the component view merged onto the context model, so the container element,
+    // its dependency edges and its components are the ones those views produce -- not
+    // an approximation assembled from the capability layout.
+    let component_view = want_component.then(|| {
+        components::build_view(
+            g,
+            &system_boundary,
+            &endpoint_classes,
+            &subject.role,
+            &subject.name,
+            &capability_layout,
+            usize::MAX,
+        )
+    });
+    let internal_capabilities: Vec<J> = capability_layout
+        .containers
+        .iter()
+        .map(|cap| {
+            let mut units = cap.package_units.clone();
+            units.sort();
+            json!({
+                "name": cap.name,
+                "kind": containers::container_kind(cap),
+                "packageUnits": units,
+                "methods": cap.method_count as f64,
+                "callSites": cap.call_site_count as f64,
+                "endpoints": cap.endpoint_count as f64,
+                "primaryClasses": cap.primary_classes,
+                "whySelected": cap.rationale,
+            })
+        })
+        .collect();
+    let containers_json: Vec<J> = if want_container || want_component {
+        runtime_layout
+            .containers
+            .iter()
+            .map(|c| {
+                let kind = containers::container_kind(c);
+                let components: Vec<J> = component_view
+                    .as_ref()
+                    .and_then(|v| v.as_ref())
+                    .map(|v| {
+                        v.components
+                            .iter()
+                            .map(|comp| {
+                                let mut entries = vec![
+                                    ("graphite.type", json!("component")),
+                                    ("graphite.kind", json!(comp.kind)),
+                                    (
+                                        "graphite.architectureType",
+                                        json!(comp.architecture_type),
+                                    ),
+                                    ("graphite.responsibility", json!(comp.responsibility)),
+                                    ("graphite.whySelected", json!(comp.why_selected)),
+                                    ("graphite.container", json!(comp.container)),
+                                    ("graphite.containerId", json!(comp.container_id)),
+                                    ("graphite.fullName", json!(comp.full_name)),
+                                    ("graphite.methods", json!(comp.methods)),
+                                    ("graphite.callSites", json!(comp.call_sites)),
+                                    ("graphite.endpoints", json!(comp.endpoints)),
+                                ];
+                                if !comp.entrypoints.is_empty() {
+                                    entries.push(("graphite.entrypoints", json!(comp.entrypoints)));
+                                }
+                                entries.push(("graphite.classes", json!(comp.classes)));
+                                entries.push(("graphite.packageUnits", json!(comp.package_units)));
+                                json!({
+                                    "id": comp.id,
+                                    "name": comp.name,
+                                    "description": comp.responsibility,
+                                    "tags": tags("Component", &comp.kind),
+                                    "properties": props(entries),
+                                    "relationships": [],
+                                    "containers": [],
+                                    "components": [],
+                                })
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                let mut units = c.package_units.clone();
+                units.sort();
+                let mut entries = vec![
+                    ("graphite.type", json!("container")),
+                    ("graphite.kind", json!(kind)),
+                    (
+                        "graphite.architectureType",
+                        json!(containers::architecture_type(&kind)),
+                    ),
+                    (
+                        "graphite.responsibility",
+                        containers::operational_responsibility(&kind)
+                            .map(|r| json!(r))
+                            .unwrap_or(J::Null),
+                    ),
+                    ("graphite.whySelected", json!(c.rationale)),
+                    ("graphite.methods", json!(c.method_count)),
+                    ("graphite.callSites", json!(c.call_site_count)),
+                    ("graphite.endpoints", json!(c.endpoint_count)),
+                ];
+                if !c.entrypoints.is_empty() {
+                    entries.push(("graphite.entrypoints", json!(c.entrypoints)));
+                }
+                entries.push(("graphite.packageUnits", json!(units)));
+                entries.push(("graphite.primaryClasses", json!(c.primary_classes)));
+                if want_container {
+                    entries.push((
+                        "graphite.internalCapabilities",
+                        json!(internal_capabilities),
+                    ));
+                }
+                let rels: Vec<J> = if want_container {
+                    container_dependency_relationships(c, deps, &mut next_rel)
+                } else {
+                    Vec::new()
+                };
+                json!({
+                    "id": c.id,
+                    "name": c.name,
+                    "description": containers::description(&kind),
+                    "technology": TECHNOLOGY_JVM_BYTECODE,
+                    "tags": tags("Container", &kind),
+                    "properties": props(entries),
+                    "relationships": rels,
+                    "containers": [],
+                    "components": components,
+                })
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    let mut subject_element = element(
+        &subject.id,
+        &subject.name,
+        &subject.description,
+        tags(
+            "Software System",
+            if subject.role == "application" { "application" } else { "library" },
+        ),
+        props(vec![
+            ("graphite.type", json!("softwareSystem")),
+            ("graphite.kind", json!(subject.role)),
+            (
+                "graphite.architectureType",
+                json!(if subject.role == "application" { "software-system" } else { "library" }),
+            ),
+            ("graphite.responsibility", json!(subject.responsibility)),
+            (
+                "graphite.whySelected",
+                json!("Dominant namespace boundary inferred from internal classes and call-site traffic"),
+            ),
+            ("graphite.methods", json!(g.method_count())),
+            ("graphite.endpoints", json!(endpoint_classes.len())),
+            ("graphite.classes", json!(distinct_class_count(g))),
+            // At `all` the container view's boundary is merged onto the same subject
+            // element, after the context view has already described it.
+            (
+                "graphite.systemBoundary",
+                if want_container {
+                    json!(runtime_layout.system_boundary)
+                } else {
+                    J::Null
+                },
+            ),
+        ]),
+    );
+    if let Some(o) = subject_element.as_object_mut() {
+        o.insert("containers".into(), json!(containers_json));
+        o.insert("relationships".into(), json!(subject_rels));
     }
     // The Structurizr model declares the subject first (the mapper seeds it before
     // walking the view), while diagrams follow the view's own element order.
@@ -790,14 +874,26 @@ fn build_context_model(g: &Graph, level: &str) -> J {
         views.insert("systemContextViews".into(), json!([]));
     }
     if want_container {
+        // The container view lists the containers, then the dependencies, then the
+        // people -- the actor belongs to the context view but is registered by the time
+        // this one is built, and the baseline includes it.
+        let mut elements = container_refs(
+            &containers_json,
+            deps.iter().map(|d| d.id.clone()).collect(),
+        );
+        elements.extend(
+            people
+                .iter()
+                .filter_map(|p| p.get("id").map(|i| json!({ "id": i }))),
+        );
         views.insert(
             "containerViews".into(),
             json!([{
                 "key": "graphite-container",
                 "description": "Graphite-derived C4 container view",
                 "softwareSystemId": subject.id,
-                "elements": container_refs(&containers_json, deps.iter().map(|d| d.id.clone()).collect()),
-                "relationships": [],
+                "elements": elements,
+                "relationships": collect_relationship_ids(&[], &containers_json),
                 "properties": {
                     "graphite.level": level_prop,
                     "graphite.systemBoundary": system_boundary,

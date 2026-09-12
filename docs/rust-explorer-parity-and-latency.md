@@ -50,15 +50,52 @@ look covered; it only ever proved the document itself matched.
 | Nodes | `/api/graphs/{id}/node/{id}` — valid, out-of-range, non-numeric — plus `outgoing` and `incoming` |
 | Subgraph | `/api/graphs/{id}/subgraph` — valid, missing `center`, invalid `direction` |
 | Endpoints, resources, annotations | the `/api/graphs/{id}/…` forms, annotations both with and without `member` |
-| C4 | `/api/graphs/{id}/architecture/c4` at **`level=context` only**, in all four formats, plus an invalid level and an invalid format |
+| C4 | `/api/graphs/{id}/architecture/c4` at **every level** — `context`, `container`, `component` and `all` — in all four formats, plus an invalid level and an invalid format |
 | OpenAPI | `/openapi.json`, `/swagger.json` |
 | Cypher | 37 queries, each sent to both `/api/graphs/{id}/cypher` and `/api/cypher` — 74 cases — plus the `GET ?query=` spelling of both, and `/api/cypher/graphs` in both methods |
 | `/metrics` | The Prometheus exposition, compared structurally — see below |
 | `Content-Type` | Compared on every case above, success and error alike — see below |
-| Cross-graph routes | `/api/annotations`, `/api/endpoints`, `/api/resources`, `/api/architecture/c4` |
+| Cross-graph routes | `/api/annotations`, `/api/endpoints`, `/api/resources`, `/api/architecture/c4` (also every level in every format) |
 | Resource bodies | `/api/resources/{path}` and `/api/graphs/{id}/resources/{path}` |
 | Registry mutation | `PUT` and `POST /api/graphs/{id}` each walked through a full lifecycle — load, describe, list, reload with a bad path, reload with no path, a malformed id, unload, unload again, describe the absent graph |
 | Web UI | `/`, `/index.html`, `/app.js`, `/ui-state.js`, `/style.css` — bytes, `Content-Type`, and `If-None-Match` → 304 |
+
+### All four C4 levels, not just `context`
+
+`level=context` used to be the only level compared, and the note that "the other two
+levels produce diagram layout, which was never brought to parity" understated it: the
+level reached the workspace inference but never the diagram plan, so `container` and
+`component` both rendered the system context. Asking for a container diagram returned a
+picture of the context with the containers missing.
+
+All sixteen level-by-format combinations are now byte-identical on both routes. Three
+things had to be built, and each is worth knowing about because none is a detail of
+rendering:
+
+1. **Each level builds its workspace from a different view.** With no context view to
+   read the subject from, the baseline's mapper seeds a placeholder — which is why the
+   same graph is `system:application` / "It" at `level=context` and `system:subject` /
+   "Subject" one level down, and why the `component` workspace has no subject evidence
+   and a container described as "synthesized for component view". `level=all` is the
+   union of all three, with the container view's boundary and dependency evidence merged
+   onto elements the context view already described, and relationship ids handed out in
+   view-registration order.
+2. **Component selection did not exist here.** Capabilities are ranked by architectural
+   evidence — endpoints, then cross-capability traffic, then calls out to external
+   dependencies, with local size only breaking ties — and each one's representative
+   classes the same way, with a divisor that stops a class named like a helper from
+   representing a capability on its name alone.
+3. **A diagram is planned, not dumped.** The container diagram gives each container at
+   most one internal edge and its single strongest non-runtime dependency, reduces
+   transitive and fan-in edges, and draws only elements an edge touches — so a system
+   with six dependencies draws the one that matters. The renderers now walk a layer tree,
+   which is what makes the container level's subdivision by container kind and the
+   component level's grouping by container the same operation.
+
+One limitation to be honest about: the corpus has a single capability, so the ranking
+and the component-to-component edge selection are ported but not *exercised* — the
+fixture cannot distinguish them from any other ordering. A corpus with several
+capabilities inside one runtime container would.
 
 ### `Content-Type` is compared on every route
 
@@ -118,7 +155,6 @@ ported but unverified — the table says which. Neither is evidence of equivalen
 |---|---|
 | **`graphite build`** | The `build` subcommand is **not ported at all** — it runs the SootUp bytecode analysis, which this port does not implement. `graphite serve` is not ported either; the Explorer ships as its own `graphite-explore` binary. |
 | **The Explorer's own CLI** | Flags are one-for-one with the Kotlin binary and were exercised by hand, but no automated check compares them. `--help`, `--version` and error text are known to differ: picocli and clap format differently. |
-| **C4 container and component levels** | Only `level=context` is compared. The other two levels produce diagram layout, which was never brought to parity. |
 | **API response headers beyond `Content-Type`** | `Content-Type` is now compared on every route (see below). `Date`, `Content-Length`, `Server` and the connection headers are not — they are volatile or the web framework's business. |
 | **`TopologyStore`'s binary snapshot** | The persisted format is not read by the Rust server. |
 | **Corpus breadth** | Everything runs against one graph built from the `graphite-explore` shadow jar. A second corpus could surface encoding paths this one never exercises. |
