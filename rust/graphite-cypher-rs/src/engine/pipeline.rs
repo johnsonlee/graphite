@@ -500,6 +500,7 @@ impl Executor {
         // a duplicate of a row already emitted — which belongs in that row's provenance.
         // The baseline keeps scanning for exactly this reason; stopping early produced
         // rows identical in every visible column but missing a contributing graph.
+        let names = items.map(item_names).unwrap_or_default();
         let distinct_provenance = shape.distinct && self.cross;
         // Provenance completion runs as a targeted second pass where it can, so the
         // first pass may stop at the limit like any other.
@@ -512,6 +513,7 @@ impl Executor {
                 ev,
                 &row,
                 items,
+                &names,
                 shape.order.as_deref(),
                 shape.distinct,
                 &mut columns,
@@ -581,6 +583,7 @@ impl Executor {
                         ev,
                         &row,
                         items,
+                        &names,
                         shape.order.as_deref(),
                         shape.distinct,
                         &mut columns,
@@ -855,10 +858,28 @@ fn stash_order_values(
     Ok(())
 }
 
+/// Column names for a RETURN list, rendered once instead of once per row.
+///
+/// An unaliased item is named by its own source text, which means rendering the
+/// expression back to Cypher. That is a string build and an allocation per column, and
+/// it does not depend on the row -- doing it inside the row loop cost a `LIMIT 200`
+/// query a thousand redundant renderings.
+fn item_names(items: &[ReturnItem]) -> Vec<String> {
+    items
+        .iter()
+        .map(|it| {
+            it.alias
+                .clone()
+                .unwrap_or_else(|| to_cypher_string(&it.expr))
+        })
+        .collect()
+}
+
 fn project_row(
     ev: &Evaluator,
     row: &Row,
     items: Option<&[ReturnItem]>,
+    names: &[String],
     order: Option<&[OrderItem]>,
     distinct: bool,
     columns: &mut Vec<String>,
@@ -876,13 +897,9 @@ fn project_row(
             }
         }
         Some(items) => {
-            for it in items {
-                let name = it
-                    .alias
-                    .clone()
-                    .unwrap_or_else(|| to_cypher_string(&it.expr));
+            for (it, name) in items.iter().zip(names) {
                 let v = ev.eval(&it.expr, row)?;
-                out.insert(name, v);
+                out.insert(name.clone(), v);
             }
         }
     }
@@ -1181,12 +1198,14 @@ fn project(
         out = finalize_groups(ev, &plan, items, groups, order)?;
     } else {
         out = Vec::with_capacity(rows.len());
+        let names = item_names(items);
         let mut cols = columns.clone();
         for row in &rows {
             out.push(project_row(
                 ev,
                 row,
                 Some(items),
+                &names,
                 order,
                 distinct,
                 &mut cols,

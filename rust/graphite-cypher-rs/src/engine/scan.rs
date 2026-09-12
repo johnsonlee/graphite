@@ -139,12 +139,12 @@ struct SourcePlan {
     /// True when every predicate targets a CallSite property, so only CallSite nodes
     /// (and Annotation nodes, which expose the same names) can match.
     call_site_only: bool,
-    /// CallSite node ids resolved through the persisted accelerator, ascending — the
+    /// CallSite candidates resolved through the persisted accelerator, ascending — the
     /// same order the sweep would have produced. `None` means sweep instead.
     ///
-    /// `Some(empty)` is the case that matters most across many graphs: the term reaches
-    /// nothing here, so this graph contributes no CallSite work at all.
-    call_site_candidates: Option<Vec<u32>>,
+    /// An empty candidate set is the case that matters most across many graphs: the term
+    /// reaches nothing here, so this graph contributes no CallSite work at all.
+    call_site_candidates: Option<Candidates>,
     /// The candidate list is not merely a superset: every node in it satisfies the
     /// clause, so the WHERE re-check over it is redundant.
     call_site_exact: bool,
@@ -156,6 +156,69 @@ struct SourcePlan {
     /// matches *nothing* in the sweep, so it cannot stand in for "no opinion" — doing
     /// that silently dropped every CallSite node.
     no_prefilter: bool,
+}
+
+/// How a source's CallSite candidates are produced.
+///
+/// A disjunction's candidates are the union of one posting list per (property, string)
+/// pair, each already ascending. Materialising that union means reading every posting —
+/// bounded only by the sweep ratio, so hundreds of thousands of ids for a broad term —
+/// sorting it and de-duplicating it, and then, under a `LIMIT`, using the first couple
+/// of hundred. `Union` keeps the pairs instead and merges them on demand, so a satisfied
+/// `LIMIT` stops after reading about as many postings as it returned rows.
+enum Candidates {
+    /// Ascending node ids, already materialised.
+    Nodes(Vec<u32>),
+    /// `(property, string id)` pairs whose posting lists union to the candidates.
+    Union(Vec<(u8, u32)>),
+}
+
+/// Ascending de-duplicated union of several ascending posting lists.
+struct PostingsMerge<'a> {
+    lists: Vec<graphite_storage::callsite_index::NodePostings<'a>>,
+    heap: std::collections::BinaryHeap<std::cmp::Reverse<(u32, u32)>>,
+    last: Option<u32>,
+}
+
+impl<'a> PostingsMerge<'a> {
+    fn new(
+        idx: &'a graphite_storage::callsite_index::CallSiteStringIndex,
+        pairs: &[(u8, u32)],
+    ) -> PostingsMerge<'a> {
+        let mut lists = Vec::with_capacity(pairs.len());
+        let mut heap = std::collections::BinaryHeap::with_capacity(pairs.len());
+        for &(property, string_id) in pairs {
+            let Some(mut postings) = idx.postings(property as usize, string_id as usize) else {
+                continue;
+            };
+            if let Some(first) = postings.next() {
+                heap.push(std::cmp::Reverse((first, lists.len() as u32)));
+                lists.push(postings);
+            }
+        }
+        PostingsMerge {
+            lists,
+            heap,
+            last: None,
+        }
+    }
+
+    /// Refill `out` with up to `want` further ids. Empty means exhausted.
+    fn next_chunk(&mut self, want: usize, out: &mut Vec<u32>) {
+        out.clear();
+        while out.len() < want {
+            let Some(std::cmp::Reverse((v, i))) = self.heap.pop() else {
+                return;
+            };
+            if let Some(next) = self.lists[i as usize].next() {
+                self.heap.push(std::cmp::Reverse((next, i)));
+            }
+            if self.last != Some(v) {
+                self.last = Some(v);
+                out.push(v);
+            }
+        }
+    }
 }
 
 pub struct ScanPlan {
@@ -287,19 +350,55 @@ impl ScanPlan {
                     // When the accelerator resolved the CallSite candidates, those *are* the
                     // records to visit; nothing else needs looking at.
                     let indexed = match (tag, &sp.call_site_candidates) {
-                        (TAG_CALL_SITE_NODE, Some(nodes)) => Some(nodes.as_slice()),
+                        (TAG_CALL_SITE_NODE, Some(c)) => Some(c),
                         _ => None,
                     };
-                    let ids = indexed.unwrap_or_else(|| graph.ids_by_tag(tag));
-                    if ids.is_empty() {
+                    // A materialised candidate list (or the whole tag) is walked in
+                    // place; a disjunction's union is merged a chunk at a time instead,
+                    // so a satisfied LIMIT never pays for the postings it does not read.
+                    let slice: Option<&[u32]> = match indexed {
+                        Some(Candidates::Nodes(nodes)) => Some(nodes.as_slice()),
+                        Some(Candidates::Union(_)) => None,
+                        None => Some(graph.ids_by_tag(tag)),
+                    };
+                    if slice.is_some_and(<[u32]>::is_empty) {
                         continue;
                     }
+                    let mut merge = match (indexed, usable_index(graph)) {
+                        (Some(Candidates::Union(pairs)), Some(idx)) => {
+                            Some(PostingsMerge::new(idx, pairs))
+                        }
+                        _ => None,
+                    };
                     // When the accelerator answered exactly, the candidates are the
                     // matches: re-checking WHERE would decode four strings per record to
                     // re-derive what the dictionary already decided.
                     let verified = indexed.is_some() && sp.call_site_exact;
                     let mut hits: Vec<u32> = Vec::new();
-                    for chunk in ids.chunks(SWEEP_CHUNK) {
+                    let mut merged: Vec<u32> = Vec::new();
+                    let mut offset = 0usize;
+                    loop {
+                        let chunk: &[u32] = match slice {
+                            Some(ids) => {
+                                if offset >= ids.len() {
+                                    break;
+                                }
+                                let end = (offset + SWEEP_CHUNK).min(ids.len());
+                                let c = &ids[offset..end];
+                                offset = end;
+                                c
+                            }
+                            None => {
+                                match merge.as_mut() {
+                                    Some(m) => m.next_chunk(SWEEP_CHUNK, &mut merged),
+                                    None => break,
+                                }
+                                if merged.is_empty() {
+                                    break;
+                                }
+                                &merged[..]
+                            }
+                        };
                         ex.cancel.check()?;
                         hits.clear();
                         if indexed.is_some() || sp.no_prefilter {
@@ -436,7 +535,7 @@ fn build_source_plan(
         && !preds
             .iter()
             .any(|p| graph.strings.index_of(p.property).is_some());
-    let pruned = |candidates: Vec<u32>, exact: bool| SourcePlan {
+    let pruned = |candidates: Candidates, exact: bool| SourcePlan {
         source,
         call_site: [None, None, None, None],
         call_site_only,
@@ -454,10 +553,22 @@ fn build_source_plan(
         // the whole query to an undifferentiated sweep of all sixty-four graphs, even
         // the ones whose dictionary holds no matching string at all.
         if tree_matches_nothing(graph, idx, tree, &mut memo) {
-            return pruned(Vec::new(), true);
+            return pruned(Candidates::Nodes(Vec::new()), true);
+        }
+        // A disjunction's candidates are a union of posting lists, and a union of sorted
+        // lists does not have to be built to be read in order. Handing the pairs to the
+        // merge keeps the answer identical and makes its cost proportional to how much of
+        // it the query actually consumes.
+        if tree.is_flat_or() {
+            if let Some(sets) = property_sets(graph, idx, tree, &mut memo) {
+                let cost = sets.posting_cost(idx);
+                if cost > MERGE_FLOOR && cost * POSTING_SWEEP_RATIO <= idx.call_site_count() {
+                    return pruned(Candidates::Union(sets.pairs()), true);
+                }
+            }
         }
         if let Some((candidates, exact)) = indexed_candidates(graph, idx, tree, &mut memo) {
-            return pruned(candidates, exact);
+            return pruned(Candidates::Nodes(candidates), exact);
         }
     }
     // The bitset sweep can only express a disjunction. A conjunction the index could not
@@ -702,6 +813,10 @@ fn leaf_candidates(
 
 /// Walking postings stops paying off once they cover this fraction of the records.
 const POSTING_SWEEP_RATIO: usize = 8;
+/// Below this many postings, building the union outright beats merging it lazily: the
+/// heap costs a comparison and a mmap read per id, where a short list is one `extend`
+/// and a sort that fits in cache.
+const MERGE_FLOOR: usize = 4096;
 /// Below this many surviving candidates, further trigram intersection is not worth it.
 const TRIGRAM_INTERSECT_FLOOR: usize = 256;
 /// At most this many of a literal's trigrams are sized and intersected.
@@ -900,7 +1015,7 @@ fn build_sweep_plan(
             source,
             call_site: sets,
             call_site_only,
-            call_site_candidates: Some(Vec::new()),
+            call_site_candidates: Some(Candidates::Nodes(Vec::new())),
             call_site_exact: true,
             no_prefilter: false,
             skip_annotations,
@@ -1075,6 +1190,15 @@ impl PropertySets {
             }
         }
         total
+    }
+
+    /// The `(property, string id)` pairs behind these sets, for the lazy merge.
+    fn pairs(&self) -> Vec<(u8, u32)> {
+        let mut out = Vec::new();
+        for (property, ids) in self.ids.iter().enumerate() {
+            out.extend(ids.iter().map(|&s| (property as u8, s)));
+        }
+        out
     }
 
     /// Ascending node ids carrying any of these strings in its own property.
