@@ -1007,10 +1007,18 @@ impl serde::Serialize for CompactRowBody<'_> {
         }
         if let Some(g) = self.graph_id {
             // A row from one source names exactly that graph, as the row path does.
-            m.serialize_entry("$metadata", &serde_json::json!({ "graphIds": [g] }))?;
+            m.serialize_entry("$metadata", &CompactMeta { graph_ids: [g] })?;
         }
         m.end()
     }
+}
+
+/// `{"graphIds":[g]}` written straight to the output: building it as a
+/// `serde_json::Value` first cost a map, a key and a vector per row.
+#[derive(serde::Serialize)]
+struct CompactMeta<'a> {
+    #[serde(rename = "graphIds")]
+    graph_ids: [&'a str; 1],
 }
 
 impl serde::Serialize for ResultBody<'_> {
@@ -1564,9 +1572,7 @@ async fn metrics(State(s): St) -> Response {
             prometheus_double(nanos as f64 / 1e9)
         ));
     }
-    out.push_str(
-        "# HELP graphite_cypher_query_duration_seconds_max Cypher query execution time\n",
-    );
+    out.push_str("# HELP graphite_cypher_query_duration_seconds_max Cypher query execution time\n");
     out.push_str("# TYPE graphite_cypher_query_duration_seconds_max gauge\n");
     for (outcome, _, _) in m.snapshot() {
         let (_, max_nanos) = m.histogram(outcome);
