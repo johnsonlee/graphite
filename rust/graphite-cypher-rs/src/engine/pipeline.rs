@@ -541,6 +541,7 @@ impl Executor {
             Ok(true)
         };
         let seeds: Vec<Row> = rows.clone();
+        let mut cut_short = false;
         for r in rows {
             let cont = self.stream_match(
                 matcher,
@@ -552,6 +553,7 @@ impl Executor {
                 &mut consume,
             )?;
             if !cont {
+                cut_short = true;
                 break;
             }
         }
@@ -566,7 +568,13 @@ impl Executor {
         // is a disjunction of equalities, which the pushdown answers by binary search in
         // each dictionary and an intersection with the original predicate. Nothing new is
         // collected -- only the provenance of what is already there is merged.
-        if let Some((column, property, variable)) = targeted {
+        //
+        // It is only needed when the first pass stopped early. A scan that ran to the end
+        // has already merged every duplicate's graph into its row, so the second pass
+        // would re-plan all sixty-four graphs to learn nothing -- which is what happened
+        // on every DISTINCT query whose distinct values were fewer than its LIMIT, and
+        // those are most of them.
+        if let Some((column, property, variable)) = targeted.filter(|_| cut_short) {
             if let Some(filter) = selected_value_filter(&out, &column, &property, &variable) {
                 let combined = match shape.where_clause.clone() {
                     Some(w) => Expr::And(Box::new(w), Box::new(filter)),

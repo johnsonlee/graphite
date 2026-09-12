@@ -312,18 +312,29 @@ impl ScanPlan {
         // per graph, so a first batch of sixteen on four cores meant four graphs
         // planned serially per core before a single row could be produced -- half a
         // millisecond on a query that then took one graph's rows and stopped.
+        // Three batches at most: one graph, then one per thread, then everything left.
+        //
+        // The first is a single graph planned on this thread: a term dense enough to
+        // fill its LIMIT from one graph gets its rows without a thread fan-out. The
+        // second is a parallel batch for a term that needed a few more. Past that the
+        // term is rare, and a rare term is missing from most graphs -- so what remains
+        // is mostly establishing emptiness, at a few microseconds per graph, and the
+        // cost of doing that is dominated by how many times the work is fanned out and
+        // joined, not by the work. Doubling from four to sixteen meant seven batches
+        // for sixty-four graphs, and seven joins to learn that none of them matched.
+        let threads = rayon::current_num_threads().max(1);
         let mut batches: Vec<&[SourceIdx]> = Vec::new();
         let mut rest = sources.as_slice();
-        let threads = rayon::current_num_threads().clamp(1, PLAN_BATCH);
-        // The very first batch is a single graph, planned on this thread: a term dense
-        // enough to fill its LIMIT from one graph gets its rows without a thread
-        // fan-out, and a term that is not moves on to a parallel batch at once.
-        let mut size = 1;
-        while !rest.is_empty() {
+        for size in [1, threads] {
+            if rest.is_empty() {
+                break;
+            }
             let (head, tail) = rest.split_at(size.min(rest.len()));
             batches.push(head);
             rest = tail;
-            size = if size == 1 { threads } else { (size * 2).min(PLAN_BATCH) };
+        }
+        if !rest.is_empty() {
+            batches.push(rest);
         }
         for batch in batches {
             ex.cancel.check()?;
@@ -463,9 +474,6 @@ impl ScanPlan {
         Ok(true)
     }
 }
-
-/// Graphs planned together before any of their rows are consumed.
-const PLAN_BATCH: usize = 16;
 
 /// Candidates are examined in chunks this large, so a satisfied LIMIT stops the sweep.
 const SWEEP_CHUNK: usize = 65_536;
