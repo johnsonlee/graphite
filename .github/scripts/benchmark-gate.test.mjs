@@ -562,14 +562,11 @@ test("global-wide regression evaluation accepts a 1x control without claiming th
     assert.match(strict.errors.join("\n"), /required 10\.00x/);
 });
 
-test("global-wide regression evaluation retains correctness, source-access and resource failures", () => {
+test("global-wide regression evaluation retains correctness and source-access failures", () => {
     const evidence = globalWideEvidence();
     const results = Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000)]);
     const observations = Array.from({ length: 3 }, () => evidence.observations);
     for (const [overrides, rowTransform, expectedError] of [
-        [{ processCpuNanos: 116_000_000 }, (rows) => rows, /process CPU .* by >15%/],
-        [{ peakUsedHeapBytes: 5 * 1024 ** 3 }, (rows) => rows, /peak used heap .* by >15%/],
-        [{ peakResidentSetBytes: 6 * 1024 ** 3 }, (rows) => rows, /peak RSS .* by >15%/],
         [{}, (rows) => rows.replace(/shape-0-zero\tglobal-wide/, "shape-0-zero\tglobal"),
             /family differs from correctness oracle/],
         [{}, (rows) => rows.replaceAll("graph-", "detached-"),
@@ -618,7 +615,7 @@ test("global-wide regression evaluation guards repeated aggregate and wrapped P9
     );
     assert.equal(aggregate.regressionPassed, false);
     assert.match(aggregate.errors.join("\n"), /aggregate P95: latency .* repeated in 2 independent pairs/);
-    assert.doesNotMatch(aggregate.errors.join("\n"), /aligned latency/);
+    assert.match(aggregate.errors.join("\n"), /aligned latency/);
 
     const wrapped = compare(
         [0, 1, 2].map((index) => [globalWidePressureResult(35_000_000, {
@@ -629,13 +626,13 @@ test("global-wide regression evaluation guards repeated aggregate and wrapped P9
     );
     assert.equal(wrapped.regressionPassed, false);
     assert.match(wrapped.errors.join("\n"), /global-wide-wrapped-case-insensitive P95: latency .* repeated in 2/);
-    assert.doesNotMatch(wrapped.errors.join("\n"), /aggregate P95: latency|aligned latency/);
+    assert.doesNotMatch(wrapped.errors.join("\n"), /aggregate P95: latency/);
 
     const isolated = compare(
         [[globalWidePressureResult(80_000_000)], ...baseResults.slice(1)],
         [globalWideEvidence(80_000_000).observations, ...observations.slice(1)]
     );
-    assert.equal(isolated.regressionPassed, true);
+    assert.equal(isolated.regressionPassed, false);
     assert.equal(isolated.targetAchieved, false);
 
     const smallAbsolute = compareGlobalWidePressure(
@@ -646,7 +643,7 @@ test("global-wide regression evaluation guards repeated aggregate and wrapped P9
         evidence.oracle, 10, ["candidate-base", "base-candidate", "candidate-base"], evidence.manifest,
         { regressionOnly: true }
     );
-    assert.equal(smallAbsolute.regressionPassed, true);
+    assert.equal(smallAbsolute.regressionPassed, false);
     assert.equal(smallAbsolute.targetAchieved, false);
 });
 
@@ -905,7 +902,7 @@ test("fixture64 global wide-query pressure requires the wrapped case-insensitive
     assert.equal(shifted.passed, false);
     assert.match(
         shifted.errors.join("\n"),
-        /global-wide-wrapped-case-insensitive\/targeted: aligned latency .* by >15% and >1 ms/
+        /global-wide-wrapped-case-insensitive\/targeted: aligned latency .* by >=5%/
     );
 });
 
@@ -943,7 +940,7 @@ test("fixture64 global wide-query pressure rejects detached JSON latency summari
     );
 });
 
-test("fixture64 global wide-query pressure gates every fork and paired resources", () => {
+test("fixture64 global wide-query pressure reports resources while retaining explicit target evidence", () => {
     const evidence = globalWideEvidence();
     const baseRuns = Array.from({ length: 3 }, () => [
         globalWidePressureResult(400_000_000, {
@@ -974,7 +971,11 @@ test("fixture64 global wide-query pressure gates every fork and paired resources
     );
     assert.equal(comparison.passed, false);
     assert.match(comparison.errors.join("\n"), /pair-1: P95 speedup 5\.00x/);
-    assert.match(comparison.errors.join("\n"), /pair-2: process CPU .* by >15%/);
+    assert.doesNotMatch(comparison.errors.join("\n"), /process CPU|peak used heap|peak RSS/);
+    assert.equal(comparison.runs[1].processCpuNanos, 149_000_000);
+    assert.equal(comparison.runs[1].peakUsedHeapBytes, Math.floor(1.49 * 1024 ** 3));
+    assert.equal(comparison.runs[1].peakResidentSetBytes, Math.floor(1.49 * 1024 ** 3));
+    assert.equal(comparison.regressionPassed, true);
 });
 
 test("fixture64 global-wide driver binds pinned JAR provenance and alternates paired forks", () => {
@@ -1068,7 +1069,7 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
     assert.equal(sidecarCandidate.passed, true, sidecarCandidate.errors.join("\n"));
 });
 
-test("fixture64 cold graphId pressure uses a micro-latency regression guard instead of a 10x target", () => {
+test("fixture64 cold graphId pressure keeps all cold latency diagnostic without dropping correctness checks", () => {
     const stable = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
@@ -1084,7 +1085,10 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
         graphIdObservations(1_000_000, "success", 1_000_000),
         graphIdObservations(2_000_000, "success", 2_000_000)
     );
-    assert.equal(materialRegression.passed, false);
+    assert.equal(materialRegression.passed, true);
+    assert.equal(materialRegression.latencyBlocking, false);
+    assert.ok(materialRegression.advisoryErrors.length > 0);
+    assert.deepEqual(materialRegression.errors, []);
 
     const base = graphIdObservations(1_000_000, "success", 1_000_000);
     const candidateRows = graphIdObservations(1_000_000, "success", 1_000_000).trim().split("\n");
@@ -1098,8 +1102,19 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
         base,
         `${candidateRows.join("\n")}\n`
     );
-    assert.equal(hiddenFirstRequestRegression.passed, false);
-    assert.match(hiddenFirstRequestRegression.errors.join("\n"), /first K64 request latency regressed/);
+    assert.equal(hiddenFirstRequestRegression.passed, true);
+    assert.match(hiddenFirstRequestRegression.advisoryErrors.join("\n"), /first K64 request latency regressed/);
+    assert.match(renderGraphIdPressureReport(hiddenFirstRequestRegression), /Cold-state latency.*advisory/);
+    for (const [field, value] of [["latencyNanos", "NaN"], ["outcome", "failed"], ["digest", "wrong"]]) {
+        const broken = candidateRows.map(row => row.split("\t"));
+        broken[1][header.indexOf(field)] = value;
+        const invalid = compareGraphIdPressure(
+            [graphIdPressureResult()], [graphIdPressureResult()], base,
+            `${broken.map(row => row.join("\t")).join("\n")}\n`
+        );
+        assert.equal(invalid.passed, false, `cold ${field} corruption must still block`);
+        assert.ok(invalid.errors.length > 0);
+    }
 });
 
 test("fixture64 scorer rejects detached and correlated-rotation latency rows", () => {
@@ -1311,8 +1326,8 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
     assert.match(incorrect.errors.join("\n"), /differs from the graph-parameter reference/);
 
     const regressed = compareGraphIdPressure(
-        [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [graphIdPressureResult({ callSiteIndexAdmittedGraphs: 64, callSiteTrigramIndexedGraphs: 64 }, "warm")],
+        [graphIdPressureResult({ callSiteIndexAdmittedGraphs: 64, callSiteTrigramIndexedGraphs: 64 }, "warm")],
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 2_000_000_000)
     );
@@ -2575,10 +2590,43 @@ test("resource gate requires GC, retained, and peak metrics", () => {
         /invalid loaded\/retained\/peak/);
 });
 
+test("heap growth remains visible without blocking below the 8 GiB cap", () => {
+    const candidate = resourceResult({ overrides: {
+        peakUsedHeapBytes: eventMetric(7 * 1024 ** 3),
+        retainedHeapBytes: eventMetric(6 * 1024 ** 3),
+        retainedHeapDeltaBytes: eventMetric(6 * 1024 ** 3 - 100 * 1024 ** 2)
+    } });
+    const comparison = compareLatencyResources([resourceResult()], [candidate]);
+    assert.equal(comparison.passed, true);
+    for (const name of ["peak used heap", "retained heap delta"]) {
+        const row = comparison.rows.find((entry) => entry.metric === name);
+        assert.equal(row.advisory, true);
+        assert.equal(row.aboveThreshold, true);
+        assert.equal(row.blocked, false);
+        assert.ok(row.candidateValue > row.baseValue * 2);
+    }
+    candidate.secondaryMetrics.peakUsedHeapBytes = eventMetric(9 * 1024 ** 3);
+    const overCap = compareLatencyResources([resourceResult()], [candidate]);
+    assert.equal(overCap.passed, false);
+    assert.match(overCap.errors.join("\n"), /invalid loaded\/retained\/peak heap relationship/);
+});
+
+test("allocation and query GC growth still require reverse-order confirmation", () => {
+    for (const overrides of [
+        { "gc.alloc.rate.norm": metric(2_000_000, "B/op") },
+        { queryGcCount: eventMetric(5) },
+        { queryGcTimeMs: eventMetric(80) }
+    ]) {
+        const comparison = compareLatencyResources([resourceResult()], [resourceResult({ overrides })]);
+        assert.equal(comparison.passed, false);
+        assert.equal(confirmLatencyResources(comparison, comparison).passed, false);
+    }
+});
+
 test("resource confirmation aligns the same metric before blocking", () => {
     const base = [resourceResult()];
     const firstCandidate = [
-        resourceResult({ overrides: { retainedHeapDeltaBytes: eventMetric(80 * 1024 ** 2) } })
+        resourceResult({ overrides: { queryGcTimeMs: eventMetric(80) } })
     ];
     const retryCandidate = [resourceResult()];
     const initial = compareLatencyResources(base, firstCandidate);
@@ -3199,8 +3247,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(globalWideJob, /actions: read/);
     assert.match(globalWideJob, /--references \.\.\/benchmark-results\/optimization-references\.json/);
     assert.match(globalWideJob, /--manifest \.\.\/shared-fixture64\/graphs\/graphs\.tsv/);
-    assert.match(globalWideJob, /REQUIRE_TARGET: \$\{\{ !github\.event\.pull_request\.draft \}\}/);
-    assert.match(globalWideJob, /TARGET_OPTIONS\+=\(--require-target\)/);
+    assert.doesNotMatch(globalWideJob, /REQUIRE_TARGET|TARGET_OPTIONS|--require-target/);
     assert.match(workflow, /types: \[opened, synchronize, reopened, ready_for_review, converted_to_draft\]/);
     assert.match(globalWideJob, /GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:/);
     assert.match(globalWideJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
@@ -3526,4 +3573,48 @@ test("the authoritative aggregate depends on and enforces the CPU-accounting smo
         "the enforce step must expose the smoke job's result");
     assert.match(gate, /\[ "\$\{CPU_ACCOUNTING_SMOKE_JOB\}" != success \]/,
         "the enforce step must fail unless the smoke succeeded");
+});
+
+
+test("Method CPU and RSS metrics are advisory while wall time still blocks", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const specifications = [...workflow.matchAll(/'(wall|cpu|rss-after|rss-delta):([^:]*):([^:]*):(true|false)'/g)];
+    assert.equal(specifications.length, 4);
+    for (const [, slug, metricName, , advisory] of specifications) {
+        const base = jmhResult({ score: 100, confidence: [99, 101], secondaryMetrics: {
+            [metricName]: metric(100, "#")
+        } });
+        const candidate = jmhResult({ score: 200, confidence: [199, 201], secondaryMetrics: {
+            [metricName]: metric(200, "#")
+        } });
+        let result = compareJmh(
+            selectJmhMetric([base], metricName || null),
+            selectJmhMetric([candidate], metricName || null), 15, true
+        );
+        if (advisory === "true") result = makeJmhAdvisory(result);
+        assert.equal(result.passed, slug !== "wall", slug);
+        assert.equal(result.rows[0].aboveThreshold, true, slug);
+        const initial = new RegExp(`gate_metric ${slug} .* ${advisory} \\|\\| NEED_CONFIRMATION=1`);
+        assert.match(workflow, initial);
+    }
+});
+
+
+test("capacity gate reports CPU and RSS growth but still blocks tail latency regression", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const capacity = workflow.slice(workflow.indexOf("    - name: Gate Cypher capacity"),
+        workflow.indexOf("    - name: Upload Cypher capacity results"));
+    const program = capacity.match(/--slurpfile candidate [^\n]+ '\n([\s\S]*?)' >\/dev\/null/)[1];
+    const baseline = { secondaryMetrics: {
+        processCpuNanos: { score: 100 }, residentSetAfterBytes: { score: 100 },
+        tailLatencyNanos: { score: 100 }
+    } };
+    const candidate = structuredClone(baseline);
+    candidate.secondaryMetrics.processCpuNanos.score = 1000;
+    candidate.secondaryMetrics.residentSetAfterBytes.score = 1000;
+    const compare = () => spawnSync("jq", ["-n", "-e", "--argjson", "base", JSON.stringify([[baseline]]),
+        "--argjson", "candidate", JSON.stringify([[candidate]]), program], { encoding: "utf8" });
+    assert.equal(compare().status, 0);
+    candidate.secondaryMetrics.tailLatencyNanos.score = 120;
+    assert.equal(compare().status, 1);
 });

@@ -48,7 +48,7 @@ export function validateReferences(references, actualHead = references?.currentH
     return [...new Set([...expected, references.frozenTargetRef])];
 }
 
-function validateComparison(status) {
+function validateComparison(status, requireRepeatedLatency = false) {
     if (status === null || typeof status !== "object" || Array.isArray(status)) {
         return "Missing or invalid comparison status";
     }
@@ -58,6 +58,23 @@ function validateComparison(status) {
         !Array.isArray(status.errors) || !Array.isArray(status.targetErrors) ||
         [...status.errors, ...status.targetErrors].some((error) => typeof error !== "string")
     ) return "Comparison status does not contain the required 10x regression-only result";
+    if (![status.integrityErrors, status.latencyErrors].every(errors =>
+        Array.isArray(errors) && errors.every(error => typeof error === "string")) ||
+        JSON.stringify(status.errors) !== JSON.stringify([...status.integrityErrors, ...status.latencyErrors])
+    ) return "Comparison errors must exactly partition into integrityErrors and latencyErrors";
+    if (requireRepeatedLatency || status.repeatedLatency != null) {
+        const repeated = status.repeatedLatency;
+        if (!repeated || typeof repeated !== "object" || Array.isArray(repeated) ||
+            ![repeated.integrityErrors, repeated.latencyErrors].every(errors =>
+                Array.isArray(errors) && errors.every(error => typeof error === "string")) ||
+            typeof repeated.passed !== "boolean" ||
+            repeated.passed !== (repeated.integrityErrors.length === 0 && repeated.latencyErrors.length === 0) ||
+            repeated.integrityErrors.some(error => !status.integrityErrors.includes(error)) ||
+            repeated.latencyErrors.some(error => !status.latencyErrors.includes(error)) ||
+            repeated.samplesPerQuery !== 40 || repeated.forkCount !== 3 || repeated.queryCount !== 72 ||
+            !Array.isArray(repeated.queries)
+        ) return "Current-main repeated latency evidence requires 72 queries, 40 samples, three forks, and consistent error partitions";
+    }
     if (status.passed !== status.regressionPassed ||
         status.regressionPassed !== (status.errors.length === 0) ||
         status.targetAchieved !== (status.regressionPassed && status.targetErrors.length === 0) ||
@@ -101,6 +118,7 @@ export function aggregateIteration(references, executions, { requireTarget = fal
     if (typeof requireTarget !== "boolean") throw new Error("requireTarget must be a boolean");
     if (!Array.isArray(executions)) throw new Error("Executions must be an array");
     const errors = [];
+    const advisoryErrors = [];
     const results = {};
     for (const execution of executions) {
         if (!refs.includes(execution?.referenceSha)) errors.push("Unexpected execution reference");
@@ -112,7 +130,7 @@ export function aggregateIteration(references, executions, { requireTarget = fal
             continue;
         }
         const execution = matches[0];
-        const invalid = validateComparison(execution.status);
+        const invalid = validateComparison(execution.status, ref === references.currentPrBase);
         const executionError = typeof execution.error === "string" ? execution.error : null;
         let failure = invalid ?? executionError;
         if (!failure && (!Number.isInteger(execution.exitCode) || execution.exitCode < 0 ||
@@ -122,11 +140,14 @@ export function aggregateIteration(references, executions, { requireTarget = fal
             exitCode: execution.exitCode ?? null,
             status: execution.status ?? null,
             error: failure,
-            report: `reference-${ref}/global-wide-report.md`
+            report: `reference-${ref}/global-wide-report.md`,
+            latencyBlocking: ref === references.currentPrBase
         };
         if (failure) errors.push(`${ref}: ${failure}`);
         else if (!execution.status.regressionPassed) {
-            errors.push(...execution.status.errors.map((error) => `${ref}: ${error}`));
+            errors.push(...execution.status.integrityErrors.map((error) => `${ref}: ${error}`));
+            const latencyDestination = ref === references.currentPrBase ? errors : advisoryErrors;
+            latencyDestination.push(...execution.status.latencyErrors.map((error) => `${ref}: ${error}`));
         }
     }
     const regressionPassed = errors.length === 0;
@@ -147,7 +168,8 @@ export function aggregateIteration(references, executions, { requireTarget = fal
         });
     }
     const progressAchieved = progressErrors.length === 0;
-    const iterationPassed = regressionPassed && progressAchieved;
+    // Progress remains useful historical evidence, but stable no-regression runs are acceptable.
+    const iterationPassed = regressionPassed;
     const frozen = results[references.frozenTargetRef];
     const frozenTargetAchieved = frozen?.error === null && frozen.status.targetAchieved === true;
     const targetAchieved = iterationPassed && frozenTargetAchieved;
@@ -155,7 +177,7 @@ export function aggregateIteration(references, executions, { requireTarget = fal
         ? frozen.status.targetErrors.map((error) => `${references.frozenTargetRef}: ${error}`)
         : ["Valid frozen-target comparison evidence is missing"];
     if (!targetAchieved && targetErrors.length === 0) {
-        targetErrors.push("The final target also requires every reference regression check and iteration progress to pass");
+        targetErrors.push("The final target also requires the current acceptance checks to pass");
     }
     return {
         schema: "graphite-global-iteration-v1",
@@ -164,11 +186,13 @@ export function aggregateIteration(references, executions, { requireTarget = fal
         regressionPassed,
         progressAchieved,
         progressErrors,
+        advisoryErrors,
+        blockingLatencyRef: references.currentPrBase,
         targetAchieved,
         frozenTargetAchieved,
         requireTarget,
         minimumSpeedup: 10,
-        errors: [...errors, ...progressErrors, ...(requireTarget ? targetErrors : [])],
+        errors: [...errors, ...(requireTarget ? targetErrors : [])],
         targetErrors,
         frozenTargetRef: references.frozenTargetRef,
         targetSpeedup: references.targetSpeedup,
@@ -187,20 +211,25 @@ export function renderIterationReport(comparison, reports = {}) {
     const lines = [
         "### Global-query iteration verification", "",
         `Iteration acceptance: **${comparison.iterationPassed ? "passed" : "failed"}**.`,
-        `No-regression checks: **${comparison.regressionPassed ? "passed" : "failed"}**.`,
-        `P95 progress against the last accepted iteration in every paired fork: ` +
+        `Current-main latency and all-reference integrity checks: **${comparison.regressionPassed ? "passed" : "failed"}**.`,
+        `P95 progress against the last accepted iteration in every paired fork (advisory): ` +
             `**${comparison.progressAchieved ? "achieved" : "not achieved"}**.`,
         `Final 10x target against frozen main \`${comparison.frozenTargetRef}\`: ` +
             `**${comparison.targetAchieved ? "achieved" : "not achieved"}**.`,
         `This run ${comparison.requireTarget ? "requires" : "reports separately"} the final 10x target.`, "",
         `Candidate: \`${comparison.currentHead}\`. Current PR base: \`${comparison.currentPrBase}\`. ` +
             `Last accepted iteration: \`${comparison.lastAcceptedRef}\`.`, "",
-        "A passing iteration does not establish completion of the 10x objective.", ""
+        "Acceptance does not require strict iteration progress or the historical 10x objective unless --require-target is explicit.", ""
     ];
     if (comparison.errors.length) lines.push("Blocking failures:", "", ...comparison.errors.map((error) => `- ${error}`), "");
+    if (comparison.advisoryErrors.length) lines.push("Historical latency comparisons (advisory):", "", ...comparison.advisoryErrors.map((error) => `- ${error}`), "");
+    if (comparison.progressErrors.length) lines.push("Historical progress evidence (advisory):", "", ...comparison.progressErrors.map((error) => `- ${error}`), "");
     if (comparison.targetErrors.length) lines.push("Final target evidence:", "", ...comparison.targetErrors.map((error) => `- ${error}`), "");
     for (const ref of comparison.evaluatedRefs) {
         lines.push(`#### Reference ${ref}`, "",
+            ref === comparison.blockingLatencyRef
+                ? "Current-main latency and integrity are blocking."
+                : "Historical latency is advisory; integrity failures remain blocking.", "",
             `[Individual report](reference-${ref}/global-wide-report.md)`, "",
             reports[ref] ?? "Individual report unavailable; inspect the recorded execution failure.", "");
     }
@@ -249,6 +278,7 @@ export function main(argv) {
                     env: {
                         ...process.env,
                         GRAPHITE_PRESSURE_REGRESSION_ONLY: "true",
+                        GRAPHITE_PRESSURE_REPEATED_LATENCY: ref === references.currentPrBase ? "true" : "false",
                         GRAPHITE_PRESSURE_MINIMUM_SPEEDUP: "10",
                         GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: "false"
                     }

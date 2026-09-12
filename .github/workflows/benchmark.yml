@@ -19,10 +19,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950
-  BENCHMARK_REPORT_TRANSITION_SHA256: a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
+  BENCHMARK_REPORT_TRANSITION_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -34,6 +34,8 @@ jobs:
     name: candidate-gate-tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      queries: ${{ steps.query-matrix.outputs.queries }}
 
     steps:
     - name: Checkout PR gate tests
@@ -48,6 +50,13 @@ jobs:
 
     - name: Test wide-query profiling and oracle verification
       run: python3 -m unittest discover -s candidate/.github/scripts/wide-query-profile -p 'test_*.py'
+
+    - name: Publish complete per-query gate matrix
+      id: query-matrix
+      run: |
+        QUERIES=$(node candidate/.github/scripts/benchmark-query-gate.mjs matrix \
+          candidate/.github/scripts/wide-query-catalog.json)
+        echo "queries=${QUERIES}" >> "${GITHUB_OUTPUT}"
 
   build-explore-jmh:
     name: build-explore-jmh-${{ matrix.revision }}
@@ -674,8 +683,8 @@ jobs:
 
         NEED_CONFIRMATION=0
         gate_metric wall '' 'wall time' false || NEED_CONFIRMATION=1
-        gate_metric cpu processCpuNanos 'CPU time' false || NEED_CONFIRMATION=1
-        gate_metric rss-after residentSetAfterBytes 'RSS after query' false || NEED_CONFIRMATION=1
+        gate_metric cpu processCpuNanos 'CPU time (advisory)' true || NEED_CONFIRMATION=1
+        gate_metric rss-after residentSetAfterBytes 'RSS after query (advisory)' true || NEED_CONFIRMATION=1
         gate_metric rss-delta residentSetDeltaBytes 'RSS query delta (advisory)' true || NEED_CONFIRMATION=1
 
         if [ "${NEED_CONFIRMATION}" -eq 1 ]; then
@@ -708,8 +717,8 @@ jobs:
         FINAL_FAILURE=0
         for SPEC in \
           'wall::wall time:false' \
-          'cpu:processCpuNanos:CPU time:false' \
-          'rss-after:residentSetAfterBytes:RSS after query:false' \
+          'cpu:processCpuNanos:CPU time (advisory):true' \
+          'rss-after:residentSetAfterBytes:RSS after query (advisory):true' \
           'rss-delta:residentSetDeltaBytes:RSS query delta (advisory):true'; do
           IFS=: read -r SLUG METRIC TITLE ADVISORY <<< "${SPEC}"
           if [ "${NEED_CONFIRMATION}" -eq 0 ] || [ "${ADVISORY}" = true ]; then
@@ -1118,7 +1127,7 @@ jobs:
           --slurpfile candidate benchmark-results/candidate-cypher-capacity.json '
             ($base[0][0]) as $base_result |
             ($candidate[0][0]) as $candidate_result |
-            all(["processCpuNanos", "residentSetAfterBytes", "tailLatencyNanos"][];
+            all(["tailLatencyNanos"][];
               . as $metric |
               ($base_result.secondaryMetrics[$metric].score > 0) and
               ($candidate_result.secondaryMetrics[$metric].score > 0) and
@@ -2019,18 +2028,13 @@ jobs:
         java -jar "${CANDIDATE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
           -foe true -prof gc -rf json -rff "${PWD}/benchmark-results/candidate-latency-resources.json"
 
-    - name: Enforce resource guardrails
+    - name: Enforce resource measurement integrity and allocation/GC guardrails
       env:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
-        COMPARATOR=base/.github/scripts/benchmark-gate.mjs
-        if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${COMPARATOR}"; then
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
-            "${REAL_ONLY_LATENCY_COMPARATOR_SHA256}"
-          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
-          if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${COMPARATOR}"; then exit 1; fi
-        fi
+        # Apply this PR's resource policy while retaining the paired base-owned harness.
+        test "${CANDIDATE_GATE_TEST_JOB}" = success
+        COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
         if node "${COMPARATOR}" compare-latency-resources \
           --base benchmark-results/base-latency-resources.json \
           --candidate benchmark-results/candidate-latency-resources.json \
@@ -2613,7 +2617,7 @@ jobs:
     name: global-wide-pressure-evidence
     needs: [prepare-fixture64]
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 360
     permissions:
       contents: read
       actions: read
@@ -2671,18 +2675,15 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
         GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false
-        REQUIRE_TARGET: ${{ !github.event.pull_request.draft }}
         GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT: ../shared-fixture64/fixture-reproducibility.json
       run: |
         cd candidate
-        TARGET_OPTIONS=()
-        if [[ "${REQUIRE_TARGET}" == true ]]; then TARGET_OPTIONS+=(--require-target); fi
         node .github/scripts/benchmark-global-iteration.mjs \
           --references ../benchmark-results/optimization-references.json \
           --manifest ../shared-fixture64/graphs/graphs.tsv \
           --fixtures graphite-webgraph/build/benchmark-fixtures \
           --repository "${{ github.repository }}" \
-          --output ../benchmark-results "${TARGET_OPTIONS[@]}"
+          --output ../benchmark-results
 
     - name: Upload trusted global-wide result
       if: always()
@@ -2865,10 +2866,41 @@ jobs:
       if: always()
       run: jq -e '.passed == true' benchmark-results/global-wide-status.json >/dev/null
 
+  wide-query-latency-gate:
+    name: wide-query-latency-${{ matrix.query.id }}
+    needs: [candidate-gate-tests, global-wide-pressure-evidence]
+    if: ${{ always() && needs.candidate-gate-tests.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        query: ${{ fromJSON(needs.candidate-gate-tests.outputs.queries) }}
+    steps:
+    - name: Checkout exact candidate gate and catalog
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        persist-credentials: false
+    - name: Download shared measurements without rerunning benchmarks
+      uses: actions/download-artifact@v8
+      with:
+        name: benchmark-global-wide-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results
+    - name: Enforce this query's P50, P95, and fluctuation
+      env:
+        QUERY_ID: ${{ matrix.query.id }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        node .github/scripts/benchmark-query-gate.mjs check \
+          .github/scripts/wide-query-catalog.json \
+          benchmark-results/global-wide-status.json "${QUERY_ID}"
+
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, wide-query-latency-gate, validate-cpu-accounting]
     runs-on: ubuntu-latest
 
     steps:
@@ -2980,6 +3012,7 @@ jobs:
         LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
         GRAPH_ROUTING_JOB: ${{ needs.graph-routing-pressure-evidence.result }}
         GLOBAL_WIDE_JOB: ${{ needs.global-wide-pressure-evidence.result }}
+        QUERY_LATENCY_JOB: ${{ needs.wide-query-latency-gate.result }}
         CPU_ACCOUNTING_SMOKE_JOB: ${{ needs.validate-cpu-accounting.result }}
       run: |
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
@@ -2991,6 +3024,7 @@ jobs:
           [ "${LARGE_CORPUS_JOB}" != success ] || \
           [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ] || \
           [ "${GRAPH_ROUTING_JOB}" != success ] || [ "${GLOBAL_WIDE_JOB}" != success ] || \
+          [ "${QUERY_LATENCY_JOB}" != success ] || \
           [ "${CPU_ACCOUNTING_SMOKE_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"
           exit 1

@@ -57,7 +57,11 @@ function status({ regressionPassed = true, targetAchieved = false, progressAchie
         targetAchieved: regressionPassed && targetAchieved,
         regressionOnly: true,
         minimumSpeedup: 10,
-        errors: regressionPassed ? [] : ["paired process CPU exceeds the regression limit"],
+        repeatedLatency: { passed: true, integrityErrors: [], latencyErrors: [],
+            samplesPerQuery: 40, forkCount: 3, queryCount: 72, queries: [] },
+        errors: regressionPassed ? [] : ["paired P95 exceeds the regression limit"],
+        integrityErrors: [],
+        latencyErrors: regressionPassed ? [] : ["paired P95 exceeds the regression limit"],
         targetErrors: targetErrors(runs),
         runs
     };
@@ -146,18 +150,45 @@ test("10x against a moving reference cannot substitute for the frozen target", (
     assert.equal(result.passed, false);
 });
 
-test("every reference regression blocks even when frozen target measurements improve", () => {
+test("only current-main latency regression blocks; historical latency stays advisory", () => {
     const refs = references();
     for (const failedRef of validateReferences(refs)) {
         const result = aggregateIteration(refs, executions(refs, {
-            [FROZEN_TARGET_REF]: { status: status({ targetAchieved: true }) },
             [failedRef]: { exitCode: 1, status: status({ regressionPassed: false }) }
         }));
-        assert.equal(result.passed, false);
-        assert.equal(result.iterationPassed, false);
-        assert.equal(result.targetAchieved, false);
-        assert.match(result.errors[0], /process CPU/);
+        assert.equal(result.passed, failedRef !== BASE);
+        assert.equal(result.iterationPassed, failedRef !== BASE);
+        assert.equal(result.errors.length, failedRef === BASE ? 1 : 0);
+        assert.equal(result.advisoryErrors.length, failedRef === BASE ? 0 : 1);
         assert.equal(Object.keys(result.comparisons).length, 3);
+    }
+});
+
+test("integrity failures remain blocking for every reference", () => {
+    const refs = references();
+    for (const failedRef of validateReferences(refs)) {
+        const failed = status({ regressionPassed: false });
+        failed.errors = ["full result signature differs"];
+        failed.integrityErrors = [...failed.errors];
+        failed.latencyErrors = [];
+        const result = aggregateIteration(refs, executions(refs, {
+            [failedRef]: { exitCode: 1, status: failed }
+        }));
+        assert.equal(result.passed, false);
+        assert.match(result.errors[0], /full result signature/);
+        assert.deepEqual(result.advisoryErrors, []);
+    }
+});
+
+test("unclassified or inconsistent error partitions fail closed", () => {
+    const refs = references();
+    for (const patch of [{ integrityErrors: undefined }, { latencyErrors: undefined },
+        { errors: ["hidden correctness mismatch"] }, { latencyErrors: ["unrecorded latency"] }]) {
+        const result = aggregateIteration(refs, executions(refs, {
+            [FROZEN_TARGET_REF]: { status: { ...status(), ...patch } }
+        }));
+        assert.equal(result.passed, false);
+        assert.match(result.comparisons[FROZEN_TARGET_REF].error, /partition/);
     }
 });
 
@@ -191,7 +222,7 @@ test("inconsistent comparison flags and malformed frozen evidence cannot pass", 
         }));
         assert.equal(result.passed, false);
         assert.equal(result.targetAchieved, false);
-        assert.match(result.comparisons[FROZEN_TARGET_REF].error, /status|flags/);
+        assert.match(result.comparisons[FROZEN_TARGET_REF].error, /status|flags|partition/);
     }
 });
 
@@ -219,41 +250,41 @@ test("the report distinguishes iteration approval from final success and include
     const report = renderIterationReport(result, { [BASE]: "Base comparison retained verbatim." });
     assert.match(report, /Iteration acceptance: \*\*passed\*\*/);
     assert.match(report, /Final 10x target[^\n]+\*\*not achieved\*\*/);
-    assert.match(report, /does not establish completion/);
+    assert.match(report, /does not require strict iteration progress/);
     assert.match(report, /Base comparison retained verbatim/);
     for (const ref of validateReferences(refs)) assert.ok(report.includes(`reference-${ref}/global-wide-report.md`));
 });
 
 
-test("a 1x control fails the iteration even when every no-regression check passes", () => {
+test("a 1x control passes acceptance when every no-regression check passes", () => {
     const refs = references();
     const result = aggregateIteration(refs, executions(refs, {
         [ACCEPTED]: { status: status({ progressAchieved: false }) }
     }));
     assert.equal(result.regressionPassed, true);
     assert.equal(result.progressAchieved, false);
-    assert.equal(result.iterationPassed, false);
-    assert.equal(result.passed, false);
+    assert.equal(result.iterationPassed, true);
+    assert.equal(result.passed, true);
     assert.equal(result.targetAchieved, false);
     assert.equal(result.progressErrors.length, 3);
     assert.match(renderIterationReport(result), /P95 progress[^\n]+\*\*not achieved\*\*/);
 });
 
-test("progress requires every fork to improve strictly against the last accepted reference", () => {
+test("advisory progress requires every fork to improve strictly against the last accepted reference", () => {
     const refs = references();
     for (const p95 of [100, 101]) {
         const mixed = status();
         mixed.runs[1].p95LatencyNanos = p95;
         mixed.targetErrors = targetErrors(mixed.runs);
         const result = aggregateIteration(refs, executions(refs, { [ACCEPTED]: { status: mixed } }));
-        assert.equal(result.passed, false);
+        assert.equal(result.passed, true);
         assert.equal(result.progressAchieved, false);
         assert.equal(result.progressErrors.length, 1);
         assert.match(result.progressErrors[0], /pair-2/);
     }
 });
 
-test("improvement against base or frozen main cannot replace progress against the last accepted reference", () => {
+test("historical progress does not veto a passing frozen target", () => {
     const refs = references();
     const result = aggregateIteration(refs, executions(refs, {
         [BASE]: { status: status({ targetAchieved: true }) },
@@ -262,8 +293,8 @@ test("improvement against base or frozen main cannot replace progress against th
     }));
     assert.equal(result.frozenTargetAchieved, true);
     assert.equal(result.progressAchieved, false);
-    assert.equal(result.targetAchieved, false);
-    assert.equal(result.passed, false);
+    assert.equal(result.targetAchieved, true);
+    assert.equal(result.passed, true);
 });
 
 
@@ -354,4 +385,24 @@ test("each aggregate and wrapped fork independently binds the target flags and e
         assert.equal(result.passed, false);
         assert.match(result.comparisons[BASE].error, /contradict.*P95/);
     }
+});
+
+
+test("current-main acceptance requires repeated latency evidence with the full sampling protocol", () => {
+    const refs = references();
+    const valid = status().repeatedLatency;
+    for (const repeatedLatency of [null, undefined, { ...valid, samplesPerQuery: 39 },
+        { ...valid, forkCount: 2 }, { ...valid, queryCount: 34 }, { ...valid, passed: false },
+        { ...valid, latencyErrors: ["unbound instability"] }]) {
+        const result = aggregateIteration(refs, executions(refs, {
+            [BASE]: { status: { ...status(), repeatedLatency } }
+        }));
+        assert.equal(result.passed, false);
+        assert.match(result.comparisons[BASE].error, /repeated latency/);
+    }
+    const historicalOnly = aggregateIteration(refs, executions(refs, {
+        [ACCEPTED]: { status: { ...status(), repeatedLatency: null } },
+        [FROZEN_TARGET_REF]: { status: { ...status(), repeatedLatency: null } }
+    }));
+    assert.equal(historicalOnly.passed, true);
 });

@@ -31,6 +31,8 @@ TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 PUBLISH_EVIDENCE=${GRAPHITE_PRESSURE_PUBLISH_EVIDENCE:-true}
 SHARED_REPRODUCIBILITY_RECEIPT=${GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:-}
 REGRESSION_ONLY=${GRAPHITE_PRESSURE_REGRESSION_ONLY:-false}
+REPEATED_LATENCY=${GRAPHITE_PRESSURE_REPEATED_LATENCY:-true}
+[[ "${REPEATED_LATENCY}" == true || "${REPEATED_LATENCY}" == false ]]
 MINIMUM_SPEEDUP=${GRAPHITE_PRESSURE_MINIMUM_SPEEDUP:-10}
 [[ "${REGRESSION_ONLY}" == true || "${REGRESSION_ONLY}" == false ]]
 [[ "${MINIMUM_SPEEDUP}" == 10 ]]
@@ -163,11 +165,15 @@ run_pressure() {
   local JAR=$1
   local PREFIX=$2
   local CORRECTNESS_ARGS=$3
+  local LATENCY_ARGS=""
+  if [[ "${REPEATED_LATENCY}" == true ]]; then
+    LATENCY_ARGS="-Dgraphite.broad.pressure.latency.output=${PREFIX}.latency.tsv -Dgraphite.broad.pressure.latency.oracle=${ORACLE}.latency.correctness"
+  fi
   java -jar "${JAR}" "${FILTER}" \
     -p graphCount=64 -p coverageFamily=global-wide -p indexState=cold \
-    -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -rf json \
+    -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -to 120m -foe true -prof gc -rf json \
     -rff "${PREFIX}.json" \
-    -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} ${CORRECTNESS_ARGS} \
+    -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} ${CORRECTNESS_ARGS} ${LATENCY_ARGS} \
       -Dgraphite.broad.pressure.observations.output=${PREFIX}.tsv"
 }
 
@@ -181,6 +187,8 @@ BASE_JSON_FILES=()
 BASE_OBSERVATION_FILES=()
 CANDIDATE_JSON_FILES=()
 CANDIDATE_OBSERVATION_FILES=()
+BASE_LATENCY_FILES=()
+CANDIDATE_LATENCY_FILES=()
 for RUN in 1 2 3; do
   BASE_PREFIX=${OUTPUT_DIR}/base-global-wide-${RUN}
   CANDIDATE_PREFIX=${OUTPUT_DIR}/candidate-global-wide-${RUN}
@@ -201,12 +209,23 @@ for RUN in 1 2 3; do
   BASE_OBSERVATION_FILES+=("${BASE_PREFIX}.tsv")
   CANDIDATE_JSON_FILES+=("${CANDIDATE_PREFIX}.json")
   CANDIDATE_OBSERVATION_FILES+=("${CANDIDATE_PREFIX}.tsv")
+  if [[ "${REPEATED_LATENCY}" == true ]]; then
+    BASE_LATENCY_FILES+=("${BASE_PREFIX}.latency.tsv")
+    CANDIDATE_LATENCY_FILES+=("${CANDIDATE_PREFIX}.latency.tsv")
+  fi
 done
 
 IFS=, BASE_JSON_LIST="${BASE_JSON_FILES[*]}"
 IFS=, BASE_OBSERVATION_LIST="${BASE_OBSERVATION_FILES[*]}"
 IFS=, CANDIDATE_JSON_LIST="${CANDIDATE_JSON_FILES[*]}"
 IFS=, CANDIDATE_OBSERVATION_LIST="${CANDIDATE_OBSERVATION_FILES[*]}"
+if [[ "${REPEATED_LATENCY}" == true ]]; then
+  IFS=, BASE_LATENCY_LIST="${BASE_LATENCY_FILES[*]}"
+  IFS=, CANDIDATE_LATENCY_LIST="${CANDIDATE_LATENCY_FILES[*]}"
+  COMPARISON_OPTIONS+=(--base-latency-samples "${BASE_LATENCY_LIST}"
+    --candidate-latency-samples "${CANDIDATE_LATENCY_LIST}"
+    --latency-oracle "${ORACLE}.latency.correctness")
+fi
 COMPARISON_EXIT=0
 node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-global-wide-pressure \
   --bases "${BASE_JSON_LIST}" \
@@ -262,6 +281,10 @@ EVIDENCE_FILES=(
   "${BASE_JSON_FILES[@]}" "${BASE_OBSERVATION_FILES[@]}"
   "${CANDIDATE_JSON_FILES[@]}" "${CANDIDATE_OBSERVATION_FILES[@]}"
 )
+if [[ "${REPEATED_LATENCY}" == true ]]; then
+  EVIDENCE_FILES+=("${ORACLE}.latency.correctness"
+    "${BASE_LATENCY_FILES[@]}" "${CANDIDATE_LATENCY_FILES[@]}")
+fi
 FILES_JSON=$(for FILE in "${EVIDENCE_FILES[@]}"; do
   jq -n --arg name "$(basename "${FILE}")" --arg sha256 "$(sha256_file "${FILE}")" \
     '{key:$name,value:$sha256}'
