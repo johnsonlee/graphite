@@ -382,6 +382,87 @@ impl ScanPlan {
         where_clause: Option<&Expr>,
         consume: &mut dyn FnMut(Row) -> CypherResult<bool>,
     ) -> CypherResult<bool> {
+        self.run_inner(ex, ev, row, where_clause, &mut |value, provenance, verified| {
+            let mut r = row.clone();
+            // Two inserts follow; one reservation instead of two growths.
+            r.reserve(2);
+            r.insert(self.variable.clone(), value.clone());
+            match provenance {
+                Some(p) => {
+                    r.insert(
+                        super::pipeline::INTERNAL_PROVENANCE_KEY.to_string(),
+                        p.clone(),
+                    );
+                }
+                None => add_provenance(&mut r, ex, &value),
+            }
+            if let Some(w) = where_clause {
+                if !verified && ev.eval(w, &r)?.as_bool() != Some(true) {
+                    return Ok(true);
+                }
+            }
+            consume(r)
+        })
+    }
+
+    /// The scan variable.
+    pub fn variable(&self) -> &str {
+        &self.variable
+    }
+
+    /// Sweep candidates and hand each survivor's projected values to `sink`, never
+    /// building a row.
+    ///
+    /// For the query shape that dominates the load -- one node, a pushed-down WHERE, a
+    /// RETURN of that node's properties, a LIMIT -- the row is pure overhead: an
+    /// `IndexMap` with a `String` key per column built to be read once by the
+    /// projection and dropped, then a second one for the projection itself. Seventeen
+    /// allocations per row on a path that otherwise touches four string ids. Here the
+    /// properties are read straight off the node into a `Vec`, with the source graph's
+    /// id alongside for provenance.
+    pub fn run_nodes(
+        &self,
+        ex: &Executor,
+        ev: &Evaluator,
+        where_clause: Option<&Expr>,
+        keys: &[String],
+        sink: &mut dyn FnMut(Vec<Value>, std::sync::Arc<str>) -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        let empty = Row::new();
+        self.run_inner(ex, ev, &empty, where_clause, &mut |value, _, verified| {
+            if !verified {
+                if let Some(w) = where_clause {
+                    // The clause only ever names the scan variable's own properties.
+                    let mut r = Row::with_capacity(1);
+                    r.insert(self.variable.clone(), value.clone());
+                    if ev.eval(w, &r)?.as_bool() != Some(true) {
+                        return Ok(true);
+                    }
+                }
+            }
+            let source = match &value {
+                Value::Node(n) => n.source,
+                _ => return Ok(true),
+            };
+            let values: Vec<Value> = keys.iter().map(|k| ev.property(&value, k)).collect();
+            sink(values, ex.sources[source as usize].id.clone())
+        })
+    }
+
+    /// The scan proper. `emit` receives each surviving node, the source's provenance
+    /// value when one row-independent value serves every row, and whether the plan
+    /// that produced it was exact -- in which case WHERE need not be re-checked.
+    fn run_inner(
+        &self,
+        ex: &Executor,
+        ev: &Evaluator,
+        row: &Row,
+        where_clause: Option<&Expr>,
+        emit: &mut dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        // The clause itself is `emit`'s business; the scan only needs to know it exists
+        // to decide whether an inexact plan's survivors are still worth producing.
+        let _ = (ev, where_clause);
         // Plans are built a batch at a time, in parallel, and consumed in source order.
         //
         // Resolving a term against one graph's dictionary is most of the cost of a broad
@@ -458,6 +539,14 @@ impl ScanPlan {
             for sp in &plans {
                 let source = sp.source;
                 let graph = ex.graph(source);
+                // Every row from this source carries the same provenance, so it is
+                // built once here and cloned in -- an `Arc` bump per row -- rather than
+                // assembled per row from a fresh list, a sort and two allocations. Only
+                // when the base row has none of its own; a row that already names
+                // graphs is merged the general way.
+                let provenance: Option<Value> = (ex.cross
+                    && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
+                .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
                 // Which tags this source contributes, decided inline: collecting them
                 // meant a vector per graph, and there are sixty-four of them per query.
                 let wanted = |t: u8| {
@@ -548,15 +637,7 @@ impl ScanPlan {
                                 source: sp.source,
                                 id,
                             });
-                            let mut r = row.clone();
-                            r.insert(self.variable.clone(), value.clone());
-                            add_provenance(&mut r, ex, &value);
-                            if let Some(w) = where_clause {
-                                if !verified && ev.eval(w, &r)?.as_bool() != Some(true) {
-                                    continue;
-                                }
-                            }
-                            if !consume(r)? {
+                            if !emit(value, provenance.as_ref(), verified)? {
                                 return Ok(false);
                             }
                         }

@@ -122,10 +122,18 @@ So the target is not reachable by making the engine faster. It would need one of
   actually contain the term — about 284 µs each — not in the 64-graph fan-out, which
   pruning has already made nearly free for a miss (≈11 µs).
 
-What has been done instead is to take the reducible parts: the response path is down 41%
-(one-pass serialization), the WHERE re-check is skipped where the pushdown answer is
-exact, and a disjunction's postings are merged lazily rather than materialized. P50 on
-the backtest sits at 2.3–2.4 ms against Kotlin's 6.6 ms, about 2.9x.
+What has been done instead is to take every reducible part, each from a profile: the
+response path serializes in one pass and, by decision, without pretty-printing; the WHERE
+re-check is skipped where the pushdown answer is exact; a disjunction's postings are
+merged lazily; planning starts with one graph and fans out at most twice; a dense
+conjunction sweeps bitsets instead of falling to the generic evaluator; trigram runs are
+looked up rather than searched; a complete scan skips the provenance pass; and the
+dominant query shape — one node, a pushed-down WHERE, a RETURN of that node's properties
+— produces its rows as plain values with no per-row map at all.
+
+Measured as an interleaved A/B on the same box (two rounds each, the only comparison this
+machine's noise allows): **P50 1.2 ms against Kotlin's 6.6 ms, 5.5x; P95 4.4 ms against
+117.9 ms, 27x.** The per-request HTTP floor is 0.19 ms of that 1.2.
 
 ## What changed
 

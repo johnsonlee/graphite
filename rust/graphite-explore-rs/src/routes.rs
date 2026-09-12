@@ -984,23 +984,72 @@ impl serde::Serialize for RowBody<'_> {
     }
 }
 
+/// One compact row: the values in column order, plus its graph for provenance.
+struct CompactRowBody<'a> {
+    columns: &'a [String],
+    values: &'a [graphite_cypher::value::Value],
+    graph_id: Option<&'a str>,
+    ex: &'a Executor,
+}
+
+impl serde::Serialize for CompactRowBody<'_> {
+    fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let mut m = ser.serialize_map(Some(self.columns.len() + 1))?;
+        for (c, v) in self.columns.iter().zip(self.values) {
+            m.serialize_entry(
+                c,
+                &ValueBody {
+                    value: Some(v),
+                    ex: self.ex,
+                },
+            )?;
+        }
+        if let Some(g) = self.graph_id {
+            // A row from one source names exactly that graph, as the row path does.
+            m.serialize_entry("$metadata", &serde_json::json!({ "graphIds": [g] }))?;
+        }
+        m.end()
+    }
+}
+
 impl serde::Serialize for ResultBody<'_> {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
         let mut m = ser.serialize_map(Some(3 + self.extra.len()))?;
         m.serialize_entry("columns", &self.result.columns)?;
-        let rows: Vec<RowBody> = self
-            .result
-            .rows
-            .iter()
-            .map(|row| RowBody {
-                row,
-                columns: &self.result.columns,
-                ex: self.ex,
-            })
-            .collect();
-        m.serialize_entry("rows", &rows)?;
-        m.serialize_entry("rowCount", &self.result.rows.len())?;
+        let count = match &self.result.compact {
+            Some(c) => {
+                let rows: Vec<CompactRowBody> = c
+                    .values
+                    .iter()
+                    .zip(&c.graph_ids)
+                    .map(|(values, gid)| CompactRowBody {
+                        columns: &self.result.columns,
+                        values,
+                        graph_id: self.ex.cross.then(|| gid.as_ref()),
+                        ex: self.ex,
+                    })
+                    .collect();
+                m.serialize_entry("rows", &rows)?;
+                c.values.len()
+            }
+            None => {
+                let rows: Vec<RowBody> = self
+                    .result
+                    .rows
+                    .iter()
+                    .map(|row| RowBody {
+                        row,
+                        columns: &self.result.columns,
+                        ex: self.ex,
+                    })
+                    .collect();
+                m.serialize_entry("rows", &rows)?;
+                self.result.rows.len()
+            }
+        };
+        m.serialize_entry("rowCount", &count)?;
         for (k, v) in self.extra {
             m.serialize_entry(k, v)?;
         }
@@ -1275,7 +1324,9 @@ async fn run_cypher(
                 graph: l.graph,
             })
             .collect();
-        let ex = Executor::new(sources, cross).with_cancel(permit.cancel.clone());
+        let ex = Executor::new(sources, cross)
+            .with_cancel(permit.cancel.clone())
+            .with_compact();
         let out = ex.execute(&query, Some(limit.max(0) as usize));
         (out, ex)
     })

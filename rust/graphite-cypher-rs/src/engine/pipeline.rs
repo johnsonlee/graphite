@@ -26,6 +26,19 @@ const AGG_PLACEHOLDER_PREFIX: &str = "\u{0}agg:";
 pub struct QueryResult {
     pub columns: Vec<String>,
     pub rows: Vec<Row>,
+    /// Rows as plain values, when the query took the compact path. `rows` is then empty.
+    ///
+    /// Only an executor built with `with_compact` produces this, and only the HTTP
+    /// Cypher route builds one: every other consumer keeps reading `rows`.
+    pub compact: Option<CompactRows>,
+}
+
+/// Projected rows without the per-row map: one `Vec<Value>` per row in `columns`
+/// order, and the id of the graph each row came from, for provenance.
+#[derive(Debug, Clone, Default)]
+pub struct CompactRows {
+    pub values: Vec<Vec<Value>>,
+    pub graph_ids: Vec<Arc<str>>,
 }
 
 impl QueryResult {
@@ -317,7 +330,11 @@ impl Executor {
                 !k.starts_with(ORDER_STASH_PREFIX) && !k.starts_with(AGG_PLACEHOLDER_PREFIX)
             });
         }
-        Ok(QueryResult { columns, rows })
+        Ok(QueryResult {
+            columns,
+            rows,
+            compact: None,
+        })
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -496,6 +513,41 @@ impl Executor {
         // The baseline keeps scanning for exactly this reason; stopping early produced
         // rows identical in every visible column but missing a contributing graph.
         let names = items.map(item_names).unwrap_or_default();
+        // The compact path: no ordering, no DISTINCT, a single empty seed (so nothing
+        // precedes the MATCH), a pushed-down scan, and a RETURN of the scanned node's
+        // own properties. Everything a row would carry is then already in hand.
+        if self.compact && shape.order.is_none() && !shape.distinct {
+            if let (Some(plan), Some(items), [seed]) = (&scan, items, rows.as_slice()) {
+                if seed.is_empty() {
+                    if let Some(keys) = simple_property_keys(items, plan.variable()) {
+                        let mut values: Vec<Vec<Value>> = Vec::new();
+                        let mut graph_ids: Vec<Arc<str>> = Vec::new();
+                        plan.run_nodes(
+                            self,
+                            ev,
+                            shape.where_clause.as_ref(),
+                            &keys,
+                            &mut |v, g| {
+                                values.push(v);
+                                graph_ids.push(g);
+                                Ok(budget.is_none_or(|b| values.len() < b))
+                            },
+                        )?;
+                        let skipped = skip.unwrap_or(0).max(0) as usize;
+                        if skipped > 0 {
+                            let n = skipped.min(values.len());
+                            values.drain(..n);
+                            graph_ids.drain(..n);
+                        }
+                        return Ok(QueryResult {
+                            columns,
+                            rows: Vec::new(),
+                            compact: Some(CompactRows { values, graph_ids }),
+                        });
+                    }
+                }
+            }
+        }
         let distinct_provenance = shape.distinct && self.cross;
         // Provenance completion runs as a targeted second pass where it can, so the
         // first pass may stop at the limit like any other.
@@ -683,7 +735,11 @@ fn finish_fused(
             !k.starts_with(ORDER_STASH_PREFIX) && !k.starts_with(AGG_PLACEHOLDER_PREFIX)
         });
     }
-    Ok(QueryResult { columns, rows })
+    Ok(QueryResult {
+        columns,
+        rows,
+        compact: None,
+    })
 }
 
 /// Shape: MATCH [WHERE] RETURN [ORDER BY] [SKIP] [LIMIT] <end>
@@ -859,6 +915,20 @@ fn stash_order_values(
         }
     }
     Ok(())
+}
+
+/// The property keys of a RETURN list that reads nothing but `<variable>.<key>` items.
+fn simple_property_keys(items: &[ReturnItem], variable: &str) -> Option<Vec<String>> {
+    items
+        .iter()
+        .map(|it| match &it.expr {
+            Expr::Property { expr, key } => match expr.as_ref() {
+                Expr::Variable(v) if v == variable => Some(key.clone()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .collect()
 }
 
 /// Column names for a RETURN list, rendered once instead of once per row.

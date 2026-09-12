@@ -93,6 +93,7 @@ fn count_result(ex: &Executor, item: &ReturnItem, per_source: &[i64]) -> QueryRe
     QueryResult {
         columns: vec![column],
         rows: vec![row],
+        compact: None,
     }
 }
 
@@ -209,7 +210,11 @@ pub fn grouped_call_site_property(
     if let Some(l) = limit {
         rows.truncate(l);
     }
-    Ok(Some(QueryResult { columns, rows }))
+    Ok(Some(QueryResult {
+        columns,
+        rows,
+        compact: None,
+    }))
 }
 
 const CALL_SITE_FIELDS: [&str; 4] = ["caller_class", "caller_name", "callee_class", "callee_name"];
@@ -352,6 +357,7 @@ pub fn distinct_string_property(
     Ok(Some(QueryResult {
         columns: vec![column],
         rows,
+        compact: None,
     }))
 }
 

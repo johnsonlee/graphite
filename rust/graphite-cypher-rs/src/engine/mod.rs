@@ -108,6 +108,9 @@ pub struct Executor {
     pub cancel: Arc<CancelToken>,
     /// Kotlin `graphSourceScopeApplied`: sources were explicitly selected (affects nothing observable but kept).
     pub scoped: bool,
+    /// Whether a result may come back as `QueryResult::compact` instead of rows. Off by
+    /// default; only a consumer that reads the compact form asks for it.
+    pub compact: bool,
     /// Distinguishes this executor's cached node decodes from any earlier executor's
     /// on the same thread. Monotonic, so it never repeats the way an address can.
     epoch: u64,
@@ -132,6 +135,7 @@ impl Executor {
             params: IndexMap::new(),
             cancel: CancelToken::new(),
             scoped: false,
+            compact: false,
             epoch: EPOCH.fetch_add(1, Ordering::Relaxed),
             poll: AtomicU64::new(0),
         }
@@ -144,6 +148,12 @@ impl Executor {
 
     pub fn with_cancel(mut self, cancel: Arc<CancelToken>) -> Self {
         self.cancel = cancel;
+        self
+    }
+
+    /// Allow the compact result form; see `QueryResult::compact`.
+    pub fn with_compact(mut self) -> Self {
+        self.compact = true;
         self
     }
 
