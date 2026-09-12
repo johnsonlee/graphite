@@ -849,12 +849,14 @@ jobs:
           )' "${FILE}" >/dev/null
         echo "cpu-accounting smoke: candidate fork published a valid javaThreadCpuNanos row"
 
-    # The 4-graph/count smoke alone did not establish the accounting across the gate matrix: the
-    # tripwire fired on the longer 17/36-graph scenarios (prefix, contains) where the JDK
-    # HttpURLConnection client's Keep-Alive-Timer thread exits inside the window. Run the worst-case
-    # graph count over both named scenarios on the candidate harness (which runs with
-    # http.keepAlive=false) with fail-on-error, so an abort in measure() fails this step. Completion
-    # proves the fix keeps the accounting usable across the matrix.
+    # The 4-graph/count smoke alone does not establish the accounting across the gate matrix. The
+    # longest windows are the full-scan group (contains, regex, or) at the worst-case graph count,
+    # where incidental non-request threads (the JDK client's Keep-Alive-Timer, and later a second
+    # default-named thread) churned inside the window. With the in-window sampler each Java thread's
+    # CPU is captured up to its last sample, so a thread that exits mid-window no longer aborts the
+    # accounting; this step proves the sampler produces a valid javaThreadCpuNanos row on those long
+    # windows rather than merely not throwing. It runs the whole scan group plus prefix (the original
+    # tripwire) at 36 graphs on the candidate harness with fail-on-error.
     - name: Exercise the long method scenarios that tripped the accounting
       run: |
         JAR=jmh-candidate-native/candidate-native-explore-jmh.jar
@@ -865,7 +867,7 @@ jobs:
         java -jar "${JAR}" \
           'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' \
           -wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
-          -p graphCount=36 -p scenario=prefix,contains \
+          -p graphCount=36 -p scenario=prefix,contains,regex,or \
           -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-cpu-accounting-longscan.txt" \
           -rff "${PWD}/benchmark-results/candidate-cpu-accounting-longscan.json"
 
@@ -874,8 +876,8 @@ jobs:
         FILE=benchmark-results/candidate-cpu-accounting-longscan.json
         EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate'
         jq -e --arg expected "${EXPECTED}" '
-          length == 2 and
-          ([.[].params.scenario] | sort) == ["contains", "prefix"] and
+          length == 4 and
+          ([.[].params.scenario] | sort) == ["contains", "or", "prefix", "regex"] and
           all(.[];
             .benchmark == $expected and
             .params.graphCount == "36" and
@@ -887,7 +889,7 @@ jobs:
             .secondaryMetrics.jvmInternalCpuNanos.score >= 0 and
             .secondaryMetrics.cpuAccountingUnderflowNanos.score >= 0
           )' "${FILE}" >/dev/null
-        echo "cpu-accounting smoke: 36-graph prefix and contains completed on the pinned harness"
+        echo "cpu-accounting smoke: 36-graph scan group and prefix completed on the sampling harness"
 
     - name: Upload CPU accounting smoke result
       if: always()
