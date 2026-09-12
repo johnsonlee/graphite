@@ -426,9 +426,7 @@ open class MethodDiscoveryCompatibilityBenchmark {
             "Method benchmark registry did not include every real corpus"
         }
         topology = TopologyService(registry, emptyList(), root).also { it.rebuild() }
-        app = Javalin.create { config ->
-            config.jsonMapper(JavalinGson(GsonBuilder().create()))
-        }.start(0)
+        app = createMethodBenchmarkServer().start(0)
         cypherGuard = CypherQueryGuard(TARGET_CYPHER_CONCURRENCY, TARGET_CYPHER_WORK_BUDGET)
         ExploreRoutes(cypherGuard).register(app, registry, topology)
         port = app.port()
@@ -1921,3 +1919,34 @@ private const val EXPLICIT_GC_CAUSE = "System.gc()"
 private const val END_OF_MAJOR_GC = "end of major GC"
 private const val END_OF_MINOR_GC = "end of minor GC"
 
+
+/** Shared by the measured Method server and its fixture-free lifecycle regression contract. */
+internal fun createMethodBenchmarkServer(): Javalin = Javalin.create { config ->
+    // JettyServer otherwise starts an unnamed startup watcher which exits after five seconds.
+    // Its exit during a long query invalidates identity-based CPU accounting. This is startup
+    // diagnostics only; leave request workers and their accounting untouched.
+    config.startupWatcherEnabled = false
+    config.jsonMapper(JavalinGson(GsonBuilder().create()))
+}
+
+/** Exercises the actual benchmark server factory through the watcher's entire lifetime. */
+object MethodBenchmarkServerLifecycleContract {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        RequestCpuAccounting.requireAvailable()
+        val app = createMethodBenchmarkServer().start(0)
+        try {
+            val (result, sample) = RequestCpuAccounting.measure {
+                Thread.sleep(STARTUP_WATCHER_LIFETIME_WINDOW_MILLIS)
+                app.port()
+            }
+            check(result == app.port() && result > 0) { "Server did not survive the measured window" }
+            check(sample.processCpuNanos >= 0L && sample.javaThreadCpuNanos >= 0L)
+            println("method-server-lifecycle-contract: PASS; measured beyond startup watcher lifetime")
+        } finally {
+            app.stop()
+        }
+    }
+}
+
+private const val STARTUP_WATCHER_LIFETIME_WINDOW_MILLIS = 5_500L

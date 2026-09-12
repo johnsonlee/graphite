@@ -10,10 +10,55 @@ contains the base and candidate SHAs, runner architecture, every measured score,
 and gate decision. Raw JMH JSON and large-corpus logs are retained as workflow artifacts for 14
 days.
 
+## Current wide-query acceptance policy
+
+The required gate focuses on query diversity, correct results, and warmed latency under an
+**8 GiB maximum heap**. Process CPU, peak used heap, and peak RSS remain recorded diagnostics;
+their percentage increases do not reject a change. Method CPU/RSS and capacity CPU/RSS are
+advisory too; wrapped retained/peak heap increases are advisory. Actual heap caps, invalid
+measurements, correctness, cancellation, and capacity behavior remain checked. Allocation/GC
+checks and Explorer's existing memory-stability assertions are separate, unchanged checks.
+
+The reviewed [query catalog](../.github/scripts/wide-query-catalog.json) has **72 cases**: the
+original 34 plus 38 multi-keyword cases. It includes AND, OR, mixed Boolean trees, four-term OR,
+zero hits, single-graph hits at early/middle/late positions, multiple-graph hits, and ordinary and
+DISTINCT projections. The corpus consists of 64 persisted shards of four real source corpora;
+it does not represent 64 independent applications or concurrent client requests.
+
+Each `wide-query-latency-<query-id>` CI check independently accepts or rejects one query. All
+checks consume the same paired experiment artifact; they do not rerun the workload 72 times.
+Every JVM executes **five fixed warmup rounds, then 40 measured rounds**, preserving warmed
+indexes and caches between rounds. There are three independent base/candidate JVM pairs in
+candidate/base, base/candidate, candidate/base order. The effective JVM maximum heap is checked
+in addition to passing `-Xmx8g`. This is workload pressure over all 64 sources, with queries
+submitted sequentially; it is not a multi-client throughput test.
+
+For **each query**, compute nearest-rank P50 and P95 from its own 40 samples in each fork:
+
+- Each paired candidate P50 and P95 must be **less than 105%** of the matching main value.
+- For each quantile and each revision, cross-fork fluctuation is `(maximum - minimum) / minimum`
+  across the three forks and must be **less than 5%**. An unstable baseline also fails the
+  measurement. No absolute-latency allowance hides a 5% regression, and exactly 5% fails.
+- Every warmup and measured result must match the base-generated full 14-field correctness
+  oracle, including the canonical result digest that binds field values, row order, and graph
+  provenance. Missing queries/samples, timeouts, exceptions, duplicate samples, and altered query
+  identities fail closed. A query's result error cannot be offset by another query's speedup.
+
+The mixed-query percentile over the original 34 cases is diagnostic only for this warmed
+acceptance policy. Cold-start latency, the historical 10x target, and strict improvement over the
+last accepted iteration are not current PR acceptance criteria. Only the current PR main base
+runs the expanded repeated experiment; historical reference latency is diagnostic, while its
+correctness and evidence-integrity checks remain hard requirements. Raw sample TSVs, per-query
+verdicts, all paired quantiles, and fluctuation calculations are retained in the CI artifact.
+
+Other existing benchmark families do not all share this warmup protocol: some use normal JMH
+warmup/measurement iterations, while startup/session and cold-replay probes use SingleShot runs.
+Those measurements must not be described as warmed per-query P50/P95 evidence.
+
 ## Report coverage taxonomy
 
 The aggregate comment separates a component's run result from its coverage scope. `PASS`/`FAIL`
-comes only from the nine blocking component reports. Coverage labels follow the model introduced in
+comes only from the blocking component reports. Coverage labels follow the model introduced in
 PR #104: ✅ means an implemented gate has no identified gate-specific gap, while ⚠️ means the gate
 is implemented but intentionally incomplete. A passing component does not claim to cover its listed
 gap.
@@ -85,7 +130,7 @@ candidate comparator only when the base comparator matches the pinned reviewed S
 `candidate-gate-tests` passes. Any other pre-anchor base fails closed. The CODEOWNERS boundary must
 review that bootstrap change for actors without ruleset bypass. Repository owners and holders of
 bypass credentials are part of the trusted boundary. When the base exposes the anchor command, the
-workflow always selects the base-owned comparator; the final nine-component aggregate remains
+workflow always selects the base-owned comparator; the final aggregate remains
 base-owned in either case.
 
 The five-sample large-corpus rollout has an equally bounded one-time transition. If the exact base
@@ -228,9 +273,9 @@ diagnostic because they include forced GC outside the query; regressions are
 decided by the query-only counters. Missing metrics or raw samples, incompatible
 units, duplicate results, a wrong heap cap, or impossible
 `loaded <= peak <= max` / `retained <= peak` relationships fail closed.
-Allocation, query GC, retained-delta, and peak regressions use a 15% relative
-threshold plus an absolute noise floor and must repeat in a candidate-first
-confirmation run before blocking.
+Allocation and query GC regressions use a 15% relative threshold plus an absolute noise floor
+and must repeat in a candidate-first confirmation run before blocking. Retained-delta and peak
+heap changes are advisory; the effective 8 GiB heap cap and impossible measurements remain hard checks.
 
 ## Method-level gate
 
@@ -248,6 +293,19 @@ directly. Missing benchmarks, invalid scores, changed units, and execution error
 
 ## Method compatibility gate
 
+The measured Method server disables Javalin's startup watcher. Javalin otherwise creates an
+unnamed thread which sleeps for five seconds and exits even after successful startup; a long
+query can span that exit, invalidating the strict Java-thread CPU snapshots. This removes a
+startup diagnostic thread at its source without excluding any request worker from accounting.
+The fixture-free `MethodBenchmarkServerLifecycleContract` uses the same server factory and
+measures through the watcher's lifetime; the existing transient-worker and vanished-thread
+negative CPU contracts remain unchanged.
+
+While main still contains the known legacy Explorer harness, CI verifies its SHA and installs
+the reviewed, SHA-pinned fixed Explorer harness into both production revisions after candidate
+gate tests pass. CPU accounting and capacity harnesses remain base-owned. The transition and
+its failure paths are exercised by running the actual installation shell in contract tests.
+
 Method discovery covers the exact 11-scenario matrix at 4, 17, and 36 graphs: 33
 semantic/performance cases. The workflow partitions each graph count into four scenario groups
 (`position`, `string`, `scan`, and `aggregate`) for 12 independently scheduled shards. Each shard
@@ -255,8 +313,8 @@ runs its assigned scenarios for base and candidate from the shared Explorer JMH 
 both JMH metrics and canonical result records.
 
 The aggregator requires all 12 artifacts, the exact 33 unique `(graphCount, scenario)` pairs, and
-identical result records. Wall time, process CPU, and post-run RSS are blocking 15% comparisons;
-RSS delta remains advisory. Sharding changes scheduling only—the scenario manifest and final
+identical result records. Wall time is a blocking 15% comparison; process CPU, post-run RSS,
+and RSS delta are advisory. Sharding changes scheduling only—the scenario manifest and final
 fail-closed contract are unchanged.
 
 ## Real-corpus end-to-end gate

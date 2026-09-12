@@ -78,6 +78,7 @@ open class LargeBroadQueryPressureBenchmark {
     private lateinit var queryExecutor: ExecutorService
     private lateinit var sampler: BroadQueryResourceSampler
     private lateinit var workload: List<BroadQueryCase>
+    private lateinit var diverseWorkload: List<BroadQueryCase>
     private lateinit var graphPaths: List<Path>
     private lateinit var sourcesById: Map<String, CypherGraph>
     private lateinit var correctnessMode: BroadQueryCorrectnessMode
@@ -124,6 +125,11 @@ open class LargeBroadQueryPressureBenchmark {
         check(workload.isNotEmpty())
         check(workload.map(BroadQueryCase::selectivity).toSet() == BroadQuerySelectivity.entries.toSet())
         workload.forEach { case -> CypherDslAdapter.parse(case.query) }
+        diverseWorkload = if (System.getProperty(LATENCY_OUTPUT_PROPERTY) != null) {
+            check(coverageFamily == BroadQueryFamily.GLOBAL_WIDE.id && graphCount == MAX_GRAPH_COUNT)
+            workload + supplementalWideQueries()
+        } else emptyList()
+        diverseWorkload.forEach { case -> CypherDslAdapter.parse(case.query) }
         configureCorrectnessGate()
 
         graphPaths = graphSources.map(BroadQueryGraphSource::path)
@@ -186,7 +192,39 @@ open class LargeBroadQueryPressureBenchmark {
         writeCorrectnessManifest(samples)
         writeObservations(samples)
         enforceCorrectness(samples)
+        replayDiverseLatencySamples()
         return samples.sumOf(BroadQuerySample::responseBytes) + samples.sumOf(BroadQuerySample::rowCount)
+    }
+
+    /** Keep historic cold diagnostics separate from repeated, steady-state query latency. */
+    private fun replayDiverseLatencySamples() {
+        val output = System.getProperty(LATENCY_OUTPUT_PROPERTY) ?: return
+        val oraclePath = Path.of(requireNotNull(System.getProperty(LATENCY_ORACLE_PROPERTY)))
+        val ids = diverseWorkload.mapTo(mutableSetOf(), BroadQueryCase::id)
+        val expected = when (correctnessMode) {
+            BroadQueryCorrectnessMode.RECORD -> {
+                graphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
+                val records = replay(true, diverseWorkload).map(BroadQuerySample::correctnessRecord)
+                QueryCorrectnessManifest.requireRecordable(records, ids)
+                QueryCorrectnessManifest.write(oraclePath, records)
+                records
+            }
+            BroadQueryCorrectnessMode.VERIFY -> QueryCorrectnessManifest.selectCompleteOracle(
+                QueryCorrectnessManifest.read(oraclePath), ids, oraclePath.toString()
+            )
+        }
+        if (correctnessMode == BroadQueryCorrectnessMode.RECORD) return
+        // Clear once before fixed warmup; retain the resulting indexes throughout measurement.
+        // This measures steady-state latency rather than repeatedly charging startup/index builds.
+        // Every warmup and measured replay verifies the same complete oracle. No adaptive retries.
+        graphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
+        repeat(DIVERSE_WARMUP_ROUNDS + DIVERSE_MEASURED_ROUNDS) { index ->
+            val samples = replay(true, diverseWorkload)
+            QueryCorrectnessManifest.verify(expected, samples.map(BroadQuerySample::correctnessRecord))
+            if (index >= DIVERSE_WARMUP_ROUNDS) {
+                writeObservations(samples, output, index - DIVERSE_WARMUP_ROUNDS + 1)
+            }
+        }
     }
 
     private fun configureCorrectnessGate() {
@@ -230,7 +268,10 @@ open class LargeBroadQueryPressureBenchmark {
         }
     }
 
-    private fun replay(validateResults: Boolean): List<BroadQuerySample> = workload.map { case ->
+    private fun replay(
+        validateResults: Boolean,
+        cases: List<BroadQueryCase> = workload
+    ): List<BroadQuerySample> = cases.map { case ->
         resetCallSiteScanMetrics()
         resetGraphWorkerMetrics()
         val started = System.nanoTime()
@@ -611,8 +652,12 @@ open class LargeBroadQueryPressureBenchmark {
         )
     }
 
-    private fun writeObservations(samples: List<BroadQuerySample>) {
-        val configured = System.getProperty(OBSERVATIONS_OUTPUT_PROPERTY) ?: return
+    private fun writeObservations(
+        samples: List<BroadQuerySample>,
+        configured: String? = System.getProperty(OBSERVATIONS_OUTPUT_PROPERTY),
+        round: Int? = null
+    ) {
+        if (configured == null) return
         val header = listOf(
             "id",
             "family",
@@ -687,7 +732,15 @@ open class LargeBroadQueryPressureBenchmark {
                 sample.execution.generalFallbackExecutions
             ).joinToString("\t")
         }
-        Files.writeString(Path.of(configured), lines)
+        if (round == null) {
+            Files.writeString(Path.of(configured), lines)
+        } else {
+            val output = Path.of(configured)
+            val rows = lines.lineSequence().drop(1).filter(String::isNotEmpty)
+                .joinToString("\n", postfix = "\n") { "$round\t$it" }
+            if (round == 1) Files.writeString(output, "round\t$header\n")
+            Files.writeString(output, rows, java.nio.file.StandardOpenOption.APPEND)
+        }
     }
 
     private fun digest(canonicalResult: ByteArray): String = MessageDigest.getInstance("SHA-256")
@@ -2166,3 +2219,105 @@ private val TARGETED_EXACT_CLASSES = listOf("java.util.List", "java.util.Map", "
 private val DENSE_EXACT_CLASSES = listOf("java.lang.String", "java.lang.Object", "java.lang.Class")
 private val TARGETED_EXACT_NAMES = listOf("main", "parse", "onCreate", "invoke")
 private val DENSE_EXACT_NAMES = listOf("get", "set", "toString", "equals")
+
+
+// Terms and Boolean trees from the independently censused fixture64 supplemental v3 catalog.
+// Both projections are retained; the final pure-four-OR zero-hit pair completes 38 additions.
+private fun supplementalWideQueries(): List<BroadQueryCase> {
+    val terms = listOf(
+        "com.android.internal.app.iappopsservice\$stub\$proxy",
+        "com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt\$copy" +
+            "torecursively\$3",
+        "recycle",
+        "org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl",
+        "net.bytebuddy.dynamic.scaffold.typewriter\$default\$forinlining\$withfullprocessing\$initializ" +
+            "ationhandler\$appending\$framewriter\$expanding",
+        "get_store",
+        "org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt\$extractvariabless" +
+            "etterstoouterpossibleblock\$1",
+        "org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator\$choosemostspec" +
+            "ificoverridden\$lambda\$7\$lambda\$6\$\$inlined\$anyoverriddenof\$1",
+        "visitstatementcontainer",
+        "get",
+        "set",
+        "java.lang",
+        "<init>",
+        "com.android.internal.org.bouncycastle.jcajce.provider.asymmetric.dsa.algorithmparametergen" +
+            "eratorspi",
+        "android.media.internal.guava_common.util.concurrent.closingfuture\$combiner\$asynccombiningc" +
+            "allable",
+        "net.bytebuddy.dynamic.classfilelocator\$forinstrumentation\$classloadingdelegate\$fordelegati" +
+            "ngclassloader\$dispatcher\$creationaction",
+        "net.bytebuddy.agent.builder.agentbuilder\$lambdainstrumentationstrategy\$lambdametafactoryfa" +
+            "ctory\$loader\$usingmethodhandlelookup",
+        "org.jetbrains.kotlin.ir.backend.js.export.exportmodelgeneratorkt\$isallowedfakeoverriddende" +
+            "claration\$\$inlined\$filterisinstance\$1",
+        "org.jetbrains.kotlin.ir.backend.js.lower.booleanpropertyinexternallowering\$externalboolean" +
+            "propertyprocessor\$whenmappings",
+        "read",
+        "write",
+        "__graphite_absent_or_a_72__",
+        "__graphite_absent_or_b_72__",
+        "__graphite_absent_or_c_72__",
+        "__graphite_absent_or_d_72__",
+    )
+    val predicates = terms.map { term ->
+        listOf("caller_class", "caller_name", "callee_class", "callee_name")
+            .joinToString(" OR ", prefix = "(", postfix = ")") { field ->
+                "toLower(coalesce(n.$field, '')) CONTAINS '$term'"
+            }
+    }
+    val cases = listOf(
+        "or-single-early" to "(${predicates[0]} OR ${predicates[1]})",
+        "and-single-early" to "(${predicates[0]} AND ${predicates[2]})",
+        "or-single-middle" to "(${predicates[3]} OR ${predicates[4]})",
+        "and-single-middle" to "(${predicates[3]} AND ${predicates[5]})",
+        "or-single-late" to "(${predicates[6]} OR ${predicates[7]})",
+        "and-single-late" to "(${predicates[6]} AND ${predicates[8]})",
+        "or-few-early-late" to "(${predicates[0]} OR ${predicates[6]})",
+        "or-few-early-middle" to "(${predicates[0]} OR ${predicates[3]})",
+        "or-broad-all" to "(${predicates[9]} OR ${predicates[10]})",
+        "and-broad-all" to "(${predicates[11]} AND ${predicates[12]})",
+        "mixed-four-few" to "((${predicates[0]} AND ${predicates[2]}) OR (${predicates[6]} AND ${predicates[8]}))",
+        "and-zero-disjoint-graphs" to "(${predicates[0]} AND ${predicates[6]})",
+        "or-four-broad" to "(${predicates[0]} OR ${predicates[2]} OR ${predicates[6]} OR ${predicates[8]})",
+        "or-four-single-early" to "(${predicates[0]} OR ${predicates[1]} OR ${predicates[13]} OR ${predicates[14]})",
+        "or-four-single-middle" to "(${predicates[3]} OR ${predicates[4]} OR ${predicates[15]} OR ${predicates[16]})",
+        "or-four-single-late" to "(${predicates[6]} OR ${predicates[7]} OR ${predicates[17]} OR ${predicates[18]})",
+        "or-four-few-early-late" to "(${predicates[0]} OR ${predicates[1]} OR ${predicates[6]} OR ${predicates[7]})",
+        "or-four-all" to "(${predicates[9]} OR ${predicates[10]} OR ${predicates[19]} OR ${predicates[20]})",
+        "or-four-zero" to "(${predicates[21]} OR ${predicates[22]} OR ${predicates[23]} OR ${predicates[24]})"
+    )
+    return cases.flatMap { (id, predicate) ->
+        listOf(false, true).map { distinct ->
+            val projection = if (distinct) "distinct-properties" else "properties"
+            val suffix = if (distinct) "distinct" else "rows"
+            val query = "MATCH (n) WHERE $predicate RETURN ${if (distinct) "DISTINCT " else ""}" +
+                "n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200"
+            BroadQueryCase(
+                id = "$id-$suffix",
+                family = BroadQueryFamily.GLOBAL_WIDE,
+                shape = id,
+                selectivity = when {
+                    "zero" in id -> BroadQuerySelectivity.ZERO
+                    "all" in id || "broad" in id -> BroadQuerySelectivity.DENSE
+                    else -> BroadQuerySelectivity.TARGETED
+                },
+                operator = "wrapped-multi-keyword",
+                boundary = id,
+                projection = projection,
+                limit = 200,
+                query = query,
+                parameters = emptyMap(),
+                expectZeroRows = "zero" in id,
+                workloadIdentity = MessageDigest.getInstance("SHA-256").digest(query.toByteArray())
+                    .joinToString("") { byte -> "%02x".format(byte) }
+            )
+        }
+    }
+}
+
+private const val LATENCY_OUTPUT_PROPERTY = "graphite.broad.pressure.latency.output"
+private const val LATENCY_ORACLE_PROPERTY = "graphite.broad.pressure.latency.oracle"
+private const val DIVERSE_WARMUP_ROUNDS = 5
+private const val DIVERSE_MEASURED_ROUNDS = 40
