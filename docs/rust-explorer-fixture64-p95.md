@@ -142,6 +142,26 @@ Measured as an interleaved A/B on the same box (two rounds each, the only compar
 machine's noise allows): **P50 1.0 ms against Kotlin's 6.6 ms, 6.6x; P95 3.7–3.9 ms
 against 117.9 ms, 30x.** The per-request HTTP floor is 0.17 ms of that.
 
+Where the median request's time goes, from phase timers compiled into a throwaway
+build and run over the backtest itself (the `wide-or` shape is sixty of the 170
+queries and sits at the median):
+
+| Phase | Median | Note |
+|-------|-------:|------|
+| HTTP round trip, `RETURN 1` | 0.17 ms | client and server, no engine work |
+| Engine | 0.46 ms | 5 graphs planned in 2 batches before LIMIT 200 lands |
+| — dictionary resolution | 0.07 ms | trigram runs sized, intersected, ≈190 candidates verified |
+| — posting ranges and union | 0.12 ms | |
+| — rows | 0.12 ms | 200 rows, one record read each |
+| JSON body, 50 KB | 0.10 ms | |
+| First-touch cost of an unseen term | ≈0.2 ms | the same query run again is 0.78 → 0.85 ms faster at P50 |
+
+Running every query three times in a row gives P50 1.0 / 0.85 / 0.78 ms: even a fully
+hot median is above the 0.66 ms that 10x would require. The remaining ways down are a
+cross-request cache of dictionary resolutions, which the Kotlin server does not have and
+this benchmark's different-seed warmup was written to keep from counting, or a smaller
+response body. Neither is taken here.
+
 ## What changed
 
 The port already read the same graph directory as the Kotlin server, but it ignored a
