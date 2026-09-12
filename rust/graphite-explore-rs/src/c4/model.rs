@@ -2,6 +2,7 @@
 
 use super::boundary;
 use super::constants::*;
+use super::components;
 use super::containers;
 use super::external::DependencyKind;
 use super::subject;
@@ -65,10 +66,11 @@ const SUBJECT_FALLBACK_NAME: &str = "Subject";
 
 /// Build the Structurizr workspace for one graph at the requested level.
 pub fn build_model(g: &Graph, level: &str) -> J {
-    if level == "container" {
-        return build_container_model(g);
+    match level {
+        "container" => build_container_model(g),
+        "component" => build_component_model(g),
+        _ => build_context_model(g, level),
     }
-    build_context_model(g, level)
 }
 
 /// The `level=container` workspace.
@@ -344,6 +346,146 @@ impl Inputs {
             subject,
         }
     }
+}
+
+/// The `level=component` workspace.
+///
+/// Thinner than either of the others. With neither a context nor a container view, the
+/// baseline's mapper has no subject and no container to describe: it emits a bare
+/// placeholder system, and synthesises a container purely to hang the components off --
+/// which is why the container here carries no properties and is described as
+/// "synthesized for component view" rather than by what it is.
+fn build_component_model(g: &Graph) -> J {
+    let inputs = Inputs::gather(g);
+    let capability_layout = containers::infer_layout(
+        g,
+        &inputs.system_boundary,
+        &inputs.endpoint_classes,
+        &inputs.endpoint_paths,
+        usize::MAX.max(components::MIN_CAPABILITY_LAYOUT_CANDIDATES),
+    );
+    let view = components::build_view(
+        g,
+        &inputs.system_boundary,
+        &inputs.endpoint_classes,
+        &inputs.subject.role,
+        &inputs.subject.name,
+        &capability_layout,
+        usize::MAX,
+    );
+
+    let level_prop = json!("component");
+    let available = json!(super::LEVELS);
+    let mut views = Map::new();
+    views.insert("systemContextViews".into(), json!([]));
+    views.insert("containerViews".into(), json!([]));
+
+    let mut containers_json: Vec<J> = Vec::new();
+    let mut component_views: Vec<J> = Vec::new();
+    if let Some(view) = &view {
+        let components_json: Vec<J> = view
+            .components
+            .iter()
+            .map(|c| {
+                let mut entries = vec![
+                    ("graphite.type", json!("component")),
+                    ("graphite.kind", json!(c.kind)),
+                    ("graphite.architectureType", json!(c.architecture_type)),
+                    ("graphite.responsibility", json!(c.responsibility)),
+                    ("graphite.whySelected", json!(c.why_selected)),
+                    ("graphite.container", json!(c.container)),
+                    ("graphite.containerId", json!(c.container_id)),
+                    ("graphite.fullName", json!(c.full_name)),
+                    ("graphite.methods", json!(c.methods)),
+                    ("graphite.callSites", json!(c.call_sites)),
+                    ("graphite.endpoints", json!(c.endpoints)),
+                ];
+                // Empty collections are dropped, as the baseline's metadata encoder
+                // drops them; a zero count is still a fact and stays.
+                if !c.entrypoints.is_empty() {
+                    entries.push(("graphite.entrypoints", json!(c.entrypoints)));
+                }
+                entries.push(("graphite.classes", json!(c.classes)));
+                entries.push(("graphite.packageUnits", json!(c.package_units)));
+                json!({
+                    "id": c.id,
+                    "name": c.name,
+                    // The description is the responsibility: a component element carries
+                    // no separate description of its own.
+                    "description": c.responsibility,
+                    "tags": tags("Component", &c.kind),
+                    "properties": props(entries),
+                    "relationships": [],
+                    "containers": [],
+                    "components": [],
+                })
+            })
+            .collect();
+        if !components_json.is_empty() {
+            containers_json.push(json!({
+                "id": view.container.id,
+                "name": view.container.name,
+                "description": "Inferred runtime container synthesized for component view",
+                "technology": TECHNOLOGY_JVM_BYTECODE,
+                "tags": tags("Container", "Internal Container"),
+                "properties": {},
+                "relationships": [],
+                "containers": [],
+                "components": components_json.clone(),
+            }));
+            component_views.push(json!({
+                "key": format!("graphite-component-{}", slugify(&view.container.id)),
+                "description": format!(
+                    "Graphite-derived C4 component view for {}",
+                    view.container.name
+                ),
+                "containerId": view.container.id,
+                "elements": components_json
+                    .iter()
+                    .filter_map(|c| c.get("id").map(|i| json!({"id": i})))
+                    .collect::<Vec<_>>(),
+                "relationships": [],
+                "properties": {
+                    "graphite.level": level_prop,
+                    "graphite.containerId": view.container.id,
+                    "graphite.container": view.container.name,
+                },
+            }));
+        }
+    }
+    views.insert("componentViews".into(), json!(component_views));
+    views.insert(
+        "configuration".into(),
+        json!({
+            "scope": "softwareSystem",
+            "properties": {
+                "graphite.level": level_prop,
+                "graphite.availableLevels": property_string(&available),
+            },
+        }),
+    );
+
+    let mut subject_element = element(
+        SUBJECT_FALLBACK_ID,
+        SUBJECT_FALLBACK_NAME,
+        "Derived from the Graphite code graph",
+        tags("Software System", "Application"),
+        props(vec![]),
+    );
+    if let Some(o) = subject_element.as_object_mut() {
+        o.insert("containers".into(), json!(containers_json));
+    }
+    json!({
+        "name": "Graphite C4 Workspace",
+        "description": "Structurizr workspace derived from the Graphite code graph",
+        "properties": {
+            "graphite.level": level_prop,
+            "graphite.availableLevels": property_string(&available),
+            "graphite.format": "structurizr-workspace",
+        },
+        "model": { "people": [], "softwareSystems": [subject_element] },
+        "views": J::Object(views),
+    })
 }
 
 fn build_context_model(g: &Graph, level: &str) -> J {

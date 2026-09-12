@@ -515,107 +515,273 @@ fn container_plan(workspace: &J) -> Option<(Vec<Element>, Vec<Edge>)> {
     Some((visible, edges))
 }
 
-/// What a diagram draws: which elements, which edges, and whether the application layer
-/// is subdivided. The context diagram draws the model's top level whole; the container
-/// diagram draws a planned slice of what is inside the subject.
-struct Plan {
+/// A group of elements in a diagram, possibly containing further groups.
+///
+/// Mirrors the baseline's layer tree, which is what lets one walk render a flat context
+/// diagram, a container diagram whose application layer is subdivided by container kind,
+/// and a component diagram grouped by container.
+struct Layer {
+    id: String,
+    title: String,
     elements: Vec<Element>,
-    edges: Vec<Edge>,
-    split_application: bool,
+    children: Vec<Layer>,
 }
 
-fn plan(workspace: &J) -> Plan {
-    if level_of(workspace) == "container" {
-        if let Some((elements, edges)) = container_plan(workspace) {
-            return Plan {
-                elements,
-                edges,
-                split_application: true,
-            };
-        }
+impl Layer {
+    fn is_empty(&self) -> bool {
+        self.elements.is_empty() && self.children.iter().all(Layer::is_empty)
     }
-    let elements = collect(workspace);
-    let edges = ordered_edges(&elements)
-        .into_iter()
-        .map(|(from, r)| Edge {
-            from: from.to_string(),
-            to: r.destination.clone(),
-            label: r.label.clone(),
-            kind: r.kind.clone(),
-            weight: r.weight,
-        })
-        .collect();
-    Plan {
-        elements,
-        edges,
-        split_application: false,
-    }
+}
+
+/// What a diagram draws.
+struct Plan {
+    layers: Vec<Layer>,
+    edges: Vec<Edge>,
 }
 
 impl Plan {
-    /// Elements of one top-level layer, in plan order.
-    fn layer<'a>(&'a self, layer: &str) -> Vec<&'a Element> {
-        self.elements
-            .iter()
-            .filter(|e| layer_of(&e.architecture_type) == layer)
-            .collect()
-    }
-
-    /// The application layer's sub-layers, empty ones dropped.
-    fn application_sublayers(&self) -> Vec<(&'static str, &'static str, Vec<&Element>)> {
-        let members = self.layer("application");
-        APPLICATION_LAYERS
-            .iter()
-            .filter_map(|(id, title)| {
-                let of_this: Vec<&Element> = members
-                    .iter()
-                    .copied()
-                    .filter(|e| application_layer_of(&e.kind) == *id)
-                    .collect();
-                (!of_this.is_empty()).then_some((*id, *title, of_this))
-            })
-            .collect()
+    fn is_empty(&self) -> bool {
+        self.layers.iter().all(Layer::is_empty)
     }
 }
 
-pub fn render_mermaid(workspace: &J) -> String {
-    let p = plan(workspace);
-    if p.elements.is_empty() {
+/// Group elements into the five top-level layers, optionally subdividing the application
+/// layer by what each container is.
+fn top_level_layers(elements: Vec<Element>, split_application: bool) -> Vec<Layer> {
+    let mut by_layer: indexmap::IndexMap<&str, Vec<Element>> = indexmap::IndexMap::new();
+    for e in elements {
+        by_layer
+            .entry(layer_of(&e.architecture_type))
+            .or_default()
+            .push(e);
+    }
+    LAYERS
+        .into_iter()
+        .map(|(layer, layer_id, title)| {
+            let members = by_layer.shift_remove(layer).unwrap_or_default();
+            if layer == "application" && split_application {
+                let mut remaining = members;
+                let children = APPLICATION_LAYERS
+                    .iter()
+                    .map(|(id, sub_title)| {
+                        let (mine, rest): (Vec<Element>, Vec<Element>) = remaining
+                            .drain(..)
+                            .partition(|e| application_layer_of(&e.kind) == *id);
+                        remaining = rest;
+                        Layer {
+                            id: id.to_string(),
+                            title: sub_title.to_string(),
+                            elements: mine,
+                            children: Vec::new(),
+                        }
+                    })
+                    .filter(|l| !l.is_empty())
+                    .collect();
+                Layer {
+                    id: layer_id.to_string(),
+                    title: title.to_string(),
+                    elements: Vec::new(),
+                    children,
+                }
+            } else {
+                Layer {
+                    id: layer_id.to_string(),
+                    title: title.to_string(),
+                    elements: members,
+                    children: Vec::new(),
+                }
+            }
+        })
+        .filter(|l| !l.is_empty())
+        .collect()
+}
+
+/// The component diagram: one group per container, holding that container's components.
+fn component_plan(workspace: &J) -> Option<Plan> {
+    let model = workspace.get("model")?;
+    let systems = model.get("softwareSystems")?.as_array()?;
+    let primary = systems.iter().find(|s| {
+        s.get("id")
+            .and_then(|v| v.as_str())
+            .is_some_and(|i| i.starts_with("system:"))
+    })?;
+    let mut children: Vec<Layer> = Vec::new();
+    let mut every: Vec<Element> = Vec::new();
+    for container in primary
+        .get("containers")
+        .and_then(|v| v.as_array())
+        .into_iter()
+        .flatten()
+    {
+        let name = container.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        let id = container.get("id").and_then(|v| v.as_str()).unwrap_or("");
+        let components = collect(&json!({
+            "model": {
+                "people": [],
+                "softwareSystems": container.get("components").cloned().unwrap_or(json!([])),
+            }
+        }));
+        if components.is_empty() {
+            continue;
+        }
+        every.extend(components.iter().map(|e| Element {
+            id: e.id.clone(),
+            label: e.label.clone(),
+            architecture_type: e.architecture_type.clone(),
+            kind: e.kind.clone(),
+            relationships: Vec::new(),
+        }));
+        children.push(Layer {
+            id: if id.is_empty() {
+                if name.is_empty() { "container" } else { name }.to_string()
+            } else {
+                id.to_string()
+            },
+            title: if name.is_empty() { "Container" } else { name }.to_string(),
+            elements: components,
+            children: Vec::new(),
+        });
+    }
+    if children.is_empty() {
+        return None;
+    }
+    let allowed: std::collections::HashSet<String> = every.iter().map(|e| e.id.clone()).collect();
+    let mut edges: Vec<Edge> = children
+        .iter()
+        .flat_map(|l| l.elements.iter())
+        .flat_map(|e| raw_edges(e, &allowed))
+        .collect();
+    edges.sort_by(|a, b| b.weight.cmp(&a.weight));
+    Some(Plan {
+        layers: vec![Layer {
+            id: "application".to_string(),
+            title: "Application Layer".to_string(),
+            elements: Vec::new(),
+            children,
+        }],
+        edges,
+    })
+}
+
+fn plan_for(workspace: &J, level: &str) -> Plan {
+    match level {
+        "container" => container_plan(workspace)
+            .map(|(elements, edges)| Plan {
+                layers: top_level_layers(elements, true),
+                edges,
+            })
+            .unwrap_or(Plan {
+                layers: Vec::new(),
+                edges: Vec::new(),
+            }),
+        "component" => component_plan(workspace).unwrap_or(Plan {
+            layers: Vec::new(),
+            edges: Vec::new(),
+        }),
+        _ => {
+            let elements = collect(workspace);
+            let edges = ordered_edges(&elements)
+                .into_iter()
+                .map(|(from, r)| Edge {
+                    from: from.to_string(),
+                    to: r.destination.clone(),
+                    label: r.label.clone(),
+                    kind: r.kind.clone(),
+                    weight: r.weight,
+                })
+                .collect();
+            Plan {
+                layers: top_level_layers(elements, false),
+                edges,
+            }
+        }
+    }
+}
+
+fn plan(workspace: &J) -> Plan {
+    plan_for(workspace, &level_of(workspace))
+}
+
+/// Walk a layer tree into lines, the way the baseline's document builder does: a group
+/// opens, its own elements are emitted one level in, its children recurse, it closes.
+///
+/// `group` decides whether a layer is drawn as a group at all -- PlantUML leaves the top
+/// level actors ungrouped.
+fn walk_layers(
+    layers: &[Layer],
+    depth: usize,
+    lines: &mut Vec<String>,
+    group: &dyn Fn(&Layer, usize) -> bool,
+    open: &dyn Fn(&Layer, usize) -> String,
+    close: &dyn Fn(usize) -> String,
+    element: &dyn Fn(&Element, usize) -> String,
+) {
+    for layer in layers {
+        if layer.is_empty() {
+            continue;
+        }
+        if !group(layer, depth) {
+            for e in &layer.elements {
+                lines.push(element(e, depth));
+            }
+            walk_layers(&layer.children, depth, lines, group, open, close, element);
+            continue;
+        }
+        lines.push(open(layer, depth));
+        for e in &layer.elements {
+            lines.push(element(e, depth + 1));
+        }
+        walk_layers(
+            &layer.children,
+            depth + 1,
+            lines,
+            group,
+            open,
+            close,
+            element,
+        );
+        lines.push(close(depth));
+    }
+}
+
+/// `level=all` renders all three diagrams in one document, each behind a comment
+/// heading, in the language's own comment syntax.
+fn render_all_sections(workspace: &J, heading: &dyn Fn(&str) -> String, one: &dyn Fn(&J, &str) -> String) -> String {
+    [
+        heading("Context"),
+        one(workspace, "context"),
+        String::new(),
+        heading("Container"),
+        one(workspace, "container"),
+        String::new(),
+        heading("Component"),
+        one(workspace, "component"),
+    ]
+    .join("\n")
+}
+
+fn mermaid_at(workspace: &J, level: &str) -> String {
+    let p = plan_for(workspace, level);
+    if p.is_empty() {
         return "graph TD".to_string();
     }
     let mut lines = vec!["graph TD".to_string()];
-    for (layer, layer_id, title) in LAYERS {
-        let members = p.layer(layer);
-        if members.is_empty() {
-            continue;
-        }
-        let open = format!(
-            "    subgraph {}[\"{}\"]",
-            diagram_id(&layer_id.to_lowercase()),
-            title
-        );
-        if layer == "application" && p.split_application {
-            lines.push(open);
-            for (id, sub_title, of_this) in p.application_sublayers() {
-                lines.push(format!(
-                    "        subgraph {}[\"{}\"]",
-                    diagram_id(id),
-                    sub_title
-                ));
-                for e in of_this {
-                    lines.push(format!("            {}{}", diagram_id(&e.id), node_shape(e)));
-                }
-                lines.push("        end".to_string());
-            }
-            lines.push("    end".to_string());
-            continue;
-        }
-        lines.push(open);
-        for e in members {
-            lines.push(format!("        {}{}", diagram_id(&e.id), node_shape(e)));
-        }
-        lines.push("    end".to_string());
-    }
+    walk_layers(
+        &p.layers,
+        0,
+        &mut lines,
+        &|_, _| true,
+        &|layer, depth| {
+            format!(
+                "{}subgraph {}[\"{}\"]",
+                "    ".repeat(depth + 1),
+                diagram_id(&layer.id.to_lowercase()),
+                layer.title.replace('"', "'").replace('\n', "<br/>")
+            )
+        },
+        &|depth| format!("{}end", "    ".repeat(depth + 1)),
+        &|e, depth| format!("{}{}{}", "    ".repeat(depth + 1), diagram_id(&e.id), node_shape(e)),
+    );
     for e in &p.edges {
         lines.push(format!(
             "    {} -->|{}| {}",
@@ -625,6 +791,13 @@ pub fn render_mermaid(workspace: &J) -> String {
         ));
     }
     lines.join("\n")
+}
+
+pub fn render_mermaid(workspace: &J) -> String {
+    if level_of(workspace) == "all" {
+        return render_all_sections(workspace, &|t| format!("%% {t}"), &mermaid_at);
+    }
+    mermaid_at(workspace, &level_of(workspace))
 }
 
 fn node_shape(e: &Element) -> String {
@@ -652,9 +825,9 @@ fn plantuml_keyword(e: &Element) -> &'static str {
     }
 }
 
-pub fn render_plantuml(workspace: &J) -> String {
-    let p = plan(workspace);
-    if p.elements.is_empty() {
+fn plantuml_at(workspace: &J, level: &str) -> String {
+    let p = plan_for(workspace, level);
+    if p.is_empty() {
         return "@startuml\n@enduml".to_string();
     }
     let mut lines = vec![
@@ -662,41 +835,30 @@ pub fn render_plantuml(workspace: &J) -> String {
         "top to bottom direction".to_string(),
         "skinparam shadowing false".to_string(),
     ];
-    for (layer, _layer_id, title) in LAYERS {
-        let members = p.layer(layer);
-        if members.is_empty() {
-            continue;
-        }
-        // Actors are emitted ungrouped at the top level.
-        let grouped = layer != "actor";
-        if grouped {
-            lines.push(format!("package \"{}\" {{", escape(title)));
-        }
-        let declare = |lines: &mut Vec<String>, e: &Element, indent: &str| {
-            lines.push(format!(
-                "{indent}{} \"{}\" as {}",
+    walk_layers(
+        &p.layers,
+        0,
+        &mut lines,
+        // Actors at the top level are emitted ungrouped.
+        &|layer, depth| !(depth == 0 && layer.id == "actors"),
+        &|layer, depth| {
+            format!(
+                "{}package \"{}\" {{",
+                "  ".repeat(depth),
+                escape(&layer.title)
+            )
+        },
+        &|depth| format!("{}}}", "  ".repeat(depth)),
+        &|e, depth| {
+            format!(
+                "{}{} \"{}\" as {}",
+                "  ".repeat(depth),
                 plantuml_keyword(e),
                 escape(&e.label),
                 diagram_id(&e.id)
-            ));
-        };
-        if layer == "application" && p.split_application {
-            for (_, sub_title, of_this) in p.application_sublayers() {
-                lines.push(format!("  package \"{}\" {{", escape(sub_title)));
-                for e in of_this {
-                    declare(&mut lines, e, "    ");
-                }
-                lines.push("  }".to_string());
-            }
-        } else {
-            for e in members {
-                declare(&mut lines, e, if grouped { "  " } else { "" });
-            }
-        }
-        if grouped {
-            lines.push("}".to_string());
-        }
-    }
+            )
+        },
+    );
     for e in &p.edges {
         lines.push(format!(
             "{} --> {} : {}",
@@ -707,6 +869,13 @@ pub fn render_plantuml(workspace: &J) -> String {
     }
     lines.push("@enduml".to_string());
     lines.join("\n")
+}
+
+pub fn render_plantuml(workspace: &J) -> String {
+    if level_of(workspace) == "all" {
+        return render_all_sections(workspace, &|t| format!("' {t}"), &plantuml_at);
+    }
+    plantuml_at(workspace, &level_of(workspace))
 }
 
 fn escape(text: &str) -> String {

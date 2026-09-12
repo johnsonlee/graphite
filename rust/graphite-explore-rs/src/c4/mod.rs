@@ -10,6 +10,7 @@ pub mod constants;
 pub mod util;
 
 mod boundary;
+mod components;
 mod containers;
 mod external;
 mod model;
