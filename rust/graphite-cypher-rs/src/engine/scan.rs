@@ -70,6 +70,9 @@ struct StringPredicate {
     /// The literal's trigrams, computed once for the query rather than once per graph.
     /// They depend only on the literal, and there are sixty-four graphs.
     trigrams: std::sync::Arc<Option<Vec<i32>>>,
+    /// The literal's trigram signature, for rejecting a candidate string without
+    /// decoding it.
+    signature: u64,
 }
 
 impl StringPredicate {
@@ -661,8 +664,14 @@ fn matching_string_ids(
         }
         candidates.retain(|id| list.contains(*id));
     }
-    // The trigram set is a filter, not an answer: check the predicate for real.
-    candidates.retain(|&id| predicate_matches(graph, p, id));
+    // The trigram set is a filter, not an answer: check the predicate for real. The
+    // signature goes first: it is one word read, where checking for real means decoding
+    // the string out of the front-coded dictionary. A string containing the literal
+    // contains every one of the literal's trigrams, so every bit the literal's signature
+    // sets is also set in that string's — the test can reject, never wrongly admit.
+    candidates.retain(|&id| {
+        idx.signature(id as usize) & p.signature == p.signature && predicate_matches(graph, p, id)
+    });
     Some(candidates)
 }
 
@@ -907,12 +916,14 @@ fn push_predicate(
         Some((property, transform)) => {
             let trigrams =
                 std::sync::Arc::new(graphite_storage::callsite_index::literal_trigrams(&literal));
+            let signature = graphite_storage::callsite_index::literal_signature(&literal);
             out.push(StringPredicate {
                 property,
                 op,
                 literal,
                 transform,
                 trigrams,
+                signature,
             });
             true
         }
