@@ -3,6 +3,7 @@ name: Benchmark regression
 on:
   pull_request:
     branches: ['**']
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
@@ -18,10 +19,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
-  BENCHMARK_REPORT_TRANSITION_SHA256: 9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
+  BENCHMARK_REPORT_TRANSITION_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 4c48c78deb9850bbaa4f783217a71ea563b3dff3cf2e65b9dffb476247dc943b
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -36,6 +37,8 @@ jobs:
     name: candidate-gate-tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      queries: ${{ steps.query-matrix.outputs.queries }}
 
     steps:
     - name: Checkout PR gate tests
@@ -47,6 +50,16 @@ jobs:
 
     - name: Test candidate benchmark gate logic
       run: node --test candidate/.github/scripts/benchmark-*.test.mjs
+
+    - name: Test wide-query profiling and oracle verification
+      run: python3 -m unittest discover -s candidate/.github/scripts/wide-query-profile -p 'test_*.py'
+
+    - name: Publish complete per-query gate matrix
+      id: query-matrix
+      run: |
+        QUERIES=$(node candidate/.github/scripts/benchmark-query-gate.mjs matrix \
+          candidate/.github/scripts/wide-query-catalog.json)
+        echo "queries=${QUERIES}" >> "${GITHUB_OUTPUT}"
 
   build-explore-jmh:
     name: build-explore-jmh-${{ matrix.revision }}
@@ -2627,9 +2640,10 @@ jobs:
     name: global-wide-pressure-evidence
     needs: [prepare-fixture64]
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 360
     permissions:
       contents: read
+      actions: read
 
     steps:
     - name: Checkout exact candidate benchmark implementation
@@ -2637,7 +2651,20 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        fetch-depth: 0
         persist-credentials: false
+
+    - name: Resolve frozen target and last accepted iteration
+      working-directory: candidate
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        mkdir -p ../benchmark-results
+        node .github/scripts/benchmark-optimization-references.mjs \
+          --repo "${{ github.repository }}" --pr "${{ github.event.pull_request.number }}" \
+          --head "${{ github.event.pull_request.head.sha }}" \
+          --base "${{ github.event.pull_request.base.sha }}" \
+          > ../benchmark-results/optimization-references.json
 
     - name: Set up Java
       uses: actions/setup-java@v5
@@ -2671,17 +2698,15 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
         GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false
-        GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY: true
         GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT: ../shared-fixture64/fixture-reproducibility.json
       run: |
         cd candidate
-        .github/scripts/run-real64-global-wide.sh \
-          ../shared-fixture64/graphs/graphs.tsv \
-          graphite-webgraph/build/benchmark-fixtures \
-          "${{ github.event.pull_request.base.sha }}" \
-          "${{ github.event.pull_request.head.sha }}" \
-          "${{ github.repository }}" \
-          ../benchmark-results
+        node .github/scripts/benchmark-global-iteration.mjs \
+          --references ../benchmark-results/optimization-references.json \
+          --manifest ../shared-fixture64/graphs/graphs.tsv \
+          --fixtures graphite-webgraph/build/benchmark-fixtures \
+          --repository "${{ github.repository }}" \
+          --output ../benchmark-results
 
     - name: Upload trusted global-wide result
       if: always()
@@ -2846,7 +2871,7 @@ jobs:
           --run-orders candidate-base,base-candidate,candidate-base \
           --graph-manifest "${E}/graphs.tsv" \
           --correctness-oracle "${E}/base-global-wide-oracle-seed.correctness" \
-          --minimum-speedup 5 --report benchmark-results/global-wide-report.md \
+          --minimum-speedup 10 --report benchmark-results/global-wide-report.md \
           --status benchmark-results/global-wide-status.json
         cmp benchmark-results/global-wide-report.md "${E}/global-wide-report.md"
         cmp benchmark-results/global-wide-status.json "${E}/global-wide-status.json"
@@ -2950,10 +2975,41 @@ jobs:
         if-no-files-found: error
         retention-days: 14
 
+  wide-query-latency-gate:
+    name: wide-query-latency-${{ matrix.query.id }}
+    needs: [candidate-gate-tests, global-wide-pressure-evidence]
+    if: ${{ always() && needs.candidate-gate-tests.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        query: ${{ fromJSON(needs.candidate-gate-tests.outputs.queries) }}
+    steps:
+    - name: Checkout exact candidate gate and catalog
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        persist-credentials: false
+    - name: Download shared measurements without rerunning benchmarks
+      uses: actions/download-artifact@v8
+      with:
+        name: benchmark-global-wide-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results
+    - name: Enforce this query's P50, P95, and fluctuation
+      env:
+        QUERY_ID: ${{ matrix.query.id }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        node .github/scripts/benchmark-query-gate.mjs check \
+          .github/scripts/wide-query-catalog.json \
+          benchmark-results/global-wide-status.json "${QUERY_ID}"
+
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting, slow-query-shapes]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, wide-query-latency-gate, validate-cpu-accounting, slow-query-shapes]
     runs-on: ubuntu-latest
 
     steps:
@@ -3087,6 +3143,7 @@ jobs:
         LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
         GRAPH_ROUTING_JOB: ${{ needs.graph-routing-pressure-evidence.result }}
         GLOBAL_WIDE_JOB: ${{ needs.global-wide-pressure-evidence.result }}
+        QUERY_LATENCY_JOB: ${{ needs.wide-query-latency-gate.result }}
         CPU_ACCOUNTING_SMOKE_JOB: ${{ needs.validate-cpu-accounting.result }}
         SLOW_QUERY_SHAPES_JOB: ${{ needs.slow-query-shapes.result }}
       run: |
@@ -3099,6 +3156,7 @@ jobs:
           [ "${LARGE_CORPUS_JOB}" != success ] || \
           [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ] || \
           [ "${GRAPH_ROUTING_JOB}" != success ] || [ "${GLOBAL_WIDE_JOB}" != success ] || \
+          [ "${QUERY_LATENCY_JOB}" != success ] || \
           [ "${CPU_ACCOUNTING_SMOKE_JOB}" != success ] || \
           [ "${SLOW_QUERY_SHAPES_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"

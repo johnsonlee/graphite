@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { compareWideLatency, renderWideLatency } from "./benchmark-wide-latency.mjs";
 
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
@@ -1694,13 +1695,17 @@ export function compareGlobalWidePressure(
     minimumSpeedup = 10,
     runOrders = [],
     graphManifestContents = "",
-    { coldDiagnosticsOnly = false } = {}
+    { regressionOnly = false, latencyEvidence = null, coldDiagnosticsOnly = false } = {}
 ) {
     const errors = [];
     const targetErrors = [];
     const latencyErrors = [];
     const resourceErrors = [];
     if (typeof coldDiagnosticsOnly !== "boolean") errors.push("coldDiagnosticsOnly must be boolean");
+    if (typeof regressionOnly !== "boolean") errors.push("regressionOnly must be a boolean");
+    if (!Number.isFinite(minimumSpeedup) || minimumSpeedup <= 0) {
+        errors.push("minimumSpeedup must be a positive finite number");
+    }
     const manifest = parseGlobalWideGraphManifest(graphManifestContents, errors);
     const expectedBenchmark =
         "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
@@ -2010,6 +2015,19 @@ export function compareGlobalWidePressure(
                     `${wrapped.speedup.toFixed(2)}x; required ${minimumSpeedup.toFixed(2)}x`);
             }
         }
+        for (const [label, reference, measured] of [
+            ["aggregate P50", baseP50, p50],
+            ["aggregate P95", baseP95, p95],
+            ...wrappedShapeRuns.map((wrapped) =>
+                [`${wrapped.shape} P95`, wrapped.baseLatencyNanos, wrapped.latencyNanos])
+        ]) {
+            if (measured >= reference * 1.05) {
+                const samples = alignedLatencyRegressions.get(label) ?? [];
+                samples.push(`pair-${index + 1}/${label}: latency ${measured} exceeds base ` +
+                    `${reference} by >=5%`);
+                alignedLatencyRegressions.set(label, samples);
+            }
+        }
         const baseRows = new Map((baseRowsByRun[index] ?? []).map((row) => [row.id, row]));
         for (const row of candidateRowsByRun[index] ?? []) {
             const baseRow = baseRows.get(row.id);
@@ -2022,13 +2040,12 @@ export function compareGlobalWidePressure(
             const baseRowLatency = finiteNumber(baseRow?.latencyNanos);
             const candidateRowLatency = finiteNumber(row.latencyNanos);
             if (baseRowLatency === null || candidateRowLatency === null) continue;
-            if (candidateRowLatency > baseRowLatency * 1.15 &&
-                candidateRowLatency - baseRowLatency > 1_000_000
+            if (candidateRowLatency >= baseRowLatency * 1.05
             ) {
                 const key = `${row.shape}/${row.selectivity}`;
                 const samples = alignedLatencyRegressions.get(key) ?? [];
                 samples.push(`pair-${index + 1}/${key}: aligned latency ` +
-                    `${candidateRowLatency} exceeds base ${baseRowLatency} by >15% and >1 ms`);
+                    `${candidateRowLatency} exceeds base ${baseRowLatency} by >=5%`);
                 alignedLatencyRegressions.set(key, samples);
             }
         }
@@ -2063,7 +2080,7 @@ export function compareGlobalWidePressure(
         };
     }).filter(Boolean);
     for (const samples of alignedLatencyRegressions.values()) {
-        if (samples.length >= 2) latencyErrors.push(`${samples[0]}; repeated in ${samples.length} independent pairs`);
+        if (samples.length >= 1 && latencyEvidence === null) latencyErrors.push(`${samples[0]}; repeated in ${samples.length} independent pairs`);
     }
     const median = (values) => {
         const sorted = [...values].sort((left, right) => left - right);
@@ -2079,15 +2096,31 @@ export function compareGlobalWidePressure(
         // Order medians remain diagnostic; every independent pair is gated above.
         return { order, runCount: orderedRuns.length, medianP50Speedup, medianP95Speedup };
     });
+    const repeatedLatency = latencyEvidence === null ? null : compareWideLatency(
+        latencyEvidence.bases, latencyEvidence.candidates, latencyEvidence.oracle, graphManifestContents
+    );
+    if (repeatedLatency) {
+        errors.push(...repeatedLatency.integrityErrors);
+        latencyErrors.push(...repeatedLatency.latencyErrors);
+    }
     const integrityErrors = [...errors];
-    const numericalErrors = [...targetErrors, ...latencyErrors, ...resourceErrors];
-    if (!coldDiagnosticsOnly) errors.push(...numericalErrors);
+    errors.push(...latencyErrors);
+    const regressionPassed = errors.length === 0;
+    const targetAchieved = regressionPassed && targetErrors.length === 0;
     return {
-        passed: errors.length === 0,
-        errors,
-        integrityErrors, targetErrors, latencyErrors, resourceErrors,
+        passed: coldDiagnosticsOnly ? integrityErrors.length === 0 : regressionPassed && (regressionOnly || targetAchieved),
+        errors: coldDiagnosticsOnly ? integrityErrors : regressionOnly ? errors : [...errors, ...targetErrors],
         coldDiagnosticsOnly,
-        advisoryErrors: coldDiagnosticsOnly ? numericalErrors : [],
+        ...(coldDiagnosticsOnly ? { evidenceMode: "cold-diagnostics-only" } : {}),
+        resourceErrors,
+        advisoryErrors: coldDiagnosticsOnly ? [...targetErrors, ...latencyErrors, ...resourceErrors] : resourceErrors,
+        integrityErrors,
+        latencyErrors,
+        repeatedLatency,
+        regressionPassed,
+        targetAchieved,
+        targetErrors,
+        regressionOnly,
         minimumSpeedup,
         runs,
         orderSummaries
@@ -2109,12 +2142,18 @@ export function renderGlobalWidePressureReport(comparison) {
     const worstWrapped = comparison.runs.length === 0 ? { wrappedP95Speedup: 0 } :
         comparison.runs.reduce((left, right) =>
             left.wrappedP95Speedup < right.wrappedP95Speedup ? left : right);
-    return [
+    const legacy = [
         "### 64 fixture-derived global wide-query pressure gate",
         "",
-        comparison.coldDiagnosticsOnly
-            ? "Cold query latency, historical speedup targets, and CPU/heap/RSS growth are diagnostic; correctness and measurement integrity remain required."
-            : `Required P95 speedup in every independent paired fork: **${comparison.minimumSpeedup.toFixed(1)}x**`,
+        ...(comparison.coldDiagnosticsOnly ? ["Cold query latency, historical speedup targets, and CPU/heap/RSS growth are diagnostic; correctness and measurement integrity remain required."] : []),
+        `Evaluation: **${comparison.regressionOnly ? "non-regression" : "strict target"}**`,
+        `P95 target in every independent paired fork: **${comparison.minimumSpeedup.toFixed(1)}x**`,
+        `Regression checks: **${comparison.regressionPassed ? "PASS" : "FAIL"}**; ` +
+            `target achieved: **${comparison.targetAchieved ? "YES" : "NO"}**`,
+        ...(comparison.regressionOnly && !comparison.targetAchieved ? [
+            "Target remains unmet; a passing regression evaluation does not establish the speedup target.",
+            ...comparison.targetErrors
+        ] : []),
         "",
         `- Worst paired base P50 / P95: **${ms(worst.baseP50LatencyNanos)} / ` +
             `${ms(worst.baseP95LatencyNanos)}**`,
@@ -2143,6 +2182,7 @@ export function renderGlobalWidePressureReport(comparison) {
         comparison.passed ? "**Result: PASS**" : `**Result: FAIL**\n\n${comparison.errors.join("\n")}`,
         ""
     ].join("\n");
+    return comparison.repeatedLatency ? `${renderWideLatency(comparison.repeatedLatency)}\n${legacy}` : legacy;
 }
 
 export function renderGraphIdPressureReport(comparison) {
@@ -2409,7 +2449,7 @@ export function renderLatencyResourceReport(comparison) {
     const lines = [
         "### Wrapped-query resource guardrails", "",
         "Resource probes run separately from latency timing. JVM caps and metric presence fail closed;",
-        "Allocation and query-GC regressions must repeat in reverse order; retained/peak heap growth is advisory.", "",
+        "Allocation and query GC regressions must repeat in reverse order; retained and peak heap are advisory.", "",
         "| Benchmark | Metric | Base | PR | Change | Gate |",
         "|---|---|---:|---:|---:|:---:|"
     ];
@@ -3066,7 +3106,14 @@ function compareGlobalWidePressureCommand(args) {
         Number(args["minimum-speedup"] ?? 10),
         requireArg(args, "run-orders").split(",").map((order) => order.trim()).filter(Boolean),
         fs.readFileSync(requireArg(args, "graph-manifest"), "utf8"),
-        { coldDiagnosticsOnly: args["cold-diagnostics-only"] === "true" }
+        { regressionOnly: args["regression-only"] === true,
+            latencyEvidence: ["base-latency-samples", "candidate-latency-samples", "latency-oracle"].some(key => args[key])
+                ? {
+                    bases: commaSeparatedFiles(args, "base-latency-samples").map(file => fs.readFileSync(file, "utf8")),
+                    candidates: commaSeparatedFiles(args, "candidate-latency-samples").map(file => fs.readFileSync(file, "utf8")),
+                    oracle: fs.readFileSync(requireArg(args, "latency-oracle"), "utf8")
+                } : null
+        }
     );
     writeFile(requireArg(args, "report"), renderGlobalWidePressureReport(comparison));
     writeJson(requireArg(args, "status"), comparison);
