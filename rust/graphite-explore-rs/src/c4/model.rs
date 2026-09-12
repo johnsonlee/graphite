@@ -53,45 +53,306 @@ fn element(id: &str, name: &str, description: &str, tag_set: String, properties:
     })
 }
 
+/// Id and name the baseline falls back to when no system context view was built.
+///
+/// At `level=container` and `level=component` the baseline's mapper has no context view
+/// to read the subject from, so it never learns the subject's real id, name or
+/// evidence: it seeds a placeholder and only ever adds the system boundary to it. That
+/// is why the same graph is `system:application` / "It" at `level=context` and
+/// `system:subject` / "Subject" one level down.
+const SUBJECT_FALLBACK_ID: &str = "system:subject";
+const SUBJECT_FALLBACK_NAME: &str = "Subject";
+
 /// Build the Structurizr workspace for one graph at the requested level.
 pub fn build_model(g: &Graph, level: &str) -> J {
-    let endpoints = crate::endpoints::extract_endpoints(g);
-    let endpoint_classes: Vec<String> = endpoints
+    if level == "container" {
+        return build_container_model(g);
+    }
+    build_context_model(g, level)
+}
+
+/// The `level=container` workspace.
+///
+/// Built separately rather than by toggling flags on the context workspace, because the
+/// baseline builds it from a different view: only the container view exists, so the
+/// subject degenerates to a placeholder, the dependencies are described and tagged as
+/// plain external dependencies rather than by kind, and every relationship hangs off the
+/// runtime container instead of the system.
+fn build_container_model(g: &Graph) -> J {
+    let inputs = Inputs::gather(g);
+    let capability_layout = containers::infer_layout(
+        g,
+        &inputs.system_boundary,
+        &inputs.endpoint_classes,
+        &inputs.endpoint_paths,
+        usize::MAX,
+    );
+    let runtime_layout = containers::infer_operational_layout(
+        &inputs.subject.role,
+        &inputs.subject.name,
+        &capability_layout,
+    );
+    let deps = &runtime_layout.external_dependencies;
+
+    // Every dependency is "an external dependency" here: the kind survives only as a
+    // property, where the context view puts it in the description and the tag too.
+    let systems: Vec<J> = deps
         .iter()
-        .filter_map(|e| {
-            e.get("class")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string())
+        .map(|d| {
+            element(
+                &d.id,
+                &d.name,
+                "External dependency inferred from code graph evidence",
+                tags("Software System", "External Dependency"),
+                props(vec![
+                    ("graphite.kind", json!(d.kind.wire())),
+                    ("graphite.architectureType", json!(d.kind.architecture_type())),
+                    ("graphite.source", json!(d.source)),
+                    ("graphite.confidence", json!(d.confidence)),
+                    ("graphite.responsibility", json!(d.responsibility)),
+                ]),
+            )
         })
         .collect();
-    let mut endpoint_paths: indexmap::IndexMap<String, Vec<String>> = indexmap::IndexMap::new();
-    for e in &endpoints {
-        if let (Some(c), Some(p)) = (
-            e.get("class").and_then(|v| v.as_str()),
-            e.get("path").and_then(|v| v.as_str()),
-        ) {
-            endpoint_paths
-                .entry(c.to_string())
-                .or_default()
-                .push(p.to_string());
+
+    let internal_capabilities: Vec<J> = capability_layout
+        .containers
+        .iter()
+        .map(|cap| {
+            let mut units = cap.package_units.clone();
+            units.sort();
+            json!({
+                "name": cap.name,
+                "kind": containers::container_kind(cap),
+                "packageUnits": units,
+                // Doubles, not integers. This metadata is nested inside a property
+                // string, and the baseline builds that string by round-tripping the
+                // metadata through Gson into `Map<String, Any?>`, which makes every
+                // number a Double -- so the counts carry a trailing `.0` here exactly as
+                // they do at the top level.
+                "methods": cap.method_count as f64,
+                "callSites": cap.call_site_count as f64,
+                "endpoints": cap.endpoint_count as f64,
+                "primaryClasses": cap.primary_classes,
+                "whySelected": cap.rationale,
+            })
+        })
+        .collect();
+
+    let mut rel_id = 0usize;
+    let mut containers_json: Vec<J> = Vec::new();
+    for c in &runtime_layout.containers {
+        let kind = containers::container_kind(c);
+        let mut units = c.package_units.clone();
+        units.sort();
+        let mut entries = vec![
+            ("graphite.type", json!("container")),
+            ("graphite.kind", json!(kind)),
+            (
+                "graphite.architectureType",
+                json!(containers::architecture_type(&kind)),
+            ),
+            (
+                "graphite.responsibility",
+                containers::operational_responsibility(&kind)
+                    .map(|r| json!(r))
+                    .unwrap_or(J::Null),
+            ),
+            ("graphite.whySelected", json!(c.rationale)),
+            ("graphite.methods", json!(c.method_count)),
+            ("graphite.callSites", json!(c.call_site_count)),
+            ("graphite.endpoints", json!(c.endpoint_count)),
+        ];
+        // An empty list is dropped rather than rendered as `[]`, which is what the
+        // baseline's metadata encoder does with an absent collection.
+        if !c.entrypoints.is_empty() {
+            entries.push(("graphite.entrypoints", json!(c.entrypoints)));
         }
+        entries.push(("graphite.packageUnits", json!(units)));
+        entries.push(("graphite.primaryClasses", json!(c.primary_classes)));
+        entries.push((
+            "graphite.internalCapabilities",
+            json!(internal_capabilities),
+        ));
+
+        let rels: Vec<J> = deps
+            .iter()
+            .map(|d| {
+                let runtime = d.kind == DependencyKind::Runtime;
+                let (rel_kind, verb) = if runtime {
+                    ("runs-on", "runs on")
+                } else {
+                    ("depends-on", "uses")
+                };
+                // The wire tag carries the relationship kind, but the technology field
+                // carries the verb -- they differ for a dependency edge, which is
+                // `depends-on` but reads as "uses".
+                let technology = if runtime { "runs-on" } else { "uses" };
+                let evidence = json!({
+                    "crossBoundaryCalls": d.weight,
+                    "source": d.source,
+                    "confidence": d.confidence,
+                });
+                rel_id += 1;
+                json!({
+                    "id": format!("rel-{rel_id}"),
+                    "destinationId": d.id,
+                    "description": format!("{} {verb} {}", c.name, d.name),
+                    "technology": technology,
+                    "tags": format!("Relationship,{GRAPHITE_TAG},{rel_kind}"),
+                    "properties": {
+                        "graphite.view": "container",
+                        "graphite.relationshipKind": rel_kind,
+                        "graphite.evidence": serde_json::to_string_pretty(&evidence)
+                            .unwrap_or_default(),
+                        "graphite.weight": d.weight.to_string(),
+                    },
+                })
+            })
+            .collect();
+
+        let mut e = json!({
+            "id": c.id,
+            "name": c.name,
+            "description": containers::description(&kind),
+            "technology": TECHNOLOGY_JVM_BYTECODE,
+            "tags": tags("Container", &kind),
+            "properties": props(entries),
+            "relationships": rels,
+            "containers": [],
+            "components": [],
+        });
+        let _ = e.as_object_mut();
+        containers_json.push(e);
     }
 
-    // Classes seen anywhere in the graph drive boundary detection.
-    let mut primary_classes: Vec<String> = g
-        .methods()
-        .iter()
-        .map(|m| g.str(m.declaring_class).to_string())
-        .collect();
-    if primary_classes.is_empty() {
-        for &id in g.ids_by_tag(graphite_storage::node::TAG_CALL_SITE_NODE) {
-            if let Some(s) = g.call_site_strings(id) {
-                primary_classes.push(g.str(s.caller_class).to_string());
+    let mut subject_element = element(
+        SUBJECT_FALLBACK_ID,
+        SUBJECT_FALLBACK_NAME,
+        "Derived from the Graphite code graph",
+        tags("Software System", "Application"),
+        props(vec![(
+            "graphite.systemBoundary",
+            json!(runtime_layout.system_boundary),
+        )]),
+    );
+    if let Some(o) = subject_element.as_object_mut() {
+        // Replaced in place, so the key order the baseline emits is preserved:
+        // relationships, then containers, then components.
+        o.insert("containers".into(), json!(containers_json));
+    }
+    let mut all_systems = vec![subject_element];
+    all_systems.extend(systems);
+
+    let relationship_refs: Vec<J> = (1..=rel_id).map(|i| json!({"id": format!("rel-{i}")})).collect();
+    let level_prop = json!("container");
+    let available = json!(super::LEVELS);
+    let mut views = Map::new();
+    views.insert("systemContextViews".into(), json!([]));
+    views.insert(
+        "containerViews".into(),
+        json!([{
+            "key": "graphite-container",
+            "description": "Graphite-derived C4 container view",
+            "softwareSystemId": SUBJECT_FALLBACK_ID,
+            "elements": container_refs(
+                &containers_json,
+                deps.iter().map(|d| d.id.clone()).collect(),
+            ),
+            "relationships": relationship_refs,
+            "properties": {
+                "graphite.level": level_prop,
+                "graphite.systemBoundary": runtime_layout.system_boundary,
+            },
+        }]),
+    );
+    views.insert("componentViews".into(), json!([]));
+    views.insert(
+        "configuration".into(),
+        json!({
+            "scope": "softwareSystem",
+            "properties": {
+                "graphite.level": level_prop,
+                "graphite.availableLevels": property_string(&available),
+            },
+        }),
+    );
+    json!({
+        "name": "Graphite C4 Workspace",
+        "description": "Structurizr workspace derived from the Graphite code graph",
+        "properties": {
+            "graphite.level": level_prop,
+            "graphite.availableLevels": property_string(&available),
+            "graphite.format": "structurizr-workspace",
+        },
+        "model": { "people": [], "softwareSystems": all_systems },
+        "views": J::Object(views),
+    })
+}
+
+/// What every level's inference starts from, gathered once.
+struct Inputs {
+    endpoint_classes: Vec<String>,
+    endpoint_paths: indexmap::IndexMap<String, Vec<String>>,
+    system_boundary: String,
+    subject: subject::Subject,
+}
+
+impl Inputs {
+    fn gather(g: &Graph) -> Inputs {
+        let endpoints = crate::endpoints::extract_endpoints(g);
+        let endpoint_classes: Vec<String> = endpoints
+            .iter()
+            .filter_map(|e| {
+                e.get("class")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string())
+            })
+            .collect();
+        let mut endpoint_paths: indexmap::IndexMap<String, Vec<String>> =
+            indexmap::IndexMap::new();
+        for e in &endpoints {
+            if let (Some(c), Some(p)) = (
+                e.get("class").and_then(|v| v.as_str()),
+                e.get("path").and_then(|v| v.as_str()),
+            ) {
+                endpoint_paths
+                    .entry(c.to_string())
+                    .or_default()
+                    .push(p.to_string());
             }
         }
+        // Classes seen anywhere in the graph drive boundary detection.
+        let mut primary_classes: Vec<String> = g
+            .methods()
+            .iter()
+            .map(|m| g.str(m.declaring_class).to_string())
+            .collect();
+        if primary_classes.is_empty() {
+            for &id in g.ids_by_tag(graphite_storage::node::TAG_CALL_SITE_NODE) {
+                if let Some(s) = g.call_site_strings(id) {
+                    primary_classes.push(g.str(s.caller_class).to_string());
+                }
+            }
+        }
+        let system_boundary = boundary::derive(&primary_classes);
+        let subject = subject::infer(g, &system_boundary, endpoint_classes.len());
+        Inputs {
+            endpoint_classes,
+            endpoint_paths,
+            system_boundary,
+            subject,
+        }
     }
-    let system_boundary = boundary::derive(&primary_classes);
-    let subject = subject::infer(g, &system_boundary, endpoint_classes.len());
+}
+
+fn build_context_model(g: &Graph, level: &str) -> J {
+    let Inputs {
+        endpoint_classes,
+        endpoint_paths,
+        system_boundary,
+        subject,
+    } = Inputs::gather(g);
     let capability_layout = containers::infer_layout(
         g,
         &system_boundary,

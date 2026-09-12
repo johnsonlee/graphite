@@ -89,10 +89,14 @@ CASES = [
     # C4: the context level matches byte-for-byte in all four formats. The container
     # and component levels are not yet at parity (their diagram planning is not fully
     # ported), so they are checked for status only, below.
-    ("GET", "/api/graphs/app/architecture/c4?level=context&format=json", None),
-    ("GET", "/api/graphs/app/architecture/c4?level=context&format=mermaid", None),
-    ("GET", "/api/graphs/app/architecture/c4?level=context&format=plantuml", None),
-    ("GET", "/api/graphs/app/architecture/c4?level=context&format=dsl", None),
+    # Every level in every format. Only `context` used to be compared, and the other
+    # levels turned out to be rendering the context model: the level reached the
+    # workspace's inference but never its diagram plan.
+    *[
+        ("GET", f"/api/graphs/app/architecture/c4?level={level}&format={fmt}", None)
+        for level in ("context", "container", "component", "all")
+        for fmt in ("json", "mermaid", "plantuml", "dsl")
+    ],
     ("GET", "/api/graphs/app/architecture/c4?level=nosuch", None),
     ("GET", "/api/graphs/app/architecture/c4?format=nosuch", None),
     ("GET", "/openapi.json", None),
@@ -148,8 +152,11 @@ for q in QUERIES:
 CASES += [
     ("GET", "/api/annotations?class=java.lang.Object&member=toString", None),
     ("GET", "/api/annotations?class=java.lang.Object", None),
-    ("GET", "/api/architecture/c4?level=context&format=json", None),
-    ("GET", "/api/architecture/c4?level=context&format=mermaid", None),
+    *[
+        ("GET", f"/api/architecture/c4?level={level}&format={fmt}", None)
+        for level in ("context", "container", "component", "all")
+        for fmt in ("json", "mermaid", "plantuml", "dsl")
+    ],
     ("GET", "/api/architecture/c4?level=nosuch", None),
     ("GET", "/api/endpoints?limit=5", None),
     ("GET", "/api/resources?limit=5", None),

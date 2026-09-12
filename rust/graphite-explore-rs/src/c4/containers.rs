@@ -60,10 +60,12 @@ pub fn infer_kind(endpoints: i64, inbound: i64, outbound: i64, external: i64) ->
 
 pub fn architecture_type(kind: &str) -> &'static str {
     match kind {
-        "application-runtime" => "application-runtime",
-        "application-service" | "interface" | "orchestrator" | "integration" => {
-            "application-service"
-        }
+        // A runtime container is an application *service*, not an "application-runtime":
+        // the baseline folds the runtime kind in with the service kinds here, and the
+        // distinction only surfaces at `level=container`, where the container element is
+        // emitted at all.
+        "application-runtime" | "application-service" | "interface" | "orchestrator"
+        | "integration" => "application-service",
         _ => "application-component",
     }
 }
