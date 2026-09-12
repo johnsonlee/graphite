@@ -1,0 +1,339 @@
+{
+  "summary": {
+    "graphs": 64,
+    "queries": 34,
+    "repetitions": 3,
+    "kotlin_p95_ms": [
+      145.653,
+      153.903,
+      151.229
+    ],
+    "rust_p95_ms": [
+      7.873,
+      9.046,
+      13.303
+    ],
+    "kotlin_p50_ms": [
+      12.298,
+      13.051,
+      12.497
+    ],
+    "rust_p50_ms": [
+      2.06,
+      2.355,
+      3.497
+    ],
+    "identical_digests": "102 of 102",
+    "p95_speedup_median": 16.72,
+    "p95_speedup_worst_case": 10.95,
+    "p50_speedup_median": 5.31
+  },
+  "queries": [
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-four-properties",
+      "kotlin_ms": 883.0,
+      "rust_ms": 12.1,
+      "speedup": 73.1,
+      "rows": 0,
+      "digest": "40964d85f77d971d"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-class-pair",
+      "kotlin_ms": 19.4,
+      "rust_ms": 2.4,
+      "speedup": 7.9,
+      "rows": 0,
+      "digest": "80e82f2cf304d17c"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-name-pair",
+      "kotlin_ms": 13.5,
+      "rust_ms": 1.8,
+      "speedup": 7.4,
+      "rows": 0,
+      "digest": "25353a38df7098d2"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-caller-class",
+      "kotlin_ms": 14.7,
+      "rust_ms": 1.7,
+      "speedup": 8.7,
+      "rows": 0,
+      "digest": "42113d106c9d1c8c"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-callee-class",
+      "kotlin_ms": 11.8,
+      "rust_ms": 1.9,
+      "speedup": 6.2,
+      "rows": 0,
+      "digest": "91fd11cea15ef078"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-provenance",
+      "kotlin_ms": 11.6,
+      "rust_ms": 1.9,
+      "speedup": 6.0,
+      "rows": 0,
+      "digest": "dfd8e2df7caef203"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-aliased",
+      "kotlin_ms": 13.1,
+      "rust_ms": 1.9,
+      "speedup": 7.0,
+      "rows": 0,
+      "digest": "215f3f524ea1c490"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-parameterized-as-literal",
+      "kotlin_ms": 13.0,
+      "rust_ms": 1.8,
+      "speedup": 7.3,
+      "rows": 0,
+      "digest": "40964d85f77d971d"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-wrapped-case-insensitive",
+      "kotlin_ms": 14.7,
+      "rust_ms": 1.9,
+      "speedup": 7.7,
+      "rows": 0,
+      "digest": "40964d85f77d971d"
+    },
+    {
+      "selectivity": "zero",
+      "shape": "global-wide-wrapped-case-insensitive-distinct",
+      "kotlin_ms": 22.5,
+      "rust_ms": 1.5,
+      "speedup": 15.0,
+      "rows": 0,
+      "digest": "40964d85f77d971d"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-four-properties",
+      "kotlin_ms": 28.7,
+      "rust_ms": 5.9,
+      "speedup": 4.8,
+      "rows": 11,
+      "digest": "520b87e3c19ffa25"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-class-pair",
+      "kotlin_ms": 17.3,
+      "rust_ms": 2.2,
+      "speedup": 7.9,
+      "rows": 11,
+      "digest": "8f3dac4ad3561555"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-name-pair",
+      "kotlin_ms": 14.7,
+      "rust_ms": 2.3,
+      "speedup": 6.4,
+      "rows": 11,
+      "digest": "fde39fb7ef8ec783"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-caller-class",
+      "kotlin_ms": 13.7,
+      "rust_ms": 2.1,
+      "speedup": 6.5,
+      "rows": 11,
+      "digest": "6fc6285ddb10ddf7"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-callee-class",
+      "kotlin_ms": 11.7,
+      "rust_ms": 2.1,
+      "speedup": 5.5,
+      "rows": 11,
+      "digest": "318c72ebec66edc7"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-provenance",
+      "kotlin_ms": 12.5,
+      "rust_ms": 2.5,
+      "speedup": 5.1,
+      "rows": 11,
+      "digest": "ed9a8ca8742d002c"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-aliased",
+      "kotlin_ms": 15.2,
+      "rust_ms": 2.2,
+      "speedup": 6.9,
+      "rows": 11,
+      "digest": "c4fd65b10651067c"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-parameterized-as-literal",
+      "kotlin_ms": 11.2,
+      "rust_ms": 2.3,
+      "speedup": 4.9,
+      "rows": 11,
+      "digest": "520b87e3c19ffa25"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-wrapped-case-insensitive",
+      "kotlin_ms": 14.9,
+      "rust_ms": 2.7,
+      "speedup": 5.5,
+      "rows": 11,
+      "digest": "520b87e3c19ffa25"
+    },
+    {
+      "selectivity": "targeted",
+      "shape": "global-wide-wrapped-case-insensitive-distinct",
+      "kotlin_ms": 113.3,
+      "rust_ms": 2.4,
+      "speedup": 48.1,
+      "rows": 11,
+      "digest": "520b87e3c19ffa25"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-four-properties",
+      "kotlin_ms": 13.0,
+      "rust_ms": 8.9,
+      "speedup": 1.5,
+      "rows": 200,
+      "digest": "c07d01d568fc6983"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-class-pair",
+      "kotlin_ms": 10.5,
+      "rust_ms": 5.6,
+      "speedup": 1.9,
+      "rows": 200,
+      "digest": "b86e058df24ab9a4"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-name-pair",
+      "kotlin_ms": 7.5,
+      "rust_ms": 5.3,
+      "speedup": 1.4,
+      "rows": 200,
+      "digest": "db06ac71c6d09dcd"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-caller-class",
+      "kotlin_ms": 6.2,
+      "rust_ms": 5.3,
+      "speedup": 1.2,
+      "rows": 200,
+      "digest": "5139f199b00e8102"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-callee-class",
+      "kotlin_ms": 6.0,
+      "rust_ms": 4.8,
+      "speedup": 1.3,
+      "rows": 200,
+      "digest": "d8e918ebfd74ce8c"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-provenance",
+      "kotlin_ms": 8.3,
+      "rust_ms": 6.6,
+      "speedup": 1.3,
+      "rows": 200,
+      "digest": "8464bb40cfc5bb78"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-aliased",
+      "kotlin_ms": 7.1,
+      "rust_ms": 5.3,
+      "speedup": 1.3,
+      "rows": 200,
+      "digest": "1b8548b6556e3539"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-parameterized-as-literal",
+      "kotlin_ms": 5.7,
+      "rust_ms": 5.4,
+      "speedup": 1.1,
+      "rows": 200,
+      "digest": "c07d01d568fc6983"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-wrapped-case-insensitive",
+      "kotlin_ms": 8.4,
+      "rust_ms": 7.3,
+      "speedup": 1.2,
+      "rows": 200,
+      "digest": "a3164292c920b86f"
+    },
+    {
+      "selectivity": "dense",
+      "shape": "global-wide-wrapped-case-insensitive-distinct",
+      "kotlin_ms": 151.2,
+      "rust_ms": 8.1,
+      "speedup": 18.7,
+      "rows": 200,
+      "digest": "4664cf8cb8415931"
+    },
+    {
+      "selectivity": "localized-early",
+      "shape": "global-wide-four-properties",
+      "kotlin_ms": 8.7,
+      "rust_ms": 2.1,
+      "speedup": 4.1,
+      "rows": 200,
+      "digest": "f5728bf072525352"
+    },
+    {
+      "selectivity": "localized-middle",
+      "shape": "global-wide-four-properties",
+      "kotlin_ms": 22.7,
+      "rust_ms": 4.8,
+      "speedup": 4.7,
+      "rows": 200,
+      "digest": "7e4196fb5d6e6892"
+    },
+    {
+      "selectivity": "localized-late",
+      "shape": "global-wide-four-properties",
+      "kotlin_ms": 27.9,
+      "rust_ms": 4.9,
+      "speedup": 5.7,
+      "rows": 200,
+      "digest": "fddc6b76096f11e0"
+    },
+    {
+      "selectivity": "broad-all-64",
+      "shape": "global-wide-four-properties",
+      "kotlin_ms": 6.8,
+      "rust_ms": 5.8,
+      "speedup": 1.2,
+      "rows": 200,
+      "digest": "c07d01d568fc6983"
+    }
+  ]
+}
