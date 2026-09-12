@@ -145,6 +145,9 @@ struct SourcePlan {
     /// `Some(empty)` is the case that matters most across many graphs: the term reaches
     /// nothing here, so this graph contributes no CallSite work at all.
     call_site_candidates: Option<Vec<u32>>,
+    /// The candidate list is not merely a superset: every node in it satisfies the
+    /// clause, so the WHERE re-check over it is redundant.
+    call_site_exact: bool,
     /// No Annotation node can satisfy the clause, so that tag is skipped.
     skip_annotations: bool,
     /// No pre-filter could be built, so every record must reach the WHERE re-check.
@@ -291,6 +294,10 @@ impl ScanPlan {
                     if ids.is_empty() {
                         continue;
                     }
+                    // When the accelerator answered exactly, the candidates are the
+                    // matches: re-checking WHERE would decode four strings per record to
+                    // re-derive what the dictionary already decided.
+                    let verified = indexed.is_some() && sp.call_site_exact;
                     let mut hits: Vec<u32> = Vec::new();
                     for chunk in ids.chunks(SWEEP_CHUNK) {
                         ex.cancel.check()?;
@@ -315,7 +322,7 @@ impl ScanPlan {
                             r.insert(self.variable.clone(), value.clone());
                             add_provenance(&mut r, ex, &value);
                             if let Some(w) = where_clause {
-                                if ev.eval(w, &r)?.as_bool() != Some(true) {
+                                if !verified && ev.eval(w, &r)?.as_bool() != Some(true) {
                                     continue;
                                 }
                             }
@@ -429,11 +436,12 @@ fn build_source_plan(
         && !preds
             .iter()
             .any(|p| graph.strings.index_of(p.property).is_some());
-    let pruned = |candidates: Vec<u32>| SourcePlan {
+    let pruned = |candidates: Vec<u32>, exact: bool| SourcePlan {
         source,
         call_site: [None, None, None, None],
         call_site_only,
         call_site_candidates: Some(candidates),
+        call_site_exact: exact,
         no_prefilter: false,
         skip_annotations,
     };
@@ -446,10 +454,10 @@ fn build_source_plan(
         // the whole query to an undifferentiated sweep of all sixty-four graphs, even
         // the ones whose dictionary holds no matching string at all.
         if tree_matches_nothing(graph, idx, tree, &mut memo) {
-            return pruned(Vec::new());
+            return pruned(Vec::new(), true);
         }
-        if let Some(candidates) = indexed_candidates(graph, idx, tree, &mut memo) {
-            return pruned(candidates);
+        if let Some((candidates, exact)) = indexed_candidates(graph, idx, tree, &mut memo) {
+            return pruned(candidates, exact);
         }
     }
     // The bitset sweep can only express a disjunction. A conjunction the index could not
@@ -460,6 +468,7 @@ fn build_source_plan(
             call_site: [None, None, None, None],
             call_site_only: false,
             call_site_candidates: None,
+            call_site_exact: false,
             no_prefilter: true,
             skip_annotations,
         };
@@ -471,12 +480,14 @@ fn build_source_plan(
 ///
 /// `None` means the accelerator cannot (or should not) answer this predicate set, and
 /// the caller must fall back to scanning the dictionary and sweeping records.
+///
+/// The flag says whether the list is the exact answer rather than merely a superset.
 fn indexed_candidates(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     tree: &PredTree,
     memo: &mut Memo,
-) -> Option<Vec<u32>> {
+) -> Option<(Vec<u32>, bool)> {
     eval_tree(graph, idx, tree, memo)
 }
 
@@ -577,28 +588,38 @@ fn number(tree: &mut PredTree, seen: &mut Vec<StringPredicate>) {
     }
 }
 
-/// Ascending CallSite node ids that can satisfy this subtree.
+/// Ascending CallSite node ids that can satisfy this subtree, and whether that list is
+/// exact.
 ///
 /// Always a *superset* of the true matches, at every level: `OR` unions its children and
 /// `AND` intersects them, and a superset of each side intersects to a superset of the
 /// conjunction. Survivors are re-checked against the full WHERE clause, so a loose
 /// answer costs time and never correctness.
+///
+/// The second element says the list is more than a superset — every node in it satisfies
+/// the subtree. A leaf resolved through the index is exact, because the dictionary ids
+/// behind it are exactly the strings the predicate matches and the postings are exactly
+/// the records carrying them. A disjunction is exact when all its branches are; a
+/// conjunction when every conjunct contributed a filter and none was skipped.
 fn eval_tree(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     tree: &PredTree,
     memo: &mut Memo,
-) -> Option<Vec<u32>> {
+) -> Option<(Vec<u32>, bool)> {
     match tree {
-        PredTree::Leaf(p) => leaf_candidates(graph, idx, p, memo),
+        PredTree::Leaf(p) => leaf_candidates(graph, idx, p, memo).map(|nodes| (nodes, true)),
         PredTree::Or(children) => {
             let mut nodes = Vec::new();
+            let mut exact = true;
             for c in children {
-                nodes.extend(eval_tree(graph, idx, c, memo)?);
+                let (child, child_exact) = eval_tree(graph, idx, c, memo)?;
+                nodes.extend(child);
+                exact &= child_exact;
             }
             nodes.sort_unstable();
             nodes.dedup();
-            Some(nodes)
+            Some((nodes, exact))
         }
         PredTree::And(children) => {
             // Only the cheapest conjunct is turned into node ids. The rest stay on the
@@ -630,6 +651,9 @@ fn eval_tree(
             if cost * POSTING_SWEEP_RATIO > idx.call_site_count() {
                 return None;
             }
+            // Every conjunct that produced a set is applied exactly; a skipped one is the
+            // only thing that leaves survivors unverified.
+            let exact = sets.iter().all(Option::is_some);
             let mut nodes = sets[chosen].as_ref()?.nodes(idx);
             for (i, s) in sets.iter().enumerate() {
                 if i == chosen {
@@ -641,7 +665,7 @@ fn eval_tree(
                     break;
                 }
             }
-            Some(nodes)
+            Some((nodes, exact))
         }
     }
 }
@@ -877,6 +901,7 @@ fn build_sweep_plan(
             call_site: sets,
             call_site_only,
             call_site_candidates: Some(Vec::new()),
+            call_site_exact: true,
             no_prefilter: false,
             skip_annotations,
         };
@@ -886,6 +911,7 @@ fn build_sweep_plan(
         call_site: sets,
         call_site_only,
         call_site_candidates: None,
+        call_site_exact: false,
         no_prefilter: false,
         skip_annotations,
     }
