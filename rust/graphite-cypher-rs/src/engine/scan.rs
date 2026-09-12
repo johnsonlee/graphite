@@ -899,17 +899,24 @@ fn matching_string_ids(
     if !idx.may_contain_all(trigrams) {
         return Some(Vec::new());
     }
-    // A long literal has as many trigrams as characters, and sizing every one of their
-    // posting lists costs more than the narrowing is worth. A spread-out handful is
-    // enough: each probe is an independent filter, so the rarest of eight already cuts
-    // the dictionary down to a short candidate list.
-    let step = trigrams.len().div_ceil(MAX_TRIGRAM_PROBES).max(1);
+    // Every trigram's posting list is sized -- two binary searches each -- and the
+    // rarest few are the ones intersected. Probing a spread-out handful instead picked
+    // whatever fell at those positions, and for a word like "observable" that was
+    // "obs", "erv" and "abl": three of the commonest fragments in any codebase, so
+    // hundreds of candidates survived to be decoded in a graph that held no match at
+    // all. Its rarest fragments, "rva" and "vab", are absent from most graphs
+    // outright, and an absent one settles the graph before a single string is read.
+    // That matters across sixty-four graphs, where the term is missing from most of
+    // them and the per-graph bitmap cannot tell, since each fragment alone is present.
     let mut lists: Vec<_> = trigrams
         .iter()
-        .step_by(step)
         .map(|t| idx.trigram_string_ids(*t))
         .collect();
     lists.sort_by_key(|l| l.len());
+    if lists[0].is_empty() {
+        return Some(Vec::new());
+    }
+    lists.truncate(MAX_TRIGRAM_PROBES);
     let mut candidates: Vec<u32> = lists[0].iter().collect();
     for list in &lists[1..] {
         if candidates.len() <= TRIGRAM_INTERSECT_FLOOR {
