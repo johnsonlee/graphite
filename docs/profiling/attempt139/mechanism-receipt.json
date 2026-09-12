@@ -1,0 +1,64 @@
+{
+  "attempt": 139,
+  "sourceDiffOnlyTwoInlineModifiers": true,
+  "buildPassed": true,
+  "summary": {
+    "base": {
+      "loadCodeLengthBytes": 1065,
+      "validatePersistentIndexCodeLengthBytes": 340,
+      "validatorCallbackMethodCallSites": 5,
+      "function1InvokeSitesInCaller": 0,
+      "boxedValueOfSitesInCaller": 0,
+      "function1InvokeDynamicCreationSites": 4,
+      "capturedRefConstructorSites": 3,
+      "generatedValidateLambdaMethods": [
+        {
+          "name": "validatePersistentIndex$lambda$6$lambda$3",
+          "descriptor": "(ILkotlin/jvm/internal/Ref$IntRef;I)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 62,
+          "maxStack": 3,
+          "maxLocals": 4
+        },
+        {
+          "name": "validatePersistentIndex$lambda$6$lambda$4",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;II)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 45,
+          "maxStack": 3,
+          "maxLocals": 4
+        },
+        {
+          "name": "validatePersistentIndex$lambda$6$lambda$5",
+          "descriptor": "(II)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 41,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "validatePersistentIndex$lambda$7",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$LongRef;IJ)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 71,
+          "maxStack": 4,
+          "maxLocals": 6
+        }
+      ]
+    },
+    "candidate": {
+      "loadCodeLengthBytes": 1065,
+      "validatePersistentIndexCodeLengthBytes": 1232,
+      "validatorCallbackMethodCallSites": 0,
+      "function1InvokeSitesInCaller": 0,
+      "boxedValueOfSitesInCaller": 0,
+      "function1InvokeDynamicCreationSites": 0,
+      "capturedRefConstructorSites": 0,
+      "generatedValidateLambdaMethods": []
+    }
+  },
+  "bytecodeReceiptSha256": "2249b684d23aa3f69dbbad1de325fcfbe80ca42d9ca3fffd47124cb628095042",
+  "genericMethodsRemain": "The declaration and default stubs still contain Function1.invoke/valueOf, but the load\u2192validatePersistentIndex path no longer calls the callback-taking methods.",
+  "scope": "Static JVM bytecode sites and exact Code lengths only; no dynamic allocation/latency/native-JIT/C2 compilation success claim. No remembered huge-method threshold is applied.",
+  "performanceStarted": false
+}

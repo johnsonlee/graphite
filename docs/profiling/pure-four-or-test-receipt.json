@@ -1,0 +1,22 @@
+{
+  "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "productionUnchanged": true,
+  "testSha256": "22f542ebc4021b072b7e40fe58de42fc3ff9698559ba105a01904547c743817b",
+  "testXmlSha256": "544c3021872c21a8064087e4465b64213e5e4a3b268dd2d102e2fea364eff656",
+  "command": [
+    "./gradlew",
+    ":webgraph:test",
+    ":webgraph:detekt",
+    "--no-daemon"
+  ],
+  "JAVA_HOME": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+  "module": {
+    "tests": 187,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "newTests": 4,
+  "exitCode": 0,
+  "performanceEvidence": false
+}

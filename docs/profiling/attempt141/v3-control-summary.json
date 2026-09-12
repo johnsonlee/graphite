@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "queries": 36,
+  "runSha256": "7de19dc2bdf55b77f4d168d6086759cda93fff7b979990cfc68eb30160771b9e",
+  "referenceCheck": {
+    "passed": true,
+    "queryCount": 36,
+    "verifiedFullRowsAndProvenance": true,
+    "catalogSha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "queryShape": "unlabeled four-property multi-keyword",
+    "distributionCounts": [
+      0,
+      1,
+      2,
+      55,
+      64
+    ],
+    "errors": []
+  }
+}

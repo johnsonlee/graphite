@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/opt/homebrew/opt/openjdk@17/bin/java",
+    "-Xmx3g",
+    "-cp",
+    "/private/tmp/graphite-method-gate-profiling",
+    "MethodGateProfileWindows",
+    "/private/tmp/graphite-main-profiling-n50joikp/cpu-3.jfr",
+    "/private/tmp/graphite-method-gate-profiling/method-4-count-1.tsv",
+    "/private/tmp/graphite-method-gate-profiling/negative-crossgraph"
+  ],
+  "exitCode": 1,
+  "rejectedWrongTraceClass": true
+}

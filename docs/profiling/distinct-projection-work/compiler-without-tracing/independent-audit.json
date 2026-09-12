@@ -1,0 +1,1714 @@
+{
+  "passed": true,
+  "parentReportErrors": [],
+  "newJavaBuildTimingOrPerformanceRun": false,
+  "ranParentAnalysisScript": false,
+  "method": "Independent original XML tty-event reconstruction, separate compiler tasks/fragments, binary classfile Code and constant-pool parsing, exact TSV signatures and field comparisons, command/actual VM/receipt cross-checks.",
+  "jar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "jarSha256IndependentlyRead": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "classSha256": {
+    "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.class": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+    "it/unimi/dsi/fastutil/ints/IntOpenHashSet.class": "f5d96c595dd0dff8209da257e05fc7baa90427a37934c5704b07659e2a7a78d6"
+  },
+  "bytecode": {
+    "callbackMethod": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+    "callbackCodeBytes": 790,
+    "callbackBci322": {
+      "opcode": "invokevirtual",
+      "member": [
+        "it/unimi/dsi/fastutil/ints/IntOpenHashSet",
+        "contains",
+        "(I)Z"
+      ]
+    },
+    "containsCodeBytes": 70,
+    "containsBci37": {
+      "opcode": "if_icmpne",
+      "targetBci": 42,
+      "operands": "iload_1 (key), iload_2 (initial nonempty slot)",
+      "fallthrough": "iconst_1; ireturn",
+      "unequalTarget": "linear probing starts at key[(pos + 1) & mask]"
+    }
+  },
+  "forks": [
+    {
+      "fork": 1,
+      "xmlSha256": "55c0177c42918648d42c99e5367008d93c249cd44136efaae79ee169a77d24c1",
+      "runtimeEvents": [
+        {
+          "eventIndex": 9860,
+          "tag": "task_queued",
+          "compile_id": "3094",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "393",
+          "backedge_count": "1455",
+          "iicount": "394",
+          "level": "3",
+          "stamp": "7.631",
+          "comment": "tiered",
+          "hot_count": "384",
+          "frames": []
+        },
+        {
+          "eventIndex": 9888,
+          "tag": "nmethod",
+          "compile_id": "3094",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x00000001144afd00",
+          "size": "38176",
+          "address": "0x00000001144af110",
+          "relocation_offset": "344",
+          "insts_offset": "3056",
+          "stub_offset": "24496",
+          "scopes_data_offset": "28240",
+          "scopes_pcs_offset": "34336",
+          "dependencies_offset": "37584",
+          "nul_chk_table_offset": "37656",
+          "oops_offset": "27208",
+          "metadata_offset": "27264",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "2734",
+          "backedge_count": "9992",
+          "iicount": "2735",
+          "stamp": "7.633",
+          "frames": []
+        },
+        {
+          "eventIndex": 9907,
+          "tag": "task_queued",
+          "compile_id": "3101",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "4765",
+          "backedge_count": "15959",
+          "iicount": "4767",
+          "stamp": "7.634",
+          "comment": "tiered",
+          "hot_count": "4581",
+          "frames": []
+        },
+        {
+          "eventIndex": 9931,
+          "tag": "make_not_entrant",
+          "thread": "38403",
+          "compile_id": "3094",
+          "compiler": "c1",
+          "level": "3",
+          "stamp": "7.641",
+          "frames": []
+        },
+        {
+          "eventIndex": 9932,
+          "tag": "deoptimized",
+          "thread": "38403",
+          "reason": "constraint",
+          "pc": "0x00000001144b40b0",
+          "compile_id": "3094",
+          "compiler": "c1",
+          "level": "3",
+          "frames": [
+            {
+              "bci": "748",
+              "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+              "bytes": "790",
+              "count": "44693",
+              "backedge_count": "138478",
+              "iicount": "44693"
+            }
+          ]
+        },
+        {
+          "eventIndex": 9962,
+          "tag": "nmethod",
+          "compile_id": "3101",
+          "compiler": "c2",
+          "level": "4",
+          "entry": "0x000000011bad6980",
+          "size": "12792",
+          "address": "0x000000011bad6590",
+          "relocation_offset": "344",
+          "insts_offset": "1008",
+          "stub_offset": "4144",
+          "scopes_data_offset": "5872",
+          "scopes_pcs_offset": "11264",
+          "dependencies_offset": "12448",
+          "handler_table_offset": "12520",
+          "nul_chk_table_offset": "12616",
+          "oops_offset": "5360",
+          "metadata_offset": "5400",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "58722",
+          "backedge_count": "188783",
+          "iicount": "58724",
+          "stamp": "7.647",
+          "frames": []
+        },
+        {
+          "eventIndex": 9969,
+          "tag": "uncommon_trap",
+          "thread": "38403",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "debug_id": "0",
+          "compile_id": "3101",
+          "compiler": "c2",
+          "level": "4",
+          "count": "1",
+          "state": "intrinsic_or_type_checked_inlining recompiled",
+          "stamp": "7.648",
+          "frames": [
+            {
+              "bci": "37",
+              "method": "it.unimi.dsi.fastutil.ints.IntOpenHashSet contains (I)Z",
+              "bytes": "70",
+              "count": "20817",
+              "iicount": "20817",
+              "decompiles": "1",
+              "unstable_if_traps": "1"
+            },
+            {
+              "bci": "322",
+              "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+              "bytes": "790",
+              "count": "58729",
+              "backedge_count": "188812",
+              "iicount": "58729"
+            }
+          ]
+        },
+        {
+          "eventIndex": 9970,
+          "tag": "make_not_entrant",
+          "thread": "38403",
+          "compile_id": "3101",
+          "compiler": "c2",
+          "level": "4",
+          "stamp": "7.648",
+          "frames": []
+        },
+        {
+          "eventIndex": 9971,
+          "tag": "task_queued",
+          "compile_id": "3115",
+          "compile_kind": "osr",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "58809",
+          "backedge_count": "189135",
+          "iicount": "58809",
+          "decompiles": "1",
+          "osr_bci": "250",
+          "level": "3",
+          "stamp": "7.648",
+          "comment": "tiered",
+          "hot_count": "189135",
+          "frames": []
+        },
+        {
+          "eventIndex": 9998,
+          "tag": "nmethod",
+          "compile_id": "3115",
+          "compile_kind": "osr",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x00000001144c2480",
+          "size": "39096",
+          "address": "0x00000001144c1810",
+          "relocation_offset": "344",
+          "insts_offset": "3184",
+          "stub_offset": "25712",
+          "scopes_data_offset": "29616",
+          "scopes_pcs_offset": "35232",
+          "dependencies_offset": "38512",
+          "nul_chk_table_offset": "38576",
+          "oops_offset": "28568",
+          "metadata_offset": "28632",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "59035",
+          "backedge_count": "190040",
+          "iicount": "59035",
+          "decompiles": "1",
+          "stamp": "7.650",
+          "frames": []
+        },
+        {
+          "eventIndex": 10076,
+          "tag": "task_queued",
+          "compile_id": "3133",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "59077",
+          "backedge_count": "190206",
+          "iicount": "59078",
+          "decompiles": "1",
+          "level": "3",
+          "stamp": "7.654",
+          "comment": "tiered",
+          "hot_count": "59069",
+          "frames": []
+        },
+        {
+          "eventIndex": 10119,
+          "tag": "nmethod",
+          "compile_id": "3133",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x00000001144cdbc0",
+          "size": "38704",
+          "address": "0x00000001144ccf90",
+          "relocation_offset": "344",
+          "insts_offset": "3120",
+          "stub_offset": "24944",
+          "scopes_data_offset": "28664",
+          "scopes_pcs_offset": "34848",
+          "dependencies_offset": "38112",
+          "nul_chk_table_offset": "38184",
+          "oops_offset": "27608",
+          "metadata_offset": "27672",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "62351",
+          "backedge_count": "204191",
+          "iicount": "62352",
+          "decompiles": "1",
+          "stamp": "7.656",
+          "frames": []
+        },
+        {
+          "eventIndex": 10309,
+          "tag": "task_queued",
+          "compile_id": "3191",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "68173",
+          "backedge_count": "222842",
+          "iicount": "68175",
+          "decompiles": "1",
+          "stamp": "7.671",
+          "comment": "tiered",
+          "hot_count": "68068",
+          "frames": []
+        }
+      ],
+      "c1Publications": [
+        {
+          "compile_id": "3094",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x00000001144afd00",
+          "size": "38176",
+          "address": "0x00000001144af110",
+          "relocation_offset": "344",
+          "insts_offset": "3056",
+          "stub_offset": "24496",
+          "scopes_data_offset": "28240",
+          "scopes_pcs_offset": "34336",
+          "dependencies_offset": "37584",
+          "nul_chk_table_offset": "37656",
+          "oops_offset": "27208",
+          "metadata_offset": "27264",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "2734",
+          "backedge_count": "9992",
+          "iicount": "2735",
+          "stamp": "7.633"
+        },
+        {
+          "compile_id": "3115",
+          "compile_kind": "osr",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x00000001144c2480",
+          "size": "39096",
+          "address": "0x00000001144c1810",
+          "relocation_offset": "344",
+          "insts_offset": "3184",
+          "stub_offset": "25712",
+          "scopes_data_offset": "29616",
+          "scopes_pcs_offset": "35232",
+          "dependencies_offset": "38512",
+          "nul_chk_table_offset": "38576",
+          "oops_offset": "28568",
+          "metadata_offset": "28632",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "59035",
+          "backedge_count": "190040",
+          "iicount": "59035",
+          "decompiles": "1",
+          "stamp": "7.650"
+        },
+        {
+          "compile_id": "3133",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x00000001144cdbc0",
+          "size": "38704",
+          "address": "0x00000001144ccf90",
+          "relocation_offset": "344",
+          "insts_offset": "3120",
+          "stub_offset": "24944",
+          "scopes_data_offset": "28664",
+          "scopes_pcs_offset": "34848",
+          "dependencies_offset": "38112",
+          "nul_chk_table_offset": "38184",
+          "oops_offset": "27608",
+          "metadata_offset": "27672",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "62351",
+          "backedge_count": "204191",
+          "iicount": "62352",
+          "decompiles": "1",
+          "stamp": "7.656"
+        }
+      ],
+      "c2Publication": {
+        "eventIndex": 9962,
+        "tag": "nmethod",
+        "compile_id": "3101",
+        "compiler": "c2",
+        "level": "4",
+        "entry": "0x000000011bad6980",
+        "size": "12792",
+        "address": "0x000000011bad6590",
+        "relocation_offset": "344",
+        "insts_offset": "1008",
+        "stub_offset": "4144",
+        "scopes_data_offset": "5872",
+        "scopes_pcs_offset": "11264",
+        "dependencies_offset": "12448",
+        "handler_table_offset": "12520",
+        "nul_chk_table_offset": "12616",
+        "oops_offset": "5360",
+        "metadata_offset": "5400",
+        "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+        "bytes": "790",
+        "count": "58722",
+        "backedge_count": "188783",
+        "iicount": "58724",
+        "stamp": "7.647",
+        "frames": []
+      },
+      "runtimeTrap": {
+        "eventIndex": 9969,
+        "tag": "uncommon_trap",
+        "thread": "38403",
+        "reason": "unstable_if",
+        "action": "reinterpret",
+        "debug_id": "0",
+        "compile_id": "3101",
+        "compiler": "c2",
+        "level": "4",
+        "count": "1",
+        "state": "intrinsic_or_type_checked_inlining recompiled",
+        "stamp": "7.648",
+        "frames": [
+          {
+            "bci": "37",
+            "method": "it.unimi.dsi.fastutil.ints.IntOpenHashSet contains (I)Z",
+            "bytes": "70",
+            "count": "20817",
+            "iicount": "20817",
+            "decompiles": "1",
+            "unstable_if_traps": "1"
+          },
+          {
+            "bci": "322",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "58729",
+            "backedge_count": "188812",
+            "iicount": "58729"
+          }
+        ]
+      },
+      "invalidation": {
+        "eventIndex": 9970,
+        "tag": "make_not_entrant",
+        "thread": "38403",
+        "compile_id": "3101",
+        "compiler": "c2",
+        "level": "4",
+        "stamp": "7.648",
+        "frames": []
+      },
+      "laterC1PublicationCount": 2,
+      "queuedWithoutNmethod": [
+        {
+          "compile_id": "3191",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "68173",
+          "backedge_count": "222842",
+          "iicount": "68175",
+          "decompiles": "1",
+          "stamp": "7.671",
+          "comment": "tiered",
+          "hot_count": "68068"
+        }
+      ],
+      "incompleteTargetFragments": [
+        {
+          "task": {
+            "compile_id": "3191",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "70212",
+            "backedge_count": "229184",
+            "iicount": "70214",
+            "decompiles": "1",
+            "stamp": "7.672"
+          },
+          "compilerLogThread": "26371",
+          "compilerThreadRecords": [
+            {
+              "name": "C2 CompilerThread0",
+              "thread": "26371",
+              "process": "57675",
+              "stamp": "0.011"
+            }
+          ],
+          "textBytes": 182229,
+          "textSha256": "94aac2ca5a7721b3a7253c0c9ca71624638bb776c1478fb64a694a9a9fe761a7",
+          "hasTaskDone": false
+        }
+      ],
+      "allCompilerFragments": 2,
+      "completedTasks": [
+        {
+          "attributes": {
+            "compile_id": "3101",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "7531",
+            "backedge_count": "24971",
+            "iicount": "7532",
+            "stamp": "7.634"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "4352",
+              "count": "58728",
+              "backedge_count": "188808",
+              "inlined_bytes": "2550",
+              "stamp": "7.647"
+            }
+          ],
+          "failures": []
+        },
+        {
+          "attributes": {
+            "compile_id": "3094",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "414",
+            "backedge_count": "1530",
+            "iicount": "414",
+            "level": "3",
+            "stamp": "7.631"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "24152",
+              "count": "2737",
+              "backedge_count": "10000",
+              "inlined_bytes": "545",
+              "stamp": "7.633"
+            }
+          ],
+          "failures": []
+        },
+        {
+          "attributes": {
+            "compile_id": "3115",
+            "compile_kind": "osr",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "59035",
+            "backedge_count": "190040",
+            "iicount": "59035",
+            "decompiles": "1",
+            "osr_bci": "250",
+            "level": "3",
+            "stamp": "7.648"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "25384",
+              "count": "59035",
+              "backedge_count": "190040",
+              "inlined_bytes": "445",
+              "stamp": "7.650"
+            }
+          ],
+          "failures": []
+        },
+        {
+          "attributes": {
+            "compile_id": "3133",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "59094",
+            "backedge_count": "190286",
+            "iicount": "59095",
+            "decompiles": "1",
+            "level": "3",
+            "stamp": "7.654"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "24488",
+              "count": "62355",
+              "backedge_count": "204203",
+              "inlined_bytes": "576",
+              "stamp": "7.656"
+            }
+          ],
+          "failures": []
+        }
+      ],
+      "excludedCompilerParseTrapCount": 109,
+      "oracleSignatures": 34,
+      "nonLatencyDifferences": [],
+      "actualVmArguments": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-main-compilation-diagnostic/fork-1.tsv",
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+LogCompilation",
+        "-XX:LogFile=/private/tmp/graphite-main-compilation-diagnostic/fork-1.compilation.xml",
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh15493260602128758402compilecommand"
+      ],
+      "jmhAutomaticVmArguments": [
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh15493260602128758402compilecommand"
+      ],
+      "commandMatchesTemplatePlusOnlyDeclaredChanges": true,
+      "parentSummaryMatches": true,
+      "hotspotLogDone": {
+        "stamp": "7.769"
+      }
+    },
+    {
+      "fork": 2,
+      "xmlSha256": "a19822ce4c7c8213d7048b69a82bdee31b7db95face89144639b0e9bfaef70c8",
+      "runtimeEvents": [
+        {
+          "eventIndex": 9722,
+          "tag": "task_queued",
+          "compile_id": "3061",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "392",
+          "backedge_count": "1530",
+          "iicount": "392",
+          "level": "3",
+          "stamp": "7.573",
+          "comment": "tiered",
+          "hot_count": "384",
+          "frames": []
+        },
+        {
+          "eventIndex": 9762,
+          "tag": "nmethod",
+          "compile_id": "3061",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cb9480",
+          "size": "38176",
+          "address": "0x0000000114cb8890",
+          "relocation_offset": "344",
+          "insts_offset": "3056",
+          "stub_offset": "24496",
+          "scopes_data_offset": "28240",
+          "scopes_pcs_offset": "34336",
+          "dependencies_offset": "37584",
+          "nul_chk_table_offset": "37656",
+          "oops_offset": "27208",
+          "metadata_offset": "27264",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "4543",
+          "backedge_count": "16963",
+          "iicount": "4543",
+          "stamp": "7.575",
+          "frames": []
+        },
+        {
+          "eventIndex": 9783,
+          "tag": "task_queued",
+          "compile_id": "3071",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "5722",
+          "backedge_count": "20553",
+          "iicount": "5723",
+          "stamp": "7.575",
+          "comment": "tiered",
+          "hot_count": "5666",
+          "frames": []
+        },
+        {
+          "eventIndex": 9837,
+          "tag": "make_not_entrant",
+          "thread": "38403",
+          "compile_id": "3061",
+          "compiler": "c1",
+          "level": "3",
+          "stamp": "7.584",
+          "frames": []
+        },
+        {
+          "eventIndex": 9838,
+          "tag": "deoptimized",
+          "thread": "38403",
+          "reason": "constraint",
+          "pc": "0x0000000114cbd830",
+          "compile_id": "3061",
+          "compiler": "c1",
+          "level": "3",
+          "frames": [
+            {
+              "bci": "748",
+              "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+              "bytes": "790",
+              "count": "49924",
+              "backedge_count": "174450",
+              "iicount": "49924"
+            }
+          ]
+        },
+        {
+          "eventIndex": 9900,
+          "tag": "nmethod",
+          "compile_id": "3071",
+          "compiler": "c2",
+          "level": "4",
+          "entry": "0x000000011c2d3280",
+          "size": "14112",
+          "address": "0x000000011c2d2e90",
+          "relocation_offset": "344",
+          "insts_offset": "1008",
+          "stub_offset": "5424",
+          "scopes_data_offset": "7136",
+          "scopes_pcs_offset": "12584",
+          "dependencies_offset": "13768",
+          "handler_table_offset": "13840",
+          "nul_chk_table_offset": "13936",
+          "oops_offset": "6624",
+          "metadata_offset": "6664",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "62524",
+          "backedge_count": "222046",
+          "iicount": "62526",
+          "stamp": "7.589",
+          "frames": []
+        },
+        {
+          "eventIndex": 9908,
+          "tag": "uncommon_trap",
+          "thread": "38403",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "debug_id": "0",
+          "compile_id": "3071",
+          "compiler": "c2",
+          "level": "4",
+          "count": "1",
+          "state": "intrinsic_or_type_checked_inlining recompiled",
+          "stamp": "7.591",
+          "frames": [
+            {
+              "bci": "37",
+              "method": "it.unimi.dsi.fastutil.ints.IntOpenHashSet contains (I)Z",
+              "bytes": "70",
+              "count": "28451",
+              "iicount": "28451",
+              "decompiles": "1",
+              "unstable_if_traps": "1"
+            },
+            {
+              "bci": "322",
+              "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+              "bytes": "790",
+              "count": "62542",
+              "backedge_count": "222118",
+              "iicount": "62542"
+            }
+          ]
+        },
+        {
+          "eventIndex": 9909,
+          "tag": "make_not_entrant",
+          "thread": "38403",
+          "compile_id": "3071",
+          "compiler": "c2",
+          "level": "4",
+          "stamp": "7.591",
+          "frames": []
+        },
+        {
+          "eventIndex": 9910,
+          "tag": "task_queued",
+          "compile_id": "3099",
+          "compile_kind": "osr",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "62582",
+          "backedge_count": "222282",
+          "iicount": "62582",
+          "decompiles": "1",
+          "osr_bci": "250",
+          "level": "3",
+          "stamp": "7.591",
+          "comment": "tiered",
+          "hot_count": "222282",
+          "frames": []
+        },
+        {
+          "eventIndex": 9930,
+          "tag": "nmethod",
+          "compile_id": "3099",
+          "compile_kind": "osr",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cd2c80",
+          "size": "39096",
+          "address": "0x0000000114cd2010",
+          "relocation_offset": "344",
+          "insts_offset": "3184",
+          "stub_offset": "25712",
+          "scopes_data_offset": "29616",
+          "scopes_pcs_offset": "35232",
+          "dependencies_offset": "38512",
+          "nul_chk_table_offset": "38576",
+          "oops_offset": "28568",
+          "metadata_offset": "28632",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "62848",
+          "backedge_count": "223346",
+          "iicount": "62848",
+          "decompiles": "1",
+          "stamp": "7.593",
+          "frames": []
+        },
+        {
+          "eventIndex": 10018,
+          "tag": "task_queued",
+          "compile_id": "3118",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "62901",
+          "backedge_count": "223558",
+          "iicount": "62902",
+          "decompiles": "1",
+          "level": "3",
+          "stamp": "7.596",
+          "comment": "tiered",
+          "hot_count": "62881",
+          "frames": []
+        },
+        {
+          "eventIndex": 10065,
+          "tag": "nmethod",
+          "compile_id": "3118",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cdf9c0",
+          "size": "38704",
+          "address": "0x0000000114cded90",
+          "relocation_offset": "344",
+          "insts_offset": "3120",
+          "stub_offset": "24944",
+          "scopes_data_offset": "28664",
+          "scopes_pcs_offset": "34848",
+          "dependencies_offset": "38112",
+          "nul_chk_table_offset": "38184",
+          "oops_offset": "27608",
+          "metadata_offset": "27672",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "66248",
+          "backedge_count": "237486",
+          "iicount": "66248",
+          "decompiles": "1",
+          "stamp": "7.599",
+          "frames": []
+        },
+        {
+          "eventIndex": 10277,
+          "tag": "task_queued",
+          "compile_id": "3182",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "72072",
+          "backedge_count": "256074",
+          "iicount": "72072",
+          "decompiles": "1",
+          "stamp": "7.616",
+          "comment": "tiered",
+          "hot_count": "72072",
+          "frames": []
+        }
+      ],
+      "c1Publications": [
+        {
+          "compile_id": "3061",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cb9480",
+          "size": "38176",
+          "address": "0x0000000114cb8890",
+          "relocation_offset": "344",
+          "insts_offset": "3056",
+          "stub_offset": "24496",
+          "scopes_data_offset": "28240",
+          "scopes_pcs_offset": "34336",
+          "dependencies_offset": "37584",
+          "nul_chk_table_offset": "37656",
+          "oops_offset": "27208",
+          "metadata_offset": "27264",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "4543",
+          "backedge_count": "16963",
+          "iicount": "4543",
+          "stamp": "7.575"
+        },
+        {
+          "compile_id": "3099",
+          "compile_kind": "osr",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cd2c80",
+          "size": "39096",
+          "address": "0x0000000114cd2010",
+          "relocation_offset": "344",
+          "insts_offset": "3184",
+          "stub_offset": "25712",
+          "scopes_data_offset": "29616",
+          "scopes_pcs_offset": "35232",
+          "dependencies_offset": "38512",
+          "nul_chk_table_offset": "38576",
+          "oops_offset": "28568",
+          "metadata_offset": "28632",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "62848",
+          "backedge_count": "223346",
+          "iicount": "62848",
+          "decompiles": "1",
+          "stamp": "7.593"
+        },
+        {
+          "compile_id": "3118",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cdf9c0",
+          "size": "38704",
+          "address": "0x0000000114cded90",
+          "relocation_offset": "344",
+          "insts_offset": "3120",
+          "stub_offset": "24944",
+          "scopes_data_offset": "28664",
+          "scopes_pcs_offset": "34848",
+          "dependencies_offset": "38112",
+          "nul_chk_table_offset": "38184",
+          "oops_offset": "27608",
+          "metadata_offset": "27672",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "66248",
+          "backedge_count": "237486",
+          "iicount": "66248",
+          "decompiles": "1",
+          "stamp": "7.599"
+        }
+      ],
+      "c2Publication": {
+        "eventIndex": 9900,
+        "tag": "nmethod",
+        "compile_id": "3071",
+        "compiler": "c2",
+        "level": "4",
+        "entry": "0x000000011c2d3280",
+        "size": "14112",
+        "address": "0x000000011c2d2e90",
+        "relocation_offset": "344",
+        "insts_offset": "1008",
+        "stub_offset": "5424",
+        "scopes_data_offset": "7136",
+        "scopes_pcs_offset": "12584",
+        "dependencies_offset": "13768",
+        "handler_table_offset": "13840",
+        "nul_chk_table_offset": "13936",
+        "oops_offset": "6624",
+        "metadata_offset": "6664",
+        "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+        "bytes": "790",
+        "count": "62524",
+        "backedge_count": "222046",
+        "iicount": "62526",
+        "stamp": "7.589",
+        "frames": []
+      },
+      "runtimeTrap": {
+        "eventIndex": 9908,
+        "tag": "uncommon_trap",
+        "thread": "38403",
+        "reason": "unstable_if",
+        "action": "reinterpret",
+        "debug_id": "0",
+        "compile_id": "3071",
+        "compiler": "c2",
+        "level": "4",
+        "count": "1",
+        "state": "intrinsic_or_type_checked_inlining recompiled",
+        "stamp": "7.591",
+        "frames": [
+          {
+            "bci": "37",
+            "method": "it.unimi.dsi.fastutil.ints.IntOpenHashSet contains (I)Z",
+            "bytes": "70",
+            "count": "28451",
+            "iicount": "28451",
+            "decompiles": "1",
+            "unstable_if_traps": "1"
+          },
+          {
+            "bci": "322",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "62542",
+            "backedge_count": "222118",
+            "iicount": "62542"
+          }
+        ]
+      },
+      "invalidation": {
+        "eventIndex": 9909,
+        "tag": "make_not_entrant",
+        "thread": "38403",
+        "compile_id": "3071",
+        "compiler": "c2",
+        "level": "4",
+        "stamp": "7.591",
+        "frames": []
+      },
+      "laterC1PublicationCount": 2,
+      "queuedWithoutNmethod": [
+        {
+          "compile_id": "3182",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "72072",
+          "backedge_count": "256074",
+          "iicount": "72072",
+          "decompiles": "1",
+          "stamp": "7.616",
+          "comment": "tiered",
+          "hot_count": "72072"
+        }
+      ],
+      "incompleteTargetFragments": [
+        {
+          "task": {
+            "compile_id": "3182",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "78764",
+            "backedge_count": "277749",
+            "iicount": "78765",
+            "decompiles": "1",
+            "stamp": "7.618"
+          },
+          "compilerLogThread": "43267",
+          "compilerThreadRecords": [
+            {
+              "name": "C2 CompilerThread1",
+              "thread": "43267",
+              "process": "57687",
+              "stamp": "0.018"
+            },
+            {
+              "name": "C2 CompilerThread1",
+              "thread": "36355",
+              "process": "57687",
+              "stamp": "7.216"
+            }
+          ],
+          "textBytes": 191984,
+          "textSha256": "9de14c496d141915a25f14bb7062af2c45e32d0f3f85056b6d209551790b4e05",
+          "hasTaskDone": false
+        }
+      ],
+      "allCompilerFragments": 2,
+      "completedTasks": [
+        {
+          "attributes": {
+            "compile_id": "3071",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "7588",
+            "backedge_count": "25721",
+            "iicount": "7588",
+            "stamp": "7.576"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "5616",
+              "count": "62542",
+              "backedge_count": "222118",
+              "inlined_bytes": "2550",
+              "stamp": "7.590"
+            }
+          ],
+          "failures": []
+        },
+        {
+          "attributes": {
+            "compile_id": "3061",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "511",
+            "backedge_count": "1991",
+            "iicount": "511",
+            "level": "3",
+            "stamp": "7.573"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "24152",
+              "count": "4543",
+              "backedge_count": "16963",
+              "inlined_bytes": "545",
+              "stamp": "7.575"
+            }
+          ],
+          "failures": []
+        },
+        {
+          "attributes": {
+            "compile_id": "3099",
+            "compile_kind": "osr",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "62780",
+            "backedge_count": "223072",
+            "iicount": "62780",
+            "decompiles": "1",
+            "osr_bci": "250",
+            "level": "3",
+            "stamp": "7.591"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "25384",
+              "count": "62848",
+              "backedge_count": "223346",
+              "inlined_bytes": "445",
+              "stamp": "7.593"
+            }
+          ],
+          "failures": []
+        },
+        {
+          "attributes": {
+            "compile_id": "3118",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "63093",
+            "backedge_count": "224404",
+            "iicount": "63093",
+            "decompiles": "1",
+            "level": "3",
+            "stamp": "7.596"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "24488",
+              "count": "66248",
+              "backedge_count": "237486",
+              "inlined_bytes": "576",
+              "stamp": "7.599"
+            }
+          ],
+          "failures": []
+        }
+      ],
+      "excludedCompilerParseTrapCount": 108,
+      "oracleSignatures": 34,
+      "nonLatencyDifferences": [],
+      "actualVmArguments": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-main-compilation-diagnostic/fork-2.tsv",
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+LogCompilation",
+        "-XX:LogFile=/private/tmp/graphite-main-compilation-diagnostic/fork-2.compilation.xml",
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh14760836164706251869compilecommand"
+      ],
+      "jmhAutomaticVmArguments": [
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh14760836164706251869compilecommand"
+      ],
+      "commandMatchesTemplatePlusOnlyDeclaredChanges": true,
+      "parentSummaryMatches": true,
+      "hotspotLogDone": {
+        "stamp": "7.708"
+      }
+    },
+    {
+      "fork": 3,
+      "xmlSha256": "917e8b7995a2687031de35f95d11558450d948d9ff7fa64f97ab81f471741948",
+      "runtimeEvents": [
+        {
+          "eventIndex": 9792,
+          "tag": "task_queued",
+          "compile_id": "3106",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "393",
+          "backedge_count": "1555",
+          "iicount": "393",
+          "level": "3",
+          "stamp": "7.641",
+          "comment": "tiered",
+          "hot_count": "384",
+          "frames": []
+        },
+        {
+          "eventIndex": 9806,
+          "tag": "nmethod",
+          "compile_id": "3106",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cc4b00",
+          "size": "38176",
+          "address": "0x0000000114cc3f10",
+          "relocation_offset": "344",
+          "insts_offset": "3056",
+          "stub_offset": "24496",
+          "scopes_data_offset": "28240",
+          "scopes_pcs_offset": "34336",
+          "dependencies_offset": "37584",
+          "nul_chk_table_offset": "37656",
+          "oops_offset": "27208",
+          "metadata_offset": "27264",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "5769",
+          "backedge_count": "22680",
+          "iicount": "5771",
+          "stamp": "7.643",
+          "frames": []
+        },
+        {
+          "eventIndex": 9821,
+          "tag": "task_queued",
+          "compile_id": "3112",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "8833",
+          "backedge_count": "32127",
+          "iicount": "8834",
+          "stamp": "7.644",
+          "comment": "tiered",
+          "hot_count": "8708",
+          "frames": []
+        },
+        {
+          "eventIndex": 9842,
+          "tag": "make_not_entrant",
+          "thread": "38147",
+          "compile_id": "3106",
+          "compiler": "c1",
+          "level": "3",
+          "stamp": "7.653",
+          "frames": []
+        },
+        {
+          "eventIndex": 9843,
+          "tag": "deoptimized",
+          "thread": "38147",
+          "reason": "constraint",
+          "pc": "0x0000000114cc8eb0",
+          "compile_id": "3106",
+          "compiler": "c1",
+          "level": "3",
+          "frames": [
+            {
+              "bci": "748",
+              "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+              "bytes": "790",
+              "count": "48927",
+              "backedge_count": "150294",
+              "iicount": "48927"
+            }
+          ]
+        },
+        {
+          "eventIndex": 9904,
+          "tag": "nmethod",
+          "compile_id": "3112",
+          "compiler": "c2",
+          "level": "4",
+          "entry": "0x000000011c2d4d00",
+          "size": "14400",
+          "address": "0x000000011c2d4910",
+          "relocation_offset": "344",
+          "insts_offset": "1008",
+          "stub_offset": "5488",
+          "scopes_data_offset": "7072",
+          "scopes_pcs_offset": "12976",
+          "dependencies_offset": "14112",
+          "handler_table_offset": "14184",
+          "nul_chk_table_offset": "14232",
+          "oops_offset": "6576",
+          "metadata_offset": "6616",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "82471",
+          "backedge_count": "274766",
+          "iicount": "82472",
+          "stamp": "7.666",
+          "frames": []
+        },
+        {
+          "eventIndex": 9909,
+          "tag": "uncommon_trap",
+          "thread": "38147",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "debug_id": "0",
+          "compile_id": "3112",
+          "compiler": "c2",
+          "level": "4",
+          "stamp": "7.666",
+          "frames": [
+            {
+              "bci": "37",
+              "method": "it.unimi.dsi.fastutil.ints.IntOpenHashSet contains (I)Z",
+              "bytes": "70",
+              "count": "273306",
+              "iicount": "273306"
+            },
+            {
+              "bci": "322",
+              "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+              "bytes": "790",
+              "count": "82478",
+              "backedge_count": "274796",
+              "iicount": "82478"
+            }
+          ]
+        },
+        {
+          "eventIndex": 9910,
+          "tag": "make_not_entrant",
+          "thread": "38147",
+          "compile_id": "3112",
+          "compiler": "c2",
+          "level": "4",
+          "stamp": "7.666",
+          "frames": []
+        },
+        {
+          "eventIndex": 9911,
+          "tag": "task_queued",
+          "compile_id": "3130",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "82563",
+          "backedge_count": "275136",
+          "iicount": "82563",
+          "decompiles": "1",
+          "level": "3",
+          "stamp": "7.666",
+          "comment": "tiered",
+          "hot_count": "82563",
+          "frames": []
+        },
+        {
+          "eventIndex": 9924,
+          "tag": "nmethod",
+          "compile_id": "3130",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cd5d40",
+          "size": "38704",
+          "address": "0x0000000114cd5110",
+          "relocation_offset": "344",
+          "insts_offset": "3120",
+          "stub_offset": "24944",
+          "scopes_data_offset": "28664",
+          "scopes_pcs_offset": "34848",
+          "dependencies_offset": "38112",
+          "nul_chk_table_offset": "38184",
+          "oops_offset": "27608",
+          "metadata_offset": "27672",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "82784",
+          "backedge_count": "276024",
+          "iicount": "82784",
+          "decompiles": "1",
+          "stamp": "7.668",
+          "frames": []
+        },
+        {
+          "eventIndex": 10489,
+          "tag": "task_queued",
+          "compile_id": "3204",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "93850",
+          "backedge_count": "311524",
+          "iicount": "93851",
+          "decompiles": "1",
+          "stamp": "7.696",
+          "comment": "tiered",
+          "hot_count": "93700",
+          "frames": []
+        }
+      ],
+      "c1Publications": [
+        {
+          "compile_id": "3106",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cc4b00",
+          "size": "38176",
+          "address": "0x0000000114cc3f10",
+          "relocation_offset": "344",
+          "insts_offset": "3056",
+          "stub_offset": "24496",
+          "scopes_data_offset": "28240",
+          "scopes_pcs_offset": "34336",
+          "dependencies_offset": "37584",
+          "nul_chk_table_offset": "37656",
+          "oops_offset": "27208",
+          "metadata_offset": "27264",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "5769",
+          "backedge_count": "22680",
+          "iicount": "5771",
+          "stamp": "7.643"
+        },
+        {
+          "compile_id": "3130",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114cd5d40",
+          "size": "38704",
+          "address": "0x0000000114cd5110",
+          "relocation_offset": "344",
+          "insts_offset": "3120",
+          "stub_offset": "24944",
+          "scopes_data_offset": "28664",
+          "scopes_pcs_offset": "34848",
+          "dependencies_offset": "38112",
+          "nul_chk_table_offset": "38184",
+          "oops_offset": "27608",
+          "metadata_offset": "27672",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "82784",
+          "backedge_count": "276024",
+          "iicount": "82784",
+          "decompiles": "1",
+          "stamp": "7.668"
+        }
+      ],
+      "c2Publication": {
+        "eventIndex": 9904,
+        "tag": "nmethod",
+        "compile_id": "3112",
+        "compiler": "c2",
+        "level": "4",
+        "entry": "0x000000011c2d4d00",
+        "size": "14400",
+        "address": "0x000000011c2d4910",
+        "relocation_offset": "344",
+        "insts_offset": "1008",
+        "stub_offset": "5488",
+        "scopes_data_offset": "7072",
+        "scopes_pcs_offset": "12976",
+        "dependencies_offset": "14112",
+        "handler_table_offset": "14184",
+        "nul_chk_table_offset": "14232",
+        "oops_offset": "6576",
+        "metadata_offset": "6616",
+        "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+        "bytes": "790",
+        "count": "82471",
+        "backedge_count": "274766",
+        "iicount": "82472",
+        "stamp": "7.666",
+        "frames": []
+      },
+      "runtimeTrap": {
+        "eventIndex": 9909,
+        "tag": "uncommon_trap",
+        "thread": "38147",
+        "reason": "unstable_if",
+        "action": "reinterpret",
+        "debug_id": "0",
+        "compile_id": "3112",
+        "compiler": "c2",
+        "level": "4",
+        "stamp": "7.666",
+        "frames": [
+          {
+            "bci": "37",
+            "method": "it.unimi.dsi.fastutil.ints.IntOpenHashSet contains (I)Z",
+            "bytes": "70",
+            "count": "273306",
+            "iicount": "273306"
+          },
+          {
+            "bci": "322",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "82478",
+            "backedge_count": "274796",
+            "iicount": "82478"
+          }
+        ]
+      },
+      "invalidation": {
+        "eventIndex": 9910,
+        "tag": "make_not_entrant",
+        "thread": "38147",
+        "compile_id": "3112",
+        "compiler": "c2",
+        "level": "4",
+        "stamp": "7.666",
+        "frames": []
+      },
+      "laterC1PublicationCount": 1,
+      "queuedWithoutNmethod": [
+        {
+          "compile_id": "3204",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "bytes": "790",
+          "count": "93850",
+          "backedge_count": "311524",
+          "iicount": "93851",
+          "decompiles": "1",
+          "stamp": "7.696",
+          "comment": "tiered",
+          "hot_count": "93700"
+        }
+      ],
+      "incompleteTargetFragments": [
+        {
+          "task": {
+            "compile_id": "3204",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "93913",
+            "backedge_count": "311743",
+            "iicount": "93915",
+            "decompiles": "1",
+            "stamp": "7.696"
+          },
+          "compilerLogThread": "28675",
+          "compilerThreadRecords": [
+            {
+              "name": "C2 CompilerThread0",
+              "thread": "28675",
+              "process": "57702",
+              "stamp": "0.011"
+            }
+          ],
+          "textBytes": 193109,
+          "textSha256": "38db8eae562de789e75e291cbb9a3fadb88542efd1dada673fec6b41607a51cc",
+          "hasTaskDone": false
+        }
+      ],
+      "allCompilerFragments": 2,
+      "completedTasks": [
+        {
+          "attributes": {
+            "compile_id": "3112",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "44910",
+            "backedge_count": "138375",
+            "iicount": "44910",
+            "stamp": "7.652"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "5568",
+              "count": "82478",
+              "backedge_count": "274796",
+              "inlined_bytes": "2550",
+              "stamp": "7.666"
+            }
+          ],
+          "failures": []
+        },
+        {
+          "attributes": {
+            "compile_id": "3106",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "1426",
+            "backedge_count": "5601",
+            "iicount": "1427",
+            "level": "3",
+            "stamp": "7.641"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "24152",
+              "count": "5775",
+              "backedge_count": "22695",
+              "inlined_bytes": "545",
+              "stamp": "7.643"
+            }
+          ],
+          "failures": []
+        },
+        {
+          "attributes": {
+            "compile_id": "3130",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30 (Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+            "bytes": "790",
+            "count": "82576",
+            "backedge_count": "275192",
+            "iicount": "82577",
+            "decompiles": "1",
+            "level": "3",
+            "stamp": "7.666"
+          },
+          "taskDone": [
+            {
+              "success": "1",
+              "nmsize": "24488",
+              "count": "82784",
+              "backedge_count": "276024",
+              "inlined_bytes": "576",
+              "stamp": "7.668"
+            }
+          ],
+          "failures": []
+        }
+      ],
+      "excludedCompilerParseTrapCount": 107,
+      "oracleSignatures": 34,
+      "nonLatencyDifferences": [],
+      "actualVmArguments": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-main-compilation-diagnostic/fork-3.tsv",
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+LogCompilation",
+        "-XX:LogFile=/private/tmp/graphite-main-compilation-diagnostic/fork-3.compilation.xml",
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh3927017588597906076compilecommand"
+      ],
+      "jmhAutomaticVmArguments": [
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh3927017588597906076compilecommand"
+      ],
+      "commandMatchesTemplatePlusOnlyDeclaredChanges": true,
+      "parentSummaryMatches": true,
+      "hotspotLogDone": {
+        "stamp": "7.789"
+      }
+    }
+  ],
+  "oracleSignatureCount": 102,
+  "allNonLatencyFieldsEqualPriorBase": true,
+  "inputReceipts": {
+    "graphs": 64,
+    "files": 1088,
+    "manifestGraphOrderEqual": true,
+    "allBeforeAfterPathSizeSha256EntriesEqual": true,
+    "independentlyRehashedGraphContent": false,
+    "allThreeJarBeforeAfterReceiptsMatchCurrentlyRehashedJar": true,
+    "runProcessesSucceededAndSequential": true
+  },
+  "inputSha256": {
+    "plan.json": "da982bcb17ebf7ced82f11724f72ae26ca449701e78bcf5d36527b6194cbfc0d",
+    "runs.json": "6a058471c155f16ee53f659bdba65effc8f7772f4d87a73b3f964787c96da3e2",
+    "completion.json": "ed29135abda6a57d85f54f27b9e995eb51011aaaa14b4febf6a8521993f8bd38",
+    "run.py": "f7bb7e6168d40c78a3f568bfa2077d3f29037cc383ea02e3a5576e90ee942aec",
+    "summary.json": "38d9b1d68c1379a9adac66425de2fd3715d3265223780cd408a1a33cce321abe",
+    "README.md": "55dc1173e70c781c1133ec5df79341c5314763df99635865d1813b963bd8b7b4",
+    "graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "javap-receipt.json": "7e709c214ccfaef4771a43406a3a7db36ccbfa5120c1d29081fdec9858b26acd",
+    "fork-1-command.json": "a2ca30fbc0d02a9230d3c4f48c0b6cbdea03f7300c75674875ec67ef77fdc3f9",
+    "fork-1.tsv": "a6a3528200eeed91c74cba2e932567a6e81df676c219143b1a4765fc7e61c7e3",
+    "fork-1.json": "f89cf5f0da7e39c82bfff31358e9375efefd9db8e7ce295091007acd60647bd8",
+    "fork-1.log": "c4ba7dcc3237e4bda571f07b894241d73b7b434d5fa797926e6083d99fb71048",
+    "fork-2-command.json": "8beec8a0af275d29f2bcc549db209e969e4d164a8c22757fb8b9bb62f6033666",
+    "fork-2.tsv": "0513a4a24f595e175e6250eeaed11b70d94e65ce955c90d4477ad403605d3e26",
+    "fork-2.json": "d187e3cd95a4287a84229e3689603059fe9d6dda085cdcca90d154a1bc56793f",
+    "fork-2.log": "b085df29cf75c581610822449cea9e25970337b9949674408adce8400f2e4d19",
+    "fork-3-command.json": "83b5cb649e329c7f0f0d306889d2d0fa9af189d7e44075577ff8e50d09e4551e",
+    "fork-3.tsv": "2fde559bece7d327043df2de866bdaad054d1d9bca510033cea4d9b374291867",
+    "fork-3.json": "f8c1ff4af3fc6983037baa45ee669b89917ec96b997e4e1a2712788ed527ba23",
+    "fork-3.log": "3fc09c26a874a5339246048b41fd3218f7f0390e0a8fe91190136cfc4f5e3c85",
+    "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+    "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-1.tsv": "908f3af857cf6d751f7955d0d19b26ef867a358563da5da6995c594838c7a6fe",
+    "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+    "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-1-command.json": "10f38069494a6fa9a309cec90e595823c1b177038b85ed6126e86ba43672b696"
+  },
+  "limits": [
+    "No query timestamp windows; no query attribution or deoptimization-time, latency, regression-cause or speedup inference.",
+    "Compiler logging may perturb runtime. These forks are not a controlled tracing-on/off comparison or an acceptance gate.",
+    "The later C2 task is evidenced by its C2 compiler fragment. No nmethod before log end and no task_done in its fragment do not establish a compilation failure.",
+    "Runtime uncommon_trap events are counted only directly under tty, never compiler parse nodes.",
+    "Actual VM includes standard JMH compiler-blackhole flags and a temporary CompileCommandFile; no separately added forced-compilation options. The temporary file contents were not independently recovered.",
+    "Graph integrity audit compares the complete captured before/after inventories, manifest order, and runner hashing implementation; it does not rehash the large live graph corpus again.",
+    "JAR and both classes were independently read and hashed now; historical pre/post identity is backed by captured run receipts."
+  ]
+}

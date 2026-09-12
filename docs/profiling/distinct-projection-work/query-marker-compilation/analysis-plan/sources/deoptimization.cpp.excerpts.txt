@@ -1,0 +1,82 @@
+Source: https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/runtime/deoptimization.cpp
+Full response SHA256: 7f12ec84ebd13d0d5f565b3ad0b365677fad492c35c5287b0c82a9ba73584eda
+
+[...]
+1910:   JfrSerializer::register_serializer(TYPE_DEOPTIMIZATIONREASON, true, new DeoptReasonSerializer());
+1911:   JfrSerializer::register_serializer(TYPE_DEOPTIMIZATIONACTION, true, new DeoptActionSerializer());
+1912: }
+1913: 
+1914: static void post_deoptimization_event(CompiledMethod* nm,
+1915:                                       const Method* method,
+1916:                                       int trap_bci,
+1917:                                       int instruction,
+1918:                                       Deoptimization::DeoptReason reason,
+1919:                                       Deoptimization::DeoptAction action) {
+1920:   assert(nm != NULL, "invariant");
+1921:   assert(method != NULL, "invariant");
+1922:   if (EventDeoptimization::is_enabled()) {
+1923:     static bool serializers_registered = false;
+1924:     if (!serializers_registered) {
+1925:       register_serializers();
+1926:       serializers_registered = true;
+1927:     }
+1928:     EventDeoptimization event;
+1929:     event.set_compileId(nm->compile_id());
+1930:     event.set_compiler(nm->compiler_type());
+1931:     event.set_method(method);
+1932:     event.set_lineNumber(method->line_number_from_bci(trap_bci));
+1933:     event.set_bci(trap_bci);
+1934:     event.set_instruction(instruction);
+1935:     event.set_reason(reason);
+1936:     event.set_action(action);
+1937:     event.commit();
+1938:   }
+1939: }
+1940: 
+1941: #endif // INCLUDE_JFR
+[...]
+2034: 
+2035:     MethodData* trap_mdo =
+2036:       get_method_data(current, profiled_method, create_if_missing);
+2037: 
+2038:     JFR_ONLY(post_deoptimization_event(nm, trap_method(), trap_bci, trap_bc, reason, action);)
+2039: 
+2040:     // Log a message
+2041:     Events::log_deopt_message(current, "Uncommon trap: reason=%s action=%s pc=" INTPTR_FORMAT " method=%s @ %d %s",
+2042:                               trap_reason_name(reason), trap_action_name(action), p2i(fr.pc()),
+2043:                               trap_method->name_and_sig_as_C_string(), trap_bci, nm->compiler_name());
+2044: 
+2045:     // Print a bunch of diagnostics, if requested.
+2046:     if (TraceDeoptimization || LogCompilation || is_receiver_constraint_failure) {
+2047:       ResourceMark rm;
+2048:       ttyLocker ttyl;
+2049:       char buf[100];
+2050:       if (xtty != NULL) {
+2051:         xtty->begin_head("uncommon_trap thread='" UINTX_FORMAT "' %s",
+2052:                          os::current_thread_id(),
+2053:                          format_trap_request(buf, sizeof(buf), trap_request));
+2054: #if INCLUDE_JVMCI
+2055:         if (speculation != 0) {
+2056:           xtty->print(" speculation='" JLONG_FORMAT "'", speculation);
+2057:         }
+2058: #endif
+2059:         nm->log_identity(xtty);
+2060:       }
+2061:       Symbol* class_name = NULL;
+2062:       bool unresolved = false;
+2063:       if (unloaded_class_index >= 0) {
+2064:         constantPoolHandle constants (current, trap_method->constants());
+2065:         if (constants->tag_at(unloaded_class_index).is_unresolved_klass()) {
+2066:           class_name = constants->klass_name_at(unloaded_class_index);
+2067:           unresolved = true;
+2068:           if (xtty != NULL)
+2069:             xtty->print(" unresolved='1'");
+2070:         } else if (constants->tag_at(unloaded_class_index).is_symbol()) {
+2071:           class_name = constants->symbol_at(unloaded_class_index);
+2072:         }
+2073:         if (xtty != NULL)
+2074:           xtty->name(class_name);
+2075:       }
+2076:       if (xtty != NULL && trap_mdo != NULL && (int)reason < (int)MethodData::_trap_hist_limit) {
+2077:         // Dump the relevant MDO state.
+2078:         // This is the deopt count for the current reason, any previous

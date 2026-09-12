@@ -1,0 +1,108 @@
+{
+  "readback": {
+    "exactOrder": true,
+    "allMemberSizeAndSha256": true,
+    "sourceUnchangedAfterArchive": true
+  },
+  "readmeLinks": [
+    {
+      "from": "README.md",
+      "target": "source-review.md",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "actual-source-review.md",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "build-evidence-audit.md",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "control-and-gate-audit.md",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "method-control-audit.md",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "control-and-gate-audit.json",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "old34-pairs/global-wide-status.json",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "old34-pairs/global-wide-report.md",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "old34-pairs/local-progress.json",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "ci-plan.json",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "evidence.tar.gz",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "archive-manifest.json",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "direct-copy-list.json",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "README.md",
+      "target": "archive-inventory.md",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "archive-inventory.md",
+      "target": "archive-manifest.json",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    },
+    {
+      "from": "archive-inventory.md",
+      "target": "direct-copy-list.json",
+      "exists": true,
+      "includedInDirectCopyPlan": true
+    }
+  ],
+  "allReadmeRelativeLinksValid": true,
+  "directCopyPlanFiles": 46,
+  "actualCopyToCandidateOrRoot": false
+}

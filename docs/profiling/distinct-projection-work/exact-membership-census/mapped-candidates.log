@@ -1,0 +1,146 @@
+graph 0: 23998 used / 61909 total; actual anchors match exhaustive used-ID oracle
+graph 1: 24659 used / 62746 total; actual anchors match exhaustive used-ID oracle
+graph 2: 25378 used / 63385 total; actual anchors match exhaustive used-ID oracle
+graph 3: 25856 used / 65023 total; actual anchors match exhaustive used-ID oracle
+graph 4: 23279 used / 64808 total; actual anchors match exhaustive used-ID oracle
+graph 5: 23689 used / 62177 total; actual anchors match exhaustive used-ID oracle
+graph 6: 26853 used / 66775 total; actual anchors match exhaustive used-ID oracle
+graph 7: 25500 used / 66901 total; actual anchors match exhaustive used-ID oracle
+graph 8: 26211 used / 68236 total; actual anchors match exhaustive used-ID oracle
+graph 9: 25576 used / 67481 total; actual anchors match exhaustive used-ID oracle
+graph 10: 24900 used / 70254 total; actual anchors match exhaustive used-ID oracle
+graph 11: 23999 used / 61743 total; actual anchors match exhaustive used-ID oracle
+graph 12: 26086 used / 72531 total; actual anchors match exhaustive used-ID oracle
+graph 13: 25594 used / 66264 total; actual anchors match exhaustive used-ID oracle
+graph 14: 24517 used / 64956 total; actual anchors match exhaustive used-ID oracle
+graph 15: 22894 used / 58416 total; actual anchors match exhaustive used-ID oracle
+graph 16: 15050 used / 34568 total; actual anchors match exhaustive used-ID oracle
+graph 17: 16224 used / 36988 total; actual anchors match exhaustive used-ID oracle
+graph 18: 15583 used / 36148 total; actual anchors match exhaustive used-ID oracle
+graph 19: 14815 used / 34228 total; actual anchors match exhaustive used-ID oracle
+graph 20: 16354 used / 38548 total; actual anchors match exhaustive used-ID oracle
+graph 21: 15844 used / 35531 total; actual anchors match exhaustive used-ID oracle
+graph 22: 15378 used / 37850 total; actual anchors match exhaustive used-ID oracle
+graph 23: 15363 used / 35220 total; actual anchors match exhaustive used-ID oracle
+graph 24: 17143 used / 38341 total; actual anchors match exhaustive used-ID oracle
+graph 25: 16623 used / 36612 total; actual anchors match exhaustive used-ID oracle
+graph 26: 17787 used / 41195 total; actual anchors match exhaustive used-ID oracle
+graph 27: 16418 used / 38094 total; actual anchors match exhaustive used-ID oracle
+graph 28: 16229 used / 38552 total; actual anchors match exhaustive used-ID oracle
+graph 29: 15466 used / 35798 total; actual anchors match exhaustive used-ID oracle
+graph 30: 16035 used / 37652 total; actual anchors match exhaustive used-ID oracle
+graph 31: 18717 used / 42951 total; actual anchors match exhaustive used-ID oracle
+graph 32: 21129 used / 43919 total; actual anchors match exhaustive used-ID oracle
+graph 33: 16884 used / 37762 total; actual anchors match exhaustive used-ID oracle
+graph 34: 20070 used / 41823 total; actual anchors match exhaustive used-ID oracle
+graph 35: 19753 used / 41400 total; actual anchors match exhaustive used-ID oracle
+graph 36: 17941 used / 40911 total; actual anchors match exhaustive used-ID oracle
+graph 37: 18594 used / 39780 total; actual anchors match exhaustive used-ID oracle
+graph 38: 19181 used / 40105 total; actual anchors match exhaustive used-ID oracle
+graph 39: 19101 used / 47441 total; actual anchors match exhaustive used-ID oracle
+graph 40: 20158 used / 46723 total; actual anchors match exhaustive used-ID oracle
+graph 41: 19401 used / 40297 total; actual anchors match exhaustive used-ID oracle
+graph 42: 17383 used / 38824 total; actual anchors match exhaustive used-ID oracle
+graph 43: 19047 used / 40824 total; actual anchors match exhaustive used-ID oracle
+graph 44: 18748 used / 44676 total; actual anchors match exhaustive used-ID oracle
+graph 45: 18360 used / 42961 total; actual anchors match exhaustive used-ID oracle
+graph 46: 18424 used / 44859 total; actual anchors match exhaustive used-ID oracle
+graph 47: 18186 used / 39489 total; actual anchors match exhaustive used-ID oracle
+graph 48: 14478 used / 29499 total; actual anchors match exhaustive used-ID oracle
+graph 49: 14000 used / 31834 total; actual anchors match exhaustive used-ID oracle
+graph 50: 13758 used / 28404 total; actual anchors match exhaustive used-ID oracle
+graph 51: 13358 used / 29023 total; actual anchors match exhaustive used-ID oracle
+graph 52: 14929 used / 29773 total; actual anchors match exhaustive used-ID oracle
+graph 53: 14755 used / 30875 total; actual anchors match exhaustive used-ID oracle
+graph 54: 13903 used / 27412 total; actual anchors match exhaustive used-ID oracle
+graph 55: 13549 used / 29923 total; actual anchors match exhaustive used-ID oracle
+graph 56: 14382 used / 30303 total; actual anchors match exhaustive used-ID oracle
+graph 57: 14272 used / 30494 total; actual anchors match exhaustive used-ID oracle
+graph 58: 15705 used / 35203 total; actual anchors match exhaustive used-ID oracle
+graph 59: 13186 used / 26540 total; actual anchors match exhaustive used-ID oracle
+graph 60: 13471 used / 32550 total; actual anchors match exhaustive used-ID oracle
+graph 61: 14770 used / 31379 total; actual anchors match exhaustive used-ID oracle
+graph 62: 14255 used / 29241 total; actual anchors match exhaustive used-ID oracle
+graph 63: 13411 used / 27812 total; actual anchors match exhaustive used-ID oracle
+[
+  {
+    "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+    "candidateGraphs": 2,
+    "totals": {
+      "exactEntriesAcrossPredicates": 8,
+      "currentHashKeyArraysPayload": 96,
+      "onePropertyMaskBytePayload": 54352,
+      "perPredicateBytePayload": 217408
+    }
+  },
+  {
+    "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "candidateGraphs": 64,
+    "totals": {
+      "exactEntriesAcrossPredicates": 892732,
+      "currentHashKeyArraysPayload": 7013376,
+      "onePropertyMaskBytePayload": 2793940,
+      "perPredicateBytePayload": 11175760
+    }
+  },
+  {
+    "id": "or-four-broad",
+    "candidateGraphs": 55,
+    "totals": {
+      "exactEntriesAcrossPredicates": 2584,
+      "currentHashKeyArraysPayload": 28064,
+      "onePropertyMaskBytePayload": 2517764,
+      "perPredicateBytePayload": 40284224
+    }
+  },
+  {
+    "id": "or-four-single-early",
+    "candidateGraphs": 1,
+    "totals": {
+      "exactEntriesAcrossPredicates": 16,
+      "currentHashKeyArraysPayload": 192,
+      "onePropertyMaskBytePayload": 61909,
+      "perPredicateBytePayload": 990544
+    }
+  },
+  {
+    "id": "or-four-single-middle",
+    "candidateGraphs": 1,
+    "totals": {
+      "exactEntriesAcrossPredicates": 16,
+      "currentHashKeyArraysPayload": 192,
+      "onePropertyMaskBytePayload": 42951,
+      "perPredicateBytePayload": 687216
+    }
+  },
+  {
+    "id": "or-four-single-late",
+    "candidateGraphs": 1,
+    "totals": {
+      "exactEntriesAcrossPredicates": 16,
+      "currentHashKeyArraysPayload": 192,
+      "onePropertyMaskBytePayload": 27812,
+      "perPredicateBytePayload": 444992
+    }
+  },
+  {
+    "id": "or-four-few-early-late",
+    "candidateGraphs": 2,
+    "totals": {
+      "exactEntriesAcrossPredicates": 16,
+      "currentHashKeyArraysPayload": 384,
+      "onePropertyMaskBytePayload": 89721,
+      "perPredicateBytePayload": 1435536
+    }
+  },
+  {
+    "id": "or-four-all",
+    "candidateGraphs": 64,
+    "totals": {
+      "exactEntriesAcrossPredicates": 1502324,
+      "currentHashKeyArraysPayload": 11619328,
+      "onePropertyMaskBytePayload": 2793940,
+      "perPredicateBytePayload": 44703040
+    }
+  }
+]

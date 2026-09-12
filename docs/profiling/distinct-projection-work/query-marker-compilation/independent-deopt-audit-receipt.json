@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "path": "independent-deopt-audit.py",
+      "sha256": "efad3d631f98d1df46cb349e0b29a431759c1ad34d2612873f6b591b77821175",
+      "bytes": 17287
+    },
+    {
+      "path": "independent-deopt-audit.json",
+      "sha256": "74815e22b1197642b4c2bee26b1942366c3731105ec7136ee1be7be939b11802",
+      "bytes": 3904089
+    },
+    {
+      "path": "independent-deopt-audit.md",
+      "sha256": "a121fc25e3c24745f466095cc8715c5aa93f5588389f332c12c29705107d4c4a",
+      "bytes": 6482
+    }
+  ],
+  "inputHashesInAuditJson": true,
+  "productionChanges": false,
+  "javaBuildMeasurementExecuted": false
+}

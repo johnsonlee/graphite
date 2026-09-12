@@ -1,0 +1,60 @@
+# DISTINCT source-work audit
+
+Read-only audit of `e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694` against frozen main `4e328b0109e13c896b74004823fb049fcb19251a`. The six audited production files are byte-identical to frozen main; hashes and exact references are in `source-work-audit.json`. User-provided AGENTS instructions and workspace CONVENTIONS.md were read (no AGENTS.md file exists in cwd). No workspace edit, candidate implementation, Java process, test, or performance measurement was started.
+
+## Why 12 matching nodes still cause two whole-graph scans
+
+The storage entry point is **MappedWebGraphBackedGraph.distinctStringPropertyDisjunction**, not a method of the same name on MappedCallSiteStringIndex. At `MappedWebGraphBackedGraph.kt:397–417`, Split consumers first obtain exact predicate string IDs from the retained index or mapped view. Empty exact IDs return immediately; otherwise the implementation first attempts `parallelRawDistinctCallSiteStringProjection`, even when a mapped view is already available. It does not use the view's existing ordered posting merge for DISTINCT.
+
+The raw path (`:491–624`) divides the CallSite type stream into physical segments, checks each node's four raw IDs, applies OR membership, builds projection values for matching nodes, and stops a segment only after `targetSize` distinct tuples. For the certified targeted query only 11 + 1 nodes match in two Kotlin shards; both have fewer than LIMIT 200, so both entire CallSite type streams are consumed. The existing independent full reference census reports 104,566 CallSites in those two graphs. Existing observations report two raw parallel scans and 106,706 work units; **the extra 2,140 units cannot be attributed solely from these counts**.
+
+At `QueryPipeline.kt:2181–2266`, initial source selection calls storage with `selectedValues = null`. The resulting 12 distinct rows never fill LIMIT, so all 64 sources are visited and the function returns before any provenance-completion call. Existing phase recordings confirm 64 initial / zero provenance calls. This is a different path from selected-tuple lookup, not merely an unusually sparse provenance lookup.
+
+The 12-node reference count is not proof that a posting implementation costs 12 work units: string candidate discovery, property directories, full selected-range physical-order validation, merged duplicate postings, raw projection, and accounting still apply. No speedup factor follows from this audit.
+
+## How the chosen 200 tuples are checked in later sources
+
+At `QueryPipeline.kt:2243`, the balanced path probes the leading source. Dense DISTINCT gets 200 rows from that source. `:2285–2307` excludes only known-zero sources or a source already known to contain every selected visible tuple, then invokes storage once per remaining source with the selected tuple set. In the existing phase traces this is 63 calls. It is **one storage call per source containing up to 200 tuples**, not 200 independently executed Cypher queries per source.
+
+`storageSelectedValues` (`:2355`) filters graphId-qualified tuples and turns local graphId columns into null placeholders. At `MappedWebGraphBackedGraph.kt:508–545`, the raw path resolves string values through a query-local map, verifies corresponding-property string membership, and rejects an empty feasible tuple set. This happens **after** eager predicate discovery at `:398`. For surviving tuples, a raw node must satisfy the original OR predicate and the whole projected tuple. Independently present component strings do not prove tuple occurrence. The scan stops only after every requested feasible tuple has a hit, or source exhaustion; per-worker duplicate removal and ordered result merge remain.
+
+`QueryPipeline.kt:2320` also handles non-CallSite candidates when the original node type admits them, then `:2336` adds the matching source IDs to existing rows without changing the chosen visible-row order. The early source shortcut must not lose later provenance. Already scanned sources that do not contain all selected tuples may need rechecking: their LIMIT prefix does not prove a later selected tuple absent.
+
+## Available APIs and their boundaries
+
+All line references are within `src/main/kotlin/io/johnsonlee/graphite/` of the named module; the JSON has complete paths.
+
+| Available facility | Source | What it actually supplies |
+|---|---|---|
+| Mapped exact predicate string IDs | webgraph/MappedCallSiteStringIndexView.kt:69 | CONTAINS of at least 3 characters, lowercase or raw ASCII expected. Verifies real string matches after trigram candidate discovery. Results are not property-specific until joined with directories. |
+| Mapped property membership | same file:60 | Binary search on corresponding property's string directory. Necessary condition only; not a tuple hit. |
+| `exactMatchesCanFillLimit` | same file:85 | Sums posting occurrences to a threshold. Overlaps can overcount nodes and DISTINCT tuples; not an exact cardinality/rank API. |
+| Mapped `matchingNodeIds` | same file:111 | Full selected-range validation eagerly, then lazy k-way merge in physical order with node deduplication. Null means unavailable/invalid ordering and must preserve fallback. |
+| `postingRange` / `validatedPostingCursor` | same file:193 / 160 | Private mapped internals. Current main exposes no direct mapped shortest-selected-tuple posting method. |
+| Heap `distinctProjection` | webgraph/MappedCallSiteStringIndex.kt:765 | Initial matching ranges → ordered deduplicated projection; selected values → private tuple lookup, or predicate-wide bitset fallback. Requires the retained heap index. |
+| Heap selected tuple lookup | same file:798 | Resolves projected IDs, chooses shortest existing property posting, checks entire tuple and original predicate; may build the full exact tuple index at :816. This is not free mapped-view reuse. |
+| Heap posting/range operations | same file:1170 / 1278 | `PropertyCsr.postingRange`, `postingNodeId`, `PostingRanges.mergedNodeIds`, and `matchedNodeBitSet`; backed by retained arrays. `matchingRanges` is private at :255. |
+| Physical encounter order | webgraph/MappedWebGraphBackedGraph.kt:269 / 1682 | `nodeOffsets.offset(nodeId)` is the canonical order and mapped view's `nodeOrder` callback. Numeric node ID is not a substitute. No mapped rank/select or complete retained rank table exists in these audited sources. |
+| Type-stream iteration | webgraph/NodeTypeIndex.kt:29 | `ids`, primitive iterator, and ordinal segment `forEachIdWhile`. Enumeration/segmentation does not select predicate candidates. |
+| Four raw projected IDs | webgraph/MappedWebGraphBackedGraph.kt:2448 / 2523 | Private raw mapped-node readers. A future projection can use node IDs without materializing Nodes, but mapping of null, repeated, reordered and graphId columns remains necessary. |
+
+Existing ordinary lookup uses mapped `matchingNodeIds` at `MappedWebGraphBackedGraph.kt:941`, currently gated by `predicates.shareStringMatcher()`. Existing initialized non-DISTINCT projection also uses it at `:775`, with the same matcher-sharing restriction. The mapped method itself can accept separate per-predicate ID arrays. Pure A OR B OR C OR D has multiple matcher keys; current callers' restriction must not be silently treated as proof that the full multi-keyword DISTINCT path is covered.
+
+## Correctness boundaries that a later experiment must preserve
+
+- **Complete sidecar validation before publication:** `MappedCallSiteStringIndexView.load:262` checks file shape, identity, dimensions, bounds and checksum; `validatePersistentIndex:363` checks sorted property directories, strictly increasing posting ends, valid node IDs, signatures/CRC and sorted trigram postings. This does not establish physical node ordering within selected property postings.
+- **Full selected posting order before LIMIT:** `validatedPostingCursor:160` walks every element of an uncached selected range and requires nonnegative, strictly increasing physical offsets. `matchingNodeIds:111` calls this for every selected range before returning the sequence. It cannot yield the first correct row then skip late corruption because LIMIT is already satisfied. Cached valid/invalid decisions are safe only for the same immutable range/view.
+- **Bounded retained validation state:** `BoundedPostingRangeValidationCache:568` has 1,024 entries and a 16 KiB shared-budget reservation. Collision/denial repeats validation rather than omitting it. Cold per-range `LongArray` order buffers are transient; these are not a global rank index. Heap-index persisted load separately checks full posting order at `MappedCallSiteStringIndex.kt:1563`.
+- **Ordering and DISTINCT semantics:** storage contract `core/Graph.kt:273` records canonical encounter order. Initial selection is source-order then physical node-order, deduplicated on visible projection. LIMIT counts distinct tuples, not candidate nodes/posting entries. OR overlap and equal tuples across different nodes or sources must not change the result. All source IDs for selected tuples remain required.
+- **Work, failure and cancellation:** mapped directory search, selected-range validation and merge use `BufferedGraphWorkConsumer` and `finally` flushes (`MappedWebGraphBackedGraph.kt:3097`). Mapping validation charges consumed chunks; view loops poll interruption. Merge flushes before yielding. Budget and cancellation failures cannot become a false empty hit set. Raw scan failure drains workers and restores interruption (`:629–684`); ordered graph scheduling cancels and joins its suffix (`QueryPipeline.kt:2479`). These remain relevant even if later work is shifted to callers.
+- **Fallback and projection shape:** preserve unavailable index, unsupported predicate/projection, checksum-valid bad posting, null placeholder, repeated/reordered projection, graphId, non-CallSite candidate and prepared/serial/Split consumer behavior. Existing tests prove only their exercised paths; do not claim comprehensive per-chunk validator fault coverage.
+
+Existing concrete test anchors: GraphStoreTest `split raw scans reuse exact matches from the existing persisted index` (:302, including CRC fallback), `mapped posting merge falls back before limit when a checksum-valid range is out of order` (:583), `mapped posting validation stays bounded when complete index memory is unavailable` (:659), `persisted CallSite index resolves selected four-property tuples with a bounded exact lookup` (:1257), selected raw projection failure/join coverage near :3759–3816, and the retained ParallelDistinctDisjunctionTest multi-keyword/order/null/cache tests. No tests were executed by this audit.
+
+## Previous experiments limit what is new
+
+Attempt 133 already tried direct **mapped selected-tuple shortest-posting lookup**, preserving full range validation before an early hit. It reduced dense work but left initial selection unchanged; targeted became P95 in all three local pairs. Exact-head Method17/zero CPU exceeded the unchanged bound twice, so it was rejected and reverted. The heap helper existing on main does not mean this rejected mapped specialization is present.
+
+Attempt 135 already tried **selected-tuple feasibility before predicate discovery**, not candidate posting projection. Dense work dropped, but targeted latency regressed in two pairs and the attempt was rejected. Renaming either approach does not make it a new accepted strategy. Attempts 123/124 distinguish global structural validation from selected posting physical ordering; 125's eager all-posting order/rank work was rejected; 128's bounded selected-range cache is part of frozen main.
+
+The phase report supports separate attribution of initial selection and provenance completion. A useful next profiling preparation is to record candidate posting volume/cache state by source and separate string discovery, feasible selected tuple setup, actual raw projection and posting order-validation work. That evidence is still missing; this audit does not select Attempt 138, change acceptance criteria, or authorize layering a new optimization.

@@ -1,0 +1,350 @@
+{
+  "schema": "attempt138-revert-ci-archive-v1",
+  "sourceRoot": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci",
+  "archiveRoot": "docs/profiling/attempt138/revert-ci",
+  "readOnlyEvidenceCollection": true,
+  "newMeasurements": false,
+  "excluded": "Original JAR/JFR, raw TSVs and duplicated routing state reports/status remain in the complete temporary evidence directory.",
+  "files": [
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/terminal-receipt.json",
+      "destination": "docs/profiling/attempt138/revert-ci/terminal-receipt.json",
+      "sourceSha256": "450b65645b709b99e124ba3151ddecb1d563406ed79aebc5faa4c5026906e57c",
+      "archivedSha256": "450b65645b709b99e124ba3151ddecb1d563406ed79aebc5faa4c5026906e57c",
+      "sourceBytes": 528,
+      "archivedBytes": 528,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/terminal-unit.json",
+      "destination": "docs/profiling/attempt138/revert-ci/terminal-unit.json",
+      "sourceSha256": "47e01ead0cc6a528e851bcbdec204c312f3e4ff0b46d7e7d8d4f5cc31699738e",
+      "archivedSha256": "47e01ead0cc6a528e851bcbdec204c312f3e4ff0b46d7e7d8d4f5cc31699738e",
+      "sourceBytes": 2671,
+      "archivedBytes": 2671,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/terminal-benchmark.json",
+      "destination": "docs/profiling/attempt138/revert-ci/terminal-benchmark.json",
+      "sourceSha256": "ce4e7692cc1b8096590c1c523bb9418f2eca834960ab6a32bcc5742927cb92ab",
+      "archivedSha256": "ce4e7692cc1b8096590c1c523bb9418f2eca834960ab6a32bcc5742927cb92ab",
+      "sourceBytes": 103741,
+      "archivedBytes": 103741,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/run-33991414367.json",
+      "destination": "docs/profiling/attempt138/revert-ci/run-33991414367.json",
+      "sourceSha256": "47e01ead0cc6a528e851bcbdec204c312f3e4ff0b46d7e7d8d4f5cc31699738e",
+      "archivedSha256": "47e01ead0cc6a528e851bcbdec204c312f3e4ff0b46d7e7d8d4f5cc31699738e",
+      "sourceBytes": 2671,
+      "archivedBytes": 2671,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/run-33991414379.json",
+      "destination": "docs/profiling/attempt138/revert-ci/run-33991414379.json",
+      "sourceSha256": "ce4e7692cc1b8096590c1c523bb9418f2eca834960ab6a32bcc5742927cb92ab",
+      "archivedSha256": "ce4e7692cc1b8096590c1c523bb9418f2eca834960ab6a32bcc5742927cb92ab",
+      "sourceBytes": 103741,
+      "archivedBytes": 103741,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/ci-audit.md",
+      "destination": "docs/profiling/attempt138/revert-ci/ci-audit.md",
+      "sourceSha256": "f1d037b694f904c76cec7a1d0fc8ddd47ddae8f20ec1a048a75779fc4e735bec",
+      "archivedSha256": "f1d037b694f904c76cec7a1d0fc8ddd47ddae8f20ec1a048a75779fc4e735bec",
+      "sourceBytes": 4414,
+      "archivedBytes": 4414,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": null
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/ci-audit.json",
+      "destination": "docs/profiling/attempt138/revert-ci/ci-audit.json",
+      "sourceSha256": "1f8ea764146006928ac7465e2519bac69fe56f8a9a1944941513a653ab91423c",
+      "archivedSha256": "1f8ea764146006928ac7465e2519bac69fe56f8a9a1944941513a653ab91423c",
+      "sourceBytes": 30517,
+      "archivedBytes": 30517,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/recompute-audit.py",
+      "destination": "docs/profiling/attempt138/revert-ci/recompute-audit.py",
+      "sourceSha256": "9b19b6293b0bdc139a82cda4616a36c8b3726482f09b88b58a0189c4b6c23562",
+      "archivedSha256": "9b19b6293b0bdc139a82cda4616a36c8b3726482f09b88b58a0189c4b6c23562",
+      "sourceBytes": 6925,
+      "archivedBytes": 6925,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": null
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/recompute-output.json",
+      "destination": "docs/profiling/attempt138/revert-ci/recompute-output.json",
+      "sourceSha256": "035a5ac7c328722ffa80c874dc8f335168c975770401df5436f4b239bfc082d3",
+      "archivedSha256": "035a5ac7c328722ffa80c874dc8f335168c975770401df5436f4b239bfc082d3",
+      "sourceBytes": 2710,
+      "archivedBytes": 2710,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/method-job-results.json",
+      "destination": "docs/profiling/attempt138/revert-ci/method-job-results.json",
+      "sourceSha256": "c4658afaf2149b418734ea89ba25f8eb0769b5115f34f66f2ef16a7b24958477",
+      "archivedSha256": "c4658afaf2149b418734ea89ba25f8eb0769b5115f34f66f2ef16a7b24958477",
+      "sourceBytes": 2978,
+      "archivedBytes": 2978,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/download-receipt.json",
+      "destination": "docs/profiling/attempt138/revert-ci/download-receipt.json",
+      "sourceSha256": "20187d59a60820c22f4d09d0a0407b6157e8b978ba889a8914e0abe4f4e96825",
+      "archivedSha256": "20187d59a60820c22f4d09d0a0407b6157e8b978ba889a8914e0abe4f4e96825",
+      "sourceBytes": 2539,
+      "archivedBytes": 2539,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/artifacts.json",
+      "destination": "docs/profiling/attempt138/revert-ci/artifacts.json",
+      "sourceSha256": "8894709e51581e8395ea7394b4bc14cfe8a8db9b60d6d09f422fbd444fade5a7",
+      "archivedSha256": "1a703e513bfc9d98c03ee928f2b5608aea8356b444d7a6ab5046272d77e94b1d",
+      "sourceBytes": 25332,
+      "archivedBytes": 25333,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/monitor-command.json",
+      "destination": "docs/profiling/attempt138/revert-ci/monitor-command.json",
+      "sourceSha256": "25963e1df02e6e14c6c50359564bba68a01c6ba7b5dd5a8f53b6d9299d4634b6",
+      "archivedSha256": "25963e1df02e6e14c6c50359564bba68a01c6ba7b5dd5a8f53b6d9299d4634b6",
+      "sourceBytes": 301,
+      "archivedBytes": 301,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/monitor.py",
+      "destination": "docs/profiling/attempt138/revert-ci/monitor.py",
+      "sourceSha256": "58d9f3d9c729817c2388027074a7f18ec184c4118a8fbe0e43508577474fc079",
+      "archivedSha256": "58d9f3d9c729817c2388027074a7f18ec184c4118a8fbe0e43508577474fc079",
+      "sourceBytes": 2656,
+      "archivedBytes": 2656,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": null
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/global-wide-report.md",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/global-wide-report.md",
+      "sourceSha256": "db5a1d05130aebcfadc6dcdb7227eba5c11ee823b3ccd6f8906ec6b47ebee1dd",
+      "archivedSha256": "72494c6e6b1ca4c18a0663a348aea5c75209829fadfe9387589606e1951b2b8d",
+      "sourceBytes": 6280,
+      "archivedBytes": 6279,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": null
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/global-wide-status.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/global-wide-status.json",
+      "sourceSha256": "3a7af57794bfcaebd2b04ec5564899d33f773944a4e4ab5bed921eb558d0b77f",
+      "archivedSha256": "3a7af57794bfcaebd2b04ec5564899d33f773944a4e4ab5bed921eb558d0b77f",
+      "sourceBytes": 13532,
+      "archivedBytes": 13532,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/optimization-references.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/optimization-references.json",
+      "sourceSha256": "8d26f507cd705086660c6d1b70ba4051fb279e4de62d033b2f1250aa84c8f4c4",
+      "archivedSha256": "8d26f507cd705086660c6d1b70ba4051fb279e4de62d033b2f1250aa84c8f4c4",
+      "sourceBytes": 380,
+      "archivedBytes": 380,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/global-wide-report.md",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/global-wide-report.md",
+      "sourceSha256": "41d56fa6e29619c3586f0f9a693b28e0cbbfc6a5dc9d5c1d326042b1ebf27081",
+      "archivedSha256": "41d56fa6e29619c3586f0f9a693b28e0cbbfc6a5dc9d5c1d326042b1ebf27081",
+      "sourceBytes": 3058,
+      "archivedBytes": 3058,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": null
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/global-wide-status.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/global-wide-status.json",
+      "sourceSha256": "d4bcae960b3ae63170018032e21677b24bc4f5c418aa06114ec9ee021e3dd6a2",
+      "archivedSha256": "d4bcae960b3ae63170018032e21677b24bc4f5c418aa06114ec9ee021e3dd6a2",
+      "sourceBytes": 5660,
+      "archivedBytes": 5660,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/evidence-manifest.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/evidence-manifest.json",
+      "sourceSha256": "fe96ef3f6925456b4900520869988d519f6542156e3315583de9fb42cc1d5a64",
+      "archivedSha256": "fe96ef3f6925456b4900520869988d519f6542156e3315583de9fb42cc1d5a64",
+      "sourceBytes": 2286,
+      "archivedBytes": 2286,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/fixture-reproducibility.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/fixture-reproducibility.json",
+      "sourceSha256": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+      "archivedSha256": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+      "sourceBytes": 419,
+      "archivedBytes": 419,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/provenance.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/provenance.json",
+      "sourceSha256": "51793ca1b76718e5d2ecf10af6b83f35c3aa2217d48006f334ab07db480b259f",
+      "archivedSha256": "51793ca1b76718e5d2ecf10af6b83f35c3aa2217d48006f334ab07db480b259f",
+      "sourceBytes": 1183,
+      "archivedBytes": 1183,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-oracle-seed.correctness",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-oracle-seed.correctness",
+      "sourceSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "archivedSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "sourceBytes": 9483,
+      "archivedBytes": 9483,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": null
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-1.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-1.json",
+      "sourceSha256": "7f9bf30b8e2f721d9a35cff81eec5265f31447759e4e68514e1ecc80d33ea5eb",
+      "archivedSha256": "7fe4cdd0d7f06c7c547a583b043916e26cd562998f2df1f1b46ad5eed8b4cd7a",
+      "sourceBytes": 69106,
+      "archivedBytes": 69104,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-2.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-2.json",
+      "sourceSha256": "92adfdf6f0757399514747551f0d5dabc1f2898d9d86372fbb8d1023bba82722",
+      "archivedSha256": "797e47216e3bba8cb9260a89d5ed047e3b42730731d62a5a07fcb1dd2af131f3",
+      "sourceBytes": 69078,
+      "archivedBytes": 69076,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-3.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-3.json",
+      "sourceSha256": "f101f8bf00f846df63d4dc582447c09d137cc0f0829b49243f6126f44ba9e39d",
+      "archivedSha256": "b6ab79fef9b34ed2e6a756f20ad3fbc24a55acd167c9f41b30673f5107bc3dc2",
+      "sourceBytes": 69106,
+      "archivedBytes": 69104,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-1.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-1.json",
+      "sourceSha256": "a3ba660ae215611dc332087b36ac33291c6809c8f289b72446797c291ad11400",
+      "archivedSha256": "4c3ebcbdb3cba5482bcc432def8e6f62aa9c9f72bebb4137111c39a1cc43e838",
+      "sourceBytes": 69085,
+      "archivedBytes": 69083,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-2.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-2.json",
+      "sourceSha256": "a2699fb6a1070a42304372ed426730aaff9490e05a95335ced20a48b7f1fb75b",
+      "archivedSha256": "5ac08016f15204d99f739fc28a42a4c78058f221912e0b850c0bb596b673f448",
+      "sourceBytes": 69125,
+      "archivedBytes": 69123,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-3.json",
+      "destination": "docs/profiling/attempt138/revert-ci/global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-3.json",
+      "sourceSha256": "7809ce73bc7dbcd5b26fc8c9a1759f9e31fe027fa199b9fa705842ae10e52552",
+      "archivedSha256": "43c1c90d0eda5754a26da8c4d487ba7563c6b328c2dd830cf4b7383fbf65a62f",
+      "sourceBytes": 69041,
+      "archivedBytes": 69039,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/routing/graph-routing-report.md",
+      "destination": "docs/profiling/attempt138/revert-ci/routing/graph-routing-report.md",
+      "sourceSha256": "0ad5dd6db0ae1e7880ba57a739cbaf70bfdae26c4c65fb6755f8cee81a27d360",
+      "archivedSha256": "0ad5dd6db0ae1e7880ba57a739cbaf70bfdae26c4c65fb6755f8cee81a27d360",
+      "sourceBytes": 190138,
+      "archivedBytes": 190138,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": null
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/routing/graph-routing-status.json",
+      "destination": "docs/profiling/attempt138/revert-ci/routing/graph-routing-status.json",
+      "sourceSha256": "aef7e00c313bd9ae946cea2b036125814384d7ddc7e93433039ba38259d1ec58",
+      "archivedSha256": "aef7e00c313bd9ae946cea2b036125814384d7ddc7e93433039ba38259d1ec58",
+      "sourceBytes": 900793,
+      "archivedBytes": 900793,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/routing/evidence-manifest.json",
+      "destination": "docs/profiling/attempt138/revert-ci/routing/evidence-manifest.json",
+      "sourceSha256": "f64cbcc4737c45cd125e4cda7866bc24f7edf7e2c46431221c100b3be5a674ea",
+      "archivedSha256": "f64cbcc4737c45cd125e4cda7866bc24f7edf7e2c46431221c100b3be5a674ea",
+      "sourceBytes": 3889,
+      "archivedBytes": 3889,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/routing/fixture-reproducibility.json",
+      "destination": "docs/profiling/attempt138/revert-ci/routing/fixture-reproducibility.json",
+      "sourceSha256": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+      "archivedSha256": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+      "sourceBytes": 419,
+      "archivedBytes": 419,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/revert-ci/routing/provenance.json",
+      "destination": "docs/profiling/attempt138/revert-ci/routing/provenance.json",
+      "sourceSha256": "62baa4cacfe1b8ce8bd4c6c3f85164d46a53ec2195e4250ae66ac329248e252c",
+      "archivedSha256": "62baa4cacfe1b8ce8bd4c6c3f85164d46a53ec2195e4250ae66ac329248e252c",
+      "sourceBytes": 1604,
+      "archivedBytes": 1604,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    }
+  ]
+}

@@ -1,0 +1,1449 @@
+{
+  "passed": true,
+  "head": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+  "candidate": "470df7cea888240b87380f1a4a650638ea713815",
+  "restoreReference": "e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "sections": {
+    "mainAndJmh": {
+      "reference": "4e328b0109e13c896b74004823fb049fcb19251a",
+      "fileCount": 130,
+      "committedAndWorkingBytesEqual": true,
+      "files": [
+        {
+          "file": "graphite-core/src/jmh/kotlin/io/johnsonlee/graphite/analysis/DataFlowAnalysisBenchmark.kt",
+          "sha256": "d1f772d2c7cfac1b6cf510466efd135edf62a7b6eccb06fdde43df3eba5487cb"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/Graphite.kt",
+          "sha256": "79408f33d11f24a436b8cae0b702a983ecdccffa16a19cfe9878a004d95e3456"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/analysis/BranchReachabilityAnalysis.kt",
+          "sha256": "d430cf31a4352eb6788e7b92d6b3118bfafa9af8be76514a05a4e83a0dc19cff"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/analysis/DataFlowAnalysis.kt",
+          "sha256": "3c21ba39930f774201bba65d23bd2e60970356d943091dae10d58326a6fd6126"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/analysis/TypeHierarchyAnalysis.kt",
+          "sha256": "bacb28a88905f8295dff7e44d1ed693438106197f4b09a8ff4399795055c2262"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/core/Edge.kt",
+          "sha256": "0fe28751bac0fbd271b179646a5a5fb6637182f15cf66944442be95e06afd35e"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/core/Node.kt",
+          "sha256": "76cadcde83cad805f26ccfeca82ab5795d959e87386c6fa68bc1a3a57ae8ea68"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/core/TypeStructure.kt",
+          "sha256": "ac829ac5e454f7ab82a4f90af5fd11be9a30f374b4138829c79d3435231d3750"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/DefaultGraph.kt",
+          "sha256": "087293ae8a020169d4c0ffd214a60c361a715c7ab104c82e71346095f07e1fe6"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/FullGraphBuilder.kt",
+          "sha256": "2b7b813dcd5ca4a3cb2f1c7453f002cbd0d5b8e4f619ccfd83c18d1aab79b760"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt",
+          "sha256": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/MmapGraph.kt",
+          "sha256": "4d7ec8ad75a1ac8de23f49f9038451d65bf974247b17d2614d2269e8c3dc95b7"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/MmapGraphBuilder.kt",
+          "sha256": "9bff5cc20cc5d93a8d50eb7f11cd9f66a56c9ab0bbd2cb4112a6ed360770f65b"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/input/JavaArchiveLayout.kt",
+          "sha256": "666317d7655427505dc53aafaf3fcd2ca17938d549ac0f6d7732c9ed1fe17756"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/input/ProjectLoader.kt",
+          "sha256": "cb51b508315ab0d5f5ec7d252c8f856ca9d016de7d2683919a0e0977ad8796ac"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/input/ResourceAccessor.kt",
+          "sha256": "5cdbad3c77836f8d1fc6e687ebbe08b1c5f1925330b6599ba2844a3adf5b34d8"
+        },
+        {
+          "file": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/query/QueryDsl.kt",
+          "sha256": "06f750549013cfe3af3b48a5a3f5ba2b062087fd8b3fc28300444c887545aa45"
+        },
+        {
+          "file": "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt",
+          "sha256": "8e29c925354ddaf104860d7a68a2f42ee83f72d05966e75edb58b71f978754aa"
+        },
+        {
+          "file": "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CrossGraphCypherBenchmark.kt",
+          "sha256": "7e31eb1578f96f3631557eb6a5af7ef203ff82a17268899ffe2008249249f2a8"
+        },
+        {
+          "file": "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt",
+          "sha256": "c31df9bf852b6038db65d116cd17a081eab3c609e044c563111b9f320c97a441"
+        },
+        {
+          "file": "graphite-cypher/src/main/antlr/CypherLexer.g4",
+          "sha256": "71aa05d51600712b6798d4fe01865f2490562e2fe60c936ede451532a45d3180"
+        },
+        {
+          "file": "graphite-cypher/src/main/antlr/CypherParser.g4",
+          "sha256": "b4bf4e008e816c00e4d162da6165f10957cdb3ede518f0f54fd18142bfe14364"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CrossGraphValues.kt",
+          "sha256": "090eb113da33baa4083e77b8a45847ebd33211cfbf5a6c992ca1cb7c083dc5ba"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherClause.kt",
+          "sha256": "5917560b18527b23750f40ee9e50b970f3b01091e9f9f5de78bb5b11a1ce31ea"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherDslAdapter.kt",
+          "sha256": "bd85057a259faf866a7d2a2f2a3096c28ecc8f8b1273559096bd9fe13de35f24"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutionBudget.kt",
+          "sha256": "3fdfd1588e92c63a682bfcdbd3e9b79c7b67142a36d3b04700f49c4397ad18a3"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutor.kt",
+          "sha256": "2de0ff1f84fc67fd76f3d4c3335c406ed440c625e29f3911aa73d2aa04cf2586"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherFunctions.kt",
+          "sha256": "b85a3b913855b8e51f6bbef72be3f290ef6c68706beda1ebc09e4cf30cfb51a9"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherPattern.kt",
+          "sha256": "8f86fd2d98b5f488a0cbc9c231db2a6164149cbdd0d5359bcae26563b526b6e4"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherResult.kt",
+          "sha256": "b1d8fbd97676f0959df98c0b9082f9939dfe014fb7edcd7f083c0ea6eb0c1212"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherValueSemantics.kt",
+          "sha256": "f9556c9889531f01e95f21e02534538282e90e48042ff723b74eebcda7202ac3"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/DirectProjectionResultCache.kt",
+          "sha256": "91e1d2e5fd4d3577d4411ea2ac2fb819d59d8ff12fd9fcb0c7122f1d9906a78d"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt",
+          "sha256": "b4c1bb76cde0be2bcc7b3485e4ac92fd28e0555839cb7d0954748436868510c8"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/GraphCypherExtensions.kt",
+          "sha256": "5b8b0d60d582ca2b546c2de22934075740957fe3e61481808a51328b88dd1017"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ImmutableCypherAst.kt",
+          "sha256": "aae5c593f3ec0602857e4ece33dda9dac2ef1be9238e35313ec20f1458b73a92"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/MethodQueryExecutor.kt",
+          "sha256": "5d435e534f56a56c0d64ba1457d44775dc50a3851f8f68492e6bc22ed354a968"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/NodePropertyAccessor.kt",
+          "sha256": "d5b7d2cb6b3052bdd2b22fec06c3ed4bbccf19c3454723d5a92a3289a99a1ae5"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ParsedQuery.kt",
+          "sha256": "bf1bd34aa0b65e638665789a1138325fbd9d6c83e54b113952ea35ae15e252e8"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/PathFinder.kt",
+          "sha256": "d3a3a0e472d441b2e294580590018144594851738265fdedfea5d2b539874bdf"
+        },
+        {
+          "file": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+          "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae"
+        },
+        {
+          "file": "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/CypherCapacityBenchmark.kt",
+          "sha256": "dd4c829134941d2f47d2f957f920316b66be02c95cc07c0161d74b02dcee7ef4"
+        },
+        {
+          "file": "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/CypherHttpBenchmark.kt",
+          "sha256": "dda743d6f4de7eefa77eb587b848267ae87e2dc8b96019752b494c2ade1e7ab6"
+        },
+        {
+          "file": "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt",
+          "sha256": "3946fcfbdfb644ef061ef68fbaedeed929218b852341c43c0f210fabff699d72"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/CypherClientCancellation.kt",
+          "sha256": "769bbeab66a2296e79cff3496e89cef274b91c28ad9d40d1d4ad2871a3644725"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/CypherQueryGuard.kt",
+          "sha256": "8741d452aff5187a010d8fd020c4bcb65f0296f6cc740eb212623dfa70bf20e6"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/CypherResponseSerializer.kt",
+          "sha256": "7583797a23d21580fccb051a8c0f595bb07e8056bf8920ed881d2e85796fe6d2"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/EndpointExtractor.kt",
+          "sha256": "585593900d3bef81f382fae70e07892f120ddd9bb58fc655d70808d29ce78eec"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreApiFields.kt",
+          "sha256": "2ea121d404923294f4bbf2eba8f50642d97fb09b7665406fcdbc470393d0328b"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreCommand.kt",
+          "sha256": "b2aa69d3d0f7cca4db158fee9bacea27b7a3c939e0fb36ecf32e892ed896c054"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreMain.kt",
+          "sha256": "3dfd8270b8185899a6230df40fb28142cb77fd2af56f23c910224f5982078396"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreRoutes.kt",
+          "sha256": "7a5c032a5113f59fc92bd3b91cb28fd3564702fb41320dfcd38cf3bb4cf251da"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/GraphRegistry.kt",
+          "sha256": "c01cbb8a4a143ad64c8b472f3b9392cda158e320ca75fe850d4430fc7739908d"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/GraphiteVersionProvider.kt",
+          "sha256": "7f522d2beda441d1ec140521b316f7a6df0ae479ba2787e0049c41f66808d99c"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/Helpers.kt",
+          "sha256": "43753a6f94daa444914e5fcd595f590b33ad9bb75a27fb3f9f8f82becb9e0edd"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/OpenApiSpecBuilder.kt",
+          "sha256": "ea8113415352a73fd8ee3802456b181cf74da72b7d590c0560eeae80a32944a7"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ServerPerformanceMetrics.kt",
+          "sha256": "62502dd02c626bb4e9c924934d00871b45e93b775fad4e3182a93d63453432f3"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/TopologyGraph.kt",
+          "sha256": "bc843b91d6102b7a250b156104f9f291547e31f0da27e4fd890005f39c460209"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/TopologyStore.kt",
+          "sha256": "9f3896e4a9da5c0b557f244d1b5ecf0ba26c2af99c81a4c854cca67178f56745"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4ArchitectureService.kt",
+          "sha256": "3ac9b1f818d63ae73f2f1955778de4f4ab4735ae0db616e5acfc348f565ee188"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4InferenceConstants.kt",
+          "sha256": "5dca9805ebaa30110585643c07715ee9c117c7740e12e3fd688339d420d81ff9"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4MermaidRenderer.kt",
+          "sha256": "114861ef4de7750df709f3e8ca403b453a078d5ec3d6f4efe7b356f36357b414"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4Metadata.kt",
+          "sha256": "d04e430911bc297294b4bd2cea8acb87b275eb9f625bcc6096782846e6a95f64"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4ModelConstants.kt",
+          "sha256": "ad32db11c2cd2344e2f4425c803a5c1937e95e10a9533ce163de9263a818b576"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4ModelInferer.kt",
+          "sha256": "cbbd5c2af4236a7f4e9430d510ee8ddcfc67565b573d2df229f8568e4eecef7e"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4PlantUmlRenderer.kt",
+          "sha256": "4bf75eb95de962ba361fc901f151ba0e036a400cdaf8d4db3180a8be2b8f57bd"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4RenderingPlan.kt",
+          "sha256": "4a3d79ce91f4697ab708eeb0b45f7a1ab78c6d39bda421dd8f6736659fa4e3c0"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4StructurizrDslRenderer.kt",
+          "sha256": "142cf3f0b896f84466b945df1281b04739722e2026231e77aae67bf0f4526cfd"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4StructurizrMapper.kt",
+          "sha256": "2fdb5d7011cc082932b8c026bda8adceafcd9cac9d19c3a6deadd65b98de2d66"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4StructurizrModel.kt",
+          "sha256": "9b926bf1ea9a8f5c2b8eff5aef3f2831b6359c74a036083205388e8ab20a34f6"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4Support.kt",
+          "sha256": "32ccb4b388aed65c60bf9940191aa666a5624faf45ee8b8064507a9e0e6f9022"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4TextDiagramRenderer.kt",
+          "sha256": "7d8a966f81af9ee0839c398d82f66ebce46c291001749fcf223d8df3431e3b6b"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4Types.kt",
+          "sha256": "e2b3cbdda2ac014a7d6fde07687585705d5c4687bde9547e9683d2a177c6f57f"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4WireCodec.kt",
+          "sha256": "6f2db7cbb89fa49b36b9d976cc53b9f0db3e49d20b304ad5ac5599150057a89f"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/ComponentSelector.kt",
+          "sha256": "041cbe3781c7292a97ceff18fd41cc8f98a824f7814d07d998bd4689ea2006c2"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/ContainerClusterer.kt",
+          "sha256": "8d88704008756523eda0d81556dcf00d3e8b3cd8cf1fc5ecce66cf4b7ed513c4"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/ExternalSystemClassifier.kt",
+          "sha256": "8def9b1e26778d3f48f5dd4294605e2099c54151b8cdc90d0125170cbdf2236d"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/SubjectDetector.kt",
+          "sha256": "50f99ed4fbf15b7d47c336b5304f092942e2c847841bf6f1b8a251c40580ef71"
+        },
+        {
+          "file": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/SystemBoundaryDetector.kt",
+          "sha256": "02ae98a8ac9c95b0fee202b844327f7a7fbc620d0bccf587cdfeff1e1ff5ec83"
+        },
+        {
+          "file": "graphite-explore/src/main/resources/web/app.js",
+          "sha256": "46f17018780bb99d69122edfd9ab26419c4013fa96c3ea6404c80ef43da1a8cb"
+        },
+        {
+          "file": "graphite-explore/src/main/resources/web/index.html",
+          "sha256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057"
+        },
+        {
+          "file": "graphite-explore/src/main/resources/web/style.css",
+          "sha256": "fc3c32e70df3f3fe3864eea6b431a36a8d837adbe505f715fbc8f9aaf452abcd"
+        },
+        {
+          "file": "graphite-explore/src/main/resources/web/ui-state.js",
+          "sha256": "9f84675e7e61e7fe47d13a21e7a8c34bec7e866ff050f6d32ce8f6f9a5b1781c"
+        },
+        {
+          "file": "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/BuildCommand.kt",
+          "sha256": "3cd79053a8596984aa28347c75bff6fd2cb5b50812377079a8aa3116f5c26a93"
+        },
+        {
+          "file": "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/GraphiteCommand.kt",
+          "sha256": "069a856f2ad39863f4b8c0e128a4308b007feba667a979124fd96295714812f1"
+        },
+        {
+          "file": "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/Main.kt",
+          "sha256": "38ae84bf9e9c55d29f3fdf4e0ea67da938d8cbd7bc7a083e2c61678504eabecb"
+        },
+        {
+          "file": "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/QueryCommand.kt",
+          "sha256": "0360731709945045c47ccc5208001294bb38a9e89b39040627aa729c31fc2cbf"
+        },
+        {
+          "file": "graphite-sootup/src/jmh/kotlin/io/johnsonlee/graphite/sootup/GraphBuildBenchmark.kt",
+          "sha256": "de2dddb851448d874b0f0cee56c8df1e33d927c56cb794d5f2b9ceda2fbd7efa"
+        },
+        {
+          "file": "graphite-sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/ArchiveResourceAccessor.kt",
+          "sha256": "2353fe49ff4ec9e08a5f9859e82061df4093dd817d1f6c7bade64f1df7ab3c1f"
+        },
+        {
+          "file": "graphite-sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/AsmApi.kt",
+          "sha256": "adc4b888e21ea49c9d5712aa2dba6c12b4c56de187d7b7cb18fcd6a77e6bf2d2"
+        },
+        {
+          "file": "graphite-sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/BytecodeSignatureReader.kt",
+          "sha256": "8d4716036ef08ef6745252f9d7b7b773ae9424518ae070aaa3d521a97db2bb87"
+        },
+        {
+          "file": "graphite-sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/GenericSignatureParser.kt",
+          "sha256": "7c5fd6054ba5f71b490560dcfbf22e83f3ac679c365b48b3a1dbacaec6f99cce"
+        },
+        {
+          "file": "graphite-sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/GraphiteContext.kt",
+          "sha256": "5131145b205aa7a929b6dd4f9484b40120974f4c6eb2315a770bb93b2f1b1d87"
+        },
+        {
+          "file": "graphite-sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/GraphiteExtension.kt",
+          "sha256": "e652b9c4d45075b5fbe9a232dd59d32592f799bd27728f08807dc7f92754e41b"
+        },
+        {
+          "file": "graphite-sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/JavaProjectLoader.kt",
+          "sha256": "4260614851968da1780095852c2fa921156717e1e4a6717c1b73d9c2332dc4eb"
+        },
+        {
+          "file": "graphite-sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapter.kt",
+          "sha256": "e7854061f874224f6950fd43e78de7a2647b4c8b90758ebb018876a5dbd22742"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt",
+          "sha256": "23fe2d48859fb056dd7656a7d8a67aed27e13fd41d82823461de3c611de949ea"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt",
+          "sha256": "78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AndroidBroadDiscoveryBenchmark.kt",
+          "sha256": "2114e585b7141b1deb3016fc126b12ee99f1c157773d59862a1b00169c8dcad4"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AndroidSchemaDiscoveryBenchmark.kt",
+          "sha256": "de8909c15c06cf6b481cc61e69d7812051db6ddd764b1d30ea133073dca983ce"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AndroidWrappedDiscoveryBenchmark.kt",
+          "sha256": "7f6f182eeba2f7505c73a49aa471f3a84013d553bf7aad4e73e74485229e90c1"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AnnotationNodeSerializationBenchmark.kt",
+          "sha256": "10f33c063bcb29f5b0b27af82f61a6bb44344d73779b9ab85b91e8bf1c954db9"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt",
+          "sha256": "5c2be9550c0f3e0fa408d5d56375efc4b9e3c78d96b95de1c20718f08aa4dd2b"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BroadDiscoveryMappedQueryBenchmark.kt",
+          "sha256": "67f3012ea31b51ab0ece3fdef6fea41b89c73ba0f7c2f8dabb288746681ef3b7"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/CrossGraphMappedQueryBenchmark.kt",
+          "sha256": "f958607787f7f2df72a512ea3bc3c2116efb4d3177693f37b04c69ba6e004112"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/EdgeLabelMapBenchmark.kt",
+          "sha256": "43b280d7fba8de8b611d0fcdbdac5c09de418f3be6f08020ab77ca8901076ba1"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt",
+          "sha256": "f88e0e29fdf41ec9e1ce3adc323ff7d7c333b3a15b049eae6ed112d133870126"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/FlatArrayBenchmark.kt",
+          "sha256": "18eebd2a6a1cf29ba5f744d987afaddb7ae537b910cdf6e13dd7f2022ff52024"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/GraphBenchmark.kt",
+          "sha256": "0e4af0495cc2ea4c7e07935ccbcf39633e89b8df5d754e7c85b36230bf6bbea9"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/GraphBuildPersistBenchmark.kt",
+          "sha256": "22776cfce30b42a4d52916fcfafd70007fc65c2080562205c2994ced6442181b"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/GraphEndToEndBenchmark.kt",
+          "sha256": "865bfb84f81e3755e9a9d6e370e7ba51a1f800d3217a38c318f478814c845732"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt",
+          "sha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedStringAdmissionBenchmark.kt",
+          "sha256": "2b7433571812ffb0ba5612d2a543bdf4eab47ec5a3a5e3f42b3bfa4da88c634b"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SavePhaseBreakdownBenchmark.kt",
+          "sha256": "7b7c7abe8065acc8f9d5d3e134d73dfb841634a9e215611fbe64165a2e193ee4"
+        },
+        {
+          "file": "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/WrappedDiscoveryResourceBenchmark.kt",
+          "sha256": "8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/BinaryEncoding.kt",
+          "sha256": "76d423233a2e26d90282421a94f23ee88d3dc391fd07f230be3d27f9cfd094a8"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/BranchComparisonLookup.kt",
+          "sha256": "c636ddd43a06d6cfe0adb7be27a58e0b3638320b6f197699d71cefa18cdeb043"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/CallSiteIndexPersistenceInput.kt",
+          "sha256": "5820fa51800efe82f1831e1a397ae5369cb76729b8e842a04f099a0ba30566fd"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/ClassOverviewStore.kt",
+          "sha256": "3fd57feb2c4cee1c8bab88f3646c35b77023d33b66cac22db2e840b0f49ac6ef"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt",
+          "sha256": "2fe499f043740e7b70970a242613f760bf23577aef45d6fa612161e1d4d546ad"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+          "sha256": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+          "sha256": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedMethodIndex.kt",
+          "sha256": "360ab0169c074db0fc097b8ddba58ff87360ba7351e6edf3da84d11db24d8b0c"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+          "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeOffsetIndex.kt",
+          "sha256": "b0be23221c4b6736f53cd72da6b325d40cce93042af8c63beb3831806c4d69a3"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt",
+          "sha256": "56b438a5ec4495e547903bb906c19ff31085574b250ef4f70a611ffdddd41699"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeTypeIndex.kt",
+          "sha256": "476ffd5884114dc18beb37e03cf1da9e2a5fcb64092a244564d09b688a46ab2e"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/PersistedResourceAccessor.kt",
+          "sha256": "ca459c5371c172d8e96cd7bf73994a15fe769788ae1d37274e3fc31e7f43e6f5"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt",
+          "sha256": "f6e8af6000ccd89e02ac932bf7e95c75cacce636ebcc73227e997f695f06e717"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt",
+          "sha256": "d7dd6b85cce88f9202ce1e2b4087a0e6ac07211d1e52758f4964be48f2df18a8"
+        },
+        {
+          "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt",
+          "sha256": "de36a402f528a628c63f1505a0afcc5056761c80d3a7013fd6e3e2c767d5456f"
+        }
+      ]
+    },
+    "tests": {
+      "reference": "e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694",
+      "fileCount": 168,
+      "committedAndWorkingBytesEqual": true,
+      "files": [
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/GraphiteTest.kt",
+          "sha256": "5703426c98470a3db9ba78728810693ccb64a67ca4999fd2b61f6c9599fd871c"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/analysis/BranchReachabilityAnalysisTest.kt",
+          "sha256": "391dffc55b09a25c858fc6d4a9c6d55faf1c06e3a4eb94b9b8a02cdb4e3ce4da"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/analysis/DataFlowAnalysisTest.kt",
+          "sha256": "4858ad75e5506724c14815acb5b52142b55df9316c403fec006a1a5e830860c3"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/analysis/TypeHierarchyAnalysisTest.kt",
+          "sha256": "5188a4b9a724c5b25f37e1bde0a422dfe59d50a0e816be12559406bf17278bdf"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/core/EdgeTest.kt",
+          "sha256": "64184c1a430018fbc9a99bfe1da92c160e60a1783a70e0054fc9c45b77242ca0"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/core/NodeTest.kt",
+          "sha256": "1f0005e46700a429ecad71396639abcf92082a2d3cfd53828a20945dd1c0a69e"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/core/TypeStructureTest.kt",
+          "sha256": "1a603a7e0946bcc7a87ed8bfac39a7c0addc2ca0c1c570976ffe4acd563d60f8"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/DefaultGraphTest.kt",
+          "sha256": "483ed36cbd7d7e911a20a3c083c43b4393abb0d5ff01276c7d2eaa1b22ed8b7b"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/GraphCapabilityTest.kt",
+          "sha256": "987cdbc70f78808f53ba002f491b85399f56ddcb8237c7ac654a1be16357a0fe"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/MethodPatternTest.kt",
+          "sha256": "5bcd91ed8e81952f2437ec1a9ee75ffd618496891d17a59d53a7e516f8ba33f4"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/MmapGraphBuilderTest.kt",
+          "sha256": "541b40f23378a0230eab856dce084d0e02ffe741d9a19cc6bc4789bfe42c8029"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/MmapGraphOffsetIndexTest.kt",
+          "sha256": "5555ac6894fb602eaa1b5830ae99ad217963070fff010ed43c7789b2548df481"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/MmapGraphTest.kt",
+          "sha256": "678615fe80d619f00ca2282e9bb92afaea7eb853d655104ed38ca430a1f8e821"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/input/JavaArchiveLayoutTest.kt",
+          "sha256": "09ef9df2ed6bd6561e7c2e927c72a5becb67d9171c55c5832dbb0c6dc07c851d"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/input/LoaderConfigTest.kt",
+          "sha256": "ccf0f016fb8c73778a064fe36be70f1735e4e791c1a7946622292ff7d557a2f5"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/input/ResourceAccessorTest.kt",
+          "sha256": "4c59d7eba1b779f040543d8bc9a46fee0535b86678dd726b6253450d608bb94c"
+        },
+        {
+          "file": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/query/QueryDslTest.kt",
+          "sha256": "21761c2b06941decd1bc413a060123141c890fc7db98f35648c49fe7e56d0448"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CrossGraphCypherExecutorTest.kt",
+          "sha256": "5ac2c435af2937a6573682d49f875092e6898e91114dfce8d5764b55d58a42d9"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherCompatibilityTest.kt",
+          "sha256": "5df8e7204f1ac3eba3c461b26bc519884f7e8c996d542683693116710f10089b"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherDslAdapterTest.kt",
+          "sha256": "0e7d27407df0f6a72bdc676769a57703cee625f62011e9136ea0f3fea1e3b39a"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherExecutorTest.kt",
+          "sha256": "9e9ccf5011eeae48f86ebae4145ac57060fa600f356e30fbff4ce21b081a5746"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherFunctionsTest.kt",
+          "sha256": "adafe0a1177fb7c5eb346618c5919af5ab9dee327ab28cb65f334fa8512befc9"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherLabelSemanticsTest.kt",
+          "sha256": "4930c0c25dbc26b7d11ebc9374640a87afb5aa44a5aee65edb321af86664b081"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherParametersTest.kt",
+          "sha256": "f5fcf6a950427fedcfdc6ff4cef873ba3f13709938ec3491218b65c243b3bcab"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherPerformanceTest.kt",
+          "sha256": "a945b8ad233f7ed706bc1ce4312d7f4b949be92fc4af0fa576573628d188e7f9"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherReviewRegressionTest.kt",
+          "sha256": "806dbfc961e1d3d97029450b05cdd86e1ab29c56924dd6de9663d525c3ca4048"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CypherValueSemanticsTest.kt",
+          "sha256": "790b0d29e16f3ebadbc783f614cf41e9c2941499514c58c594dfe8423fd159f8"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/DirectProjectionResultCacheTest.kt",
+          "sha256": "ccf1d190424f10df6816c74d0bb6d3707b7636d3e8544c1faeaae2a036b3e55d"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluatorTest.kt",
+          "sha256": "7039acdf6bedc9d21c5ae9b7c2eda71a1e233baf4c4956e40aa0012affd3a744"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/FilteredRelationshipMemoryTest.kt",
+          "sha256": "b34aa626f5a1ba9fcb682ad79972a40c2e867119020f9a6fe8f975be1754820b"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/MethodQueryExecutorTest.kt",
+          "sha256": "2008c1392c7c56eef44dd74f2cdbad66409318e9e6d541de0b8f5c3d08682ccd"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/NodePropertyAccessorTest.kt",
+          "sha256": "ba9b7d55c6164068c27d449df729c79909d8fd4c5f5bff0603eea1abca9882a4"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/ParsedQueryTest.kt",
+          "sha256": "94cb0d5f93eb93bb08a649cb5857e424c45fb8d0988ef5941376dd96148c8116"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/PathFinderTest.kt",
+          "sha256": "b3d2861dad2fae9db2ef383ff5323ee5f5ce590c2a52a7a4f17326c942eb16b8"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/PropertyFilterTest.kt",
+          "sha256": "af618d5f7daaf36f141a7b766802f1fddb9bfb727c49d4690e5e86300df539fd"
+        },
+        {
+          "file": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/QueryPipelineTest.kt",
+          "sha256": "f6e7cd295b13b2edb6698aa160c4710f3392c902c3dfe3525dcaf346d6eb134b"
+        },
+        {
+          "file": "graphite-explore/src/test/js/ui-state.test.js",
+          "sha256": "bb54b81d891ef9ecd72ccf6f8a940c282ab9ac72dd5b82c0143af047b6b4aea0"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/CypherCancellationContractTest.kt",
+          "sha256": "c01197ee16b47f2da36fed6e2b4e49be96c59659327b538a9ef7b85ad1bd40c1"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/CypherClientCancellationTest.kt",
+          "sha256": "c3d2f9dcbebb69c5bafda57da2e70682ead95d38351520ed6d139b637ef423f8"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/CypherQueryGuardTest.kt",
+          "sha256": "c696ca5de22b0754ded20741b872abc768fb8b1db8b2574ffcd095377738538f"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt",
+          "sha256": "c414fbf2a5a5fc856ef8a63944c3a7edfa381eb4ef2729cc371aea7b585a723c"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/HelpersTest.kt",
+          "sha256": "889ae460ae22150a669fdb13d74dc536472ef252c7cc83eee698fde552a036ac"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ServerPerformanceMetricsTest.kt",
+          "sha256": "2ac358b5a76448965c2ccc45d37fcaac6f5115d318f1c3702973d839347e642f"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/TopologyGraphTest.kt",
+          "sha256": "522f2a05e685b3be099c475b97eb81480f2b4511463138f9221df31505e1ff00"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/TopologyStoreTest.kt",
+          "sha256": "f4e36a9b778ab820f9161a6e0b3e08ceac5110a60a1e90654bd1d6c82f932430"
+        },
+        {
+          "file": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/c4/C4InferenceTest.kt",
+          "sha256": "20030722c0f1d51520d2779fc8f891dc786150eb812ab91cffef40f7bf0d9582"
+        },
+        {
+          "file": "graphite-query/src/test/kotlin/io/johnsonlee/graphite/cli/GraphiteCommandTest.kt",
+          "sha256": "34e8e285873dfeab554ab35a53b57e07cb33547301ff3c8769bb29cc82adf944"
+        },
+        {
+          "file": "graphite-query/src/test/kotlin/io/johnsonlee/graphite/cli/QueryCommandTest.kt",
+          "sha256": "e191e8a69844fc9bd48ffb065502235c1f4c70075bac299ddbecb031a2b40111"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/org/springframework/boot/context/properties/ConfigurationProperties.java",
+          "sha256": "1de61089461013add2254596a6317e5c79e4b3f8abb8babc1f1dda7e1b87c6ea"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/AbClient.java",
+          "sha256": "6afd972cf5cb0fe3edeead1978225aa89427ffc339f71ca53be3b2dade45dc99"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/AbKey.java",
+          "sha256": "003811aec17aeb03d18aefdb886d8f7e0bef6c97bc83194aa343faa188dbd545"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/AbKeyBoxed.java",
+          "sha256": "d17cc5be7087c473db37772a102c4605e6240c45d91ee2318ce4064acc917f70"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/AbTestIds.java",
+          "sha256": "ead7bccb0a68ee07580ca0646714509844532c9d5882e3041227109d5f8c4fd9"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/AbTestResolver.java",
+          "sha256": "5dafd8f47365a201269305c74beca64829a7455574836759d43a3c3d14027ece"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/BatchFeatureService.java",
+          "sha256": "c2395cea60b0e4147d128d1d007bac7e1d97785857c16c6bcf2a240a38414f97"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/ExperimentId.java",
+          "sha256": "30fb29b83033417903dd6842862ce9a42a71b63a8091714bfd164693144dae34"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/FeatureFlagService.java",
+          "sha256": "7e8fa3a1575e1f30a474cf90784f5f16ed5f83c9785f0f96fee34aa160c843d6"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/GuavaListPatterns.java",
+          "sha256": "aad2a3a908ca05149d3a5d39645466cbae9cf030c2ed89deeea7ebb45b22ed84"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/ListConstructionPatterns.java",
+          "sha256": "1f355164fe6067af134db81a30c3790a4de9cd0b8a49feef290ead5a99c261a0"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/MixedParamKey.java",
+          "sha256": "fa335aff8a88eedf45799cf4b6dd8f6714f11ffc626f43de8e6190b39c012cca"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/Platform.java",
+          "sha256": "dc8d4b622bd922323fb10033706133143ea8a18786472302fa7f3a01d9566762"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/PlatformFeatureService.java",
+          "sha256": "e0cb36384a9e3d0cd2745a12538f47f8b94d7084b2bc84236fc904c9f1c10156"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/Priority.java",
+          "sha256": "f9efae1272cc2ac6ea55319b67f47b12ce75364a26ffb9f9771ea31c2962d00f"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/TaskConfig.java",
+          "sha256": "64688053db7b4ea0bbe344f6e9fa5106b1f2b41a653fa32b78a4066f2172b58c"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/ab/TaskConfigWithId.java",
+          "sha256": "45f041adf0565b5e57e3105ed26bd9d3de9f822a5e984a542719e95549c80463"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/advanced/ArrayAdvancedExample.java",
+          "sha256": "bc8bd75a61d97ae539fcf5ea1d32321d7e3f4a5be8fd21c4cbb6d2e35cbec6ef"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/advanced/CastInstanceofExample.java",
+          "sha256": "49bcba9df243d1b3ac71c621f618a846640e56080cbe3e33ae92c83a08474824"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/advanced/EdgeCaseExample.java",
+          "sha256": "dbc8263a6ab4b1c1c5aa44895092250467a9927d37618fcc0bae6687df1914aa"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/advanced/InnerClassExample.java",
+          "sha256": "194f0fab27a29efc5764bac1f14a9caa4e51237f45b475560a607ff493e9a746"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/advanced/RecursionExample.java",
+          "sha256": "156c10b73fe63fc7e2d11d9644ab28a120870a3762172680d7beb34e9191b2ed"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/api/ApiController.java",
+          "sha256": "1e025c1c2e5bdbbdf0e6cd332971ff0542f7e76e485492d4c4aa0d0a59e5f3fc"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/arrays/ArrayService.java",
+          "sha256": "1c1e9c5f71805a852e578e29e309e6b45fc08c8305842dde5e2d361e3244e340"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/booleans/BooleanConstantService.java",
+          "sha256": "697553961add9b99e0664e436197a5f955014089432e2422d0f43231744d9f11"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/booleans/BooleanFieldEnum.java",
+          "sha256": "969029481df58a0acdb752b730bc62695164bfca06235f1a5a83525d45a7f54b"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/boxing/BoxingService.java",
+          "sha256": "fab0c7f0f3bdc11c89472bf9a886f6aac9f38660af8eeea051c116b05b2210f3"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/collections/CollectionController.java",
+          "sha256": "d00d8487fec27c58306e3a493a3540356d5f3a771e7570c253e35a706ae8c473"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/collections/MultipleListFieldsDTO.java",
+          "sha256": "a0452b98f0b22eedc3df3442d83bcd84bcb0ca1eb1f51e59e33b82198f0b726e"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controlflow/ComparisonService.java",
+          "sha256": "38ec24078497ea1c3610719f9f189f1e9e5bc3f3f1c845ca860b7d81e9877073"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controlflow/ComplexControlFlowExample.java",
+          "sha256": "a9158781f610342f1554f02b53c9c7462f4f016e0ab386b8db25cfd928cbea64"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controlflow/SwitchExample.java",
+          "sha256": "fe166551a71360d1ab70e342c8492e83535746a915a35523aeb87d89f8066300"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controlflow/TryCatchExample.java",
+          "sha256": "325a6e8bd7ca78066c287b65b27a4821f93e75450073cb62b71c70c4248cc3ef"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controller/ErrorResponse.java",
+          "sha256": "7d77cadbc42430705b5ee44daffb40a9e8abeda485ee09a631649fc925366a92"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controller/HealthController.java",
+          "sha256": "ac8ff4f429d997fae8d1bc2949661a6461de6e40c109bb1cf88eb14cd9a319b9"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controller/OrderDTO.java",
+          "sha256": "fb0f0be61d4e92fa2b5e45d751b2c1b3cde12e32d9a2d8b069ebde05fc7d8c0d"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controller/UserController.java",
+          "sha256": "7a524a35c7b2e9e1095bf29e692620f6924ecb46c37c18472ecf9f50e45b71cb"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/controller/UserDTO.java",
+          "sha256": "2f581444ae09ccec7a5a29b92bb3e9e9eeaba84eb0fed441903b060ded6f82d7"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/enums/BoxedArgEnum.java",
+          "sha256": "bb24b60ad6793ca9f2797ab480f6d93c1e6d3d137537dabeb2d83e4ae9931a4e"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/enums/ComplexEnum.java",
+          "sha256": "38a747789b9978b532deec732c58b230af8f587fbf8f0a3d2651873bbf8fd264"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/enums/DirectFieldRefEnum.java",
+          "sha256": "d959487be74ad8ba57cfdd8673b9f1a33b07c24d2b4a85f6880b5e3ac3da85d2"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/enums/EmptyEnum.java",
+          "sha256": "ad169358d1baa08ce1fb012ee3bfd7c0709c64077faaebac8a49da7fccffee7e"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/enums/EnumWithEnumRef.java",
+          "sha256": "015b0ca5b4ed4c3bfc5dc184f092a4480d2fdab9d245148b84da97827ef1d067"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/enums/EnumWithStaticBlock.java",
+          "sha256": "a8031fa1d9a30adef6ae56f2041239cfb0601422e2878da9c81418dd4638e376"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/enums/MoreBoxedEnum.java",
+          "sha256": "b9bb768751cb519f51d8b99185dd24d8371bb2efad594d0bce380f2fd508a866"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/generics/GenericFieldService.java",
+          "sha256": "021de99006da4d1f58e03d12adb1ba4aa68b3306244f4e46b3ea6eb7f11bbab0"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/generics/GenericInterfaceService.java",
+          "sha256": "62f8b0bb4d9b84247c4e3581730e866a6daa5eb6d3bfff5dfff7f1af8727486e"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/generics/GenericReturnService.java",
+          "sha256": "a9f46c08f0fbdff81472b6df5f45fa99d91fa752c946e8faed04c6e049e8d48a"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/inheritance/InheritanceService.java",
+          "sha256": "d0db018aeae24c72648a7bd6e40354e17279c86d667dedbc45f8bbe7807896a0"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/jackson/JacksonController.java",
+          "sha256": "9e282ba9d7a04a78c9ed64568d12196e37ccb355b7636ae56a60724c0956d6d5"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/jackson/JacksonDTO.java",
+          "sha256": "638cf7d0df79113e5c1b03a3853c53ca9e69dc096b436adbad5d70df687024a4"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/jackson/JacksonWriteOnlyDTO.java",
+          "sha256": "3b748a1f32b3f9044c9a568f02ca95e1a0b56f2fb23c4555ba980fc5eff29bfb"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/ArrayLoadExample.java",
+          "sha256": "fa147cfdd2c2d50098ca4f48756603d1d01894fef4d9d8aaa063376884952acf"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/CallbackExample.java",
+          "sha256": "20e93b9bc3bf08a22b0197a0355156229fdf9253544aab61bb0789b5bb38e283"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/CollectionCallbackExample.java",
+          "sha256": "2c3d6d81a022fd2ed4f3aec1c34764fcbb52869bba0ce8632efeb75351e366b4"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/ConditionalCallbackExample.java",
+          "sha256": "0f5378e21b0b45e06aba4d8c06dd69223cac0c84d1201e632795b77a587e0dbe"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/ConstructorRefExample.java",
+          "sha256": "44675213e31aaa6158ca2543298df04334b05dff6f008bf40d809788985b8fe5"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/FactoryExample.java",
+          "sha256": "3443ae376b67331209acc1cea79496150d67e6b28c093a6b8afac6039f7ca087"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/FieldCallbackExample.java",
+          "sha256": "792ea0d7ecdceaead7f4a80973f8727d093748893f0680bde47470ce86311923"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/FunctionalInterfaceExample.java",
+          "sha256": "593ee2e42b034c83111f455354309fc01a5d44d0459e26ae168da9660f035638"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/HigherOrderExample.java",
+          "sha256": "43063f7b44893e9daec452bd73bb798779b248210acb27637eb396fcf73b1942"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/LambdaExample.java",
+          "sha256": "34172ff4f171a4a271ccb304ae1be4e8cfbd7e25f57d444741cd08ba76330b45"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/StreamChainExample.java",
+          "sha256": "eaae957d71dc9506c6edbfef49652c589bdd88810b1f8c4411d36a122d39fadb"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lambda/StringConcatExample.java",
+          "sha256": "7343b99178dce7d0505d679581b65d73fe11fa20642e633886d1b228ef913b1b"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/lombok/LombokService.java",
+          "sha256": "130a2b23f9009baacface5ee4d5fb3600c91b0db84942428a091994fc6be25a8"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/nested/DeepNestedTypeService.java",
+          "sha256": "f1cd41338b71f5af2ef7fb0386c75be87a82c6b77f4ca5a3a2b7a95993748424"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/nested/NestedCallService.java",
+          "sha256": "5d1da577b2d91b9524672f078e5c079cf6607dddb4b325ffc79799d71096bb56"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/nested/NestedTypeService.java",
+          "sha256": "7f927c4dfa937f1a78b324732a79408df06ab4e688c548afe8d076b85d49617b"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resolution/MethodResolutionExample.java",
+          "sha256": "7d6953d0ea65a667eb475194ebdf1fd14ddd3382e19565f643dd45a87fc60b1d"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resolution/OverloadExample.java",
+          "sha256": "b4be179dc2087c1551fdea564fff4a3592c1c9d928576e550d20ab5b398ff8b7"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/ClassOnlyControl.java",
+          "sha256": "5bcd05bd7dc0f5aa6baaa6dc11a7d6ed37450b096f6a1283d9c5671a7570bb1a"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/ConfigurationPropertiesConfig.java",
+          "sha256": "ab038187b1e80421a182048c7083f43556dfb4253039224bc17a7707592c565a"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/KoreanOnlyControl.java",
+          "sha256": "fc6b6ebd66c7f05dbfd1abbeab80656ee2f66180e2f8bf40e0b1c3e38ed61779"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/MessagesListBundle.java",
+          "sha256": "c37882e4819e33f57f6b94d368b38d6ff70ef6f42fe0573b443445ddfedac95f"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/MessagesListBundle_ko_KR.java",
+          "sha256": "049550d31133a71be47daa1c74c400537ab4cbb19308297a6e7303413e185818"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/MessagesProvider.java",
+          "sha256": "641768fcb7766c52002a9a8e02f278c7e694b156f986055f65116d04efda5ba4"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/ProviderMessagesBundle.java",
+          "sha256": "90111ebb0453bca881bba2ecc1f67fad17f82c9fa69417602e64787913438171"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/ProviderMessagesBundle_ko_KR.java",
+          "sha256": "cb0c59e6d570089506b6d80d7c14697f75aaf574b663943a5fa2d3cb83791592"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/ResourceConfig.java",
+          "sha256": "6b4e6f033e384664e5404cb4330141fdda4f509dae4d8eebbf80b4c074d32fe2"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/resources/SpringResourceConfig.java",
+          "sha256": "c4d2289e2a6e8103182750d36941b3a8c1da33dc66b6780f8cb28f9b6c97048c"
+        },
+        {
+          "file": "graphite-sootup/src/test/java/sample/simple/SimpleService.java",
+          "sha256": "a12b88d15df481cbde44f35bf5d4502950e071c73474017f8f1ecd4c9529244c"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/AdvancedBytecodeTest.kt",
+          "sha256": "8353565b254a065d3b86e4351efffbdf110d3c48a96494a0e5b91fd7c5b3a785"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/AdvancedReturnTypeAnalysisTest.kt",
+          "sha256": "da34f3fbd9ff69c0864209998b123dc98ec55a517e8871be179f1791da1af620"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/ArchiveResourceAccessorTest.kt",
+          "sha256": "35f2ef0289a3ffbc8c9f5196d4354d64aac7ced06559d77eb013f5e3584079e8"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/BytecodeSignatureReaderTest.kt",
+          "sha256": "72775f34e4c116e5c720849f441718e3c337e8f1630044385b413dea666e9e04"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/CollectionConstantTrackingTest.kt",
+          "sha256": "7887e6ef4e37b065396a64813a86886ca07f2634840e75478742cf94cd7470d0"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/ControlFlowTest.kt",
+          "sha256": "d46d3ba087f837a3f844f638fbe65c0978781bcce330f82e222a52318af83f13"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/CrossMethodFieldTrackingTest.kt",
+          "sha256": "91b99947068818335fdd2dbe3d17ea4be19c8cf89c4fd17216ac1b1be6463e98"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/EndpointExtractionTest.kt",
+          "sha256": "d773054503e130bdbc2bac1b8521def673473403449163b403284b8a3b16c5e8"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/EnumValueReferenceTest.kt",
+          "sha256": "32a62f850eca9d6cd0239a1483ec9be251d1f7938641b67bd9fa3a9890154ade"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/FeatureFlagAnalysisTest.kt",
+          "sha256": "f17f9af48683af2fd78b7f94033ff3682b1b2f6b49fe774aaf42b57b4892b0b7"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/GenericSignatureParserTest.kt",
+          "sha256": "9ca425965b007581972856e9a0cbd5f8f9c9624d995ec58b619f69ed94574722"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/GenericSignatureTest.kt",
+          "sha256": "30f49ec511a6c414302179a2c5f627410b0b76593c17ceeaa467eb12ef525ded"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/GraphParityRegressionTest.kt",
+          "sha256": "ef843cc77d422caa32ceaf203e4870f0d6fdd0d4093a5158d984f4ce795ee506"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/GraphiteContextTest.kt",
+          "sha256": "204b0cd936244c98d2fc50c79c47151863aaf37923d546882f42a0d6f088c98e"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/JacksonAnnotationTest.kt",
+          "sha256": "47419bd606e84bcedbc554e17c9daf850570ed356f583be02318ecfa308f1914"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/JavaProjectLoaderTest.kt",
+          "sha256": "ee614f515448cb1b62ad681d849eeae63213c7b0e0c44048e61d955279cc8270"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/LambdaAnalysisTest.kt",
+          "sha256": "f93478d8b598d1627c6380f9b114ba5746210e1e8571caf0ee3a96cb003e35b2"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/ListConstructionPatternsTest.kt",
+          "sha256": "23f7f9d96707c0431519f2eb3730dbf3cec3b58b64be3349e728955869b29370"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/MemberAnnotationTest.kt",
+          "sha256": "ad9b59d46a838b279c922afa454a312492adf5ca77e50ac0e34205fdf45ea3bd"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/MemoryBenchmarkTest.kt",
+          "sha256": "8228df65ee1f58b3140b2f7e37bdb6100b55601b2f239e81894b1e9ecbf5d9a4"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/MethodResolutionTest.kt",
+          "sha256": "50fae6aa4f3779a1fd9fde06a2d442c74fd9b431416593112f5c3f9249fe8d80"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/MultipleListFieldsTest.kt",
+          "sha256": "d4bac0f008a4bc731e7d60b254233fc8c7aae239840d3b54f44a95af67b6480a"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/NestedTypeAnalysisTest.kt",
+          "sha256": "f2d5827400f800074e1a9d07d0c0f8733e064760f1795fee23cedfb59bd95bd1"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/PropagationPathTrackingTest.kt",
+          "sha256": "37b72e462d1e3b462d58c3a07d65d0c1d72002ad2e12449a2637ff533e614ab3"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/ResourceConfigLinkingTest.kt",
+          "sha256": "31cda3217972384ba23b09e2874343f8643398176493fcac77018a897f0e2684"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/ReturnTypeAnalysisTest.kt",
+          "sha256": "674cff0c29b0fd474059a5ca3852ea59839b8e72924c68a9691f7644fbd7e148"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapterCoverageRegressionTest.kt",
+          "sha256": "be16b1f7d089661d7df6b4c12fe94203c5ae6ca7c3857e11672278004702272e"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapterInternalCoverageTest.kt",
+          "sha256": "80f56282172b75c20e0af52b09621f7b1c97d01f5b7caa57e1e07e173e7a110a"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapterTest.kt",
+          "sha256": "6bac793a015267a740ce51233ca98318520129d6fa3caac4f3ffe0bd7509e4ec"
+        },
+        {
+          "file": "graphite-sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/StaticFieldIndirectReferenceTest.kt",
+          "sha256": "3c6ee41bc98402a8ca6f03aed0f573e9d232130a1cbb12962d9632b8cb05787a"
+        },
+        {
+          "file": "graphite-sootup/src/test/resources/META-INF/services/java.util.spi.ResourceBundleProvider",
+          "sha256": "0c6b9b42f878daafe0953fb49b7f01830a192991fb13c66c4dc5ca7194c40516"
+        },
+        {
+          "file": "graphite-sootup/src/test/resources/graph-parity/sample-corpus-baseline.tsv",
+          "sha256": "2c7b5b15c5d387af13004e6b63b6244abb4b69b2a680aa6ec1b3738e7aaad088"
+        },
+        {
+          "file": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/AndroidSdkIntegrationTest.kt",
+          "sha256": "f7633a89d8a72d2dcbb821578b3b4df487128410b6158b56e855f0fe3b8ae90e"
+        },
+        {
+          "file": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/GraphStoreTest.kt",
+          "sha256": "b87aa17f475565fc33fca3f3ebc8a873bdc66c2aa5cea7cc24104655d52e1f3c"
+        },
+        {
+          "file": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt",
+          "sha256": "97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775"
+        },
+        {
+          "file": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/MappedCypherBudgetTest.kt",
+          "sha256": "a3d154945aaaf13bd7dcf4e28f66d20a6ae61f8678b3201afc3244a6d51e7ab2"
+        },
+        {
+          "file": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/MethodQueryPersistenceTest.kt",
+          "sha256": "35a118fb0ff83a6b238dbba46ca8ef6538e92152e3c5afc6f1ea3f51f24a58ec"
+        },
+        {
+          "file": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/ParallelDistinctDisjunctionTest.kt",
+          "sha256": "22f542ebc4021b072b7e40fe58de42fc3ff9698559ba105a01904547c743817b"
+        },
+        {
+          "file": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifestTest.kt",
+          "sha256": "46c741738b43a7f6c6b2d0bdbd2a3886fe7e6bf2113737d62fc0c76e59173cc7"
+        }
+      ]
+    }
+  },
+  "restoredFilesComparedWithCandidate": [
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+    "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/GraphStoreTest.kt",
+    "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/ParallelDistinctDisjunctionTest.kt"
+  ],
+  "parentToRevertChangedFiles": [
+    "docs/profiling/attempt137/ci/terminal-copy-receipt.json",
+    "docs/profiling/attempt137/ci/terminal-receipt.json",
+    "docs/profiling/attempt137/revert-ci/README.md",
+    "docs/profiling/attempt137/revert-ci/ci-audit.json",
+    "docs/profiling/attempt137/revert-ci/ci-audit.md",
+    "docs/profiling/attempt137/revert-ci/copy-receipt.json",
+    "docs/profiling/attempt137/revert-ci/current-benchmark.json",
+    "docs/profiling/attempt137/revert-ci/current-unit.json",
+    "docs/profiling/attempt137/revert-ci/global-wide/global-wide-report.md",
+    "docs/profiling/attempt137/revert-ci/global-wide/global-wide-status.json",
+    "docs/profiling/attempt137/revert-ci/global-wide/optimization-references.json",
+    "docs/profiling/attempt137/revert-ci/method-confirmed-failures.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/base-method-compatibility-17-scan.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/candidate-method-compatibility-17-scan.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-cpu-initial-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-cpu-initial-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-cpu-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-cpu-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-initial-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-initial-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-initial-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-initial-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-wall-initial-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-wall-initial-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-wall-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-wall-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-shard-17-scan-report.md",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-shard-17-scan-status.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-confirmation-base-17-scan.json",
+    "docs/profiling/attempt137/revert-ci/method17-scan/method-confirmation-candidate-17-scan.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/base-method-compatibility-36-scan.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/candidate-method-compatibility-36-scan.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-cpu-initial-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-cpu-initial-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-cpu-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-cpu-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-initial-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-initial-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-initial-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-initial-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-wall-initial-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-wall-initial-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-wall-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-wall-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-shard-36-scan-report.md",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-shard-36-scan-status.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-confirmation-base-36-scan.json",
+    "docs/profiling/attempt137/revert-ci/method36-scan/method-confirmation-candidate-36-scan.json",
+    "docs/profiling/attempt137/revert-ci/recompute-audit.py",
+    "docs/profiling/attempt137/revert-ci/routing/evidence-manifest.json",
+    "docs/profiling/attempt137/revert-ci/routing/fixture-reproducibility.json",
+    "docs/profiling/attempt137/revert-ci/routing/graph-routing-report.md",
+    "docs/profiling/attempt137/revert-ci/routing/graph-routing-status.json",
+    "docs/profiling/attempt137/revert-ci/routing/provenance.json",
+    "docs/profiling/attempt137/revert-ci/run-33988848638.json",
+    "docs/profiling/attempt137/revert-ci/run-33988848640.json",
+    "docs/profiling/attempt138/build-command.json",
+    "docs/profiling/attempt138/build-receipt.json",
+    "docs/profiling/attempt138/build.log",
+    "docs/profiling/attempt138/combined-review.json",
+    "docs/profiling/attempt138/combined-review.md",
+    "docs/profiling/attempt138/decision.json",
+    "docs/profiling/attempt138/independent-build-audit.json",
+    "docs/profiling/attempt138/independent-build-audit.md",
+    "docs/profiling/attempt138/independent-build-audit.py",
+    "docs/profiling/attempt138/independent-old34-audit.json",
+    "docs/profiling/attempt138/independent-old34-audit.md",
+    "docs/profiling/attempt138/independent-old34-audit.py",
+    "docs/profiling/attempt138/independent-v3-audit.json",
+    "docs/profiling/attempt138/independent-v3-audit.md",
+    "docs/profiling/attempt138/independent-v3-audit.py",
+    "docs/profiling/attempt138/measurement-plan.json",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-1-command.json",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-1.json",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-1.tsv",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-2-command.json",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-2.json",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-2.tsv",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-3-command.json",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-3.json",
+    "docs/profiling/attempt138/old34-pairs/base-global-wide-3.tsv",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-1-command.json",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-1.json",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-1.tsv",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-2-command.json",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-2.json",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-2.tsv",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-3-command.json",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-3.json",
+    "docs/profiling/attempt138/old34-pairs/candidate-global-wide-3.tsv",
+    "docs/profiling/attempt138/old34-pairs/comparison-command.json",
+    "docs/profiling/attempt138/old34-pairs/global-wide-report.md",
+    "docs/profiling/attempt138/old34-pairs/global-wide-status.json",
+    "docs/profiling/attempt138/old34-pairs/local-progress.json",
+    "docs/profiling/attempt138/old34-pairs/oracle.correctness",
+    "docs/profiling/attempt138/prebuild-source-receipt.json",
+    "docs/profiling/attempt138/revert-source-receipt.json",
+    "docs/profiling/attempt138/run-old34-pairs.py",
+    "docs/profiling/attempt138/run-v3-pairs.py",
+    "docs/profiling/attempt138/selected-projection-implementation.json",
+    "docs/profiling/attempt138/selected-projection-implementation.md",
+    "docs/profiling/attempt138/v3-control-command.json",
+    "docs/profiling/attempt138/v3-control-summary.json",
+    "docs/profiling/attempt138/v3-pairs-receipt.json",
+    "docs/profiling/attempt138/v3-pairs.log",
+    "docs/profiling/attempt138/v3-pairs/README.md",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-base/fork-001-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-base/fork-001-reference-check.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-base/fork-001.tsv",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-base/run.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-base/runner-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-candidate/fork-001-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-candidate/fork-001-reference-check.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-candidate/fork-001.tsv",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-candidate/run.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-1-candidate/runner-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-base/fork-001-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-base/fork-001-reference-check.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-base/fork-001.tsv",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-base/run.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-base/runner-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-candidate/fork-001-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-candidate/fork-001-reference-check.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-candidate/fork-001.tsv",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-candidate/run.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-2-candidate/runner-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-base/fork-001-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-base/fork-001-reference-check.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-base/fork-001.tsv",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-base/run.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-base/runner-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-candidate/fork-001-command.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-candidate/fork-001-reference-check.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-candidate/fork-001.tsv",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-candidate/run.json",
+    "docs/profiling/attempt138/v3-pairs/v3-pair-3-candidate/runner-command.json",
+    "docs/profiling/distinct-projection-work/README.md",
+    "docs/profiling/distinct-projection-work/phase-application/DistinctPhaseDetails.java",
+    "docs/profiling/distinct-projection-work/phase-application/README.md",
+    "docs/profiling/distinct-projection-work/phase-application/application-summary.json",
+    "docs/profiling/distinct-projection-work/phase-application/audit-phase-application.py",
+    "docs/profiling/distinct-projection-work/phase-application/compile-command.json",
+    "docs/profiling/distinct-projection-work/phase-application/phase-1-command.json",
+    "docs/profiling/distinct-projection-work/phase-application/phase-2-command.json",
+    "docs/profiling/distinct-projection-work/phase-application/phase-3-command.json",
+    "docs/profiling/distinct-projection-work/phase-application/phase-application-audit.json",
+    "docs/profiling/distinct-projection-work/phase-application/phase-application-audit.md",
+    "docs/profiling/distinct-projection-work/phase-application/receipt.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/README.md",
+    "docs/profiling/distinct-projection-work/rejected133-residual/artifact-verification.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/build-command.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/build-diagnostic.py",
+    "docs/profiling/distinct-projection-work/rejected133-residual/build-receipt.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/build.log",
+    "docs/profiling/distinct-projection-work/rejected133-residual/capture-residual.py",
+    "docs/profiling/distinct-projection-work/rejected133-residual/copy-receipt.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/java-version.txt",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/audit-residual.py",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/base-analysis-0-command.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/base-analysis-1-command.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/base-command.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/base.tsv",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/completed.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/input-receipt.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/rejected133-analysis-0-command.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/rejected133-analysis-1-command.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/rejected133-command.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/rejected133.tsv",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/residual-audit.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/residual-audit.md",
+    "docs/profiling/distinct-projection-work/rejected133-residual/profiles/residual-summary.json",
+    "docs/profiling/distinct-projection-work/rejected133-residual/source-receipt.json",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/audit-census.py",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/census.json",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/census.py",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/control-command.json",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/control-rows.jsonl",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/control.tsv",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/correctness-receipt.json",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/independent-census-audit.json",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/independent-census-audit.md",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/input-check-receipt.json",
+    "docs/profiling/distinct-projection-work/selected-tuple-census/workload.tsv",
+    "docs/profiling/distinct-projection-work/source-work-audit.json",
+    "docs/profiling/distinct-projection-work/source-work-audit.md",
+    "docs/profiling/main-four-or-summary.zh.md",
+    "docs/profiling/main-wide-query-findings.md",
+    "docs/wrapped-case-insensitive-query-optimization-attempts.md"
+  ],
+  "parentToRevertDocsOnly": true,
+  "retainedPureFourOrTests": [
+    "four keyword OR keeps every exclusive term and deduplicates overlap in stored order",
+    "selected tuples filter the OR result without changing its physical order",
+    "raw and lowercase predicates do not share a match state for the same string",
+    "different lowercase terms keep separate match states and preserve a complete miss"
+  ],
+  "retainedPureFourOrSourceSha256": "22f542ebc4021b072b7e40fe58de42fc3ff9698559ba105a01904547c743817b",
+  "existingParentTestDifferencesFromFrozenMain": [
+    "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/CrossGraphCypherExecutorTest.kt",
+    "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/ParallelDistinctDisjunctionTest.kt"
+  ],
+  "trackedWorkingDifferences": [],
+  "untrackedAtAudit": [
+    "1.853B",
+    "12,442",
+    "12,743",
+    "1928.2",
+    "6.280B",
+    "7,797",
+    "8,003",
+    "993,095,680"
+  ],
+  "receiptSha256": "ef28e4c90bde9e9c84722d91320c5825a835660a43a9b32651cbdc2377db14c4",
+  "limitations": [
+    "Only file bytes and committed/working state were checked; no tests, builds, Java or performance runs were started.",
+    "All test files match e6c, not all match frozen main: existing parent correctness tests are retained.",
+    "Recorded untracked files are outside the committed revert diff; this audit does not alter or delete them.",
+    "Revert source equality does not waive failed performance or assert new CI success."
+  ]
+}

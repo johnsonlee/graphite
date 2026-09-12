@@ -1,0 +1,8 @@
+[
+  "/opt/homebrew/opt/openjdk@17/bin/javap",
+  "-classpath",
+  "/private/tmp/graphite-attempt138.7ihszrob/candidate-jmh.jar",
+  "-c",
+  "-p",
+  "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator"
+]

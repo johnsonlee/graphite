@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "files": [
+    {
+      "path": "independent-census-audit.py",
+      "bytes": 13753,
+      "sha256": "7f654b7c5b5cac37513a323119d12ffa04ab99db9517635fce65fb9fb13c2781"
+    },
+    {
+      "path": "independent-census-audit.json",
+      "bytes": 513894,
+      "sha256": "05be67f26c0749ccd48c017deb3936fc1c7fd1e03eb7d0e493f3cbaca7f9190f"
+    },
+    {
+      "path": "independent-census-audit.md",
+      "bytes": 3457,
+      "sha256": "5dde003c249f014ca1db5512c81d1373cdb9d66ec7047a841f65c395ae40f7c4"
+    }
+  ],
+  "sourceDomainCorrection": "property support != union matching IDs != whole S address space",
+  "actualAnchorReplay": "root independently owns the anchor replay; not claimed by this audit",
+  "javaBuildExportQueryMeasurementExecuted": false
+}

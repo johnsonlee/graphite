@@ -1,0 +1,35 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-main-distinct-concurrency-audit/README.md",
+      "destination": "docs/profiling/distinct-projection-work/graph-call-overlap/README.md",
+      "sha256": "55e872e6a2a07104522ab55c4e978569769f4b2656aefc823f68e96ab7a51991"
+    },
+    {
+      "source": "/private/tmp/graphite-main-distinct-concurrency-audit/summary.json",
+      "destination": "docs/profiling/distinct-projection-work/graph-call-overlap/summary.json",
+      "sha256": "feb860c68be24bcd4ca15b9cf2401acee21d3e9411a8ec9f7ca4d935a63534c6"
+    },
+    {
+      "source": "/private/tmp/graphite-main-distinct-concurrency-audit/analyze.py",
+      "destination": "docs/profiling/distinct-projection-work/graph-call-overlap/analyze.py",
+      "sha256": "ea397f183197a1efea42bdd6650f01e548dbd6d32e379781079b175a32459e4c"
+    },
+    {
+      "source": "/private/tmp/graphite-main-distinct-concurrency-audit/independent-audit.py",
+      "destination": "docs/profiling/distinct-projection-work/graph-call-overlap/independent-audit.py",
+      "sha256": "fd8d14ff1a7eb6f48c7f893db7830b6ecbead6af2468d43d314d727810cba9c5"
+    },
+    {
+      "source": "/private/tmp/graphite-main-distinct-concurrency-audit/independent-audit.json",
+      "destination": "docs/profiling/distinct-projection-work/graph-call-overlap/independent-audit.json",
+      "sha256": "8b49a861683405988b5378d68ec40354848d3014f523a2a79e40408b03724b81"
+    },
+    {
+      "source": "/private/tmp/graphite-main-distinct-concurrency-audit/independent-audit.md",
+      "destination": "docs/profiling/distinct-projection-work/graph-call-overlap/independent-audit.md",
+      "sha256": "e26accc97b137cf7d61383e9c30a5f8defc763e7c8b0f3f1e0065a0420d3b25f"
+    }
+  ],
+  "productionChanges": false
+}

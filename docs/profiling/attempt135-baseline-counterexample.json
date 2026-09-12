@@ -1,0 +1,126 @@
+{
+  "clone": "/private/tmp/graphite-compound-baseline-ag4x4ryq",
+  "base": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "trackedDiffEmpty": true,
+  "productionFilesByteVerified": 130,
+  "testPath": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/SelectedProjectionFeasibilityTest.kt",
+  "testSha256": "a968b6a98092a2afa6220798da93dd6421ac53d7dee4b7bbb33ebe3fda6e89f9",
+  "rootTestEqual": true,
+  "command": [
+    "./gradlew",
+    "--no-daemon",
+    ":webgraph:test",
+    "--tests",
+    "*SelectedProjectionFeasibilityTest"
+  ],
+  "environment": {
+    "JAVA_HOME": "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home",
+    "JAVA_TOOL_OPTIONS": "-XX:ActiveProcessorCount=4"
+  },
+  "exitCode": 1,
+  "tests": 9,
+  "failures": 4,
+  "errors": 0,
+  "results": [
+    {
+      "name": "even an empty selection validates the persisted index before an early return",
+      "passed": false,
+      "failure": "io.johnsonlee.graphite.cypher.CypherBudgetExceededException: Cypher work budget exceeded after 0 graph work units; add a selective label/filter or use a metadata-backed query",
+      "stackHead": [
+        "io.johnsonlee.graphite.cypher.CypherBudgetExceededException: Cypher work budget exceeded after 0 graph work units; add a selective label/filter or use a metadata-backed query",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest$WorkProbe.consume(SelectedProjectionFeasibilityTest.kt:264)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.consumeGraphWork(MappedWebGraphBackedGraph.kt:3100)",
+        "\tat app//io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.flush(MappedWebGraphBackedGraph.kt:3123)",
+        "\tat app//io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume(MappedWebGraphBackedGraph.kt:3116)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(MappedCallSiteStringIndexView.kt:228)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(MappedCallSiteStringIndexView.kt:78)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:400)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.project(SelectedProjectionFeasibilityTest.kt:192)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.project$default(SelectedProjectionFeasibilityTest.kt:187)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.even_an_empty_selection_validates_the_persisted_index_before_an_early_return$lambda$13(SelectedProjectionFeasibilityTest.kt:125)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.withMappedGraph(SelectedProjectionFeasibilityTest.kt:244)"
+      ]
+    },
+    {
+      "name": "selected null columns remain null while missing physical values cannot match",
+      "passed": true
+    },
+    {
+      "name": "unsupported exact predicate discovery retains selected tuple fallback filtering",
+      "passed": true
+    },
+    {
+      "name": "no selection retains predicate discovery and the first distinct rows",
+      "passed": true
+    },
+    {
+      "name": "empty selection does no predicate discovery after the mapped view is validated",
+      "passed": false,
+      "failure": "io.johnsonlee.graphite.cypher.CypherBudgetExceededException: Cypher work budget exceeded after 0 graph work units; add a selective label/filter or use a metadata-backed query",
+      "stackHead": [
+        "io.johnsonlee.graphite.cypher.CypherBudgetExceededException: Cypher work budget exceeded after 0 graph work units; add a selective label/filter or use a metadata-backed query",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest$WorkProbe.consume(SelectedProjectionFeasibilityTest.kt:264)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.consumeGraphWork(MappedWebGraphBackedGraph.kt:3100)",
+        "\tat app//io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.flush(MappedWebGraphBackedGraph.kt:3123)",
+        "\tat app//io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume(MappedWebGraphBackedGraph.kt:3116)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(MappedCallSiteStringIndexView.kt:228)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(MappedCallSiteStringIndexView.kt:78)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:400)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.project(SelectedProjectionFeasibilityTest.kt:192)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.project$default(SelectedProjectionFeasibilityTest.kt:187)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.empty_selection_does_no_predicate_discovery_after_the_mapped_view_is_validated$lambda$5(SelectedProjectionFeasibilityTest.kt:88)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.withMappedGraph(SelectedProjectionFeasibilityTest.kt:244)"
+      ]
+    },
+    {
+      "name": "missing corresponding property rejects selected tuples before broad predicate work",
+      "passed": false,
+      "failure": "io.johnsonlee.graphite.cypher.CypherBudgetExceededException: Cypher work budget exceeded after 64 graph work units; add a selective label/filter or use a metadata-backed query",
+      "stackHead": [
+        "io.johnsonlee.graphite.cypher.CypherBudgetExceededException: Cypher work budget exceeded after 64 graph work units; add a selective label/filter or use a metadata-backed query",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest$WorkProbe.consume(SelectedProjectionFeasibilityTest.kt:264)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.consumeGraphWork(MappedWebGraphBackedGraph.kt:3100)",
+        "\tat app//io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.flush(MappedWebGraphBackedGraph.kt:3123)",
+        "\tat app//io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume(MappedWebGraphBackedGraph.kt:3116)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(MappedCallSiteStringIndexView.kt:228)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(MappedCallSiteStringIndexView.kt:78)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:400)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.project(SelectedProjectionFeasibilityTest.kt:192)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.project$default(SelectedProjectionFeasibilityTest.kt:187)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.missing_corresponding_property_rejects_selected_tuples_before_broad_predicate_work$lambda$0(SelectedProjectionFeasibilityTest.kt:35)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.withMappedGraph(SelectedProjectionFeasibilityTest.kt:244)"
+      ]
+    },
+    {
+      "name": "small graphs and unbounded limits retain fallback results and predicate filtering",
+      "passed": true
+    },
+    {
+      "name": "feasibility work still propagates budget exhaustion and cancellation",
+      "passed": false,
+      "failure": "io.johnsonlee.graphite.cypher.CypherBudgetExceededException: Cypher work budget exceeded after 64 graph work units; add a selective label/filter or use a metadata-backed query",
+      "stackHead": [
+        "io.johnsonlee.graphite.cypher.CypherBudgetExceededException: Cypher work budget exceeded after 64 graph work units; add a selective label/filter or use a metadata-backed query",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest$WorkProbe.consume(SelectedProjectionFeasibilityTest.kt:264)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.consumeGraphWork(MappedWebGraphBackedGraph.kt:3100)",
+        "\tat app//io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.flush(MappedWebGraphBackedGraph.kt:3123)",
+        "\tat app//io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume(MappedWebGraphBackedGraph.kt:3116)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(MappedCallSiteStringIndexView.kt:228)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(MappedCallSiteStringIndexView.kt:78)",
+        "\tat app//io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:400)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.project(SelectedProjectionFeasibilityTest.kt:192)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.project$default(SelectedProjectionFeasibilityTest.kt:187)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.feasibility_work_still_propagates_budget_exhaustion_and_cancellation$lambda$9(SelectedProjectionFeasibilityTest.kt:110)",
+        "\tat app//io.johnsonlee.graphite.webgraph.SelectedProjectionFeasibilityTest.withMappedGraph(SelectedProjectionFeasibilityTest.kt:244)"
+      ]
+    },
+    {
+      "name": "independent property membership does not prove that a selected tuple exists",
+      "passed": true
+    }
+  ],
+  "xmlSha256": "30ba39991b61baad65f3f9631b85ca3848e390079395babe6bc550d9be4b75df",
+  "logSha256": "14b57e995e69c829c1c7ee7486a36bc23b34102818f2ecb3eccedcb0d8c1dc62",
+  "trackedDiffAfter": "",
+  "interpretation": "Five compatibility/result tests pass. Four fail at existing eager exactMatchingStringIds work, exceeding zero or 64-unit budget. These are deterministic mechanism counterexamples, not performance measurements."
+}

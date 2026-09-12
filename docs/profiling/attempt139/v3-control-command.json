@@ -1,0 +1,18 @@
+[
+  "python3",
+  "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/run.py",
+  "--java",
+  "/opt/homebrew/opt/openjdk@17/bin/java",
+  "--trusted-jar",
+  "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "--jar",
+  "/private/tmp/graphite-attempt139._p0bc7zf/candidate-jmh.jar",
+  "--manifest",
+  "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+  "--catalog-dir",
+  "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3",
+  "--output",
+  "/private/tmp/graphite-attempt139._p0bc7zf/v3-control",
+  "--forks",
+  "1"
+]

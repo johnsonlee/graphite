@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<style>
+	body {margin: 0; padding: 10px 10px 22px 10px; background-color: #ffffff}
+	h1 {margin: 5px 0 0 0; font-size: 18px; font-weight: normal; text-align: center}
+	header {margin: -22px 0 6px 0}
+	button {border: none; background: none; width: 24px; height: 24px; cursor: pointer; margin: 0; padding: 2px 0 0 0; text-align: center}
+	button:hover {background-color: #ffffe0; outline: 1px solid #ffc000; border-radius: 4px}
+	dl {margin: 0 4px 8px 4px}
+	dt {margin: 1px; padding: 2px 0; font-weight: bold}
+	dd {margin: 1px; padding: 2px 4px}
+	dl.frames {float: left; width: 160px}
+	dl.hotkeys {clear: left; border-top: 1px solid #666666}
+	dl.hotkeys > dt {float: left; clear: left; width: 158px; margin-right: 4px; text-align: right}
+	dl.hotkeys > dd {float: left}
+	p {position: fixed; bottom: 0; margin: 0; padding: 2px 3px 2px 3px; outline: 1px solid #ffc000; display: none; overflow: hidden; white-space: nowrap; background-color: #ffffe0}
+	a {color: #0366d6}
+	#legend {padding: 4px; border-radius: 4px; background: #ffffe0; border: 1px solid #666666; display: none}
+	#hl {position: absolute; display: none; overflow: hidden; white-space: nowrap; pointer-events: none; background-color: #ffffe0; outline: 1px solid #ffc000; height: 15px}
+	#hl span {padding: 0 3px 0 3px}
+	#status {left: 0}
+	#match {right: 0}
+	#reset {cursor: pointer}
+	#canvas {width: 100%; height: 2288px}
+</style>
+</head>
+<body style='font: 12px Verdana, sans-serif'>
+<h1>Frozen main: multi-keyword mixed DISTINCT sampled allocation bytes</h1>
+<header style='float: left'>
+<button id='inverted' title='Invert (I)'><svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 392 392'><path d='M196,36 L316,156 L76,156 Z' fill='#004d80'/><path d='M196,356 L76,236 L316,236 Z' fill='#004d80'/><path d='M196,54 L298,156 L94,156 Z' fill='#ff8d40'/><path d='M196,338 L94,236 L298,236 Z' fill='#40b2ff'/><rect x='94' y='188' width='204' height='16' fill='#004d80'/></svg></button>
+<button id='search' title='Search (Ctrl+F)'><svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='-39.3 -39.3 471.1 471.1'><circle cx='147.7' cy='147.8' r='125.9' fill='#fff'/><path fill='#40b2ff' d='M370.7 348.7c0 1.4-1.6 6.3-7.2 12.3-6.2 6.7-12.5 9.8-14.7 9.8h-.1c-19.5-1.6-62-43.2-109.6-106.8 9.2-7.2 17.5-15.5 24.6-24.6 63.6 47.6 105.2 90.2 106.8 109.6z'/><path fill='#ff8d40' d='M208.7 86.9l-14.5 14.5c-17.1 17.1-46.5 5-46.5-19.3V61.6c-49 0-88.4 40.8-86.1 90.2 2 43.9 38.1 80 82 82 49.5 2.3 90.2-37.2 90.2-86.1 0-23.7-9.6-45.2-25.1-60.8z'/><path fill='#004d80' d='M276.1 221c12.3-21.5 19.5-46.5 19.5-73.2C295.6 66.3 229.2.1 147.7.1S0 66.3 0 147.9s66.3 147.7 147.7 147.7c26.6 0 51.5-7.1 73.2-19.5 39.8 53.3 91.9 113.5 126.1 116.4 12.3.5 22.9-6.7 32.8-16.7 5.2-5.6 13.8-16.9 12.8-28.8-2.9-34.1-63.1-86.2-116.4-126.1zM147.7 273.8c-69.5 0-125.9-56.5-125.9-125.9S78.3 21.9 147.7 21.9 273.6 78.4 273.6 147.8s-56.4 126-125.9 126zm215.9 87.2c-6.2 6.7-12.4 9.8-14.7 9.8h-.1c-19.5-1.6-62-43.2-109.6-106.8 9.2-7.2 17.5-15.5 24.6-24.6 63.6 47.6 105.2 90.2 106.8 109.6 0 1.4-1.6 6.3-7.2 12.4z'/></svg></button>
+<button id='info'><svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><circle cx='10' cy='10' r='8' stroke='#004d80' fill='none'/><path d='M10 5.5c-1.25 0-2.25 1-2.25 2.25H9a1.25 1.25 0 0 1 2.5 0c0 .65-.55 1-1 1.2-.7.35-1.25.85-1.25 1.8V11h1.5v-.25c0-.37.29-.65.68-.83.73-.34 1.32-.87 1.32-2.17 0-1.25-1.5-2.25-2.75-2.25' fill='#ff8d40' stroke='#ff8d40' stroke-width='.6' stroke-linecap='round' stroke-linejoin='round'/><circle cx='10' cy='13.5' r='1.2' fill='#ff8d40'/></svg></button>
+</header>
+<header style='float: right'>Produced by <a href='https://github.com/async-profiler/async-profiler'>async-profiler</a></header>
+<div id='legend' style='position: absolute'>
+<dl class='frames'>
+	<dt>Frame types</dt>
+	<dd style='background-color: #e17d00'>Kernel</dd>
+	<dd style='background-color: #e15a5a'>Native</dd>
+	<dd style='background-color: #c8c83c'>C++ (VM)</dd>
+	<dd style='background-color: #50e150'>Java compiled</dd>
+	<dd style='background-color: #cce880'>Java compiled by C1</dd>
+	<dd style='background-color: #50cccc'>Inlined</dd>
+	<dd style='background-color: #b2e1b2'>Interpreted</dd>
+</dl>
+<dl class='frames'>
+	<dt>Allocation profile</dt>
+	<dd style='background-color: #50cccc'>Allocated class</dd>
+	<dd style='background-color: #e17d00'>Allocation outside TLAB</dd>
+	<dt>Lock profile</dt>
+	<dd style='background-color: #50cccc'>Lock class</dd>
+	<dt>&nbsp;</dt>
+	<dt>Search</dt>
+	<dd style='background-color: #ee00ee'>Matches regexp</dd>
+</dl>
+<dl class='hotkeys'>
+	<dt>Click frame</dt><dd>Zoom into frame</dd>
+	<dt>Alt+Click</dt><dd>Remove stack</dd>
+	<dt>0</dt><dd>Reset zoom</dd>
+	<dt>I</dt><dd>Invert graph</dd>
+	<dt>Ctrl+F</dt><dd>Search</dd>
+	<dt>N</dt><dd>Next match</dd>
+	<dt>Shift+N</dt><dd>Previous match</dd>
+	<dt>Esc</dt><dd>Cancel search</dd>
+</dl>
+</div>
+<canvas id='canvas'></canvas>
+<div id='hl'><span></span></div>
+<p id='status'></p>
+<p id='match'>Matched: <span id='matchval'></span> <span id='reset' title='Clear'>&#x274c;</span></p>
+<script>
+	// Copyright The async-profiler authors
+	// SPDX-License-Identifier: Apache-2.0
+	'use strict';
+	let root, px, pattern;
+	let level0 = 0, left0 = 0, width0 = 0;
+	let nav = [], navIndex, matchval;
+	let inverted = false;
+	const levels = Array(143);
+	for (let h = 0; h < levels.length; h++) {
+		levels[h] = [];
+	}
+
+	const canvas = document.getElementById('canvas');
+	const c = canvas.getContext('2d');
+	const hl = document.getElementById('hl');
+	const status = document.getElementById('status');
+
+	const canvasWidth = canvas.offsetWidth;
+	const canvasHeight = canvas.offsetHeight;
+	canvas.style.width = canvasWidth + 'px';
+	canvas.width = canvasWidth * (devicePixelRatio || 1);
+	canvas.height = canvasHeight * (devicePixelRatio || 1);
+	if (devicePixelRatio) c.scale(devicePixelRatio, devicePixelRatio);
+	c.font = document.body.style.font;
+
+	const palette = [
+		[0xb2e1b2, 20, 20, 20],
+		[0x50e150, 30, 30, 30],
+		[0x50cccc, 30, 30, 30],
+		[0xe15a5a, 30, 40, 40],
+		[0xc8c83c, 30, 30, 10],
+		[0xe17d00, 30, 30,  0],
+		[0xcce880, 20, 20, 20],
+	];
+
+	function getColor(p) {
+		const v = Math.random();
+		return '#' + (p[0] + ((p[1] * v) << 16 | (p[2] * v) << 8 | (p[3] * v))).toString(16);
+	}
+
+	function f(key, level, left, width, inln, c1, int) {
+		levels[level0 = level].push({level, left: left0 += left, width: width0 = width || width0,
+			color: getColor(palette[key & 7]), title: cpool[key >>> 3],
+			details: (int ? ', int=' + int : '') + (c1 ? ', c1=' + c1 : '') + (inln ? ', inln=' + inln : '')
+		});
+	}
+
+	function u(key, width, inln, c1, int) {
+		f(key, level0 + 1, 0, width, inln, c1, int)
+	}
+
+	function n(key, width, inln, c1, int) {
+		f(key, level0, width0, width, inln, c1, int)
+	}
+
+	function samples(n) {
+		return n === 1 ? '1 sample' : n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' samples';
+	}
+
+	function pct(a, b) {
+		return a >= b ? '100' : (100 * a / b).toFixed(2);
+	}
+
+	function findFrame(frames, x) {
+		let left = 0;
+		let right = frames.length - 1;
+
+		while (left <= right) {
+			const mid = (left + right) >>> 1;
+			const f = frames[mid];
+
+			if (f.left > x) {
+				right = mid - 1;
+			} else if (f.left + f.width <= x) {
+				left = mid + 1;
+			} else {
+				return f;
+			}
+		}
+
+		if (frames[left] && (frames[left].left - x) * px < 0.5) return frames[left];
+		if (frames[right] && (x - (frames[right].left + frames[right].width)) * px < 0.5) return frames[right];
+
+		return null;
+	}
+
+	function removeStack(left, width) {
+		for (let h = 0; h < levels.length; h++) {
+			const frames = levels[h], newFrames = [];
+			for (let i = 0; i < frames.length; i++) {
+				const f = frames[i];
+				if (f.left >= left + width) {
+					f.left -= width;
+				} else if (f.left + f.width > left) {
+					if ((f.width -= width) <= 0 && h) continue;
+				}
+				newFrames.push(f);
+			}
+			levels[h] = newFrames;
+		}
+	}
+
+	function search(r) {
+		if (r === true && (r = prompt('Enter regexp to search:', '')) === null) {
+			return;
+		}
+
+		pattern = r ? RegExp(r) : undefined;
+		const matched = render(root, nav = []);
+		navIndex = -1;
+		document.getElementById('matchval').textContent = matchval = pct(matched, root.width) + '%';
+		document.getElementById('match').style.display = r ? 'inline-block' : 'none';
+	}
+
+	function render(newRoot, nav) {
+		if (root) {
+			c.fillStyle = '#ffffff';
+			c.fillRect(0, 0, canvasWidth, canvasHeight);
+		}
+
+		root = newRoot || levels[0][0];
+		px = canvasWidth / root.width;
+
+		const x0 = root.left;
+		const x1 = x0 + root.width;
+		const marked = [];
+
+		function mark(f) {
+			return marked[f.left] || (marked[f.left] = f);
+		}
+
+		function totalMarked() {
+			let total = 0;
+			let left = 0;
+			Object.keys(marked).sort(function(a, b) { return a - b; }).forEach(function(x) {
+				if (+x >= left) {
+					const m = marked[x];
+					if (nav) nav.push(m);
+					total += m.width;
+					left = +x + m.width;
+				}
+			});
+			return total;
+		}
+
+		function drawFrame(f, y) {
+			if (f.left < x1 && f.left + f.width > x0) {
+				c.fillStyle = pattern && f.title.match(pattern) && mark(f) ? '#ee00ee' : f.color;
+				c.fillRect((f.left - x0) * px, y, f.width * px, 15);
+
+				if (f.width * px >= 21) {
+					const chars = Math.floor(f.width * px / 7);
+					const title = f.title.length <= chars ? f.title : f.title.substring(0, chars - 2) + '..';
+					c.fillStyle = '#000000';
+					c.fillText(title, Math.max(f.left - x0, 0) * px + 3, y + 12, f.width * px - 6);
+				}
+
+				if (f.level < root.level) {
+					c.fillStyle = 'rgba(255, 255, 255, 0.5)';
+					c.fillRect((f.left - x0) * px, y, f.width * px, 15);
+				}
+			}
+		}
+
+		for (let h = 0; h < levels.length; h++) {
+			const y = inverted ? h * 16 : canvasHeight - (h + 1) * 16;
+			const frames = levels[h];
+			for (let i = 0; i < frames.length; i++) {
+				drawFrame(frames[i], y);
+			}
+		}
+
+		return totalMarked();
+	}
+
+	function unpack(cpool) {
+		for (let i = 1; i < cpool.length; i++) {
+			cpool[i] = cpool[i - 1].substring(0, cpool[i].charCodeAt(0) - 32) + cpool[i].substring(1);
+		}
+	}
+
+	canvas.onmousemove = function() {
+		const h = Math.floor((inverted ? event.offsetY : (canvasHeight - event.offsetY)) / 16);
+		if (h >= 0 && h < levels.length) {
+			const f = findFrame(levels[h], event.offsetX / px + root.left);
+			if (f) {
+				if (f !== root) getSelection().removeAllRanges();
+				hl.style.left = (Math.max(f.left - root.left, 0) * px + canvas.offsetLeft) + 'px';
+				hl.style.width = (Math.min(f.width, root.width) * px) + 'px';
+				hl.style.top = ((inverted ? h * 16 : canvasHeight - (h + 1) * 16) + canvas.offsetTop) + 'px';
+				hl.firstChild.textContent = f.title;
+				hl.style.display = 'block';
+				canvas.title = f.title + '\n(' + samples(f.width) + f.details + ', ' + pct(f.width, levels[0][0].width) + '%)';
+				canvas.style.cursor = 'pointer';
+				canvas.onclick = function() {
+					if (event.altKey && h >= root.level && h > 0) {
+						removeStack(f.left, f.width);
+						root.width > f.width ? render(root) : render();
+					} else if (f !== root) {
+						render(f);
+					}
+					canvas.onmousemove();
+				};
+				status.textContent = 'Function: ' + canvas.title;
+				status.style.display = 'inline-block';
+				return;
+			}
+		}
+		canvas.onmouseout();
+	}
+
+	canvas.onmouseout = function() {
+		hl.style.display = 'none';
+		status.style.display = 'none';
+		canvas.title = '';
+		canvas.style.cursor = '';
+		canvas.onclick = null;
+	}
+
+	canvas.ondblclick = function() {
+		getSelection().selectAllChildren(hl);
+	}
+
+	document.getElementById('inverted').onclick = function() {
+		inverted = !inverted;
+		render();
+	}
+
+	document.getElementById('search').onclick = function() {
+		search(true);
+	}
+
+	document.getElementById('reset').onclick = function() {
+		search(false);
+	}
+
+	const btnInfo = document.getElementById('info');
+	const legend = document.getElementById('legend');
+
+	btnInfo.onmouseover = function() {
+		legend.style.left = (btnInfo.offsetLeft + 24) + 'px';
+		legend.style.top = (btnInfo.offsetTop + 24) + 'px';
+		legend.style.display = 'block';
+	}
+
+	btnInfo.onmouseout = function() {
+		legend.style.display = 'none';
+	}
+
+	window.onkeydown = function(event) {
+		if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+			event.preventDefault();
+			search(true);
+			return false;
+		} else if (event.key === 'Escape') {
+			search(false);
+		} else if ((event.key === 'n' || event.key === 'N') && nav.length > 0) {
+			navIndex = (navIndex + (event.shiftKey ? nav.length - 1 : 1)) % nav.length;
+			render(nav[navIndex]);
+			document.getElementById('matchval').textContent = matchval + ' (' + (navIndex + 1) + ' of ' + nav.length + ')';
+			window.scroll(0, inverted ? root.level * 16 : canvasHeight - (root.level + 1) * 16);
+			canvas.onmousemove();
+			return false;
+		} else if (event.key === 'i') {
+			canvas.onmouseout();
+			document.getElementById('inverted').onclick();
+			return false;
+		} else if (event.key === '0') {
+			canvas.onmouseout();
+			root = levels[0][0];
+			search(false);
+			return false;
+		}
+	}
+
+const cpool = [
+'all',
+' JFR Periodic Tasks [java=14,os=43011]',
+' MultiKeywordProfileRunner$$Lambda$178.0x0000007001143b28.call()Ljava/lang/Object:',
+'9.lambda$main$0(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Ljava/lang/String:)Lio/johnsonlee/graphite/cypher/CypherResult:',
+' broad-query-pressure-worker [java=25,os=35339]',
+',resource-sampler [java=20,os=30215]',
+' io.johnsonlee.graphite.core.NodeId.box-impl(I)Lio/johnsonlee/graphite/core/NodeId:',
+'8ypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:',
+'?ypherDslAdapter.buildAst$cypher(Ljava/lang/String:)Ljava/util/List:',
+'Oparse(Ljava/lang/String:)Ljava/util/List:',
+'DExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:',
+'TClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:',
+'DFunctions.call$cypher(Ljava/lang/String:Ljava/util/List:Lkotlin/jvm/functions/Function0:)Ljava/lang/Object:',
+'Ndispatch(Ljava/lang/String:Ljava/util/List:Lkotlin/jvm/functions/Function0:)Ljava/lang/Object:',
+'>ExpressionEvaluator.evaluate(Lio/johnsonlee/graphite/cypher/CypherExpr:Ljava/util/Map:)Ljava/lang/Object:',
+'ZStringOp(Lio/johnsonlee/graphite/cypher/CypherExpr$StringOp:Ljava/util/Map:)Ljava/lang/Object:',
+'>QueryPipeline$$Lambda$249.0x000000700117ed88.invoke(Ljava/lang/Object:)Ljava/lang/Object:',
+'K.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:',
+'SWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:',
+'LnodeCandidates$lambda$296$lambda$295(Lio/johnsonlee/graphite/cypher/CypherGraph:Lio/johnsonlee/graphite/core/Node:)Lio/johnsonlee/graphite/cypher/QualifiedNode:',
+'LtryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:',
+'>WorkTrackingSequence$iterator$1.hasNext()Z',
+'>parser.CypherParser.addSubExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$AddSubExpressionContext:',
+'SndExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$AndExpressionContext:',
+'StomExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$AtomExpressionContext:',
+'Rclause()Lio/johnsonlee/graphite/cypher/parser/CypherParser$ClauseContext:',
+'SomparisonExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$ComparisonExpressionContext:',
+'Rexpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$ExpressionContext:',
+'\\List()Lio/johnsonlee/graphite/cypher/parser/CypherParser$ExpressionListContext:',
+'RfunctionInvocation()Lio/johnsonlee/graphite/cypher/parser/CypherParser$FunctionInvocationContext:',
+'RmatchSt()Lio/johnsonlee/graphite/cypher/parser/CypherParser$MatchStContext:',
+'SultDivExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$MultDivExpressionContext:',
+'RnotExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$NotExpressionContext:',
+'RorExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$OrExpressionContext:',
+'RpostfixExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$PostfixExpressionContext:',
+'TwerExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$PowerExpressionContext:',
+'Rquery()Lio/johnsonlee/graphite/cypher/parser/CypherParser$QueryContext:',
+'RregularQuery()Lio/johnsonlee/graphite/cypher/parser/CypherParser$RegularQueryContext:',
+'Rscript()Lio/johnsonlee/graphite/cypher/parser/CypherParser$ScriptContext:',
+'SingleQuery()Lio/johnsonlee/graphite/cypher/parser/CypherParser$SingleQueryContext:',
+'Statement()Lio/johnsonlee/graphite/cypher/parser/CypherParser$StatementContext:',
+'TringPredicateExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$StringPredicateExpressionContext:',
+'RunaryExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$UnaryExpressionContext:',
+'RwhereSt()Lio/johnsonlee/graphite/cypher/parser/CypherParser$WhereStContext:',
+'RxorExpression()Lio/johnsonlee/graphite/cypher/parser/CypherParser$XorExpressionContext:',
+'7webgraph.BroadQueryResourceSampler$$Lambda$163.0x000000700113e4f8.run()V',
+'Y.sampleLoop()V',
+'Zthread$lambda$0(Lio/johnsonlee/graphite/webgraph/BroadQueryResourceSampler:)V',
+'@LargeBroadQueryPressureBenchmarkKt.access$processCpuLoadPermille()J',
+'jresidentSetBytes()J',
+'cprocessCpuLoadPermille()J',
+'cresidentSetBytes()J',
+'@MappedWebGraphBackedGraph$$Lambda$217.0x0000007001164000.invoke(Ljava/lang/Object:)Ljava/lang/Object:',
+'Y.node-NKfh_u4(I)Lio/johnsonlee/graphite/core/Node:',
+'^s$lambda$6(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:I)Lio/johnsonlee/graphite/core/Node:',
+'ZreadNodeAt(J)Lio/johnsonlee/graphite/core/Node:',
+'@NodeSerializer.readMethodDescriptor(Ljava/io/DataInput:Lio/johnsonlee/graphite/webgraph/StringTable:)Lio/johnsonlee/graphite/core/MethodDescriptor:',
+'SNode(Ljava/io/DataInput:Lio/johnsonlee/graphite/webgraph/StringTable:I)Lio/johnsonlee/graphite/core/Node:',
+'@StringTable.get(I)Ljava/lang/String:',
+'!t.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C',
+'-lang.MutableString.toString()Ljava/lang/String:',
+'@wrap([C)Lit/unimi/dsi/lang/MutableString:',
+'-util.FrontCodedStringList.get(I)Lit/unimi/dsi/lang/MutableString:',
+' java.io.BufferedInputStream.<init>(Ljava/io/InputStream:)V',
+'XI)V',
+'0OutputStream.<init>(Ljava/io/OutputStream:)V',
+'ZI)V',
+'0Reader.<init>(Ljava/io/Reader:I)V',
+'(InputStreamReader.<init>(Ljava/io/InputStream:Ljava/nio/charset/Charset:)V',
+'%lang.Integer.valueOf(I)Ljava/lang/Integer:',
+'*ProcessBuilder.start()Ljava/lang/Process:',
+'?[Ljava/lang/ProcessBuilder$Redirect:)Ljava/lang/Process:',
+'1HandleImpl$1.run()V',
+';.completion(JZ)Ljava/util/concurrent/CompletableFuture:',
+'1Impl$$Lambda$167.0x00000070010e0108.run()Ljava/lang/Object:',
+'@8.0x00000070010e1d18.apply(Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:',
+'6ProcessPipeInputStream.<init>(I)V',
+'MdrainInputStream(Ljava/io/InputStream:)[B',
+'MprocessExited()V',
+'AOutputStream.<init>(I)V',
+'5.<init>([B[BI[BI[B[IZZ)V',
+'6initStreams([IZ)V',
+'6lambda$initStreams$1(Ljava/lang/Integer:Ljava/lang/Throwable:)Ljava/lang/Object:',
+'=new$0([IZ)Ljava/lang/Void:',
+'6start([Ljava/lang/String:Ljava/util/Map:Ljava/lang/String:[Ljava/lang/ProcessBuilder$Redirect:Z)Ljava/lang/Process:',
+'*String.<init>([CII)V',
+'<Ljava/lang/Void:)V',
+'1toLowerCase(Ljava/util/Locale:)Ljava/lang/String:',
+'0Latin1.toLowerCase(Ljava/lang/String:[BLjava/util/Locale:)Ljava/lang/String:',
+'0UTF16.compress([CII)[B',
+'*Thread.run()V',
+'*invoke.DirectMethodHandle$Holder.newInvokeSpecial(Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:',
+'C.allocateInstance(Ljava/lang/Object:)Ljava/lang/Object:',
+'1Invokers$Holder.linkToTargetMethod(Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:',
+'*management.ManagementFactory$PlatformMBeanFinder$$Lambda$171.0x00000070010e9508.test(Ljava/lang/Object:)Z',
+'Z.findSingleton(Ljava/lang/Class:)Lsun/management/spi/PlatformMBeanProvider$PlatformComponent:',
+'[lambda$findSingleton$1(Ljava/lang/String:Lsun/management/spi/PlatformMBeanProvider$PlatformComponent:)Z',
+'F.getOperatingSystemMXBean()Ljava/lang/management/OperatingSystemMXBean:',
+'JPlatformMXBean(Ljava/lang/Class:)Ljava/lang/management/PlatformManagedObject:',
+'%nio.ByteBuffer.allocate(I)Ljava/nio/ByteBuffer:',
+')HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V',
+'%security.AccessController.doPrivileged(Ljava/security/PrivilegedExceptionAction:)Ljava/lang/Object:',
+'?executePrivileged(Ljava/security/PrivilegedExceptionAction:Ljava/security/AccessControlContext:Ljava/lang/Class:)Ljava/lang/Object:',
+'%util.ArrayList.<init>(I)V',
+'4add(Ljava/lang/Object:)Z',
+'J[Ljava/lang/Object:I)V',
+'4grow()[Ljava/lang/Object:',
+'9I)[Ljava/lang/Object:',
+'4iterator()Ljava/util/Iterator:',
+'/s.copyOf([Ljava/lang/Object:I)[Ljava/lang/Object:',
+'*Collection.stream()Ljava/util/stream/Stream:',
+'4s$2.forEachRemaining(Ljava/util/function/Consumer:)V',
+'8tryAdvance(Ljava/util/function/Consumer:)Z',
+'6SingletonMap.values()Ljava/util/Collection:',
+'?Set.spliterator()Ljava/util/Spliterator:',
+'6UnmodifiableCollection$1.<init>(Ljava/util/Collections$UnmodifiableCollection:)V',
+'L.iterator()Ljava/util/Iterator:',
+'5.singleton(Ljava/lang/Object:)Ljava/util/Set:',
+'?Spliterator(Ljava/lang/Object:)Ljava/util/Spliterator:',
+'*HashMap$ValueSpliterator.forEachRemaining(Ljava/util/function/Consumer:)V',
+'7s.spliterator()Ljava/util/Spliterator:',
+'*Optional.of(Ljava/lang/Object:)Ljava/util/Optional:',
+'*concurrent.CompletableFuture$UniHandle.tryFire(I)Ljava/util/concurrent/CompletableFuture:',
+'F.complete(Ljava/lang/Object:)Z',
+'GpostComplete()V',
+'GuniHandle(Ljava/lang/Object:Ljava/util/function/BiFunction:Ljava/util/concurrent/CompletableFuture$UniHandle:)Z',
+'7ncurrentHashMap.putIfAbsent(Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:',
+'JVal(Ljava/lang/Object:Ljava/lang/Object:Z)Ljava/lang/Object:',
+'7pyOnWriteArrayList.iterator()Ljava/util/Iterator:',
+'5FutureTask.run()V',
+'5ThreadPoolExecutor$Worker.run()V',
+'G.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V',
+'*stream.AbstractPipeline.copyInto(Ljava/util/stream/Sink:Ljava/util/Spliterator:)V',
+'Bevaluate(Ljava/util/stream/TerminalOp:)Ljava/lang/Object:',
+'BwrapAndCopyInto(Ljava/util/stream/Sink:Ljava/util/Spliterator:)Ljava/util/stream/Sink:',
+'FSink(Ljava/util/stream/Sink:)Ljava/util/stream/Sink:',
+'1Collectors$$Lambda$175.0x00000070010eb7e8.get()Ljava/lang/Object:',
+'F6.0x00000070010eba08.accept(Ljava/lang/Object:Ljava/lang/Object:)V',
+';.toList()Ljava/util/stream/Collector:',
+'1ReduceOps$2.makeSink()Ljava/util/stream/ReduceOps$2ReducingSink:',
+'cAccumulatingSink:',
+'<ReducingSink.get()Ljava/lang/Object:',
+'Tutil/Optional:',
+';3.makeSink()Ljava/util/stream/ReduceOps$3ReducingSink:',
+'cAccumulatingSink:',
+'<ReducingSink.accept(Ljava/lang/Object:)V',
+'Ibegin(J)V',
+';ReduceOp.evaluateSequential(Ljava/util/stream/PipelineHelper:Ljava/util/Spliterator:)Ljava/lang/Object:',
+':.makeRef(Ljava/util/function/BinaryOperator:)Ljava/util/stream/TerminalOp:',
+'Nstream/Collector:)Ljava/util/stream/TerminalOp:',
+'3ferencePipeline$2$1.accept(Ljava/lang/Object:)V',
+'Gbegin(J)V',
+'D.opWrapSink(ILjava/util/stream/Sink:)Ljava/util/stream/Sink:',
+'C3$1.accept(Ljava/lang/Object:)V',
+'D.opWrapSink(ILjava/util/stream/Sink:)Ljava/util/stream/Sink:',
+'B.collect(Ljava/util/stream/Collector:)Ljava/lang/Object:',
+'Cfilter(Ljava/util/function/Predicate:)Ljava/util/stream/Stream:',
+'Cmap(Ljava/util/function/Function:)Ljava/util/stream/Stream:',
+'Creduce(Ljava/util/function/BinaryOperator:)Ljava/util/Optional:',
+'1Sink$ChainedReference.begin(J)V',
+'2treamSupport.stream(Ljava/util/Spliterator:Z)Ljava/util/stream/Stream:',
+'!dk.jfr.internal.PlatformRecorder$$Lambda$65.0x0000007001041e98.run()V',
+'A.lambda$startDiskMonitor$1()V',
+'BperiodicTask()V',
+'1RequestEngine.doPeriodic()J',
+'?run_requests(Ljava/util/Collection:)J',
+'$management.jfr.internal.FlightRecorderMXBeanProvider$SingleMBeanComponent.mbeanInterfaceNames()Ljava/util/Set:',
+' kotlin.collections.IntIterator.next()Ljava/lang/Object:',
+'\'io.TextStreamsKt.copyTo$default(Ljava/io/Reader:Ljava/io/Writer:IILjava/lang/Object:)J',
+'>(Ljava/io/Reader:Ljava/io/Writer:I)J',
+'8readText(Ljava/io/Reader:)Ljava/lang/String:',
+'\'ranges.RangesKt___RangesKt.until(II)Lkotlin/ranges/IntRange:',
+'\'sequences.FilteringSequence$iterator$1.calcNext()V',
+'NhasNext()Z',
+'2latteningSequence$iterator$1.ensureItemIterator()Z',
+'OhasNext()Z',
+'Onext()Ljava/lang/Object:',
+'1TransformingSequence$iterator$1.hasNext()Z',
+'Qnext()Ljava/lang/Object:',
+' org.antlr.v4.runtime.Parser.addContextToParseTree()V',
+'<enterRule(Lorg/antlr/v4/runtime/ParserRuleContext:II)V',
+';RuleContext.addAnyChild(Lorg/antlr/v4/runtime/tree/ParseTree:)Lorg/antlr/v4/runtime/tree/ParseTree:',
+'JChild(Lorg/antlr/v4/runtime/RuleContext:)Lorg/antlr/v4/runtime/RuleContext:',
+'5atn.ATNConfigSet$AbstractConfigHashSet.createBuckets(I)[[Ljava/lang/Object:',
+'oorg/antlr/v4/runtime/atn/ATNConfig:',
+'E.add(Lorg/antlr/v4/runtime/atn/ATNConfig:Lorg/antlr/v4/runtime/misc/DoubleKeyMap:)Z',
+'9ParserATNSimulator.adaptivePredict(Lorg/antlr/v4/runtime/TokenStream:ILorg/antlr/v4/runtime/ParserRuleContext:)I',
+'Lclosure(Lorg/antlr/v4/runtime/atn/ATNConfig:Lorg/antlr/v4/runtime/atn/ATNConfigSet:Ljava/util/Set:ZZZ)V',
+'SCheckingStopState(Lorg/antlr/v4/runtime/atn/ATNConfig:Lorg/antlr/v4/runtime/atn/ATNConfigSet:Ljava/util/Set:ZZIZ)V',
+'S_(Lorg/antlr/v4/runtime/atn/ATNConfig:Lorg/antlr/v4/runtime/atn/ATNConfigSet:Ljava/util/Set:ZZIZ)V',
+'MomputeStartState(Lorg/antlr/v4/runtime/atn/ATNState:Lorg/antlr/v4/runtime/RuleContext:Z)Lorg/antlr/v4/runtime/atn/ATNConfigSet:',
+'LexecATN(Lorg/antlr/v4/runtime/dfa/DFA:Lorg/antlr/v4/runtime/dfa/DFAState:Lorg/antlr/v4/runtime/TokenStream:ILorg/antlr/v4/runtime/ParserRuleContext:)I',
+'5misc.Array2DHashSet.expand()V',
+'IgetOrAdd(Ljava/lang/Object:)Ljava/lang/Object:',
+' process reaper [java=24,os=33295]',
+' sun.management.spi.PlatformMBeanProvider$PlatformComponent.getMBeans(Ljava/lang/Class:)Ljava/util/List:',
+'$nio.cs.StreamDecoder.<init>(Ljava/io/InputStream:Ljava/lang/Object:Ljava/nio/charset/Charset:)V',
+'tDecoder:)V',
+'9forInputStreamReader(Ljava/io/InputStream:Ljava/lang/Object:Ljava/nio/charset/Charset:)Lsun/nio/cs/StreamDecoder:'
+];
+unpack(cpool);
+
+n(3,98506637312)
+u(11,524288)
+u(723)
+u(1291)
+u(1299)
+u(1307)
+u(1315)
+u(1321)
+u(1025)
+f(35,1,524288,98472296448)
+u(723)
+u(1043)
+u(1049)
+u(1035)
+u(17)
+u(25)
+u(57)
+u(81)
+u(73,524288)
+u(65)
+u(305)
+u(321)
+u(289)
+u(297)
+u(313)
+u(201)
+u(241)
+u(345)
+u(217)
+u(265)
+u(353)
+u(185)
+u(257)
+u(209)
+u(329)
+u(177)
+u(249)
+u(281)
+u(337)
+u(273)
+u(193)
+u(217)
+u(265)
+u(353)
+u(185)
+u(257)
+u(209)
+u(329)
+u(177)
+u(249)
+u(281)
+u(337)
+u(273)
+u(193)
+u(217)
+u(265)
+u(353)
+u(185)
+u(257)
+u(209)
+u(329)
+u(177)
+u(249)
+u(281)
+u(337)
+u(273)
+u(193)
+u(217)
+u(265)
+u(353)
+u(185)
+u(257)
+u(209)
+u(329)
+u(177)
+u(249)
+u(281)
+u(337)
+u(273)
+u(193)
+u(233)
+u(225)
+u(217)
+u(265)
+u(353)
+u(185)
+u(257)
+u(209)
+u(329)
+u(177)
+u(249)
+u(281,262144)
+u(337)
+u(273)
+u(193)
+u(233)
+u(225)
+u(217)
+u(265)
+u(353)
+u(185)
+u(257)
+u(209)
+u(329)
+u(177)
+u(249)
+u(281)
+u(337)
+u(273)
+u(1489)
+u(1529)
+u(1521)
+u(1497)
+u(1505)
+u(1513)
+u(1505)
+u(1505)
+u(1513)
+u(1505)
+u(1505)
+u(1513)
+u(1505)
+u(1513)
+u(1505)
+u(1505)
+u(1513)
+u(1505)
+u(1513)
+u(1505)
+u(1505)
+u(1513)
+u(1505)
+u(1513)
+u(1505)
+u(1505)
+u(1513)
+u(1505)
+u(1513)
+u(1505)
+u(1513)
+u(1505)
+u(1513)
+u(1505)
+u(1513)
+u(1505)
+u(1513)
+u(1481)
+u(1545)
+u(1539)
+u(1465)
+u(1473)
+f(1441,83,262144)
+u(1435)
+u(1457)
+u(1449)
+u(833)
+u(841)
+u(849)
+u(857)
+f(89,10,262144,98471772160)
+u(137)
+u(145)
+u(161)
+u(113,69630951424)
+u(113)
+u(113)
+u(113)
+u(113,52937359360)
+u(113,35157966848)
+u(121)
+u(113)
+f(97,22,3732930560,10356260864)
+u(105)
+u(697)
+u(705)
+f(113,22,10356260864,12407799808)
+f(827,23,3701735424,3716153344)
+n(929,4989911040)
+u(921)
+u(865)
+f(827,22,4989911040,3721920512)
+n(929,4939055104)
+u(921)
+u(865)
+f(121,19,4939055104,17779392512)
+u(113)
+f(97,21,1898446848,5347213312)
+u(105)
+u(697)
+u(705)
+f(113,21,5347213312,6229327872)
+f(827,22,1881145344,1882456064)
+n(929,2465726464)
+u(921)
+u(865)
+f(827,21,2465726464,1866203136)
+n(929,2438201344)
+u(921)
+u(865)
+f(121,18,2438201344,16693592064)
+u(113)
+f(97,20,1867513856,4373348352)
+u(105)
+u(697)
+u(705)
+f(113,20,4373348352,6192627712)
+f(827,21,1858338816,1858076672)
+n(929,2476212224)
+u(921)
+u(865)
+f(827,20,2476212224,1796997120)
+n(929,2463105024)
+u(921)
+u(865)
+f(1403,14,2463105024,28373680128)
+u(1395)
+u(1419)
+u(171)
+u(1387)
+u(1379)
+u(1425)
+u(417,28059107328)
+u(433)
+u(425)
+u(441)
+f(457,25,460849152,27598258176)
+f(49,26,1080819712,136314880)
+n(449,22851092480)
+f(465,27,3310354432,17679515648)
+u(481,7449083904)
+f(683,29,2587885568,4861198336)
+u(689)
+u(715)
+f(497,28,4861198336,10230431744)
+u(475,7667712000)
+n(489,2562719744)
+f(827,27,2562719744,1302331392)
+n(833,21757952)
+u(841)
+u(849)
+u(857)
+u(873)
+f(1369,27,21757952,537133056)
+f(465,26,537133056,3123707904)
+u(481,1411907584)
+f(683,28,584056832,827850752)
+u(689)
+f(715,30,524288,827326464)
+f(497,27,827326464,1711800320)
+u(475,1134821376)
+n(489,576978944)
+f(827,26,576978944,280231936)
+n(833,262144)
+u(841)
+u(849)
+u(857)
+u(873)
+f(1369,26,262144,125829120)
+f(1337,21,125829120,314572800)
+u(553)
+f(1409,14,314572800,467140608)
+u(1425)
+u(129)
+u(153)
+f(43,1,467140608,33292288)
+u(723)
+u(363)
+u(377)
+u(371)
+u(387,25690112)
+u(403)
+u(777)
+u(785)
+u(761,9175040)
+u(745,1310720)
+u(729)
+u(737)
+f(881,11,1310720,3670016)
+u(961,1048576)
+n(1281,2621440)
+f(1249,11,2621440,1310720)
+n(1265,2883584)
+u(1065,2359296)
+u(1177)
+u(1073,1572864)
+u(1057,262144)
+u(953)
+u(1201)
+u(753)
+u(769)
+u(1329)
+u(937)
+f(1081,15,262144,1310720)
+u(1217)
+f(1121,14,1310720,524288)
+u(1113)
+f(1129,14,524288,262144)
+u(1137)
+u(969)
+f(1185,12,262144,524288)
+f(1561,10,524288,16515072)
+u(745,786432)
+u(729)
+u(737)
+f(881,11,786432,3145728)
+u(913,786432)
+u(945)
+f(1281,12,786432,2359296)
+f(905,11,2359296,1048576)
+u(937)
+f(1105,11,1048576)
+n(1241,7864320)
+u(1065,6815744)
+u(1177)
+u(1073,5242880)
+u(1057,4456448)
+u(889,2883584)
+u(897)
+u(1201)
+u(1225)
+u(1161)
+u(1097)
+u(833)
+u(841)
+u(849)
+u(857)
+f(1211,16,2883584,1572864)
+u(1275)
+u(1171)
+u(1089)
+f(1081,15,1572864,786432)
+u(1217,262144)
+n(1233,524288)
+f(1153,14,524288,1572864)
+u(1145)
+f(1193,12,1572864,1048576)
+f(1249,11,1048576)
+n(1257,1572864)
+f(395,6,1572864,7602176)
+u(411)
+u(537,1835008)
+n(545,786432)
+u(1585)
+u(1569)
+u(1577)
+u(793)
+u(801)
+f(561,8,786432,3407872)
+u(569)
+u(673)
+u(643)
+u(809)
+u(817)
+u(593)
+u(665)
+u(651)
+u(585,524288)
+f(1009,18,262144,262144)
+u(1017)
+f(611,17,262144,1572864)
+u(505)
+u(513)
+f(635,17,1572864,1310720)
+u(521)
+u(529)
+f(1361,8,1310720,1572864)
+u(1345)
+u(1353)
+f(1555,1,1572864,524288)
+u(723)
+u(1043)
+u(1049)
+u(579)
+f(985,6,262144,262144)
+u(995)
+u(977)
+u(1001)
+u(601)
+u(657)
+u(627)
+u(617)
+
+search();
+</script></body></html>

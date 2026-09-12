@@ -1,0 +1,44 @@
+{
+  "verdict": "actual minimal diff source review passed; build and performance not asserted",
+  "candidate": "/private/tmp/graphite-attempt146.lztftoe1/candidate",
+  "headParent": "cf300347247174a74bbbd188e89c36c094ae2bdd",
+  "trackedProductionDiff": [
+    "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt"
+  ],
+  "addedSourceFiles": [
+    "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/GraphTaskEmptyChildrenTest.kt"
+  ],
+  "sha256": {
+    "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt": "7a155b69b020bad81b5babc98901583b39161069233f7a5dcd7d80dfce7db3b5",
+    "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/GraphTaskEmptyChildrenTest.kt": "23b386f16fb7174ab5bbc033e58666178c3325332ec9a22fa9f0aade6dbdae24"
+  },
+  "checksInputsMatch": true,
+  "removeOnlyAddedLineEqualsParentBytes": true,
+  "scopeNotifyCapOtherBytesUnchanged": true,
+  "test": {
+    "junitMethods": 1,
+    "branches": [
+      "normal",
+      "running cancel(false)"
+    ],
+    "schedulerWorkers": 2,
+    "cpuEarlyReturn": false,
+    "neverHadRegisteredChild": true,
+    "sameFailureIdentityAndNull": true,
+    "registrationRejectedBeforeOwnerReturn": true,
+    "actualIncompleteAndEmptyCompletionAssertions": true,
+    "fifoCanaryAndGroupCap": true,
+    "actualCallbackExitAndNoInterruption": true,
+    "replacementValue": 23,
+    "normalOwnerValue": 17,
+    "notRedGreenRequirement": true,
+    "limits": [
+      "original failure passed/returned, not thrown as Future cause",
+      "source assertions read only; no test executed by auditor"
+    ]
+  },
+  "buildAudit": "pending terminal evidence",
+  "priorReview": "/private/tmp/graphite-childless-finish-review/bounded-review.json",
+  "performanceAcceptance": false,
+  "reportSha256": "724bf82aa50d36fac92cc330686a492c6e57577e3058f730b65ddf1a7717809c"
+}

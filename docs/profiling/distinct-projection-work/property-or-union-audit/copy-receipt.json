@@ -1,0 +1,33 @@
+{
+  "source": "/private/tmp/graphite-raw-or-plan-audit",
+  "entries": [
+    {
+      "source": "/private/tmp/graphite-raw-or-plan-audit/README.md",
+      "destination": "docs/profiling/distinct-projection-work/property-or-union-audit/README.md",
+      "sourceBytes": 9272,
+      "sourceSha256": "36534237d66fbc0cd17c1584e7371f548d53912f65211648a9f52bfc40ce668f",
+      "storedBytes": 9272,
+      "storedSha256": "36534237d66fbc0cd17c1584e7371f548d53912f65211648a9f52bfc40ce668f",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-raw-or-plan-audit/audit.json",
+      "destination": "docs/profiling/distinct-projection-work/property-or-union-audit/audit.json",
+      "sourceBytes": 25534,
+      "sourceSha256": "85d34d7031b1e2a6097f7be42167f8e4d9c9dfb403ba825fe4a7dda5395733a6",
+      "storedBytes": 25534,
+      "storedSha256": "85d34d7031b1e2a6097f7be42167f8e4d9c9dfb403ba825fe4a7dda5395733a6",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-raw-or-plan-audit/audit.py",
+      "destination": "docs/profiling/distinct-projection-work/property-or-union-audit/audit.py",
+      "sourceBytes": 3713,
+      "sourceSha256": "01f11e3588a0c04b298f23e46d4d17ada0f00738662f8469acbfc7d6d98fca99",
+      "storedBytes": 3713,
+      "storedSha256": "01f11e3588a0c04b298f23e46d4d17ada0f00738662f8469acbfc7d6d98fca99",
+      "decodedEqualsSource": true
+    }
+  ],
+  "count": 3
+}

@@ -1,0 +1,13 @@
+{
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "candidateParent": "34b45bf798cbe26932e46ab42d6635b534e7fa3e",
+  "direction": "Remove per-node IntRange and iterator construction from parallel raw DISTINCT OR predicate traversal using a primitive while loop; keep exact-set/state-cache matching order and short circuit",
+  "evidence": "Existing cpu-3/4/5 dense DISTINCT allocation profiles: getIndices leaf weights 1,572,864 / 1,572,864 / 1,310,720 bytes; IntProgression.iterator leaf weights 2,621,440 / 2,621,440 / 2,621,440 bytes, each within parallelRawDistinctCallSiteStringProjection stacks. These are sampled TLAB weights, not exact savings. Bytecode nextInt is primitive and any is inline; this removes neither selected-tuple Integer.valueOf nor a predicate lambda allocation.",
+  "sequence": [
+    "Complete module tests, detekt, JMH build and independent source review",
+    "One real v3 36-query correctness control",
+    "Unchanged old34 three alternating candidate/base pairs",
+    "Only if old34 regression and strict progress pass, three v3 pairs and required CI"
+  ],
+  "accepted": false
+}

@@ -1,0 +1,44 @@
+{
+  "tests": {
+    "core": {
+      "tests": 455,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "cypher": {
+      "tests": 1236,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "webgraph": {
+      "tests": 195,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "explore": {
+      "tests": 221,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "jars": {
+    "webgraph": {
+      "path": "/private/tmp/graphite-attempt146.lztftoe1/candidate-final-jmh.jar",
+      "sha256": "120808180cebddac06522ece2eef37089db99fc08e2864090e91cfa85a66cee9",
+      "uniqueCompiledClassesChecked": 683
+    },
+    "explore": {
+      "path": "/private/tmp/graphite-attempt146.lztftoe1/candidate-final-explore-jmh.jar",
+      "sha256": "5ed837ba61df069664fd132bad9d94db1bfa69aa1b8fb221e7b48737d075338f",
+      "uniqueCompiledClassesChecked": 958
+    }
+  },
+  "sourceUnchangedDuringChecks": true,
+  "checksLog": "checks.log",
+  "acceptance": false,
+  "totalTests": 2107
+}

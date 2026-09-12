@@ -1,0 +1,1427 @@
+{
+  "diagnosticOnly": true,
+  "inputReceipt": "/private/tmp/graphite-method-gate-profiling/input-receipt.json",
+  "inputReceiptSha256": "6d242e0b152831c8fa95ed003654974a1f85bdff10f0bba20a7a7f9d904a0fdb",
+  "scriptSha256": "e6bdf92b31d84b23dcfdca6dac8f1dc9d2c2755ac60453b57e3fac0b77467a34",
+  "rules": [
+    "Reference union matches exact benchmark expected / expectedByGraph methods; count each stack once.",
+    "Engine union is any io.johnsonlee.graphite.cypher.* frame, including descendants outside that package.",
+    "Engine union is not engine-exclusive CPU: HTTP guard or serialization may also have cypher frames.",
+    "Disjoint group precedence: compiler/GC background, reference, engine stack, other JMH client, other named server, other.",
+    "Compiler is identified by thread name or CompileBroker::compiler_thread_loop for unnamed native threads.",
+    "GC background is identified by GC/G1 thread names or ConcurrentGCThread::run; no JIT/GC is attributed to a co-occurring phase.",
+    "JMH client non-reference includes response normalization/digest validation; it is not reference expected construction.",
+    "All percentages use every recorded CPU sample or every recorded allocation weight as the denominator.",
+    "Sampled TLAB/outside-TLAB bytes are not exact allocation totals or object counts."
+  ],
+  "limitations": [
+    "Existing exact Method trace analysis is consumed; JFR alignment is not independently regenerated.",
+    "TSV hashes and collapsed totals are checked; no large JFR or graph hashes were recomputed.",
+    "Input graph hashes are pre-capture evidence only; this audit does not perform the pending post-capture hash.",
+    "Mac residentSet auxiliary fields are not treated as RSS.",
+    "These main-only Mac profiles do not explain the original Linux CI comparison failures."
+  ],
+  "runs": [
+    {
+      "id": "method-4-count-1",
+      "analysis": "/private/tmp/graphite-method-gate-profiling/method-4-count-1-analysis/analysis.json",
+      "sourceJfrSha256Recorded": "65d3dcbac768dbe11745e690ef3f49f219df133368ddc23bbaf9100db315e761",
+      "tsvSha256Verified": "87d1b4e0794aa639aa08f2b849f5adc4511603fc611f87c18d76168485c8a669",
+      "validation": {
+        "passed": true,
+        "queryCount": 1,
+        "expectedCount": 1,
+        "catalogOrderChecked": true,
+        "allTsvOutcomesSuccess": true,
+        "nonoverlapping": true,
+        "binding": "chronological exact-signature MethodTrace windows paired ordinally with sequential replay TSV; JFR does not contain query IDs",
+        "durationToleranceNanos": 1000000,
+        "minLatencyGapNanos": 12208,
+        "maxLatencyGapNanos": 12208,
+        "totalLatencyGapNanos": 12208
+      },
+      "requestThread": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=33795]",
+      "traceDurationNanos": 178155917,
+      "jmhWallNanos": 178168125,
+      "latencyGapNanos": 12208,
+      "metrics": {
+        "cpuSamples": {
+          "totalWeight": 285,
+          "eventCount": 285,
+          "unit": "samples",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 66,
+            "jmhNonReference": 7,
+            "expected": 94,
+            "referenceUnion": 94,
+            "expectedByGraph": 75
+          },
+          "disjointGroups": {
+            "engineStack": 66,
+            "other": 2,
+            "compiler": 102,
+            "serverOther": 14,
+            "jmhNonReferenceNonEngine": 7,
+            "reference": 94
+          },
+          "threadGroups": {
+            "otherThread": 4,
+            "compiler": 102,
+            "serverNamed": 78,
+            "jmh": 101
+          },
+          "percentOfAllWeight": {
+            "engineStack": 23.157894736842106,
+            "other": 0.7017543859649122,
+            "compiler": 35.78947368421053,
+            "serverOther": 4.912280701754386,
+            "jmhNonReferenceNonEngine": 2.456140350877193,
+            "reference": 32.98245614035088
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=33795]": 94
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=47363]": 1,
+            "ForkJoinPool-1-worker-2 [java=42,os=60931]": 1,
+            "JettyServerThreadPool-25 [java=25,os=37891]": 1,
+            "graphite-cypher-1 [java=37,os=46851]": 42,
+            "graphite-cypher-2 [java=38,os=62467]": 7,
+            "graphite-cypher-3 [java=39,os=47107]": 8,
+            "graphite-cypher-4 [java=40,os=61699]": 6
+          },
+          "referenceTopLeaf": [
+            [
+              "java.lang.String.equals",
+              48
+            ],
+            [
+              "java.util.ArrayList$Itr.next",
+              20
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.expected",
+              15
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark$$Lambda$276.0x0000009001227280.invoke",
+              8
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodBenchmarkCompatibilityRecord.getClassName",
+              3
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              9
+            ],
+            [
+              "libz.1.dylib.inflate",
+              5
+            ],
+            [
+              "libjvm.dylib.InstanceKlass::find_method_index",
+              2
+            ],
+            [
+              "libjvm.dylib.ConcurrentHashTable<SymbolTableConfig, ",
+              2
+            ],
+            [
+              "libsystem_kernel.dylib.__psynch_cvbroad",
+              2
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              2
+            ],
+            [
+              "libsystem_platform.dylib._platform_bzero",
+              2
+            ],
+            [
+              "I2C/C2I adapters",
+              1
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-4-count-1-analysis/collapsed/01-method-4-count-1.cpuSamples.collapsed",
+          "collapsedBytes": 419360,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        },
+        "allocationSampledBytes": {
+          "totalWeight": 61416376,
+          "eventCount": 83,
+          "unit": "sampled-TLAB-or-outside-TLAB-bytes",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 58532792,
+            "jmhNonReference": 786432
+          },
+          "disjointGroups": {
+            "serverOther": 2097152,
+            "engineStack": 58532792,
+            "jmhNonReferenceNonEngine": 786432
+          },
+          "threadGroups": {
+            "serverNamed": 60629944,
+            "jmh": 786432
+          },
+          "percentOfAllWeight": {
+            "serverOther": 3.414646282613614,
+            "engineStack": 95.30486136140628,
+            "jmhNonReferenceNonEngine": 1.2804923559801054
+          },
+          "referenceByThread": {},
+          "engineByThread": {
+            "graphite-cypher-1 [java=37,os=46851]": 23606848,
+            "graphite-cypher-2 [java=38,os=62467]": 9444560,
+            "graphite-cypher-3 [java=39,os=47107]": 16210968,
+            "graphite-cypher-4 [java=40,os=61699]": 9270416
+          },
+          "referenceTopLeaf": [],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              32001304
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              19191288
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap.rehash",
+              3670184
+            ],
+            [
+              "java.util.zip.InflaterInputStream.<init>",
+              1310720
+            ],
+            [
+              "java.util.Arrays.copyOfRange",
+              786432
+            ],
+            [
+              "java.util.Collections.singletonIterator",
+              262144
+            ],
+            [
+              "java.lang.Class.initClassName",
+              262144
+            ],
+            [
+              "java.lang.StringLatin1.newString",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-4-count-1-analysis/collapsed/01-method-4-count-1.allocationSampledBytes.collapsed",
+          "collapsedBytes": 191431,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        }
+      }
+    },
+    {
+      "id": "method-4-count-2",
+      "analysis": "/private/tmp/graphite-method-gate-profiling/method-4-count-2-analysis/analysis.json",
+      "sourceJfrSha256Recorded": "b1e64f1d07e6deda703b25fb864e450a534dc4c99283d9df2f8ce60707d52967",
+      "tsvSha256Verified": "bcabba177b43f60f71b677d81aeb06326ba225a27fc6914898f323b7cf0d07c3",
+      "validation": {
+        "passed": true,
+        "queryCount": 1,
+        "expectedCount": 1,
+        "catalogOrderChecked": true,
+        "allTsvOutcomesSuccess": true,
+        "nonoverlapping": true,
+        "binding": "chronological exact-signature MethodTrace windows paired ordinally with sequential replay TSV; JFR does not contain query IDs",
+        "durationToleranceNanos": 1000000,
+        "minLatencyGapNanos": 14541,
+        "maxLatencyGapNanos": 14541,
+        "totalLatencyGapNanos": 14541
+      },
+      "requestThread": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41731]",
+      "traceDurationNanos": 176691084,
+      "jmhWallNanos": 176705625,
+      "latencyGapNanos": 14541,
+      "metrics": {
+        "cpuSamples": {
+          "totalWeight": 285,
+          "eventCount": 285,
+          "unit": "samples",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 63,
+            "jmhNonReference": 6,
+            "expected": 94,
+            "referenceUnion": 94,
+            "expectedByGraph": 74
+          },
+          "disjointGroups": {
+            "compiler": 106,
+            "other": 1,
+            "serverOther": 14,
+            "gcBackground": 1,
+            "engineStack": 63,
+            "jmhNonReferenceNonEngine": 6,
+            "reference": 94
+          },
+          "threadGroups": {
+            "compiler": 106,
+            "otherThread": 1,
+            "serverNamed": 77,
+            "gcBackground": 1,
+            "jmh": 100
+          },
+          "percentOfAllWeight": {
+            "compiler": 37.19298245614035,
+            "other": 0.3508771929824561,
+            "serverOther": 4.912280701754386,
+            "gcBackground": 0.3508771929824561,
+            "engineStack": 22.105263157894736,
+            "jmhNonReferenceNonEngine": 2.1052631578947367,
+            "reference": 32.98245614035088
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41731]": 94
+          },
+          "engineByThread": {
+            "graphite-cypher-1 [java=37,os=46595]": 42,
+            "graphite-cypher-2 [java=38,os=46851]": 7,
+            "graphite-cypher-3 [java=39,os=47107]": 8,
+            "graphite-cypher-4 [java=40,os=61699]": 6
+          },
+          "referenceTopLeaf": [
+            [
+              "java.lang.String.equals",
+              60
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.expected",
+              14
+            ],
+            [
+              "java.util.ArrayList$Itr.next",
+              12
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark$$Lambda$276.0x000000f801227280.invoke",
+              5
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodBenchmarkCompatibilityRecord.getClassName",
+              3
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              5
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.readInt",
+              3
+            ],
+            [
+              "jdk.internal.misc.Unsafe.getIntUnaligned",
+              3
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.requireRemaining",
+              3
+            ],
+            [
+              "libz.1.dylib.inflate",
+              2
+            ],
+            [
+              "libjvm.dylib.ClassFileParser::skip_over_field_signature",
+              2
+            ],
+            [
+              "libz.1.dylib.inflateSetDictionary",
+              2
+            ],
+            [
+              "libjvm.dylib.FieldStreamBase::init_generic_signature_start_slot",
+              2
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-4-count-2-analysis/collapsed/01-method-4-count-2.cpuSamples.collapsed",
+          "collapsedBytes": 436512,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        },
+        "allocationSampledBytes": {
+          "totalWeight": 67316360,
+          "eventCount": 104,
+          "unit": "sampled-TLAB-or-outside-TLAB-bytes",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 61549192,
+            "jmhNonReference": 1048576,
+            "expected": 1310720,
+            "expectedByGraph": 1310720,
+            "referenceUnion": 1310720
+          },
+          "disjointGroups": {
+            "engineStack": 61549192,
+            "serverOther": 3407872,
+            "jmhNonReferenceNonEngine": 1048576,
+            "reference": 1310720
+          },
+          "threadGroups": {
+            "otherThread": 262144,
+            "serverNamed": 64694920,
+            "jmh": 2359296
+          },
+          "percentOfAllWeight": {
+            "engineStack": 91.43273938163026,
+            "serverOther": 5.062472183582119,
+            "jmhNonReferenceNonEngine": 1.5576837487944981,
+            "reference": 1.9471046859931227
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41731]": 1310720
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=47363]": 262144,
+            "graphite-cypher-1 [java=37,os=46595]": 24838120,
+            "graphite-cypher-2 [java=38,os=46851]": 9444560,
+            "graphite-cypher-3 [java=39,os=47107]": 16997400,
+            "graphite-cypher-4 [java=40,os=61699]": 10006968
+          },
+          "referenceTopLeaf": [
+            [
+              "java.util.Formatter.parse",
+              524288
+            ],
+            [
+              "sun.security.provider.DigestBase.<init>",
+              262144
+            ],
+            [
+              "java.util.regex.Matcher.<init>",
+              262144
+            ],
+            [
+              "java.lang.StringLatin1.newString",
+              262144
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              33000000
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              19636128
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap.rehash",
+              4980904
+            ],
+            [
+              "java.util.zip.InflaterInputStream.<init>",
+              2097152
+            ],
+            [
+              "java.util.HashMap.newNode",
+              524288
+            ],
+            [
+              "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray",
+              262144
+            ],
+            [
+              "jdk.internal.org.objectweb.asm.SymbolTable.<init>",
+              262144
+            ],
+            [
+              "org.antlr.v4.runtime.atn.ParserATNSimulator.computeReachSet",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-4-count-2-analysis/collapsed/01-method-4-count-2.allocationSampledBytes.collapsed",
+          "collapsedBytes": 251972,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        }
+      }
+    },
+    {
+      "id": "method-4-count-3",
+      "analysis": "/private/tmp/graphite-method-gate-profiling/method-4-count-3-analysis/analysis.json",
+      "sourceJfrSha256Recorded": "769745a6e1688ac1b10ea2a2f6b5348316bd9cde7cbb00fc4576f5275cf9ce6e",
+      "tsvSha256Verified": "21cb3a20f55b3e63d4c37202d75225fc4d1edca965cdc076a2e044e706c0663c",
+      "validation": {
+        "passed": true,
+        "queryCount": 1,
+        "expectedCount": 1,
+        "catalogOrderChecked": true,
+        "allTsvOutcomesSuccess": true,
+        "nonoverlapping": true,
+        "binding": "chronological exact-signature MethodTrace windows paired ordinally with sequential replay TSV; JFR does not contain query IDs",
+        "durationToleranceNanos": 1000000,
+        "minLatencyGapNanos": 10916,
+        "maxLatencyGapNanos": 10916,
+        "totalLatencyGapNanos": 10916
+      },
+      "requestThread": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=34819]",
+      "traceDurationNanos": 180214042,
+      "jmhWallNanos": 180224958,
+      "latencyGapNanos": 10916,
+      "metrics": {
+        "cpuSamples": {
+          "totalWeight": 287,
+          "eventCount": 287,
+          "unit": "samples",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 68,
+            "jmhNonReference": 11,
+            "expected": 90,
+            "referenceUnion": 90,
+            "expectedByGraph": 72
+          },
+          "disjointGroups": {
+            "engineStack": 68,
+            "compiler": 103,
+            "other": 3,
+            "serverOther": 12,
+            "jmhNonReferenceNonEngine": 11,
+            "reference": 90
+          },
+          "threadGroups": {
+            "otherThread": 5,
+            "compiler": 103,
+            "serverNamed": 78,
+            "jmh": 101
+          },
+          "percentOfAllWeight": {
+            "engineStack": 23.693379790940767,
+            "compiler": 35.88850174216028,
+            "other": 1.0452961672473868,
+            "serverOther": 4.181184668989547,
+            "jmhNonReferenceNonEngine": 3.832752613240418,
+            "reference": 31.358885017421603
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=34819]": 90
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=60931]": 1,
+            "ForkJoinPool-1-worker-2 [java=42,os=47107]": 1,
+            "graphite-cypher-1 [java=37,os=62211]": 45,
+            "graphite-cypher-2 [java=38,os=61699]": 7,
+            "graphite-cypher-3 [java=39,os=61443]": 9,
+            "graphite-cypher-4 [java=40,os=46595]": 5
+          },
+          "referenceTopLeaf": [
+            [
+              "java.util.ArrayList$Itr.next",
+              38
+            ],
+            [
+              "java.lang.String.equals",
+              28
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.expected",
+              12
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark$$Lambda$276.0x000000f001227280.invoke",
+              7
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodBenchmarkCompatibilityRecord.getClassName",
+              4
+            ],
+            [
+              "java.util.Formatter.parse",
+              1
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              8
+            ],
+            [
+              "libjvm.dylib.InstanceKlass::find_method_index",
+              3
+            ],
+            [
+              "jdk.internal.misc.Unsafe.getIntUnaligned",
+              3
+            ],
+            [
+              "libsystem_platform.dylib._platform_memchr",
+              2
+            ],
+            [
+              "libjvm.dylib.hash_symbol",
+              2
+            ],
+            [
+              "libsystem_kernel.dylib.read",
+              2
+            ],
+            [
+              "org.antlr.v4.runtime.misc.FlexibleHashMap.getBucket",
+              2
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.readInt",
+              2
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-4-count-3-analysis/collapsed/01-method-4-count-3.cpuSamples.collapsed",
+          "collapsedBytes": 454585,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        },
+        "allocationSampledBytes": {
+          "totalWeight": 62415096,
+          "eventCount": 84,
+          "unit": "sampled-TLAB-or-outside-TLAB-bytes",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 59793656,
+            "jmhNonReference": 1048576
+          },
+          "disjointGroups": {
+            "engineStack": 59793656,
+            "serverOther": 1572864,
+            "jmhNonReferenceNonEngine": 1048576
+          },
+          "threadGroups": {
+            "otherThread": 786432,
+            "serverNamed": 60580088,
+            "jmh": 1048576
+          },
+          "percentOfAllWeight": {
+            "engineStack": 95.79999043821066,
+            "serverOther": 2.5200057370736078,
+            "jmhNonReferenceNonEngine": 1.6800038247157387
+          },
+          "referenceByThread": {},
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=60931]": 262144,
+            "ForkJoinPool-1-worker-3 [java=43,os=60163]": 262144,
+            "ForkJoinPool-1-worker-4 [java=44,os=59907]": 262144,
+            "graphite-cypher-1 [java=37,os=62211]": 22820416,
+            "graphite-cypher-2 [java=38,os=61699]": 10493184,
+            "graphite-cypher-3 [java=39,os=61443]": 16210944,
+            "graphite-cypher-4 [java=40,os=46595]": 9482680
+          },
+          "referenceTopLeaf": [],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              33000000
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              17356280
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap.rehash",
+              4718784
+            ],
+            [
+              "java.util.zip.InflaterInputStream.<init>",
+              1835008
+            ],
+            [
+              "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray",
+              524288
+            ],
+            [
+              "java.util.IdentityHashMap.init",
+              524288
+            ],
+            [
+              "java.lang.invoke.DirectMethodHandle.allocateInstance",
+              262144
+            ],
+            [
+              "org.antlr.v4.runtime.misc.IntervalSet.of",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-4-count-3-analysis/collapsed/01-method-4-count-3.allocationSampledBytes.collapsed",
+          "collapsedBytes": 165802,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        }
+      }
+    },
+    {
+      "id": "method-36-or-1",
+      "analysis": "/private/tmp/graphite-method-gate-profiling/method-36-or-1-analysis/analysis.json",
+      "sourceJfrSha256Recorded": "45f086720c3b515487e575c997965fc035029f513e356067a8a71c0f1316b4de",
+      "tsvSha256Verified": "3c7bce38ea1ca271fe4776024835c6c8e09ff8ac7fc36e8026adb28bfa9e55f4",
+      "validation": {
+        "passed": true,
+        "queryCount": 1,
+        "expectedCount": 1,
+        "catalogOrderChecked": true,
+        "allTsvOutcomesSuccess": true,
+        "nonoverlapping": true,
+        "binding": "chronological exact-signature MethodTrace windows paired ordinally with sequential replay TSV; JFR does not contain query IDs",
+        "durationToleranceNanos": 1000000,
+        "minLatencyGapNanos": 11417,
+        "maxLatencyGapNanos": 11417,
+        "totalLatencyGapNanos": 11417
+      },
+      "requestThread": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41987]",
+      "traceDurationNanos": 1344199500,
+      "jmhWallNanos": 1344210917,
+      "latencyGapNanos": 11417,
+      "metrics": {
+        "cpuSamples": {
+          "totalWeight": 2407,
+          "eventCount": 2407,
+          "unit": "samples",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 267,
+            "jmhNonReference": 22,
+            "expected": 985,
+            "referenceUnion": 985,
+            "expectedByGraph": 786
+          },
+          "disjointGroups": {
+            "other": 36,
+            "engineStack": 267,
+            "compiler": 441,
+            "gcBackground": 603,
+            "serverOther": 53,
+            "jmhNonReferenceNonEngine": 22,
+            "reference": 985
+          },
+          "threadGroups": {
+            "otherThread": 40,
+            "compiler": 441,
+            "gcBackground": 603,
+            "serverNamed": 316,
+            "jmh": 1007
+          },
+          "percentOfAllWeight": {
+            "other": 1.4956377233070213,
+            "engineStack": 11.092646447860407,
+            "compiler": 18.32156211051101,
+            "gcBackground": 25.051931865392604,
+            "serverOther": 2.201911092646448,
+            "jmhNonReferenceNonEngine": 0.9140008309098463,
+            "reference": 40.922309929372666
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41987]": 985
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=48131]": 1,
+            "ForkJoinPool-1-worker-2 [java=42,os=48387]": 1,
+            "ForkJoinPool-1-worker-3 [java=43,os=61955]": 2,
+            "graphite-cypher-1 [java=37,os=63491]": 111,
+            "graphite-cypher-2 [java=38,os=62979]": 50,
+            "graphite-cypher-3 [java=39,os=47363]": 60,
+            "graphite-cypher-4 [java=40,os=62467]": 42
+          },
+          "referenceTopLeaf": [
+            [
+              "java.lang.String.equals",
+              325
+            ],
+            [
+              "java.util.ArrayList$Itr.next",
+              252
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.caseFor$lambda$24",
+              129
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark$$Lambda$276.0x0000000301226e40.invoke",
+              103
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodBenchmarkCompatibilityRecord.getClassName",
+              88
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.expected",
+              78
+            ],
+            [
+              "sun.security.provider.SHA2.implCompress0",
+              1
+            ],
+            [
+              "sun.security.provider.SHA2.<init>",
+              1
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              70
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.requireRemaining",
+              31
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.readInt",
+              19
+            ],
+            [
+              "jdk.internal.misc.Unsafe.getIntUnaligned",
+              18
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              12
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.recordClassRange",
+              10
+            ],
+            [
+              "libsystem_platform.dylib._platform_bzero",
+              9
+            ],
+            [
+              "java.nio.Buffer.checkIndex",
+              9
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-36-or-1-analysis/collapsed/01-method-36-or-1.cpuSamples.collapsed",
+          "collapsedBytes": 1111358,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        },
+        "allocationSampledBytes": {
+          "totalWeight": 492053456,
+          "eventCount": 502,
+          "unit": "sampled-TLAB-or-outside-TLAB-bytes",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 473703376,
+            "jmhNonReference": 5767168,
+            "expected": 3670016,
+            "referenceUnion": 3670016,
+            "expectedByGraph": 3145728
+          },
+          "disjointGroups": {
+            "other": 1310720,
+            "engineStack": 473703376,
+            "serverOther": 7602176,
+            "jmhNonReferenceNonEngine": 5767168,
+            "reference": 3670016
+          },
+          "threadGroups": {
+            "otherThread": 2883584,
+            "serverNamed": 479732688,
+            "jmh": 9437184
+          },
+          "percentOfAllWeight": {
+            "other": 0.266377562034642,
+            "engineStack": 96.270714131515,
+            "serverOther": 1.5449898598009237,
+            "jmhNonReferenceNonEngine": 1.172061272952425,
+            "reference": 0.7458571736969977
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41987]": 3670016
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=48131]": 262144,
+            "ForkJoinPool-1-worker-2 [java=42,os=48387]": 262144,
+            "ForkJoinPool-1-worker-3 [java=43,os=61955]": 524288,
+            "ForkJoinPool-1-worker-4 [java=44,os=49155]": 524288,
+            "graphite-cypher-1 [java=37,os=63491]": 155202920,
+            "graphite-cypher-2 [java=38,os=62979]": 87520152,
+            "graphite-cypher-3 [java=39,os=47363]": 141442024,
+            "graphite-cypher-4 [java=40,os=62467]": 87965416
+          },
+          "referenceTopLeaf": [
+            [
+              "java.util.Formatter.<init>",
+              524288
+            ],
+            [
+              "java.lang.AbstractStringBuilder.<init>",
+              524288
+            ],
+            [
+              "java.util.ArrayList.grow",
+              524288
+            ],
+            [
+              "java.util.regex.Matcher.<init>",
+              524288
+            ],
+            [
+              "java.lang.String.format",
+              262144
+            ],
+            [
+              "java.util.Formatter$Flags.parse",
+              262144
+            ],
+            [
+              "java.lang.Long.toUnsignedString0",
+              262144
+            ],
+            [
+              "java.util.Formatter.parse",
+              262144
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              297262144
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              134234752
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap.rehash",
+              33293584
+            ],
+            [
+              "java.util.zip.InflaterInputStream.<init>",
+              2097152
+            ],
+            [
+              "java.util.ArrayList.<init>",
+              1310720
+            ],
+            [
+              "org.antlr.v4.runtime.atn.ATNDeserializer.stateFactory",
+              524288
+            ],
+            [
+              "org.antlr.v4.runtime.atn.ParserATNSimulator.getEpsilonTarget",
+              524288
+            ],
+            [
+              "kotlin.collections.MapsKt__MapsKt.mutableMapOf",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-36-or-1-analysis/collapsed/01-method-36-or-1.allocationSampledBytes.collapsed",
+          "collapsedBytes": 430415,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        }
+      }
+    },
+    {
+      "id": "method-36-or-2",
+      "analysis": "/private/tmp/graphite-method-gate-profiling/method-36-or-2-analysis/analysis.json",
+      "sourceJfrSha256Recorded": "3b9025e66e237ff75029a5a382391d6f013ee7343439063ee781c8d67abc2fe0",
+      "tsvSha256Verified": "5ddbd9e81bdcdc51f91b8c02da3f195f5cd852f51942e04e67508d6767da3b97",
+      "validation": {
+        "passed": true,
+        "queryCount": 1,
+        "expectedCount": 1,
+        "catalogOrderChecked": true,
+        "allTsvOutcomesSuccess": true,
+        "nonoverlapping": true,
+        "binding": "chronological exact-signature MethodTrace windows paired ordinally with sequential replay TSV; JFR does not contain query IDs",
+        "durationToleranceNanos": 1000000,
+        "minLatencyGapNanos": 16083,
+        "maxLatencyGapNanos": 16083,
+        "totalLatencyGapNanos": 16083
+      },
+      "requestThread": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41731]",
+      "traceDurationNanos": 1337880500,
+      "jmhWallNanos": 1337896583,
+      "latencyGapNanos": 16083,
+      "metrics": {
+        "cpuSamples": {
+          "totalWeight": 2366,
+          "eventCount": 2366,
+          "unit": "samples",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 264,
+            "jmhNonReference": 24,
+            "expected": 983,
+            "referenceUnion": 983,
+            "expectedByGraph": 781
+          },
+          "disjointGroups": {
+            "other": 35,
+            "engineStack": 264,
+            "compiler": 418,
+            "gcBackground": 604,
+            "serverOther": 38,
+            "jmhNonReferenceNonEngine": 24,
+            "reference": 983
+          },
+          "threadGroups": {
+            "otherThread": 40,
+            "compiler": 418,
+            "gcBackground": 604,
+            "serverNamed": 297,
+            "jmh": 1007
+          },
+          "percentOfAllWeight": {
+            "other": 1.4792899408284024,
+            "engineStack": 11.158072696534235,
+            "compiler": 17.666948436179204,
+            "gcBackground": 25.528317836010142,
+            "serverOther": 1.606086221470837,
+            "jmhNonReferenceNonEngine": 1.0143702451394758,
+            "reference": 41.5469146238377
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41731]": 983
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=62467]": 2,
+            "ForkJoinPool-1-worker-2 [java=42,os=61955]": 1,
+            "ForkJoinPool-1-worker-3 [java=43,os=61443]": 2,
+            "graphite-cypher-1 [java=37,os=62979]": 107,
+            "graphite-cypher-2 [java=38,os=46595]": 50,
+            "graphite-cypher-3 [java=39,os=62723]": 61,
+            "graphite-cypher-4 [java=40,os=47363]": 41
+          },
+          "referenceTopLeaf": [
+            [
+              "java.lang.String.equals",
+              324
+            ],
+            [
+              "java.util.ArrayList$Itr.next",
+              259
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark$$Lambda$276.0x0000007001227268.invoke",
+              127
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodBenchmarkCompatibilityRecord.getClassName",
+              103
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.caseFor$lambda$24",
+              99
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.expected",
+              63
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark$Companion.access$sha256",
+              1
+            ],
+            [
+              "sun.security.provider.SHA2.implDigest",
+              1
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              63
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.readInt",
+              23
+            ],
+            [
+              "java.nio.Buffer.checkIndex",
+              19
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.requireRemaining",
+              18
+            ],
+            [
+              "jdk.internal.misc.Unsafe.getIntUnaligned",
+              12
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              11
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap.rehash",
+              11
+            ],
+            [
+              "java.nio.Buffer.scope",
+              10
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-36-or-2-analysis/collapsed/01-method-36-or-2.cpuSamples.collapsed",
+          "collapsedBytes": 1166514,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        },
+        "allocationSampledBytes": {
+          "totalWeight": 490892328,
+          "eventCount": 506,
+          "unit": "sampled-TLAB-or-outside-TLAB-bytes",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 473328680,
+            "jmhNonReference": 7077888,
+            "expected": 3145728,
+            "referenceUnion": 3145728,
+            "expectedByGraph": 2359296
+          },
+          "disjointGroups": {
+            "other": 1310720,
+            "engineStack": 473328680,
+            "serverOther": 6029312,
+            "jmhNonReferenceNonEngine": 7077888,
+            "reference": 3145728
+          },
+          "threadGroups": {
+            "otherThread": 3670016,
+            "serverNamed": 476998696,
+            "jmh": 10223616
+          },
+          "percentOfAllWeight": {
+            "other": 0.2670076359392604,
+            "engineStack": 96.4220976784139,
+            "serverOther": 1.2282351253205979,
+            "jmhNonReferenceNonEngine": 1.4418412340720062,
+            "reference": 0.640818326254225
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=41731]": 3145728
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=62467]": 262144,
+            "ForkJoinPool-1-worker-2 [java=42,os=61955]": 524288,
+            "ForkJoinPool-1-worker-3 [java=43,os=61443]": 1048576,
+            "ForkJoinPool-1-worker-4 [java=44,os=60931]": 524288,
+            "graphite-cypher-1 [java=37,os=62979]": 155989400,
+            "graphite-cypher-2 [java=38,os=46595]": 88306488,
+            "graphite-cypher-3 [java=39,os=62723]": 142228456,
+            "graphite-cypher-4 [java=40,os=47363]": 84445040
+          },
+          "referenceTopLeaf": [
+            [
+              "java.util.regex.Matcher.<init>",
+              1835008
+            ],
+            [
+              "java.lang.AbstractStringBuilder.<init>",
+              524288
+            ],
+            [
+              "java.util.Formatter.parse",
+              524288
+            ],
+            [
+              "java.lang.String.format",
+              262144
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              294266056
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              135021184
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap.rehash",
+              33817824
+            ],
+            [
+              "java.util.zip.InflaterInputStream.<init>",
+              2621440
+            ],
+            [
+              "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray",
+              1310720
+            ],
+            [
+              "java.util.ArrayList.<init>",
+              786432
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex.materialize",
+              524288
+            ],
+            [
+              "org.antlr.v4.runtime.atn.SingletonPredictionContext.create",
+              524288
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-36-or-2-analysis/collapsed/01-method-36-or-2.allocationSampledBytes.collapsed",
+          "collapsedBytes": 439347,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        }
+      }
+    },
+    {
+      "id": "method-36-or-3",
+      "analysis": "/private/tmp/graphite-method-gate-profiling/method-36-or-3-analysis/analysis.json",
+      "sourceJfrSha256Recorded": "22cbf59c803a34dd256397159f8d5c2efd779350ddfb6135890a225f6bb2934b",
+      "tsvSha256Verified": "b7346e3b385fc78777e071f56d9607d3d603e024cb1e9379534dfa24ca271d11",
+      "validation": {
+        "passed": true,
+        "queryCount": 1,
+        "expectedCount": 1,
+        "catalogOrderChecked": true,
+        "allTsvOutcomesSuccess": true,
+        "nonoverlapping": true,
+        "binding": "chronological exact-signature MethodTrace windows paired ordinally with sequential replay TSV; JFR does not contain query IDs",
+        "durationToleranceNanos": 1000000,
+        "minLatencyGapNanos": 10375,
+        "maxLatencyGapNanos": 10375,
+        "totalLatencyGapNanos": 10375
+      },
+      "requestThread": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=33031]",
+      "traceDurationNanos": 1351075833,
+      "jmhWallNanos": 1351086208,
+      "latencyGapNanos": 10375,
+      "metrics": {
+        "cpuSamples": {
+          "totalWeight": 1923,
+          "eventCount": 1923,
+          "unit": "samples",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 278,
+            "jmhNonReference": 21,
+            "expected": 976,
+            "referenceUnion": 976,
+            "expectedByGraph": 778
+          },
+          "disjointGroups": {
+            "other": 44,
+            "engineStack": 278,
+            "compiler": 443,
+            "gcBackground": 113,
+            "serverOther": 48,
+            "jmhNonReferenceNonEngine": 21,
+            "reference": 976
+          },
+          "threadGroups": {
+            "otherThread": 46,
+            "compiler": 443,
+            "gcBackground": 113,
+            "serverNamed": 324,
+            "jmh": 997
+          },
+          "percentOfAllWeight": {
+            "other": 2.2880915236609463,
+            "engineStack": 14.456578263130526,
+            "compiler": 23.036921476859074,
+            "gcBackground": 5.876235049401976,
+            "serverOther": 2.49609984399376,
+            "jmhNonReferenceNonEngine": 1.0920436817472698,
+            "reference": 50.75403016120645
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=33031]": 976
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-3 [java=43,os=59651]": 2,
+            "graphite-cypher-1 [java=37,os=45059]": 117,
+            "graphite-cypher-2 [java=38,os=45315]": 52,
+            "graphite-cypher-3 [java=39,os=45571]": 63,
+            "graphite-cypher-4 [java=40,os=60931]": 44
+          },
+          "referenceTopLeaf": [
+            [
+              "java.lang.String.equals",
+              360
+            ],
+            [
+              "java.util.ArrayList$Itr.next",
+              232
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.caseFor$lambda$24",
+              118
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark$$Lambda$276.0x0000007001227268.invoke",
+              111
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodBenchmarkCompatibilityRecord.getClassName",
+              82
+            ],
+            [
+              "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.expected",
+              67
+            ],
+            [
+              "sun.security.provider.SHA2.implCompress0",
+              2
+            ],
+            [
+              "sun.security.provider.DigestBase.engineDigest",
+              1
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              56
+            ],
+            [
+              "libsystem_platform.dylib._platform_bzero",
+              21
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.requireRemaining",
+              20
+            ],
+            [
+              "jdk.internal.misc.Unsafe.getIntUnaligned",
+              19
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.ByteBufferDataInput.readInt",
+              18
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              13
+            ],
+            [
+              "java.nio.Buffer.checkIndex",
+              12
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.recordClassRange",
+              12
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-36-or-3-analysis/collapsed/01-method-36-or-3.cpuSamples.collapsed",
+          "collapsedBytes": 1117916,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        },
+        "allocationSampledBytes": {
+          "totalWeight": 498105936,
+          "eventCount": 520,
+          "unit": "sampled-TLAB-or-outside-TLAB-bytes",
+          "inclusiveStackUnions": {
+            "enginePackageUnion": 481328720,
+            "jmhNonReference": 4194304,
+            "expected": 5242880,
+            "referenceUnion": 5242880,
+            "expectedByGraph": 4718592
+          },
+          "disjointGroups": {
+            "other": 786432,
+            "engineStack": 481328720,
+            "serverOther": 6553600,
+            "jmhNonReferenceNonEngine": 4194304,
+            "reference": 5242880
+          },
+          "threadGroups": {
+            "otherThread": 3670016,
+            "serverNamed": 484998736,
+            "jmh": 9437184
+          },
+          "percentOfAllWeight": {
+            "other": 0.15788448664462412,
+            "engineStack": 96.63179761824802,
+            "serverOther": 1.3157040553718677,
+            "jmhNonReferenceNonEngine": 0.8420505954379953,
+            "reference": 1.0525632442974941
+          },
+          "referenceByThread": {
+            "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate-jmh-worker-1 [java=19,os=33031]": 5242880
+          },
+          "engineByThread": {
+            "ForkJoinPool-1-worker-1 [java=41,os=60419]": 1048576,
+            "ForkJoinPool-1-worker-2 [java=42,os=46339]": 262144,
+            "ForkJoinPool-1-worker-3 [java=43,os=59651]": 1048576,
+            "ForkJoinPool-1-worker-4 [java=44,os=59395]": 524288,
+            "graphite-cypher-1 [java=37,os=45059]": 153550656,
+            "graphite-cypher-2 [java=38,os=45315]": 89195488,
+            "graphite-cypher-3 [java=39,os=45571]": 144325656,
+            "graphite-cypher-4 [java=40,os=60931]": 91373336
+          },
+          "referenceTopLeaf": [
+            [
+              "java.util.regex.Matcher.<init>",
+              1310720
+            ],
+            [
+              "java.util.Arrays.copyOfRange",
+              1048576
+            ],
+            [
+              "java.util.Formatter.parse",
+              786432
+            ],
+            [
+              "java.lang.StringLatin1.newString",
+              786432
+            ],
+            [
+              "jdk.internal.misc.Unsafe.allocateUninitializedArray",
+              524288
+            ],
+            [
+              "sun.security.provider.SHA2.<init>",
+              262144
+            ],
+            [
+              "java.util.ArrayList.grow",
+              262144
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              262144
+            ]
+          ],
+          "engineTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedMethodIndex$Companion.build",
+              297000000
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              134257824
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap.rehash",
+              39585136
+            ],
+            [
+              "java.util.zip.InflaterInputStream.<init>",
+              1572864
+            ],
+            [
+              "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray",
+              1310720
+            ],
+            [
+              "io.johnsonlee.graphite.cypher.MethodQueryExecutorKt.runMethodGraphTasks$lambda$2$lambda$1",
+              1048576
+            ],
+            [
+              "java.util.ArrayList.<init>",
+              786432
+            ],
+            [
+              "org.antlr.v4.runtime.atn.ParserATNSimulator.getEpsilonTarget",
+              524288
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-method-gate-profiling/method-36-or-3-analysis/collapsed/01-method-36-or-3.allocationSampledBytes.collapsed",
+          "collapsedBytes": 407723,
+          "weightConserved": true,
+          "missingOrTruncatedStacks": 0
+        }
+      }
+    }
+  ]
+}

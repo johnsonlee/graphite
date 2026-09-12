@@ -1,0 +1,18 @@
+{
+  "mainAndJmhCompared": 130,
+  "changedProductionFiles": [
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt"
+  ],
+  "sourceSha256": "8239e1682428ac08b046ab7957f02d160d02333c354dfb600311770804e4f631",
+  "candidateJarSha256": "11b8e055adf26bf5f7d18c0d2015f8b938d0ed0b48b96eb7899715f4b70e2af0",
+  "xmlCounts": {
+    "tests": 195,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "sourceReviewSha256": "2cfe74c0ab217a5576f872578c9f6c27e8b38ffef09cde060af1c31539b90df0",
+  "liveJavaProcessesBeforeControl": [],
+  "accepted": false,
+  "comparisonScope": "All tracked src/main and src/jmh across the repository"
+}

@@ -1,0 +1,22 @@
+{
+  "attempt": 140,
+  "status": "complete",
+  "localDecision": "reject-v3-repeated-regression",
+  "newJavaBuildPerformanceOrLargeInputHash": false,
+  "markdownLinksValid": true,
+  "filesSha256": {
+    "independent-plan-audit.md": "db6d6d2934a3d44b495c48df037a60ee2c7163989cf48d37081757301d9a02b4",
+    "independent-plan-audit.json": "663d6536c5f6df0d3abea1f15276fa888984b319afdc7ced5b9a473510aecfce",
+    "independent-plan-audit.py": "98e012a34602c8ab95fd737137ed0bbdc5ef4b32f2be139fec0f07a3e664ac66",
+    "independent-control-audit.md": "8765b5c538834c2e7c43a20429418baaa7e3a2b6fc7783e13d3a2ee50c3af72a",
+    "independent-control-audit.json": "a6d66807a7a8f8be85cc900ee2fbb3d2d7d1ce06f89bf692652d6fd76a8f173d",
+    "independent-control-audit.py": "cd9d92cfc12b772ab6f79d4f73504546889b8d72c4be8e08366e405ebf9637a4",
+    "independent-old34-audit.md": "d9ec721dd92e383efebf1d4a74de7d3096e4d6b5f3fb020597cce676e8ff011d",
+    "independent-old34-audit.json": "fe971391a4ba79a99db9ae5cb17f82e075bcffb54da7b3091522b0a8595f3a48",
+    "independent-old34-audit.py": "24ba31353ee683278d540f5fb0c44675f7201fd554080d0ab183570e1c18db4e",
+    "independent-v3-audit.md": "fd155e0d36314f3d38f09bcc1f0d1aae9d8ded15668ba7bc95ab5377a827d789",
+    "independent-v3-audit.json": "ed6733913d7eaa85168da21cb5e00e00d73b9f24cba933f3124d8f194dcc9280",
+    "independent-v3-audit.py": "07777f0f6d37b101e5914977e61789307b867600c8888be48221c4e5dce619d2",
+    "v3-pairs/README.md": "d1c79de290436e877518833465ce15e1eb3cc4a50d72d2cbf1da0bb444c3c003"
+  }
+}

@@ -1,0 +1,24 @@
+START 1 candidate
+Starting fork 1/1
+Verified fork 1: all 36 queries
+VERIFIED 1 candidate 36
+START 1 base
+Starting fork 1/1
+Verified fork 1: all 36 queries
+VERIFIED 1 base 36
+START 2 base
+Starting fork 1/1
+Verified fork 1: all 36 queries
+VERIFIED 2 base 36
+START 2 candidate
+Starting fork 1/1
+Verified fork 1: all 36 queries
+VERIFIED 2 candidate 36
+START 3 candidate
+Starting fork 1/1
+Verified fork 1: all 36 queries
+VERIFIED 3 candidate 36
+START 3 base
+Starting fork 1/1
+Verified fork 1: all 36 queries
+VERIFIED 3 base 36

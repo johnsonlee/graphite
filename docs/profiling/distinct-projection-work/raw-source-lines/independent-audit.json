@@ -1,0 +1,184 @@
+{
+  "result": "pass",
+  "newCapture": false,
+  "newJavaRun": false,
+  "independentJfrRedecode": false,
+  "scope": "Read-only decoder source audit and independent nanosecond timestamp partition from full exported events, with exact original method/thread stack histograms and enriched metadata counts; no execution/import of parent analyze.py.",
+  "summarySha256": "b6ef1430eee993347706f379f6b02c03870914230fecba7dff386330e4afd594",
+  "decoderSha256": "f8a90a1f1c280b4ec157aeaa63bd1c8b0217bf0671a7626dc44208e400192f08",
+  "totals": {
+    "targetedRaw": 209,
+    "targetedNodeLeaf": 98,
+    "denseProvenanceRaw": 127
+  },
+  "targetedNodeLeafFrameTypes": {
+    "Interpreted": 63,
+    "C1 compiled": 35
+  },
+  "targetedNodeLeafBytecodeIndexes": {
+    "0": 5,
+    "66": 1,
+    "80": 1,
+    "97": 2,
+    "105": 1,
+    "123": 1,
+    "128": 3,
+    "140": 2,
+    "145": 1,
+    "155": 2,
+    "162": 4,
+    "193": 1,
+    "205": 3,
+    "218": 5,
+    "243": 1,
+    "252": 17,
+    "257": 1,
+    "265": 13,
+    "283": 8,
+    "288": 1,
+    "291": 8,
+    "294": 1,
+    "300": 1,
+    "312": 3,
+    "317": 1,
+    "322": 8,
+    "455": 2,
+    "776": 1
+  },
+  "targetedNodeLeafLineNumbers": {
+    "566": 5,
+    "572": 1,
+    "577": 1,
+    "579": 3,
+    "580": 18,
+    "581": 13,
+    "611": 1,
+    "3634": 1,
+    "3635": 3,
+    "3638": 4,
+    "3639": 2,
+    "3640": 1,
+    "3641": 6,
+    "3642": 5,
+    "3643": 34
+  },
+  "recordings": [
+    {
+      "recording": 1,
+      "exportSha256": "acd8e808c810153e6f850df03886f4fac62e18a123ce65a798e70c8a97b1a904",
+      "phaseJsonSha256": "03095f3d87c3594b0c7a20ba16c9164fcef6378d9ad0b6161a9636001b4f1d80",
+      "rawEvents": 132,
+      "eventsAssignedToExactlyOnePhase": 132,
+      "unassignedEvents": 0,
+      "originalJfrReceiptSha256Matches": true
+    },
+    {
+      "recording": 2,
+      "exportSha256": "54195d594b974812b2357f419fa9e4f706e6670ff9439f37e258fd9f9292cea9",
+      "phaseJsonSha256": "520c3758b7bcd9bf3844f5b2cd25460683739e6f77630e90c324a18032ebd8cb",
+      "rawEvents": 126,
+      "eventsAssignedToExactlyOnePhase": 126,
+      "unassignedEvents": 0,
+      "originalJfrReceiptSha256Matches": true
+    },
+    {
+      "recording": 3,
+      "exportSha256": "178626c033c1f200f1ca7aa44da4a66a073fb45cbd6887f873e80ab6a1da9dbd",
+      "phaseJsonSha256": "26749ede58297ca9a7812d7491528f52aaa5f7e83b68c482f7abd8da642101c0",
+      "rawEvents": 92,
+      "eventsAssignedToExactlyOnePhase": 92,
+      "unassignedEvents": 0,
+      "originalJfrReceiptSha256Matches": true
+    }
+  ],
+  "rows": [
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "rawApplicationCpuSamples": 75,
+      "nodeLeafSamples": 32,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "rawApplicationCpuSamples": 4,
+      "nodeLeafSamples": 2,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "rawApplicationCpuSamples": 53,
+      "nodeLeafSamples": 21,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "rawApplicationCpuSamples": 74,
+      "nodeLeafSamples": 36,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "rawApplicationCpuSamples": 6,
+      "nodeLeafSamples": 2,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "rawApplicationCpuSamples": 46,
+      "nodeLeafSamples": 17,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "rawApplicationCpuSamples": 60,
+      "nodeLeafSamples": 30,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "rawApplicationCpuSamples": 4,
+      "nodeLeafSamples": 3,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "rawApplicationCpuSamples": 28,
+      "nodeLeafSamples": 5,
+      "threadMethodStackHistogramExactlyMatches": true,
+      "lineBciFrameTypeHistogramMatchesSummary": true
+    }
+  ],
+  "limits": [
+    "Original JFR content hash is matched between retained receipts, not recomputed here. Exporter source and output hashes are checked; no second Java export was run.",
+    "Positive line and BCI establish available metadata, not true machine PC attribution.",
+    "Synthetic Kotlin source lines require exact class LineNumberTable plus SMAP; do not map to same-numbered repository lines.",
+    "Interpreted/C1 labels are recorded frame labels, not proof of causes or a steady-state C2 profile.",
+    "98 samples are only targeted initial per-node LEAF samples, a subset of 209 raw-family application CPU samples; dense provenance 127 is a separate inclusive scope."
+  ]
+}

@@ -1,0 +1,619 @@
+{
+  "result": "pass",
+  "referenceOnly": true,
+  "newJavaOrPerformanceMeasurement": false,
+  "exportAndManifestAuthenticated": true,
+  "independentFullReferenceNodesScanned": 5046935,
+  "selectedTupleCount": 200,
+  "selectionFinishedAtGraphOrdinal": 0,
+  "selectionFinishedAtExportLine": 1012,
+  "totalMatchingGetNodes": 1489740,
+  "full64By200By4PostingCardinalitiesMatch": true,
+  "allGraphAndTupleCountsMatch": true,
+  "totalActualSelectedNodes": 274,
+  "sumShortestPostingLengthsAllGraphs": 1636,
+  "sumShortestPostingLengthsAfterLeadingGraph": 53,
+  "actualSelectedNodesAfterLeadingGraph": 12,
+  "nonmatchingPerTupleAnchorEncountersAfterLeadingGraph": 41,
+  "eligibleButAbsentCompleteTupleCountsAllGraphs": 0,
+  "graphs": [
+    {
+      "graphId": "fixture-android-00",
+      "actualSelectedTuples": 200,
+      "actualSelectedNodeHits": 262,
+      "eligibleTuples": 200,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 1583,
+      "nonmatchingPerTupleAnchorEncounters": 1321
+    },
+    {
+      "graphId": "fixture-android-01",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-02",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-03",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-04",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-05",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-06",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-07",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-08",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-09",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-10",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-11",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-12",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-13",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-14",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-android-15",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-00",
+      "actualSelectedTuples": 11,
+      "actualSelectedNodeHits": 12,
+      "eligibleTuples": 11,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 53,
+      "nonmatchingPerTupleAnchorEncounters": 41
+    },
+    {
+      "graphId": "fixture-tika-01",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-02",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-03",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-04",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-05",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-06",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-07",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-08",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-09",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-10",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-11",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-12",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-13",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-14",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-tika-15",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-00",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-01",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-02",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-03",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-04",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-05",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-06",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-07",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-08",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-09",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-10",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-11",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-12",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-13",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-14",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-hive-15",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-00",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-01",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-02",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-03",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-04",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-05",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-06",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-07",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-08",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-09",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-10",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-11",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-12",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-13",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-14",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-15",
+      "actualSelectedTuples": 0,
+      "actualSelectedNodeHits": 0,
+      "eligibleTuples": 0,
+      "eligibleButAbsentCompleteTuples": 0,
+      "shortestPostingEncounterSum": 0,
+      "nonmatchingPerTupleAnchorEncounters": 0
+    }
+  ],
+  "engineControl": {
+    "fullRowsOrderColumnsProvenanceEqual": true,
+    "digest": "cc3d91e242315a466d41e05511e341e16092908dd921cca5979f77e3edc566ae",
+    "queryDigestAndManifestMatch": true,
+    "currentJarMatchesAuthenticatedFrozenJar": true,
+    "jarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "singleObservationNotPerformanceEvidence": true
+  },
+  "fileHashes": {
+    "census.py": "97af34bda0efd1816df711ea17d354d9cdd6297c67e4117c6a9c23224fa6c577",
+    "census.json": "c5f79b79b8d2c8cae84c48a0f8feaf0b32ed07279d2a5bcb4b024e0220266327",
+    "correctness-receipt.json": "e2525bab2a5db54b81e6c70a659e9f735d24b5fa784a078d404ecb1563366866",
+    "control-rows.jsonl": "4b084675212f4c77568c58adc850a0fc90759c90291e62de04233d257f8595dc",
+    "control.tsv": "fffe1e583a16476bc69e1274a1afc1f403bd996333177a881f0aa5e16a33fe71",
+    "control-command.json": "f3be24728a1c6a170a19e0029e90a67bf7ef7a91ab28d5fa55b5f0d42eb04da2"
+  },
+  "limits": [
+    "No actual index posting bytes inspected; these are logical per-property frequencies from the already authenticated export.",
+    "A shortest-posting sum includes repeated encounters and nonmatching nodes for each tuple separately; it is not unique candidate count, index work, speedup or an API guarantee.",
+    "No independent full source-file pre/post hash receipt was created by the existing one-query control. This audit checks current frozen JAR identity and persisted output consistency, not new execution.",
+    "Independent counter reuses the same authenticated export; frozen-main full-row output is a separate implementation control."
+  ]
+}

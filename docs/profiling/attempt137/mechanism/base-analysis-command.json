@@ -1,0 +1,13 @@
+[
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+  "-cp",
+  "/private/tmp/graphite-main-profiling-n50joikp",
+  "ProfileWindows",
+  "/private/tmp/graphite-attempt137.dcywsuq7/mechanism/base.jfr",
+  "/private/tmp/graphite-attempt137.dcywsuq7/mechanism/base.tsv",
+  "/private/tmp/graphite-attempt137.dcywsuq7/mechanism/base-analysis",
+  "--expected-count",
+  "80",
+  "--catalog",
+  "/private/tmp/graphite-main-profiling-n50joikp/four-or/profile-workloads.tsv"
+]

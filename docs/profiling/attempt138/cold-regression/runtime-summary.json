@@ -1,0 +1,1939 @@
+{
+  "notAcceptanceEvidence": true,
+  "eventsSource": "Existing companion JVM JFR recordings; no new execution",
+  "groups": [
+    {
+      "side": "base",
+      "projection": "rows",
+      "queryCount": 40,
+      "gcPauseOverlapNanos": 0,
+      "deoptimizationCount": 21,
+      "deoptimizationsByMethodReason": [
+        {
+          "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+          "reason": "array_check",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "java/util/Arrays.copyOf([Ljava/lang/Object;ILjava/lang/Class;)[Ljava/lang/Object;",
+          "reason": "intrinsic_or_type_checked_inlining",
+          "action": "make_not_entrant",
+          "count": 1
+        },
+        {
+          "method": "jdk/internal/misc/Unsafe.getIntUnaligned(Ljava/lang/Object;JZ)I",
+          "reason": "speculate_null_check",
+          "action": "make_not_entrant",
+          "count": 3
+        },
+        {
+          "method": "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains(I)Z",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "count": 3
+        },
+        {
+          "method": "kotlin/sequences/TransformingSequence$iterator$1.hasNext()Z",
+          "reason": "class_check",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+          "reason": "profile_predicate",
+          "action": "maybe_recompile",
+          "count": 6
+        }
+      ],
+      "perQuery": [
+        {
+          "id": "or-four-broad-rows-00",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641841557567042
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641841557613625
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641841557626833
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641841557644167
+            },
+            {
+              "method": "java/util/Arrays.copyOf([Ljava/lang/Object;ILjava/lang/Class;)[Ljava/lang/Object;",
+              "reason": "intrinsic_or_type_checked_inlining",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641841620104250
+            },
+            {
+              "method": "jdk/internal/misc/Unsafe.getIntUnaligned(Ljava/lang/Object;JZ)I",
+              "reason": "speculate_null_check",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641841625807125
+            },
+            {
+              "method": "jdk/internal/misc/Unsafe.getIntUnaligned(Ljava/lang/Object;JZ)I",
+              "reason": "speculate_null_check",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641841625812167
+            },
+            {
+              "method": "jdk/internal/misc/Unsafe.getIntUnaligned(Ljava/lang/Object;JZ)I",
+              "reason": "speculate_null_check",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641841625812167
+            },
+            {
+              "method": "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains(I)Z",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641841626424125
+            },
+            {
+              "method": "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains(I)Z",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641841638131667
+            },
+            {
+              "method": "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains(I)Z",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641841638195833
+            },
+            {
+              "method": "kotlin/sequences/TransformingSequence$iterator$1.hasNext()Z",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641841645695458
+            },
+            {
+              "method": "kotlin/sequences/TransformingSequence$iterator$1.hasNext()Z",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641841646809375
+            },
+            {
+              "method": "kotlin/sequences/TransformingSequence$iterator$1.hasNext()Z",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641841647415375
+            },
+            {
+              "method": "kotlin/sequences/TransformingSequence$iterator$1.hasNext()Z",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641841647470583
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-01",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-02",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641843657671167
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641843657702583
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641843657708500
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641843657887667
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641843658056000
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-03",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641844559714958
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-04",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-05",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-06",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-07",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-08",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-09",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-10",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-11",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-12",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-13",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-14",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-15",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-16",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-17",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-18",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-19",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-20",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-21",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-22",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-23",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-24",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-25",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-26",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-27",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-28",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-29",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-30",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-31",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-32",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-33",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-34",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-35",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-36",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-37",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-38",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-39",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        }
+      ]
+    },
+    {
+      "side": "base",
+      "projection": "distinct",
+      "queryCount": 40,
+      "gcPauseOverlapNanos": 1792750,
+      "deoptimizationCount": 22,
+      "deoptimizationsByMethodReason": [
+        {
+          "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+          "reason": "array_check",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+          "reason": "predicate",
+          "action": "maybe_recompile",
+          "count": 1
+        },
+        {
+          "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+          "reason": "class_check",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+          "reason": "bimorphic_or_optimized_type_check",
+          "action": "maybe_recompile",
+          "count": 2
+        },
+        {
+          "method": "java/lang/Integer.valueOf(I)Ljava/lang/Integer;",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "count": 1
+        },
+        {
+          "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+          "reason": "class_check",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+          "reason": "profile_predicate",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)[I",
+          "reason": "loop_limit_check",
+          "action": "maybe_recompile",
+          "count": 1
+        },
+        {
+          "method": "java/util/concurrent/locks/AbstractQueuedSynchronizer.enqueue(Ljava/util/concurrent/locks/AbstractQueuedSynchronizer$Node;)V",
+          "reason": "speculate_null_check",
+          "action": "make_not_entrant",
+          "count": 1
+        }
+      ],
+      "perQuery": [
+        {
+          "id": "or-four-broad-distinct-00",
+          "gcPauseOverlapNanos": 1792750,
+          "gcPauseIntervals": 3,
+          "deoptimizations": [
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842018283125
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842018325208
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842018358375
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842018401083
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842029562417
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842029701375
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842029825042
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842029933833
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842030044750
+            },
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "bimorphic_or_optimized_type_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842087446708
+            },
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "bimorphic_or_optimized_type_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842087487333
+            },
+            {
+              "method": "java/lang/Integer.valueOf(I)Ljava/lang/Integer;",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641842141092042
+            },
+            {
+              "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842141193042
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842151114375
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842151255333
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842191982875
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641842192483958
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-01",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641843128707083
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-02",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641844059303208
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-03",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641844920360083
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)[I",
+              "reason": "loop_limit_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641845044271000
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-04",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-05",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": [
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection",
+              "overlapNanos": 10293834,
+              "recordedDurationNanos": 194667125
+            }
+          ]
+        },
+        {
+          "id": "or-four-broad-distinct-06",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": [
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection",
+              "overlapNanos": 57324792,
+              "recordedDurationNanos": 185709250
+            }
+          ]
+        },
+        {
+          "id": "or-four-broad-distinct-07",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-08",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": [
+            {
+              "method": "io/johnsonlee/graphite/cypher/QueryPipeline.addDistinctRow",
+              "overlapNanos": 116012958,
+              "recordedDurationNanos": 116012958
+            }
+          ]
+        },
+        {
+          "id": "or-four-broad-distinct-09",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-10",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-11",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": [
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.distinctStringPropertyDisjunction",
+              "overlapNanos": 24064709,
+              "recordedDurationNanos": 127289167
+            }
+          ]
+        },
+        {
+          "id": "or-four-broad-distinct-12",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-13",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-14",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-15",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-16",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-17",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-18",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-19",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-20",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "java/util/concurrent/locks/AbstractQueuedSynchronizer.enqueue(Ljava/util/concurrent/locks/AbstractQueuedSynchronizer$Node;)V",
+              "reason": "speculate_null_check",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641859927143208
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-21",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-22",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-23",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-24",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-25",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-26",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-27",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-28",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-29",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-30",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-31",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-32",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-33",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-34",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-35",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-36",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-37",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-38",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-39",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        }
+      ]
+    },
+    {
+      "side": "candidate",
+      "projection": "rows",
+      "queryCount": 40,
+      "gcPauseOverlapNanos": 0,
+      "deoptimizationCount": 22,
+      "deoptimizationsByMethodReason": [
+        {
+          "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+          "reason": "array_check",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "java/util/Arrays.copyOf([Ljava/lang/Object;ILjava/lang/Class;)[Ljava/lang/Object;",
+          "reason": "intrinsic_or_type_checked_inlining",
+          "action": "make_not_entrant",
+          "count": 1
+        },
+        {
+          "method": "jdk/internal/misc/Unsafe.getIntUnaligned(Ljava/lang/Object;JZ)I",
+          "reason": "speculate_null_check",
+          "action": "make_not_entrant",
+          "count": 3
+        },
+        {
+          "method": "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains(I)Z",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "count": 2
+        },
+        {
+          "method": "it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList.extract(I[CII)I",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "count": 1
+        },
+        {
+          "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+          "reason": "profile_predicate",
+          "action": "maybe_recompile",
+          "count": 6
+        },
+        {
+          "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+          "reason": "speculate_class_check",
+          "action": "maybe_recompile",
+          "count": 5
+        }
+      ],
+      "perQuery": [
+        {
+          "id": "or-four-broad-rows-00",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641888937830542
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641888937854708
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641888937865292
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641888937879708
+            },
+            {
+              "method": "java/util/Arrays.copyOf([Ljava/lang/Object;ILjava/lang/Class;)[Ljava/lang/Object;",
+              "reason": "intrinsic_or_type_checked_inlining",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641889005762500
+            },
+            {
+              "method": "jdk/internal/misc/Unsafe.getIntUnaligned(Ljava/lang/Object;JZ)I",
+              "reason": "speculate_null_check",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641889014412458
+            },
+            {
+              "method": "jdk/internal/misc/Unsafe.getIntUnaligned(Ljava/lang/Object;JZ)I",
+              "reason": "speculate_null_check",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641889014412917
+            },
+            {
+              "method": "jdk/internal/misc/Unsafe.getIntUnaligned(Ljava/lang/Object;JZ)I",
+              "reason": "speculate_null_check",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641889014418125
+            },
+            {
+              "method": "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains(I)Z",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641889025054250
+            },
+            {
+              "method": "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains(I)Z",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641889025133833
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-01",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "it/unimi/dsi/fastutil/chars/CharArrayFrontCodedList.extract(I[CII)I",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641890104918458
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-02",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641891041062625
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641891041095958
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641891041103417
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641891041255125
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641891041256417
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-03",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641891934693167
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-04",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-05",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-06",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-07",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-08",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "speculate_class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641896357781875
+            },
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "speculate_class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641896373917792
+            },
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "speculate_class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641896373953250
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-09",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "speculate_class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641897261255833
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-10",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "speculate_class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641898129205083
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-11",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-12",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-13",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-14",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-15",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-16",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-17",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-18",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-19",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-20",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-21",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-22",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-23",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-24",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-25",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-26",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-27",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-28",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-29",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-30",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-31",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-32",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-33",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-34",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-35",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-36",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-37",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-38",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-rows-39",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        }
+      ]
+    },
+    {
+      "side": "candidate",
+      "projection": "distinct",
+      "queryCount": 40,
+      "gcPauseOverlapNanos": 1774250,
+      "deoptimizationCount": 23,
+      "deoptimizationsByMethodReason": [
+        {
+          "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+          "reason": "array_check",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+          "reason": "profile_predicate",
+          "action": "maybe_recompile",
+          "count": 8
+        },
+        {
+          "method": "java/lang/Integer.valueOf(I)Ljava/lang/Integer;",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "count": 1
+        },
+        {
+          "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+          "reason": "class_check",
+          "action": "maybe_recompile",
+          "count": 4
+        },
+        {
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$38$lambda$37$lambda$36(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "reason": "unstable_if",
+          "action": "reinterpret",
+          "count": 1
+        },
+        {
+          "method": "jdk/internal/misc/Unsafe.getLongUnaligned(Ljava/lang/Object;J)J",
+          "reason": "speculate_null_assert",
+          "action": "make_not_entrant",
+          "count": 1
+        },
+        {
+          "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+          "reason": "speculate_class_check",
+          "action": "maybe_recompile",
+          "count": 3
+        },
+        {
+          "method": "java/util/concurrent/locks/AbstractQueuedSynchronizer.enqueue(Ljava/util/concurrent/locks/AbstractQueuedSynchronizer$Node;)V",
+          "reason": "speculate_null_check",
+          "action": "make_not_entrant",
+          "count": 1
+        }
+      ],
+      "perQuery": [
+        {
+          "id": "or-four-broad-distinct-00",
+          "gcPauseOverlapNanos": 1774250,
+          "gcPauseIntervals": 3,
+          "deoptimizations": [
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889382816625
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889382853625
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889382881292
+            },
+            {
+              "method": "org/antlr/v4/runtime/misc/Array2DHashSet.getOrAddImpl(Ljava/lang/Object;)Ljava/lang/Object;",
+              "reason": "array_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889382915292
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889391858375
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889391957583
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889392052625
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889392146417
+            },
+            {
+              "method": "java/lang/Integer.valueOf(I)Ljava/lang/Integer;",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641889421743417
+            },
+            {
+              "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889421826250
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889546193792
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889547556500
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889567243167
+            },
+            {
+              "method": "io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1;)V",
+              "reason": "profile_predicate",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641889569204792
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-01",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641890504893708
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-02",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$38$lambda$37$lambda$36(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+              "reason": "unstable_if",
+              "action": "reinterpret",
+              "timeNanos": 1788641891402546167
+            },
+            {
+              "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641891415199958
+            },
+            {
+              "method": "jdk/internal/misc/Unsafe.getLongUnaligned(Ljava/lang/Object;J)J",
+              "reason": "speculate_null_assert",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641891482988167
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-03",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "kotlin/collections/CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+              "reason": "class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641892313203167
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-04",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-05",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-06",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-07",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "speculate_class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641895850589583
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-08",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "speculate_class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641896731321750
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-09",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "java/util/HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+              "reason": "speculate_class_check",
+              "action": "maybe_recompile",
+              "timeNanos": 1788641897626347375
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-10",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-11",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-12",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-13",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": [
+            {
+              "method": "io/johnsonlee/graphite/cypher/QueryPipeline.addDistinctRow",
+              "overlapNanos": 113979917,
+              "recordedDurationNanos": 113979917
+            }
+          ]
+        },
+        {
+          "id": "or-four-broad-distinct-14",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-15",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-16",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-17",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-18",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-19",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-20",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-21",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [
+            {
+              "method": "java/util/concurrent/locks/AbstractQueuedSynchronizer.enqueue(Ljava/util/concurrent/locks/AbstractQueuedSynchronizer$Node;)V",
+              "reason": "speculate_null_check",
+              "action": "make_not_entrant",
+              "timeNanos": 1788641908358955042
+            }
+          ],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-22",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-23",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-24",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-25",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-26",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-27",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-28",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-29",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-30",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-31",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-32",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-33",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-34",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-35",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-36",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-37",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-38",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        },
+        {
+          "id": "or-four-broad-distinct-39",
+          "gcPauseOverlapNanos": 0,
+          "gcPauseIntervals": 0,
+          "deoptimizations": [],
+          "recordedCompilationOverlaps": []
+        }
+      ]
+    }
+  ],
+  "baseInputSha256": "a536890bd952a72932ae7dc7a433b096a20408d4f85152feb25846a36d443fa2",
+  "candidateInputSha256": "40e6c0edb25d870d6334b875708e1569e7d464d239d924a93e8c8af4c789d3af",
+  "limitations": [
+    "GCPhasePause intersections use each full query trace interval and union overlapping pauses; they are not summed with GarbageCollection events.",
+    "Compilation recording has a 100ms duration threshold; retained event counts are not total compilations or total compilation work.",
+    "Compilation intervals run on background compiler threads; overlap does not prove equivalent query blocking time.",
+    "Deoptimization events, GC overlap and identical validator bytecode cannot identify the unprofiled regression cause by themselves."
+  ]
+}

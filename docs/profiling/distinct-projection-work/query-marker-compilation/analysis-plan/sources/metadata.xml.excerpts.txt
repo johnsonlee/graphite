@@ -1,0 +1,142 @@
+Source: https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/jfr/metadata/metadata.xml
+Full response SHA256: 0d127199d9503ff2142ba19ab9e5b09ccfb56530df4d34a5e9b26011de2a11bb
+
+[...]
+510:     <Field type="int" contentType="bytes" name="freedMemory" label="Freed Memory" />
+511:     <Field type="ulong" contentType="bytes" name="codeCacheMaxCapacity" label="Code Cache Maximum Capacity" />
+512:   </Event>
+513: 
+514:   <Event name="Compilation" category="Java Virtual Machine, Compiler" label="Compilation"
+515:          description="Results of method compilation attempts"
+516:          thread="true" commitState="_thread_in_native">
+517:     <Field type="uint" name="compileId" label="Compilation Identifier" relation="CompileId" />
+518:     <Field type="CompilerType" name="compiler" label="Compiler" />
+519:     <Field type="Method" name="method" label="Method" />
+520:     <Field type="ushort" name="compileLevel" label="Compilation Level" />
+521:     <Field type="boolean" name="succeded" label="Succeeded" />
+522:     <Field type="boolean" name="isOsr" label="On Stack Replacement" />
+523:     <Field type="ulong" contentType="bytes" name="codeSize" label="Compiled Code Size" />
+524:     <Field type="ulong" contentType="bytes" name="inlinedBytes" label="Inlined Code Size" />
+525:   </Event>
+526: 
+527:   <Event name="CompilerPhase" category="Java Virtual Machine, Compiler" label="Compiler Phase"
+528:          description="Describes various phases of the compilation process like inlining or string optimization related phases"
+529:          thread="true">
+530:     <Field type="CompilerPhaseType" name="phase" label="Compile Phase" />
+531:     <Field type="uint" name="compileId" label="Compilation Identifier" relation="CompileId" />
+532:     <Field type="ushort" name="phaseLevel" label="Phase Level" />
+533:   </Event>
+534: 
+535:   <Event name="CompilationFailure" category="Java Virtual Machine, Compiler" label="Compilation Failure"
+536:          description="In case a JIT compilation failed, a compilation failure is triggered, reporting the reason"
+537:          thread="true" startTime="false">
+538:     <Field type="string" name="failureMessage" label="Failure Message" />
+539:     <Field type="uint" name="compileId" label="Compilation Identifier" relation="CompileId" />
+540:   </Event>
+541: 
+[...]
+577:     <Field type="int" name="fullCount" label="Full Count" />
+578:     <Field type="ulong" contentType="bytes" name="codeCacheMaxCapacity" label="Code Cache Maximum Capacity" />
+579:   </Event>
+580: 
+581:   <Event name="Deoptimization" category="Java Virtual Machine, Compiler" label="Deoptimization"
+582:          description="Describes the detection of an uncommon situation in a compiled method which may lead to deoptimization of the method"
+583:          thread="true" stackTrace="true" startTime="false">
+584:     <Field type="uint" name="compileId" label="Compilation Identifier" relation="CompileId" />
+585:     <Field type="CompilerType" name="compiler" label="Compiler" />
+586:     <Field type="Method" name="method" label="Method" />
+587:     <Field type="int" name="lineNumber" label="Line Number" />
+588:     <Field type="int" name="bci" label="Bytecode Index" />
+589:     <Field type="Bytecode" name="instruction" label="Instruction" />
+590:     <Field type="DeoptimizationReason" name="reason" label="Reason"/>
+591:     <Field type="DeoptimizationAction" name="action" label="Action"/>
+592:   </Event>
+593: 
+594:   <Event name="SafepointBegin" category="Java Virtual Machine, Runtime, Safepoint" label="Safepoint Begin" description="Safepointing begin" thread="true">
+595:     <Field type="ulong" name="safepointId" label="Safepoint Identifier" relation="SafepointId" />
+596:     <Field type="int" name="totalThreadCount" label="Total Threads" description="The total number of threads at the start of safe point" />
+597:     <Field type="int" name="jniCriticalThreadCount" label="JNI Critical Threads" description="The number of threads in JNI critical sections" />
+598:   </Event>
+599: 
+600:   <Event name="SafepointStateSynchronization" category="Java Virtual Machine, Runtime, Safepoint" label="Safepoint State Synchronization" description="Synchronize run state of threads"
+601:     thread="true">
+602:     <Field type="ulong" name="safepointId" label="Safepoint Identifier" relation="SafepointId" />
+603:     <Field type="int" name="initialThreadCount" label="Initial Threads" description="The number of threads running at the beginning of state check" />
+604:     <Field type="int" name="runningThreadCount" label="Running Threads" description="The number of threads still running" />
+605:     <Field type="int" name="iterations" label="Iterations" description="Number of state check iterations" />
+606:   </Event>
+607: 
+608:   <Event name="SafepointCleanup" category="Java Virtual Machine, Runtime, Safepoint" label="Safepoint Cleanup" description="Safepointing begin running cleanup tasks"
+[...]
+677:     <Field type="ulong" contentType="bytes" name="amount" label="Amount" description="Amount lost data" />
+678:     <Field type="ulong" contentType="bytes" name="total" label="Total" description="Total lost amount for thread" />
+679:   </Event>
+680: 
+681:   <Event name="JVMInformation" category="Java Virtual Machine" label="JVM Information"
+682:          description="Description of JVM and the Java application"
+683:          period="endChunk">
+684:     <Field type="string" name="jvmName" label="JVM Name" />
+685:     <Field type="string" name="jvmVersion" label="JVM Version" />
+686:     <Field type="string" name="jvmArguments" label="JVM Command Line Arguments" />
+687:     <Field type="string" name="jvmFlags" label="JVM Settings File Arguments" />
+688:     <Field type="string" name="javaArguments" label="Java Application Arguments" />
+689:     <Field type="long" contentType="epochmillis" name="jvmStartTime" label="JVM Start Time" />
+690:     <Field type="long" name="pid" label="Process Identifier" />
+691:      </Event>
+692: 
+693:   <Event name="OSInformation" category="Operating System" label="OS Information"
+694:          description="Description of the OS the JVM runs on, for example, a uname-like output"
+695:          period="endChunk">
+696:     <Field type="string" name="osVersion" label="OS Version" />
+697:   </Event>
+698: 
+699:   <Event name="VirtualizationInformation" category="Operating System" label="Virtualization Information"
+700:          description="Description of the virtualization technology the JVM runs on"
+701:          period="endChunk">
+702:     <Field type="string" name="name" label="Name" />
+703:   </Event>
+704: 
+705:   <Event name="InitialSystemProperty" category="Java Virtual Machine" label="Initial System Property" description="System Property at JVM start" period="endChunk">
+706:     <Field type="string" name="key" label="Key" />
+707:     <Field type="string" name="value" label="Value" />
+708:   </Event>
+[...]
+856:     <Field type="ulong" contentType="bytes" name="totalSize" label="Total Size" description="Total amount of physical memory available to OS" />
+857:     <Field type="ulong" contentType="bytes" name="usedSize" label="Used Size" description="Total amount of physical memory in use" />
+858:   </Event>
+859: 
+860:   <Event name="ExecutionSample" category="Java Virtual Machine, Profiling" label="Method Profiling Sample" description="Snapshot of a threads state"
+861:     period="everyChunk">
+862:     <Field type="Thread" name="sampledThread" label="Thread" />
+863:     <Field type="StackTrace" name="stackTrace" label="Stack Trace" />
+864:     <Field type="ThreadState" name="state" label="Thread State" />
+865:   </Event>
+866: 
+867:   <Event name="NativeMethodSample" category="Java Virtual Machine, Profiling" label="Method Profiling Sample Native" description="Snapshot of a threads state when in native"
+868:     period="everyChunk">
+869:     <Field type="Thread" name="sampledThread" label="Thread" />
+870:     <Field type="StackTrace" name="stackTrace" label="Stack Trace" />
+871:     <Field type="ThreadState" name="state" label="Thread State" />
+872:   </Event>
+873: 
+874:   <Event name="ThreadDump" category="Java Virtual Machine, Runtime" label="Thread Dump" period="everyChunk">
+875:     <Field type="string" name="result" label="Thread Dump" />
+876:   </Event>
+877: 
+878:   <Event name="NativeLibrary" category="Java Virtual Machine, Runtime" label="Native Library" period="everyChunk"
+879:     description="Information about a dynamic library or other native image loaded by the JVM process">
+880:     <Field type="string" name="name" label="Name" />
+881:     <Field type="ulong" contentType="address" name="baseAddress" label="Base Address" description="Starting address of the module" />
+882:     <Field type="ulong" contentType="address" name="topAddress" label="Top Address" description="Ending address of the module, if available" />
+883:   </Event>
+884: 
+885:   <Event name="ModuleRequire" category="Java Virtual Machine, Runtime, Modules" label="Module Require" thread="false" period="everyChunk"
+886:     description="A directed edge representing a dependency">
+887:     <Field type="Module" name="source" label="Source Module" />
+888:     <Field type="Module" name="requiredModule" label="Required Module" />
+889:   </Event>
+890: 
+891:   <Event name="ModuleExport" category="Java Virtual Machine, Runtime, Modules" label="Module Export" thread="false" period="everyChunk">
+892:     <Field type="Package" name="exportedPackage" label="Exported Package" />
+893:     <Field type="Module" name="targetModule" label="Target Module"
+894:       description="Module to which the package is qualifiedly exported. If null or N/A, the package is unqualifiedly exported" />

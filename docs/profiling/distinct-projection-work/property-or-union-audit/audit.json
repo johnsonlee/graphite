@@ -1,0 +1,293 @@
+{
+  "scope": "Read-only feasibility/history/catalog audit; no implementation,Java,build,timing,capture or141.",
+  "searchPatterns": [
+    "per.property",
+    "same.property",
+    "group.*predicat",
+    "predicat.*group",
+    "union.*string",
+    "union.*predicat",
+    "fuse",
+    "bitset",
+    "bit.?map",
+    "归并",
+    "同属性",
+    "shared.*match"
+  ],
+  "historicalLogs": [
+    {
+      "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+      "sha256": "d83a282d26c00d30ccbe3b1b44229e08a4d47d920abe159db6a1dea43628070e",
+      "matches": [
+        {
+          "line": 92,
+          "text": "and method strings are decoded and lowercased once per property query instead"
+        },
+        {
+          "line": 194,
+          "text": "### 2026-08-29 - Attempt 006: Fuse same-node string-property disjunctions"
+        },
+        {
+          "line": 201,
+          "text": "for dynamic and unsupported properties. One fused scan inspects each candidate"
+        },
+        {
+          "line": 209,
+          "text": "| Distribution | `main` | Fused scan | Speedup | Allocation reduction |"
+        },
+        {
+          "line": 218,
+          "text": "execution around this fused primitive while retaining ordered global merge,"
+        },
+        {
+          "line": 436,
+          "text": "Cold, oversized, unknown, and unordered lookups remain eligible for fused"
+        },
+        {
+          "line": 444,
+          "text": "**Conclusion:** retained. Small cached queries avoid fused and fork-join setup,"
+        },
+        {
+          "line": 1234,
+          "text": "**Hypothesis:** persist a content-identity-bound 128 KiB bitset containing one fingerprint for each"
+        },
+        {
+          "line": 1940,
+          "text": "### 2026-09-03 - Attempt 063: Fuse the bounded leading raw scan with property projection"
+        },
+        {
+          "line": 1975,
+          "text": "fell. It also exposed two flaws in this first fused version. The raw return path omitted the graph"
+        },
+        {
+          "line": 1981,
+          "text": "**Conclusion:** reject this first selection policy while retaining the fused storage primitive for"
+        },
+        {
+          "line": 2260,
+          "text": "**Conclusion:** keep pending exact hosted paired confirmation. One shared exact matcher removes a"
+        },
+        {
+          "line": 2830,
+          "text": "- The old candidate's three observations were `162.102/129.127/129.688 ms`; the fused build-and-"
+        },
+        {
+          "line": 4033,
+          "text": "  regressed it from `1.504` to `3.414 ms` and was reverted. Rewriting the fused projection loop did"
+        },
+        {
+          "line": 4147,
+          "text": "  matcher code shape produced `1.435/1.516/1.370 ms`; special-casing a shared predicate matcher"
+        }
+      ]
+    },
+    {
+      "path": "docs/cross-graph-cypher-optimization-attempts.md",
+      "sha256": "54ef929de50beaf947c26d3c2e306a29c2a795efc688b11bfed27b51d547a110",
+      "matches": [
+        {
+          "line": 331,
+          "text": "| Retained structure | Per-property limit |"
+        },
+        {
+          "line": 431,
+          "text": "because their dynamic value map can expose the same property names. Any"
+        },
+        {
+          "line": 475,
+          "text": "four-entry LRU left the same property-level admission hot, so the next early"
+        }
+      ]
+    },
+    {
+      "path": "docs/webgraph-optimization-attempts.md",
+      "sha256": "596a0466055d943d2082c017c7e83350b1957847a1697192fdd5f1611f632f14",
+      "matches": [
+        {
+          "line": 1361,
+          "text": "- negative test: avoid `BitSet.clone()` during branch extraction"
+        },
+        {
+          "line": 1380,
+          "text": "| Avoid `BitSet.clone()` in branch extraction | N/A | `14851.686 ms/op` | rejected; expanded traversal work |"
+        },
+        {
+          "line": 3025,
+          "text": "bitsets to avoid repeated breadth-first walks in branch-heavy methods."
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+      "byteEqualFrozenMain": true
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+      "sha256": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5",
+      "byteEqualFrozenMain": true
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+      "sha256": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77",
+      "byteEqualFrozenMain": true
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt",
+      "sha256": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2",
+      "byteEqualFrozenMain": true
+    }
+  ],
+  "catalogHashes": [
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/query-catalog.json",
+      "sha256": "dd786d6912b518eff1719da9253bd8827bf37153d6e303ac0b3fb359d53e4dae"
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    }
+  ],
+  "workloadPredicateCounts": [
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "source": "/private/tmp/graphite-main-profiling-n50joikp/query-catalog.json",
+      "querySha256": "c571ed79b35fe4dba10956fb08c7fa73ea9ca10b69c85fdd42c99822d8aca0f1",
+      "predicateCountsByProperty": {
+        "caller_class": 1,
+        "caller_name": 1,
+        "callee_class": 1,
+        "callee_name": 1
+      },
+      "totalPredicates": 4,
+      "properties": 4,
+      "maxChecksBeforeGrouping": 4,
+      "maxChecksAfterGrouping": 4,
+      "boundsNotMeasurements": true
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "source": "/private/tmp/graphite-main-profiling-n50joikp/query-catalog.json",
+      "querySha256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+      "predicateCountsByProperty": {
+        "caller_class": 1,
+        "caller_name": 1,
+        "callee_class": 1,
+        "callee_name": 1
+      },
+      "totalPredicates": 4,
+      "properties": 4,
+      "maxChecksBeforeGrouping": 4,
+      "maxChecksAfterGrouping": 4,
+      "boundsNotMeasurements": true
+    },
+    {
+      "id": "or-four-broad-distinct",
+      "query": "MATCH (n) WHERE ((toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'recycle' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'recycle' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'recycle' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'recycle') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'visitstatementcontainer' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'visitstatementcontainer' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'visitstatementcontainer' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'visitstatementcontainer')) RETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+      "source": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "querySha256": "586913a4fdb2e9a5cae57d17f3c17f148e9b5c4ed35d337d7fb97d9cb512a2bb",
+      "predicateCountsByProperty": {
+        "caller_class": 4,
+        "caller_name": 4,
+        "callee_class": 4,
+        "callee_name": 4
+      },
+      "totalPredicates": 16,
+      "properties": 4,
+      "maxChecksBeforeGrouping": 16,
+      "maxChecksAfterGrouping": 4,
+      "boundsNotMeasurements": true
+    },
+    {
+      "id": "or-four-single-early-distinct",
+      "query": "MATCH (n) WHERE ((toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.internal.org.bouncycastle.jcajce.provider.asymmetric.dsa.algorithmparametergeneratorspi' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.internal.org.bouncycastle.jcajce.provider.asymmetric.dsa.algorithmparametergeneratorspi' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.internal.org.bouncycastle.jcajce.provider.asymmetric.dsa.algorithmparametergeneratorspi' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.internal.org.bouncycastle.jcajce.provider.asymmetric.dsa.algorithmparametergeneratorspi') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.closingfuture$combiner$asynccombiningcallable' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.closingfuture$combiner$asynccombiningcallable' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.closingfuture$combiner$asynccombiningcallable' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.closingfuture$combiner$asynccombiningcallable')) RETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+      "source": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "querySha256": "4153efdaa8a0e89dbb22c06693128b5f03a844e56b1082582eec532b7e8741d6",
+      "predicateCountsByProperty": {
+        "caller_class": 4,
+        "caller_name": 4,
+        "callee_class": 4,
+        "callee_name": 4
+      },
+      "totalPredicates": 16,
+      "properties": 4,
+      "maxChecksBeforeGrouping": 16,
+      "maxChecksAfterGrouping": 4,
+      "boundsNotMeasurements": true
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "query": "MATCH (n) WHERE ((toLower(coalesce(n.caller_class, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'net.bytebuddy.dynamic.scaffold.typewriter$default$forinlining$withfullprocessing$initializationhandler$appending$framewriter$expanding' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'net.bytebuddy.dynamic.scaffold.typewriter$default$forinlining$withfullprocessing$initializationhandler$appending$framewriter$expanding' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'net.bytebuddy.dynamic.scaffold.typewriter$default$forinlining$withfullprocessing$initializationhandler$appending$framewriter$expanding' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'net.bytebuddy.dynamic.scaffold.typewriter$default$forinlining$withfullprocessing$initializationhandler$appending$framewriter$expanding') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'net.bytebuddy.dynamic.classfilelocator$forinstrumentation$classloadingdelegate$fordelegatingclassloader$dispatcher$creationaction' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'net.bytebuddy.dynamic.classfilelocator$forinstrumentation$classloadingdelegate$fordelegatingclassloader$dispatcher$creationaction' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'net.bytebuddy.dynamic.classfilelocator$forinstrumentation$classloadingdelegate$fordelegatingclassloader$dispatcher$creationaction' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'net.bytebuddy.dynamic.classfilelocator$forinstrumentation$classloadingdelegate$fordelegatingclassloader$dispatcher$creationaction') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'net.bytebuddy.agent.builder.agentbuilder$lambdainstrumentationstrategy$lambdametafactoryfactory$loader$usingmethodhandlelookup' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'net.bytebuddy.agent.builder.agentbuilder$lambdainstrumentationstrategy$lambdametafactoryfactory$loader$usingmethodhandlelookup' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'net.bytebuddy.agent.builder.agentbuilder$lambdainstrumentationstrategy$lambdametafactoryfactory$loader$usingmethodhandlelookup' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'net.bytebuddy.agent.builder.agentbuilder$lambdainstrumentationstrategy$lambdametafactoryfactory$loader$usingmethodhandlelookup')) RETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+      "source": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "querySha256": "288870c4237fbc0c7e1651113716be10ed44a14b171f574160f675b37bc817a3",
+      "predicateCountsByProperty": {
+        "caller_class": 4,
+        "caller_name": 4,
+        "callee_class": 4,
+        "callee_name": 4
+      },
+      "totalPredicates": 16,
+      "properties": 4,
+      "maxChecksBeforeGrouping": 16,
+      "maxChecksAfterGrouping": 4,
+      "boundsNotMeasurements": true
+    },
+    {
+      "id": "or-four-single-late-distinct",
+      "query": "MATCH (n) WHERE ((toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.ir.backend.js.export.exportmodelgeneratorkt$isallowedfakeoverriddendeclaration$$inlined$filterisinstance$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.ir.backend.js.export.exportmodelgeneratorkt$isallowedfakeoverriddendeclaration$$inlined$filterisinstance$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.ir.backend.js.export.exportmodelgeneratorkt$isallowedfakeoverriddendeclaration$$inlined$filterisinstance$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.ir.backend.js.export.exportmodelgeneratorkt$isallowedfakeoverriddendeclaration$$inlined$filterisinstance$1') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.ir.backend.js.lower.booleanpropertyinexternallowering$externalbooleanpropertyprocessor$whenmappings' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.ir.backend.js.lower.booleanpropertyinexternallowering$externalbooleanpropertyprocessor$whenmappings' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.ir.backend.js.lower.booleanpropertyinexternallowering$externalbooleanpropertyprocessor$whenmappings' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.ir.backend.js.lower.booleanpropertyinexternallowering$externalbooleanpropertyprocessor$whenmappings')) RETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+      "source": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "querySha256": "1c18e6917213413db13a6884fb01f8a1136069ef9723999c3aa40db564094218",
+      "predicateCountsByProperty": {
+        "caller_class": 4,
+        "caller_name": 4,
+        "callee_class": 4,
+        "callee_name": 4
+      },
+      "totalPredicates": 16,
+      "properties": 4,
+      "maxChecksBeforeGrouping": 16,
+      "maxChecksAfterGrouping": 4,
+      "boundsNotMeasurements": true
+    },
+    {
+      "id": "or-four-few-early-late-distinct",
+      "query": "MATCH (n) WHERE ((toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1')) RETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+      "source": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "querySha256": "bff4548c1fbc1ebca2c7288f28cfa430664b4f3e61dc84c01aeb3370367e6fd7",
+      "predicateCountsByProperty": {
+        "caller_class": 4,
+        "caller_name": 4,
+        "callee_class": 4,
+        "callee_name": 4
+      },
+      "totalPredicates": 16,
+      "properties": 4,
+      "maxChecksBeforeGrouping": 16,
+      "maxChecksAfterGrouping": 4,
+      "boundsNotMeasurements": true
+    },
+    {
+      "id": "or-four-all-distinct",
+      "query": "MATCH (n) WHERE ((toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'set' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'set' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'set' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'set') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'read' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'read' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'read' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'read') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'write' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'write' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'write' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'write')) RETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+      "source": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "querySha256": "3aff398bacefb6741cd3b3e389d8fdb7d7b3bcc9bd279c3170683554e9c68863",
+      "predicateCountsByProperty": {
+        "caller_class": 4,
+        "caller_name": 4,
+        "callee_class": 4,
+        "callee_name": 4
+      },
+      "totalPredicates": 16,
+      "properties": 4,
+      "maxChecksBeforeGrouping": 16,
+      "maxChecksAfterGrouping": 4,
+      "boundsNotMeasurements": true
+    }
+  ],
+  "historyConclusion": "No exact per-property union implementation found in searched logs/current source. Existing006 node fusion,053 exact-ID raw scans and056 same-key discovery reuse already retained;086/103/130 alternatives/136/138/140 impose non-repetition boundaries. Absence of a textual match is not proof no unarchived variant ever existed.",
+  "decision": "Exclude as the next candidate for frozen old34 P95/10x: both determining DISTINCT queries have one predicate per property, so grouping removes no membership checks or visited nodes. New profiling is not justified; optional future offline multi-term cardinality/short-circuit evidence is diagnostic only."
+}

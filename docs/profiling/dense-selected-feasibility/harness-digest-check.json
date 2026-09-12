@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "reconstructedHarnessDigest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+  "reconstructedResponseBytes": 85721,
+  "matchesExistingCaptures": [
+    {
+      "capture": 3,
+      "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+      "responseBytes": 85721
+    },
+    {
+      "capture": 4,
+      "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+      "responseBytes": 85721
+    },
+    {
+      "capture": 5,
+      "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+      "responseBytes": 85721
+    }
+  ]
+}

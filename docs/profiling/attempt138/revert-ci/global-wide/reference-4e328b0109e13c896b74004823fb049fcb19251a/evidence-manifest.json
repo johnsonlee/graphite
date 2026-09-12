@@ -1,0 +1,29 @@
+{
+  "schema": "graphite-fixture64-global-wide-evidence-v2",
+  "repository": "johnsonlee/graphite",
+  "baseSha": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "candidateSha": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+  "statusContext": "graphite/fixture64-global-wide",
+  "description": "fixture64-wide base=4e328b0109e1 p50=0.88x p95=0.92x pairs=3 correct=pass",
+  "files": {
+    "provenance.json": "51793ca1b76718e5d2ecf10af6b83f35c3aa2217d48006f334ab07db480b259f",
+    "graphs.tsv": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+    "fixture-provenance.tsv": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+    "fixture-reproducibility.json": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+    "base-global-wide-oracle-seed.correctness": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+    "global-wide-report.md": "41d56fa6e29619c3586f0f9a693b28e0cbbfc6a5dc9d5c1d326042b1ebf27081",
+    "global-wide-status.json": "d4bcae960b3ae63170018032e21677b24bc4f5c418aa06114ec9ee021e3dd6a2",
+    "base-global-wide-1.json": "7f9bf30b8e2f721d9a35cff81eec5265f31447759e4e68514e1ecc80d33ea5eb",
+    "base-global-wide-2.json": "92adfdf6f0757399514747551f0d5dabc1f2898d9d86372fbb8d1023bba82722",
+    "base-global-wide-3.json": "f101f8bf00f846df63d4dc582447c09d137cc0f0829b49243f6126f44ba9e39d",
+    "base-global-wide-1.tsv": "b73181ddb5b9cd33ab0158b066053959b235f777d0b13d5e5b6b567ab87ff19f",
+    "base-global-wide-2.tsv": "c9a04bb874f4205bf68ed125b9ee28b0d315686804c205eb46d6752ef5bbcdf2",
+    "base-global-wide-3.tsv": "f7806e067abff88a3603de04f2ca6326dbd30a5eee87d55679ea401a725b4274",
+    "candidate-global-wide-1.json": "a3ba660ae215611dc332087b36ac33291c6809c8f289b72446797c291ad11400",
+    "candidate-global-wide-2.json": "a2699fb6a1070a42304372ed426730aaff9490e05a95335ced20a48b7f1fb75b",
+    "candidate-global-wide-3.json": "7809ce73bc7dbcd5b26fc8c9a1759f9e31fe027fa199b9fa705842ae10e52552",
+    "candidate-global-wide-1.tsv": "1c4e00420c15817322ba93316a240facd00a382eff362014df041d72e6f36738",
+    "candidate-global-wide-2.tsv": "b10367a2344140ea317f97a07f90d0ab28d262e38b19ad5ec6af345cbeb6df93",
+    "candidate-global-wide-3.tsv": "8c1e7a8ece102138955e8b18a282c343eedfae97edaae04294ed9ab42cc4252f"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "perNode": {
+    "equalAfterConstantPoolAndLambdaNameNormalization": true,
+    "baseLines": 360,
+    "candidateLines": 360,
+    "diff": ""
+  },
+  "worker": {
+    "equalAfterConstantPoolAndLambdaNameNormalization": true,
+    "baseLines": 101,
+    "candidateLines": 101,
+    "diff": ""
+  }
+}

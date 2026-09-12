@@ -1,0 +1,34 @@
+{
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/javac",
+        "-cp",
+        "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+        "-d",
+        "/private/tmp/graphite-exact-membership-census",
+        "/private/tmp/graphite-exact-membership-census/ExportStrings.java"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "-Xmx1g",
+        "-XX:ActiveProcessorCount=4",
+        "-cp",
+        "/private/tmp/graphite-exact-membership-census:/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+        "ExportStrings",
+        "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "/private/tmp/graphite-exact-membership-census/strings.utf16.bin.gz"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "jarSha256Before": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "jarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "sourceSha256": "e9049eac2c0dbc1ec6b220344ca53147ad9f8a46de7fd90de42d24cf84409281",
+  "classSha256": "dcd9b9385157314cbec60a244a82f0e0a898822607267e6745136464df9c17c4",
+  "exportSha256": "3d8d51b999e3e8dd3c7a9c6903fdb4e6111521284899086d17509f3c4f7d66fe",
+  "scope": "Read-only string deserialization/export; no graph query, performance measurement or production mutation"
+}

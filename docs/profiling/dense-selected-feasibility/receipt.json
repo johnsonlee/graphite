@@ -1,0 +1,119 @@
+{
+  "passed": true,
+  "referenceOnly": true,
+  "frozenRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "queryId": "global-wide-wrapped-case-insensitive-distinct-dense",
+  "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+  "querySha256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+  "inputs": {
+    "export": {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/multi/callsites.tsv.gz",
+      "sha256": "63a571dfc4aca0fa24315ba59032a1c5a2145e3cfc7bf32a1bcf0f5eafe037ca"
+    },
+    "manifest": {
+      "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+      "sha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b"
+    },
+    "provenance": {
+      "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-provenance.tsv",
+      "sha256": "86b13a58b2837fbaa317d70fe486fc552b38bfcdd4f615b8bf125c9992b01a1d"
+    },
+    "nonCallSiteCensus": {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/multi/non-callsite-census.tsv",
+      "sha256": "3768b55f387e610c4f08ac2175f14ce64a8b797caee22dad65547b4f911cf9cc"
+    },
+    "queryCatalog": {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/query-catalog.json",
+      "sha256": "dd786d6912b518eff1719da9253bd8827bf37153d6e303ac0b3fb359d53e4dae"
+    },
+    "authenticationCatalog": {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    }
+  },
+  "scriptSha256": "b67195c833460882099e9ca00045ddece0072f01d0572d1e89a483fc249ca6e2",
+  "totalCallSites": 5046935,
+  "fullQueryMatchingNodes": 1489740,
+  "fullQueryHitGraphCount": 64,
+  "selectedTupleCount": 200,
+  "selectedTrueSourceGraphIds": [
+    "fixture-android-00",
+    "fixture-tika-00"
+  ],
+  "excludedGraphCount": 62,
+  "excludedGraphIds": [
+    "fixture-android-01",
+    "fixture-android-02",
+    "fixture-android-03",
+    "fixture-android-04",
+    "fixture-android-05",
+    "fixture-android-06",
+    "fixture-android-07",
+    "fixture-android-08",
+    "fixture-android-09",
+    "fixture-android-10",
+    "fixture-android-11",
+    "fixture-android-12",
+    "fixture-android-13",
+    "fixture-android-14",
+    "fixture-android-15",
+    "fixture-tika-01",
+    "fixture-tika-02",
+    "fixture-tika-03",
+    "fixture-tika-04",
+    "fixture-tika-05",
+    "fixture-tika-06",
+    "fixture-tika-07",
+    "fixture-tika-08",
+    "fixture-tika-09",
+    "fixture-tika-10",
+    "fixture-tika-11",
+    "fixture-tika-12",
+    "fixture-tika-13",
+    "fixture-tika-14",
+    "fixture-tika-15",
+    "fixture-hive-00",
+    "fixture-hive-01",
+    "fixture-hive-02",
+    "fixture-hive-03",
+    "fixture-hive-04",
+    "fixture-hive-05",
+    "fixture-hive-06",
+    "fixture-hive-07",
+    "fixture-hive-08",
+    "fixture-hive-09",
+    "fixture-hive-10",
+    "fixture-hive-11",
+    "fixture-hive-12",
+    "fixture-hive-13",
+    "fixture-hive-14",
+    "fixture-hive-15",
+    "fixture-kotlin-compiler-00",
+    "fixture-kotlin-compiler-01",
+    "fixture-kotlin-compiler-02",
+    "fixture-kotlin-compiler-03",
+    "fixture-kotlin-compiler-04",
+    "fixture-kotlin-compiler-05",
+    "fixture-kotlin-compiler-06",
+    "fixture-kotlin-compiler-07",
+    "fixture-kotlin-compiler-08",
+    "fixture-kotlin-compiler-09",
+    "fixture-kotlin-compiler-10",
+    "fixture-kotlin-compiler-11",
+    "fixture-kotlin-compiler-12",
+    "fixture-kotlin-compiler-13",
+    "fixture-kotlin-compiler-14",
+    "fixture-kotlin-compiler-15"
+  ],
+  "feasibleButNoTrueSelectedHitGraphIds": [],
+  "selectedTuplesSha256": "c34cc2cd7305c0f93c5708ab842a2002ca24488a2aebba27e75a37b78dcf23fe",
+  "perGraphSha256": "46cdd0d3dde566ebee0f75f2298ef60d406c73dc401fc31d4846f5fd2e044a04",
+  "limits": [
+    "No Cypher/Java/benchmark execution and no performance measurement.",
+    "Membership uses exact original-case strings and corresponding physical property only.",
+    "Four independent property memberships are necessary, not sufficient for same-node tuple occurrence.",
+    "Excluded graphs have zero feasible selected tuples; predicate work avoidability is a logical reference count, not latency or CPU evidence.",
+    "This studies the order of existing necessary-condition checks, not Attempt133 shortest-posting direct tuple lookup.",
+    "No persistent graph formats, indexes, query plans, or source code changed."
+  ]
+}

@@ -110,6 +110,149 @@ import kotlin.test.assertTrue
 class GraphStoreTest {
 
     @Test
+    @Suppress("NestedBlockDepth")
+    fun `cancelled parent releases reservations before prepare and raw tasks are submitted`() {
+        if (callSiteScanParallelism < 2) return
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                addNode(CallSiteNode(
+                    NodeId(index),
+                    MethodDescriptor(TypeDescriptor("example.CancelledCaller$index"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    index,
+                    null,
+                    emptyList()
+                ))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-cancelled-parent-reservation")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            GraphStore.save(graph, dir, compressionThreads = 1)
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                val work = AtomicLong()
+                val consumer = ParallelGraphWorkBatchConsumer { work.addAndGet(it) }
+                val entries = listOf<Pair<String, () -> Unit>>(
+                    "prepare" to { loaded.prepareCallSiteStringIndex(consumer); Unit },
+                    "raw" to {
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(StringPropertyPredicate(
+                                "caller_class", null, StringMatchMode.CONTAINS, "absent"
+                            )),
+                            limit = 1,
+                            workConsumer = consumer
+                        ).orEmpty().toList()
+                        Unit
+                    }
+                )
+                entries.forEach { (entry, invokeStorage) ->
+                    loaded.resetCallSiteScanMetrics()
+                    val entered = CountDownLatch(1)
+                    val invokeAfterCancellation = CountDownLatch(1)
+                    val storageExited = CountDownLatch(1)
+                    val storageFailure = AtomicReference<Throwable>()
+                    val roots = io.johnsonlee.graphite.graph.GraphTaskScheduler.shared.newRootGroup<Unit>()
+                    try {
+                        val root = roots.submit(Callable {
+                            entered.countDown()
+                            check(invokeAfterCancellation.await(5, TimeUnit.SECONDS))
+                            assertTrue(io.johnsonlee.graphite.graph.GraphTaskContext.current?.isCancelled == true)
+                            assertFalse(Thread.currentThread().isInterrupted)
+                            try {
+                                invokeStorage()
+                                storageFailure.set(AssertionError("$entry storage completed after parent cancellation"))
+                            } catch (error: Throwable) {
+                                // Observe the storage invocation itself, not the cancelled Future.get().
+                                storageFailure.set(error)
+                            } finally {
+                                storageExited.countDown()
+                            }
+                        })
+                        assertTrue(entered.await(5, TimeUnit.SECONDS), "$entry root did not enter")
+                        assertTrue(root.cancel(false))
+                        invokeAfterCancellation.countDown()
+                        assertTrue(storageExited.await(5, TimeUnit.SECONDS), "$entry storage did not exit")
+                        assertTrue(storageFailure.get() is CancellationException, "$entry: ${storageFailure.get()}")
+                        // get() waits for actual exit, including the scheduler's registered child joins.
+                        assertFailsWith<CancellationException> { root.get(5, TimeUnit.SECONDS) }
+                        assertTrue(root.isDone)
+                        assertEquals(1L, loaded.callSiteParallelScanCount(), "$entry did not reach task submission")
+                        assertEquals(0L, work.get(), "$entry unexpectedly executed a storage worker")
+                        assertEquals(0, loaded.callSiteScanActiveWorkers(), "$entry still has active workers")
+                        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes(), entry)
+                        assertFalse(loaded.isCallSiteStringIndexInitialized(), entry)
+                        assertFalse(loaded.isCallSiteTrigramIndexInitialized(), entry)
+                        assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized(), entry)
+                        assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)), entry)
+                    } finally {
+                        invokeAfterCancellation.countDown()
+                        roots.cancelAndJoin()
+                    }
+                }
+            }
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `cancelled queued storage work remains a drainable completion`() {
+        val group = io.johnsonlee.graphite.graph.GraphTaskScheduler.shared.newGroup<Int>(0)
+        val called = AtomicBoolean()
+        try {
+            val task = group.submit(Callable { called.set(true); 17 })
+            assertTrue(task.cancel(false))
+            val completed = group.awaitNext()
+            assertSame(task, completed)
+            val failure = assertFailsWith<ExecutionException> { completed.callSiteTaskResult() }
+            assertTrue(failure.cause is CancellationException)
+            group.awaitAll()
+            assertFalse(called.get())
+        } finally {
+            group.close()
+        }
+    }
+
+    @Test
+    fun `storage without a consumer observes helper cancellation without interrupting its parent`() {
+        val scheduler = io.johnsonlee.graphite.graph.GraphTaskScheduler.shared
+        val roots = scheduler.newRootGroup<Boolean>()
+        val storageCancelled = AtomicBoolean()
+        try {
+            val root = roots.submit(Callable {
+                val children = scheduler.newGroup<Unit>(0)
+                lateinit var child: io.johnsonlee.graphite.graph.GraphTask<Unit>
+                try {
+                    child = children.submit(Callable {
+                        assertTrue(io.johnsonlee.graphite.graph.GraphTaskContext.current?.isHelper == true)
+                        assertTrue(child.cancel(false))
+                        assertFalse(Thread.currentThread().isInterrupted)
+                        try {
+                            // This entry has no GraphWorkConsumer; it must read the task token itself.
+                            sortCallSiteTrigramPostings(longArrayOf(3L, 1L, 2L))
+                            error("Cancelled storage work completed")
+                        } catch (_: CancellationException) {
+                            storageCancelled.set(true)
+                        }
+                    })
+                    assertFailsWith<CancellationException> { child.get() }
+                    assertTrue(storageCancelled.get())
+                    !Thread.currentThread().isInterrupted
+                } finally {
+                    children.close()
+                }
+            })
+            assertTrue(root.get(5, TimeUnit.SECONDS))
+            assertTrue(storageCancelled.get())
+        } finally {
+            roots.close()
+        }
+    }
+
+    @Test
     fun `split worker metrics can reset immediately after every completed execution`() {
         repeat(100) {
             resetSplitCallSiteWorkerMetrics()
@@ -253,7 +396,7 @@ class GraphStoreTest {
             assertTrue(backgroundStarted.await(5, TimeUnit.SECONDS))
             assertEquals(2, activeBackground.get())
             assertEquals(2, peakBackground.get())
-            assertTrue(threads.all { thread -> thread.startsWith("graphite-callsite-segment-") })
+            assertTrue(threads.all { thread -> thread.startsWith("graphite-task-") })
             releaseBackground.countDown()
             executions.forEach { execution -> assertContentEquals(IntArray(0), execution.get(5, TimeUnit.SECONDS)) }
             assertEquals(0, activeBackground.get())
@@ -1244,7 +1387,7 @@ class GraphStoreTest {
 
                 assertTrue(result.orEmpty().isEmpty())
                 assertEquals(4, threads.size)
-                assertTrue(threads.count { thread -> thread.startsWith("graphite-callsite-segment-") } == 3)
+                assertTrue(threads.count { thread -> thread.startsWith("graphite-task-") } == 3)
                 assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
             }
         } finally {
@@ -2914,7 +3057,7 @@ class GraphStoreTest {
         request.start()
         assertTrue(workersStarted.await(5, TimeUnit.SECONDS))
         assertEquals(expectedWorkers, workerThreads.size)
-        assertTrue(workerThreads.all { name -> name.startsWith("graphite-callsite-scan-") })
+        assertTrue(workerThreads.all { name -> name.startsWith("graphite-task-") })
         request.interrupt()
         releaseWorkers.countDown()
         request.join(500)
@@ -3613,7 +3756,7 @@ class GraphStoreTest {
 
                 assertEquals(listOf(0), ids)
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertTrue(workerThreads.all { thread -> thread.startsWith("graphite-callsite-scan-") })
+                assertTrue(workerThreads.all { thread -> thread.startsWith("graphite-task-") })
                 assertEquals(1L, loaded.callSiteParallelScanCount())
                 if (expectedParallelWorkers > 1) {
                     assertEquals(expectedParallelWorkers, workerThreads.size)
@@ -3647,8 +3790,8 @@ class GraphStoreTest {
                 ).orEmpty().map { it.id.value }.toList()
 
                 assertEquals(listOf(0), splitIds)
-                assertTrue(splitWorkerThreads.any { thread -> thread.startsWith("graphite-callsite-segment-") })
-                assertTrue(splitWorkerThreads.any { thread -> !thread.startsWith("graphite-callsite-segment-") })
+                assertTrue(splitWorkerThreads.any { thread -> thread.startsWith("graphite-task-") })
+                assertTrue(splitWorkerThreads.any { thread -> !thread.startsWith("graphite-task-") })
                 assertEquals(2, loaded.callSiteScanPeakActiveWorkers())
                 assertEquals(0, loaded.callSiteScanActiveWorkers())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
@@ -3679,8 +3822,8 @@ class GraphStoreTest {
                     }
                 )
                 assertEquals(expectedRawProjection, splitProjection?.map { row -> row.values })
-                assertTrue(splitProjectionThreads.any { thread -> thread.startsWith("graphite-callsite-segment-") })
-                assertTrue(splitProjectionThreads.any { thread -> !thread.startsWith("graphite-callsite-segment-") })
+                assertTrue(splitProjectionThreads.any { thread -> thread.startsWith("graphite-task-") })
+                assertTrue(splitProjectionThreads.any { thread -> !thread.startsWith("graphite-task-") })
                 assertEquals(1L, loaded.callSiteParallelScanCount())
                 assertEquals(2, loaded.callSiteScanPeakActiveWorkers())
                 assertEquals(0, loaded.callSiteScanActiveWorkers())
@@ -3789,7 +3932,7 @@ class GraphStoreTest {
                                 override val segmentWorkerCount: Int = 1
 
                                 override fun consume(workUnits: Long) {
-                                    if (Thread.currentThread().name.startsWith("graphite-callsite-segment-")) {
+                                    if (Thread.currentThread().name.startsWith("graphite-task-")) {
                                         projectionBackgroundStarted.countDown()
                                         check(releaseProjectionBackground.await(5, TimeUnit.SECONDS))
                                     }

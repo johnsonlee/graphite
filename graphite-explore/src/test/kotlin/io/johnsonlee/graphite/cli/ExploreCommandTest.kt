@@ -42,6 +42,7 @@ import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
+import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.JavaArchiveLayout
@@ -2141,6 +2142,73 @@ class ExploreCommandTest {
         assertTrue(nodes.any { it["id"] == "com.example.Foo" && it["fullName"] == "com.example.Foo" })
         assertTrue(nodes.any { it["id"] == "com.example.Baz" && it["fullName"] == "com.example.Baz" })
         assertTrue(edges.any { it["from"] == "com.example.Foo" && it["to"] == "com.example.Baz" })
+    }
+
+    @Test
+    fun `overview reconstructs directed class dependencies when no overview index is available`() {
+        assertCallSiteOverviewFallback { null }
+    }
+
+    @Test
+    fun `overview remains available when the overview index fails`() {
+        assertCallSiteOverviewFallback { throw IllegalStateException("Overview index unavailable") }
+    }
+
+    private fun assertCallSiteOverviewFallback(overviewProvider: () -> ClassOverview?) {
+        val alpha = MethodDescriptor(TypeDescriptor("example.Alpha"), "call", emptyList(), TypeDescriptor("void"))
+        val beta = MethodDescriptor(TypeDescriptor("example.Beta"), "call", emptyList(), TypeDescriptor("void"))
+        val gamma = MethodDescriptor(TypeDescriptor("example.Gamma"), "call", emptyList(), TypeDescriptor("void"))
+        val backing = DefaultGraph.Builder().apply {
+            // Duplicate calls carry weight; a reverse call is a separate directed dependency.
+            listOf(alpha to beta, alpha to beta, beta to alpha, alpha to gamma, alpha to alpha, alpha to alpha)
+                .forEachIndexed { index, (caller, callee) ->
+                    addNode(CallSiteNode(NodeId.next(), caller, callee, index, null, emptyList()))
+                }
+            addNode(StringConstant(NodeId.next(), "Not a class dependency"))
+        }.build()
+        val graph = object : Graph by backing {
+            override fun classOverview(limit: Int): ClassOverview? = overviewProvider()
+        }
+        val expectedNodes = listOf(
+            mapOf("id" to "example.Alpha", "type" to "Class", "label" to "Alpha",
+                "fullName" to "example.Alpha", "callSites" to 8.0),
+            mapOf("id" to "example.Beta", "type" to "Class", "label" to "Beta",
+                "fullName" to "example.Beta", "callSites" to 3.0),
+            mapOf("id" to "example.Gamma", "type" to "Class", "label" to "Gamma",
+                "fullName" to "example.Gamma", "callSites" to 1.0)
+        )
+        val expectedEdges = setOf(
+            mapOf("from" to "example.Alpha", "to" to "example.Beta", "type" to "Call", "weight" to 2.0),
+            mapOf("from" to "example.Beta", "to" to "example.Alpha", "type" to "Call", "weight" to 1.0),
+            mapOf("from" to "example.Alpha", "to" to "example.Gamma", "type" to "Call", "weight" to 1.0)
+        )
+
+        withExploreApp(graph) { targetPort ->
+            for (path in listOf("/api/overview", "/api/graphs/standalone/overview")) {
+                val (code, body) = get(targetPort, path)
+                assertEquals(200, code, body)
+                val full: Map<String, List<Map<String, Any?>>> = parseJson(body)
+                // Self calls contribute both endpoints to Alpha's count, but never add self edges.
+                assertEquals(expectedNodes, full["nodes"], body)
+                assertEquals(expectedEdges, full["edges"]?.toSet(), body)
+                assertEquals(expectedEdges.size, full["edges"]?.size, body)
+
+                val (limitedCode, limitedBody) = get(targetPort, "$path?limit=2")
+                assertEquals(200, limitedCode, limitedBody)
+                val limited: Map<String, List<Map<String, Any?>>> = parseJson(limitedBody)
+                assertEquals(expectedNodes.take(2), limited["nodes"], limitedBody)
+                assertEquals(expectedEdges.filter { it["to"] != "example.Gamma" }.toSet(),
+                    limited["edges"]?.toSet(), limitedBody)
+                assertEquals(2, limited["edges"]?.size, limitedBody)
+
+                val (emptyCode, emptyBody) = get(targetPort, "$path?limit=0")
+                assertEquals(200, emptyCode, emptyBody)
+                val empty: Map<String, List<Map<String, Any?>>> = parseJson(emptyBody)
+                val expectedEmpty: Map<String, List<Map<String, Any?>>> =
+                    mapOf("nodes" to emptyList(), "edges" to emptyList())
+                assertEquals(expectedEmpty, empty, emptyBody)
+            }
+        }
     }
 
     // ========================================================================

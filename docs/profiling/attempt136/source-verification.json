@@ -1,0 +1,8 @@
+{
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "productionAndJmhFilesChecked": 130,
+  "differingFiles": [
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt"
+  ],
+  "measuredCandidateSourceSha256Matches": true
+}

@@ -1,0 +1,20 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-main-raw-distinct-audit/README.md",
+      "destination": "docs/profiling/distinct-projection-work/raw-node-audit/README.md",
+      "sha256": "12fee3cbcced2b6bccb2fc7f2dbec939e17f0410dd7315d3618d3959e3f27042"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-distinct-audit/README.json",
+      "destination": "docs/profiling/distinct-projection-work/raw-node-audit/README.json",
+      "sha256": "7d19d417ac31eb845ff1684281ed4de278b44a148f1b9d05403931c0679435fd"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-distinct-audit/audit.py",
+      "destination": "docs/profiling/distinct-projection-work/raw-node-audit/audit.py",
+      "sha256": "b20eef1ef8e228c5e56cae425265b1699e6f8a4c0d34e6b3b934214ba826cb01"
+    }
+  ],
+  "productionChanges": false
+}

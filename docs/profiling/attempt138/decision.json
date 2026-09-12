@@ -1,0 +1,17 @@
+{
+  "attempt": 138,
+  "decision": "rejected",
+  "accepted": false,
+  "old34RegressionPassed": true,
+  "old34StrictProgressEveryPair": true,
+  "targetAchieved": false,
+  "v3VerifiedObservations": 216,
+  "v3RepeatedRegressionQueries": [
+    "mixed-four-few-rows",
+    "or-four-broad-distinct"
+  ],
+  "rule": "For an aligned query, >15% and >1ms slower in at least two of three original alternating pairs",
+  "productionRevertRequired": true,
+  "candidateCi": "not submitted because local additional-coverage regression already rejects candidate",
+  "jarSha256": "2c419ac0b9d996af0890d1c857f81fa3479c170f59306fe35517a6e90cf7b5bf"
+}

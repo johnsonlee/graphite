@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "scope": "Independent root recomputation of exported event ownership and frame counts using summary windows; does not independently re-decode JFR, authenticate capture-time JAR or repeat full original collapsed-stack audit.",
+  "eventsChecked": 523,
+  "rows": [
+    {
+      "recording": 3,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "raw": 64,
+      "nodeLeaf": 34,
+      "frameTypes": {
+        "Interpreted": 25,
+        "C1 compiled": 9
+      }
+    },
+    {
+      "recording": 3,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "raw": 54,
+      "nodeLeaf": 16,
+      "frameTypes": {
+        "C1 compiled": 16
+      }
+    },
+    {
+      "recording": 4,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "raw": 156,
+      "nodeLeaf": 66,
+      "frameTypes": {
+        "Interpreted": 50,
+        "C1 compiled": 16
+      }
+    },
+    {
+      "recording": 4,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "raw": 69,
+      "nodeLeaf": 45,
+      "frameTypes": {
+        "Interpreted": 45
+      }
+    },
+    {
+      "recording": 5,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "raw": 90,
+      "nodeLeaf": 51,
+      "frameTypes": {
+        "Interpreted": 48,
+        "C1 compiled": 3
+      }
+    },
+    {
+      "recording": 5,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "raw": 90,
+      "nodeLeaf": 57,
+      "frameTypes": {
+        "Interpreted": 57
+      }
+    }
+  ]
+}

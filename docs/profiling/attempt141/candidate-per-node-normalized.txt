@@ -1,0 +1,391 @@
+aload_0
+getfield #CP // Field kotlin/jvm/internal/Ref$IntRef.element:I
+istore 16
+aload_0
+iload 16
+iconst_1
+iadd
+putfield #CP // Field kotlin/jvm/internal/Ref$IntRef.element:I
+iload 16
+sipush 1023
+iand
+ifne <target>
+aload_1
+invokevirtual #CP // Method java/util/concurrent/atomic/AtomicBoolean.get:()Z
+ifne <target>
+invokestatic #CP // Method java/lang/Thread.currentThread:()Ljava/lang/Thread;
+invokevirtual #CP // Method java/lang/Thread.isInterrupted:()Z
+ifeq <target>
+aload_1
+invokevirtual #CP // Method java/util/concurrent/atomic/AtomicBoolean.get:()Z
+ifeq <target>
+aload_2
+getfield #CP // Field callSiteScanAbortedWorkers:Ljava/util/concurrent/atomic/AtomicLong;
+invokevirtual #CP // Method java/util/concurrent/atomic/AtomicLong.incrementAndGet:()J
+pop2
+new #CP // class java/util/concurrent/CancellationException
+dup
+ldc_w #CP // String Mapped string-property scan interrupted
+invokespecial #CP // Method java/util/concurrent/CancellationException."<init>":(Ljava/lang/String;)V
+athrow
+aload_3
+invokevirtual #CP // Method io/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer.consume:()V
+iconst_0
+istore 16
+aload_2
+astore 17
+iconst_0
+istore 18
+aload 17
+invokestatic #CP // Method access$getNodeOffsets$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;
+iload 15
+invokeinterface #CP, 2 // InterfaceMethod io/johnsonlee/graphite/webgraph/NodeOffsetIndex.offset:(I)J
+l2i
+iconst_5
+iadd
+istore 19
+aload 17
+invokestatic #CP // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+iload 19
+bipush 8
+iadd
+invokevirtual #CP // Method java/nio/MappedByteBuffer.getInt:(I)I
+istore 20
+iload 19
+iconst_4
+iload 20
+iadd
+iconst_4
+imul
+iadd
+istore 21
+aload 17
+invokestatic #CP // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+iload 19
+invokevirtual #CP // Method java/nio/MappedByteBuffer.getInt:(I)I
+aload 17
+invokestatic #CP // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+iload 19
+iconst_4
+iadd
+invokevirtual #CP // Method java/nio/MappedByteBuffer.getInt:(I)I
+aload 17
+invokestatic #CP // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+iload 21
+invokevirtual #CP // Method java/nio/MappedByteBuffer.getInt:(I)I
+aload 17
+invokestatic #CP // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+iload 21
+iconst_4
+iadd
+invokevirtual #CP // Method java/nio/MappedByteBuffer.getInt:(I)I
+istore 22
+istore 23
+istore 24
+istore 25
+iconst_0
+istore 26
+aload 9
+iconst_0
+iload 25
+iastore
+aload 9
+iconst_1
+iload 24
+iastore
+aload 9
+iconst_2
+iload 23
+iastore
+aload 9
+iconst_3
+iload 22
+iastore
+aload 10
+checkcast #CP // class java/util/Collection
+invokestatic #CP // Method kotlin/collections/CollectionsKt.getIndices:(Ljava/util/Collection;)Lkotlin/ranges/IntRange;
+checkcast #CP // class java/lang/Iterable
+astore 27
+iconst_0
+istore 28
+aload 27
+instanceof #CP // class java/util/Collection
+ifeq <target>
+aload 27
+checkcast #CP // class java/util/Collection
+invokeinterface #CP, 1 // InterfaceMethod java/util/Collection.isEmpty:()Z
+ifeq <target>
+iconst_0
+goto <target>
+aload 27
+invokeinterface #CP, 1 // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+astore 29
+aload 29
+invokeinterface #CP, 1 // InterfaceMethod java/util/Iterator.hasNext:()Z
+ifeq <target>
+aload 29
+checkcast #CP // class kotlin/collections/IntIterator
+invokevirtual #CP // Method kotlin/collections/IntIterator.nextInt:()I
+istore 30
+iload 30
+istore 31
+iconst_0
+istore 32
+aload 11
+iload 31
+invokeinterface #CP, 2 // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+checkcast #CP // class java/lang/Number
+invokevirtual #CP // Method java/lang/Number.intValue:()I
+istore 33
+aload 9
+iload 33
+iaload
+istore 34
+aload 12
+dup
+ifnull <target>
+astore 35
+iconst_0
+istore 36
+iconst_0
+iload 34
+if_icmpgt <target>
+iload 34
+aload 35
+arraylength
+if_icmpge <target>
+iconst_1
+goto <target>
+iconst_0
+goto <target>
+iconst_0
+ifeq <target>
+aload 35
+iload 34
+baload
+iconst_1
+iload 33
+ishl
+iand
+ifeq <target>
+iconst_1
+goto <target>
+iconst_0
+goto <target>
+pop
+aload 13
+dup
+ifnull <target>
+astore 35
+iconst_0
+istore 36
+aload 35
+iload 31
+invokeinterface #CP, 2 // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+checkcast #CP // class it/unimi/dsi/fastutil/ints/IntOpenHashSet
+iload 34
+invokevirtual #CP // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z
+goto <target>
+pop
+aload 14
+iload 31
+invokeinterface #CP, 2 // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+checkcast #CP // class "[B"
+astore 37
+aload 37
+iload 34
+baload
+istore 35
+iload 35
+iconst_2
+if_icmpne <target>
+iconst_1
+goto <target>
+iload 35
+iconst_1
+if_icmpne <target>
+iconst_0
+goto <target>
+aload_2
+getfield #CP // Field stringTable:Lio/johnsonlee/graphite/webgraph/StringTable;
+iload 34
+invokevirtual #CP // Method io/johnsonlee/graphite/webgraph/StringTable.get:(I)Ljava/lang/String;
+aload 10
+iload 31
+invokeinterface #CP, 2 // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+checkcast #CP // class io/johnsonlee/graphite/graph/StringPropertyPredicate
+invokevirtual #CP // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getTransform:()Lio/johnsonlee/graphite/graph/StringValueTransform;
+aload 10
+iload 31
+invokeinterface #CP, 2 // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+checkcast #CP // class io/johnsonlee/graphite/graph/StringPropertyPredicate
+invokevirtual #CP // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getMode:()Lio/johnsonlee/graphite/graph/StringMatchMode;
+aload 10
+iload 31
+invokeinterface #CP, 2 // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+checkcast #CP // class io/johnsonlee/graphite/graph/StringPropertyPredicate
+invokevirtual #CP // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getExpected:()Ljava/lang/String;
+invokestatic #CP // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.stringMatches:(Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;)Z
+istore 36
+iload 36
+istore 38
+iconst_0
+istore 39
+aload 37
+iload 34
+iload 38
+ifeq <target>
+iconst_2
+goto <target>
+iconst_1
+bastore
+nop
+iload 36
+nop
+ifeq <target>
+iconst_1
+goto <target>
+iconst_0
+istore 16
+nop
+nop
+nop
+iload 16
+ifeq <target>
+aload 4
+ifnull <target>
+aload 5
+checkcast #CP // class java/lang/Iterable
+astore 18
+iconst_0
+istore 19
+aload 18
+astore 20
+new #CP // class java/util/ArrayList
+dup
+aload 18
+bipush 10
+invokestatic #CP // Method kotlin/collections/CollectionsKt.collectionSizeOrDefault:(Ljava/lang/Iterable;I)I
+invokespecial #CP // Method java/util/ArrayList."<init>":(I)V
+checkcast #CP // class java/util/Collection
+astore 21
+iconst_0
+istore 22
+aload 20
+invokeinterface #CP, 1 // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+astore 23
+aload 23
+invokeinterface #CP, 1 // InterfaceMethod java/util/Iterator.hasNext:()Z
+ifeq <target>
+aload 23
+invokeinterface #CP, 1 // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+astore 24
+aload 21
+aload 24
+checkcast #CP // class java/lang/Number
+invokevirtual #CP // Method java/lang/Number.intValue:()I
+istore 25
+astore 40
+iconst_0
+istore 26
+iload 25
+ifge <target>
+iconst_m1
+goto <target>
+aload 9
+iload 25
+iaload
+invokestatic #CP // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+aload 40
+swap
+invokeinterface #CP, 2 // InterfaceMethod java/util/Collection.add:(Ljava/lang/Object;)Z
+pop
+goto <target>
+aload 21
+checkcast #CP // class java/util/List
+nop
+astore 17
+aload 4
+aload 17
+invokevirtual #CP // Method java/util/HashSet.contains:(Ljava/lang/Object;)Z
+ifne <target>
+iconst_1
+ireturn
+aload 5
+checkcast #CP // class java/lang/Iterable
+astore 18
+iconst_0
+istore 19
+aload 18
+astore 20
+new #CP // class java/util/ArrayList
+dup
+aload 18
+bipush 10
+invokestatic #CP // Method kotlin/collections/CollectionsKt.collectionSizeOrDefault:(Ljava/lang/Iterable;I)I
+invokespecial #CP // Method java/util/ArrayList."<init>":(I)V
+checkcast #CP // class java/util/Collection
+astore 21
+iconst_0
+istore 22
+aload 20
+invokeinterface #CP, 1 // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+astore 23
+aload 23
+invokeinterface #CP, 1 // InterfaceMethod java/util/Iterator.hasNext:()Z
+ifeq <target>
+aload 23
+invokeinterface #CP, 1 // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+astore 24
+aload 21
+aload 24
+checkcast #CP // class java/lang/Number
+invokevirtual #CP // Method java/lang/Number.intValue:()I
+istore 25
+astore 40
+iconst_0
+istore 26
+iload 25
+ifge <target>
+aconst_null
+goto <target>
+aload_2
+getfield #CP // Field stringTable:Lio/johnsonlee/graphite/webgraph/StringTable;
+aload 9
+iload 25
+iaload
+invokevirtual #CP // Method io/johnsonlee/graphite/webgraph/StringTable.get:(I)Ljava/lang/String;
+invokevirtual #CP // Method java/lang/String.toString:()Ljava/lang/String;
+aload 40
+swap
+invokeinterface #CP, 2 // InterfaceMethod java/util/Collection.add:(Ljava/lang/Object;)Z
+pop
+goto <target>
+aload 21
+checkcast #CP // class java/util/List
+nop
+astore 17
+aload 6
+aload 17
+invokevirtual #CP // Method java/util/HashSet.add:(Ljava/lang/Object;)Z
+ifeq <target>
+aload 7
+checkcast #CP // class java/util/Collection
+new #CP // class io/johnsonlee/graphite/graph/StringPropertyDistinctRow
+dup
+aload_2
+getfield #CP // Field nodeOffsets:Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;
+iload 15
+invokeinterface #CP, 2 // InterfaceMethod io/johnsonlee/graphite/webgraph/NodeOffsetIndex.offset:(I)J
+aload 17
+invokespecial #CP // Method io/johnsonlee/graphite/graph/StringPropertyDistinctRow."<init>":(JLjava/util/List;)V
+invokeinterface #CP, 2 // InterfaceMethod java/util/Collection.add:(Ljava/lang/Object;)Z
+pop
+aload 7
+invokevirtual #CP // Method java/util/ArrayList.size:()I
+iload 8
+if_icmpge <target>
+iconst_1
+goto <target>
+iconst_0
+ireturn

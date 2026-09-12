@@ -1,0 +1,122 @@
+[
+  {
+    "recording": 1,
+    "phaseTraceCount": 192,
+    "queries": [
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+        "outerDurationNanos": 3307625,
+        "tsvLatencyNanos": 3340250,
+        "untracedTsvNanos": 32625,
+        "initialUnionNanos": 1179294,
+        "provenanceUnionNanos": 0,
+        "otherNanos": 2128331,
+        "initialCalls": 64,
+        "provenanceCalls": 0
+      },
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "outerDurationNanos": 30229875,
+        "tsvLatencyNanos": 30282292,
+        "untracedTsvNanos": 52417,
+        "initialUnionNanos": 29332084,
+        "provenanceUnionNanos": 0,
+        "otherNanos": 897791,
+        "initialCalls": 64,
+        "provenanceCalls": 0
+      },
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "outerDurationNanos": 55217000,
+        "tsvLatencyNanos": 55271709,
+        "untracedTsvNanos": 54709,
+        "initialUnionNanos": 5079916,
+        "provenanceUnionNanos": 47671875,
+        "otherNanos": 2465209,
+        "initialCalls": 1,
+        "provenanceCalls": 63
+      }
+    ],
+    "all34MetricPartitionsConserved": true
+  },
+  {
+    "recording": 2,
+    "phaseTraceCount": 192,
+    "queries": [
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+        "outerDurationNanos": 3478250,
+        "tsvLatencyNanos": 3522541,
+        "untracedTsvNanos": 44291,
+        "initialUnionNanos": 1353626,
+        "provenanceUnionNanos": 0,
+        "otherNanos": 2124624,
+        "initialCalls": 64,
+        "provenanceCalls": 0
+      },
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "outerDurationNanos": 31118083,
+        "tsvLatencyNanos": 31188084,
+        "untracedTsvNanos": 70001,
+        "initialUnionNanos": 30259956,
+        "provenanceUnionNanos": 0,
+        "otherNanos": 858127,
+        "initialCalls": 64,
+        "provenanceCalls": 0
+      },
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "outerDurationNanos": 39489917,
+        "tsvLatencyNanos": 39549417,
+        "untracedTsvNanos": 59500,
+        "initialUnionNanos": 5700375,
+        "provenanceUnionNanos": 31285250,
+        "otherNanos": 2504292,
+        "initialCalls": 1,
+        "provenanceCalls": 63
+      }
+    ],
+    "all34MetricPartitionsConserved": true
+  },
+  {
+    "recording": 3,
+    "phaseTraceCount": 192,
+    "queries": [
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+        "outerDurationNanos": 3323083,
+        "tsvLatencyNanos": 3372333,
+        "untracedTsvNanos": 49250,
+        "initialUnionNanos": 1179210,
+        "provenanceUnionNanos": 0,
+        "otherNanos": 2143873,
+        "initialCalls": 64,
+        "provenanceCalls": 0
+      },
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "outerDurationNanos": 25923583,
+        "tsvLatencyNanos": 25989166,
+        "untracedTsvNanos": 65583,
+        "initialUnionNanos": 25315584,
+        "provenanceUnionNanos": 0,
+        "otherNanos": 607999,
+        "initialCalls": 64,
+        "provenanceCalls": 0
+      },
+      {
+        "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "outerDurationNanos": 42790541,
+        "tsvLatencyNanos": 42850250,
+        "untracedTsvNanos": 59709,
+        "initialUnionNanos": 6081208,
+        "provenanceUnionNanos": 33777083,
+        "otherNanos": 2932250,
+        "initialCalls": 1,
+        "provenanceCalls": 63
+      }
+    ],
+    "all34MetricPartitionsConserved": true
+  }
+]

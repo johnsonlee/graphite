@@ -1,0 +1,9 @@
+{
+  "processesTerminal": true,
+  "forks": 1,
+  "graphFiles": 1088,
+  "graphsUnchanged": true,
+  "jarSha256": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+  "baseSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "newProductionCandidate": false
+}

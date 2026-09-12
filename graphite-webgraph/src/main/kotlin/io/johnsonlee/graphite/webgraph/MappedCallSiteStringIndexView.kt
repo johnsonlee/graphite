@@ -2,7 +2,10 @@
 
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.graph.GraphTaskContext
+import io.johnsonlee.graphite.graph.GraphTaskScheduler
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
@@ -19,6 +22,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.PriorityQueue
+import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
 import java.util.zip.CRC32
 
@@ -220,11 +224,78 @@ internal class MappedCallSiteStringIndexView private constructor(
             }
             if (spans.isEmpty()) return null
             val anchor = spans.minBy { range -> range.last - range.first }
+            val split = (workConsumer as? SplitGraphWorkBatchConsumer)?.takeIf { it.segmentWorkerCount > 0 }
+            if (split != null &&
+                anchor.last - anchor.first + 1 >= MIN_EXACT_MATCH_TASK_ENTRIES * 2 &&
+                GraphTaskScheduler.shared.parallelism > 1
+            ) {
+                return parallelExactMatchingStringIds(predicate, anchor, split)
+            }
             val actual = MutableString()
             val matches = IntArray(anchor.last - anchor.first + 1)
             var size = 0
             for (postingIndex in anchor) {
                 if ((postingIndex and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                accounting.consume()
+                val stringId = trigramPostings.get(postingIndex).toInt()
+                if (stringId !in 0 until stringCount) return null
+                stringTable.get(stringId, actual)
+                if (reusableContains(actual, predicate.transform, predicate.expected)) {
+                    matches[size++] = stringId
+                }
+            }
+            return matches.copyOf(size)
+        } finally {
+            accounting.flush()
+        }
+    }
+
+    /** Reuse the shared segment budget; graph owners contribute their original calling thread. */
+    private fun parallelExactMatchingStringIds(
+        predicate: StringPropertyPredicate,
+        anchor: IntRange,
+        workConsumer: SplitGraphWorkBatchConsumer
+    ): IntArray? {
+        val count = anchor.last - anchor.first + 1
+        val background = minOf(workConsumer.segmentWorkerCount, GraphTaskScheduler.shared.parallelism)
+        val workers = minOf(
+            background + 1,
+            GraphTaskScheduler.shared.parallelism,
+            count / MIN_EXACT_MATCH_TASK_ENTRIES
+        )
+        val chunkSize = (count.toLong() + workers - 1) / workers
+        val tasks = (0 until workers).map { index ->
+            val start = (anchor.first + index * chunkSize).toInt()
+            val end = minOf(anchor.last.toLong() + 1, start + chunkSize).toInt()
+            Callable { exactMatchingStringIdsInRange(predicate, start until end, workConsumer) }
+        }
+        val chunks = executeSplitCallSiteTasks(tasks, background)
+        var size = 0
+        chunks.forEach { chunk -> size += (chunk ?: return null).size }
+        val matches = IntArray(size)
+        var offset = 0
+        chunks.forEach { chunk ->
+            checkNotNull(chunk).copyInto(matches, offset)
+            offset += chunk.size
+        }
+        return matches
+    }
+
+    private fun exactMatchingStringIdsInRange(
+        predicate: StringPropertyPredicate,
+        range: IntRange,
+        workConsumer: SplitGraphWorkBatchConsumer
+    ): IntArray? {
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        val actual = MutableString()
+        val matches = IntArray(range.last - range.first + 1)
+        var size = 0
+        try {
+            for (postingIndex in range) {
+                if ((postingIndex and VIEW_INTERRUPTION_POLL_MASK) == 0) {
+                    checkViewInterrupted()
+                    GraphTaskContext.current?.checkCancelled()
+                }
                 accounting.consume()
                 val stringId = trigramPostings.get(postingIndex).toInt()
                 if (stringId !in 0 until stringCount) return null
@@ -550,6 +621,7 @@ private fun checkViewInterrupted() {
     if (Thread.currentThread().isInterrupted) {
         throw CancellationException("Mapped CallSite string index view interrupted")
     }
+    GraphTaskContext.current?.checkCancelled()
 }
 
 private data class MappedPredicateKey(
@@ -675,3 +747,5 @@ private const val UINT_MASK = 0xffff_ffffL
 private const val VIEW_INTERRUPTION_POLL_MASK = 1_023
 private const val CHECKSUM_CHUNK_BYTES = 1 shl 20
 private const val MIN_INDEX_VIEW_BYTES = CALL_SITE_STRING_INDEX_HEADER_BYTES + Long.SIZE_BYTES
+
+private const val MIN_EXACT_MATCH_TASK_ENTRIES = 1_024

@@ -1,0 +1,86 @@
+{
+  "head": "e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694",
+  "benchmarkRun": 33988848640,
+  "confirmedFailures": [
+    {
+      "graphCount": 17,
+      "scenario": "or",
+      "metric": "processCpuNanos",
+      "thresholdPercent": 15,
+      "initial": {
+        "base": 1950000000.0,
+        "candidate": 3170000000.0,
+        "increasePercent": 62.56410256410256
+      },
+      "confirmation": {
+        "base": 2180000000.0,
+        "candidate": 3410000000.0,
+        "increasePercent": 56.42201834862386
+      }
+    },
+    {
+      "graphCount": 36,
+      "scenario": "contains",
+      "metric": "processCpuNanos",
+      "thresholdPercent": 15,
+      "initial": {
+        "base": 5000000000.0,
+        "candidate": 5880000000.0,
+        "increasePercent": 17.599999999999994
+      },
+      "confirmation": {
+        "base": 5110000000.0,
+        "candidate": 6020000000.0,
+        "increasePercent": 17.808219178082197
+      }
+    }
+  ],
+  "originalJmhScoresMatchFinalStatus": true,
+  "correctnessSignatureChecks": [
+    {
+      "graphCount": 17,
+      "phase": "initial",
+      "signatureCount": 3,
+      "equal": true
+    },
+    {
+      "graphCount": 17,
+      "phase": "confirmation",
+      "signatureCount": 3,
+      "equal": true
+    },
+    {
+      "graphCount": 36,
+      "phase": "initial",
+      "signatureCount": 3,
+      "equal": true
+    },
+    {
+      "graphCount": 36,
+      "phase": "confirmation",
+      "signatureCount": 3,
+      "equal": true
+    }
+  ],
+  "inputSha256": {
+    "method17-scan/method-compatibility-17-scan-cpu-status.json": "243b5d6c29ac5baf534305cbe4ec4fa6afe5423d24ab3991a055ace16a96ebfa",
+    "method17-scan/base-method-compatibility-17-scan.json": "4abeaa0f1d5c951ae8250f25762e08b30c2f1d4117e55d1e69d7ea9a7ca2f8d4",
+    "method17-scan/base-method-compatibility-17-scan.txt": "b3482499e10685a99aefb54e434ec6419aad8068a87fd31b2da4ca51c244fba2",
+    "method17-scan/candidate-method-compatibility-17-scan.json": "09048e0df40bc44d03b09ef1b3c4859ca28bc62f08c41d26f0e1dabf07c8837d",
+    "method17-scan/candidate-method-compatibility-17-scan.txt": "b3482499e10685a99aefb54e434ec6419aad8068a87fd31b2da4ca51c244fba2",
+    "method17-scan/method-confirmation-base-17-scan.json": "99cf20d19658615246147f07240934a272193cddf41d5c2373b0e757351db28f",
+    "method17-scan/method-confirmation-base-17-scan.txt": "b3482499e10685a99aefb54e434ec6419aad8068a87fd31b2da4ca51c244fba2",
+    "method17-scan/method-confirmation-candidate-17-scan.json": "a90d16de623389e5eb9a797e741be1806e053e6f9cd545af8662691446bc80b0",
+    "method17-scan/method-confirmation-candidate-17-scan.txt": "b3482499e10685a99aefb54e434ec6419aad8068a87fd31b2da4ca51c244fba2",
+    "method36-scan/method-compatibility-36-scan-cpu-status.json": "620929505fb36c1e2ac2c3d936a2c12e0b7916605611d0bf4d5fbc2d1f3e5308",
+    "method36-scan/base-method-compatibility-36-scan.json": "947756276d267d5fd1c5fb40f4dc34778a0bdb9399e68e30c1e69b499b9e6b4c",
+    "method36-scan/base-method-compatibility-36-scan.txt": "1492621b147c2ee7c423330e7479cce6129591b3aed885b781c32c1dea157bd9",
+    "method36-scan/candidate-method-compatibility-36-scan.json": "b86e0b98b457106dd88622d26a07b35273f8f50e35f1135774421f5c78180552",
+    "method36-scan/candidate-method-compatibility-36-scan.txt": "1492621b147c2ee7c423330e7479cce6129591b3aed885b781c32c1dea157bd9",
+    "method36-scan/method-confirmation-base-36-scan.json": "90978a1d397c440458f488bca452c2f1e73b677510762fdf61b553ce5df77579",
+    "method36-scan/method-confirmation-base-36-scan.txt": "1492621b147c2ee7c423330e7479cce6129591b3aed885b781c32c1dea157bd9",
+    "method36-scan/method-confirmation-candidate-36-scan.json": "2c1e50d4a32ce370804720c39e7c05ba1190810a965592fb180842d28c107b2b",
+    "method36-scan/method-confirmation-candidate-36-scan.txt": "1492621b147c2ee7c423330e7479cce6129591b3aed885b781c32c1dea157bd9"
+  },
+  "scope": "Read-only downloaded Method17/36 scan artifacts; no runtime cause assigned, no remeasurements."
+}

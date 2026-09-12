@@ -1,0 +1,1047 @@
+{
+  "schema": "independent-attempt139-revert-ci-audit-v1",
+  "head": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "readOnly": true,
+  "newMeasurements": false,
+  "workflowRuns": {
+    "33992947613": {
+      "conclusion": "success",
+      "snapshotSha256": "acd8a563c8fe949598e5e9c8551115788459ffc527c0af6c136733c2dc0524c3",
+      "failedJobs": []
+    },
+    "33992947567": {
+      "conclusion": "failure",
+      "snapshotSha256": "637c268f545266e10724ec54135de15e32736890f5444cafa8e8fb4b9f5bd86c",
+      "failedJobs": [
+        "method-compatibility-4-string",
+        "method-compatibility-gate",
+        "graph-routing-pressure-evidence",
+        "global-wide-pressure-evidence",
+        "benchmark-regression-gate"
+      ]
+    }
+  },
+  "method": {
+    "head": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+    "run": 33992947567,
+    "jobs": [
+      {
+        "name": "method-compatibility-4-position",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617083,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617083"
+      },
+      {
+        "name": "method-compatibility-36-position",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617084,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617084"
+      },
+      {
+        "name": "method-compatibility-17-position",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617087,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617087"
+      },
+      {
+        "name": "method-compatibility-4-scan",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617099,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617099"
+      },
+      {
+        "name": "method-compatibility-17-aggregate",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617107,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617107"
+      },
+      {
+        "name": "method-compatibility-4-string",
+        "status": "completed",
+        "conclusion": "failure",
+        "databaseId": 101378617109,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617109"
+      },
+      {
+        "name": "method-compatibility-4-aggregate",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617112,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617112"
+      },
+      {
+        "name": "method-compatibility-17-scan",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617113,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617113"
+      },
+      {
+        "name": "method-compatibility-17-string",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617129,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617129"
+      },
+      {
+        "name": "method-compatibility-36-aggregate",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617135,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617135"
+      },
+      {
+        "name": "method-compatibility-36-scan",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617143,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617143"
+      },
+      {
+        "name": "method-compatibility-36-string",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 101378617244,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617244"
+      },
+      {
+        "name": "method-compatibility-gate",
+        "status": "completed",
+        "conclusion": "failure",
+        "databaseId": 101379087449,
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101379087449"
+      }
+    ],
+    "conclusionScope": "Terminal job status only, failed Method4 string additionally audited from raw JMH/signatures.",
+    "rawFailureAudit": {
+      "head": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+      "benchmarkRun": 33992947567,
+      "confirmedFailures": [
+        {
+          "scenario": "prefix",
+          "graphCount": 4,
+          "metric": "processCpuNanos",
+          "thresholdPercent": 15,
+          "initial": {
+            "base": 1110000000,
+            "candidate": 1400000000,
+            "increasePercent": 26.126126126126124
+          },
+          "confirmation": {
+            "base": 1290000000,
+            "candidate": 1550000000,
+            "increasePercent": 20.155038759689916
+          }
+        }
+      ],
+      "originalJmhScoresMatchAllMetricStatusRows": true,
+      "correctness": {
+        "initialBaseCandidateEqual": true,
+        "confirmationBaseCandidateEqual": true,
+        "initialConfirmationEqual": true,
+        "uniqueSignaturesPerSidePhase": 3
+      },
+      "inputSha256": {
+        "method4-string/base-method-compatibility-4-string.json": "7fe1d878c2d697c0b45b2e869a67b222e4ceca96a391ad6ff482797cb7ec79c9",
+        "method4-string/base-method-compatibility-4-string.txt": "729fe7d9a9cced56e405cfb33b7f85851ab2e307acdc0c99cf3d4a176f058399",
+        "method4-string/candidate-method-compatibility-4-string.json": "a3bd2a5e8df86c2211d1c3d756bb56a26b494fc7ba56822c483374f075c96ac2",
+        "method4-string/candidate-method-compatibility-4-string.txt": "729fe7d9a9cced56e405cfb33b7f85851ab2e307acdc0c99cf3d4a176f058399",
+        "method4-string/method-confirmation-base-4-string.json": "e51b2518116386f16de4a633044530801cf92c0695ff7e260792c376e70a8ae2",
+        "method4-string/method-confirmation-base-4-string.txt": "729fe7d9a9cced56e405cfb33b7f85851ab2e307acdc0c99cf3d4a176f058399",
+        "method4-string/method-confirmation-candidate-4-string.json": "4f7e175a6ed7cdf914b230198e8f141d0510b31cabddb8926637499edb3f69f6",
+        "method4-string/method-confirmation-candidate-4-string.txt": "729fe7d9a9cced56e405cfb33b7f85851ab2e307acdc0c99cf3d4a176f058399",
+        "method4-string/method-compatibility-4-string-wall-initial-status.json": "8db52c68e308fa237132a13b3ca36c9957ed1141c7b839fbfe1d3dec38675be1",
+        "method4-string/method-compatibility-4-string-wall-status.json": "9339926b6e0ebd70d8701d4827a00efb3b0876bad4d4f25ec726507424f58c6e",
+        "method4-string/method-compatibility-4-string-cpu-initial-status.json": "50bea153d5c4f4322e0425d20cdeaa627f5e9ca5afb5082de0bf2addc581a0ab",
+        "method4-string/method-compatibility-4-string-cpu-status.json": "cd95b9922e54982c1a37d2bca0911764260061cdbffc2d3c1094493765031755",
+        "method4-string/method-compatibility-4-string-rss-after-initial-status.json": "f80e68e4a22d8457043d167654d44db0b296410b210ac0d4ed431d5ec5cd7fa7",
+        "method4-string/method-compatibility-4-string-rss-after-status.json": "9122b5178d7ac9208ece174a17d3ba9e3fb4fef80bce9ab28f2122a6239ec0d3",
+        "method4-string/method-compatibility-4-string-rss-delta-initial-status.json": "2257d6a91e897a3acc67cfd0fa369744903f9702034c5d90a59c5fdc76b13e59",
+        "method4-string/method-compatibility-4-string-rss-delta-status.json": "2257d6a91e897a3acc67cfd0fa369744903f9702034c5d90a59c5fdc76b13e59"
+      },
+      "scope": "Read-only downloaded Method4 string artifact; no new measurement or runtime cause attribution. Whole-process CPU includes client, reference oracle, engine and background work."
+    }
+  },
+  "iteration": {
+    "passed": false,
+    "iterationPassed": false,
+    "regressionPassed": false,
+    "progressAchieved": false,
+    "targetAchieved": false,
+    "requireTarget": false,
+    "currentHead": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+    "currentPrBase": "4e328b0109e13c896b74004823fb049fcb19251a",
+    "lastAcceptedRef": "4e328b0109e13c896b74004823fb049fcb19251a",
+    "errors": [
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2/global-wide-callee-class/zero: aligned latency 6008926 exceeds base 4235666 by >15% and >1 ms; repeated in 2 independent pairs",
+      "Valid passing paired evidence against the last accepted iteration is required for progress"
+    ],
+    "targetErrors": [
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: P95 speedup 1.32x; required 10.00x in every independent fork",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.20x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.32x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: P95 speedup 1.75x; required 10.00x in every independent fork",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.84x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.75x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: P95 speedup 1.13x; required 10.00x in every independent fork",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: global-wide-wrapped-case-insensitive P95 speedup 1.03x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.13x; required 10.00x"
+    ]
+  },
+  "globalWide": {
+    "status": {
+      "passed": false,
+      "regressionPassed": false,
+      "targetAchieved": false,
+      "errors": [
+        "pair-2/global-wide-callee-class/zero: aligned latency 6008926 exceeds base 4235666 by >15% and >1 ms; repeated in 2 independent pairs"
+      ],
+      "targetErrors": [
+        "pair-1: P95 speedup 1.32x; required 10.00x in every independent fork",
+        "pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.20x; required 10.00x",
+        "pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.32x; required 10.00x",
+        "pair-2: P95 speedup 1.75x; required 10.00x in every independent fork",
+        "pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.84x; required 10.00x",
+        "pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.75x; required 10.00x",
+        "pair-3: P95 speedup 1.13x; required 10.00x in every independent fork",
+        "pair-3: global-wide-wrapped-case-insensitive P95 speedup 1.03x; required 10.00x",
+        "pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.13x; required 10.00x"
+      ]
+    },
+    "integrity": {
+      "verifiedFileCount": 19,
+      "provenance": {
+        "repository": "johnsonlee/graphite",
+        "baseSha": "4e328b0109e13c896b74004823fb049fcb19251a",
+        "candidateSha": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+        "harnessSha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f",
+        "correctnessSha256": "f6e8af6000ccd89e02ac932bf7e95c75cacce636ebcc73227e997f695f06e717",
+        "fixtureVerifierSha256": "f88e0e29fdf41ec9e1ce3adc323ff7d7c333b3a15b049eae6ed112d133870126",
+        "comparatorSha256": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+        "scriptSha256": "4b9b07a797ce4c5f1903d8c80eee90352fd12af97445125d233ff7751dca143c",
+        "baseJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+        "candidateJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+        "manifestSha256": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+        "fixtureProvenanceSha256": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+        "oracleSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+        "fixtureSource": "four-pinned-fixture-jars",
+        "runOrder": "candidate-base,base-candidate,candidate-base"
+      },
+      "manifestSha256": "e1e84e549522f6cbb79289c0bdb1b92430c025e941fa0bd692dc6126d21660d5",
+      "reproducibility": {
+        "passed": true,
+        "firstProvenanceSha256": "2f904b7ec9469fdb6d12579d93c4f24f7def1df9bb84fe0b6538c195da0513d6",
+        "repeatedProvenanceSha256": "2f904b7ec9469fdb6d12579d93c4f24f7def1df9bb84fe0b6538c195da0513d6",
+        "firstManifestSemanticSha256": "71ed950866f0cf7555b1db05952191e42f6a6af76e6e8945280592ab29db3f18",
+        "repeatedManifestSemanticSha256": "71ed950866f0cf7555b1db05952191e42f6a6af76e6e8945280592ab29db3f18"
+      }
+    },
+    "oracleResultCount": 204,
+    "pairs": [
+      {
+        "pair": 1,
+        "order": "candidate-base",
+        "sides": {
+          "base": {
+            "p50LatencyNanos": 6938533,
+            "p95LatencyNanos": 149664773,
+            "processCpuNanos": 4050000000.0,
+            "peakUsedHeapBytes": 4333078568.0,
+            "peakResidentSetBytes": 5100240896.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 638868044,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 149664773,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 72888771,
+                "graphWorkUnits": 106706
+              }
+            ]
+          },
+          "candidate": {
+            "p50LatencyNanos": 5462838,
+            "p95LatencyNanos": 113354634,
+            "processCpuNanos": 3370000000.0,
+            "peakUsedHeapBytes": 4324771656.0,
+            "peakResidentSetBytes": 5099880448.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 627601436,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 113354634,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 54270748,
+                "graphWorkUnits": 106706
+              }
+            ]
+          }
+        },
+        "alignedWorkDifferences": [],
+        "p95Speedup": 1.3203233755754529
+      },
+      {
+        "pair": 2,
+        "order": "base-candidate",
+        "sides": {
+          "base": {
+            "p50LatencyNanos": 5355611,
+            "p95LatencyNanos": 251113633,
+            "processCpuNanos": 3840000000.0,
+            "peakUsedHeapBytes": 4350811408.0,
+            "peakResidentSetBytes": 5122076672.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 596715630,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 251113633,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 75738991,
+                "graphWorkUnits": 106706
+              }
+            ]
+          },
+          "candidate": {
+            "p50LatencyNanos": 6752301,
+            "p95LatencyNanos": 143173830,
+            "processCpuNanos": 3930000000.0,
+            "peakUsedHeapBytes": 4336024192.0,
+            "peakResidentSetBytes": 5135925248.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 580828033,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 143173830,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 63376635,
+                "graphWorkUnits": 106706
+              }
+            ]
+          }
+        },
+        "alignedWorkDifferences": [],
+        "p95Speedup": 1.7539073516438024
+      },
+      {
+        "pair": 3,
+        "order": "candidate-base",
+        "sides": {
+          "base": {
+            "p50LatencyNanos": 6984222,
+            "p95LatencyNanos": 125709738,
+            "processCpuNanos": 3820000000.0,
+            "peakUsedHeapBytes": 4297435864.0,
+            "peakResidentSetBytes": 5100503040.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 559370549,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 125709738,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 66145954,
+                "graphWorkUnits": 106706
+              }
+            ]
+          },
+          "candidate": {
+            "p50LatencyNanos": 5602026,
+            "p95LatencyNanos": 111394132,
+            "processCpuNanos": 3400000000.0,
+            "peakUsedHeapBytes": 4342515624.0,
+            "peakResidentSetBytes": 5108346880.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 579842750,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 111394132,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 62511019,
+                "graphWorkUnits": 106706
+              }
+            ]
+          }
+        },
+        "alignedWorkDifferences": [],
+        "p95Speedup": 1.1285131069561187
+      }
+    ],
+    "repeatedAlignedFailures": [
+      {
+        "id": "global-wide-callee-class-zero",
+        "pairs": [
+          {
+            "pair": 2,
+            "baseNanos": 4235666,
+            "candidateNanos": 6008926
+          },
+          {
+            "pair": 3,
+            "baseNanos": 3465365,
+            "candidateNanos": 5646283
+          }
+        ]
+      }
+    ]
+  },
+  "routing": {
+    "integrity": {
+      "verifiedFileCount": 32,
+      "provenance": {
+        "repository": "johnsonlee/graphite",
+        "baseSha": "4e328b0109e13c896b74004823fb049fcb19251a",
+        "candidateSha": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+        "harnessSha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f",
+        "correctnessManifestSha256": "f6e8af6000ccd89e02ac932bf7e95c75cacce636ebcc73227e997f695f06e717",
+        "fixtureVerifierSha256": "f88e0e29fdf41ec9e1ce3adc323ff7d7c333b3a15b049eae6ed112d133870126",
+        "comparatorSha256": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+        "scriptSha256": "38cc5f56b087e535c5f4d50478c622d82bfe578893167b9474e21a2bc3a08d00",
+        "reproducibilityScriptSha256": "dfe887b4e032746a97dd3f7b5bb2c456eef4c9435861832f39bbbd2772c7e769",
+        "zipHasherSha256": "a65bd7cbe0a7df3569ca9fcfe471a21105417753d5a1f6977c8f7bc44ea041ae",
+        "gistEvidenceSha256": "8eece58ed7117ac19afe11e4f4a7b53e413d5e715ba5c3576beb8bd24ff14d0a",
+        "fixturePreparationScriptSha256": "f9cb88042869ea91fa56c4ef7ed63ff07af3edabffdc67c3447144f5281ff20a",
+        "workloadVerifierSha256": "14a41dc9e8f63c8d1c0e474a463829ab8b5e8320262d702edc0e29d2a0ed66c6",
+        "baseJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+        "candidateJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+        "manifestSha256": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+        "fixtureProvenanceSha256": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+        "oracleSha256": "bc8edcf39a58c19d2f8bb4e269402308e916e3cb5df5ef9740d33e34f4f7836d",
+        "oracleSource": "base-single-source"
+      },
+      "manifestSha256": "ec9b9d0416f3554d88db112f0b670043ad05e427a840661b70e07543a80d0c62",
+      "reproducibility": {
+        "passed": true,
+        "firstProvenanceSha256": "2f904b7ec9469fdb6d12579d93c4f24f7def1df9bb84fe0b6538c195da0513d6",
+        "repeatedProvenanceSha256": "2f904b7ec9469fdb6d12579d93c4f24f7def1df9bb84fe0b6538c195da0513d6",
+        "firstManifestSemanticSha256": "71ed950866f0cf7555b1db05952191e42f6a6af76e6e8945280592ab29db3f18",
+        "repeatedManifestSemanticSha256": "71ed950866f0cf7555b1db05952191e42f6a6af76e6e8945280592ab29db3f18"
+      }
+    },
+    "oracleResultCount": 6822,
+    "states": {
+      "cold": {
+        "passed": true,
+        "errors": [],
+        "p50Speedup": 1.255274999657022,
+        "p95Speedup": 0.9534240001947965,
+        "graphParameterP50Speedup": 1.0846214663740803,
+        "graphParameterP95Speedup": 1.105825885753116,
+        "resources": {
+          "base": {
+            "cpuCoreUtilizationPermille": 2106,
+            "peakUsedHeapBytes": 5882860704,
+            "peakResidentSetBytes": 7222407168,
+            "gcCount": 9,
+            "gcMillis": 57,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 1979,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 29,
+            "callSiteStringIndexLookupMaxPerGraph": 38,
+            "callSiteScanPeakActiveWorkers": 0
+          },
+          "candidate": {
+            "cpuCoreUtilizationPermille": 2196,
+            "peakUsedHeapBytes": 5170991472,
+            "peakResidentSetBytes": 6360166400,
+            "gcCount": 9,
+            "gcMillis": 73,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 1979,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 29,
+            "callSiteStringIndexLookupMaxPerGraph": 38,
+            "callSiteScanPeakActiveWorkers": 0
+          }
+        },
+        "graphSetLatencyByWidth": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 196527,
+            "baseP95": 452284,
+            "candidateP50": 182069,
+            "candidateP95": 458338,
+            "p50Speedup": 1.0794094546573003,
+            "p95Speedup": 0.9867914072147629,
+            "normalizedCandidateP95": 229169
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 216725,
+            "baseP95": 1248631,
+            "candidateP50": 209571,
+            "candidateP95": 1570972,
+            "p50Speedup": 1.0341364024602642,
+            "p95Speedup": 0.7948142933164944,
+            "normalizedCandidateP95": 196371.5
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 454188,
+            "baseP95": 3275425,
+            "candidateP50": 311101,
+            "candidateP95": 2625131,
+            "p50Speedup": 1.4599374479670588,
+            "p95Speedup": 1.2477186852770394,
+            "normalizedCandidateP95": 41017.671875
+          }
+        ]
+      },
+      "warm": {
+        "passed": true,
+        "errors": [],
+        "p50Speedup": 1.0504289462645073,
+        "p95Speedup": 1.0740008003321004,
+        "graphParameterP50Speedup": 1.096915922817895,
+        "graphParameterP95Speedup": 1.2177905137483478,
+        "resources": {
+          "base": {
+            "cpuCoreUtilizationPermille": 1981,
+            "peakUsedHeapBytes": 5968661008,
+            "peakResidentSetBytes": 7496605696,
+            "gcCount": 4,
+            "gcMillis": 12,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 2043,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 30,
+            "callSiteStringIndexLookupMaxPerGraph": 39,
+            "callSiteScanPeakActiveWorkers": 0
+          },
+          "candidate": {
+            "cpuCoreUtilizationPermille": 1868,
+            "peakUsedHeapBytes": 5929180192,
+            "peakResidentSetBytes": 7538176000,
+            "gcCount": 4,
+            "gcMillis": 10,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 2043,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 30,
+            "callSiteStringIndexLookupMaxPerGraph": 39,
+            "callSiteScanPeakActiveWorkers": 0
+          }
+        },
+        "graphSetLatencyByWidth": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 111739,
+            "baseP95": 233145,
+            "candidateP50": 102551,
+            "candidateP95": 189804,
+            "p50Speedup": 1.089594445690437,
+            "p95Speedup": 1.2283460833280648,
+            "normalizedCandidateP95": 94902
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 115125,
+            "baseP95": 209912,
+            "candidateP50": 113762,
+            "candidateP95": 192580,
+            "p50Speedup": 1.0119811536365395,
+            "p95Speedup": 1.0899989614705576,
+            "normalizedCandidateP95": 24072.5
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 221133,
+            "baseP95": 256709,
+            "candidateP50": 178984,
+            "candidateP95": 228036,
+            "p50Speedup": 1.2354903231573773,
+            "p95Speedup": 1.1257389184163904,
+            "normalizedCandidateP95": 3563.0625
+          }
+        ]
+      },
+      "startup-prepared": {
+        "passed": false,
+        "errors": [],
+        "p50Speedup": 1.0693831144134802,
+        "p95Speedup": 0.842625021185744,
+        "graphParameterP50Speedup": 1.0701788628041877,
+        "graphParameterP95Speedup": 1.2185441327565814,
+        "resources": {
+          "base": {
+            "cpuCoreUtilizationPermille": 2912,
+            "peakUsedHeapBytes": 5891416936,
+            "peakResidentSetBytes": 6493798400,
+            "gcCount": 5,
+            "gcMillis": 28,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 2043,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 30,
+            "callSiteStringIndexLookupMaxPerGraph": 39,
+            "callSiteScanPeakActiveWorkers": 0
+          },
+          "candidate": {
+            "cpuCoreUtilizationPermille": 2620,
+            "peakUsedHeapBytes": 5829369584,
+            "peakResidentSetBytes": 6441676800,
+            "gcCount": 5,
+            "gcMillis": 35,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 2043,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 30,
+            "callSiteStringIndexLookupMaxPerGraph": 39,
+            "callSiteScanPeakActiveWorkers": 0
+          }
+        },
+        "graphSetLatencyByWidth": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 212778,
+            "baseP95": 579021,
+            "candidateP50": 198120,
+            "candidateP95": 484705,
+            "p50Speedup": 1.0739854633555421,
+            "p95Speedup": 1.1945843348015803,
+            "normalizedCandidateP95": 242352.5
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 181609,
+            "baseP95": 1077150,
+            "candidateP50": 230801,
+            "candidateP95": 1504308,
+            "p50Speedup": 0.7868640083881786,
+            "p95Speedup": 0.7160435230019384,
+            "normalizedCandidateP95": 188038.5
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 302835,
+            "baseP95": 3248675,
+            "candidateP50": 326840,
+            "candidateP95": 2999590,
+            "p50Speedup": 0.9265542773222372,
+            "p95Speedup": 1.0830396820898855,
+            "normalizedCandidateP95": 46868.59375
+          }
+        ]
+      }
+    },
+    "passed": false,
+    "independentGateRecomputation": {
+      "cold": {
+        "passed": true,
+        "quantileChecks": [
+          {
+            "family": "graph-id",
+            "quantile": "P50",
+            "sampleCount": 576,
+            "nearestRank": 288,
+            "baseNanos": 365993,
+            "candidateNanos": 291564,
+            "increasePercent": -20.33618129308484,
+            "absoluteDeltaNanos": -74429,
+            "relativeLimitNanos": 420891.94999999995,
+            "absoluteLimitNanos": 615993,
+            "limitNanos": 615993,
+            "passed": true
+          },
+          {
+            "family": "graph-id",
+            "quantile": "P95",
+            "sampleCount": 576,
+            "nearestRank": 548,
+            "baseNanos": 35553385,
+            "candidateNanos": 37290214,
+            "increasePercent": 4.885129784407316,
+            "absoluteDeltaNanos": 1736829,
+            "relativeLimitNanos": 40886392.75,
+            "absoluteLimitNanos": 35803385,
+            "limitNanos": 40886392.75,
+            "passed": true
+          },
+          {
+            "family": "graph-parameter",
+            "quantile": "P50",
+            "sampleCount": 192,
+            "nearestRank": 96,
+            "baseNanos": 134441,
+            "candidateNanos": 123952,
+            "increasePercent": -7.8019354214860055,
+            "absoluteDeltaNanos": -10489,
+            "relativeLimitNanos": 154607.15,
+            "absoluteLimitNanos": 384441,
+            "limitNanos": 384441,
+            "passed": true
+          },
+          {
+            "family": "graph-parameter",
+            "quantile": "P95",
+            "sampleCount": 192,
+            "nearestRank": 183,
+            "baseNanos": 257120,
+            "candidateNanos": 232514,
+            "increasePercent": -9.56985065339141,
+            "absoluteDeltaNanos": -24606,
+            "relativeLimitNanos": 295688.0,
+            "absoluteLimitNanos": 507120,
+            "limitNanos": 507120,
+            "passed": true
+          }
+        ],
+        "widthChecks": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 196527,
+            "baseP95": 452284,
+            "candidateP50": 182069,
+            "candidateP95": 458338,
+            "p50Speedup": 1.0794094546573003,
+            "p95Speedup": 0.9867914072147629,
+            "normalizedCandidateP95": 229169,
+            "p50LimitNanos": 446527,
+            "p95LimitNanos": 1452284,
+            "p50Passed": true,
+            "p95Passed": true
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 216725,
+            "baseP95": 1248631,
+            "candidateP50": 209571,
+            "candidateP95": 1570972,
+            "p50Speedup": 1.0341364024602642,
+            "p95Speedup": 0.7948142933164944,
+            "normalizedCandidateP95": 196371.5,
+            "p50LimitNanos": 466725,
+            "p95LimitNanos": 2248631,
+            "p50Passed": true,
+            "p95Passed": true
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 454188,
+            "baseP95": 3275425,
+            "candidateP50": 311101,
+            "candidateP95": 2625131,
+            "p50Speedup": 1.4599374479670588,
+            "p95Speedup": 1.2477186852770394,
+            "normalizedCandidateP95": 41017.671875,
+            "p50LimitNanos": 704188,
+            "p95LimitNanos": 4275425,
+            "p50Passed": true,
+            "p95Passed": true
+          }
+        ],
+        "widthScalingPassed": true,
+        "publishedAlignedLatencyRowsMatchRawTsv": true
+      },
+      "warm": {
+        "passed": true,
+        "quantileChecks": [
+          {
+            "family": "graph-id",
+            "quantile": "P50",
+            "sampleCount": 576,
+            "nearestRank": 288,
+            "baseNanos": 127708,
+            "candidateNanos": 121577,
+            "increasePercent": -4.800795564882387,
+            "absoluteDeltaNanos": -6131,
+            "relativeLimitNanos": 146864.19999999998,
+            "absoluteLimitNanos": 377708,
+            "limitNanos": 377708,
+            "passed": true
+          },
+          {
+            "family": "graph-id",
+            "quantile": "P95",
+            "sampleCount": 576,
+            "nearestRank": 548,
+            "baseNanos": 287176,
+            "candidateNanos": 267389,
+            "increasePercent": -6.89019973813968,
+            "absoluteDeltaNanos": -19787,
+            "relativeLimitNanos": 330252.39999999997,
+            "absoluteLimitNanos": 537176,
+            "limitNanos": 537176,
+            "passed": true
+          },
+          {
+            "family": "graph-parameter",
+            "quantile": "P50",
+            "sampleCount": 192,
+            "nearestRank": 96,
+            "baseNanos": 102611,
+            "candidateNanos": 93545,
+            "increasePercent": -8.835310054477585,
+            "absoluteDeltaNanos": -9066,
+            "relativeLimitNanos": 118002.65,
+            "absoluteLimitNanos": 352611,
+            "limitNanos": 352611,
+            "passed": true
+          },
+          {
+            "family": "graph-parameter",
+            "quantile": "P95",
+            "sampleCount": 192,
+            "nearestRank": 183,
+            "baseNanos": 224809,
+            "candidateNanos": 184604,
+            "increasePercent": -17.88407047760543,
+            "absoluteDeltaNanos": -40205,
+            "relativeLimitNanos": 258530.34999999998,
+            "absoluteLimitNanos": 474809,
+            "limitNanos": 474809,
+            "passed": true
+          }
+        ],
+        "widthChecks": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 111739,
+            "baseP95": 233145,
+            "candidateP50": 102551,
+            "candidateP95": 189804,
+            "p50Speedup": 1.089594445690437,
+            "p95Speedup": 1.2283460833280648,
+            "normalizedCandidateP95": 94902,
+            "p50LimitNanos": 361739,
+            "p95LimitNanos": 1233145,
+            "p50Passed": true,
+            "p95Passed": true
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 115125,
+            "baseP95": 209912,
+            "candidateP50": 113762,
+            "candidateP95": 192580,
+            "p50Speedup": 1.0119811536365395,
+            "p95Speedup": 1.0899989614705576,
+            "normalizedCandidateP95": 24072.5,
+            "p50LimitNanos": 365125,
+            "p95LimitNanos": 1209912,
+            "p50Passed": true,
+            "p95Passed": true
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 221133,
+            "baseP95": 256709,
+            "candidateP50": 178984,
+            "candidateP95": 228036,
+            "p50Speedup": 1.2354903231573773,
+            "p95Speedup": 1.1257389184163904,
+            "normalizedCandidateP95": 3563.0625,
+            "p50LimitNanos": 471133,
+            "p95LimitNanos": 1256709,
+            "p50Passed": true,
+            "p95Passed": true
+          }
+        ],
+        "widthScalingPassed": true,
+        "publishedAlignedLatencyRowsMatchRawTsv": true
+      },
+      "startup-prepared": {
+        "passed": false,
+        "quantileChecks": [
+          {
+            "family": "graph-id",
+            "quantile": "P50",
+            "sampleCount": 576,
+            "nearestRank": 288,
+            "baseNanos": 267118,
+            "candidateNanos": 249787,
+            "increasePercent": -6.488143816590419,
+            "absoluteDeltaNanos": -17331,
+            "relativeLimitNanos": 307185.69999999995,
+            "absoluteLimitNanos": 517118,
+            "limitNanos": 517118,
+            "passed": true
+          },
+          {
+            "family": "graph-id",
+            "quantile": "P95",
+            "sampleCount": 576,
+            "nearestRank": 548,
+            "baseNanos": 2664805,
+            "candidateNanos": 3162504,
+            "increasePercent": 18.67675120693635,
+            "absoluteDeltaNanos": 497699,
+            "relativeLimitNanos": 3064525.7499999995,
+            "absoluteLimitNanos": 2914805,
+            "limitNanos": 3064525.7499999995,
+            "passed": false
+          },
+          {
+            "family": "graph-parameter",
+            "quantile": "P50",
+            "sampleCount": 192,
+            "nearestRank": 96,
+            "baseNanos": 137076,
+            "candidateNanos": 128087,
+            "increasePercent": -6.557676033733106,
+            "absoluteDeltaNanos": -8989,
+            "relativeLimitNanos": 157637.4,
+            "absoluteLimitNanos": 387076,
+            "limitNanos": 387076,
+            "passed": true
+          },
+          {
+            "family": "graph-parameter",
+            "quantile": "P95",
+            "sampleCount": 192,
+            "nearestRank": 183,
+            "baseNanos": 282266,
+            "candidateNanos": 231642,
+            "increasePercent": -17.93485577434052,
+            "absoluteDeltaNanos": -50624,
+            "relativeLimitNanos": 324605.89999999997,
+            "absoluteLimitNanos": 532266,
+            "limitNanos": 532266,
+            "passed": true
+          }
+        ],
+        "widthChecks": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 212778,
+            "baseP95": 579021,
+            "candidateP50": 198120,
+            "candidateP95": 484705,
+            "p50Speedup": 1.0739854633555421,
+            "p95Speedup": 1.1945843348015803,
+            "normalizedCandidateP95": 242352.5,
+            "p50LimitNanos": 462778,
+            "p95LimitNanos": 1579021,
+            "p50Passed": true,
+            "p95Passed": true
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 181609,
+            "baseP95": 1077150,
+            "candidateP50": 230801,
+            "candidateP95": 1504308,
+            "p50Speedup": 0.7868640083881786,
+            "p95Speedup": 0.7160435230019384,
+            "normalizedCandidateP95": 188038.5,
+            "p50LimitNanos": 431609,
+            "p95LimitNanos": 2077150,
+            "p50Passed": true,
+            "p95Passed": true
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 302835,
+            "baseP95": 3248675,
+            "candidateP50": 326840,
+            "candidateP95": 2999590,
+            "p50Speedup": 0.9265542773222372,
+            "p95Speedup": 1.0830396820898855,
+            "normalizedCandidateP95": 46868.59375,
+            "p50LimitNanos": 552835,
+            "p95LimitNanos": 4248675,
+            "p50Passed": true,
+            "p95Passed": true
+          }
+        ],
+        "widthScalingPassed": true,
+        "publishedAlignedLatencyRowsMatchRawTsv": true
+      }
+    }
+  },
+  "limitations": [
+    "Checks compare hosted TSV signatures with their frozen oracle and published digests; no query or fixture replay occurred.",
+    "Artifact manifest hashes and provenance are verified; the original hosted JARs/graphs were not rehashed here.",
+    "Equal recorded JAR payload hashes do not explain or waive confirmed timing failures.",
+    "Method whole-process CPU includes client, reference oracle, engine and background work; this audit does not attribute Linux CI regressions to an engine phase.",
+    "Candidate139 was rejected locally because old34 pair2 P95 regressed 133.86%, violating progress in every pair, before candidate CI; this audit only covers explicit production revert CI."
+  ]
+}

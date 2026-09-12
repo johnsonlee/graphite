@@ -1,0 +1,33 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/javac",
+      "--release",
+      "17",
+      "-cp",
+      "/private/tmp/graphite-query-marker-diagnostic/diagnostic-jmh.jar",
+      "-d",
+      "/private/tmp/graphite-query-marker-diagnostic/verification-classes",
+      "/private/tmp/graphite-query-marker-diagnostic/src/VerifyMarkerClasses.java"
+    ],
+    "output": "verification-0.log",
+    "exitCode": 0,
+    "startedEpoch": 1788648971.336734,
+    "endedEpoch": 1788648971.664372,
+    "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xverify:all",
+      "-cp",
+      "/private/tmp/graphite-query-marker-diagnostic/verification-classes:/private/tmp/graphite-query-marker-diagnostic/diagnostic-jmh.jar",
+      "VerifyMarkerClasses"
+    ],
+    "output": "verification-1.log",
+    "exitCode": 0,
+    "startedEpoch": 1788648971.664793,
+    "endedEpoch": 1788648971.73854,
+    "outputSha256": "4cd5f197fdb1e0c6cfd5a43bdab3cda6656391aeb076ccaf8746bc284963b00f"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "queryCount": 1,
+  "full200RowsOrderAndProvenanceEqual": true,
+  "frozenMainOnly": true,
+  "notPerformanceEvidence": true
+}

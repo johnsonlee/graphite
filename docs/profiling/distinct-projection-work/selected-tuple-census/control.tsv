@@ -1,0 +1,2 @@
+id	family	shape	projection	workloadIdentity	outcome	rowCount	digest	latencyNanos	hitGraphIds	inputSourceCount	resetMode	graphWorkUnits	filteredNodeLimitFastPathExecutions	generalFallbackExecutions
+global-wide-wrapped-case-insensitive-distinct-dense	multi-keyword	global-wide-wrapped-case-insensitive-distinct-dense	distinct-properties	47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9	success	200	cc3d91e242315a466d41e05511e341e16092908dd921cca5979f77e3edc566ae	308645750	fixture-android-00,fixture-tika-00	64	per-query-cold	57925538	1	0

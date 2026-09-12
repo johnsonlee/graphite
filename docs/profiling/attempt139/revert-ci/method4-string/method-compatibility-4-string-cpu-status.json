@@ -1,0 +1,46 @@
+{
+  "passed": false,
+  "errors": [],
+  "thresholdOnly": true,
+  "rows": [
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=late]",
+      "baseScore": 1020000000,
+      "candidateScore": 910000000,
+      "unit": "#",
+      "delta": -10.784313725490192,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": false,
+      "blocked": false
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=prefix]",
+      "baseScore": 1110000000,
+      "candidateScore": 1400000000,
+      "unit": "#",
+      "delta": 26.126126126126124,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": true,
+      "confirmation": {
+        "baseScore": 1290000000,
+        "candidateScore": 1550000000,
+        "delta": 20.155038759689916,
+        "blocked": true
+      }
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=suffix]",
+      "baseScore": 1260000000,
+      "candidateScore": 1340000000,
+      "unit": "#",
+      "delta": 6.349206349206349,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false
+    }
+  ]
+}

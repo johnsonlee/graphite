@@ -1,0 +1,13 @@
+{
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "candidateParent": "d14bc77f625c515c2e5416728e1b07e0554aa67a",
+  "direction": "Keep persistent mapped-view integrity validation primitive at the per-element callback boundary using IntConsumer/LongConsumer instead of Function1<Int/Long, Unit>. Preserve every validation, checksum byte, iteration and work/cancellation boundary.",
+  "evidence": "Existing cold four-OR DISTINCT profile: validator in 80.86% of all CPU samples; Integer/Long boxing leaves 94.24% of sampled allocation weight. Old34 dense warm validator samples zero, so no asserted warm improvement. Complete old34 P95 must independently improve before acceptance.",
+  "sequence": [
+    "Module tests and detekt, JMH JAR exclusion; independent source review and bytecode check",
+    "One v3 real 36-query correctness control",
+    "Unchanged old34 three alternating pairs",
+    "Only if nonregression and strict P95 progress every pair pass, three v3 pairs and required CI"
+  ],
+  "accepted": false
+}

@@ -1,0 +1,75 @@
+{
+  "head": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0",
+  "run": 33995836230,
+  "readOnly": true,
+  "artifacts": [
+    {
+      "metadata": {
+        "id": 9978279341,
+        "node_id": "MDg6QXJ0aWZhY3Q5OTc4Mjc5MzQx",
+        "name": "benchmark-global-wide-116-1",
+        "size_in_bytes": 88041,
+        "url": "https://api.github.com/repos/johnsonlee/graphite/actions/artifacts/9978279341",
+        "archive_download_url": "https://api.github.com/repos/johnsonlee/graphite/actions/artifacts/9978279341/zip",
+        "expired": false,
+        "digest": "sha256:178690de7756daf86e44501d88273200e406684a1cac830573b33fca8057b626",
+        "created_at": "2026-09-05T22:44:06Z",
+        "updated_at": "2026-09-05T22:44:06Z",
+        "expires_at": "2026-09-19T22:44:05Z",
+        "workflow_run": {
+          "id": 33995836230,
+          "repository_id": 1141070800,
+          "head_repository_id": 1141070800,
+          "head_branch": "codex/main-global-query-p95-10x",
+          "head_sha": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0"
+        }
+      },
+      "command": [
+        "gh",
+        "run",
+        "download",
+        "33995836230",
+        "--name",
+        "benchmark-global-wide-116-1",
+        "--dir",
+        "/private/tmp/graphite-attempt140._5jztd0a/revert-ci/global-wide"
+      ],
+      "exitCode": 0,
+      "folder": "global-wide"
+    },
+    {
+      "metadata": {
+        "id": 9978288369,
+        "node_id": "MDg6QXJ0aWZhY3Q5OTc4Mjg4MzY5",
+        "name": "benchmark-graph-routing-116-1",
+        "size_in_bytes": 987996,
+        "url": "https://api.github.com/repos/johnsonlee/graphite/actions/artifacts/9978288369",
+        "archive_download_url": "https://api.github.com/repos/johnsonlee/graphite/actions/artifacts/9978288369/zip",
+        "expired": false,
+        "digest": "sha256:bf4965183946af10f58d578aaf845696409eb26ba64dc74a9287f49971380970",
+        "created_at": "2026-09-05T22:44:48Z",
+        "updated_at": "2026-09-05T22:44:48Z",
+        "expires_at": "2026-09-19T22:44:46Z",
+        "workflow_run": {
+          "id": 33995836230,
+          "repository_id": 1141070800,
+          "head_repository_id": 1141070800,
+          "head_branch": "codex/main-global-query-p95-10x",
+          "head_sha": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0"
+        }
+      },
+      "command": [
+        "gh",
+        "run",
+        "download",
+        "33995836230",
+        "--name",
+        "benchmark-graph-routing-116-1",
+        "--dir",
+        "/private/tmp/graphite-attempt140._5jztd0a/revert-ci/routing"
+      ],
+      "exitCode": 0,
+      "folder": "routing"
+    }
+  ]
+}

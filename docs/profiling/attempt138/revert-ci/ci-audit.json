@@ -1,0 +1,748 @@
+{
+  "schema": "independent-attempt138-revert-ci-audit-v1",
+  "head": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+  "readOnly": true,
+  "newMeasurements": false,
+  "workflowRuns": {
+    "33991414367": {
+      "conclusion": "success",
+      "snapshotSha256": "47e01ead0cc6a528e851bcbdec204c312f3e4ff0b46d7e7d8d4f5cc31699738e",
+      "failedJobs": []
+    },
+    "33991414379": {
+      "conclusion": "failure",
+      "snapshotSha256": "ce4e7692cc1b8096590c1c523bb9418f2eca834960ab6a32bcc5742927cb92ab",
+      "failedJobs": [
+        "global-wide-pressure-evidence",
+        "benchmark-regression-gate"
+      ]
+    }
+  },
+  "method": {
+    "failedMethodShards": [],
+    "all12MethodShardsAndGatePassed": true,
+    "source": "Exact-head terminal GitHub job snapshot; no failed Method artifact to independently rejudge",
+    "jobs": [
+      {
+        "name": "method-compatibility-4-position",
+        "id": 101374529673,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529673"
+      },
+      {
+        "name": "method-compatibility-17-string",
+        "id": 101374529696,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529696"
+      },
+      {
+        "name": "method-compatibility-4-string",
+        "id": 101374529709,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529709"
+      },
+      {
+        "name": "method-compatibility-36-string",
+        "id": 101374529722,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529722"
+      },
+      {
+        "name": "method-compatibility-17-aggregate",
+        "id": 101374529730,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529730"
+      },
+      {
+        "name": "method-compatibility-4-scan",
+        "id": 101374529734,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529734"
+      },
+      {
+        "name": "method-compatibility-17-position",
+        "id": 101374529735,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529735"
+      },
+      {
+        "name": "method-compatibility-36-scan",
+        "id": 101374529742,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529742"
+      },
+      {
+        "name": "method-compatibility-4-aggregate",
+        "id": 101374529746,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529746"
+      },
+      {
+        "name": "method-compatibility-36-aggregate",
+        "id": 101374529748,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529748"
+      },
+      {
+        "name": "method-compatibility-36-position",
+        "id": 101374529752,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529752"
+      },
+      {
+        "name": "method-compatibility-17-scan",
+        "id": 101374529760,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529760"
+      },
+      {
+        "name": "method-compatibility-gate",
+        "id": 101374839013,
+        "conclusion": "success",
+        "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374839013"
+      }
+    ]
+  },
+  "iteration": {
+    "passed": false,
+    "iterationPassed": false,
+    "regressionPassed": false,
+    "progressAchieved": false,
+    "targetAchieved": false,
+    "requireTarget": false,
+    "currentHead": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+    "currentPrBase": "4e328b0109e13c896b74004823fb049fcb19251a",
+    "lastAcceptedRef": "4e328b0109e13c896b74004823fb049fcb19251a",
+    "errors": [
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: process CPU 3870000000 exceeds paired base 3280000000 by >15%",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1/global-wide-class-pair/zero: aligned latency 10567829 exceeds base 7752720 by >15% and >1 ms; repeated in 2 independent pairs",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1/global-wide-aliased/targeted: aligned latency 12420924 exceeds base 9655432 by >15% and >1 ms; repeated in 3 independent pairs",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1/global-wide-parameterized/targeted: aligned latency 7839121 exceeds base 5832781 by >15% and >1 ms; repeated in 2 independent pairs",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1/global-wide-distribution-localized-early/dense: aligned latency 7593872 exceeds base 3601546 by >15% and >1 ms; repeated in 3 independent pairs",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2/global-wide-four-properties/dense: aligned latency 13866179 exceeds base 10909952 by >15% and >1 ms; repeated in 2 independent pairs",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2/global-wide-class-pair/targeted: aligned latency 11780115 exceeds base 10217513 by >15% and >1 ms; repeated in 2 independent pairs",
+      "Valid passing paired evidence against the last accepted iteration is required for progress"
+    ],
+    "targetErrors": [
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: P95 speedup 1.09x; required 10.00x in every independent fork",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.48x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.09x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: P95 speedup 0.92x; required 10.00x in every independent fork",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.81x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.92x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: P95 speedup 1.56x; required 10.00x in every independent fork",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: global-wide-wrapped-case-insensitive P95 speedup 1.01x; required 10.00x",
+      "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.56x; required 10.00x"
+    ]
+  },
+  "globalWide": {
+    "status": {
+      "passed": false,
+      "regressionPassed": false,
+      "targetAchieved": false,
+      "errors": [
+        "pair-2: process CPU 3870000000 exceeds paired base 3280000000 by >15%",
+        "pair-1/global-wide-class-pair/zero: aligned latency 10567829 exceeds base 7752720 by >15% and >1 ms; repeated in 2 independent pairs",
+        "pair-1/global-wide-aliased/targeted: aligned latency 12420924 exceeds base 9655432 by >15% and >1 ms; repeated in 3 independent pairs",
+        "pair-1/global-wide-parameterized/targeted: aligned latency 7839121 exceeds base 5832781 by >15% and >1 ms; repeated in 2 independent pairs",
+        "pair-1/global-wide-distribution-localized-early/dense: aligned latency 7593872 exceeds base 3601546 by >15% and >1 ms; repeated in 3 independent pairs",
+        "pair-2/global-wide-four-properties/dense: aligned latency 13866179 exceeds base 10909952 by >15% and >1 ms; repeated in 2 independent pairs",
+        "pair-2/global-wide-class-pair/targeted: aligned latency 11780115 exceeds base 10217513 by >15% and >1 ms; repeated in 2 independent pairs"
+      ],
+      "targetErrors": [
+        "pair-1: P95 speedup 1.09x; required 10.00x in every independent fork",
+        "pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.48x; required 10.00x",
+        "pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.09x; required 10.00x",
+        "pair-2: P95 speedup 0.92x; required 10.00x in every independent fork",
+        "pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.81x; required 10.00x",
+        "pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.92x; required 10.00x",
+        "pair-3: P95 speedup 1.56x; required 10.00x in every independent fork",
+        "pair-3: global-wide-wrapped-case-insensitive P95 speedup 1.01x; required 10.00x",
+        "pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.56x; required 10.00x"
+      ]
+    },
+    "integrity": {
+      "verifiedFileCount": 19,
+      "provenance": {
+        "repository": "johnsonlee/graphite",
+        "baseSha": "4e328b0109e13c896b74004823fb049fcb19251a",
+        "candidateSha": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+        "harnessSha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f",
+        "correctnessSha256": "f6e8af6000ccd89e02ac932bf7e95c75cacce636ebcc73227e997f695f06e717",
+        "fixtureVerifierSha256": "f88e0e29fdf41ec9e1ce3adc323ff7d7c333b3a15b049eae6ed112d133870126",
+        "comparatorSha256": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+        "scriptSha256": "4b9b07a797ce4c5f1903d8c80eee90352fd12af97445125d233ff7751dca143c",
+        "baseJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+        "candidateJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+        "manifestSha256": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+        "fixtureProvenanceSha256": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+        "oracleSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+        "fixtureSource": "four-pinned-fixture-jars",
+        "runOrder": "candidate-base,base-candidate,candidate-base"
+      },
+      "manifestSha256": "fe96ef3f6925456b4900520869988d519f6542156e3315583de9fb42cc1d5a64",
+      "reproducibility": {
+        "passed": true,
+        "firstProvenanceSha256": "2f904b7ec9469fdb6d12579d93c4f24f7def1df9bb84fe0b6538c195da0513d6",
+        "repeatedProvenanceSha256": "2f904b7ec9469fdb6d12579d93c4f24f7def1df9bb84fe0b6538c195da0513d6",
+        "firstManifestSemanticSha256": "71ed950866f0cf7555b1db05952191e42f6a6af76e6e8945280592ab29db3f18",
+        "repeatedManifestSemanticSha256": "71ed950866f0cf7555b1db05952191e42f6a6af76e6e8945280592ab29db3f18"
+      }
+    },
+    "oracleResultCount": 204,
+    "pairs": [
+      {
+        "pair": 1,
+        "order": "candidate-base",
+        "sides": {
+          "base": {
+            "p50LatencyNanos": 7413804,
+            "p95LatencyNanos": 130939067,
+            "processCpuNanos": 3920000000.0,
+            "peakUsedHeapBytes": 4306433504.0,
+            "peakResidentSetBytes": 5135392768.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 591946155,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 130939067,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 69491202,
+                "graphWorkUnits": 106706
+              }
+            ]
+          },
+          "candidate": {
+            "p50LatencyNanos": 7629979,
+            "p95LatencyNanos": 120137039,
+            "processCpuNanos": 4050000000.0,
+            "peakUsedHeapBytes": 4560966648.0,
+            "peakResidentSetBytes": 5354749952.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 588283388,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 120137039,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 67767596,
+                "graphWorkUnits": 106706
+              }
+            ]
+          }
+        },
+        "alignedWorkDifferences": [],
+        "p95Speedup": 1.0899142187115165
+      },
+      {
+        "pair": 2,
+        "order": "base-candidate",
+        "sides": {
+          "base": {
+            "p50LatencyNanos": 5836417,
+            "p95LatencyNanos": 130636671,
+            "processCpuNanos": 3280000000.0,
+            "peakUsedHeapBytes": 4318809512.0,
+            "peakResidentSetBytes": 5213782016.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 543353955,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 130636671,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 54166440,
+                "graphWorkUnits": 106706
+              }
+            ]
+          },
+          "candidate": {
+            "p50LatencyNanos": 6475453,
+            "p95LatencyNanos": 142437091,
+            "processCpuNanos": 3870000000.0,
+            "peakUsedHeapBytes": 4317135808.0,
+            "peakResidentSetBytes": 5105881088.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 582849103,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 142437091,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 68071814,
+                "graphWorkUnits": 106706
+              }
+            ]
+          }
+        },
+        "alignedWorkDifferences": [],
+        "p95Speedup": 0.9171534611023473
+      },
+      {
+        "pair": 3,
+        "order": "candidate-base",
+        "sides": {
+          "base": {
+            "p50LatencyNanos": 6119467,
+            "p95LatencyNanos": 191349031,
+            "processCpuNanos": 4420000000.0,
+            "peakUsedHeapBytes": 4522348816.0,
+            "peakResidentSetBytes": 5311705088.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 560638470,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 191349031,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 69906552,
+                "graphWorkUnits": 106706
+              }
+            ]
+          },
+          "candidate": {
+            "p50LatencyNanos": 6935609,
+            "p95LatencyNanos": 122319238,
+            "processCpuNanos": 4000000000.0,
+            "peakUsedHeapBytes": 4379850800.0,
+            "peakResidentSetBytes": 5134831616.0,
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 592705364,
+                "graphWorkUnits": 57642093
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 122319238,
+                "graphWorkUnits": 283544
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 70664596,
+                "graphWorkUnits": 106706
+              }
+            ]
+          }
+        },
+        "alignedWorkDifferences": [],
+        "p95Speedup": 1.5643412608571026
+      }
+    ],
+    "repeatedAlignedFailures": [
+      {
+        "id": "global-wide-class-pair-zero",
+        "pairs": [
+          {
+            "pair": 1,
+            "baseNanos": 7752720,
+            "candidateNanos": 10567829
+          },
+          {
+            "pair": 2,
+            "baseNanos": 7085889,
+            "candidateNanos": 10954236
+          }
+        ]
+      },
+      {
+        "id": "global-wide-aliased-targeted",
+        "pairs": [
+          {
+            "pair": 1,
+            "baseNanos": 9655432,
+            "candidateNanos": 12420924
+          },
+          {
+            "pair": 2,
+            "baseNanos": 8708113,
+            "candidateNanos": 12869438
+          },
+          {
+            "pair": 3,
+            "baseNanos": 12304968,
+            "candidateNanos": 16395394
+          }
+        ]
+      },
+      {
+        "id": "global-wide-parameterized-targeted",
+        "pairs": [
+          {
+            "pair": 1,
+            "baseNanos": 5832781,
+            "candidateNanos": 7839121
+          },
+          {
+            "pair": 3,
+            "baseNanos": 6457241,
+            "candidateNanos": 8181506
+          }
+        ]
+      },
+      {
+        "id": "global-wide-distribution-localized-early",
+        "pairs": [
+          {
+            "pair": 1,
+            "baseNanos": 3601546,
+            "candidateNanos": 7593872
+          },
+          {
+            "pair": 2,
+            "baseNanos": 2814158,
+            "candidateNanos": 3963596
+          },
+          {
+            "pair": 3,
+            "baseNanos": 4015209,
+            "candidateNanos": 6736075
+          }
+        ]
+      },
+      {
+        "id": "global-wide-four-properties-dense",
+        "pairs": [
+          {
+            "pair": 2,
+            "baseNanos": 10909952,
+            "candidateNanos": 13866179
+          },
+          {
+            "pair": 3,
+            "baseNanos": 12062314,
+            "candidateNanos": 14203873
+          }
+        ]
+      },
+      {
+        "id": "global-wide-class-pair-targeted",
+        "pairs": [
+          {
+            "pair": 2,
+            "baseNanos": 10217513,
+            "candidateNanos": 11780115
+          },
+          {
+            "pair": 3,
+            "baseNanos": 11735852,
+            "candidateNanos": 14529413
+          }
+        ]
+      }
+    ]
+  },
+  "routing": {
+    "integrity": {
+      "verifiedFileCount": 32,
+      "provenance": {
+        "repository": "johnsonlee/graphite",
+        "baseSha": "4e328b0109e13c896b74004823fb049fcb19251a",
+        "candidateSha": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+        "harnessSha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f",
+        "correctnessManifestSha256": "f6e8af6000ccd89e02ac932bf7e95c75cacce636ebcc73227e997f695f06e717",
+        "fixtureVerifierSha256": "f88e0e29fdf41ec9e1ce3adc323ff7d7c333b3a15b049eae6ed112d133870126",
+        "comparatorSha256": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+        "scriptSha256": "38cc5f56b087e535c5f4d50478c622d82bfe578893167b9474e21a2bc3a08d00",
+        "reproducibilityScriptSha256": "dfe887b4e032746a97dd3f7b5bb2c456eef4c9435861832f39bbbd2772c7e769",
+        "zipHasherSha256": "a65bd7cbe0a7df3569ca9fcfe471a21105417753d5a1f6977c8f7bc44ea041ae",
+        "gistEvidenceSha256": "8eece58ed7117ac19afe11e4f4a7b53e413d5e715ba5c3576beb8bd24ff14d0a",
+        "fixturePreparationScriptSha256": "f9cb88042869ea91fa56c4ef7ed63ff07af3edabffdc67c3447144f5281ff20a",
+        "workloadVerifierSha256": "14a41dc9e8f63c8d1c0e474a463829ab8b5e8320262d702edc0e29d2a0ed66c6",
+        "baseJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+        "candidateJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+        "manifestSha256": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+        "fixtureProvenanceSha256": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+        "oracleSha256": "bc8edcf39a58c19d2f8bb4e269402308e916e3cb5df5ef9740d33e34f4f7836d",
+        "oracleSource": "base-single-source"
+      },
+      "manifestSha256": "f64cbcc4737c45cd125e4cda7866bc24f7edf7e2c46431221c100b3be5a674ea",
+      "reproducibility": {
+        "passed": true,
+        "firstProvenanceSha256": "2f904b7ec9469fdb6d12579d93c4f24f7def1df9bb84fe0b6538c195da0513d6",
+        "repeatedProvenanceSha256": "2f904b7ec9469fdb6d12579d93c4f24f7def1df9bb84fe0b6538c195da0513d6",
+        "firstManifestSemanticSha256": "71ed950866f0cf7555b1db05952191e42f6a6af76e6e8945280592ab29db3f18",
+        "repeatedManifestSemanticSha256": "71ed950866f0cf7555b1db05952191e42f6a6af76e6e8945280592ab29db3f18"
+      }
+    },
+    "oracleResultCount": 6822,
+    "states": {
+      "cold": {
+        "passed": true,
+        "errors": [],
+        "p50Speedup": 1.0076101404003888,
+        "p95Speedup": 1.0612787075244308,
+        "graphParameterP50Speedup": 0.8745394595369508,
+        "graphParameterP95Speedup": 0.63632003880183,
+        "resources": {
+          "base": {
+            "cpuCoreUtilizationPermille": 2173,
+            "peakUsedHeapBytes": 5086681808,
+            "peakResidentSetBytes": 6073700352,
+            "gcCount": 11,
+            "gcMillis": 91,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 1979,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 29,
+            "callSiteStringIndexLookupMaxPerGraph": 38,
+            "callSiteScanPeakActiveWorkers": 0
+          },
+          "candidate": {
+            "cpuCoreUtilizationPermille": 2164,
+            "peakUsedHeapBytes": 5175493920,
+            "peakResidentSetBytes": 6334263296,
+            "gcCount": 9,
+            "gcMillis": 77,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 1979,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 29,
+            "callSiteStringIndexLookupMaxPerGraph": 38,
+            "callSiteScanPeakActiveWorkers": 0
+          }
+        },
+        "graphSetLatencyByWidth": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 180847,
+            "baseP95": 463534,
+            "candidateP50": 202276,
+            "candidateP95": 439037,
+            "p50Speedup": 0.8940605904803338,
+            "p95Speedup": 1.0557971196049536,
+            "normalizedCandidateP95": 219518.5
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 197568,
+            "baseP95": 1289732,
+            "candidateP50": 198028,
+            "candidateP95": 1111478,
+            "p50Speedup": 0.9976770961682186,
+            "p95Speedup": 1.1603756439623636,
+            "normalizedCandidateP95": 138934.75
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 281975,
+            "baseP95": 2585566,
+            "candidateP50": 371031,
+            "candidateP95": 3216204,
+            "p50Speedup": 0.7599769291514725,
+            "p95Speedup": 0.8039185325308966,
+            "normalizedCandidateP95": 50253.1875
+          }
+        ]
+      },
+      "warm": {
+        "passed": true,
+        "errors": [],
+        "p50Speedup": 1.0294200954084676,
+        "p95Speedup": 0.88592844053234,
+        "graphParameterP50Speedup": 1.1722555980338614,
+        "graphParameterP95Speedup": 1.241277539970595,
+        "resources": {
+          "base": {
+            "cpuCoreUtilizationPermille": 1982,
+            "peakUsedHeapBytes": 5980041264,
+            "peakResidentSetBytes": 7646560256,
+            "gcCount": 5,
+            "gcMillis": 13,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 2043,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 30,
+            "callSiteStringIndexLookupMaxPerGraph": 39,
+            "callSiteScanPeakActiveWorkers": 0
+          },
+          "candidate": {
+            "cpuCoreUtilizationPermille": 2026,
+            "peakUsedHeapBytes": 5887800712,
+            "peakResidentSetBytes": 7412064256,
+            "gcCount": 4,
+            "gcMillis": 12,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 2043,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 30,
+            "callSiteStringIndexLookupMaxPerGraph": 39,
+            "callSiteScanPeakActiveWorkers": 0
+          }
+        },
+        "graphSetLatencyByWidth": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 114233,
+            "baseP95": 209480,
+            "candidateP50": 102131,
+            "candidateP95": 194733,
+            "p50Speedup": 1.1184948742301555,
+            "p95Speedup": 1.07572933195709,
+            "normalizedCandidateP95": 97366.5
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 124322,
+            "baseP95": 226713,
+            "candidateP50": 102261,
+            "candidateP95": 166130,
+            "p50Speedup": 1.21573229285847,
+            "p95Speedup": 1.364672244627701,
+            "normalizedCandidateP95": 20766.25
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 260154,
+            "baseP95": 330466,
+            "candidateP50": 178062,
+            "candidateP95": 219469,
+            "p50Speedup": 1.4610304276038684,
+            "p95Speedup": 1.5057525208571598,
+            "normalizedCandidateP95": 3429.203125
+          }
+        ]
+      },
+      "startup-prepared": {
+        "passed": true,
+        "errors": [],
+        "p50Speedup": 0.9843120586928885,
+        "p95Speedup": 0.9623487460252483,
+        "graphParameterP50Speedup": 0.9924612744139564,
+        "graphParameterP95Speedup": 1.0310592829720446,
+        "resources": {
+          "base": {
+            "cpuCoreUtilizationPermille": 2734,
+            "peakUsedHeapBytes": 5829205344,
+            "peakResidentSetBytes": 6462312448,
+            "gcCount": 5,
+            "gcMillis": 31,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 2043,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 30,
+            "callSiteStringIndexLookupMaxPerGraph": 39,
+            "callSiteScanPeakActiveWorkers": 0
+          },
+          "candidate": {
+            "cpuCoreUtilizationPermille": 2718,
+            "peakUsedHeapBytes": 5882554512,
+            "peakResidentSetBytes": 6840475648,
+            "gcCount": 5,
+            "gcMillis": 33,
+            "callSiteIndexAdmittedGraphs": 64,
+            "callSiteIndexRetainedBytes": 376816260,
+            "callSiteTrigramIndexedGraphs": 64,
+            "callSiteParallelScanCount": 0,
+            "callSiteParallelScanGraphCount": 0,
+            "callSiteStringIndexLookupCount": 2043,
+            "callSiteStringIndexLookupGraphCount": 64,
+            "callSiteStringIndexLookupMinPerGraph": 30,
+            "callSiteStringIndexLookupMaxPerGraph": 39,
+            "callSiteScanPeakActiveWorkers": 0
+          }
+        },
+        "graphSetLatencyByWidth": [
+          {
+            "width": 2,
+            "sampleCount": 192,
+            "baseP50": 207717,
+            "baseP95": 560464,
+            "candidateP50": 202818,
+            "candidateP95": 651744,
+            "p50Speedup": 1.0241546608289205,
+            "p95Speedup": 0.859945009083321,
+            "normalizedCandidateP95": 325872
+          },
+          {
+            "width": 8,
+            "sampleCount": 48,
+            "baseP50": 176739,
+            "baseP95": 1066586,
+            "candidateP50": 192498,
+            "candidateP95": 1161253,
+            "p50Speedup": 0.9181342143814482,
+            "p95Speedup": 0.9184785744364062,
+            "normalizedCandidateP95": 145156.625
+          },
+          {
+            "width": 64,
+            "sampleCount": 6,
+            "baseP50": 300549,
+            "baseP95": 3071664,
+            "candidateP50": 407789,
+            "candidateP95": 3180825,
+            "p50Speedup": 0.7370208612787496,
+            "p95Speedup": 0.9656815448822239,
+            "normalizedCandidateP95": 49700.390625
+          }
+        ]
+      }
+    },
+    "passed": true
+  },
+  "limitations": [
+    "Checks compare hosted TSV signatures with their frozen oracle and published digests; no query or fixture replay occurred.",
+    "Artifact manifest hashes and provenance are verified; the original hosted JARs/graphs were not rehashed here.",
+    "Equal recorded JAR payload hashes do not explain or waive confirmed timing failures.",
+    "Method whole-process CPU includes client, reference oracle, engine and background work; this audit does not attribute Linux CI regressions to an engine phase.",
+    "Candidate138 was rejected locally by repeated v3 regressions before candidate CI; this audit only covers explicit production revert CI."
+  ]
+}

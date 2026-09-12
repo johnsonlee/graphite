@@ -1,0 +1,56 @@
+{
+  "scope": "read-only scheduling feasibility, no Java/build/tests/performance",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "currentHead": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0",
+  "comparedFiles": [
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt",
+      "relativePath": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt",
+      "sha256": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2",
+      "equalsFrozenMain": true
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+      "relativePath": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+      "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae",
+      "equalsFrozenMain": true
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutionBudget.kt",
+      "relativePath": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutionBudget.kt",
+      "sha256": "3fdfd1588e92c63a682bfcdbd3e9b79c7b67142a36d3b04700f49c4397ad18a3",
+      "equalsFrozenMain": true
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "relativePath": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+      "equalsFrozenMain": true
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+      "relativePath": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+      "sha256": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77",
+      "equalsFrozenMain": true
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt",
+      "relativePath": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt",
+      "sha256": "2fe499f043740e7b70970a242613f760bf23577aef45d6fa612161e1d4d546ad",
+      "equalsFrozenMain": true
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-cypher/build.gradle.kts",
+      "relativePath": "graphite-cypher/build.gradle.kts",
+      "sha256": "e4bf24a5bebc1dbf8dc302c5dcabb820684af66bf3b3f9f250d905f638712213",
+      "equalsFrozenMain": true
+    },
+    {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-webgraph/build.gradle.kts",
+      "relativePath": "graphite-webgraph/build.gradle.kts",
+      "sha256": "c0b5d1150a7e074b2a67cc1e470e3363c405611a8888e8be515c8216dfe152dc",
+      "equalsFrozenMain": true
+    }
+  ],
+  "mainProductionDiffNames": []
+}

@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "queries": 36,
+  "completedVerifiedForks": 1,
+  "allGraphContentBeforeAfterEqual": true,
+  "graphInventorySha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+  "fullReceipt": "v3-control/run.json",
+  "notPairedGainOrP95": true,
+  "controlExecSession": 64343,
+  "controlExit": 0
+}

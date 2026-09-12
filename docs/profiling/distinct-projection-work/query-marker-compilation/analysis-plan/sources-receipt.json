@@ -1,0 +1,119 @@
+{
+  "purpose": "read-only source capture; no Java, build, profiler or measurement executed by this audit",
+  "files": [
+    {
+      "file": "sources/local-profile.jfc",
+      "source": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/lib/jfr/profile.jfc",
+      "bytes": 35871,
+      "sha256": "9da7ab71c763344677cabe8898496b0aad1fb42fe49363d5e1ae00df8a1baded"
+    },
+    {
+      "file": "sources/local-default.jfc",
+      "source": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/lib/jfr/default.jfc",
+      "bytes": 35918,
+      "sha256": "51099f07cbdafe8c9e12e94ea74db1c92c3e1ae950679ebf6d37a9b4be4f7634"
+    },
+    {
+      "file": "sources/Event.java",
+      "source": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/lib/src.zip!/jdk.jfr/jdk/jfr/Event.java",
+      "bytes": 6226,
+      "sha256": "92de1c75cdfb0c21623fe7ae461a186941ebc3d690d599afc2ffb54d232a4a7d"
+    },
+    {
+      "file": "sources/TimeConverter.java",
+      "source": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/lib/src.zip!/jdk.jfr/jdk/jfr/internal/consumer/TimeConverter.java",
+      "bytes": 2562,
+      "sha256": "8ce0f9e9abbe5dd9676b67d8859925cb78516b8f512a010236a105fc5c41fad6"
+    },
+    {
+      "file": "sources/RecordedFrame.java",
+      "source": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/lib/src.zip!/jdk.jfr/jdk/jfr/consumer/RecordedFrame.java",
+      "bytes": 3490,
+      "sha256": "531fd596729c1eb04e2926bc3f7c60bc43fc4a91572e5a51c21f63b8f7c797f6"
+    },
+    {
+      "file": "sources/metadata.xml.excerpts.txt",
+      "source": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/jfr/metadata/metadata.xml",
+      "bytes": 9734,
+      "sha256": "38c4c69fd0343d36190843bdbfde70d321533478664e3d4fac387a23cdc7488a"
+    },
+    {
+      "file": "sources/xmlstream.cpp.excerpts.txt",
+      "source": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/utilities/xmlstream.cpp",
+      "bytes": 1495,
+      "sha256": "75dbab8e0e618a317601564a5a139bf5681a36b2fd184bb4532b0f31c1b0d579"
+    },
+    {
+      "file": "sources/ostream.cpp.excerpts.txt",
+      "source": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/utilities/ostream.cpp",
+      "bytes": 3358,
+      "sha256": "d45fb21f6d36946918bf8c57ad89491bc1bdcca430bcd83550d0af9be0525d0c"
+    },
+    {
+      "file": "sources/deoptimization.cpp.excerpts.txt",
+      "source": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/runtime/deoptimization.cpp",
+      "bytes": 3911,
+      "sha256": "9e23017f8c1822c17784bd807b83c9371b68e4d3447b6bae4d7c88de7b299abd"
+    },
+    {
+      "file": "sources/jfrThreadSampler.cpp.excerpts.txt",
+      "source": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/jfr/periodic/sampling/jfrThreadSampler.cpp",
+      "bytes": 12373,
+      "sha256": "c15e834b9a084f39818af2ff11ad6d05b29237767a6383d1c2297eadf341e209"
+    },
+    {
+      "file": "sources/QueryExecutionMarker.java",
+      "source": "/private/tmp/graphite-query-marker-diagnostic/src/QueryExecutionMarker.java",
+      "bytes": 5435,
+      "sha256": "999c53e95b2ca547e4ccace097c4c11a96940c40085ad04eb98d570d0c97b947"
+    },
+    {
+      "file": "sources/root-overlay-audit.json",
+      "source": "/private/tmp/graphite-query-marker-capture/root-overlay-audit.json",
+      "bytes": 1565,
+      "sha256": "62da807d7e1290347f01b6d60671277a6aab8f278c07a09e2817ae6f1c825071"
+    },
+    {
+      "file": "sources/original-catalog.json",
+      "source": "/private/tmp/graphite-query-marker-capture/original-catalog.json",
+      "bytes": 20091,
+      "sha256": "84606875e34be7928275e831fd26abbfd9115832952a5bca19ea6f282c8a9284"
+    },
+    {
+      "file": "sources/catalog-receipt.json",
+      "source": "/private/tmp/graphite-query-marker-capture/catalog-receipt.json",
+      "bytes": 1514,
+      "sha256": "e5cd3ef48a02f8621d7dfc235b12881ff8cf486207c1373a1d6d52ab81d028a5"
+    },
+    {
+      "file": "sources/capture-plan.json",
+      "source": "/private/tmp/graphite-query-marker-capture/capture-plan.json",
+      "bytes": 1922,
+      "sha256": "8a18ecc9a3ce9e772ab59948df7ce963c70e5eea6ac4d573012dfef5c7b05cfb"
+    },
+    {
+      "file": "sources/capture-profile.jfc",
+      "source": "/private/tmp/graphite-query-marker-capture/profile.jfc",
+      "bytes": 1626,
+      "sha256": "b4f2be553786855fb599fadca94ce1203160d1b6f26f742d30a394fc50c6267c"
+    },
+    {
+      "file": "sources/capture-control.jfc",
+      "source": "/private/tmp/graphite-query-marker-capture/control.jfc",
+      "bytes": 860,
+      "sha256": "bbb2da2133f145922c3d0c66541302d0f0ade0974c073a67e953a38f9079a1aa"
+    },
+    {
+      "file": "sources/jdk-event-metadata.txt",
+      "source": "/private/tmp/graphite-query-marker-capture/jdk-event-metadata.txt",
+      "bytes": 4016,
+      "sha256": "a88270a105db34e08a173dbeecd30c55af02881fed79ac399f6d01c72a6709f2"
+    },
+    {
+      "file": "sources/metadata-command.json",
+      "source": "/private/tmp/graphite-query-marker-capture/metadata-command.json",
+      "bytes": 330,
+      "sha256": "10720c8f8cd82ee79b6f4b3085ffb836104d2682d39e01f75e191d2842d7e9d0"
+    }
+  ]
+}

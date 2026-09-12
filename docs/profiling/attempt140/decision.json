@@ -1,0 +1,40 @@
+{
+  "attempt": 140,
+  "accepted": false,
+  "decision": "reject and explicitly revert",
+  "reason": "mixed-four-few-rows exceeds15% and1ms in pairs2and3",
+  "candidateParent": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "old34RegressionPassed": true,
+  "old34StrictProgressEveryPair": true,
+  "v3RegressionPassed": false,
+  "v3RepeatedRegressions": {
+    "mixed-four-few-rows": [
+      {
+        "pair": 2,
+        "id": "mixed-four-few-rows",
+        "baseLatencyNanos": 372238792,
+        "candidateLatencyNanos": 727403042,
+        "regressionFraction": 0.954130138053962,
+        "absoluteRegressionNanos": 355164250,
+        "crossesBothBounds": true
+      },
+      {
+        "pair": 3,
+        "id": "mixed-four-few-rows",
+        "baseLatencyNanos": 223453459,
+        "candidateLatencyNanos": 297224584,
+        "regressionFraction": 0.3301408952456628,
+        "absoluteRegressionNanos": 73771125,
+        "crossesBothBounds": true
+      }
+    ]
+  },
+  "candidateCi": "not run after local rejection; method-level and end-to-end CI performance unavailable, not passing",
+  "retries": 0,
+  "thresholdChanges": false,
+  "sourceJarRoot": "/private/tmp/graphite-attempt140._5jztd0a",
+  "finalPoolsRemoved": false,
+  "final10xAchieved": false,
+  "originalRegressionCause": "not established; no attribution from source change alone"
+}

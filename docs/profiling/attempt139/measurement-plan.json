@@ -1,0 +1,27 @@
+{
+  "attempt": 139,
+  "candidateParent": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "direction": "Compile-time specialization of the existing persisted mapped-index validator element callbacks, preserving callback bodies and every checksum/work/cancellation boundary.",
+  "scope": [
+    "Only inline the existing callback-taking updateInts and updateLongs methods; no body changes or new strategy.",
+    "No selected projection, sparse plan, cache, StringTable, format, CRC algorithm, threshold, scheduler or pool change.",
+    "Distinct from rejected137 runtime primitive consumers: remove generic call boundary via Kotlin compile-time expansion, verified from actual JAR bytecode; do not reuse137 implementation."
+  ],
+  "evidence": [
+    "Latest frozen-main cold pure4OR DISTINCT:11216/12254 application CPU samples include validator, and 48960411632 allocation sample bytes in validator.",
+    "Existing callback dispatch and boxing sites remain in identical validator JVM bytecode.",
+    "138 regression cause is unproven;139 does not claim to fix that cause or revive138."
+  ],
+  "validation": [
+    "Independent source diff:130 main/JMH files relative to frozenmain, only intended file changes.",
+    "WebGraph tests, detekt, JMH packaging/test exclusion; inspect expanded load bytecode and callback elimination, record method sizes.",
+    "One real v3 36-query full correctness control.",
+    "Three unchanged original34 alternating pairs, requiring regression pass and strict global P95 progress in every pair.",
+    "Only if old34 conditions pass, three v3 alternating pairs; repeated >15% and >1ms same-query regressions reject.",
+    "Only local pass permits attempt commit and exact-head full CI for acceptance. Failed local experiment still recorded in one attempt commit then explicitly reverted without candidate CI."
+  ],
+  "accepted": false,
+  "notTargetClaim": true,
+  "finalObjective": "Remove CallSite-related pools and reach10x frozen-main full global P95 without function/performance regressions; incremental checks do not replace final target."
+}

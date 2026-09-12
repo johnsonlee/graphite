@@ -1,0 +1,67 @@
+/private/tmp/graphite-query-marker-diagnostic/patch.py:89: UserWarning: Overlapped entries: 'META-INF/LICENSE.txt' (possible zip bomb)
+  old,new=src.read(left),dst.read(right)
+{
+  "baseJar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "baseJarSha256Before": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "baseJarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "diagnosticJar": "/private/tmp/graphite-query-marker-diagnostic/diagnostic-jmh.jar",
+  "diagnosticJarSha256": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+  "originalEntryCount": 30488,
+  "uniqueOriginalNames": 30467,
+  "unchangedOriginalEntries": 30487,
+  "modifiedOriginalEntries": [
+    {
+      "entryOrdinal": 30167,
+      "name": "io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.class",
+      "beforeSha256": "ae78c757f805386ba22698f277f41cd0f0e3e0b55aff2ab1cf5fe980a4ad35ea",
+      "afterSha256": "da0f28627399214209232fe4cb3d8759f784155a9a0def5f6cb8ca07ebd68068",
+      "changed": true
+    }
+  ],
+  "addedEntries": [
+    {
+      "entryOrdinal": 30488,
+      "name": "io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.class",
+      "beforeSha256": null,
+      "afterSha256": "35152b234ad324b4da1f3f8c600a56c5c278f00b5a33a8ff92450a234f19a6e2",
+      "changed": true
+    },
+    {
+      "entryOrdinal": 30489,
+      "name": "io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.class",
+      "beforeSha256": null,
+      "afterSha256": "b0cd9bd568db772d5ac6accff15b678b94e737f35a381ffa1599988bf4df8ebc",
+      "changed": true
+    }
+  ],
+  "modifiedClass": "io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.class",
+  "method": "replay$lambda$33$lambda$29(Ljava/util/List;Lio/johnsonlee/graphite/cypher/CypherExecutionContext;Lio/johnsonlee/graphite/webgraph/BroadQueryCase;)Lio/johnsonlee/graphite/cypher/CypherResult;",
+  "bci": 36,
+  "oldInstruction": {
+    "opcode": "invokevirtual",
+    "cpIndex": 2125,
+    "owner": "io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor",
+    "name": "execute",
+    "descriptor": "(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;"
+  },
+  "newInstruction": {
+    "opcode": "invokestatic",
+    "cpIndex": 2288,
+    "owner": "io/johnsonlee/graphite/diagnostic/QueryExecutionMarker",
+    "name": "execute",
+    "descriptor": "(Lio/johnsonlee/graphite/cypher/CrossGraphCypherExecutor;Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;"
+  },
+  "methodCodeBytesBefore": 40,
+  "methodCodeBytesAfter": 40,
+  "constantPoolCountBefore": 2284,
+  "constantPoolCountAfter": 2289,
+  "appendedConstantPoolBytes": 208,
+  "allOtherClassBytesReversibleExactly": true,
+  "methodCount": 59,
+  "allOtherMethodAttributesUnchanged": true,
+  "productionClassesModified": [],
+  "jarEntriesComparedByOrdinalIncludingDuplicateNames": true,
+  "realQueriesExecuted": 0,
+  "jfrCapturesStarted": 0,
+  "entryComparisonSha256": "48a3a3a639848328d1cc7300751690dce5ad7d26d26f25dcd51be589347b4c3e"
+}

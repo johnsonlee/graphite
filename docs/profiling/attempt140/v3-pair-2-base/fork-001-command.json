@@ -1,0 +1,13 @@
+[
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+  "-Xmx8g",
+  "-XX:ActiveProcessorCount=4",
+  "-cp",
+  "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/classes:/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "MultiKeywordProfileRunner",
+  "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+  "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/workloads.tsv",
+  "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/fork-001",
+  "all",
+  "per-query-cold"
+]

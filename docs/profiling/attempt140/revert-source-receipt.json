@@ -1,0 +1,16 @@
+{
+  "candidateCommit": "4215b66e462675baeb3e1b1f2013cf7e6de01812",
+  "candidateParent": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "targetFrozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainAndJmhCompared": 130,
+  "mainAndJmhAllByteEqualFrozen": true,
+  "testFilesComparedToParent": 168,
+  "allTestSourcesUnchanged": true,
+  "revertedProductionFile": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+  "reason": "Repeated mixed-four-few-rows v3 regression; old34 progress cannot waive it",
+  "candidateCiRun": false,
+  "accepted": false,
+  "finalPoolsRemoved": false,
+  "final10xAchieved": false,
+  "rawArtifactWhitespacePreserved": "Original139 global-wide-report.md retains its hashed trailing blank line; source/editorial diff checks exclude that raw report."
+}

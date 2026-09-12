@@ -1,0 +1,43 @@
+{
+  "terminalAuditPassed": true,
+  "candidateAccepted": false,
+  "candidateDecision": "rejected-old34",
+  "files": [
+    {
+      "path": "independent-old34-audit.py",
+      "bytes": 9091,
+      "sha256": "3a45799a8d4582d4bc66fcf03f61661f325e0620379d7dc6cd3076de12ce8993"
+    },
+    {
+      "path": "independent-old34-audit.json",
+      "bytes": 65642,
+      "sha256": "21be4b7f92bc4cd4d83216f927df1b86ad8182e7da77d650d26b07467c10ed1f"
+    },
+    {
+      "path": "independent-old34-audit.md",
+      "bytes": 6734,
+      "sha256": "540a75fdc57aaf569a63f9f4553d3d9ee79d3c65327235a8dffba2b908e3a4d9"
+    },
+    {
+      "path": "render-old34-audit.py",
+      "bytes": 5755,
+      "sha256": "e722e9c42b06fb4325b23bfc972b0780f1032458c191a5b0adb496fec74ed3cd"
+    },
+    {
+      "path": "independent-comparator-status.json",
+      "bytes": 4771,
+      "sha256": "0b0e4e66dd8d7b2bd2c06bc362c3fca15b8f3e982142b5fd02a5b1dbcf3d2ae4"
+    },
+    {
+      "path": "independent-comparator-report.md",
+      "bytes": 2217,
+      "sha256": "1510e3d7028541cfa617412c11b1cf79559ca211d477bad7b8da3f4ee90a5e77"
+    },
+    {
+      "path": "independent-comparator-receipt.json",
+      "bytes": 1980,
+      "sha256": "4bcc28744116cd44785ac9142af663632e82629a5f6bb051372329800cefb204"
+    }
+  ],
+  "noJavaBuildQueryPerformanceRerun": true
+}

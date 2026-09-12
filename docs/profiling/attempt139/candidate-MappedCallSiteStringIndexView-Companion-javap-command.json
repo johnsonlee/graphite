@@ -1,0 +1,8 @@
+[
+  "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/javap",
+  "-classpath",
+  "/private/tmp/graphite-attempt139._p0bc7zf/candidate-jmh.jar",
+  "-c",
+  "-p",
+  "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion"
+]

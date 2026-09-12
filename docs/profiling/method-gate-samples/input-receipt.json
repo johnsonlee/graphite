@@ -1,0 +1,337 @@
+{
+  "graphs": [
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/forward.graph",
+      "size": 7472680,
+      "sha256": "367c691aa7faeb53763f13227e42ad13404d81d1b95f77d36c05dfb9efa7edf1"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/forward.offsets",
+      "size": 4417332,
+      "sha256": "38e67d758d3e9c271435b0ea9d919516399e417cd4f6c977261911810fac08fb"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/forward.properties",
+      "size": 1057,
+      "sha256": "79e951e31a1e6ef98ae6fdbd3f42421680bee9180004c75646c69a538039f28f"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.callsite-string-content.identity",
+      "size": 32,
+      "sha256": "b3966dafd179a221ffb8138637bd4cfeaf06556c6da1189d3646ebf46e13d95c"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.classoverview",
+      "size": 251280,
+      "sha256": "b89668d328fa71342c4c4d434a0dce48d60ae0261ca14e1235a2bbf068549338"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.comparisons",
+      "size": 9454584,
+      "sha256": "d9c0bf1e781eebfe6fc2187527d92cd05e97376cc5e3d3ebde9e08b530181341"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.labelprefix",
+      "size": 23755312,
+      "sha256": "df869986dd013ea872766c40bbd09ce46a000d6fd86ac28440c6b59815bdd315"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.labels",
+      "size": 6675058,
+      "sha256": "50471287ea659e35ba44f77ca04652421c6d47b1810e82ea2cebe3858809eb20"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.metadata",
+      "size": 46546172,
+      "sha256": "eb9a5a23603f22e62d8881171d5fd57691ef7dd3fa4156acefd66daa54085db6"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.nodedata",
+      "size": 252654696,
+      "sha256": "ba6066cfd58b3034a6f67eaa952a9c375f2165e6292a255f229ab846c54ff525"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.nodeindex",
+      "size": 77204746,
+      "sha256": "9602deb3db17f4791c5c58b47c0308dbdf5cab6602dc651e3abf3a4a2c40f4ea"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.nodeoffsets",
+      "size": 47510624,
+      "sha256": "ad4bb3edd0ab54d5d567b7ac123ddcb0321cd66e7844db98b2d39b5635679c98"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.resources",
+      "size": 2377627,
+      "sha256": "374b35817146394152cd3a2e7d0dd3d4b82ba634eee088420b48038e5902d05a"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.strings",
+      "size": 15982317,
+      "sha256": "1f5496141863c68e08da9f3119d336856f6c940b9a51c67679c5f8d2831c921a"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.strings.identity",
+      "size": 32,
+      "sha256": "6770c927d48bb3306e440ba585c67177d0a9b8252f516b735f0eead038d6dad3"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/android/graph.typeindex",
+      "size": 23755520,
+      "sha256": "9b6450dd9f89c362b2d9ed6a40a521ceabd53c758a3b8c5d23cabd07007e28a8"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/forward.graph",
+      "size": 4808503,
+      "sha256": "4102658156eb9a049611a211e8b5ad204c2def378552d765008f81dfc2efc7bc"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/forward.offsets",
+      "size": 2923189,
+      "sha256": "7470870c1e674ba5818dc261bb5e0b526428739573558f4eaacac24929f796f6"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/forward.properties",
+      "size": 1025,
+      "sha256": "98fee308b6f2c23e7bb76fd84e737d5607af8d3516b61c253e6a815631052211"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.callsite-string-content.identity",
+      "size": 32,
+      "sha256": "187f0d36a5ce8edf7a5e479e710218d9d1569ea4b38f86fabaa1fa068f5c24d3"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.classoverview",
+      "size": 138120,
+      "sha256": "f12afa057e0588e9677dc6d27ead613a9fe5438ae873c71b14f783f4f4b10644"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.comparisons",
+      "size": 5623288,
+      "sha256": "81184f39a322a90367a86e6ec79a192192146adba9a757516b00204d50631d26"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.labelprefix",
+      "size": 15588056,
+      "sha256": "fca8087b64872e3b514424f52873525bbb63aeb12faf64e5ed740d43f7e62ee0"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.labels",
+      "size": 4342382,
+      "sha256": "5669a64fdea3457e3001a70cc228305ffa64c3e534d6617acc62d6b53a573fd9"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.metadata",
+      "size": 29058212,
+      "sha256": "ea28e866ddea13b7dd206ebdc4a6e422982f7440fe434bbc565aee2c4df75104"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.nodedata",
+      "size": 156118715,
+      "sha256": "47e5677e95c6b13999192a3790dfe6ebbd90abe9487bff7b115db04158e2d7d0"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.nodeindex",
+      "size": 50661164,
+      "sha256": "e8d7cfb185a3de63949bb5f432120b41de85b10bdc72e84ce143764c08a124cd"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.nodeoffsets",
+      "size": 31176112,
+      "sha256": "02968226d758a1e1dff5a0300a9838bc148c64a73f76c944184f2546896e167e"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.resources",
+      "size": 5673996,
+      "sha256": "7a5264f7e1271928558efc75755c5ee391132c2644d7534ff6b94da38118daa8"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.strings",
+      "size": 6740083,
+      "sha256": "c4d88b158678f3eed129d096f70fcf8195750a10676f1c08e2514e9421aa06a7"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.strings.identity",
+      "size": 32,
+      "sha256": "b9ce46fa8a569119a35931528e98db5a38b166551aa1098a3ce3e0d4fcb1dc5f"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/tika/graph.typeindex",
+      "size": 15588264,
+      "sha256": "274eb08ecccaac1c1fdcd7e5420045fa1a9b584168b5f4b967ce1c792996e9f2"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/forward.graph",
+      "size": 6974329,
+      "sha256": "35fb1080dc0e0443084443e98fd1013fb20312d0ba6e43b5213d79e9b4a53d56"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/forward.offsets",
+      "size": 4366160,
+      "sha256": "65682ed83af33f3f46f66730aa8a63bb1ec8d327f39abdbd5cbfeab4707d7294"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/forward.properties",
+      "size": 1040,
+      "sha256": "c9419edf985b649f0f35c70440db40497a50ebc1349b675c0ae882177c35a831"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.callsite-string-content.identity",
+      "size": 32,
+      "sha256": "67bae21ffb9f54e523b7fc93687a38c43f2b805720532230db9525c4b36f44dd"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.classoverview",
+      "size": 208128,
+      "sha256": "8dc9ecd4faca3cda993cb8265b0fdae8511f9f8a4ec141c8d0e722a67b08bf2e"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.comparisons",
+      "size": 9188888,
+      "sha256": "028331aac67be85517c0e7d23b8d24c1e5091d4744dd7c72eac979c75eebac59"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.labelprefix",
+      "size": 23946700,
+      "sha256": "084824ae7ed5fdabf5bbc692bdbcbab4120137c07472951b1c5a4859d77bbf51"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.labels",
+      "size": 6161463,
+      "sha256": "bcfc887896386028de73ae8f02eff3b55e89c49888d2f98e6710e92077dc7c37"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.metadata",
+      "size": 46682408,
+      "sha256": "83aea541e72bf2da917e1a314acc6e90113e42dcfcd3d237d597fa6f99eefe58"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.nodedata",
+      "size": 250037877,
+      "sha256": "379497347e447746c5522f1952d8602d8a756e4443ece9f6834373fde62a01f5"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.nodeindex",
+      "size": 77826757,
+      "sha256": "4882685727dfacd23f92b6b41fe3c260882dbb208f1fa115e0542df9df2ddc2e"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.nodeoffsets",
+      "size": 47893400,
+      "sha256": "cae2671369dbf00d2545421d8f1691e9f6010c01b21f98c555c4496ce16bf3cb"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.resources",
+      "size": 1254054,
+      "sha256": "53c2dc423442d3c974bf0a426e9056f4866cd20d8e8425f45ae6fc66060dfd94"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.strings",
+      "size": 7847367,
+      "sha256": "6b4fdd5c5e7df06bb6120810732b0caa4bc1464e1af06fae4e82b13a9ebdd92d"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.strings.identity",
+      "size": 32,
+      "sha256": "ad7d177be0dc4b42d080d073cc284ccf10f944856ac3f52e5b72b2b8ba976286"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/hive/graph.typeindex",
+      "size": 23946908,
+      "sha256": "01c686adcb79ecd75f40d3bab1d55f8f0097e613b5c629f9efdd1e8110b745ba"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/forward.graph",
+      "size": 4116733,
+      "sha256": "684e06d789afa39404db34fde5240bb6dbb0d837afecbb92bc53a4617a506b8a"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/forward.offsets",
+      "size": 2493915,
+      "sha256": "2480eda189b096596fa269a99a8d5e64d7defe614addfac983a7d4031468cea1"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/forward.properties",
+      "size": 1022,
+      "sha256": "3095af7ab11690308a861d0f1214436cc8e1aff4db3a98e37e0299a7bc285db8"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.callsite-string-content.identity",
+      "size": 32,
+      "sha256": "8d8edb02c6e9095416b8c23062528b5dfbc712f048441e1e8183f492072e5650"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.classoverview",
+      "size": 254088,
+      "sha256": "4743acd1473311cfa971acf3d4da1b98795d210b27462d7b094d6e6d95d2e421"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.comparisons",
+      "size": 5656664,
+      "sha256": "3e480a84d6d3c8fe533b212c8629c25433aa187ce5066d8f271f24a88b68f405"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.labelprefix",
+      "size": 13074156,
+      "sha256": "1acd2c35ebfb76bfe4b7b34684801470419a910f9a41263e6c878dc3f035070c"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.labels",
+      "size": 3559500,
+      "sha256": "3aee3db236813de7f4515a96791a975df628744306b7ecfc06ff40103c5dcfb6"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.metadata",
+      "size": 28422892,
+      "sha256": "375a70b2756925d5e338990644afb495d18310a31971db85d7cccf3b94a73418"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.nodedata",
+      "size": 142208386,
+      "sha256": "86e5a4f315e25335274aa9346d9ef66364e24d02c3bb7729caa5574344f4de61"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.nodeindex",
+      "size": 42490989,
+      "sha256": "948bd3531872e07bba946821a626ec2ae427e5a40d70a2551d5d4c07abeeb4b4"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.nodeoffsets",
+      "size": 26148312,
+      "sha256": "e5691056a5d15d871dbe21ac55e8f686078f98f21912e66ea32bd2892b495b76"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.resources",
+      "size": 250850,
+      "sha256": "d2564fce7ef330f91e967bf922ecd006ca736e6c6336f8d45eaf76a51b133e7e"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.strings",
+      "size": 7361151,
+      "sha256": "f1acb60755c022448195bec8d9dbc3953670f68f92834dd193c40f21555591bb"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.strings.identity",
+      "size": 32,
+      "sha256": "a4f09a054ad0281617417d05754fae59e7a03621adfeb1bef036f89c2e8c3663"
+    },
+    {
+      "path": "/private/tmp/pr113-method-fixtures/kotlin-compiler/graph.typeindex",
+      "size": 13074364,
+      "sha256": "6cd6c524bfa0a7d1ae1d0967f47094a2d0772228315aed36b0cb26ddb36b47a4"
+    }
+  ],
+  "jar": {
+    "path": "/private/tmp/graphite-attempt134-revert-ci/explorer-base/base-explore-jmh.jar",
+    "sha256": "7a5bc242259971d990c305b521eccee09a8c400e19e29d691de4f55bf8b9a66d",
+    "previousIndependentCanonicalContentSha256": "a78e19f19dc03d05aa800fa3b8395f002b4363ad2b21d9161a51951a8fa1d2a2"
+  },
+  "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "nodeCountPreflightPassed": true,
+  "originalUsageReceipt": "/private/tmp/pr113-method-position-local/main-r1.json",
+  "limits": [
+    "Historical persisted real corpora; this run checks frozen expected node counts and content hashes, not source-JAR regeneration.",
+    "Local macOS profiles diagnose timing boundaries, not hosted Linux failure causality or acceptance.",
+    "Method residentSetBytes falls back to committed JVM heap on macOS; do not report it as RSS."
+  ]
+}

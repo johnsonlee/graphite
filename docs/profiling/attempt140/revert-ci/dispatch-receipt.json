@@ -1,0 +1,11 @@
+{
+  "head": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0",
+  "runs": {
+    "unit": 33995836241,
+    "benchmark": 33995836230
+  },
+  "timestamp": "2026-09-05T22:30:21.098363+00:00",
+  "mode": "Read-only existing CI observation; no workflow dispatch/rerun",
+  "pollSeconds": 55,
+  "candidate140RejectionUnchanged": true
+}

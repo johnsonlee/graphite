@@ -1,0 +1,9 @@
+{
+  "rejectedAttemptCommit": "bd942197c14d8febd8ea1118d85616444f4e3834",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "productionAndJmhFilesCompared": 130,
+  "differingFiles": [],
+  "retainedCorrectnessTest": "ParallelDistinctDisjunctionTest.kt",
+  "baselineTestReceipt": "../pure-four-or-test-receipt.json",
+  "ciAcceptance": "pending, not accepted"
+}

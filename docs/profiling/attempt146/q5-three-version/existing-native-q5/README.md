@@ -1,0 +1,13 @@
+# Reused official-PR q5 wall stacks
+
+This is a new extraction from three already completed official-PR native captures in `/private/tmp/graphite-sparse-native-stacks.kpkcdzsl`. It starts no JVM and changes no benchmark. The old captures used exact query-time anchors, native wall sampling and compiler logging; their timings are not comparable performance samples for the current uninstrumented main/official/helper batch.
+
+`extract.py` streams the three authenticated sample files, verifies their complete existing size/SHA receipts, selects q5 plus a 2ms edge envelope and retains every selected full stack. The complete original14 q5 signatures match current official observations. Recomputed 0/1/2ms interior and boundary sample counts exactly match the original all34 analysis. Exact prior PIDs, windows, frame labels, states, native/missing/GC/compiler samples and all thread identities are retained in `result.json` and three q5 sample files.
+
+The observed official path includes mapped trigram posting lookup and `exactMatchingStringIds`, followed by per-source row iteration. Three old q5 durations are 5.547/5.677/5.494ms. At the 1ms interior, mapped exact-filter stacks occur in 5/1/3 distinct samples and trigram-range lookup in 4/1/1; these inclusive counts overlap. Query-owner samples include waiting for the result queue, and task-worker samples include both executing storage/scanner code and direct `GraphTaskScheduler.work` waits. Submission/help/lane-management frames are also present.
+
+This confirms that indexed lookup and scheduling both occur; it does not quantify their contributions, prove excessive scheduler waiting, show queued runnable work during idle samples, or assign the current q5 delta to the helper. An empty `indexLookupCount` counter is not evidence of no index lookup. Direct worker waits are not sufficient evidence that a root reservation is binding; that needs the simultaneous admission state available only in the separate prior dense-query probe, not these q5 samples.
+
+GraphTaskContext's source checks only cancellation flags, parent contexts and thread interruption; its `checkCancelled` method itself calls no user callback. That does not turn the encompassing storage/query operation into a guaranteed nonblocking operation. The current helper invokes it at pre-existing polling points, with unchanged serial/parallel loop bytecode. No current helper runtime samples were captured here.
+
+Wall samples are not CPU time; sleeping samples are not exact wait durations; default JIT labels are not C2. Sparse short windows and observer effects limit attribution. No new timing run or production optimization follows solely from these samples.

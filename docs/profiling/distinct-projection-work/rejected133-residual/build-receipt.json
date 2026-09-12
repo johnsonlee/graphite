@@ -1,0 +1,13 @@
+{
+  "diagnosticOnly": true,
+  "previousAttempt133RejectionUnchanged": true,
+  "exitCode": 0,
+  "elapsedSeconds": 8.497496128082275,
+  "noProfileOrBenchmarkStarted": true,
+  "jar": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/rejected133-diagnostic-jmh.jar",
+  "jarSha256": "8434d0a137b5dad0cb45df2261c576a1dcf768d30d17e50a76b626a85095f220",
+  "jarBytes": 60246808,
+  "cloneHead": "2b98f6929893be2cd572a250d884ba1701efb1dc",
+  "cloneStatus": "",
+  "allSourceFilesMatchBeforeBuild": true
+}

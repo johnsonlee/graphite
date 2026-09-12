@@ -1,0 +1,12 @@
+{
+  "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+  "sha256": "7cd7b21f0ac451f265f4014cfa2c0cee09cc4630318c4f3092a897eba668f0aa",
+  "onlyAdditions": "StringPropertyDistinctRow import and selectedProjectionHits/private helpers; stripping those restores parent source exactly",
+  "invocationLocalCaches": [
+    "HashMap<String, Int> including negative IDs",
+    "HashMap<Long, Boolean> for corresponding property membership"
+  ],
+  "changedExistingValidationOrFormat": false,
+  "testsBuildOrPerformanceRun": false,
+  "workspaceModified": false
+}

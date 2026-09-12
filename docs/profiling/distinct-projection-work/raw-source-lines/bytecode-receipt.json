@@ -1,0 +1,29 @@
+{
+  "jar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "jarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "classEntry": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.class",
+  "classSha256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/javap",
+        "-c",
+        "-l",
+        "-p",
+        "/private/tmp/graphite-main-raw-source-lines/MappedWebGraphBackedGraph.class"
+      ],
+      "output": "mapped-javap.txt",
+      "sha256": "f0f31b830feffc8c487c502e71bc4df824513f20173334fb73713ea26bf30ba1"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/javap",
+        "-v",
+        "-p",
+        "/private/tmp/graphite-main-raw-source-lines/MappedWebGraphBackedGraph.class"
+      ],
+      "output": "mapped-javap-verbose.txt",
+      "sha256": "3a002438f255c1aa7d697813f850df0c2778291806626a7c69f4c1c7dfd02b2f"
+    }
+  ]
+}

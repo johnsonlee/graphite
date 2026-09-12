@@ -1,0 +1,98 @@
+{
+  "head": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "run": 33992947567,
+  "jobs": [
+    {
+      "name": "method-compatibility-4-position",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617083,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617083"
+    },
+    {
+      "name": "method-compatibility-36-position",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617084,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617084"
+    },
+    {
+      "name": "method-compatibility-17-position",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617087,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617087"
+    },
+    {
+      "name": "method-compatibility-4-scan",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617099,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617099"
+    },
+    {
+      "name": "method-compatibility-17-aggregate",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617107,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617107"
+    },
+    {
+      "name": "method-compatibility-4-string",
+      "status": "completed",
+      "conclusion": "failure",
+      "databaseId": 101378617109,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617109"
+    },
+    {
+      "name": "method-compatibility-4-aggregate",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617112,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617112"
+    },
+    {
+      "name": "method-compatibility-17-scan",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617113,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617113"
+    },
+    {
+      "name": "method-compatibility-17-string",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617129,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617129"
+    },
+    {
+      "name": "method-compatibility-36-aggregate",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617135,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617135"
+    },
+    {
+      "name": "method-compatibility-36-scan",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617143,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617143"
+    },
+    {
+      "name": "method-compatibility-36-string",
+      "status": "completed",
+      "conclusion": "success",
+      "databaseId": 101378617244,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101378617244"
+    },
+    {
+      "name": "method-compatibility-gate",
+      "status": "completed",
+      "conclusion": "failure",
+      "databaseId": 101379087449,
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33992947567/job/101379087449"
+    }
+  ],
+  "conclusionScope": "Terminal job status only, failed Method4 string additionally audited from raw JMH/signatures."
+}

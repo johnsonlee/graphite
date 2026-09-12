@@ -1,0 +1,13 @@
+--- base-node
++++ candidate-node
+@@ -134,9 +134,7 @@
+ aload 9
+ aload 11
+ iload 30
+-invokeinterface #CP, 2 // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+-checkcast #CP // class java/lang/Number
+-invokevirtual #CP // Method java/lang/Number.intValue:()I
++iaload
+ iaload
+ istore 32
+ aload 12

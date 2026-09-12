@@ -1,0 +1,16 @@
+{
+  "attempt": 139,
+  "decision": "rejected",
+  "accepted": false,
+  "reason": "Pair2 global P95 is slower; strict progress in every pair fails. Passing the original repeated-regression bound is insufficient.",
+  "regressionPassed": true,
+  "strictProgressEveryPair": false,
+  "targetAchieved": false,
+  "failedPair": 2,
+  "failedPairBaseP95Nanos": 58594458,
+  "failedPairCandidateP95Nanos": 137031292,
+  "v3ControlCorrect": 36,
+  "additionalV3Pairs": "not run after local rejection",
+  "candidateCi": "not submitted after local rejection",
+  "productionRevertRequired": true
+}

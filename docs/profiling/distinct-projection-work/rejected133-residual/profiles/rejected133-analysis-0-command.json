@@ -1,0 +1,13 @@
+[
+  "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/java",
+  "-cp",
+  "/private/tmp/graphite-main-profiling-n50joikp",
+  "ProfileWindows",
+  "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/rejected133.jfr",
+  "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/rejected133.tsv",
+  "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/rejected133-analysis",
+  "--expected-count",
+  "34",
+  "--catalog",
+  "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/expected-query-ids.txt"
+]

@@ -1,0 +1,350 @@
+{
+  "passed": true,
+  "queries": 36,
+  "fullRowsVerified": 6171,
+  "valuesOrderProvenanceDigestAllExact": true,
+  "perQuery": [
+    {
+      "id": "or-single-early-rows",
+      "rows": 200,
+      "digest": "98ab8b3888fbfe23d1757ed2348194c5701c18d371cedd4beb75f665eee5aa5c",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 1158842
+    },
+    {
+      "id": "or-single-early-distinct",
+      "rows": 200,
+      "digest": "6c8cc0b81657ec613fc85c0c26ccdf2d39cb9674f617ad0d44318771ad6ee3b9",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57725462
+    },
+    {
+      "id": "and-single-early-rows",
+      "rows": 200,
+      "digest": "1ae0f35e1944fc343d3fae7b7dd0e25c206c08f602de0b7eaf1eed8bf26ddd43",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 1115413
+    },
+    {
+      "id": "and-single-early-distinct",
+      "rows": 50,
+      "digest": "bdc198459629cf993470282cb1db1d6b26265f16e0f2e54032dfd68a1fea750e",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57645747
+    },
+    {
+      "id": "or-single-middle-rows",
+      "rows": 200,
+      "digest": "3bd01b10601e5249ab5e18c5975374ab3fde6cd988b191d86d575e51316074ab",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 31181868
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "rows": 200,
+      "digest": "3bd01b10601e5249ab5e18c5975374ab3fde6cd988b191d86d575e51316074ab",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57706193
+    },
+    {
+      "id": "and-single-middle-rows",
+      "rows": 200,
+      "digest": "f612e9aeb2fb270a6b43aa980e11cb4b62890a4d37fdd5021b02c74a9a888492",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 31149593
+    },
+    {
+      "id": "and-single-middle-distinct",
+      "rows": 200,
+      "digest": "4a01791c1af51302209d5f0957afd936186a4a5528a14ed7c8d8f3da1a9c9918",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57648990
+    },
+    {
+      "id": "or-single-late-rows",
+      "rows": 200,
+      "digest": "23ad1c2ec5bcb52656704428e3993d2940573f189ae63deb0a0554650c5185fd",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57694678
+    },
+    {
+      "id": "or-single-late-distinct",
+      "rows": 200,
+      "digest": "499764b872a1710207331df026d21dd67ba50064b92f25973c12a738ee4c3cca",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57699420
+    },
+    {
+      "id": "and-single-late-rows",
+      "rows": 29,
+      "digest": "77a06d5d75ffcabfd62c0438727a85910d6248dc2a40e30933899b43121f98e5",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57645014
+    },
+    {
+      "id": "and-single-late-distinct",
+      "rows": 21,
+      "digest": "97784c4161f78c286cb8649169845e11c34a225e8833a010ff0a23dcb1bba258",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57645014
+    },
+    {
+      "id": "or-few-early-late-rows",
+      "rows": 200,
+      "digest": "0d66da987904b69e1cc5c4666a557a1fd391cc44e04c30ad0c1340227253c02b",
+      "fullHitGraphCount": 2,
+      "returnedGraphCount": 1,
+      "work": 1158755
+    },
+    {
+      "id": "or-few-early-late-distinct",
+      "rows": 200,
+      "digest": "8da0f10dd828ec386e0020192ffd93accf98019a9c88d610ec35502889654202",
+      "fullHitGraphCount": 2,
+      "returnedGraphCount": 1,
+      "work": 57724950
+    },
+    {
+      "id": "or-few-early-middle-rows",
+      "rows": 200,
+      "digest": "0d66da987904b69e1cc5c4666a557a1fd391cc44e04c30ad0c1340227253c02b",
+      "fullHitGraphCount": 2,
+      "returnedGraphCount": 1,
+      "work": 1158758
+    },
+    {
+      "id": "or-few-early-middle-distinct",
+      "rows": 200,
+      "digest": "8da0f10dd828ec386e0020192ffd93accf98019a9c88d610ec35502889654202",
+      "fullHitGraphCount": 2,
+      "returnedGraphCount": 1,
+      "work": 57724583
+    },
+    {
+      "id": "or-broad-all-rows",
+      "rows": 200,
+      "digest": "2fe460cf1e885829cacdedc85a5ca7e01a14018432c8520ede54aa0909bceee8",
+      "fullHitGraphCount": 64,
+      "returnedGraphCount": 1,
+      "work": 503
+    },
+    {
+      "id": "or-broad-all-distinct",
+      "rows": 200,
+      "digest": "b204d6916e239935315114f410555739f1c9828e6a59a0eab95c618b2a862647",
+      "fullHitGraphCount": 64,
+      "returnedGraphCount": 2,
+      "work": 58038455
+    },
+    {
+      "id": "and-broad-all-rows",
+      "rows": 200,
+      "digest": "60eb143543e9396beb51460d708f13fca188f31bff6b1a4c7b42bf3efaf5dba6",
+      "fullHitGraphCount": 64,
+      "returnedGraphCount": 1,
+      "work": 1138149
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "rows": 200,
+      "digest": "84555646fa566360d2544edccd3684603ca35e4b19c85577b57d35c345e21368",
+      "fullHitGraphCount": 64,
+      "returnedGraphCount": 2,
+      "work": 59629362
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "rows": 200,
+      "digest": "1ae0f35e1944fc343d3fae7b7dd0e25c206c08f602de0b7eaf1eed8bf26ddd43",
+      "fullHitGraphCount": 2,
+      "returnedGraphCount": 1,
+      "work": 275294
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "rows": 71,
+      "digest": "bfe3d37209e6f8f8b354e57c76fdd286ec28e16d335b32ee1209dcf80da3a748",
+      "fullHitGraphCount": 2,
+      "returnedGraphCount": 2,
+      "work": 19431891
+    },
+    {
+      "id": "and-zero-disjoint-graphs-rows",
+      "rows": 0,
+      "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "fullHitGraphCount": 0,
+      "returnedGraphCount": 0,
+      "work": 57645014
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "rows": 0,
+      "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "fullHitGraphCount": 0,
+      "returnedGraphCount": 0,
+      "work": 57645014
+    },
+    {
+      "id": "or-four-broad-rows",
+      "rows": 200,
+      "digest": "140b3076907f55b10242b5bc310882d929d3aa5e851f9a44e1998729856bd8ad",
+      "fullHitGraphCount": 55,
+      "returnedGraphCount": 1,
+      "work": 1152827
+    },
+    {
+      "id": "or-four-broad-distinct",
+      "rows": 200,
+      "digest": "49cffd06880788859569587f8f77a604a22e71ac9a1df0c256c4a8ac5db7f0a8",
+      "fullHitGraphCount": 55,
+      "returnedGraphCount": 1,
+      "work": 57697051
+    },
+    {
+      "id": "or-four-single-early-rows",
+      "rows": 200,
+      "digest": "7b4f86c9c71a64e4e67b6f2cb7610e992eed21c5489e5f994886cb2d31d43a88",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 1159025
+    },
+    {
+      "id": "or-four-single-early-distinct",
+      "rows": 200,
+      "digest": "88695151ea0fdeaedf78856def6fea45b5f897a124c9a9ee708e5172583e0f5c",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57731891
+    },
+    {
+      "id": "or-four-single-middle-rows",
+      "rows": 200,
+      "digest": "3bd01b10601e5249ab5e18c5975374ab3fde6cd988b191d86d575e51316074ab",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 31119327
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "rows": 200,
+      "digest": "3bd01b10601e5249ab5e18c5975374ab3fde6cd988b191d86d575e51316074ab",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57710259
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "rows": 200,
+      "digest": "7f82eb1a1222553adb0b862251630a1c90478c54f43ea46eafbad88ed3c6b2d9",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57698955
+    },
+    {
+      "id": "or-four-single-late-distinct",
+      "rows": 200,
+      "digest": "a52fc2ca9463baa6910a43e59a96450a95b40e4490f103cac306a711d1e3039d",
+      "fullHitGraphCount": 1,
+      "returnedGraphCount": 1,
+      "work": 57703697
+    },
+    {
+      "id": "or-four-few-early-late-rows",
+      "rows": 200,
+      "digest": "98ab8b3888fbfe23d1757ed2348194c5701c18d371cedd4beb75f665eee5aa5c",
+      "fullHitGraphCount": 2,
+      "returnedGraphCount": 1,
+      "work": 1158850
+    },
+    {
+      "id": "or-four-few-early-late-distinct",
+      "rows": 200,
+      "digest": "6c8cc0b81657ec613fc85c0c26ccdf2d39cb9674f617ad0d44318771ad6ee3b9",
+      "fullHitGraphCount": 2,
+      "returnedGraphCount": 1,
+      "work": 57729887
+    },
+    {
+      "id": "or-four-all-rows",
+      "rows": 200,
+      "digest": "85c6640dc2a6e1c81063855f903a520a90676b0adfb19b54416b1951c698e5f6",
+      "fullHitGraphCount": 64,
+      "returnedGraphCount": 1,
+      "work": 1123138
+    },
+    {
+      "id": "or-four-all-distinct",
+      "rows": 200,
+      "digest": "ce74ec59e326b25f31322ea05e9d1ac4fbaf71559a32c117411bef66d0a13df4",
+      "fullHitGraphCount": 64,
+      "returnedGraphCount": 2,
+      "work": 58084676
+    }
+  ],
+  "inputsVerifiedNow": {
+    "trustedJar": {
+      "path": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+      "sha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+    },
+    "runtimeJar": {
+      "path": "/private/tmp/graphite-attempt141.sb7dlq4r/candidate-jmh.jar",
+      "sha256": "11b8e055adf26bf5f7d18c0d2015f8b938d0ed0b48b96eb7899715f4b70e2af0"
+    },
+    "manifest": {
+      "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+      "sha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b"
+    },
+    "catalog": {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    "workloads": {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    "adapterSource": {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/MultiKeywordProfileRunner.java",
+      "sha256": "05bf55718595c9327609705dc35dc23fb9baa42168b02b081f93d2e010936c6c"
+    },
+    "runnerSource": {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/run.py",
+      "sha256": "cbe0ab440c1151948b0798fe00dafe87a4d06bfa3f7cce64e5f991a7f7dd6542"
+    },
+    "verifierSource": {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/verify_run.py",
+      "sha256": "e4f644b5bda6b3f3227cc3d5f2c53b71411534c43de4863c12bdf1ef8a545533"
+    }
+  },
+  "graphReceiptsEqual": true,
+  "graphFileRecords": 1088,
+  "graphContentReceiptSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+  "hashes": {
+    "run.json": "7de19dc2bdf55b77f4d168d6086759cda93fff7b979990cfc68eb30160771b9e",
+    "catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "fork-001.tsv": "7e7b55c0a97f5220283a680398071f535abd497b21b61eedc03d3029d94a4e30",
+    "fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+    "fork-001-command.json": "5dff72d9251deb41a3696dc100d8da24fb3fe7cdc75b1b33b31ea308ca34c53b",
+    "fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+    "graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+  },
+  "scriptSha256": "6e672e63b1a6b6bfac8500d411f84817dada18a2b41bb0568e36af3d2a9ace7a",
+  "limitations": [
+    "One correctness control is not a performance acceptance result or per-query P95.",
+    "Graph before/after file hashes were independently compared as recorded receipts; live graph content was not reread during the parent timed run.",
+    "Catalog rows were treated as the hash-pinned independently derived oracle; this audit did not repeat graph export or oracle derivation."
+  ]
+}

@@ -1,0 +1,366 @@
+{
+  "passed": true,
+  "scope": "Final bounded read-only comparison of README/analysis against original JFR JSON markers, native events and XML; Python only, no Java/build/measurement.",
+  "reviewedREADMEsha256": "5d837d251c7952078b0ddd71a3c517e1418e512333e14d65fd5052860100af0d",
+  "reviewedAnalysisSha256": "b4e160567fad837e8d743f254b74e5b3d7c4d84485c704cdd247fd0f4eb4ab6c",
+  "runs": [
+    {
+      "name": "profile-1",
+      "all34SampleCountersMatch": true,
+      "sampleCounters": {
+        "global-wide-wrapped-case-insensitive-distinct-targeted": {
+          "allJavaSnapshots": 31,
+          "applicationJavaSnapshots": 31,
+          "rawStackSnapshots": 31,
+          "nodeCallbackSnapshots": 29,
+          "nodeCallbackLeafSnapshots": 25,
+          "nodeFrameTypes": {
+            "Interpreted": 24,
+            "JIT compiled": 5
+          }
+        },
+        "global-wide-wrapped-case-insensitive-distinct-dense": {
+          "allJavaSnapshots": 33,
+          "applicationJavaSnapshots": 29,
+          "rawStackSnapshots": 12,
+          "nodeCallbackSnapshots": 12,
+          "nodeCallbackLeafSnapshots": 4,
+          "nodeFrameTypes": {
+            "Interpreted": 4,
+            "JIT compiled": 8
+          }
+        }
+      },
+      "rootDeoptsMatch": [
+        {
+          "eventIndex": 5538,
+          "compileId": "4215",
+          "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "bci": 58,
+          "nanosIntoQuery": 27612791,
+          "nanosUntilQueryEnd": 23991792
+        },
+        {
+          "eventIndex": 5539,
+          "compileId": "4215",
+          "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "bci": 58,
+          "nanosIntoQuery": 27614125,
+          "nanosUntilQueryEnd": 23990458
+        },
+        {
+          "eventIndex": 5540,
+          "compileId": "4215",
+          "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "bci": 58,
+          "nanosIntoQuery": 27641875,
+          "nanosUntilQueryEnd": 23962708
+        }
+      ],
+      "firstIndependentCallbackC2": {
+        "eventIndex": 5491,
+        "compileId": "4215",
+        "compiler": "c2",
+        "durationNanos": 12439209,
+        "startEpochNanos": 1788649330525099125,
+        "endEpochNanos": 1788649330537538334,
+        "startQuery": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "endQuery": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "queryOverlaps": [
+          {
+            "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+            "overlapNanos": 2921084
+          },
+          {
+            "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+            "overlapNanos": 7771250
+          }
+        ],
+        "endOffsetInQueryNanos": 7771250
+      },
+      "allCallbackCompilationIntervalsMatch": true,
+      "recordedGcPauseQueryOverlapsMatch": true,
+      "distinctTargetedDenseGcPauseOverlapCount": 0,
+      "otherQueryGcPauseOverlapEvents": [
+        {
+          "eventIndex": 4585,
+          "startEpochNanos": 1788649330206581000,
+          "endEpochNanos": 1788649330207408167,
+          "durationNanos": 827167,
+          "queryOverlaps": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "overlapNanos": 827167
+            }
+          ]
+        },
+        {
+          "eventIndex": 4594,
+          "startEpochNanos": 1788649330211781417,
+          "endEpochNanos": 1788649330212631292,
+          "durationNanos": 849875,
+          "queryOverlaps": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "overlapNanos": 849875
+            }
+          ]
+        },
+        {
+          "eventIndex": 4598,
+          "startEpochNanos": 1788649330215625417,
+          "endEpochNanos": 1788649330215685834,
+          "durationNanos": 60417,
+          "queryOverlaps": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "overlapNanos": 60417
+            }
+          ]
+        }
+      ],
+      "compilationFailuresAllBeforeFirstQuery": [
+        {
+          "eventIndex": 14,
+          "compileId": 1166,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7332870000
+        },
+        {
+          "eventIndex": 132,
+          "compileId": 1049,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7332042125
+        },
+        {
+          "eventIndex": 458,
+          "compileId": 761,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7318954167
+        }
+      ],
+      "eventsSha256": "4b2751576ba6a2fd5755dcd9d65e09f186e300ec36615cfc866bdd320399aef5"
+    },
+    {
+      "name": "profile-2",
+      "all34SampleCountersMatch": true,
+      "sampleCounters": {
+        "global-wide-wrapped-case-insensitive-distinct-targeted": {
+          "allJavaSnapshots": 34,
+          "applicationJavaSnapshots": 31,
+          "rawStackSnapshots": 31,
+          "nodeCallbackSnapshots": 27,
+          "nodeCallbackLeafSnapshots": 10,
+          "nodeFrameTypes": {
+            "Interpreted": 5,
+            "JIT compiled": 22
+          }
+        },
+        "global-wide-wrapped-case-insensitive-distinct-dense": {
+          "allJavaSnapshots": 29,
+          "applicationJavaSnapshots": 29,
+          "rawStackSnapshots": 11,
+          "nodeCallbackSnapshots": 10,
+          "nodeCallbackLeafSnapshots": 6,
+          "nodeFrameTypes": {
+            "Interpreted": 1,
+            "JIT compiled": 9
+          }
+        }
+      },
+      "rootDeoptsMatch": [
+        {
+          "eventIndex": 5439,
+          "compileId": "4218",
+          "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "bci": 37,
+          "nanosIntoQuery": 37151125,
+          "nanosUntilQueryEnd": 597584
+        }
+      ],
+      "firstIndependentCallbackC2": {
+        "eventIndex": 5427,
+        "compileId": "4218",
+        "compiler": "c2",
+        "durationNanos": 14256291,
+        "startEpochNanos": 1788649338991060584,
+        "endEpochNanos": 1788649339005316875,
+        "startQuery": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "endQuery": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "queryOverlaps": [
+          {
+            "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+            "overlapNanos": 14256291
+          }
+        ],
+        "endOffsetInQueryNanos": 32672000
+      },
+      "allCallbackCompilationIntervalsMatch": true,
+      "recordedGcPauseQueryOverlapsMatch": true,
+      "distinctTargetedDenseGcPauseOverlapCount": 0,
+      "otherQueryGcPauseOverlapEvents": [
+        {
+          "eventIndex": 4577,
+          "startEpochNanos": 1788649338691441625,
+          "endEpochNanos": 1788649338692268542,
+          "durationNanos": 826917,
+          "queryOverlaps": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "overlapNanos": 826917
+            }
+          ]
+        },
+        {
+          "eventIndex": 4583,
+          "startEpochNanos": 1788649338696636000,
+          "endEpochNanos": 1788649338697550459,
+          "durationNanos": 914459,
+          "queryOverlaps": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "overlapNanos": 914459
+            }
+          ]
+        },
+        {
+          "eventIndex": 4587,
+          "startEpochNanos": 1788649338700487459,
+          "endEpochNanos": 1788649338700555750,
+          "durationNanos": 68291,
+          "queryOverlaps": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "overlapNanos": 68291
+            }
+          ]
+        }
+      ],
+      "compilationFailuresAllBeforeFirstQuery": [
+        {
+          "eventIndex": 19,
+          "compileId": 1171,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7409636375
+        },
+        {
+          "eventIndex": 381,
+          "compileId": 1069,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7406410500
+        },
+        {
+          "eventIndex": 447,
+          "compileId": 771,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7398620083
+        }
+      ],
+      "eventsSha256": "162975e9857ba8962f70254d8a57c81ff9b35c043224cdfc49f7fbbe58bb7b02"
+    },
+    {
+      "name": "profile-3",
+      "all34SampleCountersMatch": true,
+      "sampleCounters": {
+        "global-wide-wrapped-case-insensitive-distinct-targeted": {
+          "allJavaSnapshots": 25,
+          "applicationJavaSnapshots": 25,
+          "rawStackSnapshots": 25,
+          "nodeCallbackSnapshots": 22,
+          "nodeCallbackLeafSnapshots": 18,
+          "nodeFrameTypes": {
+            "Interpreted": 16,
+            "JIT compiled": 6
+          }
+        },
+        "global-wide-wrapped-case-insensitive-distinct-dense": {
+          "allJavaSnapshots": 22,
+          "applicationJavaSnapshots": 22,
+          "rawStackSnapshots": 9,
+          "nodeCallbackSnapshots": 7,
+          "nodeCallbackLeafSnapshots": 3,
+          "nodeFrameTypes": {
+            "JIT compiled": 7
+          }
+        }
+      },
+      "rootDeoptsMatch": [
+        {
+          "eventIndex": 5517,
+          "compileId": "4248",
+          "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "bci": 37,
+          "nanosIntoQuery": 36789042,
+          "nanosUntilQueryEnd": 383458
+        }
+      ],
+      "firstIndependentCallbackC2": {
+        "eventIndex": 5516,
+        "compileId": "4248",
+        "compiler": "c2",
+        "durationNanos": 12177042,
+        "startEpochNanos": 1788649347380207542,
+        "endEpochNanos": 1788649347392384584,
+        "startQuery": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "endQuery": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "queryOverlaps": [
+          {
+            "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+            "overlapNanos": 12177042
+          }
+        ],
+        "endOffsetInQueryNanos": 36507542
+      },
+      "allCallbackCompilationIntervalsMatch": true,
+      "recordedGcPauseQueryOverlapsMatch": true,
+      "distinctTargetedDenseGcPauseOverlapCount": 0,
+      "otherQueryGcPauseOverlapEvents": [
+        {
+          "eventIndex": 4763,
+          "startEpochNanos": 1788649347200821750,
+          "endEpochNanos": 1788649347201786292,
+          "durationNanos": 964542,
+          "queryOverlaps": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "overlapNanos": 964542
+            }
+          ]
+        }
+      ],
+      "compilationFailuresAllBeforeFirstQuery": [
+        {
+          "eventIndex": 18,
+          "compileId": 1160,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7344852625
+        },
+        {
+          "eventIndex": 377,
+          "compileId": 1059,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7341963291
+        },
+        {
+          "eventIndex": 451,
+          "compileId": 758,
+          "failureMessage": "Jvmti state change invalidated dependencies",
+          "nanosBeforeFirstQuery": 7333449125
+        }
+      ],
+      "eventsSha256": "e3d3c8b307a18737b64e6d2fcb6ca20cbfdb5bad4a7b8a3c69964d680bd05beb"
+    }
+  ],
+  "wordingReview": {
+    "lateTrapNotExplanationOfPriorElapsedTime": true,
+    "rootNmethodDistinguishedFromTrapMethodAndRawFramePresence": true,
+    "firstIndependentC2CompletionDoesNotExcludeOtherInlining": true,
+    "jitCompiledDoesNotIdentifyC1OrC2": true,
+    "samplesNotCpuDurationOrCpuPercent": true,
+    "gcAbsenceLimitedToRecordedPauseOverlapForTwoQueries": true,
+    "compilationFailuresPreservedBeforeFirstQuery": true,
+    "xmlIdentityNotClockCalibration": true
+  },
+  "findings": [],
+  "note": "observedJfrEndMinusXmlStampNanos in main JSON is epoch JFR end minus relative XML stamp (an anchor-sized difference), not the small publication residual or a proven calibrated timestamp. Main README makes no calibrated-clock claim."
+}

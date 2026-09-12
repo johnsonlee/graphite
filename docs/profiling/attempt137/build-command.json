@@ -1,0 +1,8 @@
+[
+  "./gradlew",
+  ":webgraph:test",
+  ":webgraph:detekt",
+  ":webgraph:jmhJar",
+  ":webgraph:verifyJmhJarExcludesTests",
+  "--no-daemon"
+]

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-05T23:47:15.143Z" hostname="johnsonlee.local" time="0.167">
+  <properties/>
+  <testcase name="mismatched predicates and invalid properties decline the entire table" classname="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" time="0.12"/>
+  <testcase name="admission counts every original array even with duplicate properties and IDs" classname="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" time="0.004"/>
+  <testcase name="sparse candidates keep hash membership" classname="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" time="0.0"/>
+  <testcase name="invalid candidate IDs decline the entire table" classname="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" time="0.0"/>
+  <testcase name="property unions preserve the original OR for every node combination" classname="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" time="0.01"/>
+  <testcase name="admission includes the exact original key array payload boundary" classname="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" time="0.0"/>
+  <testcase name="preexisting caller interruption cancels construction without clearing the flag" classname="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" time="0.032"/>
+  <testcase name="empty candidate sets cannot match any field" classname="io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

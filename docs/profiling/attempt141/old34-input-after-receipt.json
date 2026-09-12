@@ -1,0 +1,7 @@
+{
+  "graphs": 64,
+  "files": 1088,
+  "sameAsControl": true,
+  "reference": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/graph-content-after.json",
+  "referenceSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+}

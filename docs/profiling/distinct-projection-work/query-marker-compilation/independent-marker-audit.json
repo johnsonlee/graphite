@@ -1,0 +1,2536 @@
+{
+  "passed": true,
+  "ranParentVerifier": false,
+  "startedJavaBuildOrRecording": false,
+  "independentMethod": "Read native jfr-print JSON, exact integer-nanosecond marker checks, original catalog and TSV/oracle comparisons; resolve actual ActiveSetting IDs through per-recording event metadata; cross-check commands/JVMInformation/profile XML PID/classpath, output and input hashes.",
+  "totalMarkers": 136,
+  "totalOracleSignatures": 136,
+  "allNonLatencyFieldsEqualPriorBase": true,
+  "baseJarCurrentSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "overlayJarCurrentSha256": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+  "overlayHandoffEvidenceHashesUnchanged": true,
+  "catalogSha256": "84606875e34be7928275e831fd26abbfd9115832952a5bca19ea6f282c8a9284",
+  "manifestSha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+  "graphs": 64,
+  "graphFiles": 1088,
+  "allFourCapturedGraphInventoriesEqual": true,
+  "independentlyRehashedLargeGraphCorpus": false,
+  "allFourProcessesExitedZeroAndSequential": true,
+  "results": [
+    {
+      "name": "control",
+      "passed": true,
+      "markerCount": 34,
+      "oracleSignatureCount": 34,
+      "nonLatencyDifferences": [],
+      "windows": [
+        {
+          "ordinal": 1,
+          "id": "global-wide-four-properties-zero",
+          "querySha256": "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+          "parametersJson": "{}",
+          "startNanos": 1788649151567123834,
+          "endNanos": 1788649151838109459,
+          "durationNanos": 270985625,
+          "tsvLatencyNanos": 281123209,
+          "untracedTsvNanos": 10137584
+        },
+        {
+          "ordinal": 2,
+          "id": "global-wide-four-properties-targeted",
+          "querySha256": "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+          "parametersJson": "{}",
+          "startNanos": 1788649151843001000,
+          "endNanos": 1788649151852276917,
+          "durationNanos": 9275917,
+          "tsvLatencyNanos": 9357917,
+          "untracedTsvNanos": 82000
+        },
+        {
+          "ordinal": 3,
+          "id": "global-wide-four-properties-dense",
+          "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+          "parametersJson": "{}",
+          "startNanos": 1788649151855300917,
+          "endNanos": 1788649151859533250,
+          "durationNanos": 4232333,
+          "tsvLatencyNanos": 4299625,
+          "untracedTsvNanos": 67292
+        },
+        {
+          "ordinal": 4,
+          "id": "global-wide-class-pair-zero",
+          "querySha256": "8ba5999f51caeb5bca311659c068cb0a1aecc136a5baae8c49138cba5a9997c1",
+          "parametersJson": "{}",
+          "startNanos": 1788649151868903209,
+          "endNanos": 1788649151870860250,
+          "durationNanos": 1957041,
+          "tsvLatencyNanos": 2026542,
+          "untracedTsvNanos": 69501
+        },
+        {
+          "ordinal": 5,
+          "id": "global-wide-class-pair-targeted",
+          "querySha256": "92766e11ab73fd76ac8d3e57534de83237f9b507895f1bffc0909f4dde9eef3b",
+          "parametersJson": "{}",
+          "startNanos": 1788649151872688167,
+          "endNanos": 1788649151876747334,
+          "durationNanos": 4059167,
+          "tsvLatencyNanos": 4171833,
+          "untracedTsvNanos": 112666
+        },
+        {
+          "ordinal": 6,
+          "id": "global-wide-class-pair-dense",
+          "querySha256": "df6505ac9046688c21d330141017178d1a6bf86671867ea2238e2a0b989570ea",
+          "parametersJson": "{}",
+          "startNanos": 1788649151879098292,
+          "endNanos": 1788649151879903375,
+          "durationNanos": 805083,
+          "tsvLatencyNanos": 868250,
+          "untracedTsvNanos": 63167
+        },
+        {
+          "ordinal": 7,
+          "id": "global-wide-name-pair-zero",
+          "querySha256": "90c946b0f709ed5ab2f09ca4ce8a29be725a8752f15739a34e76ab7483a19634",
+          "parametersJson": "{}",
+          "startNanos": 1788649151883658750,
+          "endNanos": 1788649151885374084,
+          "durationNanos": 1715334,
+          "tsvLatencyNanos": 1776542,
+          "untracedTsvNanos": 61208
+        },
+        {
+          "ordinal": 8,
+          "id": "global-wide-name-pair-targeted",
+          "querySha256": "46d56e276bfa2a2a7a2a23265f5ed204034402447061f3d77da3de7e883ca7a5",
+          "parametersJson": "{}",
+          "startNanos": 1788649151887003000,
+          "endNanos": 1788649151891256000,
+          "durationNanos": 4253000,
+          "tsvLatencyNanos": 4311334,
+          "untracedTsvNanos": 58334
+        },
+        {
+          "ordinal": 9,
+          "id": "global-wide-name-pair-dense",
+          "querySha256": "9bee68d1375446a2a3a49ea8ce5cb524602c143950717720b13c8ed711818c8d",
+          "parametersJson": "{}",
+          "startNanos": 1788649151892949500,
+          "endNanos": 1788649151893648917,
+          "durationNanos": 699417,
+          "tsvLatencyNanos": 751500,
+          "untracedTsvNanos": 52083
+        },
+        {
+          "ordinal": 10,
+          "id": "global-wide-caller-class-zero",
+          "querySha256": "49c6954a3a42a2830e085a935dd4b177627d1b52f6624a862363f44e8652b4d6",
+          "parametersJson": "{}",
+          "startNanos": 1788649151896740625,
+          "endNanos": 1788649151898132417,
+          "durationNanos": 1391792,
+          "tsvLatencyNanos": 1448500,
+          "untracedTsvNanos": 56708
+        },
+        {
+          "ordinal": 11,
+          "id": "global-wide-caller-class-targeted",
+          "querySha256": "757d12af19637fe3a02b1d2bac858b1bbb526db717e84ed563e7c79df9986371",
+          "parametersJson": "{}",
+          "startNanos": 1788649151899866250,
+          "endNanos": 1788649151902732125,
+          "durationNanos": 2865875,
+          "tsvLatencyNanos": 2971375,
+          "untracedTsvNanos": 105500
+        },
+        {
+          "ordinal": 12,
+          "id": "global-wide-caller-class-dense",
+          "querySha256": "7c55514c67383c0e4170b6961553036bc893f2ba150a6fad504c6e6cea8c8234",
+          "parametersJson": "{}",
+          "startNanos": 1788649151904464625,
+          "endNanos": 1788649151904908834,
+          "durationNanos": 444209,
+          "tsvLatencyNanos": 495750,
+          "untracedTsvNanos": 51541
+        },
+        {
+          "ordinal": 13,
+          "id": "global-wide-callee-class-zero",
+          "querySha256": "91887845c129e40f3e005d6d5a3cefefeebb4b4e413687523f091cd78174acde",
+          "parametersJson": "{}",
+          "startNanos": 1788649151907690459,
+          "endNanos": 1788649151908954750,
+          "durationNanos": 1264291,
+          "tsvLatencyNanos": 1316875,
+          "untracedTsvNanos": 52584
+        },
+        {
+          "ordinal": 14,
+          "id": "global-wide-callee-class-targeted",
+          "querySha256": "b3a255e68b5597112a7c2658d848b7c32daca01e0ab7a722e6fd41b43833fb6b",
+          "parametersJson": "{}",
+          "startNanos": 1788649151910465375,
+          "endNanos": 1788649151912683042,
+          "durationNanos": 2217667,
+          "tsvLatencyNanos": 2272709,
+          "untracedTsvNanos": 55042
+        },
+        {
+          "ordinal": 15,
+          "id": "global-wide-callee-class-dense",
+          "querySha256": "a90ae1b807d6addb89e11ec96205e07ae4a9f910673a6daf7059c1b533cd043e",
+          "parametersJson": "{}",
+          "startNanos": 1788649151914351834,
+          "endNanos": 1788649151914745292,
+          "durationNanos": 393458,
+          "tsvLatencyNanos": 452542,
+          "untracedTsvNanos": 59084
+        },
+        {
+          "ordinal": 16,
+          "id": "global-wide-provenance-zero",
+          "querySha256": "e351961762ddd161ab9dab4a11580f5077a62c6265edbd4660ef54af7445d602",
+          "parametersJson": "{}",
+          "startNanos": 1788649151917247959,
+          "endNanos": 1788649151918309000,
+          "durationNanos": 1061041,
+          "tsvLatencyNanos": 1114041,
+          "untracedTsvNanos": 53000
+        },
+        {
+          "ordinal": 17,
+          "id": "global-wide-provenance-targeted",
+          "querySha256": "c4f26a2b165a6b8ddd2f6fbafa2fc8a260a6b36154287a61b336e6f613eb57af",
+          "parametersJson": "{}",
+          "startNanos": 1788649151920292292,
+          "endNanos": 1788649151923224792,
+          "durationNanos": 2932500,
+          "tsvLatencyNanos": 2997834,
+          "untracedTsvNanos": 65334
+        },
+        {
+          "ordinal": 18,
+          "id": "global-wide-provenance-dense",
+          "querySha256": "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+          "parametersJson": "{}",
+          "startNanos": 1788649151924855959,
+          "endNanos": 1788649151925612334,
+          "durationNanos": 756375,
+          "tsvLatencyNanos": 819500,
+          "untracedTsvNanos": 63125
+        },
+        {
+          "ordinal": 19,
+          "id": "global-wide-aliased-zero",
+          "querySha256": "c1b8def9a031551c7297f20ba52bb9cc4e4a2a45f9404a0818ec6457d532efb2",
+          "parametersJson": "{}",
+          "startNanos": 1788649151928791667,
+          "endNanos": 1788649151929719167,
+          "durationNanos": 927500,
+          "tsvLatencyNanos": 981333,
+          "untracedTsvNanos": 53833
+        },
+        {
+          "ordinal": 20,
+          "id": "global-wide-aliased-targeted",
+          "querySha256": "142eb7b5a9f9e227bbccf212372f4f66fab94702202c99040aedc82bdb611931",
+          "parametersJson": "{}",
+          "startNanos": 1788649151931270250,
+          "endNanos": 1788649151934556042,
+          "durationNanos": 3285792,
+          "tsvLatencyNanos": 3333750,
+          "untracedTsvNanos": 47958
+        },
+        {
+          "ordinal": 21,
+          "id": "global-wide-aliased-dense",
+          "querySha256": "9ff0b9a62177ec4599cbfae0b60af87ffe23b5a894ad37a46bfa5328f86a69d4",
+          "parametersJson": "{}",
+          "startNanos": 1788649151936730750,
+          "endNanos": 1788649151937449500,
+          "durationNanos": 718750,
+          "tsvLatencyNanos": 781625,
+          "untracedTsvNanos": 62875
+        },
+        {
+          "ordinal": 22,
+          "id": "global-wide-parameterized-zero",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"__graphite_fixture64_absent_fixture-kotlin-compiler-01__\"}",
+          "startNanos": 1788649151940738292,
+          "endNanos": 1788649151941778750,
+          "durationNanos": 1040458,
+          "tsvLatencyNanos": 1148916,
+          "untracedTsvNanos": 108458
+        },
+        {
+          "ordinal": 23,
+          "id": "global-wide-parameterized-targeted",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1\"}",
+          "startNanos": 1788649151943385750,
+          "endNanos": 1788649151945562834,
+          "durationNanos": 2177084,
+          "tsvLatencyNanos": 2237666,
+          "untracedTsvNanos": 60582
+        },
+        {
+          "ordinal": 24,
+          "id": "global-wide-parameterized-dense",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"get\"}",
+          "startNanos": 1788649151947174917,
+          "endNanos": 1788649151947889125,
+          "durationNanos": 714208,
+          "tsvLatencyNanos": 776708,
+          "untracedTsvNanos": 62500
+        },
+        {
+          "ordinal": 25,
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "querySha256": "f77a86ad220e46758abff4ae3e80ea7b338f2321a575b40202c0be145e24cae0",
+          "parametersJson": "{}",
+          "startNanos": 1788649151950818750,
+          "endNanos": 1788649151951867834,
+          "durationNanos": 1049084,
+          "tsvLatencyNanos": 1103417,
+          "untracedTsvNanos": 54333
+        },
+        {
+          "ordinal": 26,
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "querySha256": "abd8a20ed062ec299a16a3fcf3f63bfde5ff19ce32d4401b8ded0ca3cb363d79",
+          "parametersJson": "{}",
+          "startNanos": 1788649151953336334,
+          "endNanos": 1788649151955567875,
+          "durationNanos": 2231541,
+          "tsvLatencyNanos": 2291416,
+          "untracedTsvNanos": 59875
+        },
+        {
+          "ordinal": 27,
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+          "parametersJson": "{}",
+          "startNanos": 1788649151957162209,
+          "endNanos": 1788649151958493167,
+          "durationNanos": 1330958,
+          "tsvLatencyNanos": 1375791,
+          "untracedTsvNanos": 44833
+        },
+        {
+          "ordinal": 28,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "querySha256": "0efeb86c9616508a5015bbbe1da0cc614b95a7af764ded9330a3eaf6caf8b0a8",
+          "parametersJson": "{}",
+          "startNanos": 1788649151961423875,
+          "endNanos": 1788649151964445667,
+          "durationNanos": 3021792,
+          "tsvLatencyNanos": 3078625,
+          "untracedTsvNanos": 56833
+        },
+        {
+          "ordinal": 29,
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "querySha256": "c571ed79b35fe4dba10956fb08c7fa73ea9ca10b69c85fdd42c99822d8aca0f1",
+          "parametersJson": "{}",
+          "startNanos": 1788649151966173625,
+          "endNanos": 1788649151988857709,
+          "durationNanos": 22684084,
+          "tsvLatencyNanos": 22780375,
+          "untracedTsvNanos": 96291
+        },
+        {
+          "ordinal": 30,
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "querySha256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+          "parametersJson": "{}",
+          "startNanos": 1788649151990663167,
+          "endNanos": 1788649152039010917,
+          "durationNanos": 48347750,
+          "tsvLatencyNanos": 48424000,
+          "untracedTsvNanos": 76250
+        },
+        {
+          "ordinal": 31,
+          "id": "global-wide-distribution-broad-all-64",
+          "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+          "parametersJson": "{}",
+          "startNanos": 1788649152042318500,
+          "endNanos": 1788649152043034959,
+          "durationNanos": 716459,
+          "tsvLatencyNanos": 775459,
+          "untracedTsvNanos": 59000
+        },
+        {
+          "ordinal": 32,
+          "id": "global-wide-distribution-localized-early",
+          "querySha256": "f49966801eba26ab2c8d62bfa867da3da0126876f4bf1b5a9c09737ea44510c2",
+          "parametersJson": "{}",
+          "startNanos": 1788649152046090500,
+          "endNanos": 1788649152047250084,
+          "durationNanos": 1159584,
+          "tsvLatencyNanos": 1217417,
+          "untracedTsvNanos": 57833
+        },
+        {
+          "ordinal": 33,
+          "id": "global-wide-distribution-localized-late",
+          "querySha256": "5aced7e9dba4d43bb5110d0a024b03c5dc50bab7dbb8a1287a53a62635c63012",
+          "parametersJson": "{}",
+          "startNanos": 1788649152050209250,
+          "endNanos": 1788649152054105834,
+          "durationNanos": 3896584,
+          "tsvLatencyNanos": 3946958,
+          "untracedTsvNanos": 50374
+        },
+        {
+          "ordinal": 34,
+          "id": "global-wide-distribution-localized-middle",
+          "querySha256": "43688b9aa82ab933c9e9554ada13917a0adaeb93303063b512c5692db9f3685f",
+          "parametersJson": "{}",
+          "startNanos": 1788649152057330125,
+          "endNanos": 1788649152059993417,
+          "durationNanos": 2663292,
+          "tsvLatencyNanos": 2724000,
+          "untracedTsvNanos": 60708
+        }
+      ],
+      "workerThreadIdentities": [
+        [
+          28,
+          36355,
+          "broad-query-pressure-worker"
+        ]
+      ],
+      "eventCounts": {
+        "jdk.ActiveRecording": 1,
+        "jdk.ActiveSetting": 340,
+        "jdk.JVMInformation": 1,
+        "graphite.diagnostic.QueryExecution": 34
+      },
+      "recordedDataLoss": 0,
+      "activeSettingsResolvedByEventTypeId": {
+        "jdk.GarbageCollection": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649144425031125
+            }
+          ],
+          "enabled": [
+            {
+              "value": "false",
+              "startNanos": 1788649144425036250
+            }
+          ]
+        },
+        "jdk.GCPhasePause": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649144425183292
+            }
+          ],
+          "enabled": [
+            {
+              "value": "false",
+              "startNanos": 1788649144425188875
+            }
+          ]
+        },
+        "jdk.Compilation": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649144425309959
+            }
+          ],
+          "enabled": [
+            {
+              "value": "false",
+              "startNanos": 1788649144425315417
+            }
+          ]
+        },
+        "jdk.CompilationFailure": {
+          "enabled": [
+            {
+              "value": "false",
+              "startNanos": 1788649144425332000
+            }
+          ]
+        },
+        "jdk.Deoptimization": {
+          "stackTrace": [
+            {
+              "value": "true",
+              "startNanos": 1788649144425359459
+            }
+          ],
+          "enabled": [
+            {
+              "value": "false",
+              "startNanos": 1788649144425364917
+            }
+          ]
+        },
+        "jdk.DataLoss": {
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649144425547875
+            }
+          ]
+        },
+        "jdk.JVMInformation": {
+          "period": [
+            {
+              "value": "beginChunk",
+              "startNanos": 1788649144425553375
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649144425559167
+            }
+          ]
+        },
+        "jdk.ExecutionSample": {
+          "period": [
+            {
+              "value": "everyChunk",
+              "startNanos": 1788649144425801125
+            }
+          ],
+          "enabled": [
+            {
+              "value": "false",
+              "startNanos": 1788649144425807584
+            }
+          ]
+        },
+        "jdk.ActiveRecording": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649144426501459
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649144426507084
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649144426513125
+            }
+          ]
+        },
+        "jdk.ActiveSetting": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649144426518917
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649144426524584
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649144426530834
+            }
+          ]
+        },
+        "graphite.diagnostic.QueryExecution": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649151567042667
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649151567081125
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649151567085709
+            }
+          ]
+        }
+      },
+      "jvmInformation": {
+        "startTime": "2026-09-06T07:59:04.426854542+09:00",
+        "jvmName": "OpenJDK 64-Bit Server VM",
+        "jvmVersion": "OpenJDK 64-Bit Server VM (17.0.18+0) for bsd-aarch64 JRE (17.0.18+0), built on Feb 18 2026 23:52:33 by \"brew\" with clang Apple LLVM 16.0.0 (clang-1600.0.26.6)",
+        "jvmArguments": "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv -Dgraphite.broad.pressure.correctness.mode=verify -Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness -Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-query-marker-capture/control.tsv -XX:StartFlightRecording=settings=/private/tmp/graphite-query-marker-capture/control.jfc,filename=/private/tmp/graphite-query-marker-capture/control.jfr,dumponexit=true -XX:FlightRecorderOptions=stackdepth=256 -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -DcompilerBlackholesEnabled=true -XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh15340162000629870096compilecommand",
+        "jvmFlags": null,
+        "javaArguments": "org.openjdk.jmh.runner.ForkedMain 127.0.0.1 57733",
+        "jvmStartTime": "2026-09-06T07:59:04.296+09:00",
+        "pid": 58674
+      },
+      "activeRecording": {
+        "startTime": "2026-09-06T07:59:04.424522459+09:00",
+        "duration": "PT0S",
+        "eventThread": {
+          "osName": "main",
+          "osThreadId": 8707,
+          "javaName": "main",
+          "javaThreadId": 1,
+          "group": {
+            "parent": {
+              "parent": null,
+              "name": "system"
+            },
+            "name": "main"
+          }
+        },
+        "stackTrace": null,
+        "id": 1,
+        "name": "1",
+        "destination": "/private/tmp/graphite-query-marker-capture/control.jfr",
+        "maxAge": "PT2562047788015H12M55.807S",
+        "flushInterval": "PT1S",
+        "maxSize": 0,
+        "recordingStart": "2026-09-06T07:59:04.420+09:00",
+        "recordingDuration": "PT2562047788015H12M55.807S"
+      },
+      "automaticJmhOptions": [
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh15340162000629870096compilecommand"
+      ],
+      "profileXmlSameProcessIdentity": null,
+      "hostIdentityLimits": "JVM version/platform and native/Java thread/process identities present; OSInformation/CPUInformation/hostname not exported. No independent physical-host identity claim.",
+      "eventExportSha256": "340afc420c55fcbf7f43db3203e1039290890ce38600e64a7553b30a5833650e",
+      "jfrSha256": "7f04b6b41e92187ac0f03e265208210ebe946f3cdcaa9c6c6f4352c6c51f2501",
+      "eventTypesSha256": "9e5a32b7d5ffc041d3458f0b7023daceecb69c0b58f45b4e0490c852c7cb53a5",
+      "parentVerifierSummaryMatches": true
+    },
+    {
+      "name": "profile-1",
+      "passed": true,
+      "markerCount": 34,
+      "oracleSignatureCount": 34,
+      "nonLatencyDifferences": [],
+      "windows": [
+        {
+          "ordinal": 1,
+          "id": "global-wide-four-properties-zero",
+          "querySha256": "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+          "parametersJson": "{}",
+          "startNanos": 1788649330078910042,
+          "endNanos": 1788649330343313792,
+          "durationNanos": 264403750,
+          "tsvLatencyNanos": 274606583,
+          "untracedTsvNanos": 10202833
+        },
+        {
+          "ordinal": 2,
+          "id": "global-wide-four-properties-targeted",
+          "querySha256": "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+          "parametersJson": "{}",
+          "startNanos": 1788649330348863625,
+          "endNanos": 1788649330359294167,
+          "durationNanos": 10430542,
+          "tsvLatencyNanos": 10546292,
+          "untracedTsvNanos": 115750
+        },
+        {
+          "ordinal": 3,
+          "id": "global-wide-four-properties-dense",
+          "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+          "parametersJson": "{}",
+          "startNanos": 1788649330362891125,
+          "endNanos": 1788649330367175500,
+          "durationNanos": 4284375,
+          "tsvLatencyNanos": 4364667,
+          "untracedTsvNanos": 80292
+        },
+        {
+          "ordinal": 4,
+          "id": "global-wide-class-pair-zero",
+          "querySha256": "8ba5999f51caeb5bca311659c068cb0a1aecc136a5baae8c49138cba5a9997c1",
+          "parametersJson": "{}",
+          "startNanos": 1788649330376830500,
+          "endNanos": 1788649330378733500,
+          "durationNanos": 1903000,
+          "tsvLatencyNanos": 1985084,
+          "untracedTsvNanos": 82084
+        },
+        {
+          "ordinal": 5,
+          "id": "global-wide-class-pair-targeted",
+          "querySha256": "92766e11ab73fd76ac8d3e57534de83237f9b507895f1bffc0909f4dde9eef3b",
+          "parametersJson": "{}",
+          "startNanos": 1788649330380872209,
+          "endNanos": 1788649330385233292,
+          "durationNanos": 4361083,
+          "tsvLatencyNanos": 4426542,
+          "untracedTsvNanos": 65459
+        },
+        {
+          "ordinal": 6,
+          "id": "global-wide-class-pair-dense",
+          "querySha256": "df6505ac9046688c21d330141017178d1a6bf86671867ea2238e2a0b989570ea",
+          "parametersJson": "{}",
+          "startNanos": 1788649330387890792,
+          "endNanos": 1788649330388773084,
+          "durationNanos": 882292,
+          "tsvLatencyNanos": 941583,
+          "untracedTsvNanos": 59291
+        },
+        {
+          "ordinal": 7,
+          "id": "global-wide-name-pair-zero",
+          "querySha256": "90c946b0f709ed5ab2f09ca4ce8a29be725a8752f15739a34e76ab7483a19634",
+          "parametersJson": "{}",
+          "startNanos": 1788649330392641917,
+          "endNanos": 1788649330394291917,
+          "durationNanos": 1650000,
+          "tsvLatencyNanos": 1713958,
+          "untracedTsvNanos": 63958
+        },
+        {
+          "ordinal": 8,
+          "id": "global-wide-name-pair-targeted",
+          "querySha256": "46d56e276bfa2a2a7a2a23265f5ed204034402447061f3d77da3de7e883ca7a5",
+          "parametersJson": "{}",
+          "startNanos": 1788649330396008500,
+          "endNanos": 1788649330400904709,
+          "durationNanos": 4896209,
+          "tsvLatencyNanos": 4959458,
+          "untracedTsvNanos": 63249
+        },
+        {
+          "ordinal": 9,
+          "id": "global-wide-name-pair-dense",
+          "querySha256": "9bee68d1375446a2a3a49ea8ce5cb524602c143950717720b13c8ed711818c8d",
+          "parametersJson": "{}",
+          "startNanos": 1788649330402748542,
+          "endNanos": 1788649330403512459,
+          "durationNanos": 763917,
+          "tsvLatencyNanos": 834292,
+          "untracedTsvNanos": 70375
+        },
+        {
+          "ordinal": 10,
+          "id": "global-wide-caller-class-zero",
+          "querySha256": "49c6954a3a42a2830e085a935dd4b177627d1b52f6624a862363f44e8652b4d6",
+          "parametersJson": "{}",
+          "startNanos": 1788649330407262542,
+          "endNanos": 1788649330408815875,
+          "durationNanos": 1553333,
+          "tsvLatencyNanos": 1641583,
+          "untracedTsvNanos": 88250
+        },
+        {
+          "ordinal": 11,
+          "id": "global-wide-caller-class-targeted",
+          "querySha256": "757d12af19637fe3a02b1d2bac858b1bbb526db717e84ed563e7c79df9986371",
+          "parametersJson": "{}",
+          "startNanos": 1788649330410395417,
+          "endNanos": 1788649330413217542,
+          "durationNanos": 2822125,
+          "tsvLatencyNanos": 2884083,
+          "untracedTsvNanos": 61958
+        },
+        {
+          "ordinal": 12,
+          "id": "global-wide-caller-class-dense",
+          "querySha256": "7c55514c67383c0e4170b6961553036bc893f2ba150a6fad504c6e6cea8c8234",
+          "parametersJson": "{}",
+          "startNanos": 1788649330415060667,
+          "endNanos": 1788649330415643042,
+          "durationNanos": 582375,
+          "tsvLatencyNanos": 660125,
+          "untracedTsvNanos": 77750
+        },
+        {
+          "ordinal": 13,
+          "id": "global-wide-callee-class-zero",
+          "querySha256": "91887845c129e40f3e005d6d5a3cefefeebb4b4e413687523f091cd78174acde",
+          "parametersJson": "{}",
+          "startNanos": 1788649330418616375,
+          "endNanos": 1788649330420528042,
+          "durationNanos": 1911667,
+          "tsvLatencyNanos": 1991917,
+          "untracedTsvNanos": 80250
+        },
+        {
+          "ordinal": 14,
+          "id": "global-wide-callee-class-targeted",
+          "querySha256": "b3a255e68b5597112a7c2658d848b7c32daca01e0ab7a722e6fd41b43833fb6b",
+          "parametersJson": "{}",
+          "startNanos": 1788649330422202042,
+          "endNanos": 1788649330424663375,
+          "durationNanos": 2461333,
+          "tsvLatencyNanos": 2546125,
+          "untracedTsvNanos": 84792
+        },
+        {
+          "ordinal": 15,
+          "id": "global-wide-callee-class-dense",
+          "querySha256": "a90ae1b807d6addb89e11ec96205e07ae4a9f910673a6daf7059c1b533cd043e",
+          "parametersJson": "{}",
+          "startNanos": 1788649330426422250,
+          "endNanos": 1788649330427020459,
+          "durationNanos": 598209,
+          "tsvLatencyNanos": 654458,
+          "untracedTsvNanos": 56249
+        },
+        {
+          "ordinal": 16,
+          "id": "global-wide-provenance-zero",
+          "querySha256": "e351961762ddd161ab9dab4a11580f5077a62c6265edbd4660ef54af7445d602",
+          "parametersJson": "{}",
+          "startNanos": 1788649330430036500,
+          "endNanos": 1788649330431329292,
+          "durationNanos": 1292792,
+          "tsvLatencyNanos": 1415667,
+          "untracedTsvNanos": 122875
+        },
+        {
+          "ordinal": 17,
+          "id": "global-wide-provenance-targeted",
+          "querySha256": "c4f26a2b165a6b8ddd2f6fbafa2fc8a260a6b36154287a61b336e6f613eb57af",
+          "parametersJson": "{}",
+          "startNanos": 1788649330433371667,
+          "endNanos": 1788649330436813542,
+          "durationNanos": 3441875,
+          "tsvLatencyNanos": 3518709,
+          "untracedTsvNanos": 76834
+        },
+        {
+          "ordinal": 18,
+          "id": "global-wide-provenance-dense",
+          "querySha256": "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+          "parametersJson": "{}",
+          "startNanos": 1788649330438697125,
+          "endNanos": 1788649330439548542,
+          "durationNanos": 851417,
+          "tsvLatencyNanos": 929875,
+          "untracedTsvNanos": 78458
+        },
+        {
+          "ordinal": 19,
+          "id": "global-wide-aliased-zero",
+          "querySha256": "c1b8def9a031551c7297f20ba52bb9cc4e4a2a45f9404a0818ec6457d532efb2",
+          "parametersJson": "{}",
+          "startNanos": 1788649330443593209,
+          "endNanos": 1788649330445240167,
+          "durationNanos": 1646958,
+          "tsvLatencyNanos": 1720458,
+          "untracedTsvNanos": 73500
+        },
+        {
+          "ordinal": 20,
+          "id": "global-wide-aliased-targeted",
+          "querySha256": "142eb7b5a9f9e227bbccf212372f4f66fab94702202c99040aedc82bdb611931",
+          "parametersJson": "{}",
+          "startNanos": 1788649330447066042,
+          "endNanos": 1788649330451100625,
+          "durationNanos": 4034583,
+          "tsvLatencyNanos": 4109625,
+          "untracedTsvNanos": 75042
+        },
+        {
+          "ordinal": 21,
+          "id": "global-wide-aliased-dense",
+          "querySha256": "9ff0b9a62177ec4599cbfae0b60af87ffe23b5a894ad37a46bfa5328f86a69d4",
+          "parametersJson": "{}",
+          "startNanos": 1788649330453882542,
+          "endNanos": 1788649330454668959,
+          "durationNanos": 786417,
+          "tsvLatencyNanos": 846166,
+          "untracedTsvNanos": 59749
+        },
+        {
+          "ordinal": 22,
+          "id": "global-wide-parameterized-zero",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"__graphite_fixture64_absent_fixture-kotlin-compiler-01__\"}",
+          "startNanos": 1788649330458014875,
+          "endNanos": 1788649330459296125,
+          "durationNanos": 1281250,
+          "tsvLatencyNanos": 1371417,
+          "untracedTsvNanos": 90167
+        },
+        {
+          "ordinal": 23,
+          "id": "global-wide-parameterized-targeted",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1\"}",
+          "startNanos": 1788649330461007917,
+          "endNanos": 1788649330463378625,
+          "durationNanos": 2370708,
+          "tsvLatencyNanos": 2441167,
+          "untracedTsvNanos": 70459
+        },
+        {
+          "ordinal": 24,
+          "id": "global-wide-parameterized-dense",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"get\"}",
+          "startNanos": 1788649330465120459,
+          "endNanos": 1788649330465880125,
+          "durationNanos": 759666,
+          "tsvLatencyNanos": 821459,
+          "untracedTsvNanos": 61793
+        },
+        {
+          "ordinal": 25,
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "querySha256": "f77a86ad220e46758abff4ae3e80ea7b338f2321a575b40202c0be145e24cae0",
+          "parametersJson": "{}",
+          "startNanos": 1788649330469004875,
+          "endNanos": 1788649330470055459,
+          "durationNanos": 1050584,
+          "tsvLatencyNanos": 1099000,
+          "untracedTsvNanos": 48416
+        },
+        {
+          "ordinal": 26,
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "querySha256": "abd8a20ed062ec299a16a3fcf3f63bfde5ff19ce32d4401b8ded0ca3cb363d79",
+          "parametersJson": "{}",
+          "startNanos": 1788649330471647167,
+          "endNanos": 1788649330473872542,
+          "durationNanos": 2225375,
+          "tsvLatencyNanos": 2292209,
+          "untracedTsvNanos": 66834
+        },
+        {
+          "ordinal": 27,
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+          "parametersJson": "{}",
+          "startNanos": 1788649330475587750,
+          "endNanos": 1788649330476977917,
+          "durationNanos": 1390167,
+          "tsvLatencyNanos": 1439416,
+          "untracedTsvNanos": 49249
+        },
+        {
+          "ordinal": 28,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "querySha256": "0efeb86c9616508a5015bbbe1da0cc614b95a7af764ded9330a3eaf6caf8b0a8",
+          "parametersJson": "{}",
+          "startNanos": 1788649330480092459,
+          "endNanos": 1788649330483616834,
+          "durationNanos": 3524375,
+          "tsvLatencyNanos": 3575000,
+          "untracedTsvNanos": 50625
+        },
+        {
+          "ordinal": 29,
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "querySha256": "c571ed79b35fe4dba10956fb08c7fa73ea9ca10b69c85fdd42c99822d8aca0f1",
+          "parametersJson": "{}",
+          "startNanos": 1788649330485315834,
+          "endNanos": 1788649330528020209,
+          "durationNanos": 42704375,
+          "tsvLatencyNanos": 42794084,
+          "untracedTsvNanos": 89709
+        },
+        {
+          "ordinal": 30,
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "querySha256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+          "parametersJson": "{}",
+          "startNanos": 1788649330529767084,
+          "endNanos": 1788649330581371667,
+          "durationNanos": 51604583,
+          "tsvLatencyNanos": 51671208,
+          "untracedTsvNanos": 66625
+        },
+        {
+          "ordinal": 31,
+          "id": "global-wide-distribution-broad-all-64",
+          "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+          "parametersJson": "{}",
+          "startNanos": 1788649330584959417,
+          "endNanos": 1788649330585779125,
+          "durationNanos": 819708,
+          "tsvLatencyNanos": 893584,
+          "untracedTsvNanos": 73876
+        },
+        {
+          "ordinal": 32,
+          "id": "global-wide-distribution-localized-early",
+          "querySha256": "f49966801eba26ab2c8d62bfa867da3da0126876f4bf1b5a9c09737ea44510c2",
+          "parametersJson": "{}",
+          "startNanos": 1788649330588971917,
+          "endNanos": 1788649330590272209,
+          "durationNanos": 1300292,
+          "tsvLatencyNanos": 1356917,
+          "untracedTsvNanos": 56625
+        },
+        {
+          "ordinal": 33,
+          "id": "global-wide-distribution-localized-late",
+          "querySha256": "5aced7e9dba4d43bb5110d0a024b03c5dc50bab7dbb8a1287a53a62635c63012",
+          "parametersJson": "{}",
+          "startNanos": 1788649330593055000,
+          "endNanos": 1788649330597553292,
+          "durationNanos": 4498292,
+          "tsvLatencyNanos": 4548917,
+          "untracedTsvNanos": 50625
+        },
+        {
+          "ordinal": 34,
+          "id": "global-wide-distribution-localized-middle",
+          "querySha256": "43688b9aa82ab933c9e9554ada13917a0adaeb93303063b512c5692db9f3685f",
+          "parametersJson": "{}",
+          "startNanos": 1788649330600557334,
+          "endNanos": 1788649330603439875,
+          "durationNanos": 2882541,
+          "tsvLatencyNanos": 2945333,
+          "untracedTsvNanos": 62792
+        }
+      ],
+      "workerThreadIdentities": [
+        [
+          27,
+          36611,
+          "broad-query-pressure-worker"
+        ]
+      ],
+      "eventCounts": {
+        "jdk.Compilation": 3122,
+        "jdk.CompilationFailure": 3,
+        "jdk.ActiveRecording": 1,
+        "jdk.ActiveSetting": 340,
+        "jdk.JVMInformation": 1,
+        "jdk.ExecutionSample": 2121,
+        "jdk.Deoptimization": 94,
+        "jdk.GCPhasePause": 25,
+        "jdk.GarbageCollection": 22,
+        "graphite.diagnostic.QueryExecution": 34
+      },
+      "recordedDataLoss": 0,
+      "activeSettingsResolvedByEventTypeId": {
+        "jdk.GarbageCollection": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649322746561459
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322746566709
+            }
+          ]
+        },
+        "jdk.GCPhasePause": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649322746716834
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322746722459
+            }
+          ]
+        },
+        "jdk.Compilation": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649322746841625
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322746847084
+            }
+          ]
+        },
+        "jdk.CompilationFailure": {
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322746871417
+            }
+          ]
+        },
+        "jdk.Deoptimization": {
+          "stackTrace": [
+            {
+              "value": "true",
+              "startNanos": 1788649322746898334
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322746904834
+            }
+          ]
+        },
+        "jdk.DataLoss": {
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322747124750
+            }
+          ]
+        },
+        "jdk.JVMInformation": {
+          "period": [
+            {
+              "value": "beginChunk",
+              "startNanos": 1788649322747130042
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322747135917
+            }
+          ]
+        },
+        "jdk.ExecutionSample": {
+          "period": [
+            {
+              "value": "2 ms",
+              "startNanos": 1788649322747380250
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322747386125
+            }
+          ]
+        },
+        "jdk.ActiveRecording": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649322748071750
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649322748077375
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322748083375
+            }
+          ]
+        },
+        "jdk.ActiveSetting": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649322748088375
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649322748095000
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649322748101000
+            }
+          ]
+        },
+        "graphite.diagnostic.QueryExecution": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649330078832834
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649330078867292
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649330078871750
+            }
+          ]
+        }
+      },
+      "jvmInformation": {
+        "startTime": "2026-09-06T08:02:02.748400334+09:00",
+        "jvmName": "OpenJDK 64-Bit Server VM",
+        "jvmVersion": "OpenJDK 64-Bit Server VM (17.0.18+0) for bsd-aarch64 JRE (17.0.18+0), built on Feb 18 2026 23:52:33 by \"brew\" with clang Apple LLVM 16.0.0 (clang-1600.0.26.6)",
+        "jvmArguments": "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv -Dgraphite.broad.pressure.correctness.mode=verify -Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness -Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-query-marker-capture/profile-1.tsv -XX:StartFlightRecording=settings=/private/tmp/graphite-query-marker-capture/profile.jfc,filename=/private/tmp/graphite-query-marker-capture/profile-1.jfr,dumponexit=true -XX:FlightRecorderOptions=stackdepth=256 -XX:+UnlockDiagnosticVMOptions -XX:+LogCompilation -XX:LogFile=/private/tmp/graphite-query-marker-capture/profile-1.compilation.xml -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -DcompilerBlackholesEnabled=true -XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh13307878548067838478compilecommand",
+        "jvmFlags": null,
+        "javaArguments": "org.openjdk.jmh.runner.ForkedMain 127.0.0.1 57769",
+        "jvmStartTime": "2026-09-06T08:02:02.602+09:00",
+        "pid": 58709
+      },
+      "activeRecording": {
+        "startTime": "2026-09-06T08:02:02.746041292+09:00",
+        "duration": "PT0S",
+        "eventThread": {
+          "osName": "main",
+          "osThreadId": 10499,
+          "javaName": "main",
+          "javaThreadId": 1,
+          "group": {
+            "parent": {
+              "parent": null,
+              "name": "system"
+            },
+            "name": "main"
+          }
+        },
+        "stackTrace": null,
+        "id": 1,
+        "name": "1",
+        "destination": "/private/tmp/graphite-query-marker-capture/profile-1.jfr",
+        "maxAge": "PT2562047788015H12M55.807S",
+        "flushInterval": "PT1S",
+        "maxSize": 0,
+        "recordingStart": "2026-09-06T08:02:02.741+09:00",
+        "recordingDuration": "PT2562047788015H12M55.807S"
+      },
+      "automaticJmhOptions": [
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh13307878548067838478compilecommand"
+      ],
+      "profileXmlSameProcessIdentity": {
+        "process": "58709",
+        "logTimeMillis": "1788649322592",
+        "jvmStartTime": "2026-09-06T08:02:02.602+09:00",
+        "xmlUncompressedSha256": "ac9a024dea5201582ebbdeaf9d9f1a323d893182a6a764117f9aa56c103415ab",
+        "samePidVmArgumentsAndOverlayClasspath": true
+      },
+      "hostIdentityLimits": "JVM version/platform and native/Java thread/process identities present; OSInformation/CPUInformation/hostname not exported. No independent physical-host identity claim.",
+      "eventExportSha256": "4b2751576ba6a2fd5755dcd9d65e09f186e300ec36615cfc866bdd320399aef5",
+      "jfrSha256": "dc769e6afa01dfc87aaf707bad9832c58715cacbf03f4dd746b582c79b22eaed",
+      "eventTypesSha256": "9e5a32b7d5ffc041d3458f0b7023daceecb69c0b58f45b4e0490c852c7cb53a5",
+      "parentVerifierSummaryMatches": true
+    },
+    {
+      "name": "profile-2",
+      "passed": true,
+      "markerCount": 34,
+      "oracleSignatureCount": 34,
+      "nonLatencyDifferences": [],
+      "windows": [
+        {
+          "ordinal": 1,
+          "id": "global-wide-four-properties-zero",
+          "querySha256": "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+          "parametersJson": "{}",
+          "startNanos": 1788649338571130792,
+          "endNanos": 1788649338829176917,
+          "durationNanos": 258046125,
+          "tsvLatencyNanos": 268491250,
+          "untracedTsvNanos": 10445125
+        },
+        {
+          "ordinal": 2,
+          "id": "global-wide-four-properties-targeted",
+          "querySha256": "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+          "parametersJson": "{}",
+          "startNanos": 1788649338835039792,
+          "endNanos": 1788649338845532250,
+          "durationNanos": 10492458,
+          "tsvLatencyNanos": 10614250,
+          "untracedTsvNanos": 121792
+        },
+        {
+          "ordinal": 3,
+          "id": "global-wide-four-properties-dense",
+          "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+          "parametersJson": "{}",
+          "startNanos": 1788649338849541000,
+          "endNanos": 1788649338853831834,
+          "durationNanos": 4290834,
+          "tsvLatencyNanos": 4363458,
+          "untracedTsvNanos": 72624
+        },
+        {
+          "ordinal": 4,
+          "id": "global-wide-class-pair-zero",
+          "querySha256": "8ba5999f51caeb5bca311659c068cb0a1aecc136a5baae8c49138cba5a9997c1",
+          "parametersJson": "{}",
+          "startNanos": 1788649338863409584,
+          "endNanos": 1788649338865266292,
+          "durationNanos": 1856708,
+          "tsvLatencyNanos": 1933917,
+          "untracedTsvNanos": 77209
+        },
+        {
+          "ordinal": 5,
+          "id": "global-wide-class-pair-targeted",
+          "querySha256": "92766e11ab73fd76ac8d3e57534de83237f9b507895f1bffc0909f4dde9eef3b",
+          "parametersJson": "{}",
+          "startNanos": 1788649338867259084,
+          "endNanos": 1788649338871541584,
+          "durationNanos": 4282500,
+          "tsvLatencyNanos": 4430208,
+          "untracedTsvNanos": 147708
+        },
+        {
+          "ordinal": 6,
+          "id": "global-wide-class-pair-dense",
+          "querySha256": "df6505ac9046688c21d330141017178d1a6bf86671867ea2238e2a0b989570ea",
+          "parametersJson": "{}",
+          "startNanos": 1788649338874048959,
+          "endNanos": 1788649338875163875,
+          "durationNanos": 1114916,
+          "tsvLatencyNanos": 1197583,
+          "untracedTsvNanos": 82667
+        },
+        {
+          "ordinal": 7,
+          "id": "global-wide-name-pair-zero",
+          "querySha256": "90c946b0f709ed5ab2f09ca4ce8a29be725a8752f15739a34e76ab7483a19634",
+          "parametersJson": "{}",
+          "startNanos": 1788649338879883875,
+          "endNanos": 1788649338881619209,
+          "durationNanos": 1735334,
+          "tsvLatencyNanos": 1809833,
+          "untracedTsvNanos": 74499
+        },
+        {
+          "ordinal": 8,
+          "id": "global-wide-name-pair-targeted",
+          "querySha256": "46d56e276bfa2a2a7a2a23265f5ed204034402447061f3d77da3de7e883ca7a5",
+          "parametersJson": "{}",
+          "startNanos": 1788649338883463334,
+          "endNanos": 1788649338887775709,
+          "durationNanos": 4312375,
+          "tsvLatencyNanos": 4376375,
+          "untracedTsvNanos": 64000
+        },
+        {
+          "ordinal": 9,
+          "id": "global-wide-name-pair-dense",
+          "querySha256": "9bee68d1375446a2a3a49ea8ce5cb524602c143950717720b13c8ed711818c8d",
+          "parametersJson": "{}",
+          "startNanos": 1788649338890241542,
+          "endNanos": 1788649338890977500,
+          "durationNanos": 735958,
+          "tsvLatencyNanos": 803250,
+          "untracedTsvNanos": 67292
+        },
+        {
+          "ordinal": 10,
+          "id": "global-wide-caller-class-zero",
+          "querySha256": "49c6954a3a42a2830e085a935dd4b177627d1b52f6624a862363f44e8652b4d6",
+          "parametersJson": "{}",
+          "startNanos": 1788649338894705209,
+          "endNanos": 1788649338896617792,
+          "durationNanos": 1912583,
+          "tsvLatencyNanos": 1979541,
+          "untracedTsvNanos": 66958
+        },
+        {
+          "ordinal": 11,
+          "id": "global-wide-caller-class-targeted",
+          "querySha256": "757d12af19637fe3a02b1d2bac858b1bbb526db717e84ed563e7c79df9986371",
+          "parametersJson": "{}",
+          "startNanos": 1788649338898334625,
+          "endNanos": 1788649338901633709,
+          "durationNanos": 3299084,
+          "tsvLatencyNanos": 3389083,
+          "untracedTsvNanos": 89999
+        },
+        {
+          "ordinal": 12,
+          "id": "global-wide-caller-class-dense",
+          "querySha256": "7c55514c67383c0e4170b6961553036bc893f2ba150a6fad504c6e6cea8c8234",
+          "parametersJson": "{}",
+          "startNanos": 1788649338903434042,
+          "endNanos": 1788649338903977084,
+          "durationNanos": 543042,
+          "tsvLatencyNanos": 603041,
+          "untracedTsvNanos": 59999
+        },
+        {
+          "ordinal": 13,
+          "id": "global-wide-callee-class-zero",
+          "querySha256": "91887845c129e40f3e005d6d5a3cefefeebb4b4e413687523f091cd78174acde",
+          "parametersJson": "{}",
+          "startNanos": 1788649338906824000,
+          "endNanos": 1788649338908571375,
+          "durationNanos": 1747375,
+          "tsvLatencyNanos": 1805958,
+          "untracedTsvNanos": 58583
+        },
+        {
+          "ordinal": 14,
+          "id": "global-wide-callee-class-targeted",
+          "querySha256": "b3a255e68b5597112a7c2658d848b7c32daca01e0ab7a722e6fd41b43833fb6b",
+          "parametersJson": "{}",
+          "startNanos": 1788649338910252500,
+          "endNanos": 1788649338912836625,
+          "durationNanos": 2584125,
+          "tsvLatencyNanos": 2652083,
+          "untracedTsvNanos": 67958
+        },
+        {
+          "ordinal": 15,
+          "id": "global-wide-callee-class-dense",
+          "querySha256": "a90ae1b807d6addb89e11ec96205e07ae4a9f910673a6daf7059c1b533cd043e",
+          "parametersJson": "{}",
+          "startNanos": 1788649338914797625,
+          "endNanos": 1788649338915370167,
+          "durationNanos": 572542,
+          "tsvLatencyNanos": 634334,
+          "untracedTsvNanos": 61792
+        },
+        {
+          "ordinal": 16,
+          "id": "global-wide-provenance-zero",
+          "querySha256": "e351961762ddd161ab9dab4a11580f5077a62c6265edbd4660ef54af7445d602",
+          "parametersJson": "{}",
+          "startNanos": 1788649338918592542,
+          "endNanos": 1788649338919954834,
+          "durationNanos": 1362292,
+          "tsvLatencyNanos": 1429209,
+          "untracedTsvNanos": 66917
+        },
+        {
+          "ordinal": 17,
+          "id": "global-wide-provenance-targeted",
+          "querySha256": "c4f26a2b165a6b8ddd2f6fbafa2fc8a260a6b36154287a61b336e6f613eb57af",
+          "parametersJson": "{}",
+          "startNanos": 1788649338922133375,
+          "endNanos": 1788649338925768042,
+          "durationNanos": 3634667,
+          "tsvLatencyNanos": 3712458,
+          "untracedTsvNanos": 77791
+        },
+        {
+          "ordinal": 18,
+          "id": "global-wide-provenance-dense",
+          "querySha256": "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+          "parametersJson": "{}",
+          "startNanos": 1788649338927574834,
+          "endNanos": 1788649338928459042,
+          "durationNanos": 884208,
+          "tsvLatencyNanos": 948916,
+          "untracedTsvNanos": 64708
+        },
+        {
+          "ordinal": 19,
+          "id": "global-wide-aliased-zero",
+          "querySha256": "c1b8def9a031551c7297f20ba52bb9cc4e4a2a45f9404a0818ec6457d532efb2",
+          "parametersJson": "{}",
+          "startNanos": 1788649338932042042,
+          "endNanos": 1788649338933626250,
+          "durationNanos": 1584208,
+          "tsvLatencyNanos": 1648250,
+          "untracedTsvNanos": 64042
+        },
+        {
+          "ordinal": 20,
+          "id": "global-wide-aliased-targeted",
+          "querySha256": "142eb7b5a9f9e227bbccf212372f4f66fab94702202c99040aedc82bdb611931",
+          "parametersJson": "{}",
+          "startNanos": 1788649338935290625,
+          "endNanos": 1788649338939318709,
+          "durationNanos": 4028084,
+          "tsvLatencyNanos": 4095375,
+          "untracedTsvNanos": 67291
+        },
+        {
+          "ordinal": 21,
+          "id": "global-wide-aliased-dense",
+          "querySha256": "9ff0b9a62177ec4599cbfae0b60af87ffe23b5a894ad37a46bfa5328f86a69d4",
+          "parametersJson": "{}",
+          "startNanos": 1788649338941913875,
+          "endNanos": 1788649338942710917,
+          "durationNanos": 797042,
+          "tsvLatencyNanos": 866292,
+          "untracedTsvNanos": 69250
+        },
+        {
+          "ordinal": 22,
+          "id": "global-wide-parameterized-zero",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"__graphite_fixture64_absent_fixture-kotlin-compiler-01__\"}",
+          "startNanos": 1788649338945902417,
+          "endNanos": 1788649338947266917,
+          "durationNanos": 1364500,
+          "tsvLatencyNanos": 1443041,
+          "untracedTsvNanos": 78541
+        },
+        {
+          "ordinal": 23,
+          "id": "global-wide-parameterized-targeted",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1\"}",
+          "startNanos": 1788649338948891209,
+          "endNanos": 1788649338951370042,
+          "durationNanos": 2478833,
+          "tsvLatencyNanos": 2556375,
+          "untracedTsvNanos": 77542
+        },
+        {
+          "ordinal": 24,
+          "id": "global-wide-parameterized-dense",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"get\"}",
+          "startNanos": 1788649338953122875,
+          "endNanos": 1788649338953876959,
+          "durationNanos": 754084,
+          "tsvLatencyNanos": 808708,
+          "untracedTsvNanos": 54624
+        },
+        {
+          "ordinal": 25,
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "querySha256": "f77a86ad220e46758abff4ae3e80ea7b338f2321a575b40202c0be145e24cae0",
+          "parametersJson": "{}",
+          "startNanos": 1788649338956937584,
+          "endNanos": 1788649338958062375,
+          "durationNanos": 1124791,
+          "tsvLatencyNanos": 1177417,
+          "untracedTsvNanos": 52626
+        },
+        {
+          "ordinal": 26,
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "querySha256": "abd8a20ed062ec299a16a3fcf3f63bfde5ff19ce32d4401b8ded0ca3cb363d79",
+          "parametersJson": "{}",
+          "startNanos": 1788649338959585750,
+          "endNanos": 1788649338961884167,
+          "durationNanos": 2298417,
+          "tsvLatencyNanos": 2355708,
+          "untracedTsvNanos": 57291
+        },
+        {
+          "ordinal": 27,
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+          "parametersJson": "{}",
+          "startNanos": 1788649338963565500,
+          "endNanos": 1788649338965032417,
+          "durationNanos": 1466917,
+          "tsvLatencyNanos": 1528417,
+          "untracedTsvNanos": 61500
+        },
+        {
+          "ordinal": 28,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "querySha256": "0efeb86c9616508a5015bbbe1da0cc614b95a7af764ded9330a3eaf6caf8b0a8",
+          "parametersJson": "{}",
+          "startNanos": 1788649338968011084,
+          "endNanos": 1788649338971097875,
+          "durationNanos": 3086791,
+          "tsvLatencyNanos": 3132375,
+          "untracedTsvNanos": 45584
+        },
+        {
+          "ordinal": 29,
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "querySha256": "c571ed79b35fe4dba10956fb08c7fa73ea9ca10b69c85fdd42c99822d8aca0f1",
+          "parametersJson": "{}",
+          "startNanos": 1788649338972644875,
+          "endNanos": 1788649339010393584,
+          "durationNanos": 37748709,
+          "tsvLatencyNanos": 37841209,
+          "untracedTsvNanos": 92500
+        },
+        {
+          "ordinal": 30,
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "querySha256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+          "parametersJson": "{}",
+          "startNanos": 1788649339012238417,
+          "endNanos": 1788649339062694375,
+          "durationNanos": 50455958,
+          "tsvLatencyNanos": 50535000,
+          "untracedTsvNanos": 79042
+        },
+        {
+          "ordinal": 31,
+          "id": "global-wide-distribution-broad-all-64",
+          "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+          "parametersJson": "{}",
+          "startNanos": 1788649339066231625,
+          "endNanos": 1788649339067004542,
+          "durationNanos": 772917,
+          "tsvLatencyNanos": 851500,
+          "untracedTsvNanos": 78583
+        },
+        {
+          "ordinal": 32,
+          "id": "global-wide-distribution-localized-early",
+          "querySha256": "f49966801eba26ab2c8d62bfa867da3da0126876f4bf1b5a9c09737ea44510c2",
+          "parametersJson": "{}",
+          "startNanos": 1788649339070242084,
+          "endNanos": 1788649339071504292,
+          "durationNanos": 1262208,
+          "tsvLatencyNanos": 1306292,
+          "untracedTsvNanos": 44084
+        },
+        {
+          "ordinal": 33,
+          "id": "global-wide-distribution-localized-late",
+          "querySha256": "5aced7e9dba4d43bb5110d0a024b03c5dc50bab7dbb8a1287a53a62635c63012",
+          "parametersJson": "{}",
+          "startNanos": 1788649339074341584,
+          "endNanos": 1788649339078560834,
+          "durationNanos": 4219250,
+          "tsvLatencyNanos": 4270542,
+          "untracedTsvNanos": 51292
+        },
+        {
+          "ordinal": 34,
+          "id": "global-wide-distribution-localized-middle",
+          "querySha256": "43688b9aa82ab933c9e9554ada13917a0adaeb93303063b512c5692db9f3685f",
+          "parametersJson": "{}",
+          "startNanos": 1788649339081699125,
+          "endNanos": 1788649339084442625,
+          "durationNanos": 2743500,
+          "tsvLatencyNanos": 2796542,
+          "untracedTsvNanos": 53042
+        }
+      ],
+      "workerThreadIdentities": [
+        [
+          28,
+          35331,
+          "broad-query-pressure-worker"
+        ]
+      ],
+      "eventCounts": {
+        "jdk.Compilation": 3105,
+        "jdk.ActiveRecording": 1,
+        "jdk.CompilationFailure": 3,
+        "jdk.ActiveSetting": 340,
+        "jdk.JVMInformation": 1,
+        "jdk.ExecutionSample": 2123,
+        "jdk.Deoptimization": 80,
+        "jdk.GCPhasePause": 25,
+        "jdk.GarbageCollection": 22,
+        "graphite.diagnostic.QueryExecution": 34
+      },
+      "recordedDataLoss": 0,
+      "activeSettingsResolvedByEventTypeId": {
+        "jdk.GarbageCollection": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649331162023875
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162029167
+            }
+          ]
+        },
+        "jdk.GCPhasePause": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649331162181167
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162186625
+            }
+          ]
+        },
+        "jdk.Compilation": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649331162293750
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162298875
+            }
+          ]
+        },
+        "jdk.CompilationFailure": {
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162318750
+            }
+          ]
+        },
+        "jdk.Deoptimization": {
+          "stackTrace": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162345292
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162351000
+            }
+          ]
+        },
+        "jdk.DataLoss": {
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162559834
+            }
+          ]
+        },
+        "jdk.JVMInformation": {
+          "period": [
+            {
+              "value": "beginChunk",
+              "startNanos": 1788649331162565084
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162571000
+            }
+          ]
+        },
+        "jdk.ExecutionSample": {
+          "period": [
+            {
+              "value": "2 ms",
+              "startNanos": 1788649331162813334
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331162819000
+            }
+          ]
+        },
+        "jdk.ActiveRecording": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649331163519084
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649331163524584
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331163530500
+            }
+          ]
+        },
+        "jdk.ActiveSetting": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649331163535375
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649331163541792
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649331163547709
+            }
+          ]
+        },
+        "graphite.diagnostic.QueryExecution": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649338571051125
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649338571091917
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649338571096084
+            }
+          ]
+        }
+      },
+      "jvmInformation": {
+        "startTime": "2026-09-06T08:02:11.163855959+09:00",
+        "jvmName": "OpenJDK 64-Bit Server VM",
+        "jvmVersion": "OpenJDK 64-Bit Server VM (17.0.18+0) for bsd-aarch64 JRE (17.0.18+0), built on Feb 18 2026 23:52:33 by \"brew\" with clang Apple LLVM 16.0.0 (clang-1600.0.26.6)",
+        "jvmArguments": "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv -Dgraphite.broad.pressure.correctness.mode=verify -Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness -Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-query-marker-capture/profile-2.tsv -XX:StartFlightRecording=settings=/private/tmp/graphite-query-marker-capture/profile.jfc,filename=/private/tmp/graphite-query-marker-capture/profile-2.jfr,dumponexit=true -XX:FlightRecorderOptions=stackdepth=256 -XX:+UnlockDiagnosticVMOptions -XX:+LogCompilation -XX:LogFile=/private/tmp/graphite-query-marker-capture/profile-2.compilation.xml -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -DcompilerBlackholesEnabled=true -XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh2721508522602345688compilecommand",
+        "jvmFlags": null,
+        "javaArguments": "org.openjdk.jmh.runner.ForkedMain 127.0.0.1 57771",
+        "jvmStartTime": "2026-09-06T08:02:11.013+09:00",
+        "pid": 58720
+      },
+      "activeRecording": {
+        "startTime": "2026-09-06T08:02:11.161484792+09:00",
+        "duration": "PT0S",
+        "eventThread": {
+          "osName": "main",
+          "osThreadId": 10243,
+          "javaName": "main",
+          "javaThreadId": 1,
+          "group": {
+            "parent": {
+              "parent": null,
+              "name": "system"
+            },
+            "name": "main"
+          }
+        },
+        "stackTrace": null,
+        "id": 1,
+        "name": "1",
+        "destination": "/private/tmp/graphite-query-marker-capture/profile-2.jfr",
+        "maxAge": "PT2562047788015H12M55.807S",
+        "flushInterval": "PT1S",
+        "maxSize": 0,
+        "recordingStart": "2026-09-06T08:02:11.157+09:00",
+        "recordingDuration": "PT2562047788015H12M55.807S"
+      },
+      "automaticJmhOptions": [
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh2721508522602345688compilecommand"
+      ],
+      "profileXmlSameProcessIdentity": {
+        "process": "58720",
+        "logTimeMillis": "1788649331003",
+        "jvmStartTime": "2026-09-06T08:02:11.013+09:00",
+        "xmlUncompressedSha256": "97b22f69174e2ec46d7bd82fe1826edb7baa3b9cc7b84347d5b2768bbeca6fe9",
+        "samePidVmArgumentsAndOverlayClasspath": true
+      },
+      "hostIdentityLimits": "JVM version/platform and native/Java thread/process identities present; OSInformation/CPUInformation/hostname not exported. No independent physical-host identity claim.",
+      "eventExportSha256": "162975e9857ba8962f70254d8a57c81ff9b35c043224cdfc49f7fbbe58bb7b02",
+      "jfrSha256": "6f6b699e25166d3497e7e73315c3f56474e9792f7b0e96fb3337740c004c859c",
+      "eventTypesSha256": "9e5a32b7d5ffc041d3458f0b7023daceecb69c0b58f45b4e0490c852c7cb53a5",
+      "parentVerifierSummaryMatches": true
+    },
+    {
+      "name": "profile-3",
+      "passed": true,
+      "markerCount": 34,
+      "oracleSignatureCount": 34,
+      "nonLatencyDifferences": [],
+      "windows": [
+        {
+          "ordinal": 1,
+          "id": "global-wide-four-properties-zero",
+          "querySha256": "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+          "parametersJson": "{}",
+          "startNanos": 1788649346983422750,
+          "endNanos": 1788649347233519334,
+          "durationNanos": 250096584,
+          "tsvLatencyNanos": 260537875,
+          "untracedTsvNanos": 10441291
+        },
+        {
+          "ordinal": 2,
+          "id": "global-wide-four-properties-targeted",
+          "querySha256": "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+          "parametersJson": "{}",
+          "startNanos": 1788649347238993917,
+          "endNanos": 1788649347249132959,
+          "durationNanos": 10139042,
+          "tsvLatencyNanos": 10246750,
+          "untracedTsvNanos": 107708
+        },
+        {
+          "ordinal": 3,
+          "id": "global-wide-four-properties-dense",
+          "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+          "parametersJson": "{}",
+          "startNanos": 1788649347252256417,
+          "endNanos": 1788649347256556042,
+          "durationNanos": 4299625,
+          "tsvLatencyNanos": 4366000,
+          "untracedTsvNanos": 66375
+        },
+        {
+          "ordinal": 4,
+          "id": "global-wide-class-pair-zero",
+          "querySha256": "8ba5999f51caeb5bca311659c068cb0a1aecc136a5baae8c49138cba5a9997c1",
+          "parametersJson": "{}",
+          "startNanos": 1788649347265546042,
+          "endNanos": 1788649347267290000,
+          "durationNanos": 1743958,
+          "tsvLatencyNanos": 1839167,
+          "untracedTsvNanos": 95209
+        },
+        {
+          "ordinal": 5,
+          "id": "global-wide-class-pair-targeted",
+          "querySha256": "92766e11ab73fd76ac8d3e57534de83237f9b507895f1bffc0909f4dde9eef3b",
+          "parametersJson": "{}",
+          "startNanos": 1788649347268852959,
+          "endNanos": 1788649347273355334,
+          "durationNanos": 4502375,
+          "tsvLatencyNanos": 4573709,
+          "untracedTsvNanos": 71334
+        },
+        {
+          "ordinal": 6,
+          "id": "global-wide-class-pair-dense",
+          "querySha256": "df6505ac9046688c21d330141017178d1a6bf86671867ea2238e2a0b989570ea",
+          "parametersJson": "{}",
+          "startNanos": 1788649347275373250,
+          "endNanos": 1788649347276409417,
+          "durationNanos": 1036167,
+          "tsvLatencyNanos": 1154459,
+          "untracedTsvNanos": 118292
+        },
+        {
+          "ordinal": 7,
+          "id": "global-wide-name-pair-zero",
+          "querySha256": "90c946b0f709ed5ab2f09ca4ce8a29be725a8752f15739a34e76ab7483a19634",
+          "parametersJson": "{}",
+          "startNanos": 1788649347280070000,
+          "endNanos": 1788649347281836334,
+          "durationNanos": 1766334,
+          "tsvLatencyNanos": 1854958,
+          "untracedTsvNanos": 88624
+        },
+        {
+          "ordinal": 8,
+          "id": "global-wide-name-pair-targeted",
+          "querySha256": "46d56e276bfa2a2a7a2a23265f5ed204034402447061f3d77da3de7e883ca7a5",
+          "parametersJson": "{}",
+          "startNanos": 1788649347283036625,
+          "endNanos": 1788649347287821667,
+          "durationNanos": 4785042,
+          "tsvLatencyNanos": 4857667,
+          "untracedTsvNanos": 72625
+        },
+        {
+          "ordinal": 9,
+          "id": "global-wide-name-pair-dense",
+          "querySha256": "9bee68d1375446a2a3a49ea8ce5cb524602c143950717720b13c8ed711818c8d",
+          "parametersJson": "{}",
+          "startNanos": 1788649347289141667,
+          "endNanos": 1788649347289987084,
+          "durationNanos": 845417,
+          "tsvLatencyNanos": 904166,
+          "untracedTsvNanos": 58749
+        },
+        {
+          "ordinal": 10,
+          "id": "global-wide-caller-class-zero",
+          "querySha256": "49c6954a3a42a2830e085a935dd4b177627d1b52f6624a862363f44e8652b4d6",
+          "parametersJson": "{}",
+          "startNanos": 1788649347292518875,
+          "endNanos": 1788649347294049959,
+          "durationNanos": 1531084,
+          "tsvLatencyNanos": 1589375,
+          "untracedTsvNanos": 58291
+        },
+        {
+          "ordinal": 11,
+          "id": "global-wide-caller-class-targeted",
+          "querySha256": "757d12af19637fe3a02b1d2bac858b1bbb526db717e84ed563e7c79df9986371",
+          "parametersJson": "{}",
+          "startNanos": 1788649347295180292,
+          "endNanos": 1788649347298246375,
+          "durationNanos": 3066083,
+          "tsvLatencyNanos": 3124250,
+          "untracedTsvNanos": 58167
+        },
+        {
+          "ordinal": 12,
+          "id": "global-wide-caller-class-dense",
+          "querySha256": "7c55514c67383c0e4170b6961553036bc893f2ba150a6fad504c6e6cea8c8234",
+          "parametersJson": "{}",
+          "startNanos": 1788649347299545500,
+          "endNanos": 1788649347300126459,
+          "durationNanos": 580959,
+          "tsvLatencyNanos": 632125,
+          "untracedTsvNanos": 51166
+        },
+        {
+          "ordinal": 13,
+          "id": "global-wide-callee-class-zero",
+          "querySha256": "91887845c129e40f3e005d6d5a3cefefeebb4b4e413687523f091cd78174acde",
+          "parametersJson": "{}",
+          "startNanos": 1788649347302276000,
+          "endNanos": 1788649347303978167,
+          "durationNanos": 1702167,
+          "tsvLatencyNanos": 1776667,
+          "untracedTsvNanos": 74500
+        },
+        {
+          "ordinal": 14,
+          "id": "global-wide-callee-class-targeted",
+          "querySha256": "b3a255e68b5597112a7c2658d848b7c32daca01e0ab7a722e6fd41b43833fb6b",
+          "parametersJson": "{}",
+          "startNanos": 1788649347305075084,
+          "endNanos": 1788649347307319625,
+          "durationNanos": 2244541,
+          "tsvLatencyNanos": 2295917,
+          "untracedTsvNanos": 51376
+        },
+        {
+          "ordinal": 15,
+          "id": "global-wide-callee-class-dense",
+          "querySha256": "a90ae1b807d6addb89e11ec96205e07ae4a9f910673a6daf7059c1b533cd043e",
+          "parametersJson": "{}",
+          "startNanos": 1788649347308615625,
+          "endNanos": 1788649347309166625,
+          "durationNanos": 551000,
+          "tsvLatencyNanos": 605584,
+          "untracedTsvNanos": 54584
+        },
+        {
+          "ordinal": 16,
+          "id": "global-wide-provenance-zero",
+          "querySha256": "e351961762ddd161ab9dab4a11580f5077a62c6265edbd4660ef54af7445d602",
+          "parametersJson": "{}",
+          "startNanos": 1788649347311606167,
+          "endNanos": 1788649347312958875,
+          "durationNanos": 1352708,
+          "tsvLatencyNanos": 1412333,
+          "untracedTsvNanos": 59625
+        },
+        {
+          "ordinal": 17,
+          "id": "global-wide-provenance-targeted",
+          "querySha256": "c4f26a2b165a6b8ddd2f6fbafa2fc8a260a6b36154287a61b336e6f613eb57af",
+          "parametersJson": "{}",
+          "startNanos": 1788649347314505667,
+          "endNanos": 1788649347317806125,
+          "durationNanos": 3300458,
+          "tsvLatencyNanos": 3366500,
+          "untracedTsvNanos": 66042
+        },
+        {
+          "ordinal": 18,
+          "id": "global-wide-provenance-dense",
+          "querySha256": "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+          "parametersJson": "{}",
+          "startNanos": 1788649347319018459,
+          "endNanos": 1788649347319970084,
+          "durationNanos": 951625,
+          "tsvLatencyNanos": 1022000,
+          "untracedTsvNanos": 70375
+        },
+        {
+          "ordinal": 19,
+          "id": "global-wide-aliased-zero",
+          "querySha256": "c1b8def9a031551c7297f20ba52bb9cc4e4a2a45f9404a0818ec6457d532efb2",
+          "parametersJson": "{}",
+          "startNanos": 1788649347322712500,
+          "endNanos": 1788649347323952834,
+          "durationNanos": 1240334,
+          "tsvLatencyNanos": 1298083,
+          "untracedTsvNanos": 57749
+        },
+        {
+          "ordinal": 20,
+          "id": "global-wide-aliased-targeted",
+          "querySha256": "142eb7b5a9f9e227bbccf212372f4f66fab94702202c99040aedc82bdb611931",
+          "parametersJson": "{}",
+          "startNanos": 1788649347325010000,
+          "endNanos": 1788649347328853125,
+          "durationNanos": 3843125,
+          "tsvLatencyNanos": 3907500,
+          "untracedTsvNanos": 64375
+        },
+        {
+          "ordinal": 21,
+          "id": "global-wide-aliased-dense",
+          "querySha256": "9ff0b9a62177ec4599cbfae0b60af87ffe23b5a894ad37a46bfa5328f86a69d4",
+          "parametersJson": "{}",
+          "startNanos": 1788649347330505542,
+          "endNanos": 1788649347331250584,
+          "durationNanos": 745042,
+          "tsvLatencyNanos": 791959,
+          "untracedTsvNanos": 46917
+        },
+        {
+          "ordinal": 22,
+          "id": "global-wide-parameterized-zero",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"__graphite_fixture64_absent_fixture-kotlin-compiler-01__\"}",
+          "startNanos": 1788649347333544875,
+          "endNanos": 1788649347334647167,
+          "durationNanos": 1102292,
+          "tsvLatencyNanos": 1170500,
+          "untracedTsvNanos": 68208
+        },
+        {
+          "ordinal": 23,
+          "id": "global-wide-parameterized-targeted",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1\"}",
+          "startNanos": 1788649347335695959,
+          "endNanos": 1788649347338019167,
+          "durationNanos": 2323208,
+          "tsvLatencyNanos": 2420416,
+          "untracedTsvNanos": 97208
+        },
+        {
+          "ordinal": 24,
+          "id": "global-wide-parameterized-dense",
+          "querySha256": "a98fb32aff4478d88089612c2ab9add59ec0c1c70db0adc0c5c6f4c2c49d5988",
+          "parametersJson": "{\"term\":\"get\"}",
+          "startNanos": 1788649347339221334,
+          "endNanos": 1788649347339928500,
+          "durationNanos": 707166,
+          "tsvLatencyNanos": 773667,
+          "untracedTsvNanos": 66501
+        },
+        {
+          "ordinal": 25,
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "querySha256": "f77a86ad220e46758abff4ae3e80ea7b338f2321a575b40202c0be145e24cae0",
+          "parametersJson": "{}",
+          "startNanos": 1788649347342196000,
+          "endNanos": 1788649347343384792,
+          "durationNanos": 1188792,
+          "tsvLatencyNanos": 1249666,
+          "untracedTsvNanos": 60874
+        },
+        {
+          "ordinal": 26,
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "querySha256": "abd8a20ed062ec299a16a3fcf3f63bfde5ff19ce32d4401b8ded0ca3cb363d79",
+          "parametersJson": "{}",
+          "startNanos": 1788649347344450792,
+          "endNanos": 1788649347346594750,
+          "durationNanos": 2143958,
+          "tsvLatencyNanos": 2198583,
+          "untracedTsvNanos": 54625
+        },
+        {
+          "ordinal": 27,
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+          "parametersJson": "{}",
+          "startNanos": 1788649347347685000,
+          "endNanos": 1788649347349003792,
+          "durationNanos": 1318792,
+          "tsvLatencyNanos": 1361750,
+          "untracedTsvNanos": 42958
+        },
+        {
+          "ordinal": 28,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "querySha256": "0efeb86c9616508a5015bbbe1da0cc614b95a7af764ded9330a3eaf6caf8b0a8",
+          "parametersJson": "{}",
+          "startNanos": 1788649347351528334,
+          "endNanos": 1788649347354801084,
+          "durationNanos": 3272750,
+          "tsvLatencyNanos": 3334708,
+          "untracedTsvNanos": 61958
+        },
+        {
+          "ordinal": 29,
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "querySha256": "c571ed79b35fe4dba10956fb08c7fa73ea9ca10b69c85fdd42c99822d8aca0f1",
+          "parametersJson": "{}",
+          "startNanos": 1788649347355877042,
+          "endNanos": 1788649347393049542,
+          "durationNanos": 37172500,
+          "tsvLatencyNanos": 37261583,
+          "untracedTsvNanos": 89083
+        },
+        {
+          "ordinal": 30,
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "querySha256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+          "parametersJson": "{}",
+          "startNanos": 1788649347394321167,
+          "endNanos": 1788649347433998875,
+          "durationNanos": 39677708,
+          "tsvLatencyNanos": 39744916,
+          "untracedTsvNanos": 67208
+        },
+        {
+          "ordinal": 31,
+          "id": "global-wide-distribution-broad-all-64",
+          "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+          "parametersJson": "{}",
+          "startNanos": 1788649347436560042,
+          "endNanos": 1788649347437279125,
+          "durationNanos": 719083,
+          "tsvLatencyNanos": 786959,
+          "untracedTsvNanos": 67876
+        },
+        {
+          "ordinal": 32,
+          "id": "global-wide-distribution-localized-early",
+          "querySha256": "f49966801eba26ab2c8d62bfa867da3da0126876f4bf1b5a9c09737ea44510c2",
+          "parametersJson": "{}",
+          "startNanos": 1788649347439603209,
+          "endNanos": 1788649347440884709,
+          "durationNanos": 1281500,
+          "tsvLatencyNanos": 1360959,
+          "untracedTsvNanos": 79459
+        },
+        {
+          "ordinal": 33,
+          "id": "global-wide-distribution-localized-late",
+          "querySha256": "5aced7e9dba4d43bb5110d0a024b03c5dc50bab7dbb8a1287a53a62635c63012",
+          "parametersJson": "{}",
+          "startNanos": 1788649347443103209,
+          "endNanos": 1788649347447200834,
+          "durationNanos": 4097625,
+          "tsvLatencyNanos": 4154125,
+          "untracedTsvNanos": 56500
+        },
+        {
+          "ordinal": 34,
+          "id": "global-wide-distribution-localized-middle",
+          "querySha256": "43688b9aa82ab933c9e9554ada13917a0adaeb93303063b512c5692db9f3685f",
+          "parametersJson": "{}",
+          "startNanos": 1788649347449621000,
+          "endNanos": 1788649347452319000,
+          "durationNanos": 2698000,
+          "tsvLatencyNanos": 2758083,
+          "untracedTsvNanos": 60083
+        }
+      ],
+      "workerThreadIdentities": [
+        [
+          28,
+          40963,
+          "broad-query-pressure-worker"
+        ]
+      ],
+      "eventCounts": {
+        "jdk.Compilation": 3170,
+        "jdk.CompilationFailure": 3,
+        "jdk.ActiveRecording": 1,
+        "jdk.ActiveSetting": 340,
+        "jdk.JVMInformation": 1,
+        "jdk.ExecutionSample": 2095,
+        "jdk.Deoptimization": 99,
+        "jdk.GCPhasePause": 27,
+        "jdk.GarbageCollection": 24,
+        "graphite.diagnostic.QueryExecution": 34
+      },
+      "recordedDataLoss": 0,
+      "activeSettingsResolvedByEventTypeId": {
+        "jdk.GarbageCollection": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649339639130125
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639135125
+            }
+          ]
+        },
+        "jdk.GCPhasePause": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649339639287125
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639292750
+            }
+          ]
+        },
+        "jdk.Compilation": {
+          "threshold": [
+            {
+              "value": "0 ms",
+              "startNanos": 1788649339639406584
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639411834
+            }
+          ]
+        },
+        "jdk.CompilationFailure": {
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639432250
+            }
+          ]
+        },
+        "jdk.Deoptimization": {
+          "stackTrace": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639459167
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639464834
+            }
+          ]
+        },
+        "jdk.DataLoss": {
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639667500
+            }
+          ]
+        },
+        "jdk.JVMInformation": {
+          "period": [
+            {
+              "value": "beginChunk",
+              "startNanos": 1788649339639672834
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639678750
+            }
+          ]
+        },
+        "jdk.ExecutionSample": {
+          "period": [
+            {
+              "value": "2 ms",
+              "startNanos": 1788649339639924500
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339639930125
+            }
+          ]
+        },
+        "jdk.ActiveRecording": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649339640609875
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649339640615459
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339640621417
+            }
+          ]
+        },
+        "jdk.ActiveSetting": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649339640626375
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649339640632750
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649339640638667
+            }
+          ]
+        },
+        "graphite.diagnostic.QueryExecution": {
+          "threshold": [
+            {
+              "value": "0 ns",
+              "startNanos": 1788649346983330917
+            }
+          ],
+          "stackTrace": [
+            {
+              "value": "false",
+              "startNanos": 1788649346983377625
+            }
+          ],
+          "enabled": [
+            {
+              "value": "true",
+              "startNanos": 1788649346983382000
+            }
+          ]
+        }
+      },
+      "jvmInformation": {
+        "startTime": "2026-09-06T08:02:19.640957875+09:00",
+        "jvmName": "OpenJDK 64-Bit Server VM",
+        "jvmVersion": "OpenJDK 64-Bit Server VM (17.0.18+0) for bsd-aarch64 JRE (17.0.18+0), built on Feb 18 2026 23:52:33 by \"brew\" with clang Apple LLVM 16.0.0 (clang-1600.0.26.6)",
+        "jvmArguments": "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv -Dgraphite.broad.pressure.correctness.mode=verify -Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness -Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-query-marker-capture/profile-3.tsv -XX:StartFlightRecording=settings=/private/tmp/graphite-query-marker-capture/profile.jfc,filename=/private/tmp/graphite-query-marker-capture/profile-3.jfr,dumponexit=true -XX:FlightRecorderOptions=stackdepth=256 -XX:+UnlockDiagnosticVMOptions -XX:+LogCompilation -XX:LogFile=/private/tmp/graphite-query-marker-capture/profile-3.compilation.xml -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -DcompilerBlackholesEnabled=true -XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh14439611133521554812compilecommand",
+        "jvmFlags": null,
+        "javaArguments": "org.openjdk.jmh.runner.ForkedMain 127.0.0.1 57774",
+        "jvmStartTime": "2026-09-06T08:02:19.496+09:00",
+        "pid": 58730
+      },
+      "activeRecording": {
+        "startTime": "2026-09-06T08:02:19.638595042+09:00",
+        "duration": "PT0S",
+        "eventThread": {
+          "osName": "main",
+          "osThreadId": 9987,
+          "javaName": "main",
+          "javaThreadId": 1,
+          "group": {
+            "parent": {
+              "parent": null,
+              "name": "system"
+            },
+            "name": "main"
+          }
+        },
+        "stackTrace": null,
+        "id": 1,
+        "name": "1",
+        "destination": "/private/tmp/graphite-query-marker-capture/profile-3.jfr",
+        "maxAge": "PT2562047788015H12M55.807S",
+        "flushInterval": "PT1S",
+        "maxSize": 0,
+        "recordingStart": "2026-09-06T08:02:19.634+09:00",
+        "recordingDuration": "PT2562047788015H12M55.807S"
+      },
+      "automaticJmhOptions": [
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-DcompilerBlackholesEnabled=true",
+        "-XX:CompileCommandFile=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/jmh14439611133521554812compilecommand"
+      ],
+      "profileXmlSameProcessIdentity": {
+        "process": "58730",
+        "logTimeMillis": "1788649339486",
+        "jvmStartTime": "2026-09-06T08:02:19.496+09:00",
+        "xmlUncompressedSha256": "f48627312660e71232a4f41aa5a3c072f2344bd7858d689478456c22db9b3596",
+        "samePidVmArgumentsAndOverlayClasspath": true
+      },
+      "hostIdentityLimits": "JVM version/platform and native/Java thread/process identities present; OSInformation/CPUInformation/hostname not exported. No independent physical-host identity claim.",
+      "eventExportSha256": "e3d3c8b307a18737b64e6d2fcb6ca20cbfdb5bad4a7b8a3c69964d680bd05beb",
+      "jfrSha256": "74fcd50d9666ca6e7d76fe517a95c8289d3214a0f16d2d85e31c3e5dad1b769d",
+      "eventTypesSha256": "9e5a32b7d5ffc041d3458f0b7023daceecb69c0b58f45b4e0490c852c7cb53a5",
+      "parentVerifierSummaryMatches": true
+    }
+  ],
+  "inputSha256": {
+    "profile-1.log": "c301c6b673ff83db004c09b0a7d475aa55e6f3a5f0b71660ff1d66419af0d08e",
+    "profile-runs.json": "2edde06a420d294ceac23bc69319fe0ceb29ef9ab971a65214d23154d3e80b38",
+    "capture-plan.json": "8a18ecc9a3ce9e772ab59948df7ce963c70e5eea6ac4d573012dfef5c7b05cfb",
+    "profile-3.log": "54b9d9a9b466b9287310449963c1cc30c6d8f63c50563d67902a5dc655fa0cdf",
+    "profile-2.log": "7994aaa849b2a647c76eefe524c5abe0e09e9fa3a33777956ad7d9111faab919",
+    "catalog-receipt.json": "e5cd3ef48a02f8621d7dfc235b12881ff8cf486207c1373a1d6d52ab81d028a5",
+    "root-overlay-audit.json": "62da807d7e1290347f01b6d60671277a6aab8f278c07a09e2817ae6f1c825071",
+    "control-graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "profile-2-command.json": "4c56e930b4f607ca242e7150371a8aea02afaa89cd1dba916f0c119c547a8b66",
+    "control-completion.json": "e335dfa7120b9e1d6a02bc0cd412a34e7fea9661be1ba14e3445797ad895c699",
+    "control-graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "control.tsv": "398a6576b687802d2d3b320115c4843af558514050f9d52f0b39889ef423d43d",
+    "control-command.json": "01f68b148e497c4801536611b6bf2d8e71bea51d21314ff5a6c2064a11aee4db",
+    "profile-completion.json": "62f656472fa5b10e7f5d4b9a53ff6305c7d35718605a8547b1b24a9cf8d67f8e",
+    "profile.jfc": "b4f2be553786855fb599fadca94ce1203160d1b6f26f742d30a394fc50c6267c",
+    "profile-3-command.json": "fe259a4a6a18f411149b40d7fe58b00fc97d23f4d9ced05921863527073748da",
+    "profile-3.jmh.json": "3199dd58033ba6508ce41553c0686dd4977f7035c980a5eeef9a7f30b4984573",
+    "profile-2.jmh.json": "ac89aae4f5072b9aa624568c27da9746ac42a75113679e3e6eb9f4ad25853ef8",
+    "original-catalog.json": "84606875e34be7928275e831fd26abbfd9115832952a5bca19ea6f282c8a9284",
+    "control.log": "c1c646ec8574c1e5695d0f918e19a061700d30c170b3c6bc2e09a82269332d90",
+    "control.jfc": "bbb2da2133f145922c3d0c66541302d0f0ade0974c073a67e953a38f9079a1aa",
+    "capture.py": "5bd5e8557ff8846f439ff11f5852b0c39a5408e1c497cfe57fbe923e3098849b",
+    "profile-1-command.json": "02135d7ed60c68557fb51408225600fa04ec0bdb861599afd41ccde94e936a83",
+    "JfrEventTypes.java": "71d54db168689c2b5ce75d1927cab00c11da954269d2c112dabfc478f30590da",
+    "metadata-command.json": "10720c8f8cd82ee79b6f4b3085ffb836104d2682d39e01f75e191d2842d7e9d0",
+    "profile-graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "control.jmh.json": "70b1f85df2e4e69e12aa91fc6cd979cbb80514b11719552f5054ef5604d17919",
+    "control-export-receipt.json": "97a89e61471ea6d08a2618474cf8cd8dae486a79a2b9433421256e0aac2619c6",
+    "ExportOriginalCatalog.java": "5bd50f5253426557e1ae445012c6a3e0dde1e5b0f76c4e8e97c09d20125eb772",
+    "control-runs.json": "f418c9dc289844a94a61fb099274c234518b5ece374a0126bc08642ecb49d1cc",
+    "profile-1-export-receipt.json": "3651bb922f14b5e10569432d47c4aff82cd8aaab4aec8e7ccc0d6c41e3229a82",
+    "profile-1.jmh.json": "2f3a1b15a9a6c2abe52372dec865d6a2c6a4c6df86713418e66318053068aacf",
+    "control-export-command.json": "b7dafbfd4dbd7058f2ea0dae313053a05d86588dd0b0711d34d4bb24a0cd3e0a",
+    "profile-3-export-receipt.json": "5b20c45a56ee83bd91d7a9f6a3c2b52c67e563cc0510b8d82660536a839e4d01",
+    "profile-2-export-receipt.json": "784afa18c1d4b1138382547f4960a5bacc45cb3eb7a169552ceb71008f722771",
+    "profile-1.tsv": "144dfb596bbb67ca093dc20aa82c5da884e337ace03c664558996a220fb5593a",
+    "profile-graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "profile-2.tsv": "518bc7a02031d0b38270a07c4935577155d07d3f7b7a19a843a0d329903830f9",
+    "profile-3.tsv": "c403cca93b5b3d6b0187fe36073a8faa57d7bc0d9cb050a8cb0b7fb274b578b9"
+  },
+  "limits": [
+    "No query/graph execution, Java build, new JFR capture or parent verifier invocation during this audit.",
+    "Native JSON was produced by the recorded jfr-print commands; this audit checks raw JFR/export hashes and JSON contents, not a second binary JFR decoding. Only explicitly exported event types are covered.",
+    "DataLoss is enabled and no DataLoss events are recorded; this does not prove absence of every possible sampling blind spot.",
+    "Graph integrity uses complete captured before/after path/size/SHA inventories and reviewed hashing implementation; the large corpus was not rehashed again.",
+    "Host OS/CPU/hostname events are absent from these exports; JVM platform/build, process and thread identities are available, with profile XML PID/arguments/classpath cross-check.",
+    "Marker preparation/commit, queuing and other work outside execute cause positive TSV gaps. No positive-gap upper bound is imposed; all trace durations are strictly within TSV latency.",
+    "Marker/JFR/LogCompilation perturb execution. No performance gain, regression cause, exclusive CPU cost, or causal query ownership claim is made.",
+    "CompilationFailure events (three per full recording) are preserved in totals and are not query failures. Their cause and event-to-query attribution are outside this bounded audit."
+  ]
+}

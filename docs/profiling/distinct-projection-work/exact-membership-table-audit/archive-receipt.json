@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-exact-membership-table-audit/README.md",
+      "path": "README.md",
+      "sha256": "c5da2186d45b6bac6ad43f9ab3664d42b8b41c19a8e4aaa38de56ac9a173770d",
+      "bytes": 8187
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-table-audit/census.json",
+      "path": "census.json",
+      "sha256": "b5bd71aa34d252f1f69d86e46e4a2d2a1c7fd7dedab57e26bcf2bd91882f18bc",
+      "bytes": 45209
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-table-audit/census.py",
+      "path": "census.py",
+      "sha256": "f090fdd345e104479a8a3616de5bc2dc0e23ad9622d0678de336df2eabc3730e",
+      "bytes": 5319
+    }
+  ],
+  "excluded": [],
+  "allCopiedBytesMatch": true
+}

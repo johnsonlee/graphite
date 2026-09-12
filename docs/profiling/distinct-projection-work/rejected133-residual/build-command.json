@@ -1,0 +1,16 @@
+{
+  "cwd": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/repo",
+  "argv": [
+    "./gradlew",
+    ":webgraph:jmhJar",
+    ":webgraph:verifyJmhJarExcludesTests",
+    "--no-daemon"
+  ],
+  "environmentOverrides": {
+    "JAVA_HOME": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+    "JAVA_TOOL_OPTIONS": "-XX:ActiveProcessorCount=4",
+    "PATHPrefix": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin"
+  },
+  "diagnosticOnly": true,
+  "noTestOrBenchmarkRun": true
+}

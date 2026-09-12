@@ -1,0 +1,443 @@
+# JMH version: 1.37
+# VM version: JDK 17.0.18, OpenJDK 64-Bit Server VM, 17.0.18+0
+# VM invoker: /opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java
+# VM options: -Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv -Dgraphite.broad.pressure.correctness.mode=verify -Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness -Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-3.tsv
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: <none>
+# Measurement: 1 iterations, single-shot each
+# Timeout: 30 min per iteration
+# Threads: 1 thread
+# Benchmark mode: Single shot invocation time
+# Benchmark: io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
+# Parameters: (coverageFamily = global-wide, graphCount = 64, indexState = cold, timeoutMillis = 300000)
+
+# Run progress: 0.00% complete, ETA 00:00:00
+# Fork: 1 of 1
+Iteration   1: 0.515 s/op
+                 accessedGraphCount:                   1452.000 #
+                 aggregationP95LatencyNanos:           ? 0 #
+                 availableProcessors:                  4.000 #
+                 booleanP95LatencyNanos:               ? 0 #
+                 callSiteIndexAdmittedGraphs:          ? 0 #
+                 callSiteIndexRetainedBytes:           ? 0 #
+                 callSiteParallelScanCount:            4.000 #
+                 callSiteParallelScanGraphCount:       4.000 #
+                 callSiteScanPeakActiveWorkers:        3.000 #
+                 callSiteStringIndexLookupCount:       ? 0 #
+                 callSiteStringIndexLookupGraphCount:  ? 0 #
+                 callSiteStringIndexLookupMaxPerGraph: ? 0 #
+                 callSiteStringIndexLookupMinPerGraph: ? 0 #
+                 callSiteTrigramIndexedGraphs:         ? 0 #
+                 containsP95LatencyNanos:              ? 0 #
+                 coverageBoundaryCount:                3.000 #
+                 coverageFamilyCount:                  1.000 #
+                 coverageOperatorCount:                2.000 #
+                 coverageProjectionCount:              8.000 #
+                 coverageSelectivityCount:             3.000 #
+                 coverageShapeCount:                   14.000 #
+                 cpuCoreUtilizationPermille:           3087.000 #
+                 cypherGraphIdPredicateQueryCount:     ? 0 #
+                 denseP50LatencyNanos:                 853750.000 #
+                 denseP95LatencyNanos:                 49196834.000 #
+                 distinctGraphPathCount:               64.000 #
+                 exactP95LatencyNanos:                 ? 0 #
+                 failureCount:                         ? 0 #
+                 filteredNodeLimitFastPathExecutions:  34.000 #
+                 gc.alloc.rate:                        566.708 MB/sec
+                 gc.alloc.rate.norm:                   4805641384.000 B/op
+                 gc.count:                             17.000 counts
+                 gc.time:                              48.000 ms
+                 gcCount:                              1.000 #
+                 gcMillis:                             ? 0 #
+                 generalFallbackExecutions:            ? 0 #
+                 globalP95LatencyNanos:                ? 0 #
+                 graphCount:                           64.000 #
+                 graphIdP95LatencyNanos:               ? 0 #
+                 graphIdSetP95LatencyNanos:            ? 0 #
+                 graphIdSourcePruningExecutions:       ? 0 #
+                 graphIdSourceSelections:              ? 0 #
+                 graphIdSourcesPruned:                 ? 0 #
+                 graphIdTargetCount:                   ? 0 #
+                 graphParameterP95LatencyNanos:        ? 0 #
+                 graphParameterTargetCount:            ? 0 #
+                 graphScanPeakActiveWorkers:           2.000 #
+                 graphWorkUnits:                       58071626.000 #
+                 graphWorkerCount:                     2.000 #
+                 inputSourceCount:                     2176.000 #
+                 maxHeapBytes:                         8589934592.000 #
+                 maxLatencyNanos:                      263459250.000 #
+                 nonTargetGraphAccessCount:            1452.000 #
+                 p50LatencyNanos:                      1595208.000 #
+                 p95LatencyNanos:                      49196834.000 #
+                 peakCommittedHeapBytes:               5817499648.000 #
+                 peakProcessCpuLoadPermille:           2555.000 #
+                 peakResidentSetBytes:                 5268488192.000 #
+                 peakUsedHeapBytes:                    4704533536.000 #
+                 processCpuNanos:                      1535388000.000 #
+                 projectionP95LatencyNanos:            ? 0 #
+                 queryCount:                           34.000 #
+                 rawStringMatchStateBytes:             ? 0 #
+                 regexP95LatencyNanos:                 ? 0 #
+                 requestSelectedSourceQueryCount:      ? 0 #
+                 residentSetAfterBytes:                5269356544.000 #
+                 residentSetBeforeBytes:               3563192320.000 #
+                 segmentScanPeakActiveWorkers:         2.000 #
+                 segmentWorkerCount:                   2.000 #
+                 successCount:                         34.000 #
+                 targetGraphAccessCount:               ? 0 #
+                 targetedP50LatencyNanos:              3013917.000 #
+                 targetedP95LatencyNanos:              20057541.000 #
+                 timeoutCount:                         ? 0 #
+                 totalRows:                            2925.000 #
+                 usedHeapAfterBytes:                   4704533536.000 #
+                 usedHeapBeforeBytes:                  3431053544.000 #
+                 wallNanos:                            497292000.000 #
+                 wrappedP95LatencyNanos:               ? 0 #
+                 zeroP50LatencyNanos:                  1354583.000 #
+                 zeroP95LatencyNanos:                  263459250.000 #
+
+
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:accessedGraphCount":
+  1452.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:aggregationP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:availableProcessors":
+  4.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:booleanP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteIndexAdmittedGraphs":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteIndexRetainedBytes":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteParallelScanCount":
+  4.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteParallelScanGraphCount":
+  4.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteScanPeakActiveWorkers":
+  3.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteStringIndexLookupCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteStringIndexLookupGraphCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteStringIndexLookupMaxPerGraph":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteStringIndexLookupMinPerGraph":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteTrigramIndexedGraphs":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:containsP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageBoundaryCount":
+  3.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageFamilyCount":
+  1.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageOperatorCount":
+  2.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageProjectionCount":
+  8.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageSelectivityCount":
+  3.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageShapeCount":
+  14.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:cpuCoreUtilizationPermille":
+  3087.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:cypherGraphIdPredicateQueryCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:denseP50LatencyNanos":
+  853750.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:denseP95LatencyNanos":
+  49196834.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:distinctGraphPathCount":
+  64.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:exactP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:failureCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:filteredNodeLimitFastPathExecutions":
+  34.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:gc.alloc.rate":
+  566.708 MB/sec
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:gc.alloc.rate.norm":
+  4805641384.000 B/op
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:gc.count":
+  17.000 counts
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:gc.time":
+  48.000 ms
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:gcCount":
+  1.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:gcMillis":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:generalFallbackExecutions":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:globalP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphCount":
+  64.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdSetP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdSourcePruningExecutions":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdSourceSelections":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdSourcesPruned":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdTargetCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphParameterP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphParameterTargetCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphScanPeakActiveWorkers":
+  2.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphWorkUnits":
+  58071626.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:graphWorkerCount":
+  2.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:inputSourceCount":
+  2176.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:maxHeapBytes":
+  8589934592.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:maxLatencyNanos":
+  263459250.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:nonTargetGraphAccessCount":
+  1452.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:p50LatencyNanos":
+  1595208.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:p95LatencyNanos":
+  49196834.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:peakCommittedHeapBytes":
+  5817499648.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:peakProcessCpuLoadPermille":
+  2555.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:peakResidentSetBytes":
+  5268488192.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:peakUsedHeapBytes":
+  4704533536.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:processCpuNanos":
+  1535388000.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:projectionP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:queryCount":
+  34.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:rawStringMatchStateBytes":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:regexP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:requestSelectedSourceQueryCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:residentSetAfterBytes":
+  5269356544.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:residentSetBeforeBytes":
+  3563192320.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:segmentScanPeakActiveWorkers":
+  2.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:segmentWorkerCount":
+  2.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:successCount":
+  34.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:targetGraphAccessCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:targetedP50LatencyNanos":
+  3013917.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:targetedP95LatencyNanos":
+  20057541.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:timeoutCount":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:totalRows":
+  2925.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:usedHeapAfterBytes":
+  4704533536.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:usedHeapBeforeBytes":
+  3431053544.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:wallNanos":
+  497292000.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:wrappedP95LatencyNanos":
+  ? 0 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:zeroP50LatencyNanos":
+  1354583.000 #
+
+Secondary result "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries:zeroP95LatencyNanos":
+  263459250.000 #
+
+
+# Run complete. Total time: 00:00:08
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                                                 (coverageFamily)  (graphCount)  (indexState)  (timeoutMillis)  Mode  Cnt           Score   Error   Units
+LargeBroadQueryPressureBenchmark.replayBroadQueries                                            global-wide            64          cold           300000    ss                0.515            s/op
+LargeBroadQueryPressureBenchmark.replayBroadQueries:accessedGraphCount                         global-wide            64          cold           300000    ss             1452.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:aggregationP95LatencyNanos                 global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:availableProcessors                        global-wide            64          cold           300000    ss                4.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:booleanP95LatencyNanos                     global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteIndexAdmittedGraphs                global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteIndexRetainedBytes                 global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteParallelScanCount                  global-wide            64          cold           300000    ss                4.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteParallelScanGraphCount             global-wide            64          cold           300000    ss                4.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteScanPeakActiveWorkers              global-wide            64          cold           300000    ss                3.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteStringIndexLookupCount             global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteStringIndexLookupGraphCount        global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteStringIndexLookupMaxPerGraph       global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteStringIndexLookupMinPerGraph       global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:callSiteTrigramIndexedGraphs               global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:containsP95LatencyNanos                    global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageBoundaryCount                      global-wide            64          cold           300000    ss                3.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageFamilyCount                        global-wide            64          cold           300000    ss                1.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageOperatorCount                      global-wide            64          cold           300000    ss                2.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageProjectionCount                    global-wide            64          cold           300000    ss                8.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageSelectivityCount                   global-wide            64          cold           300000    ss                3.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:coverageShapeCount                         global-wide            64          cold           300000    ss               14.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:cpuCoreUtilizationPermille                 global-wide            64          cold           300000    ss             3087.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:cypherGraphIdPredicateQueryCount           global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:denseP50LatencyNanos                       global-wide            64          cold           300000    ss           853750.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:denseP95LatencyNanos                       global-wide            64          cold           300000    ss         49196834.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:distinctGraphPathCount                     global-wide            64          cold           300000    ss               64.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:exactP95LatencyNanos                       global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:failureCount                               global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:filteredNodeLimitFastPathExecutions        global-wide            64          cold           300000    ss               34.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:gc.alloc.rate                              global-wide            64          cold           300000    ss              566.708          MB/sec
+LargeBroadQueryPressureBenchmark.replayBroadQueries:gc.alloc.rate.norm                         global-wide            64          cold           300000    ss       4805641384.000            B/op
+LargeBroadQueryPressureBenchmark.replayBroadQueries:gc.count                                   global-wide            64          cold           300000    ss               17.000          counts
+LargeBroadQueryPressureBenchmark.replayBroadQueries:gc.time                                    global-wide            64          cold           300000    ss               48.000              ms
+LargeBroadQueryPressureBenchmark.replayBroadQueries:gcCount                                    global-wide            64          cold           300000    ss                1.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:gcMillis                                   global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:generalFallbackExecutions                  global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:globalP95LatencyNanos                      global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphCount                                 global-wide            64          cold           300000    ss               64.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdP95LatencyNanos                     global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdSetP95LatencyNanos                  global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdSourcePruningExecutions             global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdSourceSelections                    global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdSourcesPruned                       global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphIdTargetCount                         global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphParameterP95LatencyNanos              global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphParameterTargetCount                  global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphScanPeakActiveWorkers                 global-wide            64          cold           300000    ss                2.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphWorkUnits                             global-wide            64          cold           300000    ss         58071626.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:graphWorkerCount                           global-wide            64          cold           300000    ss                2.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:inputSourceCount                           global-wide            64          cold           300000    ss             2176.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:maxHeapBytes                               global-wide            64          cold           300000    ss       8589934592.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:maxLatencyNanos                            global-wide            64          cold           300000    ss        263459250.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:nonTargetGraphAccessCount                  global-wide            64          cold           300000    ss             1452.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:p50LatencyNanos                            global-wide            64          cold           300000    ss          1595208.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:p95LatencyNanos                            global-wide            64          cold           300000    ss         49196834.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:peakCommittedHeapBytes                     global-wide            64          cold           300000    ss       5817499648.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:peakProcessCpuLoadPermille                 global-wide            64          cold           300000    ss             2555.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:peakResidentSetBytes                       global-wide            64          cold           300000    ss       5268488192.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:peakUsedHeapBytes                          global-wide            64          cold           300000    ss       4704533536.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:processCpuNanos                            global-wide            64          cold           300000    ss       1535388000.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:projectionP95LatencyNanos                  global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:queryCount                                 global-wide            64          cold           300000    ss               34.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:rawStringMatchStateBytes                   global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:regexP95LatencyNanos                       global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:requestSelectedSourceQueryCount            global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:residentSetAfterBytes                      global-wide            64          cold           300000    ss       5269356544.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:residentSetBeforeBytes                     global-wide            64          cold           300000    ss       3563192320.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:segmentScanPeakActiveWorkers               global-wide            64          cold           300000    ss                2.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:segmentWorkerCount                         global-wide            64          cold           300000    ss                2.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:successCount                               global-wide            64          cold           300000    ss               34.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:targetGraphAccessCount                     global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:targetedP50LatencyNanos                    global-wide            64          cold           300000    ss          3013917.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:targetedP95LatencyNanos                    global-wide            64          cold           300000    ss         20057541.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:timeoutCount                               global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:totalRows                                  global-wide            64          cold           300000    ss             2925.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:usedHeapAfterBytes                         global-wide            64          cold           300000    ss       4704533536.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:usedHeapBeforeBytes                        global-wide            64          cold           300000    ss       3431053544.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:wallNanos                                  global-wide            64          cold           300000    ss        497292000.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:wrappedP95LatencyNanos                     global-wide            64          cold           300000    ss                  ? 0               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:zeroP50LatencyNanos                        global-wide            64          cold           300000    ss          1354583.000               #
+LargeBroadQueryPressureBenchmark.replayBroadQueries:zeroP95LatencyNanos                        global-wide            64          cold           300000    ss        263459250.000               #
+
+Benchmark result is saved to /private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-3.json

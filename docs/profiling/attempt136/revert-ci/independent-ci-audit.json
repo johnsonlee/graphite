@@ -1,0 +1,907 @@
+{
+  "auditPassed": true,
+  "ciPerformancePassed": false,
+  "head": "d14bc77f625c515c2e5416728e1b07e0554aa67a",
+  "workflowRun": 33986202016,
+  "unitRunReportedByParent": 33986202091,
+  "scope": "Read-only independent Python checks of downloaded global-wide and routing artifacts after parent confirmed downloads completed; no CI retry, Java, gate edits or new measurements. Method17 and hosted status not independently re-fetched.",
+  "manifestChecks": [
+    {
+      "directory": "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a",
+      "filesChecked": 19,
+      "files": [
+        "provenance.json",
+        "graphs.tsv",
+        "fixture-provenance.tsv",
+        "fixture-reproducibility.json",
+        "base-global-wide-oracle-seed.correctness",
+        "global-wide-report.md",
+        "global-wide-status.json",
+        "base-global-wide-1.json",
+        "base-global-wide-2.json",
+        "base-global-wide-3.json",
+        "base-global-wide-1.tsv",
+        "base-global-wide-2.tsv",
+        "base-global-wide-3.tsv",
+        "candidate-global-wide-1.json",
+        "candidate-global-wide-2.json",
+        "candidate-global-wide-3.json",
+        "candidate-global-wide-1.tsv",
+        "candidate-global-wide-2.tsv",
+        "candidate-global-wide-3.tsv"
+      ],
+      "allHashesMatch": true
+    },
+    {
+      "directory": "routing",
+      "filesChecked": 32,
+      "files": [
+        "provenance.json",
+        "graphs.tsv",
+        "fixture-provenance.tsv",
+        "fixture-reproducibility.json",
+        "base-single-source-reference.json",
+        "base-single-source-reference.tsv",
+        "base-single-source-reference.manifest",
+        "base-single-source-oracle.manifest",
+        "base-graph-routing-cold.json",
+        "base-graph-routing-cold.tsv",
+        "base-graph-routing-cold.correctness",
+        "candidate-graph-routing-cold.json",
+        "candidate-graph-routing-cold.tsv",
+        "candidate-graph-routing-cold.correctness",
+        "graph-routing-cold-report.md",
+        "graph-routing-cold-status.json",
+        "base-graph-routing-warm.json",
+        "base-graph-routing-warm.tsv",
+        "base-graph-routing-warm.correctness",
+        "candidate-graph-routing-warm.json",
+        "candidate-graph-routing-warm.tsv",
+        "candidate-graph-routing-warm.correctness",
+        "graph-routing-warm-report.md",
+        "graph-routing-warm-status.json",
+        "base-graph-routing-startup-prepared.json",
+        "base-graph-routing-startup-prepared.tsv",
+        "base-graph-routing-startup-prepared.correctness",
+        "candidate-graph-routing-startup-prepared.json",
+        "candidate-graph-routing-startup-prepared.tsv",
+        "candidate-graph-routing-startup-prepared.correctness",
+        "graph-routing-startup-prepared-report.md",
+        "graph-routing-startup-prepared-status.json"
+      ],
+      "allHashesMatch": true
+    }
+  ],
+  "provenance": [
+    {
+      "repository": "johnsonlee/graphite",
+      "baseSha": "4e328b0109e13c896b74004823fb049fcb19251a",
+      "candidateSha": "d14bc77f625c515c2e5416728e1b07e0554aa67a",
+      "harnessSha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f",
+      "correctnessSha256": "f6e8af6000ccd89e02ac932bf7e95c75cacce636ebcc73227e997f695f06e717",
+      "fixtureVerifierSha256": "f88e0e29fdf41ec9e1ce3adc323ff7d7c333b3a15b049eae6ed112d133870126",
+      "comparatorSha256": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+      "scriptSha256": "4b9b07a797ce4c5f1903d8c80eee90352fd12af97445125d233ff7751dca143c",
+      "baseJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+      "candidateJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+      "manifestSha256": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+      "fixtureProvenanceSha256": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+      "oracleSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "fixtureSource": "four-pinned-fixture-jars",
+      "runOrder": "candidate-base,base-candidate,candidate-base"
+    },
+    {
+      "repository": "johnsonlee/graphite",
+      "baseSha": "4e328b0109e13c896b74004823fb049fcb19251a",
+      "candidateSha": "d14bc77f625c515c2e5416728e1b07e0554aa67a",
+      "harnessSha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f",
+      "correctnessManifestSha256": "f6e8af6000ccd89e02ac932bf7e95c75cacce636ebcc73227e997f695f06e717",
+      "fixtureVerifierSha256": "f88e0e29fdf41ec9e1ce3adc323ff7d7c333b3a15b049eae6ed112d133870126",
+      "comparatorSha256": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+      "scriptSha256": "38cc5f56b087e535c5f4d50478c622d82bfe578893167b9474e21a2bc3a08d00",
+      "reproducibilityScriptSha256": "dfe887b4e032746a97dd3f7b5bb2c456eef4c9435861832f39bbbd2772c7e769",
+      "zipHasherSha256": "a65bd7cbe0a7df3569ca9fcfe471a21105417753d5a1f6977c8f7bc44ea041ae",
+      "gistEvidenceSha256": "8eece58ed7117ac19afe11e4f4a7b53e413d5e715ba5c3576beb8bd24ff14d0a",
+      "fixturePreparationScriptSha256": "f9cb88042869ea91fa56c4ef7ed63ff07af3edabffdc67c3447144f5281ff20a",
+      "workloadVerifierSha256": "14a41dc9e8f63c8d1c0e474a463829ab8b5e8320262d702edc0e29d2a0ed66c6",
+      "baseJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+      "candidateJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+      "manifestSha256": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+      "fixtureProvenanceSha256": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+      "oracleSha256": "bc8edcf39a58c19d2f8bb4e269402308e916e3cb5df5ef9740d33e34f4f7836d",
+      "oracleSource": "base-single-source"
+    }
+  ],
+  "globalWide": {
+    "publishedStatus": {
+      "passed": false,
+      "iterationPassed": false,
+      "regressionPassed": false,
+      "progressAchieved": false,
+      "progressErrors": [
+        "Valid passing paired evidence against the last accepted iteration is required for progress"
+      ],
+      "targetAchieved": false,
+      "requireTarget": false,
+      "errors": [
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-1/global-wide-wrapped-case-insensitive-distinct/zero: aligned latency 8426481 exceeds base 6310643 by >15% and >1 ms; repeated in 2 independent pairs",
+        "Valid passing paired evidence against the last accepted iteration is required for progress"
+      ],
+      "targetErrors": [
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: P95 speedup 1.93x; required 10.00x in every independent fork",
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: global-wide-wrapped-case-insensitive P95 speedup 0.84x; required 10.00x",
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.93x; required 10.00x",
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: P95 speedup 1.07x; required 10.00x in every independent fork",
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: global-wide-wrapped-case-insensitive P95 speedup 1.02x; required 10.00x",
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.07x; required 10.00x",
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: P95 speedup 0.53x; required 10.00x in every independent fork",
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: global-wide-wrapped-case-insensitive P95 speedup 1.37x; required 10.00x",
+        "4e328b0109e13c896b74004823fb049fcb19251a: pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.53x; required 10.00x"
+      ]
+    },
+    "correctnessRowsComparedToOracle": 204,
+    "oracleSeedRows": 34,
+    "pairs": [
+      {
+        "pair": 1,
+        "order": "candidate-base",
+        "base": {
+          "p50Nanos": 4329716,
+          "p95Nanos": 194765887,
+          "p95Query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "processCpuNanos": 2970000000.0,
+          "peakUsedHeapBytes": 4259459784.0,
+          "peakResidentSetBytes": 5014839296.0,
+          "distinctRows": [
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+              "latencyNanos": "6310643",
+              "rowCount": "0",
+              "graphWorkUnits": "99",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "41766065",
+              "rowCount": "12",
+              "graphWorkUnits": "106706",
+              "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "194765887",
+              "rowCount": "200",
+              "graphWorkUnits": "283544",
+              "hitGraphIds": "fixture-android-00,fixture-tika-00"
+            }
+          ]
+        },
+        "candidate": {
+          "p50Nanos": 4429033,
+          "p95Nanos": 100719754,
+          "p95Query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "processCpuNanos": 2780000000.0,
+          "peakUsedHeapBytes": 4270578528.0,
+          "peakResidentSetBytes": 5057716224.0,
+          "distinctRows": [
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+              "latencyNanos": "8426481",
+              "rowCount": "0",
+              "graphWorkUnits": "99",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "42520846",
+              "rowCount": "12",
+              "graphWorkUnits": "106706",
+              "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "100719754",
+              "rowCount": "200",
+              "graphWorkUnits": "283544",
+              "hitGraphIds": "fixture-android-00,fixture-tika-00"
+            }
+          ]
+        },
+        "p95Speedup": 1.9337406940052693,
+        "strictP95Improvement": true
+      },
+      {
+        "pair": 2,
+        "order": "base-candidate",
+        "base": {
+          "p50Nanos": 4191693,
+          "p95Nanos": 103967619,
+          "p95Query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "processCpuNanos": 2830000000.0,
+          "peakUsedHeapBytes": 4368712248.0,
+          "peakResidentSetBytes": 5168558080.0,
+          "distinctRows": [
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+              "latencyNanos": "7739032",
+              "rowCount": "0",
+              "graphWorkUnits": "99",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "42118052",
+              "rowCount": "12",
+              "graphWorkUnits": "106706",
+              "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "103967619",
+              "rowCount": "200",
+              "graphWorkUnits": "283544",
+              "hitGraphIds": "fixture-android-00,fixture-tika-00"
+            }
+          ]
+        },
+        "candidate": {
+          "p50Nanos": 4427452,
+          "p95Nanos": 97493250,
+          "p95Query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "processCpuNanos": 2640000000.0,
+          "peakUsedHeapBytes": 4272701704.0,
+          "peakResidentSetBytes": 5070184448.0,
+          "distinctRows": [
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+              "latencyNanos": "8901044",
+              "rowCount": "0",
+              "graphWorkUnits": "99",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "43849365",
+              "rowCount": "12",
+              "graphWorkUnits": "106706",
+              "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "97493250",
+              "rowCount": "200",
+              "graphWorkUnits": "283544",
+              "hitGraphIds": "fixture-android-00,fixture-tika-00"
+            }
+          ]
+        },
+        "p95Speedup": 1.066408382118762,
+        "strictP95Improvement": true
+      },
+      {
+        "pair": 3,
+        "order": "candidate-base",
+        "base": {
+          "p50Nanos": 5805125,
+          "p95Nanos": 126274819,
+          "p95Query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "processCpuNanos": 3130000000.0,
+          "peakUsedHeapBytes": 4396385896.0,
+          "peakResidentSetBytes": 5209083904.0,
+          "distinctRows": [
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+              "latencyNanos": "12415617",
+              "rowCount": "0",
+              "graphWorkUnits": "99",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "51110475",
+              "rowCount": "12",
+              "graphWorkUnits": "106706",
+              "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "126274819",
+              "rowCount": "200",
+              "graphWorkUnits": "283544",
+              "hitGraphIds": "fixture-android-00,fixture-tika-00"
+            }
+          ]
+        },
+        "candidate": {
+          "p50Nanos": 4014633,
+          "p95Nanos": 238913798,
+          "p95Query": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "processCpuNanos": 3120000000.0,
+          "peakUsedHeapBytes": 4270751192.0,
+          "peakResidentSetBytes": 5082980352.0,
+          "distinctRows": [
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+              "latencyNanos": "7743975",
+              "rowCount": "0",
+              "graphWorkUnits": "99",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "54359829",
+              "rowCount": "12",
+              "graphWorkUnits": "106706",
+              "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "238913798",
+              "rowCount": "200",
+              "graphWorkUnits": "283544",
+              "hitGraphIds": "fixture-android-00,fixture-tika-00"
+            }
+          ]
+        },
+        "p95Speedup": 0.5285371546435338,
+        "strictP95Improvement": false
+      }
+    ],
+    "allAlignedRowsAboveThreshold": {
+      "global-wide-four-properties/zero": [
+        {
+          "pair": 1,
+          "id": "global-wide-four-properties-zero",
+          "baseNanos": 467047247,
+          "candidateNanos": 539454800,
+          "relativeIncrease": 0.15503260851037615,
+          "absoluteIncreaseNanos": 72407553
+        }
+      ],
+      "global-wide-class-pair/zero": [
+        {
+          "pair": 1,
+          "id": "global-wide-class-pair-zero",
+          "baseNanos": 4770856,
+          "candidateNanos": 6649099,
+          "relativeIncrease": 0.393690985433222,
+          "absoluteIncreaseNanos": 1878243
+        }
+      ],
+      "global-wide-aliased/zero": [
+        {
+          "pair": 1,
+          "id": "global-wide-aliased-zero",
+          "baseNanos": 1957302,
+          "candidateNanos": 3540353,
+          "relativeIncrease": 0.8087924091427894,
+          "absoluteIncreaseNanos": 1583051
+        }
+      ],
+      "global-wide-wrapped-case-insensitive-distinct/zero": [
+        {
+          "pair": 1,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "baseNanos": 6310643,
+          "candidateNanos": 8426481,
+          "relativeIncrease": 0.3352808897603621,
+          "absoluteIncreaseNanos": 2115838
+        },
+        {
+          "pair": 2,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "baseNanos": 7739032,
+          "candidateNanos": 8901044,
+          "relativeIncrease": 0.15014952774455503,
+          "absoluteIncreaseNanos": 1162012
+        }
+      ],
+      "global-wide-caller-class/targeted": [
+        {
+          "pair": 2,
+          "id": "global-wide-caller-class-targeted",
+          "baseNanos": 5696343,
+          "candidateNanos": 8121806,
+          "relativeIncrease": 0.4257930043889562,
+          "absoluteIncreaseNanos": 2425463
+        }
+      ],
+      "global-wide-callee-class/targeted": [
+        {
+          "pair": 2,
+          "id": "global-wide-callee-class-targeted",
+          "baseNanos": 4790636,
+          "candidateNanos": 6573367,
+          "relativeIncrease": 0.37212825186467935,
+          "absoluteIncreaseNanos": 1782731
+        }
+      ],
+      "global-wide-provenance/targeted": [
+        {
+          "pair": 2,
+          "id": "global-wide-provenance-targeted",
+          "baseNanos": 5821415,
+          "candidateNanos": 7657480,
+          "relativeIncrease": 0.31539840399627916,
+          "absoluteIncreaseNanos": 1836065
+        }
+      ],
+      "global-wide-parameterized/targeted": [
+        {
+          "pair": 2,
+          "id": "global-wide-parameterized-targeted",
+          "baseNanos": 4191693,
+          "candidateNanos": 5745616,
+          "relativeIncrease": 0.3707148877553772,
+          "absoluteIncreaseNanos": 1553923
+        }
+      ],
+      "global-wide-wrapped-case-insensitive-distinct/dense": [
+        {
+          "pair": 3,
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "baseNanos": 126274819,
+          "candidateNanos": 238913798,
+          "relativeIncrease": 0.8920145749723862,
+          "absoluteIncreaseNanos": 112638979
+        }
+      ]
+    },
+    "repeatedAlignedFailures": {
+      "global-wide-wrapped-case-insensitive-distinct/zero": [
+        {
+          "pair": 1,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "baseNanos": 6310643,
+          "candidateNanos": 8426481,
+          "relativeIncrease": 0.3352808897603621,
+          "absoluteIncreaseNanos": 2115838
+        },
+        {
+          "pair": 2,
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "baseNanos": 7739032,
+          "candidateNanos": 8901044,
+          "relativeIncrease": 0.15014952774455503,
+          "absoluteIncreaseNanos": 1162012
+        }
+      ]
+    },
+    "allPairedResourcesWithin15Percent": true,
+    "everyPairStrictP95Improvement": false
+  },
+  "routing": [
+    {
+      "indexState": "cold",
+      "passed": false,
+      "errors": [
+        "k64: graph-set latency regressed; base/candidate P50 278150/1524298, P95 2319441/3077890"
+      ],
+      "correctnessRowsPerRevision": 1137,
+      "resources": {
+        "base": {
+          "processCpuNanos": 11800000000.0,
+          "peakUsedHeapBytes": 5869010288.0,
+          "peakResidentSetBytes": 7444262912.0,
+          "graphWorkUnits": 116321091.0,
+          "queryCount": 1137.0,
+          "failureCount": 0.0,
+          "timeoutCount": 0.0
+        },
+        "candidate": {
+          "processCpuNanos": 11280000000.0,
+          "peakUsedHeapBytes": 5167086544.0,
+          "peakResidentSetBytes": 6354186240.0,
+          "graphWorkUnits": 116321091.0,
+          "queryCount": 1137.0,
+          "failureCount": 0.0,
+          "timeoutCount": 0.0
+        }
+      },
+      "graphSetByWidth": [
+        {
+          "width": 2,
+          "sampleCount": 192,
+          "baseP50": 156350,
+          "baseP95": 368784,
+          "candidateP50": 166856,
+          "candidateP95": 431076,
+          "p50Speedup": 0.9370355276406003,
+          "p95Speedup": 0.8554964785791832,
+          "normalizedCandidateP95": 215538,
+          "p50LimitNanos": 406350,
+          "p95LimitNanos": 1368784,
+          "p50Failed": false,
+          "p95Failed": false,
+          "rawLatencyRows": []
+        },
+        {
+          "width": 8,
+          "sampleCount": 48,
+          "baseP50": 162109,
+          "baseP95": 1010831,
+          "candidateP50": 162440,
+          "candidateP95": 1050169,
+          "p50Speedup": 0.9979623245506033,
+          "p95Speedup": 0.9625412671674749,
+          "normalizedCandidateP95": 131271.125,
+          "p50LimitNanos": 412109,
+          "p95LimitNanos": 2010831,
+          "p50Failed": false,
+          "p95Failed": false,
+          "rawLatencyRows": []
+        },
+        {
+          "width": 64,
+          "sampleCount": 6,
+          "baseP50": 278150,
+          "baseP95": 2319441,
+          "candidateP50": 1524298,
+          "candidateP95": 3077890,
+          "p50Speedup": 0.18247744207497485,
+          "p95Speedup": 0.7535815120098509,
+          "normalizedCandidateP95": 48092.03125,
+          "p50LimitNanos": 528150,
+          "p95LimitNanos": 3319441,
+          "p50Failed": true,
+          "p95Failed": false,
+          "rawLatencyRows": [
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-zero",
+              "latencyNanos": "2426240",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-zero",
+              "latencyNanos": "1693428",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-targeted",
+              "latencyNanos": "3077890",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00,fixture-android-09"
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-targeted",
+              "latencyNanos": "1524298",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00,fixture-android-09"
+            },
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-dense",
+              "latencyNanos": "434712",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00"
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-dense",
+              "latencyNanos": "203209",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00"
+            }
+          ]
+        }
+      ],
+      "coldFirst": {
+        "id": "request-selected-set-wrapped-contains-k64-group-00-zero",
+        "baseLatencyNanos": 478081925,
+        "candidateLatencyNanos": 390930440,
+        "speedup": 1.222933484023398,
+        "limitNanos": 728081925
+      }
+    },
+    {
+      "indexState": "warm",
+      "passed": true,
+      "errors": [],
+      "correctnessRowsPerRevision": 1137,
+      "resources": {
+        "base": {
+          "processCpuNanos": 4530000000.0,
+          "peakUsedHeapBytes": 5886625768.0,
+          "peakResidentSetBytes": 7390085120.0,
+          "graphWorkUnits": 80091.0,
+          "queryCount": 1137.0,
+          "failureCount": 0.0,
+          "timeoutCount": 0.0
+        },
+        "candidate": {
+          "processCpuNanos": 4410000000.0,
+          "peakUsedHeapBytes": 5884038936.0,
+          "peakResidentSetBytes": 7401496576.0,
+          "graphWorkUnits": 80091.0,
+          "queryCount": 1137.0,
+          "failureCount": 0.0,
+          "timeoutCount": 0.0
+        }
+      },
+      "graphSetByWidth": [
+        {
+          "width": 2,
+          "sampleCount": 192,
+          "baseP50": 71205,
+          "baseP95": 153607,
+          "candidateP50": 69462,
+          "candidateP95": 143061,
+          "p50Speedup": 1.0250928565258703,
+          "p95Speedup": 1.07371680611767,
+          "normalizedCandidateP95": 71530.5,
+          "p50LimitNanos": 321205,
+          "p95LimitNanos": 1153607,
+          "p50Failed": false,
+          "p95Failed": false,
+          "rawLatencyRows": []
+        },
+        {
+          "width": 8,
+          "sampleCount": 48,
+          "baseP50": 92386,
+          "baseP95": 173256,
+          "candidateP50": 77565,
+          "candidateP95": 139566,
+          "p50Speedup": 1.1910784503319796,
+          "p95Speedup": 1.2413911697691415,
+          "normalizedCandidateP95": 17445.75,
+          "p50LimitNanos": 342386,
+          "p95LimitNanos": 1173256,
+          "p50Failed": false,
+          "p95Failed": false,
+          "rawLatencyRows": []
+        },
+        {
+          "width": 64,
+          "sampleCount": 6,
+          "baseP50": 168389,
+          "baseP95": 238622,
+          "candidateP50": 142590,
+          "candidateP95": 201647,
+          "p50Speedup": 1.1809313416088085,
+          "p95Speedup": 1.1833649893130074,
+          "normalizedCandidateP95": 3150.734375,
+          "p50LimitNanos": 418389,
+          "p95LimitNanos": 1238622,
+          "p50Failed": false,
+          "p95Failed": false,
+          "rawLatencyRows": [
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-zero",
+              "latencyNanos": "201647",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-zero",
+              "latencyNanos": "128470",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-targeted",
+              "latencyNanos": "142590",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00,fixture-android-09"
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-targeted",
+              "latencyNanos": "148499",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00,fixture-android-09"
+            },
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-dense",
+              "latencyNanos": "160677",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00"
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-dense",
+              "latencyNanos": "84264",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00"
+            }
+          ]
+        }
+      ],
+      "coldFirst": null
+    },
+    {
+      "indexState": "startup-prepared",
+      "passed": true,
+      "errors": [],
+      "correctnessRowsPerRevision": 1137,
+      "resources": {
+        "base": {
+          "processCpuNanos": 8960000000.0,
+          "peakUsedHeapBytes": 5815943416.0,
+          "peakResidentSetBytes": 6481661952.0,
+          "graphWorkUnits": 1036940.0,
+          "queryCount": 1137.0,
+          "failureCount": 0.0,
+          "timeoutCount": 0.0
+        },
+        "candidate": {
+          "processCpuNanos": 8860000000.0,
+          "peakUsedHeapBytes": 5842670712.0,
+          "peakResidentSetBytes": 6489362432.0,
+          "graphWorkUnits": 1036940.0,
+          "queryCount": 1137.0,
+          "failureCount": 0.0,
+          "timeoutCount": 0.0
+        }
+      },
+      "graphSetByWidth": [
+        {
+          "width": 2,
+          "sampleCount": 192,
+          "baseP50": 190561,
+          "baseP95": 500689,
+          "candidateP50": 183921,
+          "candidateP95": 455903,
+          "p50Speedup": 1.0361024570331827,
+          "p95Speedup": 1.0982358089330406,
+          "normalizedCandidateP95": 227951.5,
+          "p50LimitNanos": 440561,
+          "p95LimitNanos": 1500689,
+          "p50Failed": false,
+          "p95Failed": false,
+          "rawLatencyRows": []
+        },
+        {
+          "width": 8,
+          "sampleCount": 48,
+          "baseP50": 206004,
+          "baseP95": 1212418,
+          "candidateP50": 159124,
+          "candidateP95": 1219229,
+          "p50Speedup": 1.2946130062089942,
+          "p95Speedup": 0.9944136827454071,
+          "normalizedCandidateP95": 152403.625,
+          "p50LimitNanos": 456004,
+          "p95LimitNanos": 2212418,
+          "p50Failed": false,
+          "p95Failed": false,
+          "rawLatencyRows": []
+        },
+        {
+          "width": 64,
+          "sampleCount": 6,
+          "baseP50": 289327,
+          "baseP95": 2916262,
+          "candidateP50": 291720,
+          "candidateP95": 3084920,
+          "p50Speedup": 0.9917969285616345,
+          "p95Speedup": 0.9453282418993038,
+          "normalizedCandidateP95": 48201.875,
+          "p50LimitNanos": 539327,
+          "p95LimitNanos": 3916262,
+          "p50Failed": false,
+          "p95Failed": false,
+          "rawLatencyRows": [
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-zero",
+              "latencyNanos": "394331",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-zero",
+              "latencyNanos": "291720",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": ""
+            },
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-targeted",
+              "latencyNanos": "3084920",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00,fixture-android-09"
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-targeted",
+              "latencyNanos": "1478060",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00,fixture-android-09"
+            },
+            {
+              "id": "graph-id-in-literal-wrapped-contains-k64-group-00-dense",
+              "latencyNanos": "175739",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00"
+            },
+            {
+              "id": "graph-id-in-parameter-wrapped-contains-k64-group-00-dense",
+              "latencyNanos": "185694",
+              "workloadIdentity": "35bad66d358dca7faeb0cdf55b64b864a288b1b7a4100dbf64766839a0267284",
+              "targetGraphIds": "fixture-android-00,fixture-android-01,fixture-android-02,fixture-android-03,fixture-android-04,fixture-android-05,fixture-android-06,fixture-android-07,fixture-android-08,fixture-android-09,fixture-android-10,fixture-android-11,fixture-android-12,fixture-android-13,fixture-android-14,fixture-android-15,fixture-tika-00,fixture-tika-01,fixture-tika-02,fixture-tika-03,fixture-tika-04,fixture-tika-05,fixture-tika-06,fixture-tika-07,fixture-tika-08,fixture-tika-09,fixture-tika-10,fixture-tika-11,fixture-tika-12,fixture-tika-13,fixture-tika-14,fixture-tika-15,fixture-hive-00,fixture-hive-01,fixture-hive-02,fixture-hive-03,fixture-hive-04,fixture-hive-05,fixture-hive-06,fixture-hive-07,fixture-hive-08,fixture-hive-09,fixture-hive-10,fixture-hive-11,fixture-hive-12,fixture-hive-13,fixture-hive-14,fixture-hive-15,fixture-kotlin-compiler-00,fixture-kotlin-compiler-01,fixture-kotlin-compiler-02,fixture-kotlin-compiler-03,fixture-kotlin-compiler-04,fixture-kotlin-compiler-05,fixture-kotlin-compiler-06,fixture-kotlin-compiler-07,fixture-kotlin-compiler-08,fixture-kotlin-compiler-09,fixture-kotlin-compiler-10,fixture-kotlin-compiler-11,fixture-kotlin-compiler-12,fixture-kotlin-compiler-13,fixture-kotlin-compiler-14,fixture-kotlin-compiler-15",
+              "hitGraphIds": "fixture-android-00"
+            }
+          ]
+        }
+      ],
+      "coldFirst": null
+    }
+  ],
+  "limitations": [
+    "JAR content equivalence is reported by hash-bound CI provenance; original JARs not included/rehashed here. It does not nullify observed gate failures or establish their cause.",
+    "Correctness independently checks full 14-field signatures and hit/access graph IDs/work equality; raw result rows are not embedded in artifacts, so this does not independently execute their oracle.",
+    "global progress false is short-circuited because regression evidence failed; independently the third pair also lacks strict P95 improvement.",
+    "Method17 CPU numbers and unit terminal status belong to parent audit, not this artifact audit."
+  ],
+  "inputSha256": {
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/evidence-manifest.json": "0299215ca69db9c0d902691bd507560599fe98fa031ba8f9f3226b67e6086a4b",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/provenance.json": "72c6053f2dca19c7355d0beacb3cb2fd8bc4795e0648bcac14432b0e147eaeb5",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/graphs.tsv": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/fixture-provenance.tsv": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/fixture-reproducibility.json": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-oracle-seed.correctness": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/global-wide-report.md": "d9fd2138ffa453754f5b471f6b06a89a7cf87a8057f7d3e9e37f58f77e3aea03",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/global-wide-status.json": "03a291964e5cc9af6439de9708403091878720601843e14ed1fc9a60b204b2b2",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-1.json": "79f8a7c8d1d84f2a8022676e2289137bbea016269afe6252bd8f22f52493e4cd",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-2.json": "68e8bc3c711a4ab7e676157a67faca96c1e2e6e9816128275a604ad7cb4a2a84",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-3.json": "0829fd38fdb6f9b286e56091d80aabbc7bcb17d51a8595c850cd5553f1a3b782",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-1.tsv": "9bf776855b041d9dcc5fe08ab60415234a86ee62bef1836ffaafe75ad5f8b4c7",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-2.tsv": "7f40edaf6dfed5163ab9abc009331cc087c4b765939726630bee59e86d6e85de",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-3.tsv": "db2a0c7d229ca92d3ef019abf315290e8824056cd3670bd54009130525ab1ec5",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-1.json": "c82e6ff23215fe45413ddb56ee3efb659435585b87a9f00327d30c8e8741c639",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-2.json": "622111201ba71bb57154cd0c561818fef94bc046b3062fb73b2bf505c847b820",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-3.json": "f2cf2500bbd84aa8ce7314229f89b1d4dbf0ff35a101d8c2ec716996fc1791c3",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-1.tsv": "93261a58f20d20ac5f5d6cb75cde2060ebb2e55177c155d11d95f3c4a53d0875",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-2.tsv": "7ab73aa6c127d7d6345b784746d750522f3c2e4fbdfd5c6ff9ba790b0a3353f9",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/candidate-global-wide-3.tsv": "f460070a5a94516a93a19c4787e747ce784a0d643b09f9d072bafab0c0bfb4aa",
+    "routing/evidence-manifest.json": "e4912c92a741ea9f7b7261188bd50105c514cf193a3199b2bc90a761bf98b80d",
+    "routing/provenance.json": "1f7dfd90a10f83baef7ba6e433e8436a2474bacc2fba846e50c556da72516144",
+    "routing/graphs.tsv": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+    "routing/fixture-provenance.tsv": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+    "routing/fixture-reproducibility.json": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+    "routing/base-single-source-reference.json": "370f71871aaf5bd63bc9c4809b933a23f73c0b27ae147d031e51e5399aa63b75",
+    "routing/base-single-source-reference.tsv": "520e23f575392c1ae6cff7bcca13a5b8542894005e09294775aab34a166b8968",
+    "routing/base-single-source-reference.manifest": "fee54d81e6c7a19341ba8a1c236b779772bcd06a6eb63f5e2dfc4798106e81d4",
+    "routing/base-single-source-oracle.manifest": "bc8edcf39a58c19d2f8bb4e269402308e916e3cb5df5ef9740d33e34f4f7836d",
+    "routing/base-graph-routing-cold.json": "d51e365841b1979321c7d99a928056f80c48ef814c9ea96d891719c84a2a5e8c",
+    "routing/base-graph-routing-cold.tsv": "9dc360769f648f985901d062d759de0eaf51db009fe5902acfafc31bd3885e8b",
+    "routing/base-graph-routing-cold.correctness": "35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd",
+    "routing/candidate-graph-routing-cold.json": "3141e7d071da7613daa8d52550b3bd59452832363281f1d5cf58deceac5090f9",
+    "routing/candidate-graph-routing-cold.tsv": "07d19d444d3de2333783c1995bf5fcd3c6ba139aab5dd4089b4e9afe5cf3ad48",
+    "routing/candidate-graph-routing-cold.correctness": "35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd",
+    "routing/graph-routing-cold-report.md": "a745bbc2e7276f67bc845e0db5e9f76c424e94640b3211bc10e3579e448742f1",
+    "routing/graph-routing-cold-status.json": "b815492e49cc8183a919f34b855acb650fbbf46a90a9defc7ee7891a664da9fc",
+    "routing/base-graph-routing-warm.json": "9db197c3434d74698d75fac0914b5e6eb833019a18370e37e5034e346a8c2635",
+    "routing/base-graph-routing-warm.tsv": "584f44241dfda67d42c8bc496572ceb5a0299cf5fd59adb770d17402b6360008",
+    "routing/base-graph-routing-warm.correctness": "35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd",
+    "routing/candidate-graph-routing-warm.json": "07a17cd33fb5e7bca12ebe77d95accae05cabf5e4d974c82dbcba8696fbc4c3f",
+    "routing/candidate-graph-routing-warm.tsv": "d249b9e672e420a7056b9ff6239ff8925de8958e4aebd2d06e79b5695ef63486",
+    "routing/candidate-graph-routing-warm.correctness": "35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd",
+    "routing/graph-routing-warm-report.md": "9fa3d9674507074ed664c86eb3e22eea14a0e3b157cc6ee9332f20c5cd56dd35",
+    "routing/graph-routing-warm-status.json": "b33890b65259a1800d71b764b5031cf80cadbb8915f6b81c824a88a316b62de3",
+    "routing/base-graph-routing-startup-prepared.json": "b49cedfcdf91ba76180c1c52bae85864b785712f3200b91a7ce67f98a3871baa",
+    "routing/base-graph-routing-startup-prepared.tsv": "293e90781cbdbc2f48f83d22a889777c8080f53469935901ec77e78acdf56459",
+    "routing/base-graph-routing-startup-prepared.correctness": "35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd",
+    "routing/candidate-graph-routing-startup-prepared.json": "36c9aa40924af5060d2c2018d540f77de0b9c5297387664b715a13d489b5e649",
+    "routing/candidate-graph-routing-startup-prepared.tsv": "222aa54a4e5939c8587a97a62557e9d90b412590b7fda17f798090ce7881d773",
+    "routing/candidate-graph-routing-startup-prepared.correctness": "35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd",
+    "routing/graph-routing-startup-prepared-report.md": "027635f953658f86a180e7919459bc9fc2be63442997200c9e0f4108ae2410ec",
+    "routing/graph-routing-startup-prepared-status.json": "16a4a380f97ea75bf512655ce03432e546ae987e3f9b3e29701768344afd36dd",
+    "global-wide/optimization-references.json": "5d40288a593c22a197427482a20c448c33ff356036859ab2ea77d6192dc268a1",
+    "global-wide/global-wide-status.json": "71e26029cc12397d40493619d9d3f3b30c7c1b9f80c1c42218bc2fa3b27d2d22",
+    "global-wide/reference-4e328b0109e13c896b74004823fb049fcb19251a/base-global-wide-oracle-seed.tsv": "351f67d6f25504397050479ae11b94742e49007f854b3ad00a9011913ae3b4ad"
+  }
+}

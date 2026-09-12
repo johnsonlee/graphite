@@ -1,0 +1,85 @@
+{
+  "failedMethodShards": [],
+  "all12MethodShardsAndGatePassed": true,
+  "source": "Exact-head terminal GitHub job snapshot; no failed Method artifact to independently rejudge",
+  "jobs": [
+    {
+      "name": "method-compatibility-4-position",
+      "id": 101374529673,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529673"
+    },
+    {
+      "name": "method-compatibility-17-string",
+      "id": 101374529696,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529696"
+    },
+    {
+      "name": "method-compatibility-4-string",
+      "id": 101374529709,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529709"
+    },
+    {
+      "name": "method-compatibility-36-string",
+      "id": 101374529722,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529722"
+    },
+    {
+      "name": "method-compatibility-17-aggregate",
+      "id": 101374529730,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529730"
+    },
+    {
+      "name": "method-compatibility-4-scan",
+      "id": 101374529734,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529734"
+    },
+    {
+      "name": "method-compatibility-17-position",
+      "id": 101374529735,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529735"
+    },
+    {
+      "name": "method-compatibility-36-scan",
+      "id": 101374529742,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529742"
+    },
+    {
+      "name": "method-compatibility-4-aggregate",
+      "id": 101374529746,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529746"
+    },
+    {
+      "name": "method-compatibility-36-aggregate",
+      "id": 101374529748,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529748"
+    },
+    {
+      "name": "method-compatibility-36-position",
+      "id": 101374529752,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529752"
+    },
+    {
+      "name": "method-compatibility-17-scan",
+      "id": 101374529760,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374529760"
+    },
+    {
+      "name": "method-compatibility-gate",
+      "id": 101374839013,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379/job/101374839013"
+    }
+  ]
+}

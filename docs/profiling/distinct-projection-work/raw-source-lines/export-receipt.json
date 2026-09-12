@@ -1,0 +1,46 @@
+{
+  "offlineOnly": true,
+  "newRecordings": 0,
+  "inputs": [
+    {
+      "phase": 1,
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-cp",
+        "/private/tmp/graphite-main-raw-source-lines:/private/tmp/graphite-main-profiling-n50joikp",
+        "RawFrameDetails",
+        "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/phase-1.jfr",
+        "/private/tmp/graphite-main-raw-source-lines/phase-1.json"
+      ],
+      "jfrSha256": "5f4423b8f8df8f78505e68aa3110fc82994827a8ddd7828c841c5c6beebd4dd1",
+      "outputSha256": "acd8e808c810153e6f850df03886f4fac62e18a123ce65a798e70c8a97b1a904"
+    },
+    {
+      "phase": 2,
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-cp",
+        "/private/tmp/graphite-main-raw-source-lines:/private/tmp/graphite-main-profiling-n50joikp",
+        "RawFrameDetails",
+        "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/phase-2.jfr",
+        "/private/tmp/graphite-main-raw-source-lines/phase-2.json"
+      ],
+      "jfrSha256": "4a89b7d9371f774451f582cc46d18718adf35eb518f6d6833db1c6e43dae2875",
+      "outputSha256": "54195d594b974812b2357f419fa9e4f706e6670ff9439f37e258fd9f9292cea9"
+    },
+    {
+      "phase": 3,
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-cp",
+        "/private/tmp/graphite-main-raw-source-lines:/private/tmp/graphite-main-profiling-n50joikp",
+        "RawFrameDetails",
+        "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/phase-3.jfr",
+        "/private/tmp/graphite-main-raw-source-lines/phase-3.json"
+      ],
+      "jfrSha256": "e88f85126ed1a6569480d8c528b0e7d03aa0ff928e106e722c2050f3ec5623f1",
+      "outputSha256": "178626c033c1f200f1ca7aa44da4a66a073fb45cbd6887f873e80ab6a1da9dbd"
+    }
+  ],
+  "sourceSha256": "f8a90a1f1c280b4ec157aeaa63bd1c8b0217bf0671a7626dc44208e400192f08"
+}

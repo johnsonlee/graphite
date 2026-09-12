@@ -1,0 +1,653 @@
+{
+  "notP95": true,
+  "rows": [
+    {
+      "pair": 1,
+      "id": "or-single-early-rows",
+      "baseLatencyNanos": 85560541,
+      "candidateLatencyNanos": 86928125
+    },
+    {
+      "pair": 1,
+      "id": "or-single-early-distinct",
+      "baseLatencyNanos": 247742625,
+      "candidateLatencyNanos": 275727917
+    },
+    {
+      "pair": 1,
+      "id": "and-single-early-rows",
+      "baseLatencyNanos": 37624709,
+      "candidateLatencyNanos": 39940750
+    },
+    {
+      "pair": 1,
+      "id": "and-single-early-distinct",
+      "baseLatencyNanos": 169670166,
+      "candidateLatencyNanos": 164794083
+    },
+    {
+      "pair": 1,
+      "id": "or-single-middle-rows",
+      "baseLatencyNanos": 96673666,
+      "candidateLatencyNanos": 106813417
+    },
+    {
+      "pair": 1,
+      "id": "or-single-middle-distinct",
+      "baseLatencyNanos": 157612583,
+      "candidateLatencyNanos": 156848292
+    },
+    {
+      "pair": 1,
+      "id": "and-single-middle-rows",
+      "baseLatencyNanos": 94004375,
+      "candidateLatencyNanos": 85463291
+    },
+    {
+      "pair": 1,
+      "id": "and-single-middle-distinct",
+      "baseLatencyNanos": 152978917,
+      "candidateLatencyNanos": 152730375
+    },
+    {
+      "pair": 1,
+      "id": "or-single-late-rows",
+      "baseLatencyNanos": 148132500,
+      "candidateLatencyNanos": 150922458
+    },
+    {
+      "pair": 1,
+      "id": "or-single-late-distinct",
+      "baseLatencyNanos": 144944791,
+      "candidateLatencyNanos": 147805708
+    },
+    {
+      "pair": 1,
+      "id": "and-single-late-rows",
+      "baseLatencyNanos": 148053709,
+      "candidateLatencyNanos": 148666292
+    },
+    {
+      "pair": 1,
+      "id": "and-single-late-distinct",
+      "baseLatencyNanos": 149478750,
+      "candidateLatencyNanos": 148966750
+    },
+    {
+      "pair": 1,
+      "id": "or-few-early-late-rows",
+      "baseLatencyNanos": 15149208,
+      "candidateLatencyNanos": 14158625
+    },
+    {
+      "pair": 1,
+      "id": "or-few-early-late-distinct",
+      "baseLatencyNanos": 144805500,
+      "candidateLatencyNanos": 146734292
+    },
+    {
+      "pair": 1,
+      "id": "or-few-early-middle-rows",
+      "baseLatencyNanos": 13161834,
+      "candidateLatencyNanos": 14942500
+    },
+    {
+      "pair": 1,
+      "id": "or-few-early-middle-distinct",
+      "baseLatencyNanos": 144547291,
+      "candidateLatencyNanos": 145557667
+    },
+    {
+      "pair": 1,
+      "id": "or-broad-all-rows",
+      "baseLatencyNanos": 5115417,
+      "candidateLatencyNanos": 5643625
+    },
+    {
+      "pair": 1,
+      "id": "or-broad-all-distinct",
+      "baseLatencyNanos": 181483083,
+      "candidateLatencyNanos": 191852625
+    },
+    {
+      "pair": 1,
+      "id": "and-broad-all-rows",
+      "baseLatencyNanos": 20713666,
+      "candidateLatencyNanos": 17661042
+    },
+    {
+      "pair": 1,
+      "id": "and-broad-all-distinct",
+      "baseLatencyNanos": 977941750,
+      "candidateLatencyNanos": 980041166
+    },
+    {
+      "pair": 1,
+      "id": "mixed-four-few-rows",
+      "baseLatencyNanos": 548661541,
+      "candidateLatencyNanos": 96127375
+    },
+    {
+      "pair": 1,
+      "id": "mixed-four-few-distinct",
+      "baseLatencyNanos": 38856822250,
+      "candidateLatencyNanos": 211030542
+    },
+    {
+      "pair": 1,
+      "id": "and-zero-disjoint-graphs-rows",
+      "baseLatencyNanos": 147394333,
+      "candidateLatencyNanos": 145404834
+    },
+    {
+      "pair": 1,
+      "id": "and-zero-disjoint-graphs-distinct",
+      "baseLatencyNanos": 148436417,
+      "candidateLatencyNanos": 149865334
+    },
+    {
+      "pair": 1,
+      "id": "or-four-broad-rows",
+      "baseLatencyNanos": 34576833,
+      "candidateLatencyNanos": 38290625
+    },
+    {
+      "pair": 1,
+      "id": "or-four-broad-distinct",
+      "baseLatencyNanos": 151670959,
+      "candidateLatencyNanos": 155660917
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-early-rows",
+      "baseLatencyNanos": 15864041,
+      "candidateLatencyNanos": 16478291
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-early-distinct",
+      "baseLatencyNanos": 151300500,
+      "candidateLatencyNanos": 146807125
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-middle-rows",
+      "baseLatencyNanos": 91662667,
+      "candidateLatencyNanos": 92804583
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-middle-distinct",
+      "baseLatencyNanos": 144987583,
+      "candidateLatencyNanos": 153517583
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-late-rows",
+      "baseLatencyNanos": 148812834,
+      "candidateLatencyNanos": 151477000
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-late-distinct",
+      "baseLatencyNanos": 150079375,
+      "candidateLatencyNanos": 151993250
+    },
+    {
+      "pair": 1,
+      "id": "or-four-few-early-late-rows",
+      "baseLatencyNanos": 15248833,
+      "candidateLatencyNanos": 17151959
+    },
+    {
+      "pair": 1,
+      "id": "or-four-few-early-late-distinct",
+      "baseLatencyNanos": 150302209,
+      "candidateLatencyNanos": 149253292
+    },
+    {
+      "pair": 1,
+      "id": "or-four-all-rows",
+      "baseLatencyNanos": 16320416,
+      "candidateLatencyNanos": 15810292
+    },
+    {
+      "pair": 1,
+      "id": "or-four-all-distinct",
+      "baseLatencyNanos": 174478000,
+      "candidateLatencyNanos": 179144208
+    },
+    {
+      "pair": 2,
+      "id": "or-single-early-rows",
+      "baseLatencyNanos": 90942833,
+      "candidateLatencyNanos": 88157375
+    },
+    {
+      "pair": 2,
+      "id": "or-single-early-distinct",
+      "baseLatencyNanos": 265901959,
+      "candidateLatencyNanos": 271826875
+    },
+    {
+      "pair": 2,
+      "id": "and-single-early-rows",
+      "baseLatencyNanos": 36745459,
+      "candidateLatencyNanos": 38267542
+    },
+    {
+      "pair": 2,
+      "id": "and-single-early-distinct",
+      "baseLatencyNanos": 171974167,
+      "candidateLatencyNanos": 169067583
+    },
+    {
+      "pair": 2,
+      "id": "or-single-middle-rows",
+      "baseLatencyNanos": 103469417,
+      "candidateLatencyNanos": 117141541
+    },
+    {
+      "pair": 2,
+      "id": "or-single-middle-distinct",
+      "baseLatencyNanos": 154331042,
+      "candidateLatencyNanos": 155387709
+    },
+    {
+      "pair": 2,
+      "id": "and-single-middle-rows",
+      "baseLatencyNanos": 94045625,
+      "candidateLatencyNanos": 93210833
+    },
+    {
+      "pair": 2,
+      "id": "and-single-middle-distinct",
+      "baseLatencyNanos": 154047708,
+      "candidateLatencyNanos": 152010375
+    },
+    {
+      "pair": 2,
+      "id": "or-single-late-rows",
+      "baseLatencyNanos": 150273958,
+      "candidateLatencyNanos": 149220583
+    },
+    {
+      "pair": 2,
+      "id": "or-single-late-distinct",
+      "baseLatencyNanos": 152269583,
+      "candidateLatencyNanos": 146527583
+    },
+    {
+      "pair": 2,
+      "id": "and-single-late-rows",
+      "baseLatencyNanos": 135648833,
+      "candidateLatencyNanos": 147619334
+    },
+    {
+      "pair": 2,
+      "id": "and-single-late-distinct",
+      "baseLatencyNanos": 148556542,
+      "candidateLatencyNanos": 149324500
+    },
+    {
+      "pair": 2,
+      "id": "or-few-early-late-rows",
+      "baseLatencyNanos": 11780959,
+      "candidateLatencyNanos": 17226167
+    },
+    {
+      "pair": 2,
+      "id": "or-few-early-late-distinct",
+      "baseLatencyNanos": 152734375,
+      "candidateLatencyNanos": 150040000
+    },
+    {
+      "pair": 2,
+      "id": "or-few-early-middle-rows",
+      "baseLatencyNanos": 14769500,
+      "candidateLatencyNanos": 14822625
+    },
+    {
+      "pair": 2,
+      "id": "or-few-early-middle-distinct",
+      "baseLatencyNanos": 148214375,
+      "candidateLatencyNanos": 149858000
+    },
+    {
+      "pair": 2,
+      "id": "or-broad-all-rows",
+      "baseLatencyNanos": 5152500,
+      "candidateLatencyNanos": 5235375
+    },
+    {
+      "pair": 2,
+      "id": "or-broad-all-distinct",
+      "baseLatencyNanos": 184814000,
+      "candidateLatencyNanos": 188290833
+    },
+    {
+      "pair": 2,
+      "id": "and-broad-all-rows",
+      "baseLatencyNanos": 19688417,
+      "candidateLatencyNanos": 20243250
+    },
+    {
+      "pair": 2,
+      "id": "and-broad-all-distinct",
+      "baseLatencyNanos": 982588250,
+      "candidateLatencyNanos": 987080625
+    },
+    {
+      "pair": 2,
+      "id": "mixed-four-few-rows",
+      "baseLatencyNanos": 639417416,
+      "candidateLatencyNanos": 83400291
+    },
+    {
+      "pair": 2,
+      "id": "mixed-four-few-distinct",
+      "baseLatencyNanos": 38254018083,
+      "candidateLatencyNanos": 210610042
+    },
+    {
+      "pair": 2,
+      "id": "and-zero-disjoint-graphs-rows",
+      "baseLatencyNanos": 141811291,
+      "candidateLatencyNanos": 148295917
+    },
+    {
+      "pair": 2,
+      "id": "and-zero-disjoint-graphs-distinct",
+      "baseLatencyNanos": 147415500,
+      "candidateLatencyNanos": 145658833
+    },
+    {
+      "pair": 2,
+      "id": "or-four-broad-rows",
+      "baseLatencyNanos": 33928375,
+      "candidateLatencyNanos": 34355792
+    },
+    {
+      "pair": 2,
+      "id": "or-four-broad-distinct",
+      "baseLatencyNanos": 149993042,
+      "candidateLatencyNanos": 150634667
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-early-rows",
+      "baseLatencyNanos": 16117917,
+      "candidateLatencyNanos": 16147959
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-early-distinct",
+      "baseLatencyNanos": 149879292,
+      "candidateLatencyNanos": 148603833
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-middle-rows",
+      "baseLatencyNanos": 90801333,
+      "candidateLatencyNanos": 92060292
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-middle-distinct",
+      "baseLatencyNanos": 145970917,
+      "candidateLatencyNanos": 146476667
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-late-rows",
+      "baseLatencyNanos": 148473333,
+      "candidateLatencyNanos": 148687167
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-late-distinct",
+      "baseLatencyNanos": 146897625,
+      "candidateLatencyNanos": 147746416
+    },
+    {
+      "pair": 2,
+      "id": "or-four-few-early-late-rows",
+      "baseLatencyNanos": 14338500,
+      "candidateLatencyNanos": 17705709
+    },
+    {
+      "pair": 2,
+      "id": "or-four-few-early-late-distinct",
+      "baseLatencyNanos": 147478542,
+      "candidateLatencyNanos": 136838209
+    },
+    {
+      "pair": 2,
+      "id": "or-four-all-rows",
+      "baseLatencyNanos": 13897375,
+      "candidateLatencyNanos": 14917208
+    },
+    {
+      "pair": 2,
+      "id": "or-four-all-distinct",
+      "baseLatencyNanos": 182153417,
+      "candidateLatencyNanos": 175668916
+    },
+    {
+      "pair": 3,
+      "id": "or-single-early-rows",
+      "baseLatencyNanos": 89443917,
+      "candidateLatencyNanos": 93582625
+    },
+    {
+      "pair": 3,
+      "id": "or-single-early-distinct",
+      "baseLatencyNanos": 242442875,
+      "candidateLatencyNanos": 274217000
+    },
+    {
+      "pair": 3,
+      "id": "and-single-early-rows",
+      "baseLatencyNanos": 37050167,
+      "candidateLatencyNanos": 36662666
+    },
+    {
+      "pair": 3,
+      "id": "and-single-early-distinct",
+      "baseLatencyNanos": 172117584,
+      "candidateLatencyNanos": 167710459
+    },
+    {
+      "pair": 3,
+      "id": "or-single-middle-rows",
+      "baseLatencyNanos": 114605500,
+      "candidateLatencyNanos": 110881000
+    },
+    {
+      "pair": 3,
+      "id": "or-single-middle-distinct",
+      "baseLatencyNanos": 160647375,
+      "candidateLatencyNanos": 152505833
+    },
+    {
+      "pair": 3,
+      "id": "and-single-middle-rows",
+      "baseLatencyNanos": 94136083,
+      "candidateLatencyNanos": 91082833
+    },
+    {
+      "pair": 3,
+      "id": "and-single-middle-distinct",
+      "baseLatencyNanos": 155220666,
+      "candidateLatencyNanos": 154624834
+    },
+    {
+      "pair": 3,
+      "id": "or-single-late-rows",
+      "baseLatencyNanos": 147444875,
+      "candidateLatencyNanos": 151169958
+    },
+    {
+      "pair": 3,
+      "id": "or-single-late-distinct",
+      "baseLatencyNanos": 129336000,
+      "candidateLatencyNanos": 146656750
+    },
+    {
+      "pair": 3,
+      "id": "and-single-late-rows",
+      "baseLatencyNanos": 146909375,
+      "candidateLatencyNanos": 147717750
+    },
+    {
+      "pair": 3,
+      "id": "and-single-late-distinct",
+      "baseLatencyNanos": 151793458,
+      "candidateLatencyNanos": 150041042
+    },
+    {
+      "pair": 3,
+      "id": "or-few-early-late-rows",
+      "baseLatencyNanos": 14447750,
+      "candidateLatencyNanos": 15427208
+    },
+    {
+      "pair": 3,
+      "id": "or-few-early-late-distinct",
+      "baseLatencyNanos": 148798750,
+      "candidateLatencyNanos": 148410209
+    },
+    {
+      "pair": 3,
+      "id": "or-few-early-middle-rows",
+      "baseLatencyNanos": 15046959,
+      "candidateLatencyNanos": 13504458
+    },
+    {
+      "pair": 3,
+      "id": "or-few-early-middle-distinct",
+      "baseLatencyNanos": 148081459,
+      "candidateLatencyNanos": 147416583
+    },
+    {
+      "pair": 3,
+      "id": "or-broad-all-rows",
+      "baseLatencyNanos": 4379250,
+      "candidateLatencyNanos": 6087333
+    },
+    {
+      "pair": 3,
+      "id": "or-broad-all-distinct",
+      "baseLatencyNanos": 195869042,
+      "candidateLatencyNanos": 191013333
+    },
+    {
+      "pair": 3,
+      "id": "and-broad-all-rows",
+      "baseLatencyNanos": 20629084,
+      "candidateLatencyNanos": 20167334
+    },
+    {
+      "pair": 3,
+      "id": "and-broad-all-distinct",
+      "baseLatencyNanos": 987393875,
+      "candidateLatencyNanos": 985251333
+    },
+    {
+      "pair": 3,
+      "id": "mixed-four-few-rows",
+      "baseLatencyNanos": 648624458,
+      "candidateLatencyNanos": 79295750
+    },
+    {
+      "pair": 3,
+      "id": "mixed-four-few-distinct",
+      "baseLatencyNanos": 39249165792,
+      "candidateLatencyNanos": 214954667
+    },
+    {
+      "pair": 3,
+      "id": "and-zero-disjoint-graphs-rows",
+      "baseLatencyNanos": 148433834,
+      "candidateLatencyNanos": 144614333
+    },
+    {
+      "pair": 3,
+      "id": "and-zero-disjoint-graphs-distinct",
+      "baseLatencyNanos": 128203625,
+      "candidateLatencyNanos": 150323583
+    },
+    {
+      "pair": 3,
+      "id": "or-four-broad-rows",
+      "baseLatencyNanos": 26038792,
+      "candidateLatencyNanos": 40269583
+    },
+    {
+      "pair": 3,
+      "id": "or-four-broad-distinct",
+      "baseLatencyNanos": 150414959,
+      "candidateLatencyNanos": 153518333
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-early-rows",
+      "baseLatencyNanos": 16656208,
+      "candidateLatencyNanos": 15748667
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-early-distinct",
+      "baseLatencyNanos": 150072042,
+      "candidateLatencyNanos": 152228625
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-middle-rows",
+      "baseLatencyNanos": 89537042,
+      "candidateLatencyNanos": 92351834
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-middle-distinct",
+      "baseLatencyNanos": 149016792,
+      "candidateLatencyNanos": 149367583
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-late-rows",
+      "baseLatencyNanos": 149705709,
+      "candidateLatencyNanos": 150054250
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-late-distinct",
+      "baseLatencyNanos": 148966583,
+      "candidateLatencyNanos": 151461083
+    },
+    {
+      "pair": 3,
+      "id": "or-four-few-early-late-rows",
+      "baseLatencyNanos": 16647000,
+      "candidateLatencyNanos": 15247208
+    },
+    {
+      "pair": 3,
+      "id": "or-four-few-early-late-distinct",
+      "baseLatencyNanos": 149513250,
+      "candidateLatencyNanos": 148303250
+    },
+    {
+      "pair": 3,
+      "id": "or-four-all-rows",
+      "baseLatencyNanos": 14413250,
+      "candidateLatencyNanos": 15530875
+    },
+    {
+      "pair": 3,
+      "id": "or-four-all-distinct",
+      "baseLatencyNanos": 176566833,
+      "candidateLatencyNanos": 176616333
+    }
+  ]
+}

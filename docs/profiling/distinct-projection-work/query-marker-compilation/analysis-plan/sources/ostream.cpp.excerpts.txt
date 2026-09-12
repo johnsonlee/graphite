@@ -1,0 +1,85 @@
+Source: https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/utilities/ostream.cpp
+Full response SHA256: 744be63ab4faf2ae70a280a40f2b1a3e4ccf63be89dfe7a20980993f3404707e
+
+[...]
+213: void outputStream::cr_indent() {
+214:   cr(); indent();
+215: }
+216: 
+217: void outputStream::stamp() {
+218:   if (! _stamp.is_updated()) {
+219:     _stamp.update(); // start at 0 on first call to stamp()
+220:   }
+221: 
+222:   // outputStream::stamp() may get called by ostream_abort(), use snprintf
+223:   // to avoid allocating large stack buffer in print().
+224:   char buf[40];
+225:   jio_snprintf(buf, sizeof(buf), "%.3f", _stamp.seconds());
+226:   print_raw(buf);
+227: }
+228: 
+229: void outputStream::stamp(bool guard,
+230:                          const char* prefix,
+231:                          const char* suffix) {
+232:   if (!guard) {
+233:     return;
+234:   }
+235:   print_raw(prefix);
+236:   stamp();
+237:   print_raw(suffix);
+238: }
+239: 
+240: void outputStream::date_stamp(bool guard,
+241:                               const char* prefix,
+242:                               const char* suffix) {
+243:   if (!guard) {
+244:     return;
+245:   }
+246:   print_raw(prefix);
+247:   static const char error_time[] = "yyyy-mm-ddThh:mm:ss.mmm+zzzz";
+248:   static const int buffer_length = 32;
+249:   char buffer[buffer_length];
+250:   const char* iso8601_result = os::iso8601_time(buffer, buffer_length);
+251:   if (iso8601_result != NULL) {
+252:     print_raw(buffer);
+253:   } else {
+254:     print_raw(error_time);
+255:   }
+256:   print_raw(suffix);
+[...]
+706:     // (For now, don't bother to issue a DTD for this private format.)
+707: 
+708:     // Calculate the start time of the log as ms since the epoch: this is
+709:     // the current time in ms minus the uptime in ms.
+710:     jlong time_ms = os::javaTimeMillis() - tty->time_stamp().milliseconds();
+711:     xs->head("hotspot_log version='%d %d'"
+712:              " process='%d' time_ms='" INT64_FORMAT "'",
+713:              LOG_MAJOR_VERSION, LOG_MINOR_VERSION,
+714:              os::current_process_id(), (int64_t)time_ms);
+715:     // Write VM version header immediately.
+716:     xs->head("vm_version");
+717:     xs->head("name"); xs->text("%s", VM_Version::vm_name()); xs->cr();
+718:     xs->tail("name");
+719:     xs->head("release"); xs->text("%s", VM_Version::vm_release()); xs->cr();
+720:     xs->tail("release");
+721:     xs->head("info"); xs->text("%s", VM_Version::internal_vm_info_string()); xs->cr();
+722:     xs->tail("info");
+723:     xs->tail("vm_version");
+724:     // Record information about the command-line invocation.
+725:     xs->head("vm_arguments");  // Cf. Arguments::print_on()
+726:     if (Arguments::num_jvm_flags() > 0) {
+727:       xs->head("flags");
+728:       Arguments::print_jvm_flags_on(xs->text());
+729:       xs->tail("flags");
+730:     }
+731:     if (Arguments::num_jvm_args() > 0) {
+732:       xs->head("args");
+733:       Arguments::print_jvm_args_on(xs->text());
+734:       xs->tail("args");
+735:     }
+736:     if (Arguments::java_command() != NULL) {
+737:       xs->head("command"); xs->text()->print_cr("%s", Arguments::java_command());
+738:       xs->tail("command");
+739:     }
+740:     if (Arguments::sun_java_launcher() != NULL) {
+741:       xs->head("launcher"); xs->text()->print_cr("%s", Arguments::sun_java_launcher());

@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "kind": "read-only source and measurement-plan review; no Java/build/tests/measurement",
+  "candidateRepository": "/private/tmp/graphite-attempt141.sb7dlq4r/repo",
+  "candidateParent": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0",
+  "sourceSha256": "8239e1682428ac08b046ab7957f02d160d02333c354dfb600311770804e4f631",
+  "parentSourceSha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+  "measurementPlanSha256": "be9b59ed1aca25827104e56e85cf2df5a1b9dc3bedf64dd5f553c3ce91a2b26b",
+  "productionFilesChanged": [
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt"
+  ],
+  "exactReverseDiffRestoresWholeParentFile": true,
+  "blockingDefects": [],
+  "checks": {
+    "payloadUsesActualHashCommonAndDefaultLoadFactor": true,
+    "payloadLongSaturationSafe": true,
+    "sparseChecksSizesOnlyNoCandidateIdPrepass": true,
+    "denseAllCandidateRangeCheckBeforeAllocation": true,
+    "invalidCandidateFallsBackToWholeOriginalHashPath": true,
+    "propertyBitsAreFourPhysicalProperties": true,
+    "orFinalTruthEquivalentIncludingSamePropertyDifferentPredicates": true,
+    "guardedOutOfRangeNodeProbeEqualsOriginalHashFalseForValidatedCandidates": true,
+    "exactNullRetainsOriginalLazyMatchStates": true,
+    "selectedFeasibilityOrderAndCachesUnchanged": true,
+    "predicateIndicesAnyAndPropertyListRetained": true,
+    "workerSchedulingPoolsLifecycleUnchanged": true,
+    "originalNodeConsumeAndFinallyFlushUnchanged": true,
+    "constructorDoesNotPerformStorageItemReads": true,
+    "threadInterruptionPollingRetainsFlag": true,
+    "doesNotClaimRequestSignalPollingDuringConstruction": true,
+    "noWorkConsumerChargeForTransientMemoryPreprocessingReasonable": true,
+    "strictOld34V3AndExactHeadCiRequirementsRemain": true
+  },
+  "limits": [
+    "No runtime test, bytecode verification or performance conclusion from this audit.",
+    "Per-property OR union can short-circuit earlier within the unchanged predicate loop; final truth and per-node work are the preserved observables.",
+    "Dense setup adds a complete candidate range pass and filling pass plus S-byte zero initialization; sparse setup adds property/length/capacity checks.",
+    "Factory observes Thread.isInterrupted only. A request cancellation signal without interruption is observed by subsequent original node accounting/flush, not this factory.",
+    "The prior plan suggestion to call consume(0) was optional cancellation strengthening, not required storage accounting; source review does not require it."
+  ]
+}

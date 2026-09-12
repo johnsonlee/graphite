@@ -1,0 +1,266 @@
+[
+  {
+    "file": "method4-aggregate/base-method-compatibility-4-aggregate.json",
+    "originalSha256": "6e5cae8a1f546d54b68d27662fa401e50a638fc402b1ee7c7f891d7ee190c8ca",
+    "repositorySha256": "c0667d90f5d0eae9df56fda524c351f0a80080f3b557a762257b0559e16c2d53",
+    "normalization": "trailing newlines only"
+  },
+  {
+    "file": "method4-aggregate/candidate-method-compatibility-4-aggregate.json",
+    "originalSha256": "ab3029dd722c899e6176550fac8966eaa0cfc73f7b28a4f06acade5b5f14c14c",
+    "repositorySha256": "4d393f35666befb42264e8e7c8dba6b521d96f88a2311ba3489751da1a43b2e0",
+    "normalization": "trailing newlines only"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-cpu-initial-report.md",
+    "originalSha256": "dc927f349377a0089a46c39673965a9ccf184b9d883bf0af4f104a1c85267e11",
+    "repositorySha256": "dc927f349377a0089a46c39673965a9ccf184b9d883bf0af4f104a1c85267e11",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-cpu-initial-status.json",
+    "originalSha256": "a511e11a46a441a1154dbb7f947c21116380f320765595ae394723308bd2d8f7",
+    "repositorySha256": "a511e11a46a441a1154dbb7f947c21116380f320765595ae394723308bd2d8f7",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-cpu-report.md",
+    "originalSha256": "aac76482ac4018493d0ac8f544f92cf12e26cc23961476c03d271e091f07173e",
+    "repositorySha256": "aac76482ac4018493d0ac8f544f92cf12e26cc23961476c03d271e091f07173e",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-cpu-status.json",
+    "originalSha256": "e5f3aa0c7b62047e7ff7b211f7b2cd70fa83277235077f6d3afd731ed5f26c4d",
+    "repositorySha256": "e5f3aa0c7b62047e7ff7b211f7b2cd70fa83277235077f6d3afd731ed5f26c4d",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-rss-after-initial-report.md",
+    "originalSha256": "0ae4568e3f9d5875481afc5078501d68a5b6f770bb85bc26e29b9875d8894d79",
+    "repositorySha256": "0ae4568e3f9d5875481afc5078501d68a5b6f770bb85bc26e29b9875d8894d79",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-rss-after-initial-status.json",
+    "originalSha256": "a6e81ba75e36d2601c525e5123ad06940ef9558c85a06ac83387a550d78da8c1",
+    "repositorySha256": "a6e81ba75e36d2601c525e5123ad06940ef9558c85a06ac83387a550d78da8c1",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-rss-after-report.md",
+    "originalSha256": "0ae4568e3f9d5875481afc5078501d68a5b6f770bb85bc26e29b9875d8894d79",
+    "repositorySha256": "0ae4568e3f9d5875481afc5078501d68a5b6f770bb85bc26e29b9875d8894d79",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-rss-after-status.json",
+    "originalSha256": "8baf5a8053ab6856dd12ad58ad70b11ff2bde3d44809e3dfcd17f44a2578320f",
+    "repositorySha256": "8baf5a8053ab6856dd12ad58ad70b11ff2bde3d44809e3dfcd17f44a2578320f",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-rss-delta-initial-report.md",
+    "originalSha256": "e5b8cd9ebc863acb3157587cc969cda6b79f0417bcba1b03d6008d47acb99293",
+    "repositorySha256": "e5b8cd9ebc863acb3157587cc969cda6b79f0417bcba1b03d6008d47acb99293",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-rss-delta-initial-status.json",
+    "originalSha256": "1bdc30ecdfed1d7112ff2bf8e24db1e2f758640c77f6ee76382e817384a51e7a",
+    "repositorySha256": "1bdc30ecdfed1d7112ff2bf8e24db1e2f758640c77f6ee76382e817384a51e7a",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-rss-delta-report.md",
+    "originalSha256": "e5b8cd9ebc863acb3157587cc969cda6b79f0417bcba1b03d6008d47acb99293",
+    "repositorySha256": "e5b8cd9ebc863acb3157587cc969cda6b79f0417bcba1b03d6008d47acb99293",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-rss-delta-status.json",
+    "originalSha256": "1bdc30ecdfed1d7112ff2bf8e24db1e2f758640c77f6ee76382e817384a51e7a",
+    "repositorySha256": "1bdc30ecdfed1d7112ff2bf8e24db1e2f758640c77f6ee76382e817384a51e7a",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-wall-initial-report.md",
+    "originalSha256": "900becd4a1ec08df80501b8b7e7c8525e75be5f64fa831224b6d6744c06918d9",
+    "repositorySha256": "900becd4a1ec08df80501b8b7e7c8525e75be5f64fa831224b6d6744c06918d9",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-wall-initial-status.json",
+    "originalSha256": "51b0884dacd91669b0a892f12cf4d5babc1829eedd0088d789c305fd7ceb6027",
+    "repositorySha256": "51b0884dacd91669b0a892f12cf4d5babc1829eedd0088d789c305fd7ceb6027",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-wall-report.md",
+    "originalSha256": "900becd4a1ec08df80501b8b7e7c8525e75be5f64fa831224b6d6744c06918d9",
+    "repositorySha256": "900becd4a1ec08df80501b8b7e7c8525e75be5f64fa831224b6d6744c06918d9",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-4-aggregate-wall-status.json",
+    "originalSha256": "8f9590d816faaab1132a45df644911ac2ee541b09860fd09e1897f7faec4cb7b",
+    "repositorySha256": "8f9590d816faaab1132a45df644911ac2ee541b09860fd09e1897f7faec4cb7b",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-shard-4-aggregate-report.md",
+    "originalSha256": "131b70be4ba7e58151e59cd998eeca62db8d56c4364a968ff03c26d7494c5877",
+    "repositorySha256": "131b70be4ba7e58151e59cd998eeca62db8d56c4364a968ff03c26d7494c5877",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-compatibility-shard-4-aggregate-status.json",
+    "originalSha256": "c3449c8b074dd7fdfefdf5e5c565d47ffdae39ed9ec5a7dd2bf56bfbd4a71259",
+    "repositorySha256": "c3449c8b074dd7fdfefdf5e5c565d47ffdae39ed9ec5a7dd2bf56bfbd4a71259",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-aggregate/method-confirmation-base-4-aggregate.json",
+    "originalSha256": "c5502dc2aea84fafaa4b4509e0c371a2d378604e954aa37dcdb6285b4ec5bfd9",
+    "repositorySha256": "12df4719ac5a9130887932098509f53ebb5a06f6d287458a7f6f0c239ff08a8c",
+    "normalization": "trailing newlines only"
+  },
+  {
+    "file": "method4-aggregate/method-confirmation-candidate-4-aggregate.json",
+    "originalSha256": "49050adcbcb5f3c475217cd5ec2a6a13d681f94d67d10542dcf0aa2e78c4fd53",
+    "repositorySha256": "b6db8511fb9a4158a54b7fc9434396fe9f4832feed6974b46930fca7ca0dc699",
+    "normalization": "trailing newlines only"
+  },
+  {
+    "file": "method4-position/base-method-compatibility-4-position.json",
+    "originalSha256": "5571e47532d09ead8c497b255210f4fba3d661ec19dbe4ad1f57a5ed1ab06717",
+    "repositorySha256": "77bff58aad7efb43ddb6bb49e76adcdcc989466c7443565b5471cc2043a534c6",
+    "normalization": "trailing newlines only"
+  },
+  {
+    "file": "method4-position/candidate-method-compatibility-4-position.json",
+    "originalSha256": "818a1b1e45c9827956f79839d686d9539f9af0b9665f77a05bbac45c98084625",
+    "repositorySha256": "1064235ad721f9c64bde6fc683d6514ee8ed5c7e3d8e6f4e16b5278b7301d192",
+    "normalization": "trailing newlines only"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-cpu-initial-report.md",
+    "originalSha256": "454ce53341d9009368a837cba0a2da2daac71bd9fc9f571124d6a16ada947f1f",
+    "repositorySha256": "454ce53341d9009368a837cba0a2da2daac71bd9fc9f571124d6a16ada947f1f",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-cpu-initial-status.json",
+    "originalSha256": "e3314aec0c82b66b8acc3be4d8257789901211518b2fbfa7a223a2f995e55a3e",
+    "repositorySha256": "e3314aec0c82b66b8acc3be4d8257789901211518b2fbfa7a223a2f995e55a3e",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-cpu-report.md",
+    "originalSha256": "aac9bbc1838c307eb504af1b6f1c87d1561892e7bbd2a3c8b28833caa474849c",
+    "repositorySha256": "aac9bbc1838c307eb504af1b6f1c87d1561892e7bbd2a3c8b28833caa474849c",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-cpu-status.json",
+    "originalSha256": "78ecce7d632cb2e3de0b7cbb4749c7a3dddc827f86adc4521b30f23a93147f3b",
+    "repositorySha256": "78ecce7d632cb2e3de0b7cbb4749c7a3dddc827f86adc4521b30f23a93147f3b",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-rss-after-initial-report.md",
+    "originalSha256": "b59f7b680262a19c486c3eedcd70c54635adb88acb4a8a0aa1b2a5425a0fdcb2",
+    "repositorySha256": "b59f7b680262a19c486c3eedcd70c54635adb88acb4a8a0aa1b2a5425a0fdcb2",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-rss-after-initial-status.json",
+    "originalSha256": "fa4e7b8640f77606802ff52d562a7deec54249a07421951e413ef71975a7bded",
+    "repositorySha256": "fa4e7b8640f77606802ff52d562a7deec54249a07421951e413ef71975a7bded",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-rss-after-report.md",
+    "originalSha256": "b59f7b680262a19c486c3eedcd70c54635adb88acb4a8a0aa1b2a5425a0fdcb2",
+    "repositorySha256": "b59f7b680262a19c486c3eedcd70c54635adb88acb4a8a0aa1b2a5425a0fdcb2",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-rss-after-status.json",
+    "originalSha256": "066263767b7ff6a85181220794bdc54c0d69c512ec0e44788412cc6b15e992ba",
+    "repositorySha256": "066263767b7ff6a85181220794bdc54c0d69c512ec0e44788412cc6b15e992ba",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-rss-delta-initial-report.md",
+    "originalSha256": "ea55c7a377192683ef70e8433100c8c7908924401015f46aa6107b8b3c00546f",
+    "repositorySha256": "ea55c7a377192683ef70e8433100c8c7908924401015f46aa6107b8b3c00546f",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-rss-delta-initial-status.json",
+    "originalSha256": "5d3cf1f074a4da62a4c7e9377c937edc62882bdd3dd9abd455eebb697621abf1",
+    "repositorySha256": "5d3cf1f074a4da62a4c7e9377c937edc62882bdd3dd9abd455eebb697621abf1",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-rss-delta-report.md",
+    "originalSha256": "ea55c7a377192683ef70e8433100c8c7908924401015f46aa6107b8b3c00546f",
+    "repositorySha256": "ea55c7a377192683ef70e8433100c8c7908924401015f46aa6107b8b3c00546f",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-rss-delta-status.json",
+    "originalSha256": "5d3cf1f074a4da62a4c7e9377c937edc62882bdd3dd9abd455eebb697621abf1",
+    "repositorySha256": "5d3cf1f074a4da62a4c7e9377c937edc62882bdd3dd9abd455eebb697621abf1",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-wall-initial-report.md",
+    "originalSha256": "acdcf849214ceada69e3519aded4bd2b207217b2b08478b8c3d9bee08618dd9c",
+    "repositorySha256": "acdcf849214ceada69e3519aded4bd2b207217b2b08478b8c3d9bee08618dd9c",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-wall-initial-status.json",
+    "originalSha256": "fca9792a3a5b38cda972330409fa2a21df45d5bd4f852289a68b79f94e3a81d3",
+    "repositorySha256": "fca9792a3a5b38cda972330409fa2a21df45d5bd4f852289a68b79f94e3a81d3",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-wall-report.md",
+    "originalSha256": "acdcf849214ceada69e3519aded4bd2b207217b2b08478b8c3d9bee08618dd9c",
+    "repositorySha256": "acdcf849214ceada69e3519aded4bd2b207217b2b08478b8c3d9bee08618dd9c",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-4-position-wall-status.json",
+    "originalSha256": "d60d8a3d779a01fa686a1d4ed9a7cc94705c5f2d43fd99858e298bcf8e43de17",
+    "repositorySha256": "d60d8a3d779a01fa686a1d4ed9a7cc94705c5f2d43fd99858e298bcf8e43de17",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-shard-4-position-report.md",
+    "originalSha256": "691e8a1364de28739ed4d1772293f5cea7003e710de541fe1bb62fb837ea0319",
+    "repositorySha256": "691e8a1364de28739ed4d1772293f5cea7003e710de541fe1bb62fb837ea0319",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-compatibility-shard-4-position-status.json",
+    "originalSha256": "9f6c084265e87f7cf1558af80492852342473481b1ceb96f871ae0661e03edbd",
+    "repositorySha256": "9f6c084265e87f7cf1558af80492852342473481b1ceb96f871ae0661e03edbd",
+    "normalization": "none"
+  },
+  {
+    "file": "method4-position/method-confirmation-base-4-position.json",
+    "originalSha256": "e17fbeee40f7fff72f57c21969c914c606ab436fe6db3c99d3043bd705ff87a6",
+    "repositorySha256": "160d767cb4229f4a5d2e8933717103c19e0b0f892e89909b96ef31e66a7b1be6",
+    "normalization": "trailing newlines only"
+  },
+  {
+    "file": "method4-position/method-confirmation-candidate-4-position.json",
+    "originalSha256": "f835be42daf674d3178cd7306571cd16353215b94f52825765a9ca0ff69cfae1",
+    "repositorySha256": "4e0e60e0ff26d76bddde0eac77af56a1737cb887434ebc35f663a159135ec227",
+    "normalization": "trailing newlines only"
+  }
+]

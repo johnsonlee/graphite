@@ -1,0 +1,19 @@
+{
+  "head": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+  "observedAt": "2026-09-05T21:13:23.912392+00:00",
+  "status": "complete",
+  "runs": {
+    "unit": {
+      "id": 33991414367,
+      "conclusion": "success",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414367"
+    },
+    "benchmark": {
+      "id": 33991414379,
+      "conclusion": "failure",
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/33991414379"
+    }
+  },
+  "readOnly": true,
+  "candidate138RejectionUnchanged": true
+}

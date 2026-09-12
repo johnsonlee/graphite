@@ -1,0 +1,37 @@
+{
+  "name": "profile-2",
+  "commands": [
+    [
+      "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/jfr",
+      "print",
+      "--json",
+      "--stack-depth",
+      "256",
+      "--events",
+      "graphite.diagnostic.QueryExecution,jdk.Deoptimization,jdk.Compilation,jdk.CompilationFailure,jdk.ExecutionSample,jdk.JVMInformation,jdk.ActiveRecording,jdk.ActiveSetting,jdk.DataLoss,jdk.GarbageCollection,jdk.GCPhasePause",
+      "/private/tmp/graphite-query-marker-capture/profile-2.jfr"
+    ],
+    [
+      "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-cp",
+      "/private/tmp/graphite-query-marker-capture",
+      "JfrEventTypes",
+      "/private/tmp/graphite-query-marker-capture/profile-2.jfr",
+      "/private/tmp/graphite-query-marker-capture/profile-2.event-types.json"
+    ]
+  ],
+  "jfrSha256BeforeAfter": "6f6b699e25166d3497e7e73315c3f56474e9792f7b0e96fb3337740c004c859c",
+  "eventsJsonSha256": "162975e9857ba8962f70254d8a57c81ff9b35c043224cdfc49f7fbbe58bb7b02",
+  "eventTypesSha256": "9e5a32b7d5ffc041d3458f0b7023daceecb69c0b58f45b4e0490c852c7cb53a5",
+  "metadataSourceSha256": "71d54db168689c2b5ce75d1927cab00c11da954269d2c112dabfc478f30590da",
+  "metadataClassSha256": "b2db966c6e9c30efe567941e045f5532090af57d5f88129d7dd4a2421888aa7a",
+  "eventTypesCompilerCommand": [
+    "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/javac",
+    "-cp",
+    "/private/tmp/graphite-query-marker-capture",
+    "-d",
+    "/private/tmp/graphite-query-marker-capture",
+    "/private/tmp/graphite-query-marker-capture/JfrEventTypes.java"
+  ],
+  "captureProcessesAlreadyTerminal": true
+}

@@ -1,0 +1,159 @@
+{
+  "passed": false,
+  "errors": [],
+  "rows": [
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=early]",
+      "baseScore": 365.355935,
+      "candidateScore": 406.574366,
+      "unit": "ms/op",
+      "delta": 11.281719291079817,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=middle]",
+      "baseScore": 383.827202,
+      "candidateScore": 429.804564,
+      "unit": "ms/op",
+      "delta": 11.978661689538095,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=zero]",
+      "baseScore": 266.482973,
+      "candidateScore": 247.187662,
+      "unit": "ms/op",
+      "delta": -7.240729410505353,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=early]",
+      "baseScore": 850000000,
+      "candidateScore": 1050000000,
+      "unit": "#",
+      "delta": 23.529411764705888,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": false,
+      "confirmation": {
+        "baseScore": 960000000,
+        "candidateScore": 990000000,
+        "delta": 3.125,
+        "blocked": false
+      }
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=middle]",
+      "baseScore": 860000000,
+      "candidateScore": 1130000000,
+      "unit": "#",
+      "delta": 31.39534883720929,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": true,
+      "confirmation": {
+        "baseScore": 840000000,
+        "candidateScore": 1040000000,
+        "delta": 23.809523809523814,
+        "blocked": true
+      }
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=zero]",
+      "baseScore": 530000000,
+      "candidateScore": 620000000,
+      "unit": "#",
+      "delta": 16.981132075471695,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": false,
+      "confirmation": {
+        "baseScore": 590000000,
+        "candidateScore": 660000000,
+        "delta": 11.864406779661007,
+        "blocked": false
+      }
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=early]",
+      "baseScore": 2131099648,
+      "candidateScore": 2119720960,
+      "unit": "#",
+      "delta": -0.5339350513561714,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": false,
+      "blocked": false
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=middle]",
+      "baseScore": 2121953280,
+      "candidateScore": 2207293440,
+      "unit": "#",
+      "delta": 4.021773749891411,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=zero]",
+      "baseScore": 2067800064,
+      "candidateScore": 2132774912,
+      "unit": "#",
+      "delta": 3.1422210073014156,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=early]",
+      "baseScore": 34557952,
+      "candidateScore": 38350848,
+      "unit": "#",
+      "delta": 10.975465212753344,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false,
+      "advisory": true
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=middle]",
+      "baseScore": 34541568,
+      "candidateScore": 209956864,
+      "unit": "#",
+      "delta": 507.83825447646154,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": false,
+      "advisory": true
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=zero]",
+      "baseScore": 5144576,
+      "candidateScore": 165838848,
+      "unit": "#",
+      "delta": 3123.566878980892,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": false,
+      "advisory": true
+    }
+  ]
+}

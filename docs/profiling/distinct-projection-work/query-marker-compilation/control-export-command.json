@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/jfr",
+    "print",
+    "--json",
+    "--stack-depth",
+    "256",
+    "--events",
+    "graphite.diagnostic.QueryExecution,jdk.Deoptimization,jdk.Compilation,jdk.CompilationFailure,jdk.ExecutionSample,jdk.JVMInformation,jdk.ActiveRecording,jdk.ActiveSetting,jdk.DataLoss,jdk.GarbageCollection,jdk.GCPhasePause",
+    "/private/tmp/graphite-query-marker-capture/control.jfr"
+  ],
+  "jfrSha256": "7f04b6b41e92187ac0f03e265208210ebe946f3cdcaa9c6c6f4352c6c51f2501",
+  "outputSha256": "340afc420c55fcbf7f43db3203e1039290890ce38600e64a7553b30a5833650e"
+}

@@ -1,0 +1,13 @@
+{
+  "zipCrcCheckPassed": true,
+  "entryCount": 30489,
+  "requiredClasses": {
+    "io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.class": "83b5277fe9140e01c355c8f5240df6b59d2f8ffc141391804b37747d6abb3d29",
+    "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.class": "ea3e0bf76a62c18514e47ab980ca58e910e067739651001bf3d4b56b77f3979b",
+    "io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.class": "ae78c757f805386ba22698f277f41cd0f0e3e0b55aff2ab1cf5fe980a4ad35ea"
+  },
+  "diagnosticOnly": true,
+  "gradleBuildCacheUsed": true,
+  "testClassesCompiledButNoTestsExecuted": true,
+  "noNewOptimizationOrAcceptance": true
+}

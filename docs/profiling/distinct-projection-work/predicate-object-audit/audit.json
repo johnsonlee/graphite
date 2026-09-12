@@ -1,0 +1,2493 @@
+{
+  "scope": "Read-only next-hypothesis screen; not Attempt141, no candidate or measurement",
+  "decision": "Distinct and not ruled out by inlining: retain only as a low-confidence single falsifiable mechanism hypothesis. Existing evidence does not establish material exclusive forwarding cost or a 10x opportunity. Any later test must first prove exact semantic scope and emitted shape; no test is initiated here.",
+  "correctedCounts": {
+    "wrapperCodeBytes": 61,
+    "wrapperCallBci": 57,
+    "staticCallbackParameters": 15,
+    "captures": 14,
+    "nodeIdArguments": 1
+  },
+  "bytecode": {
+    "jarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "mappedClassSha256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+    "nodeCodeBytes": 790,
+    "staticParameterCount": 15,
+    "capturedValueCount": 14,
+    "parameters": [
+      {
+        "slot": 0,
+        "name": "$inspected",
+        "descriptor": "Lkotlin/jvm/internal/Ref$IntRef;"
+      },
+      {
+        "slot": 1,
+        "name": "$abort",
+        "descriptor": "Ljava/util/concurrent/atomic/AtomicBoolean;"
+      },
+      {
+        "slot": 2,
+        "name": "this$0",
+        "descriptor": "Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;"
+      },
+      {
+        "slot": 3,
+        "name": "$accounting",
+        "descriptor": "Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;"
+      },
+      {
+        "slot": 4,
+        "name": "$selectedIdValues",
+        "descriptor": "Ljava/util/HashSet;"
+      },
+      {
+        "slot": 5,
+        "name": "$projectedPropertyIndexes",
+        "descriptor": "Ljava/util/List;"
+      },
+      {
+        "slot": 6,
+        "name": "$seenValues",
+        "descriptor": "Ljava/util/HashSet;"
+      },
+      {
+        "slot": 7,
+        "name": "$rows",
+        "descriptor": "Ljava/util/ArrayList;"
+      },
+      {
+        "slot": 8,
+        "name": "$targetSize",
+        "descriptor": "I"
+      },
+      {
+        "slot": 9,
+        "name": "$stringIds",
+        "descriptor": "[I"
+      },
+      {
+        "slot": 10,
+        "name": "$predicates",
+        "descriptor": "Ljava/util/List;"
+      },
+      {
+        "slot": 11,
+        "name": "$predicatePropertyIndexes",
+        "descriptor": "Ljava/util/List;"
+      },
+      {
+        "slot": 12,
+        "name": "$exactMatchSets",
+        "descriptor": "Ljava/util/List;"
+      },
+      {
+        "slot": 13,
+        "name": "$matchStates",
+        "descriptor": "Ljava/util/List;"
+      },
+      {
+        "slot": 14,
+        "name": "nodeId",
+        "descriptor": "I"
+      }
+    ],
+    "workerCodeBytes": 190,
+    "lambdaFactoryBci": 108,
+    "invokeDynamicCpIndex": 2683,
+    "captureDescriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Ljava/util/function/IntPredicate;",
+    "bootstrap": {
+      "owner": "java/lang/invoke/LambdaMetafactory",
+      "name": "metafactory",
+      "descriptor": "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
+    },
+    "implementationHandle": {
+      "owner": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph",
+      "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+      "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z"
+    },
+    "hiddenClassPresentInFrozenJar": false,
+    "hiddenWrapperCodeBytesEvidence": "Runtime XML method bytes=61; XML parser BCI57 invokestatic and actual native stack BCI57. No dumped hidden class is available, so no claim of independent full wrapper class bytes.",
+    "wrapperCallBci": 57
+  },
+  "recordings": [
+    {
+      "name": "profile-1",
+      "xmlSha256": "ac9a024dea5201582ebbdeaf9d9f1a323d893182a6a764117f9aa56c103415ab",
+      "nativeEventsSha256": "4b2751576ba6a2fd5755dcd9d65e09f186e300ec36615cfc866bdd320399aef5",
+      "wrapperRuntimeName": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$237/0x00000070011aa258",
+      "wrapperPublishedNmethods": [
+        {
+          "compile_id": "4211",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x00000001307f75c0",
+          "size": "1080",
+          "address": "0x00000001307f7410",
+          "relocation_offset": "344",
+          "insts_offset": "432",
+          "stub_offset": "880",
+          "scopes_data_offset": "984",
+          "scopes_pcs_offset": "1008",
+          "dependencies_offset": "1072",
+          "oops_offset": "952",
+          "metadata_offset": "960",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$237/0x00000070011aa258 test (I)Z",
+          "bytes": "61",
+          "count": "4650",
+          "iicount": "4650",
+          "stamp": "7.902"
+        }
+      ],
+      "wrapperQueuedTasks": [
+        {
+          "compile_id": "4211",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$237/0x00000070011aa258 test (I)Z",
+          "bytes": "61",
+          "count": "657",
+          "iicount": "657",
+          "level": "3",
+          "stamp": "7.900",
+          "comment": "tiered",
+          "hot_count": "656"
+        },
+        {
+          "compile_id": "4221",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$237/0x00000070011aa258 test (I)Z",
+          "bytes": "61",
+          "count": "21035",
+          "iicount": "21035",
+          "stamp": "7.906",
+          "comment": "tiered",
+          "hot_count": "21008"
+        }
+      ],
+      "wrapperToNodeCalls": [
+        {
+          "task": {
+            "compile_id": "4211",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$237/0x00000070011aa258 test (I)Z",
+            "bytes": "61",
+            "count": "4172",
+            "iicount": "4173",
+            "level": "3",
+            "stamp": "7.902"
+          },
+          "publishedNmethod": {
+            "compile_id": "4211",
+            "compiler": "c1",
+            "level": "3",
+            "entry": "0x00000001307f75c0",
+            "size": "1080",
+            "address": "0x00000001307f7410",
+            "relocation_offset": "344",
+            "insts_offset": "432",
+            "stub_offset": "880",
+            "scopes_data_offset": "984",
+            "scopes_pcs_offset": "1008",
+            "dependencies_offset": "1072",
+            "oops_offset": "952",
+            "metadata_offset": "960",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$237/0x00000070011aa258 test (I)Z",
+            "bytes": "61",
+            "count": "4650",
+            "iicount": "4650",
+            "stamp": "7.902"
+          },
+          "call": {
+            "method": "1258",
+            "instr": "invokestatic"
+          },
+          "callee": {
+            "owner": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph",
+            "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+            "bytes": "790",
+            "arguments": "1252 1253 1254 1255 1256 1257 1256 1211 1112 1243 1257 1257 1257 1257 1112"
+          },
+          "bytecode": {
+            "code": "184",
+            "bci": "57"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "callee is too large"
+            }
+          ]
+        }
+      ],
+      "indexToIntPredicateCalls": [
+        {
+          "task": {
+            "compile_id": "4231",
+            "compile_kind": "osr",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "60451",
+            "iicount": "6",
+            "osr_bci": "155",
+            "level": "3",
+            "stamp": "7.919"
+          },
+          "publishedNmethod": {
+            "compile_id": "4231",
+            "compile_kind": "osr",
+            "compiler": "c1",
+            "level": "3",
+            "entry": "0x00000001307fe400",
+            "size": "9552",
+            "address": "0x00000001307fdf90",
+            "relocation_offset": "344",
+            "insts_offset": "1136",
+            "stub_offset": "6576",
+            "scopes_data_offset": "7664",
+            "scopes_pcs_offset": "8600",
+            "dependencies_offset": "9432",
+            "nul_chk_table_offset": "9464",
+            "oops_offset": "7320",
+            "metadata_offset": "7360",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "61316",
+            "iicount": "6",
+            "stamp": "7.920"
+          },
+          "call": {
+            "method": "1303",
+            "instr": "invokeinterface"
+          },
+          "callee": {
+            "owner": "java.util.function.IntPredicate",
+            "name": "test",
+            "bytes": "0",
+            "arguments": "1112"
+          },
+          "bytecode": {
+            "code": "185",
+            "bci": "180"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "no static binding"
+            }
+          ]
+        },
+        {
+          "task": {
+            "compile_id": "4232",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "61549",
+            "iicount": "6",
+            "level": "3",
+            "stamp": "7.920"
+          },
+          "publishedNmethod": {
+            "compile_id": "4232",
+            "compiler": "c1",
+            "level": "3",
+            "entry": "0x0000000130800980",
+            "size": "9208",
+            "address": "0x0000000130800510",
+            "relocation_offset": "344",
+            "insts_offset": "1136",
+            "stub_offset": "6256",
+            "scopes_data_offset": "7344",
+            "scopes_pcs_offset": "8280",
+            "dependencies_offset": "9096",
+            "nul_chk_table_offset": "9128",
+            "oops_offset": "7000",
+            "metadata_offset": "7040",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "62229",
+            "iicount": "6",
+            "stamp": "7.921"
+          },
+          "call": {
+            "method": "1305",
+            "instr": "invokeinterface"
+          },
+          "callee": {
+            "owner": "java.util.function.IntPredicate",
+            "name": "test",
+            "bytes": "0",
+            "arguments": "1112"
+          },
+          "bytecode": {
+            "code": "185",
+            "bci": "180"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "no static binding"
+            }
+          ]
+        }
+      ],
+      "otherRelevantCalls": [],
+      "nativeCompilationEvents": [
+        {
+          "eventIndex": 5415,
+          "compileId": 4210,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649330491806417,
+          "endNanos": 1788649330493859834,
+          "endRelativeToTargetStartNanos": 8544000,
+          "targetDurationNanos": 42704375,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5420,
+          "compileId": 4211,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$237+0x00000070011aa258/1466903129.test",
+          "startNanos": 1788649330494296000,
+          "endNanos": 1788649330494399500,
+          "endRelativeToTargetStartNanos": 9083666,
+          "targetDurationNanos": 42704375,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5491,
+          "compileId": 4215,
+          "compiler": "c2",
+          "level": 4,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649330525099125,
+          "endNanos": 1788649330537538334,
+          "endRelativeToTargetStartNanos": 52222500,
+          "targetDurationNanos": 42704375,
+          "completedWithinTarget": false,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5547,
+          "compileId": 4301,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649330557673375,
+          "endNanos": 1788649330559909584,
+          "endRelativeToTargetStartNanos": 74593750,
+          "targetDurationNanos": 42704375,
+          "completedWithinTarget": false,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5551,
+          "compileId": 4304,
+          "compiler": "c1",
+          "level": 2,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649330560063584,
+          "endNanos": 1788649330561739959,
+          "endRelativeToTargetStartNanos": 76424125,
+          "targetDurationNanos": 42704375,
+          "completedWithinTarget": false,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5628,
+          "compileId": 4308,
+          "compiler": "c2",
+          "level": 4,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649330579695459,
+          "endNanos": 1788649330594282375,
+          "endRelativeToTargetStartNanos": 108966541,
+          "targetDurationNanos": 42704375,
+          "completedWithinTarget": false,
+          "succeeded": true
+        }
+      ],
+      "targetedAllJavaSnapshots": 31,
+      "targetedApplicationJavaSnapshots": 31,
+      "targetedNodeSnapshots": 29,
+      "targetedNodeFrameTypes": {
+        "Interpreted": 24,
+        "JIT compiled": 5
+      },
+      "targetedWrapperFrameTypes": {
+        "Interpreted": 2,
+        "JIT compiled": 27
+      },
+      "targetedSamples": [
+        {
+          "eventIndex": 5410,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 322,
+          "wrapperFrameType": "Interpreted",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5411,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 128,
+          "wrapperFrameType": "Interpreted",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5426,
+          "thread": "graphite-cypher-scan-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 66,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5427,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 85,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5429,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 243,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5430,
+          "thread": "graphite-cypher-scan-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 229,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5432,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5437,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 322,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5438,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 140,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5439,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 205,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5440,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 140,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5441,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 243,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5442,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 312,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5443,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 291,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5444,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5445,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 312,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5448,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 140,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5449,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 105,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5450,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 265,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5451,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 243,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5452,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 128,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5453,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 283,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5454,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 105,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5455,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5456,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 140,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5459,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 205,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5461,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 776,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5463,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5464,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 312,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        }
+      ],
+      "wholeRecordingWrapperLeafSamples": []
+    },
+    {
+      "name": "profile-2",
+      "xmlSha256": "97b22f69174e2ec46d7bd82fe1826edb7baa3b9cc7b84347d5b2768bbeca6fe9",
+      "nativeEventsSha256": "162975e9857ba8962f70254d8a57c81ff9b35c043224cdfc49f7fbbe58bb7b02",
+      "wrapperRuntimeName": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50",
+      "wrapperPublishedNmethods": [
+        {
+          "compile_id": "4206",
+          "compiler": "c1",
+          "level": "2",
+          "entry": "0x0000000114e805c0",
+          "size": "1072",
+          "address": "0x0000000114e80410",
+          "relocation_offset": "344",
+          "insts_offset": "432",
+          "stub_offset": "880",
+          "scopes_data_offset": "976",
+          "scopes_pcs_offset": "1000",
+          "dependencies_offset": "1064",
+          "oops_offset": "952",
+          "metadata_offset": "960",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+          "bytes": "61",
+          "count": "1856",
+          "iicount": "1857",
+          "stamp": "7.978"
+        },
+        {
+          "compile_id": "4211",
+          "compiler": "c1",
+          "level": "3",
+          "entry": "0x0000000114e8c840",
+          "size": "1080",
+          "address": "0x0000000114e8c690",
+          "relocation_offset": "344",
+          "insts_offset": "432",
+          "stub_offset": "880",
+          "scopes_data_offset": "984",
+          "scopes_pcs_offset": "1008",
+          "dependencies_offset": "1072",
+          "oops_offset": "952",
+          "metadata_offset": "960",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+          "bytes": "61",
+          "count": "7725",
+          "iicount": "7726",
+          "stamp": "7.981"
+        },
+        {
+          "compile_id": "4221",
+          "compiler": "c2",
+          "level": "4",
+          "entry": "0x000000011c346e40",
+          "size": "872",
+          "address": "0x000000011c346c90",
+          "relocation_offset": "344",
+          "insts_offset": "432",
+          "stub_offset": "688",
+          "scopes_data_offset": "776",
+          "scopes_pcs_offset": "792",
+          "dependencies_offset": "840",
+          "handler_table_offset": "848",
+          "oops_offset": "752",
+          "metadata_offset": "760",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+          "bytes": "61",
+          "count": "69101",
+          "iicount": "69101",
+          "stamp": "8.008"
+        }
+      ],
+      "wrapperQueuedTasks": [
+        {
+          "compile_id": "4206",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+          "bytes": "61",
+          "count": "521",
+          "iicount": "521",
+          "level": "2",
+          "stamp": "7.976",
+          "comment": "tiered",
+          "hot_count": "516"
+        },
+        {
+          "compile_id": "4211",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+          "bytes": "61",
+          "count": "3547",
+          "iicount": "3548",
+          "level": "3",
+          "stamp": "7.979",
+          "comment": "tiered",
+          "hot_count": "3394"
+        },
+        {
+          "compile_id": "4221",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+          "bytes": "61",
+          "count": "28928",
+          "iicount": "28928",
+          "stamp": "7.994",
+          "comment": "tiered",
+          "hot_count": "28909"
+        }
+      ],
+      "wrapperToNodeCalls": [
+        {
+          "task": {
+            "compile_id": "4221",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+            "bytes": "61",
+            "count": "69043",
+            "iicount": "69043",
+            "stamp": "8.007"
+          },
+          "publishedNmethod": {
+            "compile_id": "4221",
+            "compiler": "c2",
+            "level": "4",
+            "entry": "0x000000011c346e40",
+            "size": "872",
+            "address": "0x000000011c346c90",
+            "relocation_offset": "344",
+            "insts_offset": "432",
+            "stub_offset": "688",
+            "scopes_data_offset": "776",
+            "scopes_pcs_offset": "792",
+            "dependencies_offset": "840",
+            "handler_table_offset": "848",
+            "oops_offset": "752",
+            "metadata_offset": "760",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+            "bytes": "61",
+            "count": "69101",
+            "iicount": "69101",
+            "stamp": "8.008"
+          },
+          "call": {
+            "method": "1258",
+            "count": "62318",
+            "prof_factor": "1.000000",
+            "inline": "1"
+          },
+          "callee": {
+            "owner": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph",
+            "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+            "bytes": "790",
+            "arguments": "1252 1253 1254 1255 1256 1257 1256 1211 1112 1243 1257 1257 1257 1257 1112"
+          },
+          "bytecode": {
+            "code": "184",
+            "bci": "57"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "hot method too big"
+            },
+            {
+              "tag": "direct_call",
+              "bci": "57"
+            }
+          ]
+        },
+        {
+          "task": {
+            "compile_id": "4206",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+            "bytes": "61",
+            "count": "1817",
+            "iicount": "1817",
+            "level": "2",
+            "stamp": "7.978"
+          },
+          "publishedNmethod": {
+            "compile_id": "4206",
+            "compiler": "c1",
+            "level": "2",
+            "entry": "0x0000000114e805c0",
+            "size": "1072",
+            "address": "0x0000000114e80410",
+            "relocation_offset": "344",
+            "insts_offset": "432",
+            "stub_offset": "880",
+            "scopes_data_offset": "976",
+            "scopes_pcs_offset": "1000",
+            "dependencies_offset": "1064",
+            "oops_offset": "952",
+            "metadata_offset": "960",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+            "bytes": "61",
+            "count": "1856",
+            "iicount": "1857",
+            "stamp": "7.978"
+          },
+          "call": {
+            "method": "1258",
+            "instr": "invokestatic"
+          },
+          "callee": {
+            "owner": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph",
+            "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+            "bytes": "790",
+            "arguments": "1252 1253 1254 1255 1256 1257 1256 1211 1112 1243 1257 1257 1257 1257 1112"
+          },
+          "bytecode": {
+            "code": "184",
+            "bci": "57"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "callee is too large"
+            }
+          ]
+        },
+        {
+          "task": {
+            "compile_id": "4211",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+            "bytes": "61",
+            "count": "7707",
+            "iicount": "7707",
+            "level": "3",
+            "stamp": "7.981"
+          },
+          "publishedNmethod": {
+            "compile_id": "4211",
+            "compiler": "c1",
+            "level": "3",
+            "entry": "0x0000000114e8c840",
+            "size": "1080",
+            "address": "0x0000000114e8c690",
+            "relocation_offset": "344",
+            "insts_offset": "432",
+            "stub_offset": "880",
+            "scopes_data_offset": "984",
+            "scopes_pcs_offset": "1008",
+            "dependencies_offset": "1072",
+            "oops_offset": "952",
+            "metadata_offset": "960",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235/0x00000003011afa50 test (I)Z",
+            "bytes": "61",
+            "count": "7725",
+            "iicount": "7726",
+            "stamp": "7.981"
+          },
+          "call": {
+            "method": "1258",
+            "instr": "invokestatic"
+          },
+          "callee": {
+            "owner": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph",
+            "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+            "bytes": "790",
+            "arguments": "1252 1253 1254 1255 1256 1257 1256 1211 1112 1243 1257 1257 1257 1257 1112"
+          },
+          "bytecode": {
+            "code": "184",
+            "bci": "57"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "callee is too large"
+            }
+          ]
+        }
+      ],
+      "indexToIntPredicateCalls": [
+        {
+          "task": {
+            "compile_id": "4225",
+            "compile_kind": "osr",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "60643",
+            "iicount": "6",
+            "osr_bci": "155",
+            "level": "3",
+            "stamp": "8.004"
+          },
+          "publishedNmethod": {
+            "compile_id": "4225",
+            "compile_kind": "osr",
+            "compiler": "c1",
+            "level": "3",
+            "entry": "0x0000000114e8d900",
+            "size": "9552",
+            "address": "0x0000000114e8d490",
+            "relocation_offset": "344",
+            "insts_offset": "1136",
+            "stub_offset": "6576",
+            "scopes_data_offset": "7664",
+            "scopes_pcs_offset": "8600",
+            "dependencies_offset": "9432",
+            "nul_chk_table_offset": "9464",
+            "oops_offset": "7320",
+            "metadata_offset": "7360",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "70177",
+            "iicount": "6",
+            "stamp": "8.005"
+          },
+          "call": {
+            "method": "1303",
+            "instr": "invokeinterface"
+          },
+          "callee": {
+            "owner": "java.util.function.IntPredicate",
+            "name": "test",
+            "bytes": "0",
+            "arguments": "1112"
+          },
+          "bytecode": {
+            "code": "185",
+            "bci": "180"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "no static binding"
+            }
+          ]
+        },
+        {
+          "task": {
+            "compile_id": "4226",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "71544",
+            "iicount": "6",
+            "level": "3",
+            "stamp": "8.005"
+          },
+          "publishedNmethod": {
+            "compile_id": "4226",
+            "compiler": "c1",
+            "level": "3",
+            "entry": "0x0000000114e8fe80",
+            "size": "9208",
+            "address": "0x0000000114e8fa10",
+            "relocation_offset": "344",
+            "insts_offset": "1136",
+            "stub_offset": "6256",
+            "scopes_data_offset": "7344",
+            "scopes_pcs_offset": "8280",
+            "dependencies_offset": "9096",
+            "nul_chk_table_offset": "9128",
+            "oops_offset": "7000",
+            "metadata_offset": "7040",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "75385",
+            "iicount": "6",
+            "stamp": "8.005"
+          },
+          "call": {
+            "method": "1305",
+            "instr": "invokeinterface"
+          },
+          "callee": {
+            "owner": "java.util.function.IntPredicate",
+            "name": "test",
+            "bytes": "0",
+            "arguments": "1112"
+          },
+          "bytecode": {
+            "code": "185",
+            "bci": "180"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "no static binding"
+            }
+          ]
+        }
+      ],
+      "otherRelevantCalls": [],
+      "nativeCompilationEvents": [
+        {
+          "eventIndex": 5388,
+          "compileId": 4205,
+          "compiler": "c1",
+          "level": 2,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649338979349750,
+          "endNanos": 1788649338981031875,
+          "endRelativeToTargetStartNanos": 8387000,
+          "targetDurationNanos": 37748709,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5389,
+          "compileId": 4206,
+          "compiler": "c1",
+          "level": 2,
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235+0x00000003011afa50/1974219949.test",
+          "startNanos": 1788649338981048000,
+          "endNanos": 1788649338981151542,
+          "endRelativeToTargetStartNanos": 8506667,
+          "targetDurationNanos": 37748709,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5402,
+          "compileId": 4210,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649338982069750,
+          "endNanos": 1788649338984160250,
+          "endRelativeToTargetStartNanos": 11515375,
+          "targetDurationNanos": 37748709,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5403,
+          "compileId": 4211,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235+0x00000003011afa50/1974219949.test",
+          "startNanos": 1788649338984171750,
+          "endNanos": 1788649338984286042,
+          "endRelativeToTargetStartNanos": 11641167,
+          "targetDurationNanos": 37748709,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5427,
+          "compileId": 4218,
+          "compiler": "c2",
+          "level": 4,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649338991060584,
+          "endNanos": 1788649339005316875,
+          "endRelativeToTargetStartNanos": 32672000,
+          "targetDurationNanos": 37748709,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5446,
+          "compileId": 4221,
+          "compiler": "c2",
+          "level": 4,
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235+0x00000003011afa50/1974219949.test",
+          "startNanos": 1788649339010242042,
+          "endNanos": 1788649339010643334,
+          "endRelativeToTargetStartNanos": 37998459,
+          "targetDurationNanos": 37748709,
+          "completedWithinTarget": false,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5450,
+          "compileId": 4227,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649339009880584,
+          "endNanos": 1788649339012326167,
+          "endRelativeToTargetStartNanos": 39681292,
+          "targetDurationNanos": 37748709,
+          "completedWithinTarget": false,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5464,
+          "compileId": 4242,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649339015808125,
+          "endNanos": 1788649339017827500,
+          "endRelativeToTargetStartNanos": 45182625,
+          "targetDurationNanos": 37748709,
+          "completedWithinTarget": false,
+          "succeeded": true
+        }
+      ],
+      "targetedAllJavaSnapshots": 34,
+      "targetedApplicationJavaSnapshots": 31,
+      "targetedNodeSnapshots": 27,
+      "targetedNodeFrameTypes": {
+        "Interpreted": 5,
+        "JIT compiled": 22
+      },
+      "targetedWrapperFrameTypes": {
+        "Interpreted": 2,
+        "JIT compiled": 25
+      },
+      "targetedSamples": [
+        {
+          "eventIndex": 5384,
+          "thread": "graphite-cypher-scan-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 145,
+          "wrapperFrameType": "Interpreted",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5386,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 283,
+          "wrapperFrameType": "Interpreted",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5399,
+          "thread": "graphite-cypher-scan-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 128,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5400,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 162,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5401,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 291,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5405,
+          "thread": "graphite-cypher-scan-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 291,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5406,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 140,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5407,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 105,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5410,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 291,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5413,
+          "thread": "graphite-cypher-scan-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 265,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5414,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 150,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5415,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 312,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5416,
+          "thread": "graphite-cypher-scan-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 150,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5417,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 162,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5418,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 162,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5419,
+          "thread": "graphite-cypher-scan-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 150,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5420,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 265,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5421,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 291,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5422,
+          "thread": "graphite-cypher-scan-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 128,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5423,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 128,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5424,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 128,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5425,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 85,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5432,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 322,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5433,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 322,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5440,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5441,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 123,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5442,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        }
+      ],
+      "wholeRecordingWrapperLeafSamples": [
+        {
+          "eventIndex": 5385,
+          "insideTargeted": true,
+          "bci": 57,
+          "type": "Interpreted",
+          "thread": "graphite-callsite-segment-1"
+        }
+      ]
+    },
+    {
+      "name": "profile-3",
+      "xmlSha256": "f48627312660e71232a4f41aa5a3c072f2344bd7858d689478456c22db9b3596",
+      "nativeEventsSha256": "e3d3c8b307a18737b64e6d2fcb6ca20cbfdb5bad4a7b8a3c69964d680bd05beb",
+      "wrapperRuntimeName": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000",
+      "wrapperPublishedNmethods": [
+        {
+          "compile_id": "4244",
+          "compiler": "c1",
+          "level": "2",
+          "entry": "0x00000001307d0840",
+          "size": "1072",
+          "address": "0x00000001307d0690",
+          "relocation_offset": "344",
+          "insts_offset": "432",
+          "stub_offset": "880",
+          "scopes_data_offset": "976",
+          "scopes_pcs_offset": "1000",
+          "dependencies_offset": "1064",
+          "oops_offset": "952",
+          "metadata_offset": "960",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000 test (I)Z",
+          "bytes": "61",
+          "count": "6900",
+          "iicount": "6901",
+          "stamp": "7.879"
+        },
+        {
+          "compile_id": "4247",
+          "compiler": "c2",
+          "level": "4",
+          "entry": "0x0000000137c70c40",
+          "size": "872",
+          "address": "0x0000000137c70a90",
+          "relocation_offset": "344",
+          "insts_offset": "432",
+          "stub_offset": "688",
+          "scopes_data_offset": "776",
+          "scopes_pcs_offset": "792",
+          "dependencies_offset": "840",
+          "handler_table_offset": "848",
+          "oops_offset": "752",
+          "metadata_offset": "760",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000 test (I)Z",
+          "bytes": "61",
+          "count": "79253",
+          "iicount": "79253",
+          "stamp": "7.903"
+        }
+      ],
+      "wrapperQueuedTasks": [
+        {
+          "compile_id": "4244",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000 test (I)Z",
+          "bytes": "61",
+          "count": "1059",
+          "iicount": "1059",
+          "level": "3",
+          "stamp": "7.876",
+          "comment": "tiered",
+          "hot_count": "1040"
+        },
+        {
+          "compile_id": "4247",
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000 test (I)Z",
+          "bytes": "61",
+          "count": "8455",
+          "iicount": "8456",
+          "stamp": "7.879",
+          "comment": "tiered",
+          "hot_count": "8424"
+        }
+      ],
+      "wrapperToNodeCalls": [
+        {
+          "task": {
+            "compile_id": "4247",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000 test (I)Z",
+            "bytes": "61",
+            "count": "78007",
+            "iicount": "78008",
+            "stamp": "7.903"
+          },
+          "publishedNmethod": {
+            "compile_id": "4247",
+            "compiler": "c2",
+            "level": "4",
+            "entry": "0x0000000137c70c40",
+            "size": "872",
+            "address": "0x0000000137c70a90",
+            "relocation_offset": "344",
+            "insts_offset": "432",
+            "stub_offset": "688",
+            "scopes_data_offset": "776",
+            "scopes_pcs_offset": "792",
+            "dependencies_offset": "840",
+            "handler_table_offset": "848",
+            "oops_offset": "752",
+            "metadata_offset": "760",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000 test (I)Z",
+            "bytes": "61",
+            "count": "79253",
+            "iicount": "79253",
+            "stamp": "7.903"
+          },
+          "call": {
+            "method": "1258",
+            "count": "6377",
+            "prof_factor": "1.000000",
+            "inline": "1"
+          },
+          "callee": {
+            "owner": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph",
+            "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+            "bytes": "790",
+            "arguments": "1252 1253 1254 1255 1256 1257 1256 1211 1112 1243 1257 1257 1257 1257 1112"
+          },
+          "bytecode": {
+            "code": "184",
+            "bci": "57"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "hot method too big"
+            },
+            {
+              "tag": "direct_call",
+              "bci": "57"
+            }
+          ]
+        },
+        {
+          "task": {
+            "compile_id": "4244",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000 test (I)Z",
+            "bytes": "61",
+            "count": "6502",
+            "iicount": "6502",
+            "level": "2",
+            "stamp": "7.879"
+          },
+          "publishedNmethod": {
+            "compile_id": "4244",
+            "compiler": "c1",
+            "level": "2",
+            "entry": "0x00000001307d0840",
+            "size": "1072",
+            "address": "0x00000001307d0690",
+            "relocation_offset": "344",
+            "insts_offset": "432",
+            "stub_offset": "880",
+            "scopes_data_offset": "976",
+            "scopes_pcs_offset": "1000",
+            "dependencies_offset": "1064",
+            "oops_offset": "952",
+            "metadata_offset": "960",
+            "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236/0x000000d8011aa000 test (I)Z",
+            "bytes": "61",
+            "count": "6900",
+            "iicount": "6901",
+            "stamp": "7.879"
+          },
+          "call": {
+            "method": "1258",
+            "instr": "invokestatic"
+          },
+          "callee": {
+            "owner": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph",
+            "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+            "bytes": "790",
+            "arguments": "1252 1253 1254 1255 1256 1257 1256 1211 1112 1243 1257 1257 1257 1257 1112"
+          },
+          "bytecode": {
+            "code": "184",
+            "bci": "57"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "callee is too large"
+            }
+          ]
+        }
+      ],
+      "indexToIntPredicateCalls": [
+        {
+          "task": {
+            "compile_id": "4262",
+            "compile_kind": "osr",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "60950",
+            "iicount": "6",
+            "osr_bci": "155",
+            "level": "3",
+            "stamp": "7.898"
+          },
+          "publishedNmethod": {
+            "compile_id": "4262",
+            "compile_kind": "osr",
+            "compiler": "c1",
+            "level": "3",
+            "entry": "0x0000000130177b80",
+            "size": "9552",
+            "address": "0x0000000130177710",
+            "relocation_offset": "344",
+            "insts_offset": "1136",
+            "stub_offset": "6576",
+            "scopes_data_offset": "7664",
+            "scopes_pcs_offset": "8600",
+            "dependencies_offset": "9432",
+            "nul_chk_table_offset": "9464",
+            "oops_offset": "7320",
+            "metadata_offset": "7360",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "63164",
+            "iicount": "6",
+            "stamp": "7.899"
+          },
+          "call": {
+            "method": "1303",
+            "instr": "invokeinterface"
+          },
+          "callee": {
+            "owner": "java.util.function.IntPredicate",
+            "name": "test",
+            "bytes": "0",
+            "arguments": "1112"
+          },
+          "bytecode": {
+            "code": "185",
+            "bci": "180"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "no static binding"
+            }
+          ]
+        },
+        {
+          "task": {
+            "compile_id": "4263",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "65277",
+            "iicount": "6",
+            "level": "3",
+            "stamp": "7.900"
+          },
+          "publishedNmethod": {
+            "compile_id": "4263",
+            "compiler": "c1",
+            "level": "3",
+            "entry": "0x00000001301a5f80",
+            "size": "9208",
+            "address": "0x00000001301a5b10",
+            "relocation_offset": "344",
+            "insts_offset": "1136",
+            "stub_offset": "6256",
+            "scopes_data_offset": "7344",
+            "scopes_pcs_offset": "8280",
+            "dependencies_offset": "9096",
+            "nul_chk_table_offset": "9128",
+            "oops_offset": "7000",
+            "metadata_offset": "7040",
+            "method": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex forEachIdWhile (Ljava/lang/Class;IILjava/util/function/IntPredicate;)V",
+            "bytes": "216",
+            "count": "6",
+            "backedge_count": "67306",
+            "iicount": "6",
+            "stamp": "7.900"
+          },
+          "call": {
+            "method": "1305",
+            "instr": "invokeinterface"
+          },
+          "callee": {
+            "owner": "java.util.function.IntPredicate",
+            "name": "test",
+            "bytes": "0",
+            "arguments": "1112"
+          },
+          "bytecode": {
+            "code": "185",
+            "bci": "180"
+          },
+          "outcomes": [
+            {
+              "tag": "inline_fail",
+              "reason": "no static binding"
+            }
+          ]
+        }
+      ],
+      "otherRelevantCalls": [],
+      "nativeCompilationEvents": [
+        {
+          "eventIndex": 5446,
+          "compileId": 4243,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649347362109125,
+          "endNanos": 1788649347364166209,
+          "endRelativeToTargetStartNanos": 8289167,
+          "targetDurationNanos": 37172500,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5451,
+          "compileId": 4244,
+          "compiler": "c1",
+          "level": 2,
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236+0x000000d8011aa000/1701403344.test",
+          "startNanos": 1788649347364438084,
+          "endNanos": 1788649347364529000,
+          "endRelativeToTargetStartNanos": 8651958,
+          "targetDurationNanos": 37172500,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5511,
+          "compileId": 4247,
+          "compiler": "c2",
+          "level": 4,
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236+0x000000d8011aa000/1701403344.test",
+          "startNanos": 1788649347388474042,
+          "endNanos": 1788649347388863959,
+          "endRelativeToTargetStartNanos": 32986917,
+          "targetDurationNanos": 37172500,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5516,
+          "compileId": 4248,
+          "compiler": "c2",
+          "level": 4,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649347380207542,
+          "endNanos": 1788649347392384584,
+          "endRelativeToTargetStartNanos": 36507542,
+          "targetDurationNanos": 37172500,
+          "completedWithinTarget": true,
+          "succeeded": true
+        },
+        {
+          "eventIndex": 5521,
+          "compileId": 4264,
+          "compiler": "c1",
+          "level": 3,
+          "method": "io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "startNanos": 1788649347392811167,
+          "endNanos": 1788649347395045125,
+          "endRelativeToTargetStartNanos": 39168083,
+          "targetDurationNanos": 37172500,
+          "completedWithinTarget": false,
+          "succeeded": true
+        }
+      ],
+      "targetedAllJavaSnapshots": 25,
+      "targetedApplicationJavaSnapshots": 25,
+      "targetedNodeSnapshots": 22,
+      "targetedNodeFrameTypes": {
+        "Interpreted": 16,
+        "JIT compiled": 6
+      },
+      "targetedWrapperFrameTypes": {
+        "Interpreted": 4,
+        "JIT compiled": 18
+      },
+      "targetedSamples": [
+        {
+          "eventIndex": 5439,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 291,
+          "wrapperFrameType": "Interpreted",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5440,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 322,
+          "wrapperFrameType": "Interpreted",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5441,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 265,
+          "wrapperFrameType": "Interpreted",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5450,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 312,
+          "wrapperFrameType": "Interpreted",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5465,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 312,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5466,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 229,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5468,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 291,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5471,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 85,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5473,
+          "thread": "graphite-cypher-scan-3",
+          "application": true,
+          "nodeFrameType": "JIT compiled",
+          "nodeBci": 283,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5481,
+          "thread": "graphite-cypher-scan-4",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5482,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 265,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5483,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5489,
+          "thread": "graphite-cypher-scan-4",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 162,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5490,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 145,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5491,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5499,
+          "thread": "graphite-cypher-scan-4",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 776,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5500,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 265,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5501,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 322,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5512,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 252,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5513,
+          "thread": "graphite-cypher-scan-4",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 322,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5514,
+          "thread": "graphite-callsite-segment-1",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 283,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        },
+        {
+          "eventIndex": 5515,
+          "thread": "graphite-callsite-segment-2",
+          "application": true,
+          "nodeFrameType": "Interpreted",
+          "nodeBci": 322,
+          "wrapperFrameType": "JIT compiled",
+          "wrapperBci": 57,
+          "wrapperLeaf": false
+        }
+      ],
+      "wholeRecordingWrapperLeafSamples": [
+        {
+          "eventIndex": 5474,
+          "insideTargeted": true,
+          "bci": 57,
+          "type": "JIT compiled",
+          "thread": "graphite-callsite-segment-2"
+        }
+      ]
+    }
+  ],
+  "historySearch": {
+    "files": {
+      "docs/cross-graph-cypher-optimization-attempts.md": "54ef929de50beaf947c26d3c2e306a29c2a795efc688b11bfed27b51d547a110",
+      "docs/webgraph-optimization-attempts.md": "596a0466055d943d2082c017c7e83350b1957847a1697192fdd5f1611f632f14",
+      "docs/wrapped-case-insensitive-query-optimization-attempts.md": "19af0e2c8603633b13f2480ad83ebdf7a0e03764482a1e067e4239008ba584ff"
+    },
+    "matches": [
+      {
+        "path": "docs/cross-graph-cypher-optimization-attempts.md",
+        "line": 138,
+        "attempt": 3,
+        "heading": "### 2026-08-26 - Attempt 003: Compile direct string filters",
+        "text": "inline node properties, one literal string predicate, a non-aggregate return,"
+      },
+      {
+        "path": "docs/cross-graph-cypher-optimization-attempts.md",
+        "line": 171,
+        "attempt": 4,
+        "heading": "### 2026-08-26 - Attempt 004: Seek graph-qualified element IDs",
+        "text": "resolved candidate is still checked against labels, inline properties, and the"
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 136,
+        "attempt": 4,
+        "heading": "### 2026-07-18 — Attempt 004: Early-stop simple `DISTINCT property LIMIT`",
+        "text": "The fast path scans matching nodes only until `k` distinct values have been seen. Queries with `WHERE`, relationships, inline node properties, missing `LIMIT`, multiple return items, grouping, `WITH`, or `ORDER BY` still use the normal pipeline."
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 405,
+        "attempt": 10,
+        "heading": "### 2026-07-25 — Attempt 010: Explorer Android memory JMH baseline",
+        "text": "- `android_browserForwardExploration`: repeated node detail/outgoing/subgraph requests, passing `direction=outgoing` to the subgraph endpoint. Current main ignores that parameter, so this captures the pre-optimization behavior where subgraph expansion still traverses incoming edges."
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 2113,
+        "attempt": 52,
+        "heading": "### 2026-08-02 — Attempt 052: Reject selective callee resolution",
+        "text": "JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home ./gradlew :sootup:test --tests \"io.johnsonlee.graphite.sootup.MethodResolutionTest\" --tests \"io.johnsonlee.graphite.sootup.LambdaAnalysisTest\" --tests \"io.johnsonlee.graphite.sootup.ResourceConfigLinkingTest\" --tests \"io.johnsonlee.graphite.sootup.SootUpAdapterTest\" --no-daemon"
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 2629,
+        "attempt": 67,
+        "heading": "### 2026-08-02 — Attempt 067: Reject invokedynamic argument reuse",
+        "text": "JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home ./gradlew :sootup:test --tests \"io.johnsonlee.graphite.sootup.LambdaAnalysisTest\" --tests \"io.johnsonlee.graphite.sootup.SootUpAdapterTest\" --tests \"io.johnsonlee.graphite.sootup.SootUpAdapterInternalCoverageTest\" --no-daemon"
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 2636,
+        "attempt": 67,
+        "heading": "### 2026-08-02 — Attempt 067: Reject invokedynamic argument reuse",
+        "text": "The targeted lambda and adapter tests passed."
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 2701,
+        "attempt": 69,
+        "heading": "### 2026-08-02 — Attempt 069: Reject active parameter-node map",
+        "text": "JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home ./gradlew :sootup:test --tests \"io.johnsonlee.graphite.sootup.AdvancedBytecodeTest\" --tests \"io.johnsonlee.graphite.sootup.LambdaAnalysisTest\" --tests \"io.johnsonlee.graphite.sootup.MethodResolutionTest\" --tests \"io.johnsonlee.graphite.sootup.ControlFlowTest\" --tests \"io.johnsonlee.graphite.sootup.SootUpAdapterTest\" --no-daemon"
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 2707,
+        "attempt": 69,
+        "heading": "### 2026-08-02 — Attempt 069: Reject active parameter-node map",
+        "text": "The targeted parameter, lambda, method-resolution, control-flow, and adapter"
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 2774,
+        "attempt": 71,
+        "heading": "### 2026-08-02 — Attempt 071: Reject lightweight field-signature keys",
+        "text": "JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home ./gradlew :sootup:test --tests \"io.johnsonlee.graphite.sootup.StaticFieldIndirectReferenceTest\" --tests \"io.johnsonlee.graphite.sootup.LambdaAnalysisTest\" --tests \"io.johnsonlee.graphite.sootup.ResourceConfigLinkingTest\" --tests \"io.johnsonlee.graphite.sootup.SootUpAdapterTest\" --tests \"io.johnsonlee.graphite.sootup.SootUpAdapterInternalCoverageTest\" --no-daemon"
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 2782,
+        "attempt": 71,
+        "heading": "### 2026-08-02 — Attempt 071: Reject lightweight field-signature keys",
+        "text": "helper, the targeted static-field, lambda, resource, and adapter tests passed."
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 3510,
+        "attempt": 90,
+        "heading": "### 2026-08-02 — Attempt 090: Reject singleton argument-node list",
+        "text": "JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home ./gradlew :sootup:test --tests \"io.johnsonlee.graphite.sootup.SootUpAdapterTest\" --tests \"io.johnsonlee.graphite.sootup.LambdaAnalysisTest\" --tests \"io.johnsonlee.graphite.sootup.SootUpAdapterInternalCoverageTest\" --tests \"io.johnsonlee.graphite.sootup.AdvancedBytecodeTest\" --no-daemon"
+      },
+      {
+        "path": "docs/webgraph-optimization-attempts.md",
+        "line": 3534,
+        "attempt": 90,
+        "heading": "### 2026-08-02 — Attempt 090: Reject singleton argument-node list",
+        "text": "The targeted adapter, lambda, internal coverage, and advanced bytecode tests"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 1647,
+        "attempt": 53,
+        "heading": "### 2026-09-03 - Attempt 053: Scan raw CallSites by exact prefilter string IDs",
+        "text": "  graph caller can process one segment inline, so the logical CallSite scan peak is nine while the"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 2639,
+        "attempt": 84,
+        "heading": "### 2026-09-03 - Attempt 084: Cancel fixed segments from any complete ordered prefix",
+        "text": "  inline graph worker."
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 2655,
+        "attempt": 85,
+        "heading": "### 2026-09-03 - Attempt 085: Queue one extra dense ordered range",
+        "text": "ranges but retain the existing two background segment workers plus the inline graph worker. The"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 2688,
+        "attempt": 86,
+        "heading": "### 2026-09-03 - Attempt 086: Specialize small exact string-id sets",
+        "text": "  samples, ahead of the raw CallSite scan lambda at 21. This is profiling evidence only; acceptance"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 2741,
+        "attempt": 87,
+        "heading": "### 2026-09-03 - Attempt 087: Scan dense exact matches in ordered prefix waves",
+        "text": "the existing two background segment tasks plus the inline graph worker run at once. The remaining"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 3092,
+        "attempt": 99,
+        "heading": "### 2026-09-03 - Attempt 099: Preserve lazy Method streams around exact-pattern rejection",
+        "text": "  captured the review report: constructing `graph.methods(MethodPattern())` immediately initialized"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 3155,
+        "attempt": 102,
+        "heading": "### 2026-09-03 - Attempt 102: Preserve bounded raw-leading probes for prepared non-DISTINCT queries",
+        "text": "serial branch also captures dense bounded non-DISTINCT queries that should satisfy their limit from"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 3453,
+        "attempt": 112,
+        "heading": "### 2026-09-03 - Attempt 112: Defer suffix scanner construction past leading LIMIT",
+        "text": "objects and their captured state are pure latency/allocation overhead. Construct only the leading"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 3879,
+        "attempt": 123,
+        "heading": "### 2026-09-04 - Attempt 123: Keep mapped posting validation sequential",
+        "text": "  Cypher also executes the split consumer's work-forwarding branch. Full measured coverage returns"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4125,
+        "attempt": 130,
+        "heading": "### 2026-09-04 - Attempt 130: Keep the bounded raw projection loop primitive",
+        "text": "per-node `indices.any` lambda from that loop, while preserving its bounded matcher, source order,"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4231,
+        "attempt": 132,
+        "heading": "### 2026-09-05 - Attempt 132: Execute CallSite work on the requesting thread",
+        "text": "Cypher graph tasks also run inline. The generic graph pool remains available to"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4531,
+        "attempt": 133,
+        "heading": "### 2026-09-05 - Attempt 133: Locate selected CallSite tuples through existing postings",
+        "text": "unprofiled control latency is 38.375816 s; diagnostic CPU/wall captures take"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4532,
+        "attempt": 133,
+        "heading": "### 2026-09-05 - Attempt 133: Locate selected CallSite tuples through existing postings",
+        "text": "42.642898 / 40.549959 s. In the CPU capture, 42,516 of 44,322 samples belong to"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4537,
+        "attempt": 133,
+        "heading": "### 2026-09-05 - Attempt 133: Locate selected CallSite tuples through existing postings",
+        "text": "captures neither prove a repeated-query P95 nor identify thread scheduling as"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4552,
+        "attempt": 133,
+        "heading": "### 2026-09-05 - Attempt 133: Locate selected CallSite tuples through existing postings",
+        "text": "Forty repetitions per projection in each separate CPU/wall diagnostic capture"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4560,
+        "attempt": 133,
+        "heading": "### 2026-09-05 - Attempt 133: Locate selected CallSite tuples through existing postings",
+        "text": "A separate index-warm control and CPU/wall captures retain indexes after the"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4620,
+        "attempt": 134,
+        "heading": "### 2026-09-06 - Attempt 134: Use indexed candidate supersets for compound OR",
+        "text": "also exposes existing no-op parallel work-consumer lambda incompatibility for"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4876,
+        "attempt": 135,
+        "heading": "### 2026-09-06 - Attempt 135: Check selected tuple feasibility before predicate discovery",
+        "text": "are identical after normalizing constant-pool references and generated lambda"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4883,
+        "attempt": 135,
+        "heading": "### 2026-09-06 - Attempt 135: Check selected tuple feasibility before predicate discovery",
+        "text": "Input graph files and JAR hashes match before/after capture. This does not"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4900,
+        "attempt": 136,
+        "heading": "### 2026-09-06 - Attempt 136: Remove range and iterator construction from raw DISTINCT OR",
+        "text": "Existing bytecode uses primitive `nextInt` and inlines `any`; the candidate does"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4901,
+        "attempt": 136,
+        "heading": "### 2026-09-06 - Attempt 136: Remove range and iterator construction from raw DISTINCT OR",
+        "text": "not eliminate index boxing or a predicate-lambda object. The selected tuple"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5293,
+        "attempt": 139,
+        "heading": "### 2026-09-06 - Attempt 139: Specialize validator callbacks at compile time",
+        "text": "Only two `inline` modifiers are added to callback-taking `updateInts` and"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5324,
+        "attempt": 139,
+        "heading": "### 2026-09-06 - Attempt 139: Specialize validator callbacks at compile time",
+        "text": "method call sites, four lambda creation sites and three captured Ref constructions"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5326,
+        "attempt": 139,
+        "heading": "### 2026-09-06 - Attempt 139: Specialize validator callbacks at compile time",
+        "text": "valueOf call. Generic inline declarations/default stubs remain in the JAR;"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5378,
+        "attempt": 139,
+        "heading": "### 2026-09-06 - Attempt 139: Specialize validator callbacks at compile time",
+        "text": "The 98 targeted per-node lambda leaf samples now map to 42 OR traversal/control,"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5421,
+        "attempt": 139,
+        "heading": "### 2026-09-06 - Attempt 139: Specialize validator callbacks at compile time",
+        "text": "paired tracing experiment or an unprofiled JIT-state proof; earlier captures"
+      },
+      {
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5423,
+        "attempt": 139,
+        "heading": "### 2026-09-06 - Attempt 139: Specialize validator callbacks at compile time",
+        "text": "the capture-time JAR identity limitation, and root's independent event-count check are"
+      }
+    ],
+    "relatedAttempts": [
+      {
+        "attempt": 6,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 194,
+        "heading": "### 2026-08-29 - Attempt 006: Fuse same-node string-property disjunctions"
+      },
+      {
+        "attempt": 63,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 1940,
+        "heading": "### 2026-09-03 - Attempt 063: Fuse the bounded leading raw scan with property projection"
+      },
+      {
+        "attempt": 112,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 3449,
+        "heading": "### 2026-09-03 - Attempt 112: Defer suffix scanner construction past leading LIMIT"
+      },
+      {
+        "attempt": 130,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4120,
+        "heading": "### 2026-09-04 - Attempt 130: Keep the bounded raw projection loop primitive"
+      },
+      {
+        "attempt": 133,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4354,
+        "heading": "### 2026-09-05 - Attempt 133: Locate selected CallSite tuples through existing postings"
+      },
+      {
+        "attempt": 134,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4606,
+        "heading": "### 2026-09-06 - Attempt 134: Use indexed candidate supersets for compound OR"
+      },
+      {
+        "attempt": 135,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4755,
+        "heading": "### 2026-09-06 - Attempt 135: Check selected tuple feasibility before predicate discovery"
+      },
+      {
+        "attempt": 136,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 4887,
+        "heading": "### 2026-09-06 - Attempt 136: Remove range and iterator construction from raw DISTINCT OR"
+      },
+      {
+        "attempt": 137,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5005,
+        "heading": "### 2026-09-06 - Attempt 137: Keep mapped-view validation callbacks primitive"
+      },
+      {
+        "attempt": 138,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5160,
+        "heading": "### 2026-09-06 - Attempt 138: Project DISTINCT candidates through validated mapped postings"
+      },
+      {
+        "attempt": 139,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5282,
+        "heading": "### 2026-09-06 - Attempt 139: Specialize validator callbacks at compile time"
+      },
+      {
+        "attempt": 140,
+        "path": "docs/wrapped-case-insensitive-query-optimization-attempts.md",
+        "line": 5427,
+        "heading": "### 2026-09-06 - Attempt 140: Store raw DISTINCT predicate property indexes as an IntArray"
+      }
+    ],
+    "exactNamedRawDistinctPredicateObjectAttemptFound": false,
+    "boundedAbsenceClaim": "Only the three chronological logs and current source were searched; not a claim about every historical unpublished change."
+  },
+  "sourceSha256": {
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeTypeIndex.kt": "476ffd5884114dc18beb37e03cf1da9e2a5fcb64092a244564d09b688a46ab2e",
+    "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/ParallelDistinctDisjunctionTest.kt": "22f542ebc4021b072b7e40fe58de42fc3ff9698559ba105a01904547c743817b"
+  },
+  "limits": [
+    "The hidden lambda class is runtime-generated and was not dumped. Original class bootstrap/descriptor and runtime XML/JFR identities are checked, not a full hidden-class bytecode dump.",
+    "Inlining failures refer to these completed compilation tasks. They do not prove every invocation executes a separate call or quantify interpreter/C1 overhead.",
+    "A lower wrapper frame and BCI57 identify a suspended caller, not exclusive CPU or argument-copy cost. Whole-recording wrapper leaf counts are only 0/1/1.",
+    "Native ExecutionSample is a periodic Java snapshot, not process CPU; JIT compiled labels do not resolve C1 versus C2.",
+    "Moving a body into an instance method may replace cheap local loads with repeated getfield/synthetic accessor operations and change JIT profile/compilation behavior; no savings are established.",
+    "No while traversal, IntArray indexes, postings, caching, primitive matcher, work accounting or pool change belongs to the proposed scope. All earlier rejections remain final."
+  ]
+}

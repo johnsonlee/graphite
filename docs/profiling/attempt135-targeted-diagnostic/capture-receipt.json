@@ -1,0 +1,9 @@
+{
+  "diagnosticOnly": true,
+  "pairedRuns": 3,
+  "notAcceptanceTimings": true,
+  "jarHashes": {
+    "candidate": "b3d29878dd13c04578f1947951eed8da23b38862b633994e5c998b09783db496",
+    "base": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+  }
+}

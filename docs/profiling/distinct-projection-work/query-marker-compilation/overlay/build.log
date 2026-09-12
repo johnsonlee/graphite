@@ -1,0 +1,11 @@
+START javac.log
+END javac.log 0
+START patch.log
+END patch.log 0
+START diagnostic-benchmark.javap.txt
+END diagnostic-benchmark.javap.txt 0
+START marker-helper.javap.txt
+END marker-helper.javap.txt 0
+START marker-event.javap.txt
+END marker-event.javap.txt 0
+ALL COMPILER/PATCH/JAVAP PROCESSES TERMINAL; NO QUERIES OR JFR CAPTURES

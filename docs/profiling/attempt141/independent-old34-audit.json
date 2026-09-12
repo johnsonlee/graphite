@@ -1,0 +1,2216 @@
+{
+  "schema": "independent-attempt141-old34-audit-v2",
+  "passed": true,
+  "correctnessResultCount": 204,
+  "oracleSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+  "matchesPrior140FrozenOracle": true,
+  "pairs": [
+    {
+      "pair": 1,
+      "order": "candidate-base",
+      "sides": {
+        "base": {
+          "processCpuNanos": 1476806000,
+          "peakUsedHeapBytes": 4711461848,
+          "peakResidentSetBytes": 5412536320,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1685625,
+          "p95LatencyNanos": 41608625,
+          "maxLatencyNanos": 273169292,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "273169292",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "41608625",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "20099625",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        },
+        "candidate": {
+          "processCpuNanos": 1819397000,
+          "peakUsedHeapBytes": 4221203328,
+          "peakResidentSetBytes": 4780425216,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1876250,
+          "p95LatencyNanos": 118184625,
+          "maxLatencyNanos": 240580000,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "240580000",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "118184625",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "39705125",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        }
+      },
+      "wrappedShapes": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseP95Nanos": 2439125,
+          "candidateP95Nanos": 2222416,
+          "speedup": 1.0975105470802946
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseP95Nanos": 41608625,
+          "candidateP95Nanos": 118184625,
+          "speedup": 0.3520646192345239
+        }
+      ],
+      "p95Speedup": 0.3520646192345239,
+      "resourceIncreasePercent": {
+        "processCpuNanos": 23.198104558080068,
+        "peakUsedHeapBytes": -10.4056561597355,
+        "peakResidentSetBytes": -11.678648726370122
+      },
+      "resourcesAbove15Percent": [
+        "processCpuNanos"
+      ],
+      "strictP95Improvement": false
+    },
+    {
+      "pair": 2,
+      "order": "base-candidate",
+      "sides": {
+        "base": {
+          "processCpuNanos": 1492257000,
+          "peakUsedHeapBytes": 4228782576,
+          "peakResidentSetBytes": 4784209920,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1668250,
+          "p95LatencyNanos": 48693708,
+          "maxLatencyNanos": 254200291,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "254200291",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "48693708",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "37971042",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        },
+        "candidate": {
+          "processCpuNanos": 1572952000,
+          "peakUsedHeapBytes": 4400207360,
+          "peakResidentSetBytes": 4942938112,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 2121000,
+          "p95LatencyNanos": 55151042,
+          "maxLatencyNanos": 249464708,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "249464708",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "55151042",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "31430625",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        }
+      },
+      "wrappedShapes": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseP95Nanos": 2091000,
+          "candidateP95Nanos": 2367917,
+          "speedup": 0.883054600309048
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseP95Nanos": 48693708,
+          "candidateP95Nanos": 55151042,
+          "speedup": 0.8829154669462093
+        }
+      ],
+      "p95Speedup": 0.8829154669462093,
+      "resourceIncreasePercent": {
+        "processCpuNanos": 5.407580597712047,
+        "peakUsedHeapBytes": 4.053762067903488,
+        "peakResidentSetBytes": 3.3177514083662984
+      },
+      "resourcesAbove15Percent": [],
+      "strictP95Improvement": false
+    },
+    {
+      "pair": 3,
+      "order": "candidate-base",
+      "sides": {
+        "base": {
+          "processCpuNanos": 1644617000,
+          "peakUsedHeapBytes": 4713378240,
+          "peakResidentSetBytes": 5255282688,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1945875,
+          "p95LatencyNanos": 61887459,
+          "maxLatencyNanos": 255149000,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "255149000",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "61887459",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "35066583",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        },
+        "candidate": {
+          "processCpuNanos": 1519967000,
+          "peakUsedHeapBytes": 4317112888,
+          "peakResidentSetBytes": 4862951424,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1908000,
+          "p95LatencyNanos": 46230833,
+          "maxLatencyNanos": 247220750,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "247220750",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "46230833",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "36270000",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        }
+      },
+      "wrappedShapes": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseP95Nanos": 2310750,
+          "candidateP95Nanos": 2168667,
+          "speedup": 1.065516282582803
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseP95Nanos": 61887459,
+          "candidateP95Nanos": 46230833,
+          "speedup": 1.338661992095189
+        }
+      ],
+      "p95Speedup": 1.338661992095189,
+      "resourceIncreasePercent": {
+        "processCpuNanos": -7.579272256093672,
+        "peakUsedHeapBytes": -8.407247027983056,
+        "peakResidentSetBytes": -7.465464510517306
+      },
+      "resourcesAbove15Percent": [],
+      "strictP95Improvement": true
+    }
+  ],
+  "alignedRows": [
+    {
+      "id": "global-wide-four-properties-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 273169292,
+          "candidateNanos": 240580000,
+          "deltaNanos": -32589292,
+          "deltaPercent": -11.930071554309263,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 254200291,
+          "candidateNanos": 249464708,
+          "deltaNanos": -4735583,
+          "deltaPercent": -1.8629337446352534,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 255149000,
+          "candidateNanos": 247220750,
+          "deltaNanos": -7928250,
+          "deltaPercent": -3.107302007846391,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-four-properties-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 9932791,
+          "candidateNanos": 9421583,
+          "deltaNanos": -511208,
+          "deltaPercent": -5.146670256124386,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 10139083,
+          "candidateNanos": 12711583,
+          "deltaNanos": 2572500,
+          "deltaPercent": 25.372116985332905,
+          "slower": true,
+          "above15PercentAnd1ms": true,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 9515208,
+          "candidateNanos": 9991458,
+          "deltaNanos": 476250,
+          "deltaPercent": 5.005145447162063,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-four-properties-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 3993583,
+          "candidateNanos": 4254583,
+          "deltaNanos": 261000,
+          "deltaPercent": 6.5354845510910975,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 4259625,
+          "candidateNanos": 4401542,
+          "deltaNanos": 141917,
+          "deltaPercent": 3.3316782580626203,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 3985083,
+          "candidateNanos": 4200959,
+          "deltaNanos": 215876,
+          "deltaPercent": 5.417101726613982,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-class-pair-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 2052542,
+          "candidateNanos": 1876250,
+          "deltaNanos": -176292,
+          "deltaPercent": -8.588959446384049,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 1834625,
+          "candidateNanos": 2231709,
+          "deltaNanos": 397084,
+          "deltaPercent": 21.64387817673912,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 2068583,
+          "candidateNanos": 2324292,
+          "deltaNanos": 255709,
+          "deltaPercent": 12.36155377860111,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-class-pair-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 4064334,
+          "candidateNanos": 4437459,
+          "deltaNanos": 373125,
+          "deltaPercent": 9.180470896338733,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 4088958,
+          "candidateNanos": 4553292,
+          "deltaNanos": 464334,
+          "deltaPercent": 11.35580262746645,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 4278083,
+          "candidateNanos": 4193958,
+          "deltaNanos": -84125,
+          "deltaPercent": -1.9664181363475142,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-class-pair-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1064459,
+          "candidateNanos": 1068000,
+          "deltaNanos": 3541,
+          "deltaPercent": 0.3326572465449651,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 1097958,
+          "candidateNanos": 1000875,
+          "deltaNanos": -97083,
+          "deltaPercent": -8.842141502680434,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 948125,
+          "candidateNanos": 1084291,
+          "deltaNanos": 136166,
+          "deltaPercent": 14.361608437705996,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-name-pair-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1685625,
+          "candidateNanos": 1973833,
+          "deltaNanos": 288208,
+          "deltaPercent": 17.097990359658887,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 1668250,
+          "candidateNanos": 1784333,
+          "deltaNanos": 116083,
+          "deltaPercent": 6.958369548928522,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 1945875,
+          "candidateNanos": 1678667,
+          "deltaNanos": -267208,
+          "deltaPercent": -13.732022868889315,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-name-pair-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 4295250,
+          "candidateNanos": 4069875,
+          "deltaNanos": -225375,
+          "deltaPercent": -5.2470752575519475,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 4325792,
+          "candidateNanos": 4867042,
+          "deltaNanos": 541250,
+          "deltaPercent": 12.512159623023944,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 4270125,
+          "candidateNanos": 3950917,
+          "deltaNanos": -319208,
+          "deltaPercent": -7.475378355434559,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-name-pair-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 840459,
+          "candidateNanos": 793667,
+          "deltaNanos": -46792,
+          "deltaPercent": -5.567433985476988,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 812042,
+          "candidateNanos": 856542,
+          "deltaNanos": 44500,
+          "deltaPercent": 5.480012117599831,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 823500,
+          "candidateNanos": 791833,
+          "deltaNanos": -31667,
+          "deltaPercent": -3.8454159077109917,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-caller-class-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1431625,
+          "candidateNanos": 1435458,
+          "deltaNanos": 3833,
+          "deltaPercent": 0.2677377106435008,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 1424292,
+          "candidateNanos": 2121000,
+          "deltaNanos": 696708,
+          "deltaPercent": 48.9160930483356,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 1345167,
+          "candidateNanos": 1908000,
+          "deltaNanos": 562833,
+          "deltaPercent": 41.84112455925546,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-caller-class-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 2870042,
+          "candidateNanos": 2859667,
+          "deltaNanos": -10375,
+          "deltaPercent": -0.36149296769872885,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 2453000,
+          "candidateNanos": 3324000,
+          "deltaNanos": 871000,
+          "deltaPercent": 35.5075417855687,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 2394375,
+          "candidateNanos": 2723083,
+          "deltaNanos": 328708,
+          "deltaPercent": 13.728342469329146,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-caller-class-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 542458,
+          "candidateNanos": 698583,
+          "deltaNanos": 156125,
+          "deltaPercent": 28.781030052096202,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 763042,
+          "candidateNanos": 663708,
+          "deltaNanos": -99334,
+          "deltaPercent": -13.018156274490789,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 560333,
+          "candidateNanos": 623000,
+          "deltaNanos": 62667,
+          "deltaPercent": 11.183885296778872,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-callee-class-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1128042,
+          "candidateNanos": 1157500,
+          "deltaNanos": 29458,
+          "deltaPercent": 2.6114275886890637,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 1432750,
+          "candidateNanos": 1587958,
+          "deltaNanos": 155208,
+          "deltaPercent": 10.832873844006286,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 1436958,
+          "candidateNanos": 1207417,
+          "deltaNanos": -229541,
+          "deltaPercent": -15.974092492612868,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-callee-class-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1903792,
+          "candidateNanos": 2134167,
+          "deltaNanos": 230375,
+          "deltaPercent": 12.10084925243935,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 2078416,
+          "candidateNanos": 2574375,
+          "deltaNanos": 495959,
+          "deltaPercent": 23.862354793265638,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 2551792,
+          "candidateNanos": 2020000,
+          "deltaNanos": -531792,
+          "deltaPercent": -20.83994306746004,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-callee-class-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 437875,
+          "candidateNanos": 529167,
+          "deltaNanos": 91292,
+          "deltaPercent": 20.848872395089924,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 603417,
+          "candidateNanos": 480375,
+          "deltaNanos": -123042,
+          "deltaPercent": -20.39087397272533,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 539292,
+          "candidateNanos": 493250,
+          "deltaNanos": -46042,
+          "deltaPercent": -8.537489894157524,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-provenance-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 889792,
+          "candidateNanos": 1321167,
+          "deltaNanos": 431375,
+          "deltaPercent": 48.48043138171618,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 1107292,
+          "candidateNanos": 1086000,
+          "deltaNanos": -21292,
+          "deltaPercent": -1.9228893552920123,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 1337709,
+          "candidateNanos": 1056375,
+          "deltaNanos": -281334,
+          "deltaPercent": -21.031031412661495,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-provenance-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 2648042,
+          "candidateNanos": 3153708,
+          "deltaNanos": 505666,
+          "deltaPercent": 19.09584515653453,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 3265333,
+          "candidateNanos": 3090916,
+          "deltaNanos": -174417,
+          "deltaPercent": -5.341476657970256,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 3205375,
+          "candidateNanos": 3025459,
+          "deltaNanos": -179916,
+          "deltaPercent": -5.612947003080759,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-provenance-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 844500,
+          "candidateNanos": 813917,
+          "deltaNanos": -30583,
+          "deltaPercent": -3.6214328004736562,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 825250,
+          "candidateNanos": 870459,
+          "deltaNanos": 45209,
+          "deltaPercent": 5.478218721599526,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 867791,
+          "candidateNanos": 808250,
+          "deltaNanos": -59541,
+          "deltaPercent": -6.861214278553252,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-aliased-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 901125,
+          "candidateNanos": 987542,
+          "deltaNanos": 86417,
+          "deltaPercent": 9.5899015119989,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 929000,
+          "candidateNanos": 929709,
+          "deltaNanos": 709,
+          "deltaPercent": 0.07631862217438723,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 964709,
+          "candidateNanos": 893708,
+          "deltaNanos": -71001,
+          "deltaPercent": -7.359835971261797,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-aliased-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 3101125,
+          "candidateNanos": 3383042,
+          "deltaNanos": 281917,
+          "deltaPercent": 9.090797694385099,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 3236250,
+          "candidateNanos": 3263583,
+          "deltaNanos": 27333,
+          "deltaPercent": 0.8445886442641992,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 3416292,
+          "candidateNanos": 3165667,
+          "deltaNanos": -250625,
+          "deltaPercent": -7.33617032736078,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-aliased-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 749917,
+          "candidateNanos": 758750,
+          "deltaNanos": 8833,
+          "deltaPercent": 1.177863683580993,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 719583,
+          "candidateNanos": 744917,
+          "deltaNanos": 25334,
+          "deltaPercent": 3.5206501543254998,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 777417,
+          "candidateNanos": 730167,
+          "deltaNanos": -47250,
+          "deltaPercent": -6.07781923986741,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-parameterized-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1045500,
+          "candidateNanos": 1022167,
+          "deltaNanos": -23333,
+          "deltaPercent": -2.2317551410808267,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 958709,
+          "candidateNanos": 1022041,
+          "deltaNanos": 63332,
+          "deltaPercent": 6.605966982681921,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 953041,
+          "candidateNanos": 1144750,
+          "deltaNanos": 191709,
+          "deltaPercent": 20.115503949987467,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-parameterized-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 2181500,
+          "candidateNanos": 2203333,
+          "deltaNanos": 21833,
+          "deltaPercent": 1.00082512033004,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 2148625,
+          "candidateNanos": 2249125,
+          "deltaNanos": 100500,
+          "deltaPercent": 4.677409971493396,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 2274625,
+          "candidateNanos": 2278500,
+          "deltaNanos": 3875,
+          "deltaPercent": 0.17035775127767216,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-parameterized-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 808042,
+          "candidateNanos": 719834,
+          "deltaNanos": -88208,
+          "deltaPercent": -10.916264253590779,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 714208,
+          "candidateNanos": 750834,
+          "deltaNanos": 36626,
+          "deltaPercent": 5.12819794793673,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 868084,
+          "candidateNanos": 718209,
+          "deltaNanos": -149875,
+          "deltaPercent": -17.265034259357392,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1077709,
+          "candidateNanos": 1079958,
+          "deltaNanos": 2249,
+          "deltaPercent": 0.20868342010691432,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 989708,
+          "candidateNanos": 1142917,
+          "deltaNanos": 153209,
+          "deltaPercent": 15.480222449449732,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 1164667,
+          "candidateNanos": 1058625,
+          "deltaNanos": -106042,
+          "deltaPercent": -9.10492011879791,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 2439125,
+          "candidateNanos": 2222416,
+          "deltaNanos": -216709,
+          "deltaPercent": -8.884702506021625,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 2091000,
+          "candidateNanos": 2367917,
+          "deltaNanos": 276917,
+          "deltaPercent": 13.243280726924912,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 2310750,
+          "candidateNanos": 2168667,
+          "deltaNanos": -142083,
+          "deltaPercent": -6.1487828627069145,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1534291,
+          "candidateNanos": 1365208,
+          "deltaNanos": -169083,
+          "deltaPercent": -11.020269297023832,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 1337083,
+          "candidateNanos": 1479625,
+          "deltaNanos": 142542,
+          "deltaPercent": 10.660669532108336,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 1363334,
+          "candidateNanos": 1324208,
+          "deltaNanos": -39126,
+          "deltaPercent": -2.8698763472487343,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 3561375,
+          "candidateNanos": 3453417,
+          "deltaNanos": -107958,
+          "deltaPercent": -3.031357270717072,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 3194375,
+          "candidateNanos": 3193834,
+          "deltaNanos": -541,
+          "deltaPercent": -0.016936020348268244,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 3515833,
+          "candidateNanos": 3097750,
+          "deltaNanos": -418083,
+          "deltaPercent": -11.891435116514348,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 20099625,
+          "candidateNanos": 39705125,
+          "deltaNanos": 19605500,
+          "deltaPercent": 97.54162080138312,
+          "slower": true,
+          "above15PercentAnd1ms": true,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 37971042,
+          "candidateNanos": 31430625,
+          "deltaNanos": -6540417,
+          "deltaPercent": -17.224749850162134,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 35066583,
+          "candidateNanos": 36270000,
+          "deltaNanos": 1203417,
+          "deltaPercent": 3.4318057165706684,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 41608625,
+          "candidateNanos": 118184625,
+          "deltaNanos": 76576000,
+          "deltaPercent": 184.03876600103945,
+          "slower": true,
+          "above15PercentAnd1ms": true,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 48693708,
+          "candidateNanos": 55151042,
+          "deltaNanos": 6457334,
+          "deltaPercent": 13.261126057600702,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 61887459,
+          "candidateNanos": 46230833,
+          "deltaNanos": -15656626,
+          "deltaPercent": -25.29854392632278,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-distribution-broad-all-64",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 757417,
+          "candidateNanos": 802875,
+          "deltaNanos": 45458,
+          "deltaPercent": 6.001713719126989,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 763166,
+          "candidateNanos": 824583,
+          "deltaNanos": 61417,
+          "deltaPercent": 8.047659355893732,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 804291,
+          "candidateNanos": 797417,
+          "deltaNanos": -6874,
+          "deltaPercent": -0.8546657863882645,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-distribution-localized-early",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 1165541,
+          "candidateNanos": 1235500,
+          "deltaNanos": 69959,
+          "deltaPercent": 6.002277054174843,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 1169917,
+          "candidateNanos": 1202125,
+          "deltaNanos": 32208,
+          "deltaPercent": 2.7530158122328396,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 1201292,
+          "candidateNanos": 1185458,
+          "deltaNanos": -15834,
+          "deltaPercent": -1.3180808662673238,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-distribution-localized-late",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 4150542,
+          "candidateNanos": 3965250,
+          "deltaNanos": -185292,
+          "deltaPercent": -4.464284423576492,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 3846000,
+          "candidateNanos": 4097333,
+          "deltaNanos": 251333,
+          "deltaPercent": 6.534919396775862,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 4067458,
+          "candidateNanos": 4027083,
+          "deltaNanos": -40375,
+          "deltaPercent": -0.9926347119011414,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    },
+    {
+      "id": "global-wide-distribution-localized-middle",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 2687500,
+          "candidateNanos": 2804542,
+          "deltaNanos": 117042,
+          "deltaPercent": 4.355051162790691,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 2,
+          "baseNanos": 2538167,
+          "candidateNanos": 2963792,
+          "deltaNanos": 425625,
+          "deltaPercent": 16.76899116567192,
+          "slower": true,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        },
+        {
+          "pair": 3,
+          "baseNanos": 2749666,
+          "candidateNanos": 2696250,
+          "deltaNanos": -53416,
+          "deltaPercent": -1.9426359419653205,
+          "slower": false,
+          "above15PercentAnd1ms": false,
+          "nonLatencyChanges": {}
+        }
+      ]
+    }
+  ],
+  "inputSha256": {
+    "candidate-global-wide-3.json": "386036fc809c29be0ad498509197d04a23ac6fe718647ba9e28ec4cfbbc98d88",
+    "candidate-global-wide-3-command.json": "63e6b4dd6a2d727e485ca39b132b4d965df337084ed4346e0b4314215b988b7e",
+    "candidate-global-wide-2-command.json": "8e81a2070e3573bc877c9ed1fc57904e911f2e837d3e565221032edf877930ea",
+    "candidate-global-wide-2.json": "ac25291cf0d877ece5f2e8aa187665b843c9469cf7cb1648b63e37ee36f72c0a",
+    "comparison-command.json": "8ac17be3196adbd457e8067dbf6b175800b4e0eb63946bf6a57bd30eae72294e",
+    "candidate-global-wide-2.tsv": "461de72077fe1fe78dc55c9cbd35586df5943bfb1d3cf7eaa4f4150baebab646",
+    "base-global-wide-3.json": "16b1279a16a32c9808f3e124fb4a57ecd6c468d9c075271d39d39a538e412fab",
+    "candidate-global-wide-3.tsv": "cdf6e01e0fc8d8eaf09e207e1612cebc8df86111645e216525d82195ef4610cf",
+    "global-wide-status.json": "0b0e4e66dd8d7b2bd2c06bc362c3fca15b8f3e982142b5fd02a5b1dbcf3d2ae4",
+    "candidate-global-wide-1.tsv": "b326f578cafa0bb5dc8579fb66332984ca2a8b73fb42e68bb7684993236df69a",
+    "base-global-wide-1-command.json": "cae92b06a33c6ee068589f6cfe5d092fce719d9dfdaa23c04c889fe4d5657ab1",
+    "base-global-wide-2.json": "d5da413449e696b826887f7bca05908ad8ab5468ab0eaa33d840dc04f215b9ac",
+    "oracle.correctness": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+    "local-progress.json": "9f1a9d2b5bc3f44f95cabf81fa5f76937b42f666b613279ecf2b9936c85d5201",
+    "base-global-wide-1.json": "8b94e05611f220ccb54df4cdd3864fbbb238a4141b66e217a6db67f27dcede26",
+    "base-global-wide-2-command.json": "626f93bc69358f52b32569d16efebc2e890f6e8cb05159168904b9e162b25e2a",
+    "base-global-wide-3-command.json": "7e334c2d014f23e42d632afbc7dbb2a41e56faae5a3d81aa0abf4aa367184f0f",
+    "base-global-wide-3.tsv": "d38125e1c6b114192b5d424c0ce4e1356437ddd7139ba16630a5cda21de11faa",
+    "candidate-global-wide-1.json": "aac31b7dff89603d02a8d582aa80a61d9d6b7e2e7e2ba4aa6d46984135b95592",
+    "base-global-wide-2.tsv": "22d8b1e65f3c95aca36531ecdd506681825f75abf89025854bc8ede613a22785",
+    "base-global-wide-1.tsv": "e85bd349b7029e70a7be83bfec92ac65db39d532ecd94e2eed81bdbf86120fbb",
+    "candidate-global-wide-1-command.json": "cfe75474f6b9f1fb0fecb50b1d69a9940d1fc1b8b431d6675185c2f422699d2e"
+  },
+  "publishedStatus": {
+    "passed": false,
+    "regressionPassed": false,
+    "targetAchieved": false,
+    "errors": [
+      "pair-1: process CPU 1819397000 exceeds paired base 1476806000 by >15%"
+    ],
+    "targetErrors": [
+      "pair-1: P95 speedup 0.35x; required 10.00x in every independent fork",
+      "pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.10x; required 10.00x",
+      "pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.35x; required 10.00x",
+      "pair-2: P95 speedup 0.88x; required 10.00x in every independent fork",
+      "pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.88x; required 10.00x",
+      "pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.88x; required 10.00x",
+      "pair-3: P95 speedup 1.34x; required 10.00x in every independent fork",
+      "pair-3: global-wide-wrapped-case-insensitive P95 speedup 1.07x; required 10.00x",
+      "pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.34x; required 10.00x"
+    ]
+  },
+  "recordedJarHashes": {
+    "base": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "candidate": "11b8e055adf26bf5f7d18c0d2015f8b938d0ed0b48b96eb7899715f4b70e2af0"
+  },
+  "nonLatencyChanges": [],
+  "slowerObservations": [
+    {
+      "id": "global-wide-four-properties-targeted",
+      "pair": 2,
+      "baseNanos": 10139083,
+      "candidateNanos": 12711583,
+      "deltaNanos": 2572500,
+      "deltaPercent": 25.372116985332905,
+      "slower": true,
+      "above15PercentAnd1ms": true,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-four-properties-targeted",
+      "pair": 3,
+      "baseNanos": 9515208,
+      "candidateNanos": 9991458,
+      "deltaNanos": 476250,
+      "deltaPercent": 5.005145447162063,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-four-properties-dense",
+      "pair": 1,
+      "baseNanos": 3993583,
+      "candidateNanos": 4254583,
+      "deltaNanos": 261000,
+      "deltaPercent": 6.5354845510910975,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-four-properties-dense",
+      "pair": 2,
+      "baseNanos": 4259625,
+      "candidateNanos": 4401542,
+      "deltaNanos": 141917,
+      "deltaPercent": 3.3316782580626203,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-four-properties-dense",
+      "pair": 3,
+      "baseNanos": 3985083,
+      "candidateNanos": 4200959,
+      "deltaNanos": 215876,
+      "deltaPercent": 5.417101726613982,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-class-pair-zero",
+      "pair": 2,
+      "baseNanos": 1834625,
+      "candidateNanos": 2231709,
+      "deltaNanos": 397084,
+      "deltaPercent": 21.64387817673912,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-class-pair-zero",
+      "pair": 3,
+      "baseNanos": 2068583,
+      "candidateNanos": 2324292,
+      "deltaNanos": 255709,
+      "deltaPercent": 12.36155377860111,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-class-pair-targeted",
+      "pair": 1,
+      "baseNanos": 4064334,
+      "candidateNanos": 4437459,
+      "deltaNanos": 373125,
+      "deltaPercent": 9.180470896338733,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-class-pair-targeted",
+      "pair": 2,
+      "baseNanos": 4088958,
+      "candidateNanos": 4553292,
+      "deltaNanos": 464334,
+      "deltaPercent": 11.35580262746645,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-class-pair-dense",
+      "pair": 1,
+      "baseNanos": 1064459,
+      "candidateNanos": 1068000,
+      "deltaNanos": 3541,
+      "deltaPercent": 0.3326572465449651,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-class-pair-dense",
+      "pair": 3,
+      "baseNanos": 948125,
+      "candidateNanos": 1084291,
+      "deltaNanos": 136166,
+      "deltaPercent": 14.361608437705996,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-name-pair-zero",
+      "pair": 1,
+      "baseNanos": 1685625,
+      "candidateNanos": 1973833,
+      "deltaNanos": 288208,
+      "deltaPercent": 17.097990359658887,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-name-pair-zero",
+      "pair": 2,
+      "baseNanos": 1668250,
+      "candidateNanos": 1784333,
+      "deltaNanos": 116083,
+      "deltaPercent": 6.958369548928522,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-name-pair-targeted",
+      "pair": 2,
+      "baseNanos": 4325792,
+      "candidateNanos": 4867042,
+      "deltaNanos": 541250,
+      "deltaPercent": 12.512159623023944,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-name-pair-dense",
+      "pair": 2,
+      "baseNanos": 812042,
+      "candidateNanos": 856542,
+      "deltaNanos": 44500,
+      "deltaPercent": 5.480012117599831,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-caller-class-zero",
+      "pair": 1,
+      "baseNanos": 1431625,
+      "candidateNanos": 1435458,
+      "deltaNanos": 3833,
+      "deltaPercent": 0.2677377106435008,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-caller-class-zero",
+      "pair": 2,
+      "baseNanos": 1424292,
+      "candidateNanos": 2121000,
+      "deltaNanos": 696708,
+      "deltaPercent": 48.9160930483356,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-caller-class-zero",
+      "pair": 3,
+      "baseNanos": 1345167,
+      "candidateNanos": 1908000,
+      "deltaNanos": 562833,
+      "deltaPercent": 41.84112455925546,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-caller-class-targeted",
+      "pair": 2,
+      "baseNanos": 2453000,
+      "candidateNanos": 3324000,
+      "deltaNanos": 871000,
+      "deltaPercent": 35.5075417855687,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-caller-class-targeted",
+      "pair": 3,
+      "baseNanos": 2394375,
+      "candidateNanos": 2723083,
+      "deltaNanos": 328708,
+      "deltaPercent": 13.728342469329146,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-caller-class-dense",
+      "pair": 1,
+      "baseNanos": 542458,
+      "candidateNanos": 698583,
+      "deltaNanos": 156125,
+      "deltaPercent": 28.781030052096202,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-caller-class-dense",
+      "pair": 3,
+      "baseNanos": 560333,
+      "candidateNanos": 623000,
+      "deltaNanos": 62667,
+      "deltaPercent": 11.183885296778872,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-callee-class-zero",
+      "pair": 1,
+      "baseNanos": 1128042,
+      "candidateNanos": 1157500,
+      "deltaNanos": 29458,
+      "deltaPercent": 2.6114275886890637,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-callee-class-zero",
+      "pair": 2,
+      "baseNanos": 1432750,
+      "candidateNanos": 1587958,
+      "deltaNanos": 155208,
+      "deltaPercent": 10.832873844006286,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-callee-class-targeted",
+      "pair": 1,
+      "baseNanos": 1903792,
+      "candidateNanos": 2134167,
+      "deltaNanos": 230375,
+      "deltaPercent": 12.10084925243935,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-callee-class-targeted",
+      "pair": 2,
+      "baseNanos": 2078416,
+      "candidateNanos": 2574375,
+      "deltaNanos": 495959,
+      "deltaPercent": 23.862354793265638,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-callee-class-dense",
+      "pair": 1,
+      "baseNanos": 437875,
+      "candidateNanos": 529167,
+      "deltaNanos": 91292,
+      "deltaPercent": 20.848872395089924,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-provenance-zero",
+      "pair": 1,
+      "baseNanos": 889792,
+      "candidateNanos": 1321167,
+      "deltaNanos": 431375,
+      "deltaPercent": 48.48043138171618,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-provenance-targeted",
+      "pair": 1,
+      "baseNanos": 2648042,
+      "candidateNanos": 3153708,
+      "deltaNanos": 505666,
+      "deltaPercent": 19.09584515653453,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-provenance-dense",
+      "pair": 2,
+      "baseNanos": 825250,
+      "candidateNanos": 870459,
+      "deltaNanos": 45209,
+      "deltaPercent": 5.478218721599526,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-aliased-zero",
+      "pair": 1,
+      "baseNanos": 901125,
+      "candidateNanos": 987542,
+      "deltaNanos": 86417,
+      "deltaPercent": 9.5899015119989,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-aliased-zero",
+      "pair": 2,
+      "baseNanos": 929000,
+      "candidateNanos": 929709,
+      "deltaNanos": 709,
+      "deltaPercent": 0.07631862217438723,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-aliased-targeted",
+      "pair": 1,
+      "baseNanos": 3101125,
+      "candidateNanos": 3383042,
+      "deltaNanos": 281917,
+      "deltaPercent": 9.090797694385099,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-aliased-targeted",
+      "pair": 2,
+      "baseNanos": 3236250,
+      "candidateNanos": 3263583,
+      "deltaNanos": 27333,
+      "deltaPercent": 0.8445886442641992,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-aliased-dense",
+      "pair": 1,
+      "baseNanos": 749917,
+      "candidateNanos": 758750,
+      "deltaNanos": 8833,
+      "deltaPercent": 1.177863683580993,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-aliased-dense",
+      "pair": 2,
+      "baseNanos": 719583,
+      "candidateNanos": 744917,
+      "deltaNanos": 25334,
+      "deltaPercent": 3.5206501543254998,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-parameterized-zero",
+      "pair": 2,
+      "baseNanos": 958709,
+      "candidateNanos": 1022041,
+      "deltaNanos": 63332,
+      "deltaPercent": 6.605966982681921,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-parameterized-zero",
+      "pair": 3,
+      "baseNanos": 953041,
+      "candidateNanos": 1144750,
+      "deltaNanos": 191709,
+      "deltaPercent": 20.115503949987467,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-parameterized-targeted",
+      "pair": 1,
+      "baseNanos": 2181500,
+      "candidateNanos": 2203333,
+      "deltaNanos": 21833,
+      "deltaPercent": 1.00082512033004,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-parameterized-targeted",
+      "pair": 2,
+      "baseNanos": 2148625,
+      "candidateNanos": 2249125,
+      "deltaNanos": 100500,
+      "deltaPercent": 4.677409971493396,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-parameterized-targeted",
+      "pair": 3,
+      "baseNanos": 2274625,
+      "candidateNanos": 2278500,
+      "deltaNanos": 3875,
+      "deltaPercent": 0.17035775127767216,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-parameterized-dense",
+      "pair": 2,
+      "baseNanos": 714208,
+      "candidateNanos": 750834,
+      "deltaNanos": 36626,
+      "deltaPercent": 5.12819794793673,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-zero",
+      "pair": 1,
+      "baseNanos": 1077709,
+      "candidateNanos": 1079958,
+      "deltaNanos": 2249,
+      "deltaPercent": 0.20868342010691432,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-zero",
+      "pair": 2,
+      "baseNanos": 989708,
+      "candidateNanos": 1142917,
+      "deltaNanos": 153209,
+      "deltaPercent": 15.480222449449732,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-targeted",
+      "pair": 2,
+      "baseNanos": 2091000,
+      "candidateNanos": 2367917,
+      "deltaNanos": 276917,
+      "deltaPercent": 13.243280726924912,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "pair": 2,
+      "baseNanos": 1337083,
+      "candidateNanos": 1479625,
+      "deltaNanos": 142542,
+      "deltaPercent": 10.660669532108336,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "pair": 1,
+      "baseNanos": 20099625,
+      "candidateNanos": 39705125,
+      "deltaNanos": 19605500,
+      "deltaPercent": 97.54162080138312,
+      "slower": true,
+      "above15PercentAnd1ms": true,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "pair": 3,
+      "baseNanos": 35066583,
+      "candidateNanos": 36270000,
+      "deltaNanos": 1203417,
+      "deltaPercent": 3.4318057165706684,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "pair": 1,
+      "baseNanos": 41608625,
+      "candidateNanos": 118184625,
+      "deltaNanos": 76576000,
+      "deltaPercent": 184.03876600103945,
+      "slower": true,
+      "above15PercentAnd1ms": true,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "pair": 2,
+      "baseNanos": 48693708,
+      "candidateNanos": 55151042,
+      "deltaNanos": 6457334,
+      "deltaPercent": 13.261126057600702,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-distribution-broad-all-64",
+      "pair": 1,
+      "baseNanos": 757417,
+      "candidateNanos": 802875,
+      "deltaNanos": 45458,
+      "deltaPercent": 6.001713719126989,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-distribution-broad-all-64",
+      "pair": 2,
+      "baseNanos": 763166,
+      "candidateNanos": 824583,
+      "deltaNanos": 61417,
+      "deltaPercent": 8.047659355893732,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-distribution-localized-early",
+      "pair": 1,
+      "baseNanos": 1165541,
+      "candidateNanos": 1235500,
+      "deltaNanos": 69959,
+      "deltaPercent": 6.002277054174843,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-distribution-localized-early",
+      "pair": 2,
+      "baseNanos": 1169917,
+      "candidateNanos": 1202125,
+      "deltaNanos": 32208,
+      "deltaPercent": 2.7530158122328396,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-distribution-localized-late",
+      "pair": 2,
+      "baseNanos": 3846000,
+      "candidateNanos": 4097333,
+      "deltaNanos": 251333,
+      "deltaPercent": 6.534919396775862,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-distribution-localized-middle",
+      "pair": 1,
+      "baseNanos": 2687500,
+      "candidateNanos": 2804542,
+      "deltaNanos": 117042,
+      "deltaPercent": 4.355051162790691,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    },
+    {
+      "id": "global-wide-distribution-localized-middle",
+      "pair": 2,
+      "baseNanos": 2538167,
+      "candidateNanos": 2963792,
+      "deltaNanos": 425625,
+      "deltaPercent": 16.76899116567192,
+      "slower": true,
+      "above15PercentAnd1ms": false,
+      "nonLatencyChanges": {}
+    }
+  ],
+  "repeatedAboveThreshold": {},
+  "slowerEveryPair": [
+    "global-wide-four-properties-dense",
+    "global-wide-caller-class-zero",
+    "global-wide-parameterized-targeted"
+  ],
+  "attemptDecision": "rejected-locally",
+  "strictProgressEveryPair": false,
+  "aggregateP95RegressionPairs": [
+    1
+  ],
+  "resourceRegressionCounts": {
+    "processCpuNanos": 1
+  },
+  "wrappedRepeatedRegressions": {
+    "global-wide-wrapped-case-insensitive": 0,
+    "global-wide-wrapped-case-insensitive-distinct": 1
+  },
+  "independentlyComputedRegressionPass": false,
+  "limitations": [
+    "Six replay runs provide three paired observations; do not call the distribution across three runs a P95. Each reported P95 is the nearest-rank quantile across that run\u2019s 34 queries.",
+    "Full 14-field signatures match the saved frozen oracle; no queries were re-executed during this audit.",
+    "The replay starts with cold indexes, while later queries reuse indexes initialized earlier in the same replay.",
+    "Recorded JAR hashes were compared to build receipt; whole JAR/graph contents were not rehashed while other timed runs are live.",
+    "Work/scan changes support execution-path observations, not complete attribution of measured time or proof of stable CI success.",
+    "A regression-only pass does not replace strict global P95 improvement in every pair. Passing old34 permits v3 evaluation only; it does not accept Attempt141 or satisfy the final target."
+  ],
+  "measurementPlanSha256": "be9b59ed1aca25827104e56e85cf2df5a1b9dc3bedf64dd5f553c3ce91a2b26b",
+  "fixtureManifestSha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+  "resourceRule": "Any single pair above 15% fails; unlike latency, resources do not require repetition.",
+  "runnerComparisonExit": 1,
+  "originalComparatorIndependentFullStatusEquality": true,
+  "independentComparatorReceipt": "independent-comparator-receipt.json",
+  "inputAfterReceipt": {
+    "graphs": 64,
+    "files": 1088,
+    "sameAsControl": true,
+    "reference": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/graph-content-after.json",
+    "referenceSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+  },
+  "inputAfterReferenceHashAndInventoryVerified": true,
+  "pairedCommandsExactJarAndColdZeroWarmupSingleForkVerified": true
+}

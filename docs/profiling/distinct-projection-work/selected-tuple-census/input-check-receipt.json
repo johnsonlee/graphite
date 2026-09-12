@@ -1,0 +1,9 @@
+{
+  "controlJar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "controlJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "adapterClassSha256": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+  "graphFilesMatchPriorAuthenticatedInventory": true,
+  "priorInventory": "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/input-receipt.json",
+  "scope": "Current full graph-file hashes compared with prior authenticated phase inventory after correctness control; not a new before/after timing claim.",
+  "graphInventoriesCompared": 64
+}

@@ -1,0 +1,8 @@
+{
+  "attempt": 146,
+  "parent": "cf300347247174a74bbbd188e89c36c094ae2bdd",
+  "hypothesis": "Skip the snapshot and second monitor acquisition when child registration is closed and no descendants remain; preserve actual completion and wakeup protocol.",
+  "scope": "Same shared scheduling direction, one executable line, no prediction that diagnostic childDrain equals savings",
+  "acceptance": "Original real-data correctness and unchanged performance gates; not yet run",
+  "candidate": "/private/tmp/graphite-attempt146.lztftoe1/candidate"
+}

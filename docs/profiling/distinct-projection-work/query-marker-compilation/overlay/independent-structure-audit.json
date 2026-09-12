@@ -1,0 +1,229 @@
+{
+  "passed": true,
+  "ranPatchScriptForVerification": false,
+  "diagnosticJarSha256": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+  "jarMode": "0o444",
+  "originalEntries": 30488,
+  "unchangedEntries": 30487,
+  "changedOriginalEntries": [
+    {
+      "ordinal": 30167,
+      "name": "io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.class",
+      "oldSha256": "ae78c757f805386ba22698f277f41cd0f0e3e0b55aff2ab1cf5fe980a4ad35ea",
+      "newSha256": "da0f28627399214209232fe4cb3d8759f784155a9a0def5f6cb8ca07ebd68068"
+    }
+  ],
+  "addedEntries": [
+    "io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.class",
+    "io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.class"
+  ],
+  "duplicateOriginalEntryNames": {
+    "META-INF/versions/9/module-info.class": 8,
+    "LICENSE": 5,
+    "THIRD-PARTY": 4,
+    "META-INF/LICENSE.txt": 6,
+    "META-INF/NOTICE.txt": 3
+  },
+  "allOriginalNamesAndEntryOrderPreserved": true,
+  "constantPoolCounts": [
+    2284,
+    2289
+  ],
+  "appendedConstantPoolBytes": 208,
+  "allOtherClassBytesIdenticalExcept": [
+    {
+      "offsetFromClassBody": 38580,
+      "before": 182,
+      "after": 184
+    },
+    {
+      "offsetFromClassBody": 38582,
+      "before": 77,
+      "after": 240
+    }
+  ],
+  "javapDifferenceOnlyOneInvocation": {
+    "before": [
+      "      36: invokevirtual #2125               // Method io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor.execute:(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;"
+    ],
+    "after": [
+      "      36: invokestatic  #2288               // Method io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.execute:(Lio/johnsonlee/graphite/cypher/CrossGraphCypherExecutor;Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;"
+    ]
+  },
+  "actualHelperBytecodePreservesOriginalThrowableReference": true,
+  "workloadCatalogSha256": "84606875e34be7928275e831fd26abbfd9115832952a5bca19ea6f282c8a9284",
+  "expectedParameters": [
+    {
+      "ordinal": 1,
+      "id": "global-wide-four-properties-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 2,
+      "id": "global-wide-four-properties-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 3,
+      "id": "global-wide-four-properties-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 4,
+      "id": "global-wide-class-pair-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 5,
+      "id": "global-wide-class-pair-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 6,
+      "id": "global-wide-class-pair-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 7,
+      "id": "global-wide-name-pair-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 8,
+      "id": "global-wide-name-pair-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 9,
+      "id": "global-wide-name-pair-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 10,
+      "id": "global-wide-caller-class-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 11,
+      "id": "global-wide-caller-class-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 12,
+      "id": "global-wide-caller-class-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 13,
+      "id": "global-wide-callee-class-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 14,
+      "id": "global-wide-callee-class-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 15,
+      "id": "global-wide-callee-class-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 16,
+      "id": "global-wide-provenance-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 17,
+      "id": "global-wide-provenance-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 18,
+      "id": "global-wide-provenance-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 19,
+      "id": "global-wide-aliased-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 20,
+      "id": "global-wide-aliased-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 21,
+      "id": "global-wide-aliased-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 22,
+      "id": "global-wide-parameterized-zero",
+      "parametersJson": "{\"term\":\"__graphite_fixture64_absent_fixture-kotlin-compiler-01__\"}"
+    },
+    {
+      "ordinal": 23,
+      "id": "global-wide-parameterized-targeted",
+      "parametersJson": "{\"term\":\"org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1\"}"
+    },
+    {
+      "ordinal": 24,
+      "id": "global-wide-parameterized-dense",
+      "parametersJson": "{\"term\":\"get\"}"
+    },
+    {
+      "ordinal": 25,
+      "id": "global-wide-wrapped-case-insensitive-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 26,
+      "id": "global-wide-wrapped-case-insensitive-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 27,
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 28,
+      "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 29,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 30,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 31,
+      "id": "global-wide-distribution-broad-all-64",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 32,
+      "id": "global-wide-distribution-localized-early",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 33,
+      "id": "global-wide-distribution-localized-late",
+      "parametersJson": "{}"
+    },
+    {
+      "ordinal": 34,
+      "id": "global-wide-distribution-localized-middle",
+      "parametersJson": "{}"
+    }
+  ],
+  "realQueriesExecuted": 0,
+  "jfrRecordingsStarted": 0
+}

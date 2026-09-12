@@ -1,0 +1,134 @@
+[
+  {
+    "file": "base-global-wide-1-command.json",
+    "originalSha256": "2e5e0e20bfbb29493a5d0e8fa4a07dbc90dd2f401fc81e1cf4840443cc5625cf",
+    "repositorySha256": "08d1a52c789e238e8a23255754bb4ebadbf99a695ba54fa49198f7d1d5908fda",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "base-global-wide-1.json",
+    "originalSha256": "1d18468bdd8a57d1feb67e5be60f4b77e5b7f292ca8d954e31afad0738d72bf3",
+    "repositorySha256": "ecf56eb1f8defccbb822e45d3d9cae8a0825b7386c390bf812ff606677e4ca03",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "base-global-wide-1.tsv",
+    "originalSha256": "4e4e973f4adc1065c472e368ef796a6818d3c90058eacfbd2fa95ce120f72f26",
+    "repositorySha256": "4e4e973f4adc1065c472e368ef796a6818d3c90058eacfbd2fa95ce120f72f26",
+    "change": "none"
+  },
+  {
+    "file": "base-global-wide-2-command.json",
+    "originalSha256": "e33aaaf4f4ea2561843127cc7e67c2366d625e43f26f2b98d63156c54a113f4f",
+    "repositorySha256": "233189140ad6d5945b081de1585e18c59be858bd578f0beedba1fadd14641225",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "base-global-wide-2.json",
+    "originalSha256": "9d4e8cb38f69098c1cca7d8ceba1de058265d2a9f5aaa7542491f6e393a79104",
+    "repositorySha256": "9ba5fe0e54c393fd310980b049274ec67b1e1373927616e8076dc271358bd401",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "base-global-wide-2.tsv",
+    "originalSha256": "600a186c032bb088113c763563c31afea2294186b7fb475eed02710ff4a03f6e",
+    "repositorySha256": "600a186c032bb088113c763563c31afea2294186b7fb475eed02710ff4a03f6e",
+    "change": "none"
+  },
+  {
+    "file": "base-global-wide-3-command.json",
+    "originalSha256": "ff9acfbc87081d30b210169527783b8749bbfd7a08e236a8ae159141f2db83cb",
+    "repositorySha256": "667a59968b3888e48a41a59d45a9556540162b2936d583f328d4580ec1db3224",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "base-global-wide-3.json",
+    "originalSha256": "5a3fce06615bc5c0ca0fdb58acb23d56c9d5468941dae687b6d06db83084bb81",
+    "repositorySha256": "ba579af5793e3e6bd7dfc94b70321dba0dadb55ee47ad445b7c6135546a41263",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "base-global-wide-3.tsv",
+    "originalSha256": "8fdd3d52e97aff8c44340304dff48d45a1875a3f2bc57c05c8e00abcdf07c1f0",
+    "repositorySha256": "8fdd3d52e97aff8c44340304dff48d45a1875a3f2bc57c05c8e00abcdf07c1f0",
+    "change": "none"
+  },
+  {
+    "file": "candidate-global-wide-1-command.json",
+    "originalSha256": "6182dbf83f9b17231adf6042f0eebb067734b9160e3f45a85dedade1d47dc06e",
+    "repositorySha256": "e0480441b40215980e2df75665433185e268476d81aa2dc1f66a9891f958d59f",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "candidate-global-wide-1.json",
+    "originalSha256": "91663cda3c41d48384fc7e5284836b9d240179606ea49110777a97f2897da9cd",
+    "repositorySha256": "3bade33d2815f0b307cc7ed300301cc78a9481e74b65ab4f7f838df5a5398913",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "candidate-global-wide-1.tsv",
+    "originalSha256": "f8287f33391c4e2e09446bc39593b7d2ac6039fd2c6c91561c588258dc947954",
+    "repositorySha256": "f8287f33391c4e2e09446bc39593b7d2ac6039fd2c6c91561c588258dc947954",
+    "change": "none"
+  },
+  {
+    "file": "candidate-global-wide-2-command.json",
+    "originalSha256": "9821bb45de302410c6849247763f4012f9bee1980a4ec8d8dde4d979fb0e8c67",
+    "repositorySha256": "29c4b3607cf29ef234b16c0ef7ff65d5f60e2a9bb1cb89395a9284cadcdfed99",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "candidate-global-wide-2.json",
+    "originalSha256": "c32f3cd15054d92bf42203094a97e617b9c275a37f2db3d232fbb207ab281f2b",
+    "repositorySha256": "45962075bcd3940b185c6fa7fd785ab5bc9262ce54547ffa4f3ed39ede435998",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "candidate-global-wide-2.tsv",
+    "originalSha256": "6f5bf5d4414df0b51650b38c183ffc2446af16c5cdfbb80d719082a2be82e449",
+    "repositorySha256": "6f5bf5d4414df0b51650b38c183ffc2446af16c5cdfbb80d719082a2be82e449",
+    "change": "none"
+  },
+  {
+    "file": "candidate-global-wide-3-command.json",
+    "originalSha256": "9d6c653d25df223a4076b2491bf93f403234dc7ff36ce6beb590b411c2f0c528",
+    "repositorySha256": "6fc3ec2062990801263dc8aaf7ceac5b609935515876e68734cd33d576cfbada",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "candidate-global-wide-3.json",
+    "originalSha256": "6c89fa5e08e99009278f31680f7f6bb3c320e5b0d63cf46f73a86001969d74d6",
+    "repositorySha256": "b2401fccdb5eefce3dd2ce682aab635098e6bd23b279b1d5f715db34ae987316",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "candidate-global-wide-3.tsv",
+    "originalSha256": "8d374541f5e398f07bac219009ada5fc115c6c20906846de2073dc45fd02b2d1",
+    "repositorySha256": "8d374541f5e398f07bac219009ada5fc115c6c20906846de2073dc45fd02b2d1",
+    "change": "none"
+  },
+  {
+    "file": "comparison-command.json",
+    "originalSha256": "2a6a3bffd49c100e0f7926a9768c077454563bda9939af220bf9662f97318e2b",
+    "repositorySha256": "b5bdea6a5ee2e0a0792727297694277ba56640050c490e99250d4c71d96615b9",
+    "change": "trailing newline normalization only"
+  },
+  {
+    "file": "global-wide-status.json",
+    "originalSha256": "ea54069147503d776e0da907fdd7afc1196bbb6c0c2ad2ce3e910f0abb5e0b34",
+    "repositorySha256": "ea54069147503d776e0da907fdd7afc1196bbb6c0c2ad2ce3e910f0abb5e0b34",
+    "change": "none"
+  },
+  {
+    "file": "local-progress.json",
+    "originalSha256": "dc4e2dc7fcd01798e43ebe566017f6cce6dddece3e7b8c370ad9c7cab0ea503b",
+    "repositorySha256": "dc4e2dc7fcd01798e43ebe566017f6cce6dddece3e7b8c370ad9c7cab0ea503b",
+    "change": "none"
+  },
+  {
+    "file": "oracle.correctness",
+    "originalSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+    "repositorySha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+    "change": "none"
+  }
+]

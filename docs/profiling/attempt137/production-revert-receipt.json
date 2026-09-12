@@ -1,0 +1,8 @@
+{
+  "productionReverted": true,
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "rejectedCommit": "536f585aab37da0888dd021cf9355d73dad1c545",
+  "mainAndJmhFilesCompared": 130,
+  "allByteIdentical": true,
+  "reason": "Exact-head required CI failed repeated Method4 count CPU +32.8358%/+17.9775% and middle CPU +31.3953%/+23.8095% against unchanged15% bound."
+}

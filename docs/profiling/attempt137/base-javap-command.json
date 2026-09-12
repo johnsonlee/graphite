@@ -1,0 +1,9 @@
+[
+  "/opt/homebrew/opt/openjdk@17/bin/javap",
+  "-p",
+  "-c",
+  "-s",
+  "-classpath",
+  "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator"
+]

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-05T22:02:29.111Z" hostname="johnsonlee.local" time="0.924">
+  <properties/>
+  <testcase name="raw and lowercase predicates do not share a match state for the same string" classname="io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest" time="0.636"/>
+  <testcase name="different lowercase terms keep separate match states and preserve a complete miss" classname="io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest" time="0.063"/>
+  <testcase name="four keyword OR keeps every exclusive term and deduplicates overlap in stored order" classname="io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest" time="0.127"/>
+  <testcase name="selected tuples filter the OR result without changing its physical order" classname="io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest" time="0.098"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

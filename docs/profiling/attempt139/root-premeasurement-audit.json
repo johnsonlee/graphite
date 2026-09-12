@@ -1,0 +1,12 @@
+{
+  "sourceMechanicalReverseMatchesFrozenMain": true,
+  "actualXmlTotals": {
+    "tests": 187,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "candidateJarHashMatchesBuilder": true,
+  "modifiedSourceSha256": "e702dd25666c83a98e6222d4634fd985b78b6edb3dcda5d1ae0f2b6269e14793",
+  "accepted": false
+}

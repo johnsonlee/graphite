@@ -1,0 +1,1491 @@
+{
+  "attempt": 146,
+  "auditPassed": true,
+  "acceptance": false,
+  "v3": {
+    "status": "complete",
+    "queries": 36,
+    "fullRowsValuesOrderProvenance": 6171,
+    "queryHashesAndDigestsVerified": true,
+    "schema": "graphite-wide-query-oracle-v3",
+    "forks": 1,
+    "perQueryP95Reported": false,
+    "performanceGate": false,
+    "graphManifestRecords": 1088,
+    "inputBytes": 10321426977,
+    "jarHash": "120808180cebddac06522ece2eef37089db99fc08e2864090e91cfa85a66cee9"
+  },
+  "old34": {
+    "status": "terminal",
+    "completedPairs": 3,
+    "signaturesVerified": 204,
+    "oracleFields": [
+      "id",
+      "family",
+      "shape",
+      "selectivity",
+      "operator",
+      "boundary",
+      "projection",
+      "targetGraphId",
+      "workloadIdentity",
+      "limit",
+      "outcome",
+      "rowCount",
+      "responseBytes",
+      "digest"
+    ],
+    "pairs": [
+      {
+        "pair": 1,
+        "order": [
+          "candidate",
+          "base"
+        ],
+        "sides": {
+          "candidate": {
+            "p50LatencyNanos": 2481417.0,
+            "p95LatencyNanos": 42817666.0,
+            "maxLatencyNanos": 264784750.0,
+            "processCpuNanos": 1559704000.0,
+            "peakUsedHeapBytes": 4265173392.0,
+            "peakResidentSetBytes": 4799119360.0,
+            "graphScanPeakActiveWorkers": 2.0,
+            "segmentScanPeakActiveWorkers": 2.0,
+            "graphWorkUnits": 58071626.0,
+            "p95Query": [
+              "global-wide-wrapped-case-insensitive-distinct-dense"
+            ],
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 264784750
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 42817666
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 26505583
+              }
+            ]
+          },
+          "base": {
+            "p50LatencyNanos": 2059166.0,
+            "p95LatencyNanos": 57550125.0,
+            "maxLatencyNanos": 271638833.0,
+            "processCpuNanos": 1623256000.0,
+            "peakUsedHeapBytes": 4707910168.0,
+            "peakResidentSetBytes": 5256511488.0,
+            "graphScanPeakActiveWorkers": 2.0,
+            "segmentScanPeakActiveWorkers": 2.0,
+            "graphWorkUnits": 58071626.0,
+            "p95Query": [
+              "global-wide-wrapped-case-insensitive-distinct-dense"
+            ],
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 271638833
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 57550125
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 27270667
+              }
+            ]
+          }
+        },
+        "strictProgress": true,
+        "peaksPassed": true,
+        "resources": {
+          "processCpuNanos": {
+            "base": 1623256000.0,
+            "candidate": 1559704000.0,
+            "deltaPercent": -3.915094107152539,
+            "passed": true
+          },
+          "peakUsedHeapBytes": {
+            "base": 4707910168.0,
+            "candidate": 4265173392.0,
+            "deltaPercent": -9.404104160893157,
+            "passed": true
+          },
+          "peakResidentSetBytes": {
+            "base": 5256511488.0,
+            "candidate": 4799119360.0,
+            "deltaPercent": -8.70143875922601,
+            "passed": true
+          }
+        }
+      },
+      {
+        "pair": 2,
+        "order": [
+          "base",
+          "candidate"
+        ],
+        "sides": {
+          "base": {
+            "p50LatencyNanos": 1793208.0,
+            "p95LatencyNanos": 62780833.0,
+            "maxLatencyNanos": 261247458.0,
+            "processCpuNanos": 1714644000.0,
+            "peakUsedHeapBytes": 4220219376.0,
+            "peakResidentSetBytes": 4767989760.0,
+            "graphScanPeakActiveWorkers": 2.0,
+            "segmentScanPeakActiveWorkers": 2.0,
+            "graphWorkUnits": 58071626.0,
+            "p95Query": [
+              "global-wide-wrapped-case-insensitive-distinct-dense"
+            ],
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 261247458
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 62780833
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 50511334
+              }
+            ]
+          },
+          "candidate": {
+            "p50LatencyNanos": 2366792.0,
+            "p95LatencyNanos": 47492458.0,
+            "maxLatencyNanos": 271912208.0,
+            "processCpuNanos": 1684759000.0,
+            "peakUsedHeapBytes": 4506109976.0,
+            "peakResidentSetBytes": 5063163904.0,
+            "graphScanPeakActiveWorkers": 2.0,
+            "segmentScanPeakActiveWorkers": 2.0,
+            "graphWorkUnits": 58071626.0,
+            "p95Query": [
+              "global-wide-wrapped-case-insensitive-distinct-dense"
+            ],
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 271912208
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 47492458
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 31033791
+              }
+            ]
+          }
+        },
+        "strictProgress": true,
+        "peaksPassed": true,
+        "resources": {
+          "processCpuNanos": {
+            "base": 1714644000.0,
+            "candidate": 1684759000.0,
+            "deltaPercent": -1.7429273948411428,
+            "passed": true
+          },
+          "peakUsedHeapBytes": {
+            "base": 4220219376.0,
+            "candidate": 4506109976.0,
+            "deltaPercent": 6.77430660656726,
+            "passed": true
+          },
+          "peakResidentSetBytes": {
+            "base": 4767989760.0,
+            "candidate": 5063163904.0,
+            "deltaPercent": 6.19074618146831,
+            "passed": true
+          }
+        }
+      },
+      {
+        "pair": 3,
+        "order": [
+          "candidate",
+          "base"
+        ],
+        "sides": {
+          "candidate": {
+            "p50LatencyNanos": 2228416.0,
+            "p95LatencyNanos": 52154333.0,
+            "maxLatencyNanos": 281462917.0,
+            "processCpuNanos": 1842224000.0,
+            "peakUsedHeapBytes": 4711927568.0,
+            "peakResidentSetBytes": 5271371776.0,
+            "graphScanPeakActiveWorkers": 2.0,
+            "segmentScanPeakActiveWorkers": 2.0,
+            "graphWorkUnits": 58071626.0,
+            "p95Query": [
+              "global-wide-wrapped-case-insensitive-distinct-dense"
+            ],
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 281462917
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 52154333
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 40172458
+              }
+            ]
+          },
+          "base": {
+            "p50LatencyNanos": 2177250.0,
+            "p95LatencyNanos": 51742417.0,
+            "maxLatencyNanos": 271319375.0,
+            "processCpuNanos": 1726941000.0,
+            "peakUsedHeapBytes": 4704970088.0,
+            "peakResidentSetBytes": 5269798912.0,
+            "graphScanPeakActiveWorkers": 2.0,
+            "segmentScanPeakActiveWorkers": 2.0,
+            "graphWorkUnits": 58071626.0,
+            "p95Query": [
+              "global-wide-wrapped-case-insensitive-distinct-dense"
+            ],
+            "top3": [
+              {
+                "id": "global-wide-four-properties-zero",
+                "latencyNanos": 271319375
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+                "latencyNanos": 51742417
+              },
+              {
+                "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+                "latencyNanos": 47995792
+              }
+            ]
+          }
+        },
+        "strictProgress": false,
+        "peaksPassed": true,
+        "resources": {
+          "processCpuNanos": {
+            "base": 1726941000.0,
+            "candidate": 1842224000.0,
+            "deltaPercent": 6.675561006426967,
+            "passed": true
+          },
+          "peakUsedHeapBytes": {
+            "base": 4704970088.0,
+            "candidate": 4711927568.0,
+            "deltaPercent": 0.14787511652294416,
+            "passed": true
+          },
+          "peakResidentSetBytes": {
+            "base": 5269798912.0,
+            "candidate": 5271371776.0,
+            "deltaPercent": 0.02984675556438887,
+            "passed": true
+          }
+        }
+      }
+    ],
+    "observations": [
+      {
+        "pair": 1,
+        "id": "global-wide-four-properties-zero",
+        "baseNanos": 271638833,
+        "candidateNanos": 264784750,
+        "deltaPercent": -2.523233855889817,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-four-properties-targeted",
+        "baseNanos": 11756750,
+        "candidateNanos": 12012459,
+        "deltaPercent": 2.1749973419525004,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-four-properties-dense",
+        "baseNanos": 4532125,
+        "candidateNanos": 4198042,
+        "deltaPercent": -7.371442755881619,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-class-pair-zero",
+        "baseNanos": 2392458,
+        "candidateNanos": 2626416,
+        "deltaPercent": 9.778980446051722,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-class-pair-targeted",
+        "baseNanos": 4763125,
+        "candidateNanos": 4900625,
+        "deltaPercent": 2.8867602676813986,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-class-pair-dense",
+        "baseNanos": 987709,
+        "candidateNanos": 945750,
+        "deltaPercent": -4.248113563812828,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-name-pair-zero",
+        "baseNanos": 2059166,
+        "candidateNanos": 2490833,
+        "deltaPercent": 20.96319577926209,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-name-pair-targeted",
+        "baseNanos": 4836625,
+        "candidateNanos": 5013833,
+        "deltaPercent": 3.6638771870880937,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-name-pair-dense",
+        "baseNanos": 811375,
+        "candidateNanos": 900625,
+        "deltaPercent": 10.99984594053305,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-caller-class-zero",
+        "baseNanos": 1690458,
+        "candidateNanos": 2138209,
+        "deltaPercent": 26.48696388789311,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-caller-class-targeted",
+        "baseNanos": 3343708,
+        "candidateNanos": 3384250,
+        "deltaPercent": 1.2124862577713058,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-caller-class-dense",
+        "baseNanos": 561833,
+        "candidateNanos": 625292,
+        "deltaPercent": 11.294993352117078,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-callee-class-zero",
+        "baseNanos": 2047375,
+        "candidateNanos": 2305166,
+        "deltaPercent": 12.591293729775943,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-callee-class-targeted",
+        "baseNanos": 2870750,
+        "candidateNanos": 2849583,
+        "deltaPercent": -0.7373334494470085,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-callee-class-dense",
+        "baseNanos": 508333,
+        "candidateNanos": 479375,
+        "deltaPercent": -5.696659473219324,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-provenance-zero",
+        "baseNanos": 1598500,
+        "candidateNanos": 1646167,
+        "deltaPercent": 2.981983109164843,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-provenance-targeted",
+        "baseNanos": 3381709,
+        "candidateNanos": 3787375,
+        "deltaPercent": 11.995887286576101,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-provenance-dense",
+        "baseNanos": 947792,
+        "candidateNanos": 918291,
+        "deltaPercent": -3.1126027651636634,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-aliased-zero",
+        "baseNanos": 1821959,
+        "candidateNanos": 1333458,
+        "deltaPercent": -26.811854712427664,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-aliased-targeted",
+        "baseNanos": 4433375,
+        "candidateNanos": 4090042,
+        "deltaPercent": -7.744280598866549,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-aliased-dense",
+        "baseNanos": 868959,
+        "candidateNanos": 791125,
+        "deltaPercent": -8.957154480245899,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-parameterized-zero",
+        "baseNanos": 1322333,
+        "candidateNanos": 1281209,
+        "deltaPercent": -3.109957930415408,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-parameterized-targeted",
+        "baseNanos": 2492000,
+        "candidateNanos": 2987250,
+        "deltaPercent": 19.87359550561798,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-parameterized-dense",
+        "baseNanos": 784333,
+        "candidateNanos": 819084,
+        "deltaPercent": 4.430643616933105,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-wrapped-case-insensitive-zero",
+        "baseNanos": 1251625,
+        "candidateNanos": 1337583,
+        "deltaPercent": 6.867711974433233,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-wrapped-case-insensitive-targeted",
+        "baseNanos": 2626708,
+        "candidateNanos": 2481417,
+        "deltaPercent": -5.531296208029213,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-wrapped-case-insensitive-dense",
+        "baseNanos": 1467833,
+        "candidateNanos": 1458333,
+        "deltaPercent": -0.6472125916231586,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+        "baseNanos": 3663375,
+        "candidateNanos": 3758417,
+        "deltaPercent": 2.5943835943631255,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "baseNanos": 27270667,
+        "candidateNanos": 26505583,
+        "deltaPercent": -2.8055199383278717,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "baseNanos": 57550125,
+        "candidateNanos": 42817666,
+        "deltaPercent": -25.599351869348673,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-distribution-broad-all-64",
+        "baseNanos": 881792,
+        "candidateNanos": 815375,
+        "deltaPercent": -7.532048374219769,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-distribution-localized-early",
+        "baseNanos": 1405125,
+        "candidateNanos": 1304666,
+        "deltaPercent": -7.149470687661241,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-distribution-localized-late",
+        "baseNanos": 4097458,
+        "candidateNanos": 3691375,
+        "deltaPercent": -9.910607991588927,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 1,
+        "id": "global-wide-distribution-localized-middle",
+        "baseNanos": 3003833,
+        "candidateNanos": 2573084,
+        "deltaPercent": -14.33997828774103,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-four-properties-zero",
+        "baseNanos": 261247458,
+        "candidateNanos": 271912208,
+        "deltaPercent": 4.082240677725557,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-four-properties-targeted",
+        "baseNanos": 11317917,
+        "candidateNanos": 11567541,
+        "deltaPercent": 2.205564857915099,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-four-properties-dense",
+        "baseNanos": 4560833,
+        "candidateNanos": 4311042,
+        "deltaPercent": -5.47687231696491,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-class-pair-zero",
+        "baseNanos": 2118834,
+        "candidateNanos": 2635166,
+        "deltaPercent": 24.368685796055757,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-class-pair-targeted",
+        "baseNanos": 4750625,
+        "candidateNanos": 5289875,
+        "deltaPercent": 11.351138008156813,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-class-pair-dense",
+        "baseNanos": 907458,
+        "candidateNanos": 931917,
+        "deltaPercent": 2.6953313541783652,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-name-pair-zero",
+        "baseNanos": 1793208,
+        "candidateNanos": 2366792,
+        "deltaPercent": 31.9864734040892,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-name-pair-targeted",
+        "baseNanos": 4663667,
+        "candidateNanos": 5224333,
+        "deltaPercent": 12.021998997784355,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-name-pair-dense",
+        "baseNanos": 843292,
+        "candidateNanos": 814750,
+        "deltaPercent": -3.384592762649241,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-caller-class-zero",
+        "baseNanos": 1755750,
+        "candidateNanos": 2131042,
+        "deltaPercent": 21.37502491812615,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-caller-class-targeted",
+        "baseNanos": 2631792,
+        "candidateNanos": 3638125,
+        "deltaPercent": 38.23755828728106,
+        "above15PercentAnd1ms": true,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-caller-class-dense",
+        "baseNanos": 663750,
+        "candidateNanos": 592667,
+        "deltaPercent": -10.709303201506593,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-callee-class-zero",
+        "baseNanos": 1748625,
+        "candidateNanos": 2095208,
+        "deltaPercent": 19.82031596254199,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-callee-class-targeted",
+        "baseNanos": 2653917,
+        "candidateNanos": 2874959,
+        "deltaPercent": 8.328896495255877,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-callee-class-dense",
+        "baseNanos": 575542,
+        "candidateNanos": 481042,
+        "deltaPercent": -16.419305628433722,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-provenance-zero",
+        "baseNanos": 1192291,
+        "candidateNanos": 1608625,
+        "deltaPercent": 34.91882434741183,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-provenance-targeted",
+        "baseNanos": 3780833,
+        "candidateNanos": 3552833,
+        "deltaPercent": -6.03041710649479,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-provenance-dense",
+        "baseNanos": 881875,
+        "candidateNanos": 952875,
+        "deltaPercent": 8.051027639971654,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-aliased-zero",
+        "baseNanos": 1243583,
+        "candidateNanos": 1421292,
+        "deltaPercent": 14.290079552390145,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-aliased-targeted",
+        "baseNanos": 3401084,
+        "candidateNanos": 4494250,
+        "deltaPercent": 32.141693648260386,
+        "above15PercentAnd1ms": true,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-aliased-dense",
+        "baseNanos": 784416,
+        "candidateNanos": 803292,
+        "deltaPercent": 2.4063762085424045,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-parameterized-zero",
+        "baseNanos": 1080750,
+        "candidateNanos": 1232333,
+        "deltaPercent": 14.025722877631264,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-parameterized-targeted",
+        "baseNanos": 2466166,
+        "candidateNanos": 2724917,
+        "deltaPercent": 10.49203500494289,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-parameterized-dense",
+        "baseNanos": 819375,
+        "candidateNanos": 770542,
+        "deltaPercent": -5.959786422578183,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-wrapped-case-insensitive-zero",
+        "baseNanos": 1179541,
+        "candidateNanos": 1171167,
+        "deltaPercent": -0.7099371704756385,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-wrapped-case-insensitive-targeted",
+        "baseNanos": 2267917,
+        "candidateNanos": 2721000,
+        "deltaPercent": 19.977935700468752,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-wrapped-case-insensitive-dense",
+        "baseNanos": 1359250,
+        "candidateNanos": 1400750,
+        "deltaPercent": 3.053154313040274,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+        "baseNanos": 3252958,
+        "candidateNanos": 5003625,
+        "deltaPercent": 53.81769454139893,
+        "above15PercentAnd1ms": true,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "baseNanos": 50511334,
+        "candidateNanos": 31033791,
+        "deltaPercent": -38.56073767523146,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "baseNanos": 62780833,
+        "candidateNanos": 47492458,
+        "deltaPercent": -24.35197857282333,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-distribution-broad-all-64",
+        "baseNanos": 803667,
+        "candidateNanos": 857125,
+        "deltaPercent": 6.651759995122353,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-distribution-localized-early",
+        "baseNanos": 1167667,
+        "candidateNanos": 1308167,
+        "deltaPercent": 12.032540099189237,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-distribution-localized-late",
+        "baseNanos": 4078583,
+        "candidateNanos": 4151541,
+        "deltaPercent": 1.7888075343814203,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 2,
+        "id": "global-wide-distribution-localized-middle",
+        "baseNanos": 3095709,
+        "candidateNanos": 2805292,
+        "deltaPercent": -9.381275824051938,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-four-properties-zero",
+        "baseNanos": 271319375,
+        "candidateNanos": 281462917,
+        "deltaPercent": 3.7385984690551544,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-four-properties-targeted",
+        "baseNanos": 11581292,
+        "candidateNanos": 11747750,
+        "deltaPercent": 1.4373007778406777,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-four-properties-dense",
+        "baseNanos": 4244167,
+        "candidateNanos": 4122833,
+        "deltaPercent": -2.858841322690653,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-class-pair-zero",
+        "baseNanos": 2394708,
+        "candidateNanos": 2629375,
+        "deltaPercent": 9.799399342216253,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-class-pair-targeted",
+        "baseNanos": 4654000,
+        "candidateNanos": 5393834,
+        "deltaPercent": 15.896733992264721,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-class-pair-dense",
+        "baseNanos": 940334,
+        "candidateNanos": 1030375,
+        "deltaPercent": 9.575427454500218,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-name-pair-zero",
+        "baseNanos": 2177250,
+        "candidateNanos": 2228416,
+        "deltaPercent": 2.350028705936391,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-name-pair-targeted",
+        "baseNanos": 4256625,
+        "candidateNanos": 5175166,
+        "deltaPercent": 21.579091416321617,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-name-pair-dense",
+        "baseNanos": 776958,
+        "candidateNanos": 824541,
+        "deltaPercent": 6.124269265520144,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-caller-class-zero",
+        "baseNanos": 1850459,
+        "candidateNanos": 1974209,
+        "deltaPercent": 6.687529958783189,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-caller-class-targeted",
+        "baseNanos": 3180917,
+        "candidateNanos": 3561083,
+        "deltaPercent": 11.95145928045278,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-caller-class-dense",
+        "baseNanos": 682167,
+        "candidateNanos": 539375,
+        "deltaPercent": -20.932117795202643,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-callee-class-zero",
+        "baseNanos": 1365125,
+        "candidateNanos": 1848583,
+        "deltaPercent": 35.41492537313433,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-callee-class-targeted",
+        "baseNanos": 2199292,
+        "candidateNanos": 3043042,
+        "deltaPercent": 38.364619159256705,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-callee-class-dense",
+        "baseNanos": 497708,
+        "candidateNanos": 553666,
+        "deltaPercent": 11.243138547099907,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-provenance-zero",
+        "baseNanos": 1146458,
+        "candidateNanos": 1717084,
+        "deltaPercent": 49.77295286874879,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-provenance-targeted",
+        "baseNanos": 3049708,
+        "candidateNanos": 3918250,
+        "deltaPercent": 28.479513448500636,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-provenance-dense",
+        "baseNanos": 922958,
+        "candidateNanos": 904417,
+        "deltaPercent": -2.008867142383508,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-aliased-zero",
+        "baseNanos": 1378625,
+        "candidateNanos": 1609333,
+        "deltaPercent": 16.734645026747664,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-aliased-targeted",
+        "baseNanos": 3865416,
+        "candidateNanos": 4446417,
+        "deltaPercent": 15.030749601077865,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-aliased-dense",
+        "baseNanos": 863625,
+        "candidateNanos": 796458,
+        "deltaPercent": -7.77733391228832,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-parameterized-zero",
+        "baseNanos": 1330916,
+        "candidateNanos": 1199042,
+        "deltaPercent": -9.9085141361288,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-parameterized-targeted",
+        "baseNanos": 2616250,
+        "candidateNanos": 3031167,
+        "deltaPercent": 15.859225991399907,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-parameterized-dense",
+        "baseNanos": 815833,
+        "candidateNanos": 868000,
+        "deltaPercent": 6.394323348038133,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-wrapped-case-insensitive-zero",
+        "baseNanos": 1176959,
+        "candidateNanos": 1255459,
+        "deltaPercent": 6.669731061149964,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-wrapped-case-insensitive-targeted",
+        "baseNanos": 2456250,
+        "candidateNanos": 2511333,
+        "deltaPercent": 2.24256488549619,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-wrapped-case-insensitive-dense",
+        "baseNanos": 1526375,
+        "candidateNanos": 1461541,
+        "deltaPercent": -4.247580050773891,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+        "baseNanos": 3082791,
+        "candidateNanos": 3979000,
+        "deltaPercent": 29.071351252809553,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+        "baseNanos": 47995792,
+        "candidateNanos": 40172458,
+        "deltaPercent": -16.30004147030223,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "baseNanos": 51742417,
+        "candidateNanos": 52154333,
+        "deltaPercent": 0.7960895989841399,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-distribution-broad-all-64",
+        "baseNanos": 885125,
+        "candidateNanos": 783833,
+        "deltaPercent": -11.443807371840132,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-distribution-localized-early",
+        "baseNanos": 1351833,
+        "candidateNanos": 1290250,
+        "deltaPercent": -4.555518322159613,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-distribution-localized-late",
+        "baseNanos": 4319792,
+        "candidateNanos": 4781125,
+        "deltaPercent": 10.679518828684342,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      },
+      {
+        "pair": 3,
+        "id": "global-wide-distribution-localized-middle",
+        "baseNanos": 3052541,
+        "candidateNanos": 3072583,
+        "deltaPercent": 0.6565677578122653,
+        "above15PercentAnd1ms": false,
+        "nonLatencyChanges": {}
+      }
+    ],
+    "nonLatencyDifferencesFromFrozenOracle": [],
+    "repeatedDoubleThresholdQueries": {},
+    "comparatorExecuted": true,
+    "driverWouldInvokeComparator": false,
+    "notRunPairs": [],
+    "ciRun": false,
+    "strictProgressEveryPair": false,
+    "comparatorExit": {
+      "exitCode": 0,
+      "scope": "Run unchanged complete comparator on existing six recordings after driver stopped; no new measurement"
+    },
+    "comparatorStatus": {
+      "passed": true,
+      "errors": [],
+      "regressionPassed": true,
+      "targetAchieved": false,
+      "targetErrors": [
+        "pair-1: P95 speedup 1.34x; required 10.00x in every independent fork",
+        "pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.06x; required 10.00x",
+        "pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.34x; required 10.00x",
+        "pair-2: P95 speedup 1.32x; required 10.00x in every independent fork",
+        "pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.83x; required 10.00x",
+        "pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.32x; required 10.00x",
+        "pair-3: P95 speedup 0.99x; required 10.00x in every independent fork",
+        "pair-3: global-wide-wrapped-case-insensitive P95 speedup 0.98x; required 10.00x",
+        "pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.99x; required 10.00x"
+      ],
+      "regressionOnly": true,
+      "minimumSpeedup": 10,
+      "runs": [
+        {
+          "order": "candidate-base",
+          "baseP50LatencyNanos": 2059166,
+          "baseP95LatencyNanos": 57550125,
+          "p50LatencyNanos": 2481417,
+          "p95LatencyNanos": 42817666,
+          "p50Speedup": 0.8298347274964264,
+          "p95Speedup": 1.3440743126914017,
+          "baseWrappedP95LatencyNanos": 2626708,
+          "wrappedP95LatencyNanos": 2481417,
+          "wrappedP95Speedup": 1.0585516259459817,
+          "wrappedShapeRuns": [
+            {
+              "shape": "global-wide-wrapped-case-insensitive",
+              "baseLatencyNanos": 2626708,
+              "latencyNanos": 2481417,
+              "speedup": 1.0585516259459817
+            },
+            {
+              "shape": "global-wide-wrapped-case-insensitive-distinct",
+              "baseLatencyNanos": 57550125,
+              "latencyNanos": 42817666,
+              "speedup": 1.3440743126914017
+            }
+          ],
+          "baseProcessCpuNanos": 1623256000,
+          "processCpuNanos": 1559704000,
+          "cpuCoreUtilizationPermille": 3190,
+          "basePeakUsedHeapBytes": 4707910168,
+          "peakUsedHeapBytes": 4265173392,
+          "basePeakResidentSetBytes": 5256511488,
+          "peakResidentSetBytes": 4799119360
+        },
+        {
+          "order": "base-candidate",
+          "baseP50LatencyNanos": 1793208,
+          "baseP95LatencyNanos": 62780833,
+          "p50LatencyNanos": 2366792,
+          "p95LatencyNanos": 47492458,
+          "p50Speedup": 0.7576533975102163,
+          "p95Speedup": 1.3219116391069925,
+          "baseWrappedP95LatencyNanos": 2267917,
+          "wrappedP95LatencyNanos": 2721000,
+          "wrappedP95Speedup": 0.833486585814039,
+          "wrappedShapeRuns": [
+            {
+              "shape": "global-wide-wrapped-case-insensitive",
+              "baseLatencyNanos": 2267917,
+              "latencyNanos": 2721000,
+              "speedup": 0.833486585814039
+            },
+            {
+              "shape": "global-wide-wrapped-case-insensitive-distinct",
+              "baseLatencyNanos": 62780833,
+              "latencyNanos": 47492458,
+              "speedup": 1.3219116391069925
+            }
+          ],
+          "baseProcessCpuNanos": 1714644000,
+          "processCpuNanos": 1684759000,
+          "cpuCoreUtilizationPermille": 3180,
+          "basePeakUsedHeapBytes": 4220219376,
+          "peakUsedHeapBytes": 4506109976,
+          "basePeakResidentSetBytes": 4767989760,
+          "peakResidentSetBytes": 5063163904
+        },
+        {
+          "order": "candidate-base",
+          "baseP50LatencyNanos": 2177250,
+          "baseP95LatencyNanos": 51742417,
+          "p50LatencyNanos": 2228416,
+          "p95LatencyNanos": 52154333,
+          "p50Speedup": 0.9770392960739825,
+          "p95Speedup": 0.9921019793312283,
+          "baseWrappedP95LatencyNanos": 2456250,
+          "wrappedP95LatencyNanos": 2511333,
+          "wrappedP95Speedup": 0.9780662301654142,
+          "wrappedShapeRuns": [
+            {
+              "shape": "global-wide-wrapped-case-insensitive",
+              "baseLatencyNanos": 2456250,
+              "latencyNanos": 2511333,
+              "speedup": 0.9780662301654142
+            },
+            {
+              "shape": "global-wide-wrapped-case-insensitive-distinct",
+              "baseLatencyNanos": 51742417,
+              "latencyNanos": 52154333,
+              "speedup": 0.9921019793312283
+            }
+          ],
+          "baseProcessCpuNanos": 1726941000,
+          "processCpuNanos": 1842224000,
+          "cpuCoreUtilizationPermille": 3319,
+          "basePeakUsedHeapBytes": 4704970088,
+          "peakUsedHeapBytes": 4711927568,
+          "basePeakResidentSetBytes": 5269798912,
+          "peakResidentSetBytes": 5271371776
+        }
+      ],
+      "orderSummaries": [
+        {
+          "order": "candidate-base",
+          "runCount": 2,
+          "medianP50Speedup": 0.9034370117852044,
+          "medianP95Speedup": 1.168088146011315
+        },
+        {
+          "order": "base-candidate",
+          "runCount": 1,
+          "medianP50Speedup": 0.7576533975102163,
+          "medianP95Speedup": 1.3219116391069925
+        }
+      ]
+    },
+    "wrappedRecomputed": [
+      {
+        "pair": 1,
+        "shape": "global-wide-wrapped-case-insensitive",
+        "baseLatencyNanos": 2626708,
+        "latencyNanos": 2481417,
+        "speedup": 1.0585516259459817
+      },
+      {
+        "pair": 1,
+        "shape": "global-wide-wrapped-case-insensitive-distinct",
+        "baseLatencyNanos": 57550125,
+        "latencyNanos": 42817666,
+        "speedup": 1.3440743126914017
+      },
+      {
+        "pair": 2,
+        "shape": "global-wide-wrapped-case-insensitive",
+        "baseLatencyNanos": 2267917,
+        "latencyNanos": 2721000,
+        "speedup": 0.833486585814039
+      },
+      {
+        "pair": 2,
+        "shape": "global-wide-wrapped-case-insensitive-distinct",
+        "baseLatencyNanos": 62780833,
+        "latencyNanos": 47492458,
+        "speedup": 1.3219116391069925
+      },
+      {
+        "pair": 3,
+        "shape": "global-wide-wrapped-case-insensitive",
+        "baseLatencyNanos": 2456250,
+        "latencyNanos": 2511333,
+        "speedup": 0.9780662301654142
+      },
+      {
+        "pair": 3,
+        "shape": "global-wide-wrapped-case-insensitive-distinct",
+        "baseLatencyNanos": 51742417,
+        "latencyNanos": 52154333,
+        "speedup": 0.9921019793312283
+      }
+    ],
+    "aggregateOrWrappedRepeatedFailures": {}
+  },
+  "hashes": {
+    "/private/tmp/graphite-attempt146.lztftoe1/final-build-receipt.json": "30fc6d949c07692347bb862b0c8583b0df2eb139757b489975f13c7b7ad6251a",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/run.json": "dab8261427cfc8d93866c3e97395e4499b3ec9a76737ed8d62c221cad3fe213f",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/fork-001.tsv": "d9b2c20d40f15e4daf1a5785f70a711155230529015030e6013b139c127339c1",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+    "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+    "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/MultiKeywordProfileRunner.java": "05bf55718595c9327609705dc35dc23fb9baa42168b02b081f93d2e010936c6c",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/run.py": "cbe0ab440c1151948b0798fe00dafe87a4d06bfa3f7cce64e5f991a7f7dd6542",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/verify_run.py": "e4f644b5bda6b3f3227cc3d5f2c53b71411534c43de4863c12bdf1ef8a545533",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/classes/MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/fork-001-command.json": "6a0ea1844e16e1acb42ab82e86aed1a667af62089e254f73545a993f30ac47ce",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-final/fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/local-progress.json": "360be6670de29aadd099938113a773e34ef44d5fec9a13e01db243ac4f174d24",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/graph-input-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/graph-input-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/oracle.correctness": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+    "/private/tmp/graphite-mapped-tuple-evidence.t2461mo1/oracle.correctness": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+    "/private/tmp/graphite-mapped-tuple-evidence.t2461mo1/oracle.tsv": "6a755286a7223271e21bb22965bba824d34eda1cf30b959b09370a1aed7c6430",
+    "/private/tmp/graphite-mapped-tuple-evidence.t2461mo1/oracle-command.json": "1d526953e7d28f29a531dd40e8dfb94b2faf5822b53da2d2d861789b09df8061",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-1.tsv": "edc96387ea8910ce06c4af982e0587ef5aa0048b21768f9d138b3a2245278a69",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-1.json": "9d3266e358148016c40082847af0110ed00aec40d5342cd2bc6ac08aba8392e9",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-1-command.json": "75e5ad32477f54b7030bee4c259efecdef4fe2739777f7a9db1974cdbf4117b4",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-1.tsv": "91ab0ba689e3d097545bc1c02c6e081c7f1f7a9725ee2aafcbd5141dfaea7877",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-1.json": "e6a878431e523a06b50e3d78ecaa09aa8a8f1b8d95e337989cc16549e96a1085",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-1-command.json": "7f4a3b7237fe08720cbef1acda175bc64dbce6f4741c0a265889d279bc5c5269",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-2.tsv": "4eabfd664e996e0aa01f25acd310ad2ac03a5e12bb712ad0065dd232c93ddb5d",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-2.json": "034b5bb0d47b62ceeea671fe83540bf050b16d298ad2c5745a55d05ab5095df1",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-2-command.json": "1917939263f58076ba598622eab3ac3de476a76f453b04eb2699b68bcf4b3c46",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-2.tsv": "472d50f9a4e0ea72a3c596e96584e8f3fc943a12d393ed44e53434fd3af509b3",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-2.json": "713e90ecf67e30fede3dc5f48fa53f06bb1a0e074f8d3841f42e8533f0df814e",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-2-command.json": "1bc53ab595bf324d2a42f8afcf3fc70ee6ca2ed837e3914230660a42aee2f393",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-3.tsv": "b1b42810ff456312f45ee2112adb6c300c79b42e8f4f9cebd2ad96725f3a49d3",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-3.json": "13daa978ea7070d98321045d7fb76ac7b69a5436f6544ea1da7618dd88550087",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-3-command.json": "4a3919b07079681580bf889de1ae5a5bd81dcdb068b67fde7297a57d93005bb8",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-3.tsv": "68fa7db2ab9b8da999494bc5b75b82f2fcdf716a9c198f45be131090443125ad",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-3.json": "2c6464955c0d6a33a246231ad50277030b286edd2b15ecad11d047b7be205216",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-3-command.json": "ee9784daa6f17787c777c9ba625e1b1557d2f32b222c217840e3e1cc877d2c8a",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/comparison-exit.json": "1ec758b2435e21207b0d383b840a039474471c76cb2483b8c860a73b34271741",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/global-wide-status.json": "f61f474b3bc3b2b9ce6a0abf3c79c139b6a86b7548b443a8fb8def601d144756",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/comparison-command.json": "5b97bd1637615c0f0c1ac1d597bd505334a7392df044193a32b1cbea4c5af55d",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/benchmark-gate.mjs": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+    "/private/tmp/graphite-attempt146.lztftoe1/candidate/.github/scripts/benchmark-gate.mjs": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-2.log": "ea0f932db39d754591ea5aef478f91f851e47dfd7b9d65cbab2e99156647b8c4",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-3.log": "6d47746426c199ba92a7c73fb7e4751bcc56cdb788759ddbae57664244679227",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/global-wide-report.md": "4a1fe2772391f0d517bfb69f4a950029a5cfb396ede0ca6c6e8c0efbf8e57264",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/base-global-wide-1.log": "964ebbc34d9b7c6c0e12af73d7f11ac65647948957ef26b80915a94ebc08d373",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-3.log": "32647f0e86144480da57fa9125a8cebf5ce940f8c70a58eaaacb2fd2623c3add",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-2.log": "e48717811117ed366789f0b7aea5880c5381d159bff4e64acee58e261c0c5797",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/comparison.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-pairs/candidate-global-wide-1.log": "d3970dde6055ef75094581f6f64adcda571295bfa04c4fdb44eb8eb1d057dca2",
+    "/private/tmp/graphite-attempt146.lztftoe1/old34-exit.json": "bd8ca18ac0f1d8a56e2116e11d154d8e8914791d395e54165f3679e6bd858440",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-exit.json": "982b9e9bfb10ffe83cad665807abcfd3fa97b37822db5ab7831157a499548a9e",
+    "/private/tmp/graphite-attempt146.lztftoe1/run-old34-pairs.py": "ef52bde5a9c902443e88191dcf5455e6f38f66311db41402cdec2201dd93a1e0",
+    "/private/tmp/graphite-attempt146.lztftoe1/v3-control-command.json": "844c3ba7156359374d84ebd081ab37ebc218023ca11ad4540ae515f151586598"
+  },
+  "processExits": {
+    "old34-exit.json": {
+      "exitCode": 0,
+      "note": "Runner exit is not gate verdict; inspect old34-pairs/local-progress.json and comparator output"
+    },
+    "v3-control-exit.json": {
+      "exitCode": 0
+    }
+  },
+  "limitations": [
+    "File-only audit: graph before/after per-file receipts matched; no reread of 10GB graph payload or whole JAR hashing during timing.",
+    "V3 is one complete correctness replay, no 20-fork per-query P95 or performance acceptance.",
+    "Original34 P95 is rank33 across34 heterogeneous query observations, not a percentile across paired forks.",
+    "Driver break on progress/resource/peak failure can exit0; full comparator is conditional on3 pairs passing those preliminary conditions.",
+    "Repeated row gate requires >15% AND >1ms in at least2 paired forks; unrecorded forks cannot confirm or dismiss a single exceedance.",
+    "Recorded graph/segment maxima2/2 are separate counters, not proof of four simultaneously alive workers.",
+    "No new measurement, comparator, Java, build, CI invocation or source modification."
+  ]
+}

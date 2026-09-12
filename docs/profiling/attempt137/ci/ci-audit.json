@@ -1,0 +1,324 @@
+{
+  "auditPassed": true,
+  "candidateAccepted": false,
+  "rejectionConfirmed": true,
+  "head": "536f585aab37da0888dd021cf9355d73dad1c545",
+  "benchmarkRun": 33988242513,
+  "unitRun": 33988242502,
+  "scope": "Minimal independent audit of two completed failed Method4 shards; incomplete/cancelled remaining gates have no usable conclusion. No rerun, code/PR edits, Java or measurements.",
+  "failures": [
+    {
+      "shard": "aggregate",
+      "scenario": "count",
+      "metric": "processCpuNanos",
+      "thresholdPercent": 15,
+      "blocked": true,
+      "initial": {
+        "baseNanos": 670000000.0,
+        "candidateNanos": 890000000.0,
+        "increasePercent": 32.835820895522396
+      },
+      "confirmation": {
+        "baseNanos": 890000000.0,
+        "candidateNanos": 1050000000.0,
+        "increasePercent": 17.97752808988764
+      }
+    },
+    {
+      "shard": "position",
+      "scenario": "middle",
+      "metric": "processCpuNanos",
+      "thresholdPercent": 15,
+      "blocked": true,
+      "initial": {
+        "baseNanos": 860000000.0,
+        "candidateNanos": 1130000000.0,
+        "increasePercent": 31.39534883720929
+      },
+      "confirmation": {
+        "baseNanos": 840000000.0,
+        "candidateNanos": 1040000000.0,
+        "increasePercent": 23.809523809523814
+      }
+    }
+  ],
+  "correctnessChecks": [
+    {
+      "shard": "aggregate",
+      "phase": "initial",
+      "scenarioSignatures": 2,
+      "equal": true,
+      "requestsSucceededMetricPerScenario": 1
+    },
+    {
+      "shard": "aggregate",
+      "phase": "confirmation",
+      "scenarioSignatures": 2,
+      "equal": true,
+      "requestsSucceededMetricPerScenario": 1
+    },
+    {
+      "shard": "position",
+      "phase": "initial",
+      "scenarioSignatures": 3,
+      "equal": true,
+      "requestsSucceededMetricPerScenario": 1
+    },
+    {
+      "shard": "position",
+      "phase": "confirmation",
+      "scenarioSignatures": 3,
+      "equal": true,
+      "requestsSucceededMetricPerScenario": 1
+    }
+  ],
+  "provenance": {
+    "exactHeadValidated": true,
+    "jobIds": [
+      101366512911,
+      101366512952
+    ],
+    "artifacts": [
+      "benchmark-method-compatibility-shard-4-aggregate-116-1",
+      "benchmark-method-compatibility-shard-4-position-116-1"
+    ],
+    "runtime": "Linux Temurin17,8GiB,1fork/1measurement,0warmup,4corpus paths",
+    "limitation": "Artifacts contain original JMH JSON and response signatures, not independent fixture/JAR content hashes. Download is bound to exact run; full fixture provenance is not independently proven here."
+  },
+  "otherMetrics": "Both final wall/RSS-after pass. Position early/zero initial CPU violations did not confirm. RSS delta advisory. requestsSucceeded=1 is scenario action success, not an HTTP request count.",
+  "workflowSnapshot": {
+    "33988242502": {
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "run-unit-test",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    "33988242513": {
+      "status": "in_progress",
+      "conclusion": "",
+      "jobs": [
+        {
+          "name": "prepare-fixture64",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-level-benchmarks",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "candidate-gate-tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "budgeted-collection-latency",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "budgeted-mapped-string-latency",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "build-explore-jmh-candidate",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "build-explore-jmh-base",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "legacy-global-wide-external-evidence-disabled",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "legacy-graph-routing-external-evidence-disabled",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "large-corpus-benchmarks",
+          "status": "in_progress",
+          "conclusion": ""
+        },
+        {
+          "name": "build-wrapped-query-jmh-base",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "build-wrapped-query-jmh-candidate",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "build-wrapped-query-jmh-reference",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "prepare-latency-fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "wrapped-query-resources",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "explorer-benchmarks",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "cypher-capacity-gate",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "wrapped-query-latency-shard-real-36",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "wrapped-query-latency-shard-real-d",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "wrapped-query-latency-shard-real-c",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "wrapped-query-latency-shard-real-b",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "wrapped-query-latency-shard-real-a",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-17-position",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-4-scan",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-4-aggregate",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "name": "method-compatibility-17-string",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-36-string",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-4-position",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "name": "method-compatibility-36-scan",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-17-aggregate",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-4-string",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-36-aggregate",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-36-position",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-17-scan",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "method-compatibility-gate",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "name": "graph-routing-pressure-evidence",
+          "status": "in_progress",
+          "conclusion": ""
+        },
+        {
+          "name": "global-wide-pressure-evidence",
+          "status": "in_progress",
+          "conclusion": ""
+        },
+        {
+          "name": "wrapped-query-latency",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  },
+  "inputSha256": {
+    "run-33988242502.json": "6ca2aa15f8ae5083affb04e0694cd873fc4717ccdc0d6fc09bff54dec58b8787",
+    "run-33988242513.json": "7f91a68bd4caa22c7c408739a839910140409fdff122be6e66c062c0eef4f154",
+    "method4-aggregate/method-compatibility-4-aggregate-cpu-status.json": "e5f3aa0c7b62047e7ff7b211f7b2cd70fa83277235077f6d3afd731ed5f26c4d",
+    "method4-aggregate/base-method-compatibility-4-aggregate.json": "6e5cae8a1f546d54b68d27662fa401e50a638fc402b1ee7c7f891d7ee190c8ca",
+    "method4-aggregate/base-method-compatibility-4-aggregate.txt": "7b380e01d07f2c26e45376c5a0c594d72bd5d2a026c555ec214b43290f39087d",
+    "method4-aggregate/candidate-method-compatibility-4-aggregate.json": "ab3029dd722c899e6176550fac8966eaa0cfc73f7b28a4f06acade5b5f14c14c",
+    "method4-aggregate/candidate-method-compatibility-4-aggregate.txt": "7b380e01d07f2c26e45376c5a0c594d72bd5d2a026c555ec214b43290f39087d",
+    "method4-aggregate/method-confirmation-base-4-aggregate.json": "c5502dc2aea84fafaa4b4509e0c371a2d378604e954aa37dcdb6285b4ec5bfd9",
+    "method4-aggregate/method-confirmation-base-4-aggregate.txt": "7b380e01d07f2c26e45376c5a0c594d72bd5d2a026c555ec214b43290f39087d",
+    "method4-aggregate/method-confirmation-candidate-4-aggregate.json": "49050adcbcb5f3c475217cd5ec2a6a13d681f94d67d10542dcf0aa2e78c4fd53",
+    "method4-aggregate/method-confirmation-candidate-4-aggregate.txt": "7b380e01d07f2c26e45376c5a0c594d72bd5d2a026c555ec214b43290f39087d",
+    "method4-aggregate/method-compatibility-4-aggregate-wall-status.json": "8f9590d816faaab1132a45df644911ac2ee541b09860fd09e1897f7faec4cb7b",
+    "method4-aggregate/method-compatibility-4-aggregate-rss-after-status.json": "8baf5a8053ab6856dd12ad58ad70b11ff2bde3d44809e3dfcd17f44a2578320f",
+    "method4-position/method-compatibility-4-position-cpu-status.json": "78ecce7d632cb2e3de0b7cbb4749c7a3dddc827f86adc4521b30f23a93147f3b",
+    "method4-position/base-method-compatibility-4-position.json": "5571e47532d09ead8c497b255210f4fba3d661ec19dbe4ad1f57a5ed1ab06717",
+    "method4-position/base-method-compatibility-4-position.txt": "d359eda3546d9e533bfbaecd4172f59a11ea6ff60c9ee7d0e07733630ba4bc4a",
+    "method4-position/candidate-method-compatibility-4-position.json": "818a1b1e45c9827956f79839d686d9539f9af0b9665f77a05bbac45c98084625",
+    "method4-position/candidate-method-compatibility-4-position.txt": "d359eda3546d9e533bfbaecd4172f59a11ea6ff60c9ee7d0e07733630ba4bc4a",
+    "method4-position/method-confirmation-base-4-position.json": "e17fbeee40f7fff72f57c21969c914c606ab436fe6db3c99d3043bd705ff87a6",
+    "method4-position/method-confirmation-base-4-position.txt": "d359eda3546d9e533bfbaecd4172f59a11ea6ff60c9ee7d0e07733630ba4bc4a",
+    "method4-position/method-confirmation-candidate-4-position.json": "f835be42daf674d3178cd7306571cd16353215b94f52825765a9ca0ff69cfae1",
+    "method4-position/method-confirmation-candidate-4-position.txt": "d359eda3546d9e533bfbaecd4172f59a11ea6ff60c9ee7d0e07733630ba4bc4a",
+    "method4-position/method-compatibility-4-position-wall-status.json": "d60d8a3d779a01fa686a1d4ed9a7cc94705c5f2d43fd99858e298bcf8e43de17",
+    "method4-position/method-compatibility-4-position-rss-after-status.json": "066263767b7ff6a85181220794bdc54c0d69c512ec0e44788412cc6b15e992ba"
+  }
+}

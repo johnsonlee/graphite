@@ -1,0 +1,3075 @@
+{
+  "attempt": 140,
+  "jars": {
+    "base": {
+      "path": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+      "sha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+    },
+    "candidate": {
+      "path": "/private/tmp/graphite-attempt140._5jztd0a/candidate-jmh.jar",
+      "sha256": "fb58d962d349a5c526bec229b996f08d94800702688ed202c1e7e771c3e4e357"
+    }
+  },
+  "class": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph",
+  "results": {
+    "base": {
+      "major": 61,
+      "minor": 0,
+      "classFileBytes": 188252,
+      "methods": [
+        {
+          "name": "<init>",
+          "descriptor": "(Lit/unimi/dsi/webgraph/ImmutableGraph;Lkotlin/Lazy;Ljava/nio/MappedByteBuffer;ILio/johnsonlee/graphite/webgraph/StringTable;Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;Lio/johnsonlee/graphite/webgraph/NodeTypeIndex;[B[IJLjava/io/File;Ljava/nio/file/Path;ZJLio/johnsonlee/graphite/webgraph/BranchComparisonLookup;Lkotlin/Lazy;Lkotlin/jvm/functions/Function1;Lkotlin/Lazy;)V",
+          "accessFlags": 1,
+          "codeLengthBytes": 438,
+          "maxStack": 8,
+          "maxLocals": 21
+        },
+        {
+          "name": "getResources",
+          "descriptor": "()Lio/johnsonlee/graphite/input/ResourceAccessor;",
+          "accessFlags": 1,
+          "codeLengthBytes": 13,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "getBranchScopeIndex",
+          "descriptor": "()Ljava/util/Map;",
+          "accessFlags": 18,
+          "codeLengthBytes": 15,
+          "maxStack": 1,
+          "maxLocals": 2
+        },
+        {
+          "name": "getMappedMethodMetadata",
+          "descriptor": "()Ljava/nio/MappedByteBuffer;",
+          "accessFlags": 18,
+          "codeLengthBytes": 22,
+          "maxStack": 3,
+          "maxLocals": 2
+        },
+        {
+          "name": "callSiteStringIndexContentIdentity",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)[B",
+          "accessFlags": 18,
+          "codeLengthBytes": 351,
+          "maxStack": 6,
+          "maxLocals": 25
+        },
+        {
+          "name": "node-NKfh_u4",
+          "descriptor": "(I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 1,
+          "codeLengthBytes": 48,
+          "maxStack": 4,
+          "maxLocals": 5
+        },
+        {
+          "name": "nodes",
+          "descriptor": "(Ljava/lang/Class;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 27,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "nodeCount",
+          "descriptor": "(Ljava/lang/Class;)Ljava/lang/Long;",
+          "accessFlags": 1,
+          "codeLengthBytes": 21,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "stringPropertyNodeOrder",
+          "descriptor": "(Lio/johnsonlee/graphite/core/Node;)J",
+          "accessFlags": 1,
+          "codeLengthBytes": 23,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "nodesByStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 43,
+          "maxStack": 8,
+          "maxLocals": 6
+        },
+        {
+          "name": "nodesByStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 52,
+          "maxStack": 8,
+          "maxLocals": 7
+        },
+        {
+          "name": "nodesByTransformedStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 52,
+          "maxStack": 8,
+          "maxLocals": 7
+        },
+        {
+          "name": "nodesByTransformedStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 61,
+          "maxStack": 8,
+          "maxLocals": 8
+        },
+        {
+          "name": "nodesByStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 23,
+          "maxStack": 5,
+          "maxLocals": 4
+        },
+        {
+          "name": "nodesByStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 32,
+          "maxStack": 5,
+          "maxLocals": 5
+        },
+        {
+          "name": "aggregateStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/lang/String;)Lio/johnsonlee/graphite/graph/StringPropertyDisjunctionAggregate;",
+          "accessFlags": 1,
+          "codeLengthBytes": 23,
+          "maxStack": 5,
+          "maxLocals": 4
+        },
+        {
+          "name": "aggregateStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/lang/String;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/graph/StringPropertyDisjunctionAggregate;",
+          "accessFlags": 1,
+          "codeLengthBytes": 32,
+          "maxStack": 5,
+          "maxLocals": 5
+        },
+        {
+          "name": "aggregateStringPropertyDisjunctionInternal",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/lang/String;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/graph/StringPropertyDisjunctionAggregate;",
+          "accessFlags": 18,
+          "codeLengthBytes": 227,
+          "maxStack": 5,
+          "maxLocals": 11
+        },
+        {
+          "name": "distinctStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 726,
+          "maxStack": 10,
+          "maxLocals": 17
+        },
+        {
+          "name": "serialCallSitePredicatesCannotMatch",
+          "descriptor": "(Ljava/util/List;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 30,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "nonSerialCallSitePredicatesCannotMatch",
+          "descriptor": "(Ljava/util/List;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 30,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;Ljava/util/List;Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 2171,
+          "maxStack": 13,
+          "maxLocals": 54
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;Ljava/util/List;Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership;ILjava/lang/Object;)Ljava/util/List;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 38,
+          "maxStack": 8,
+          "maxLocals": 10
+        },
+        {
+          "name": "rawDistinctCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 1186,
+          "maxStack": 6,
+          "maxLocals": 42
+        },
+        {
+          "name": "projectStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 347,
+          "maxStack": 5,
+          "maxLocals": 12
+        },
+        {
+          "name": "initializedMappedCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 203,
+          "maxStack": 4,
+          "maxLocals": 20
+        },
+        {
+          "name": "rawCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 1101,
+          "maxStack": 8,
+          "maxLocals": 35
+        },
+        {
+          "name": "projectRawCallSiteRows",
+          "descriptor": "([ILjava/util/List;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 338,
+          "maxStack": 6,
+          "maxLocals": 27
+        },
+        {
+          "name": "lookupStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 859,
+          "maxStack": 11,
+          "maxLocals": 15
+        },
+        {
+          "name": "serialRawCallSiteStringDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 50,
+          "maxStack": 8,
+          "maxLocals": 5
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;Ljava/util/List;Z)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 2154,
+          "maxStack": 13,
+          "maxLocals": 45
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;Ljava/util/List;ZILjava/lang/Object;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 36,
+          "maxStack": 7,
+          "maxLocals": 9
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex",
+          "descriptor": "(Ljava/util/List;JLio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexMemoryBudget$Reservation;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 521,
+          "maxStack": 12,
+          "maxLocals": 31
+        },
+        {
+          "name": "callSiteStringIndexContentIdentity",
+          "descriptor": "(Ljava/util/List;I)[B",
+          "accessFlags": 18,
+          "codeLengthBytes": 256,
+          "maxStack": 5,
+          "maxLocals": 21
+        },
+        {
+          "name": "prepareCallSiteStringIndexInParallel",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 778,
+          "maxStack": 6,
+          "maxLocals": 28
+        },
+        {
+          "name": "forEachCallSiteStringProperty",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;Lkotlin/jvm/functions/Function2;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 340,
+          "maxStack": 5,
+          "maxLocals": 16
+        },
+        {
+          "name": "checkCallSiteIndexBuildWorker",
+          "descriptor": "(ILjava/util/concurrent/atomic/AtomicBoolean;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 37,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "callSitePredicatesCannotMatch",
+          "descriptor": "(Ljava/util/List;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 314,
+          "maxStack": 5,
+          "maxLocals": 12
+        },
+        {
+          "name": "shouldPreflightCallSitePredicates",
+          "descriptor": "(Ljava/util/List;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 139,
+          "maxStack": 4,
+          "maxLocals": 8
+        },
+        {
+          "name": "mappedCallSiteStringIndexView",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView;",
+          "accessFlags": 18,
+          "codeLengthBytes": 222,
+          "maxStack": 9,
+          "maxLocals": 9
+        },
+        {
+          "name": "prefersSerialStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;)Z",
+          "accessFlags": 1,
+          "codeLengthBytes": 141,
+          "maxStack": 2,
+          "maxLocals": 11
+        },
+        {
+          "name": "hasPreparedStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;)Z",
+          "accessFlags": 1,
+          "codeLengthBytes": 139,
+          "maxStack": 2,
+          "maxLocals": 9
+        },
+        {
+          "name": "hasRetainedStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;)Z",
+          "accessFlags": 1,
+          "codeLengthBytes": 125,
+          "maxStack": 2,
+          "maxLocals": 9
+        },
+        {
+          "name": "lookupStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 474,
+          "maxStack": 9,
+          "maxLocals": 21
+        },
+        {
+          "name": "indexedNodes",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedStringPropertyIndex;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 22,
+          "maxStack": 6,
+          "maxLocals": 7
+        },
+        {
+          "name": "rawStringPropertyScan",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/webgraph/StringPropertyAdmissionKey;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 29,
+          "maxStack": 12,
+          "maxLocals": 9
+        },
+        {
+          "name": "edgeCount",
+          "descriptor": "()Ljava/lang/Long;",
+          "accessFlags": 1,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "outgoing-NKfh_u4",
+          "descriptor": "(I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 70,
+          "maxStack": 5,
+          "maxLocals": 6
+        },
+        {
+          "name": "incoming-NKfh_u4",
+          "descriptor": "(I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 66,
+          "maxStack": 4,
+          "maxLocals": 6
+        },
+        {
+          "name": "lookupForwardLabel",
+          "descriptor": "(II)I",
+          "accessFlags": 18,
+          "codeLengthBytes": 57,
+          "maxStack": 4,
+          "maxLocals": 6
+        },
+        {
+          "name": "outgoing-3mFqXk4",
+          "descriptor": "(ILjava/lang/Class;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 29,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "incoming-3mFqXk4",
+          "descriptor": "(ILjava/lang/Class;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 29,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "callSites",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 24,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "supertypes",
+          "descriptor": "(Lio/johnsonlee/graphite/core/TypeDescriptor;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 53,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "subtypes",
+          "descriptor": "(Lio/johnsonlee/graphite/core/TypeDescriptor;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 53,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "methods",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 16,
+          "maxStack": 5,
+          "maxLocals": 2
+        },
+        {
+          "name": "methods",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;Lio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 21,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "methodCount",
+          "descriptor": "()Ljava/lang/Long;",
+          "accessFlags": 1,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "methodSlice",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;I)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 15,
+          "maxStack": 4,
+          "maxLocals": 3
+        },
+        {
+          "name": "methodSlice",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;ILio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 22,
+          "maxStack": 4,
+          "maxLocals": 4
+        },
+        {
+          "name": "indexedMethodSlice",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;ILio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 95,
+          "maxStack": 8,
+          "maxLocals": 7
+        },
+        {
+          "name": "streamMethods",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;Lio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 18,
+          "maxStack": 6,
+          "maxLocals": 3
+        },
+        {
+          "name": "streamMethods$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/graph/MethodPattern;Lio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;ILjava/lang/Object;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 15,
+          "maxStack": 3,
+          "maxLocals": 5
+        },
+        {
+          "name": "methodIndex",
+          "descriptor": "()Lio/johnsonlee/graphite/webgraph/MappedMethodIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 92,
+          "maxStack": 5,
+          "maxLocals": 6
+        },
+        {
+          "name": "enumValues",
+          "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 45,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "memberAnnotations",
+          "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/util/Map;",
+          "accessFlags": 1,
+          "codeLengthBytes": 53,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "memberAnnotationIndex",
+          "descriptor": "()Ljava/util/Map;",
+          "accessFlags": 1,
+          "codeLengthBytes": 16,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "classOrigin",
+          "descriptor": "(Ljava/lang/String;)Ljava/lang/String;",
+          "accessFlags": 1,
+          "codeLengthBytes": 32,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "classOrigins",
+          "descriptor": "()Ljava/util/Map;",
+          "accessFlags": 1,
+          "codeLengthBytes": 16,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "artifactDependencies",
+          "descriptor": "()Ljava/util/Map;",
+          "accessFlags": 1,
+          "codeLengthBytes": 16,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "classOverview",
+          "descriptor": "(I)Lio/johnsonlee/graphite/graph/ClassOverview;",
+          "accessFlags": 1,
+          "codeLengthBytes": 17,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "branchScopes",
+          "descriptor": "()Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 24,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "branchScopesFor-NKfh_u4",
+          "descriptor": "(I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 35,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "typeHierarchyTypes",
+          "descriptor": "()Ljava/util/Set;",
+          "accessFlags": 1,
+          "codeLengthBytes": 47,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "close",
+          "descriptor": "()V",
+          "accessFlags": 1,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "isMetadataInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 10,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "isMethodIndexInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 13,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "clearStringPropertyIndexes$webgraph",
+          "descriptor": "()V",
+          "accessFlags": 17,
+          "codeLengthBytes": 59,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "releaseStringPropertyDisjunctionCache",
+          "descriptor": "()V",
+          "accessFlags": 1,
+          "codeLengthBytes": 9,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "closeCallSiteStringIndex",
+          "descriptor": "(Z)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 329,
+          "maxStack": 2,
+          "maxLocals": 6
+        },
+        {
+          "name": "retainPersistedCallSiteStringIndexForSplit",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 23,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "rawStringMatchStateBytes$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "rawStringMatchStateCount$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "rawProjectionMatchCount$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringIndexBytes$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 17,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "hasExactCallSiteProjectionTupleIndex$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 26,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "isCallSiteStringIndexInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 13,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "isMappedCallSiteStringIndexViewInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 13,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "mappedPostingRangeValidationCount$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 17,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "mappedPostingRangeValidationBytes$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 17,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "isCallSiteTrigramIndexInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 26,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "isCallSiteStringIndexLoadedFromPersistence$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "prepareCallSiteStringIndex$webgraph",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 58,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "prepareCallSiteStringIndex$webgraph$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;ILjava/lang/Object;)Z",
+          "accessFlags": 4105,
+          "codeLengthBytes": 19,
+          "maxStack": 2,
+          "maxLocals": 4
+        },
+        {
+          "name": "persistPreparedCallSiteStringIndex$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 385,
+          "maxStack": 6,
+          "maxLocals": 14
+        },
+        {
+          "name": "replaceAtomically",
+          "descriptor": "(Ljava/nio/file/Path;Ljava/nio/file/Path;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 52,
+          "maxStack": 5,
+          "maxLocals": 6
+        },
+        {
+          "name": "callSiteParallelScanCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringLookupEntryCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringIndexLookupCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringPreflightCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringProjectionLookupCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteScanPeakActiveWorkers$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteSegmentPeakActiveWorkers$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 4,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteScanActiveWorkers$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteScanAbortedWorkers$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "resetCallSiteScanMetrics$webgraph",
+          "descriptor": "()V",
+          "accessFlags": 17,
+          "codeLengthBytes": 96,
+          "maxStack": 3,
+          "maxLocals": 2
+        },
+        {
+          "name": "stringPropertyIndexCount$webgraph",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;)I",
+          "accessFlags": 17,
+          "codeLengthBytes": 173,
+          "maxStack": 3,
+          "maxLocals": 12
+        },
+        {
+          "name": "stringPropertyIndexCount$webgraph$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;Ljava/lang/String;ILjava/lang/Object;)I",
+          "accessFlags": 4105,
+          "codeLengthBytes": 23,
+          "maxStack": 3,
+          "maxLocals": 5
+        },
+        {
+          "name": "buildStringPropertyIndex",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedStringPropertyIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 353,
+          "maxStack": 14,
+          "maxLocals": 18
+        },
+        {
+          "name": "callSiteStringIndex",
+          "descriptor": "(Ljava/lang/Class;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 1794,
+          "maxStack": 12,
+          "maxLocals": 61
+        },
+        {
+          "name": "callSiteStringIndex$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;ILjava/lang/Object;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 15,
+          "maxStack": 3,
+          "maxLocals": 5
+        },
+        {
+          "name": "loadPersistedCallSiteStringIndexIfAvailable",
+          "descriptor": "(Ljava/lang/Class;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 177,
+          "maxStack": 4,
+          "maxLocals": 12
+        },
+        {
+          "name": "loadPersistedCallSiteStringIndex",
+          "descriptor": "(ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 307,
+          "maxStack": 10,
+          "maxLocals": 11
+        },
+        {
+          "name": "persistedCallSiteStringIndexContentIdentity",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)[B",
+          "accessFlags": 18,
+          "codeLengthBytes": 130,
+          "maxStack": 3,
+          "maxLocals": 7
+        },
+        {
+          "name": "forEachRawCallSiteStringIds",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;Lkotlin/jvm/functions/Function5;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 274,
+          "maxStack": 6,
+          "maxLocals": 18
+        },
+        {
+          "name": "withRawCallSiteStringIds",
+          "descriptor": "(ILkotlin/jvm/functions/Function4;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 102,
+          "maxStack": 7,
+          "maxLocals": 7
+        },
+        {
+          "name": "rawStringPropertyIndex",
+          "descriptor": "(ILjava/lang/Class;Ljava/lang/String;)Ljava/lang/Integer;",
+          "accessFlags": 18,
+          "codeLengthBytes": 563,
+          "maxStack": 4,
+          "maxLocals": 9
+        },
+        {
+          "name": "rawCallSiteStringProperty",
+          "descriptor": "(ILjava/lang/String;)Ljava/lang/Integer;",
+          "accessFlags": 18,
+          "codeLengthBytes": 192,
+          "maxStack": 3,
+          "maxLocals": 6
+        },
+        {
+          "name": "requiredCallSiteStringPropertyIndex",
+          "descriptor": "(Ljava/lang/String;)I",
+          "accessFlags": 18,
+          "codeLengthBytes": 49,
+          "maxStack": 3,
+          "maxLocals": 6
+        },
+        {
+          "name": "rawCallSiteStringPropertyId",
+          "descriptor": "(II)I",
+          "accessFlags": 18,
+          "codeLengthBytes": 132,
+          "maxStack": 4,
+          "maxLocals": 6
+        },
+        {
+          "name": "readNodeAt",
+          "descriptor": "(J)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 18,
+          "codeLengthBytes": 36,
+          "maxStack": 5,
+          "maxLocals": 4
+        },
+        {
+          "name": "branchScopeIndex_delegate$lambda$2",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/util/Map;",
+          "accessFlags": 26,
+          "codeLengthBytes": 305,
+          "maxStack": 9,
+          "maxLocals": 16
+        },
+        {
+          "name": "mappedMethodMetadata_delegate$lambda$4",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;",
+          "accessFlags": 26,
+          "codeLengthBytes": 73,
+          "maxStack": 6,
+          "maxLocals": 5
+        },
+        {
+          "name": "nodes$lambda$6",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 22,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$maxOf__proxy",
+          "descriptor": "(II)I",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 790,
+          "maxStack": 6,
+          "maxLocals": 39
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;IIILjava/util/concurrent/atomic/AtomicBoolean;Ljava/util/HashSet;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult;",
+          "accessFlags": 26,
+          "codeLengthBytes": 190,
+          "maxStack": 18,
+          "maxLocals": 20
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$recordFailure",
+          "descriptor": "(Ljava/util/concurrent/atomic/AtomicBoolean;Lkotlin/jvm/internal/Ref$ObjectRef;Ljava/lang/Throwable;)V",
+          "accessFlags": 26,
+          "codeLengthBytes": 35,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "initializedMappedCallSiteStringProjection$lambda$55",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/util/List;[II)Lio/johnsonlee/graphite/graph/StringPropertyProjectionRow;",
+          "accessFlags": 26,
+          "codeLengthBytes": 250,
+          "maxStack": 6,
+          "maxLocals": 16
+        },
+        {
+          "name": "lookupStringPropertyDisjunction$lambda$70$lambda$69",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/CallSiteNode;",
+          "accessFlags": 26,
+          "codeLengthBytes": 25,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "lookupStringPropertyDisjunction$lambda$74$lambda$73",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 41,
+          "maxStack": 2,
+          "maxLocals": 8
+        },
+        {
+          "name": "lookupStringPropertyDisjunction$lambda$77$lambda$76",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/CallSiteNode;",
+          "accessFlags": 26,
+          "codeLengthBytes": 25,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "lookupStringPropertyDisjunction$lambda$81$lambda$80",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/CallSiteNode;",
+          "accessFlags": 26,
+          "codeLengthBytes": 25,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$98$lambda$97$maxOf__proxy$88",
+          "descriptor": "(II)I",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$98$lambda$97$lambda$96",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Lit/unimi/dsi/fastutil/ints/IntArrayList;I[I[[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 579,
+          "maxStack": 6,
+          "maxLocals": 37
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$98$lambda$97",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;IIILkotlin/jvm/internal/Ref$ObjectRef;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;Ljava/lang/Class;ILjava/util/concurrent/atomic/AtomicBoolean;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteScanResult;",
+          "accessFlags": 26,
+          "codeLengthBytes": 292,
+          "maxStack": 16,
+          "maxLocals": 25
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$recordFailure$99",
+          "descriptor": "(Ljava/util/concurrent/atomic/AtomicBoolean;Lkotlin/jvm/internal/Ref$ObjectRef;Ljava/lang/Throwable;)V",
+          "accessFlags": 26,
+          "codeLengthBytes": 35,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$110",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/ParallelCallSiteScanResult;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 26,
+          "codeLengthBytes": 15,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$112",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 41,
+          "maxStack": 2,
+          "maxLocals": 8
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex$lambda$117",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;[[ILjava/util/List;[ILio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILjava/util/concurrent/atomic/AtomicBoolean;)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 315,
+          "maxStack": 4,
+          "maxLocals": 26
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex$lambda$123",
+          "descriptor": "([[I[[ILio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;Ljava/util/List;[[I[[IILjava/util/concurrent/atomic/AtomicBoolean;)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 480,
+          "maxStack": 5,
+          "maxLocals": 30
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex$lambda$124",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)J",
+          "accessFlags": 26,
+          "codeLengthBytes": 11,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex$lambda$125",
+          "descriptor": "([B)[B",
+          "accessFlags": 26,
+          "codeLengthBytes": 14,
+          "maxStack": 3,
+          "maxLocals": 1
+        },
+        {
+          "name": "prepareCallSiteStringIndexInParallel$lambda$135$lambda$134$maxOf__proxy$131",
+          "descriptor": "(II)I",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "prepareCallSiteStringIndexInParallel$lambda$135$lambda$134$lambda$133",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;[I[[II)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 189,
+          "maxStack": 6,
+          "maxLocals": 17
+        },
+        {
+          "name": "prepareCallSiteStringIndexInParallel$lambda$135$lambda$134",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;IILio/johnsonlee/graphite/graph/GraphWorkConsumer;ILjava/util/concurrent/atomic/AtomicBoolean;)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteScanResult;",
+          "accessFlags": 26,
+          "codeLengthBytes": 205,
+          "maxStack": 10,
+          "maxLocals": 13
+        },
+        {
+          "name": "forEachCallSiteStringProperty$lambda$143$lambda$142",
+          "descriptor": "(Lkotlin/jvm/functions/Function2;ILjava/util/concurrent/atomic/AtomicBoolean;Ljava/util/concurrent/atomic/AtomicReference;)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 50,
+          "maxStack": 3,
+          "maxLocals": 5
+        },
+        {
+          "name": "mappedCallSiteStringIndexView$lambda$153$lambda$152",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)J",
+          "accessFlags": 26,
+          "codeLengthBytes": 11,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "lookupStringProperty$lambda$159$lambda$158",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 22,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "indexedNodes$lambda$167",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 22,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "outgoing_NKfh_u4$lambda$168",
+          "descriptor": "([ILio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;III)Lio/johnsonlee/graphite/core/Edge;",
+          "accessFlags": 26,
+          "codeLengthBytes": 63,
+          "maxStack": 6,
+          "maxLocals": 8
+        },
+        {
+          "name": "incoming_NKfh_u4$lambda$169",
+          "descriptor": "([ILio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;II)Lio/johnsonlee/graphite/core/Edge;",
+          "accessFlags": 26,
+          "codeLengthBytes": 56,
+          "maxStack": 6,
+          "maxLocals": 7
+        },
+        {
+          "name": "outgoing_3mFqXk4$lambda$170",
+          "descriptor": "(Ljava/lang/Class;Lio/johnsonlee/graphite/core/Edge;)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 13,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "incoming_3mFqXk4$lambda$171",
+          "descriptor": "(Ljava/lang/Class;Lio/johnsonlee/graphite/core/Edge;)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 13,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "callSites$lambda$172",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;Lio/johnsonlee/graphite/core/CallSiteNode;)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 16,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "branchScopes$lambda$177",
+          "descriptor": "(Ljava/util/List;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 26,
+          "codeLengthBytes": 15,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringIndex$lambda$202$lambda$199",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)J",
+          "accessFlags": 26,
+          "codeLengthBytes": 11,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "callSiteStringIndex$lambda$202$lambda$200",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)[B",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "loadPersistedCallSiteStringIndex$lambda$209$lambda$207",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)J",
+          "accessFlags": 26,
+          "codeLengthBytes": 11,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "access$getNodeTypeIndex$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/NodeTypeIndex;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getStringTable$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/StringTable;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$rawStringPropertyIndex",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILjava/lang/Class;Ljava/lang/String;)Ljava/lang/Integer;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 8,
+          "maxStack": 4,
+          "maxLocals": 4
+        },
+        {
+          "name": "access$requiredCallSiteStringPropertyIndex",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/String;)I",
+          "accessFlags": 4121,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "access$rawCallSiteStringPropertyId",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;II)I",
+          "accessFlags": 4121,
+          "codeLengthBytes": 7,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "access$getStringPropertyIndexLock$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/lang/Object;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getStringPropertyIndexes$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph$stringPropertyIndexes$1;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getStringPropertyAdmissions$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/StringPropertyAdmissions;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$methodIndex",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/MappedMethodIndex;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getNodeOffsets$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getMappedNodeData$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        }
+      ],
+      "classSha256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+      "javapSha256": "8036dddbf3eff5deffd642bd525aa847194943fd830b73b640505f42c5adb7f4",
+      "rawFamilyMethods": [
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;Ljava/util/List;Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 2171,
+          "maxStack": 13,
+          "maxLocals": 54
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;Ljava/util/List;Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership;ILjava/lang/Object;)Ljava/util/List;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 38,
+          "maxStack": 8,
+          "maxLocals": 10
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$maxOf__proxy",
+          "descriptor": "(II)I",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 790,
+          "maxStack": 6,
+          "maxLocals": 39
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;IIILjava/util/concurrent/atomic/AtomicBoolean;Ljava/util/HashSet;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult;",
+          "accessFlags": 26,
+          "codeLengthBytes": 190,
+          "maxStack": 18,
+          "maxLocals": 20
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$recordFailure",
+          "descriptor": "(Ljava/util/concurrent/atomic/AtomicBoolean;Lkotlin/jvm/internal/Ref$ObjectRef;Ljava/lang/Throwable;)V",
+          "accessFlags": 26,
+          "codeLengthBytes": 35,
+          "maxStack": 2,
+          "maxLocals": 3
+        }
+      ],
+      "nodeCallback": {
+        "header": "private static final boolean parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(kotlin.jvm.internal.Ref$IntRef, java.util.concurrent.atomic.AtomicBoolean, io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph, io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer, java.util.HashSet, java.util.List, java.util.HashSet, java.util.ArrayList, int, int[], java.util.List, java.util.List, java.util.List, java.util.List, int);",
+        "metadata": {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 790,
+          "maxStack": 6,
+          "maxLocals": 39
+        },
+        "instructionCount": 357,
+        "primitiveIntArrayLoadCount": 3,
+        "predicateSourceLine580": [
+          {
+            "bci": 277,
+            "instruction": "aload         9"
+          },
+          {
+            "bci": 279,
+            "instruction": "aload         11"
+          },
+          {
+            "bci": 281,
+            "instruction": "iload         30"
+          },
+          {
+            "bci": 283,
+            "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+          },
+          {
+            "bci": 288,
+            "instruction": "checkcast     #349                // class java/lang/Number"
+          },
+          {
+            "bci": 291,
+            "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I"
+          },
+          {
+            "bci": 294,
+            "instruction": "iaload"
+          },
+          {
+            "bci": 295,
+            "instruction": "istore        32"
+          }
+        ],
+        "staticInstructionSites": {
+          "listGet": [
+            {
+              "bci": 283,
+              "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 312,
+              "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 333,
+              "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 383,
+              "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 398,
+              "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 413,
+              "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            }
+          ],
+          "numberIntValue": [
+            {
+              "bci": 291,
+              "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I"
+            },
+            {
+              "bci": 549,
+              "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I"
+            },
+            {
+              "bci": 679,
+              "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I"
+            }
+          ],
+          "integerValueOf": [
+            {
+              "bci": 573,
+              "instruction": "invokestatic  #734                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;"
+            }
+          ],
+          "exactSetContains": [
+            {
+              "bci": 322,
+              "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z"
+            }
+          ],
+          "getIndices": [
+            {
+              "bci": 205,
+              "instruction": "invokestatic  #755                // Method kotlin/collections/CollectionsKt.getIndices:(Ljava/util/Collection;)Lkotlin/ranges/IntRange;"
+            }
+          ],
+          "iteratorNextInt": [
+            {
+              "bci": 265,
+              "instruction": "invokevirtual #760                // Method kotlin/collections/IntIterator.nextInt:()I"
+            }
+          ]
+        }
+      }
+    },
+    "candidate": {
+      "major": 61,
+      "minor": 0,
+      "classFileBytes": 187814,
+      "methods": [
+        {
+          "name": "<init>",
+          "descriptor": "(Lit/unimi/dsi/webgraph/ImmutableGraph;Lkotlin/Lazy;Ljava/nio/MappedByteBuffer;ILio/johnsonlee/graphite/webgraph/StringTable;Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;Lio/johnsonlee/graphite/webgraph/NodeTypeIndex;[B[IJLjava/io/File;Ljava/nio/file/Path;ZJLio/johnsonlee/graphite/webgraph/BranchComparisonLookup;Lkotlin/Lazy;Lkotlin/jvm/functions/Function1;Lkotlin/Lazy;)V",
+          "accessFlags": 1,
+          "codeLengthBytes": 438,
+          "maxStack": 8,
+          "maxLocals": 21
+        },
+        {
+          "name": "getResources",
+          "descriptor": "()Lio/johnsonlee/graphite/input/ResourceAccessor;",
+          "accessFlags": 1,
+          "codeLengthBytes": 13,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "getBranchScopeIndex",
+          "descriptor": "()Ljava/util/Map;",
+          "accessFlags": 18,
+          "codeLengthBytes": 15,
+          "maxStack": 1,
+          "maxLocals": 2
+        },
+        {
+          "name": "getMappedMethodMetadata",
+          "descriptor": "()Ljava/nio/MappedByteBuffer;",
+          "accessFlags": 18,
+          "codeLengthBytes": 22,
+          "maxStack": 3,
+          "maxLocals": 2
+        },
+        {
+          "name": "callSiteStringIndexContentIdentity",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)[B",
+          "accessFlags": 18,
+          "codeLengthBytes": 351,
+          "maxStack": 6,
+          "maxLocals": 25
+        },
+        {
+          "name": "node-NKfh_u4",
+          "descriptor": "(I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 1,
+          "codeLengthBytes": 48,
+          "maxStack": 4,
+          "maxLocals": 5
+        },
+        {
+          "name": "nodes",
+          "descriptor": "(Ljava/lang/Class;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 27,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "nodeCount",
+          "descriptor": "(Ljava/lang/Class;)Ljava/lang/Long;",
+          "accessFlags": 1,
+          "codeLengthBytes": 21,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "stringPropertyNodeOrder",
+          "descriptor": "(Lio/johnsonlee/graphite/core/Node;)J",
+          "accessFlags": 1,
+          "codeLengthBytes": 23,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "nodesByStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 43,
+          "maxStack": 8,
+          "maxLocals": 6
+        },
+        {
+          "name": "nodesByStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 52,
+          "maxStack": 8,
+          "maxLocals": 7
+        },
+        {
+          "name": "nodesByTransformedStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 52,
+          "maxStack": 8,
+          "maxLocals": 7
+        },
+        {
+          "name": "nodesByTransformedStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 61,
+          "maxStack": 8,
+          "maxLocals": 8
+        },
+        {
+          "name": "nodesByStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 23,
+          "maxStack": 5,
+          "maxLocals": 4
+        },
+        {
+          "name": "nodesByStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 32,
+          "maxStack": 5,
+          "maxLocals": 5
+        },
+        {
+          "name": "aggregateStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/lang/String;)Lio/johnsonlee/graphite/graph/StringPropertyDisjunctionAggregate;",
+          "accessFlags": 1,
+          "codeLengthBytes": 23,
+          "maxStack": 5,
+          "maxLocals": 4
+        },
+        {
+          "name": "aggregateStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/lang/String;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/graph/StringPropertyDisjunctionAggregate;",
+          "accessFlags": 1,
+          "codeLengthBytes": 32,
+          "maxStack": 5,
+          "maxLocals": 5
+        },
+        {
+          "name": "aggregateStringPropertyDisjunctionInternal",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/lang/String;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/graph/StringPropertyDisjunctionAggregate;",
+          "accessFlags": 18,
+          "codeLengthBytes": 227,
+          "maxStack": 5,
+          "maxLocals": 11
+        },
+        {
+          "name": "distinctStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 726,
+          "maxStack": 10,
+          "maxLocals": 17
+        },
+        {
+          "name": "serialCallSitePredicatesCannotMatch",
+          "descriptor": "(Ljava/util/List;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 30,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "nonSerialCallSitePredicatesCannotMatch",
+          "descriptor": "(Ljava/util/List;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 30,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;Ljava/util/List;Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 2123,
+          "maxStack": 13,
+          "maxLocals": 54
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;Ljava/util/List;Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership;ILjava/lang/Object;)Ljava/util/List;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 38,
+          "maxStack": 8,
+          "maxLocals": 10
+        },
+        {
+          "name": "rawDistinctCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 1186,
+          "maxStack": 6,
+          "maxLocals": 42
+        },
+        {
+          "name": "projectStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 347,
+          "maxStack": 5,
+          "maxLocals": 12
+        },
+        {
+          "name": "initializedMappedCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 203,
+          "maxStack": 4,
+          "maxLocals": 20
+        },
+        {
+          "name": "rawCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 1101,
+          "maxStack": 8,
+          "maxLocals": 35
+        },
+        {
+          "name": "projectRawCallSiteRows",
+          "descriptor": "([ILjava/util/List;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 338,
+          "maxStack": 6,
+          "maxLocals": 27
+        },
+        {
+          "name": "lookupStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 859,
+          "maxStack": 11,
+          "maxLocals": 15
+        },
+        {
+          "name": "serialRawCallSiteStringDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 50,
+          "maxStack": 8,
+          "maxLocals": 5
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;Ljava/util/List;Z)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 2154,
+          "maxStack": 13,
+          "maxLocals": 45
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;Ljava/util/List;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;Ljava/util/List;ZILjava/lang/Object;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 36,
+          "maxStack": 7,
+          "maxLocals": 9
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex",
+          "descriptor": "(Ljava/util/List;JLio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexMemoryBudget$Reservation;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 521,
+          "maxStack": 12,
+          "maxLocals": 31
+        },
+        {
+          "name": "callSiteStringIndexContentIdentity",
+          "descriptor": "(Ljava/util/List;I)[B",
+          "accessFlags": 18,
+          "codeLengthBytes": 256,
+          "maxStack": 5,
+          "maxLocals": 21
+        },
+        {
+          "name": "prepareCallSiteStringIndexInParallel",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 778,
+          "maxStack": 6,
+          "maxLocals": 28
+        },
+        {
+          "name": "forEachCallSiteStringProperty",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;Lkotlin/jvm/functions/Function2;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 340,
+          "maxStack": 5,
+          "maxLocals": 16
+        },
+        {
+          "name": "checkCallSiteIndexBuildWorker",
+          "descriptor": "(ILjava/util/concurrent/atomic/AtomicBoolean;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 37,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "callSitePredicatesCannotMatch",
+          "descriptor": "(Ljava/util/List;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 314,
+          "maxStack": 5,
+          "maxLocals": 12
+        },
+        {
+          "name": "shouldPreflightCallSitePredicates",
+          "descriptor": "(Ljava/util/List;)Z",
+          "accessFlags": 18,
+          "codeLengthBytes": 139,
+          "maxStack": 4,
+          "maxLocals": 8
+        },
+        {
+          "name": "mappedCallSiteStringIndexView",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView;",
+          "accessFlags": 18,
+          "codeLengthBytes": 222,
+          "maxStack": 9,
+          "maxLocals": 9
+        },
+        {
+          "name": "prefersSerialStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;)Z",
+          "accessFlags": 1,
+          "codeLengthBytes": 141,
+          "maxStack": 2,
+          "maxLocals": 11
+        },
+        {
+          "name": "hasPreparedStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;)Z",
+          "accessFlags": 1,
+          "codeLengthBytes": 139,
+          "maxStack": 2,
+          "maxLocals": 9
+        },
+        {
+          "name": "hasRetainedStringPropertyDisjunction",
+          "descriptor": "(Ljava/lang/Class;Ljava/util/List;)Z",
+          "accessFlags": 1,
+          "codeLengthBytes": 125,
+          "maxStack": 2,
+          "maxLocals": 9
+        },
+        {
+          "name": "lookupStringProperty",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 474,
+          "maxStack": 9,
+          "maxLocals": 21
+        },
+        {
+          "name": "indexedNodes",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedStringPropertyIndex;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 22,
+          "maxStack": 6,
+          "maxLocals": 7
+        },
+        {
+          "name": "rawStringPropertyScan",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;ILio/johnsonlee/graphite/webgraph/StringPropertyAdmissionKey;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 29,
+          "maxStack": 12,
+          "maxLocals": 9
+        },
+        {
+          "name": "edgeCount",
+          "descriptor": "()Ljava/lang/Long;",
+          "accessFlags": 1,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "outgoing-NKfh_u4",
+          "descriptor": "(I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 70,
+          "maxStack": 5,
+          "maxLocals": 6
+        },
+        {
+          "name": "incoming-NKfh_u4",
+          "descriptor": "(I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 66,
+          "maxStack": 4,
+          "maxLocals": 6
+        },
+        {
+          "name": "lookupForwardLabel",
+          "descriptor": "(II)I",
+          "accessFlags": 18,
+          "codeLengthBytes": 57,
+          "maxStack": 4,
+          "maxLocals": 6
+        },
+        {
+          "name": "outgoing-3mFqXk4",
+          "descriptor": "(ILjava/lang/Class;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 29,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "incoming-3mFqXk4",
+          "descriptor": "(ILjava/lang/Class;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 29,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "callSites",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 24,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "supertypes",
+          "descriptor": "(Lio/johnsonlee/graphite/core/TypeDescriptor;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 53,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "subtypes",
+          "descriptor": "(Lio/johnsonlee/graphite/core/TypeDescriptor;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 53,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "methods",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 16,
+          "maxStack": 5,
+          "maxLocals": 2
+        },
+        {
+          "name": "methods",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;Lio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 21,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "methodCount",
+          "descriptor": "()Ljava/lang/Long;",
+          "accessFlags": 1,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "methodSlice",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;I)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 15,
+          "maxStack": 4,
+          "maxLocals": 3
+        },
+        {
+          "name": "methodSlice",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;ILio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 22,
+          "maxStack": 4,
+          "maxLocals": 4
+        },
+        {
+          "name": "indexedMethodSlice",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;ILio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 95,
+          "maxStack": 8,
+          "maxLocals": 7
+        },
+        {
+          "name": "streamMethods",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;Lio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 18,
+          "codeLengthBytes": 18,
+          "maxStack": 6,
+          "maxLocals": 3
+        },
+        {
+          "name": "streamMethods$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/graph/MethodPattern;Lio/johnsonlee/graphite/graph/MethodMetadataScanConsumer;ILjava/lang/Object;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 15,
+          "maxStack": 3,
+          "maxLocals": 5
+        },
+        {
+          "name": "methodIndex",
+          "descriptor": "()Lio/johnsonlee/graphite/webgraph/MappedMethodIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 92,
+          "maxStack": 5,
+          "maxLocals": 6
+        },
+        {
+          "name": "enumValues",
+          "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;",
+          "accessFlags": 1,
+          "codeLengthBytes": 45,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "memberAnnotations",
+          "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/util/Map;",
+          "accessFlags": 1,
+          "codeLengthBytes": 53,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "memberAnnotationIndex",
+          "descriptor": "()Ljava/util/Map;",
+          "accessFlags": 1,
+          "codeLengthBytes": 16,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "classOrigin",
+          "descriptor": "(Ljava/lang/String;)Ljava/lang/String;",
+          "accessFlags": 1,
+          "codeLengthBytes": 32,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "classOrigins",
+          "descriptor": "()Ljava/util/Map;",
+          "accessFlags": 1,
+          "codeLengthBytes": 16,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "artifactDependencies",
+          "descriptor": "()Ljava/util/Map;",
+          "accessFlags": 1,
+          "codeLengthBytes": 16,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "classOverview",
+          "descriptor": "(I)Lio/johnsonlee/graphite/graph/ClassOverview;",
+          "accessFlags": 1,
+          "codeLengthBytes": 17,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "branchScopes",
+          "descriptor": "()Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 24,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "branchScopesFor-NKfh_u4",
+          "descriptor": "(I)Lkotlin/sequences/Sequence;",
+          "accessFlags": 1,
+          "codeLengthBytes": 35,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "typeHierarchyTypes",
+          "descriptor": "()Ljava/util/Set;",
+          "accessFlags": 1,
+          "codeLengthBytes": 47,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "close",
+          "descriptor": "()V",
+          "accessFlags": 1,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "isMetadataInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 10,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "isMethodIndexInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 13,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "clearStringPropertyIndexes$webgraph",
+          "descriptor": "()V",
+          "accessFlags": 17,
+          "codeLengthBytes": 59,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "releaseStringPropertyDisjunctionCache",
+          "descriptor": "()V",
+          "accessFlags": 1,
+          "codeLengthBytes": 9,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "closeCallSiteStringIndex",
+          "descriptor": "(Z)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 329,
+          "maxStack": 2,
+          "maxLocals": 6
+        },
+        {
+          "name": "retainPersistedCallSiteStringIndexForSplit",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 23,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "rawStringMatchStateBytes$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "rawStringMatchStateCount$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "rawProjectionMatchCount$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringIndexBytes$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 17,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "hasExactCallSiteProjectionTupleIndex$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 26,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "isCallSiteStringIndexInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 13,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "isMappedCallSiteStringIndexViewInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 13,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "mappedPostingRangeValidationCount$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 17,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "mappedPostingRangeValidationBytes$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 17,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "isCallSiteTrigramIndexInitialized$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 26,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "isCallSiteStringIndexLoadedFromPersistence$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "prepareCallSiteStringIndex$webgraph",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 58,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "prepareCallSiteStringIndex$webgraph$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;ILjava/lang/Object;)Z",
+          "accessFlags": 4105,
+          "codeLengthBytes": 19,
+          "maxStack": 2,
+          "maxLocals": 4
+        },
+        {
+          "name": "persistPreparedCallSiteStringIndex$webgraph",
+          "descriptor": "()Z",
+          "accessFlags": 17,
+          "codeLengthBytes": 385,
+          "maxStack": 6,
+          "maxLocals": 14
+        },
+        {
+          "name": "replaceAtomically",
+          "descriptor": "(Ljava/nio/file/Path;Ljava/nio/file/Path;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 52,
+          "maxStack": 5,
+          "maxLocals": 6
+        },
+        {
+          "name": "callSiteParallelScanCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringLookupEntryCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringIndexLookupCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringPreflightCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringProjectionLookupCount$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteScanPeakActiveWorkers$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteSegmentPeakActiveWorkers$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 4,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteScanActiveWorkers$webgraph",
+          "descriptor": "()I",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteScanAbortedWorkers$webgraph",
+          "descriptor": "()J",
+          "accessFlags": 17,
+          "codeLengthBytes": 8,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "resetCallSiteScanMetrics$webgraph",
+          "descriptor": "()V",
+          "accessFlags": 17,
+          "codeLengthBytes": 96,
+          "maxStack": 3,
+          "maxLocals": 2
+        },
+        {
+          "name": "stringPropertyIndexCount$webgraph",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;)I",
+          "accessFlags": 17,
+          "codeLengthBytes": 173,
+          "maxStack": 3,
+          "maxLocals": 12
+        },
+        {
+          "name": "stringPropertyIndexCount$webgraph$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;Ljava/lang/String;ILjava/lang/Object;)I",
+          "accessFlags": 4105,
+          "codeLengthBytes": 23,
+          "maxStack": 3,
+          "maxLocals": 5
+        },
+        {
+          "name": "buildStringPropertyIndex",
+          "descriptor": "(Ljava/lang/Class;Ljava/lang/String;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedStringPropertyIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 353,
+          "maxStack": 14,
+          "maxLocals": 18
+        },
+        {
+          "name": "callSiteStringIndex",
+          "descriptor": "(Ljava/lang/Class;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 1794,
+          "maxStack": 12,
+          "maxLocals": 61
+        },
+        {
+          "name": "callSiteStringIndex$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;ILjava/lang/Object;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 15,
+          "maxStack": 3,
+          "maxLocals": 5
+        },
+        {
+          "name": "loadPersistedCallSiteStringIndexIfAvailable",
+          "descriptor": "(Ljava/lang/Class;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 177,
+          "maxStack": 4,
+          "maxLocals": 12
+        },
+        {
+          "name": "loadPersistedCallSiteStringIndex",
+          "descriptor": "(ILio/johnsonlee/graphite/graph/GraphWorkConsumer;)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex;",
+          "accessFlags": 18,
+          "codeLengthBytes": 307,
+          "maxStack": 10,
+          "maxLocals": 11
+        },
+        {
+          "name": "persistedCallSiteStringIndexContentIdentity",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)[B",
+          "accessFlags": 18,
+          "codeLengthBytes": 130,
+          "maxStack": 3,
+          "maxLocals": 7
+        },
+        {
+          "name": "forEachRawCallSiteStringIds",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;Lkotlin/jvm/functions/Function5;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 274,
+          "maxStack": 6,
+          "maxLocals": 18
+        },
+        {
+          "name": "withRawCallSiteStringIds",
+          "descriptor": "(ILkotlin/jvm/functions/Function4;)V",
+          "accessFlags": 18,
+          "codeLengthBytes": 102,
+          "maxStack": 7,
+          "maxLocals": 7
+        },
+        {
+          "name": "rawStringPropertyIndex",
+          "descriptor": "(ILjava/lang/Class;Ljava/lang/String;)Ljava/lang/Integer;",
+          "accessFlags": 18,
+          "codeLengthBytes": 563,
+          "maxStack": 4,
+          "maxLocals": 9
+        },
+        {
+          "name": "rawCallSiteStringProperty",
+          "descriptor": "(ILjava/lang/String;)Ljava/lang/Integer;",
+          "accessFlags": 18,
+          "codeLengthBytes": 192,
+          "maxStack": 3,
+          "maxLocals": 6
+        },
+        {
+          "name": "requiredCallSiteStringPropertyIndex",
+          "descriptor": "(Ljava/lang/String;)I",
+          "accessFlags": 18,
+          "codeLengthBytes": 49,
+          "maxStack": 3,
+          "maxLocals": 6
+        },
+        {
+          "name": "rawCallSiteStringPropertyId",
+          "descriptor": "(II)I",
+          "accessFlags": 18,
+          "codeLengthBytes": 132,
+          "maxStack": 4,
+          "maxLocals": 6
+        },
+        {
+          "name": "readNodeAt",
+          "descriptor": "(J)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 18,
+          "codeLengthBytes": 36,
+          "maxStack": 5,
+          "maxLocals": 4
+        },
+        {
+          "name": "branchScopeIndex_delegate$lambda$2",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/util/Map;",
+          "accessFlags": 26,
+          "codeLengthBytes": 305,
+          "maxStack": 9,
+          "maxLocals": 16
+        },
+        {
+          "name": "mappedMethodMetadata_delegate$lambda$4",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;",
+          "accessFlags": 26,
+          "codeLengthBytes": 73,
+          "maxStack": 6,
+          "maxLocals": 5
+        },
+        {
+          "name": "nodes$lambda$6",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 22,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$31$lambda$30$maxOf__proxy",
+          "descriptor": "(II)I",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$31$lambda$30$lambda$29",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;[ILjava/util/List;Ljava/util/List;I)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 780,
+          "maxStack": 6,
+          "maxLocals": 39
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$31$lambda$30",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;IIILjava/util/concurrent/atomic/AtomicBoolean;Ljava/util/HashSet;Ljava/util/List;Ljava/util/List;[ILjava/util/List;Ljava/util/List;)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult;",
+          "accessFlags": 26,
+          "codeLengthBytes": 190,
+          "maxStack": 18,
+          "maxLocals": 20
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$recordFailure",
+          "descriptor": "(Ljava/util/concurrent/atomic/AtomicBoolean;Lkotlin/jvm/internal/Ref$ObjectRef;Ljava/lang/Throwable;)V",
+          "accessFlags": 26,
+          "codeLengthBytes": 35,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "initializedMappedCallSiteStringProjection$lambda$54",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/util/List;[II)Lio/johnsonlee/graphite/graph/StringPropertyProjectionRow;",
+          "accessFlags": 26,
+          "codeLengthBytes": 250,
+          "maxStack": 6,
+          "maxLocals": 16
+        },
+        {
+          "name": "lookupStringPropertyDisjunction$lambda$69$lambda$68",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/CallSiteNode;",
+          "accessFlags": 26,
+          "codeLengthBytes": 25,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "lookupStringPropertyDisjunction$lambda$73$lambda$72",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 41,
+          "maxStack": 2,
+          "maxLocals": 8
+        },
+        {
+          "name": "lookupStringPropertyDisjunction$lambda$76$lambda$75",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/CallSiteNode;",
+          "accessFlags": 26,
+          "codeLengthBytes": 25,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "lookupStringPropertyDisjunction$lambda$80$lambda$79",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/CallSiteNode;",
+          "accessFlags": 26,
+          "codeLengthBytes": 25,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$97$lambda$96$maxOf__proxy$87",
+          "descriptor": "(II)I",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$97$lambda$96$lambda$95",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Lit/unimi/dsi/fastutil/ints/IntArrayList;I[I[[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 579,
+          "maxStack": 6,
+          "maxLocals": 37
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$97$lambda$96",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;IIILkotlin/jvm/internal/Ref$ObjectRef;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;Ljava/lang/Class;ILjava/util/concurrent/atomic/AtomicBoolean;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteScanResult;",
+          "accessFlags": 26,
+          "codeLengthBytes": 292,
+          "maxStack": 16,
+          "maxLocals": 25
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$recordFailure$98",
+          "descriptor": "(Ljava/util/concurrent/atomic/AtomicBoolean;Lkotlin/jvm/internal/Ref$ObjectRef;Ljava/lang/Throwable;)V",
+          "accessFlags": 26,
+          "codeLengthBytes": 35,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$109",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/ParallelCallSiteScanResult;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 26,
+          "codeLengthBytes": 15,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "parallelRawCallSiteStringDisjunction$lambda$111",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/Class;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 41,
+          "maxStack": 2,
+          "maxLocals": 8
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex$lambda$116",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;[[ILjava/util/List;[ILio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILjava/util/concurrent/atomic/AtomicBoolean;)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 315,
+          "maxStack": 4,
+          "maxLocals": 26
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex$lambda$122",
+          "descriptor": "([[I[[ILio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILio/johnsonlee/graphite/graph/GraphWorkConsumer;Ljava/util/List;[[I[[IILjava/util/concurrent/atomic/AtomicBoolean;)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 480,
+          "maxStack": 5,
+          "maxLocals": 30
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex$lambda$123",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)J",
+          "accessFlags": 26,
+          "codeLengthBytes": 11,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "buildAndPublishCallSiteStringIndex$lambda$124",
+          "descriptor": "([B)[B",
+          "accessFlags": 26,
+          "codeLengthBytes": 14,
+          "maxStack": 3,
+          "maxLocals": 1
+        },
+        {
+          "name": "prepareCallSiteStringIndexInParallel$lambda$134$lambda$133$maxOf__proxy$130",
+          "descriptor": "(II)I",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "prepareCallSiteStringIndexInParallel$lambda$134$lambda$133$lambda$132",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;[I[[II)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 189,
+          "maxStack": 6,
+          "maxLocals": 17
+        },
+        {
+          "name": "prepareCallSiteStringIndexInParallel$lambda$134$lambda$133",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;IILio/johnsonlee/graphite/graph/GraphWorkConsumer;ILjava/util/concurrent/atomic/AtomicBoolean;)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteScanResult;",
+          "accessFlags": 26,
+          "codeLengthBytes": 205,
+          "maxStack": 10,
+          "maxLocals": 13
+        },
+        {
+          "name": "forEachCallSiteStringProperty$lambda$142$lambda$141",
+          "descriptor": "(Lkotlin/jvm/functions/Function2;ILjava/util/concurrent/atomic/AtomicBoolean;Ljava/util/concurrent/atomic/AtomicReference;)Lkotlin/Unit;",
+          "accessFlags": 26,
+          "codeLengthBytes": 50,
+          "maxStack": 3,
+          "maxLocals": 5
+        },
+        {
+          "name": "mappedCallSiteStringIndexView$lambda$152$lambda$151",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)J",
+          "accessFlags": 26,
+          "codeLengthBytes": 11,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "lookupStringProperty$lambda$158$lambda$157",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 22,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "indexedNodes$lambda$166",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)Lio/johnsonlee/graphite/core/Node;",
+          "accessFlags": 26,
+          "codeLengthBytes": 22,
+          "maxStack": 2,
+          "maxLocals": 3
+        },
+        {
+          "name": "outgoing_NKfh_u4$lambda$167",
+          "descriptor": "([ILio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;III)Lio/johnsonlee/graphite/core/Edge;",
+          "accessFlags": 26,
+          "codeLengthBytes": 63,
+          "maxStack": 6,
+          "maxLocals": 8
+        },
+        {
+          "name": "incoming_NKfh_u4$lambda$168",
+          "descriptor": "([ILio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;II)Lio/johnsonlee/graphite/core/Edge;",
+          "accessFlags": 26,
+          "codeLengthBytes": 56,
+          "maxStack": 6,
+          "maxLocals": 7
+        },
+        {
+          "name": "outgoing_3mFqXk4$lambda$169",
+          "descriptor": "(Ljava/lang/Class;Lio/johnsonlee/graphite/core/Edge;)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 13,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "incoming_3mFqXk4$lambda$170",
+          "descriptor": "(Ljava/lang/Class;Lio/johnsonlee/graphite/core/Edge;)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 13,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "callSites$lambda$171",
+          "descriptor": "(Lio/johnsonlee/graphite/graph/MethodPattern;Lio/johnsonlee/graphite/core/CallSiteNode;)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 16,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "branchScopes$lambda$176",
+          "descriptor": "(Ljava/util/List;)Lkotlin/sequences/Sequence;",
+          "accessFlags": 26,
+          "codeLengthBytes": 15,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "callSiteStringIndex$lambda$201$lambda$198",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)J",
+          "accessFlags": 26,
+          "codeLengthBytes": 11,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "callSiteStringIndex$lambda$201$lambda$199",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)[B",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 1
+        },
+        {
+          "name": "loadPersistedCallSiteStringIndex$lambda$208$lambda$206",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;I)J",
+          "accessFlags": 26,
+          "codeLengthBytes": 11,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "access$getNodeTypeIndex$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/NodeTypeIndex;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getStringTable$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/StringTable;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$rawStringPropertyIndex",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILjava/lang/Class;Ljava/lang/String;)Ljava/lang/Integer;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 8,
+          "maxStack": 4,
+          "maxLocals": 4
+        },
+        {
+          "name": "access$requiredCallSiteStringPropertyIndex",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/lang/String;)I",
+          "accessFlags": 4121,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "access$rawCallSiteStringPropertyId",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;II)I",
+          "accessFlags": 4121,
+          "codeLengthBytes": 7,
+          "maxStack": 3,
+          "maxLocals": 3
+        },
+        {
+          "name": "access$getStringPropertyIndexLock$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/lang/Object;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getStringPropertyIndexes$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph$stringPropertyIndexes$1;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getStringPropertyAdmissions$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/StringPropertyAdmissions;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$methodIndex",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/MappedMethodIndex;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getNodeOffsets$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        },
+        {
+          "name": "access$getMappedNodeData$p",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;",
+          "accessFlags": 4121,
+          "codeLengthBytes": 5,
+          "maxStack": 1,
+          "maxLocals": 1
+        }
+      ],
+      "classSha256": "1a1fca4b906fa95bb4b4256fd2f5e24bcdd11b0679fbfb849fce0a1027ecd486",
+      "javapSha256": "33adf339b12af3b13825ad63790e293260855a2cf390e05faa2fba1ed23a0f58",
+      "rawFamilyMethods": [
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection",
+          "descriptor": "(Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;Ljava/util/List;Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership;)Ljava/util/List;",
+          "accessFlags": 18,
+          "codeLengthBytes": 2123,
+          "maxStack": 13,
+          "maxLocals": 54
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$default",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Ljava/util/List;Ljava/util/List;ILjava/util/Set;Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;Ljava/util/List;Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership;ILjava/lang/Object;)Ljava/util/List;",
+          "accessFlags": 4104,
+          "codeLengthBytes": 38,
+          "maxStack": 8,
+          "maxLocals": 10
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$31$lambda$30$maxOf__proxy",
+          "descriptor": "(II)I",
+          "accessFlags": 26,
+          "codeLengthBytes": 6,
+          "maxStack": 2,
+          "maxLocals": 2
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$31$lambda$30$lambda$29",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;[ILjava/util/List;Ljava/util/List;I)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 780,
+          "maxStack": 6,
+          "maxLocals": 39
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$31$lambda$30",
+          "descriptor": "(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer;IIILjava/util/concurrent/atomic/AtomicBoolean;Ljava/util/HashSet;Ljava/util/List;Ljava/util/List;[ILjava/util/List;Ljava/util/List;)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult;",
+          "accessFlags": 26,
+          "codeLengthBytes": 190,
+          "maxStack": 18,
+          "maxLocals": 20
+        },
+        {
+          "name": "parallelRawDistinctCallSiteStringProjection$recordFailure",
+          "descriptor": "(Ljava/util/concurrent/atomic/AtomicBoolean;Lkotlin/jvm/internal/Ref$ObjectRef;Ljava/lang/Throwable;)V",
+          "accessFlags": 26,
+          "codeLengthBytes": 35,
+          "maxStack": 2,
+          "maxLocals": 3
+        }
+      ],
+      "nodeCallback": {
+        "header": "private static final boolean parallelRawDistinctCallSiteStringProjection$lambda$31$lambda$30$lambda$29(kotlin.jvm.internal.Ref$IntRef, java.util.concurrent.atomic.AtomicBoolean, io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph, io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer, java.util.HashSet, java.util.List, java.util.HashSet, java.util.ArrayList, int, int[], java.util.List, int[], java.util.List, java.util.List, int);",
+        "metadata": {
+          "name": "parallelRawDistinctCallSiteStringProjection$lambda$31$lambda$30$lambda$29",
+          "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;[ILjava/util/List;Ljava/util/List;I)Z",
+          "accessFlags": 26,
+          "codeLengthBytes": 780,
+          "maxStack": 6,
+          "maxLocals": 39
+        },
+        "instructionCount": 355,
+        "primitiveIntArrayLoadCount": 4,
+        "predicateSourceLine580": [
+          {
+            "bci": 277,
+            "instruction": "aload         9"
+          },
+          {
+            "bci": 279,
+            "instruction": "aload         11"
+          },
+          {
+            "bci": 281,
+            "instruction": "iload         30"
+          },
+          {
+            "bci": 283,
+            "instruction": "iaload"
+          },
+          {
+            "bci": 284,
+            "instruction": "iaload"
+          },
+          {
+            "bci": 285,
+            "instruction": "istore        32"
+          }
+        ],
+        "staticInstructionSites": {
+          "listGet": [
+            {
+              "bci": 302,
+              "instruction": "invokeinterface #723,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 323,
+              "instruction": "invokeinterface #723,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 373,
+              "instruction": "invokeinterface #723,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 388,
+              "instruction": "invokeinterface #723,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            },
+            {
+              "bci": 403,
+              "instruction": "invokeinterface #723,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;"
+            }
+          ],
+          "numberIntValue": [
+            {
+              "bci": 539,
+              "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I"
+            },
+            {
+              "bci": 669,
+              "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I"
+            }
+          ],
+          "integerValueOf": [
+            {
+              "bci": 563,
+              "instruction": "invokestatic  #746                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;"
+            }
+          ],
+          "exactSetContains": [
+            {
+              "bci": 312,
+              "instruction": "invokevirtual #2637               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z"
+            }
+          ],
+          "getIndices": [
+            {
+              "bci": 205,
+              "instruction": "invokestatic  #759                // Method kotlin/collections/CollectionsKt.getIndices:(Ljava/util/Collection;)Lkotlin/ranges/IntRange;"
+            }
+          ],
+          "iteratorNextInt": [
+            {
+              "bci": 265,
+              "instruction": "invokevirtual #764                // Method kotlin/collections/IntIterator.nextInt:()I"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "verifiedMechanism": "Only the predicatePropertyIndexes captured argument changes from List to int[]; source-line580 List.get + Number cast/intValue becomes int-array load. Remaining list/projection/selected boxing operations retained; static site counts are not runtime allocation or performance measurements.",
+  "nodeCodeBytes": {
+    "base": 790,
+    "candidate": 780
+  },
+  "nodeInstructionCounts": {
+    "base": 357,
+    "candidate": 355
+  },
+  "normalization": "For readable diff only: constant-pool numbers and generated lambda number suffixes normalized, branch absolute BCI targets omitted. Raw disassembly and actual class Code lengths retained.",
+  "performanceRun": false
+}

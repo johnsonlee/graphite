@@ -1,0 +1,285 @@
+{
+  "source": "/private/tmp/graphite-main-compilation-diagnostic",
+  "entries": [
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/README.md",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/README.md",
+      "sourceBytes": 2753,
+      "sourceSha256": "55dc1173e70c781c1133ec5df79341c5314763df99635865d1813b963bd8b7b4",
+      "storedBytes": 2753,
+      "storedSha256": "55dc1173e70c781c1133ec5df79341c5314763df99635865d1813b963bd8b7b4",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/analyze.py",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/analyze.py",
+      "sourceBytes": 8903,
+      "sourceSha256": "eeb3455dea3a9c57cdf02375604643c7953920a1a605655a819073eebacc4d78",
+      "storedBytes": 8903,
+      "storedSha256": "eeb3455dea3a9c57cdf02375604643c7953920a1a605655a819073eebacc4d78",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/archive.py",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/archive.py",
+      "sourceBytes": 1782,
+      "sourceSha256": "602ae08f59abbf45ee87f3c84f03941eac82c8466a60190fde9a2637ba2dab3c",
+      "storedBytes": 1782,
+      "storedSha256": "602ae08f59abbf45ee87f3c84f03941eac82c8466a60190fde9a2637ba2dab3c",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/completion.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/completion.json",
+      "sourceBytes": 233,
+      "sourceSha256": "ed29135abda6a57d85f54f27b9e995eb51011aaaa14b4febf6a8521993f8bd38",
+      "storedBytes": 233,
+      "storedSha256": "ed29135abda6a57d85f54f27b9e995eb51011aaaa14b4febf6a8521993f8bd38",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-1-command.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-1-command.json",
+      "sourceBytes": 1178,
+      "sourceSha256": "a2ca30fbc0d02a9230d3c4f48c0b6cbdea03f7300c75674875ec67ef77fdc3f9",
+      "storedBytes": 1178,
+      "storedSha256": "a2ca30fbc0d02a9230d3c4f48c0b6cbdea03f7300c75674875ec67ef77fdc3f9",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-1.compilation.xml",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-1.compilation.xml.gz",
+      "sourceBytes": 15827859,
+      "sourceSha256": "55c0177c42918648d42c99e5367008d93c249cd44136efaae79ee169a77d24c1",
+      "storedBytes": 1377025,
+      "storedSha256": "d6a4f19d5de8d2d849c622ceaeba5af3a83374800d7782ac03594b5dee797849",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-1.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-1.json",
+      "sourceBytes": 69232,
+      "sourceSha256": "f89cf5f0da7e39c82bfff31358e9375efefd9db8e7ce295091007acd60647bd8",
+      "storedBytes": 69232,
+      "storedSha256": "f89cf5f0da7e39c82bfff31358e9375efefd9db8e7ce295091007acd60647bd8",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-1.log",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-1.log",
+      "sourceBytes": 35022,
+      "sourceSha256": "c4ba7dcc3237e4bda571f07b894241d73b7b434d5fa797926e6083d99fb71048",
+      "storedBytes": 35022,
+      "storedSha256": "c4ba7dcc3237e4bda571f07b894241d73b7b434d5fa797926e6083d99fb71048",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-1.tsv",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-1.tsv",
+      "sourceBytes": 41052,
+      "sourceSha256": "a6a3528200eeed91c74cba2e932567a6e81df676c219143b1a4765fc7e61c7e3",
+      "storedBytes": 41052,
+      "storedSha256": "a6a3528200eeed91c74cba2e932567a6e81df676c219143b1a4765fc7e61c7e3",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-2-command.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-2-command.json",
+      "sourceBytes": 1178,
+      "sourceSha256": "8beec8a0af275d29f2bcc549db209e969e4d164a8c22757fb8b9bb62f6033666",
+      "storedBytes": 1178,
+      "storedSha256": "8beec8a0af275d29f2bcc549db209e969e4d164a8c22757fb8b9bb62f6033666",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-2.compilation.xml",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-2.compilation.xml.gz",
+      "sourceBytes": 15899413,
+      "sourceSha256": "a19822ce4c7c8213d7048b69a82bdee31b7db95face89144639b0e9bfaef70c8",
+      "storedBytes": 1377065,
+      "storedSha256": "bda9baf9410ff84200afc12dae4348f985ded7884329d3906a13fecb61878cf8",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-2.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-2.json",
+      "sourceBytes": 69190,
+      "sourceSha256": "d187e3cd95a4287a84229e3689603059fe9d6dda085cdcca90d154a1bc56793f",
+      "storedBytes": 69190,
+      "storedSha256": "d187e3cd95a4287a84229e3689603059fe9d6dda085cdcca90d154a1bc56793f",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-2.log",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-2.log",
+      "sourceBytes": 35022,
+      "sourceSha256": "b085df29cf75c581610822449cea9e25970337b9949674408adce8400f2e4d19",
+      "storedBytes": 35022,
+      "storedSha256": "b085df29cf75c581610822449cea9e25970337b9949674408adce8400f2e4d19",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-2.tsv",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-2.tsv",
+      "sourceBytes": 41052,
+      "sourceSha256": "0513a4a24f595e175e6250eeaed11b70d94e65ce955c90d4477ad403605d3e26",
+      "storedBytes": 41052,
+      "storedSha256": "0513a4a24f595e175e6250eeaed11b70d94e65ce955c90d4477ad403605d3e26",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-3-command.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-3-command.json",
+      "sourceBytes": 1178,
+      "sourceSha256": "83b5cb649e329c7f0f0d306889d2d0fa9af189d7e44075577ff8e50d09e4551e",
+      "storedBytes": 1178,
+      "storedSha256": "83b5cb649e329c7f0f0d306889d2d0fa9af189d7e44075577ff8e50d09e4551e",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-3.compilation.xml",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-3.compilation.xml.gz",
+      "sourceBytes": 16093127,
+      "sourceSha256": "917e8b7995a2687031de35f95d11558450d948d9ff7fa64f97ab81f471741948",
+      "storedBytes": 1392712,
+      "storedSha256": "66aabf303c249b0acd373ef1c2193ac743dce7285c3a99b9789ab4ff60380a37",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-3.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-3.json",
+      "sourceBytes": 69232,
+      "sourceSha256": "f8c1ff4af3fc6983037baa45ee669b89917ec96b997e4e1a2712788ed527ba23",
+      "storedBytes": 69232,
+      "storedSha256": "f8c1ff4af3fc6983037baa45ee669b89917ec96b997e4e1a2712788ed527ba23",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-3.log",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-3.log",
+      "sourceBytes": 35016,
+      "sourceSha256": "3fc09c26a874a5339246048b41fd3218f7f0390e0a8fe91190136cfc4f5e3c85",
+      "storedBytes": 35016,
+      "storedSha256": "3fc09c26a874a5339246048b41fd3218f7f0390e0a8fe91190136cfc4f5e3c85",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/fork-3.tsv",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/fork-3.tsv",
+      "sourceBytes": 41051,
+      "sourceSha256": "2fde559bece7d327043df2de866bdaad054d1d9bca510033cea4d9b374291867",
+      "storedBytes": 41051,
+      "storedSha256": "2fde559bece7d327043df2de866bdaad054d1d9bca510033cea4d9b374291867",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/graph-content-after.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/graph-content-after.json",
+      "sourceBytes": 181997,
+      "sourceSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "storedBytes": 181997,
+      "storedSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/graph-content-before.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/graph-content-before.json",
+      "sourceBytes": 181997,
+      "sourceSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "storedBytes": 181997,
+      "storedSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/independent-audit.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/independent-audit.json",
+      "sourceBytes": 83496,
+      "sourceSha256": "16281a8665efe77cac314de47bdc0ee076ecb22e234eea58bc3fbf01847894cd",
+      "storedBytes": 83496,
+      "storedSha256": "16281a8665efe77cac314de47bdc0ee076ecb22e234eea58bc3fbf01847894cd",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/independent-audit.md",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/independent-audit.md",
+      "sourceBytes": 3266,
+      "sourceSha256": "c6f2a956afc15eeedcd22e97af3aa1432056271c8d3a082b1cd37f0dfdef177b",
+      "storedBytes": 3266,
+      "storedSha256": "c6f2a956afc15eeedcd22e97af3aa1432056271c8d3a082b1cd37f0dfdef177b",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/independent-audit.py",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/independent-audit.py",
+      "sourceBytes": 16926,
+      "sourceSha256": "7c1fe0b126a26a543a0d55fb75c1dcd6faf70d0bcf27e7416ea55432706bdc45",
+      "storedBytes": 16926,
+      "storedSha256": "7c1fe0b126a26a543a0d55fb75c1dcd6faf70d0bcf27e7416ea55432706bdc45",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/int-open-hash-set.javap.txt",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/int-open-hash-set.javap.txt",
+      "sourceBytes": 42791,
+      "sourceSha256": "979c637fb50060a6ee7c88eef2540a98789afcbe68fb37a308af36b0e27fb9af",
+      "storedBytes": 42791,
+      "storedSha256": "979c637fb50060a6ee7c88eef2540a98789afcbe68fb37a308af36b0e27fb9af",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/javap-receipt.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/javap-receipt.json",
+      "sourceBytes": 904,
+      "sourceSha256": "7e709c214ccfaef4771a43406a3a7db36ccbfa5120c1d29081fdec9858b26acd",
+      "storedBytes": 904,
+      "storedSha256": "7e709c214ccfaef4771a43406a3a7db36ccbfa5120c1d29081fdec9858b26acd",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/next-evidence-plan.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/next-evidence-plan.json",
+      "sourceBytes": 1535,
+      "sourceSha256": "e465bdbfae86177b53580b3273a1122cf3a9efb361cc2831efa67720041e4222",
+      "storedBytes": 1535,
+      "storedSha256": "e465bdbfae86177b53580b3273a1122cf3a9efb361cc2831efa67720041e4222",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/plan.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/plan.json",
+      "sourceBytes": 1342,
+      "sourceSha256": "da982bcb17ebf7ced82f11724f72ae26ca449701e78bcf5d36527b6194cbfc0d",
+      "storedBytes": 1342,
+      "storedSha256": "da982bcb17ebf7ced82f11724f72ae26ca449701e78bcf5d36527b6194cbfc0d",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/run.py",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/run.py",
+      "sourceBytes": 4113,
+      "sourceSha256": "f7bb7e6168d40c78a3f568bfa2077d3f29037cc383ea02e3a5576e90ee942aec",
+      "storedBytes": 4113,
+      "storedSha256": "f7bb7e6168d40c78a3f568bfa2077d3f29037cc383ea02e3a5576e90ee942aec",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/runs.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/runs.json",
+      "sourceBytes": 903,
+      "sourceSha256": "6a058471c155f16ee53f659bdba65effc8f7772f4d87a73b3f964787c96da3e2",
+      "storedBytes": 903,
+      "storedSha256": "6a058471c155f16ee53f659bdba65effc8f7772f4d87a73b3f964787c96da3e2",
+      "decodedEqualsSource": true
+    },
+    {
+      "source": "/private/tmp/graphite-main-compilation-diagnostic/summary.json",
+      "destination": "docs/profiling/distinct-projection-work/compiler-without-tracing/summary.json",
+      "sourceBytes": 85818,
+      "sourceSha256": "38d9b1d68c1379a9adac66425de2fd3715d3265223780cd408a1a33cce321abe",
+      "storedBytes": 85818,
+      "storedSha256": "38d9b1d68c1379a9adac66425de2fd3715d3265223780cd408a1a33cce321abe",
+      "decodedEqualsSource": true
+    }
+  ],
+  "count": 31
+}

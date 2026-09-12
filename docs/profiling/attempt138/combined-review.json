@@ -1,0 +1,31 @@
+{
+  "result": "no_concrete_correctness_defect_found",
+  "scope": "Read-only review of graph storage wiring and sparse initial mapped projection; no runtime verification",
+  "reviewedSources": [
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "sha256": "7ec58e121beabf3d792cc31075d9a399cd4fe3055e94865e1347bd0ad1e9bac4",
+      "onlyAdditions": true,
+      "addedLines": 79,
+      "existingCodeUnchanged": true
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+      "sha256": "7cd7b21f0ac451f265f4014cfa2c0cee09cc4630318c4f3092a897eba668f0aa",
+      "onlyAdditions": true,
+      "addedLines": 131,
+      "existingCodeUnchanged": true
+    }
+  ],
+  "allMainJmhChangesExactlyTwoIntendedFiles": true,
+  "existingValidatorHeapAndRawBodiesUnchanged": true,
+  "sparseBound": "With validated directories and matching IDs, exactMatchesCanFillLimit false proves summed predicate posting occurrences < limit; union nodes and distinct projected rows cannot exceed that sum. Overlap/repeated OR terms can only force conservative fallback.",
+  "matchingNodeIds": "Selected posting validation is eager before sequence publication; physical-order heap merge is lazy and deduplicates node IDs. Null fallback occurs before projection rows are returned.",
+  "emptyDuplicateNullGraphId": "IDs provide query-local tuple equality; supported negative property indexes map to -1/null; empty projection yields a single empty tuple if any candidate; repeated/reordered properties remain in their original column positions. GraphId substitution remains at QueryPipeline.",
+  "selectedFallback": "Only complete-four-property selectedValues uses mapped selectedProjectionHits; partial projections return null to original exact discovery/raw/retained fallback. Any partial internally found rows are discarded if selected API returns null on invalid later posting.",
+  "sequenceCancellation": "Producer finally is not guaranteed on consumer break/throw. Safety here is explicit merge accounting.flush before every yield, no resource held across yield requiring close, and consumer own finally flush; producer-internal exceptions execute its finally. Normal valid sparse path cannot reach LIMIT since occurrence sum is already below it.",
+  "accounting": "Directory/validation/merge retain original accounting; projection charges each visited node; exceptions propagate. Added index/projection lookup counter reflects the newly used path and is not evidence of latency progress.",
+  "missingVerification": "No build/tests run in this audit; integration correctness and performance gates remain for root.",
+  "workspaceOrSourceMutationByReviewer": false,
+  "javaBuildTestOrBenchmarkStarted": false
+}

@@ -1,0 +1,489 @@
+  private static final boolean parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(kotlin.jvm.internal.Ref$IntRef, java.util.concurrent.atomic.AtomicBoolean, io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph, io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer, java.util.HashSet, java.util.List, java.util.HashSet, java.util.ArrayList, int, int[], java.util.List, java.util.List, java.util.List, java.util.List, int);
+    Code:
+       0: aload_0
+       1: getfield      #2636               // Field kotlin/jvm/internal/Ref$IntRef.element:I
+       4: istore        15
+       6: aload_0
+       7: iload         15
+       9: iconst_1
+      10: iadd
+      11: putfield      #2636               // Field kotlin/jvm/internal/Ref$IntRef.element:I
+      14: iload         15
+      16: sipush        1023
+      19: iand
+      20: ifne          65
+      23: aload_1
+      24: invokevirtual #1621               // Method java/util/concurrent/atomic/AtomicBoolean.get:()Z
+      27: ifne          39
+      30: invokestatic  #359                // Method java/lang/Thread.currentThread:()Ljava/lang/Thread;
+      33: invokevirtual #362                // Method java/lang/Thread.isInterrupted:()Z
+      36: ifeq          65
+      39: aload_1
+      40: invokevirtual #1621               // Method java/util/concurrent/atomic/AtomicBoolean.get:()Z
+      43: ifeq          54
+      46: aload_2
+      47: getfield      #254                // Field callSiteScanAbortedWorkers:Ljava/util/concurrent/atomic/AtomicLong;
+      50: invokevirtual #620                // Method java/util/concurrent/atomic/AtomicLong.incrementAndGet:()J
+      53: pop2
+      54: new           #364                // class java/util/concurrent/CancellationException
+      57: dup
+      58: ldc_w         #907                // String Mapped string-property scan interrupted
+      61: invokespecial #369                // Method java/util/concurrent/CancellationException."<init>":(Ljava/lang/String;)V
+      64: athrow
+      65: aload_3
+      66: invokevirtual #372                // Method io/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer.consume:()V
+      69: iconst_0
+      70: istore        15
+      72: aload_2
+      73: astore        16
+      75: iconst_0
+      76: istore        17
+      78: aload         16
+      80: invokestatic  #376                // Method access$getNodeOffsets$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;
+      83: iload         14
+      85: invokeinterface #382,  2          // InterfaceMethod io/johnsonlee/graphite/webgraph/NodeOffsetIndex.offset:(I)J
+      90: l2i
+      91: iconst_5
+      92: iadd
+      93: istore        18
+      95: aload         16
+      97: invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+     100: iload         18
+     102: bipush        8
+     104: iadd
+     105: invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I
+     108: istore        19
+     110: iload         18
+     112: iconst_4
+     113: iload         19
+     115: iadd
+     116: iconst_4
+     117: imul
+     118: iadd
+     119: istore        20
+     121: aload         16
+     123: invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+     126: iload         18
+     128: invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I
+     131: aload         16
+     133: invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+     136: iload         18
+     138: iconst_4
+     139: iadd
+     140: invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I
+     143: aload         16
+     145: invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+     148: iload         20
+     150: invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I
+     153: aload         16
+     155: invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;
+     158: iload         20
+     160: iconst_4
+     161: iadd
+     162: invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I
+     165: istore        21
+     167: istore        22
+     169: istore        23
+     171: istore        24
+     173: iconst_0
+     174: istore        25
+     176: aload         9
+     178: iconst_0
+     179: iload         24
+     181: iastore
+     182: aload         9
+     184: iconst_1
+     185: iload         23
+     187: iastore
+     188: aload         9
+     190: iconst_2
+     191: iload         22
+     193: iastore
+     194: aload         9
+     196: iconst_3
+     197: iload         21
+     199: iastore
+     200: aload         10
+     202: checkcast     #545                // class java/util/Collection
+     205: invokestatic  #755                // Method kotlin/collections/CollectionsKt.getIndices:(Ljava/util/Collection;)Lkotlin/ranges/IntRange;
+     208: checkcast     #543                // class java/lang/Iterable
+     211: astore        26
+     213: iconst_0
+     214: istore        27
+     216: aload         26
+     218: instanceof    #545                // class java/util/Collection
+     221: ifeq          241
+     224: aload         26
+     226: checkcast     #545                // class java/util/Collection
+     229: invokeinterface #546,  1          // InterfaceMethod java/util/Collection.isEmpty:()Z
+     234: ifeq          241
+     237: iconst_0
+     238: goto          463
+     241: aload         26
+     243: invokeinterface #547,  1          // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+     248: astore        28
+     250: aload         28
+     252: invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     257: ifeq          462
+     260: aload         28
+     262: checkcast     #757                // class kotlin/collections/IntIterator
+     265: invokevirtual #760                // Method kotlin/collections/IntIterator.nextInt:()I
+     268: istore        29
+     270: iload         29
+     272: istore        30
+     274: iconst_0
+     275: istore        31
+     277: aload         9
+     279: aload         11
+     281: iload         30
+     283: invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     288: checkcast     #349                // class java/lang/Number
+     291: invokevirtual #353                // Method java/lang/Number.intValue:()I
+     294: iaload
+     295: istore        32
+     297: aload         12
+     299: dup
+     300: ifnull        328
+     303: astore        33
+     305: iconst_0
+     306: istore        34
+     308: aload         33
+     310: iload         30
+     312: invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     317: checkcast     #812                // class it/unimi/dsi/fastutil/ints/IntOpenHashSet
+     320: iload         32
+     322: invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z
+     325: goto          455
+     328: pop
+     329: aload         13
+     331: iload         30
+     333: invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     338: checkcast     #810                // class "[B"
+     341: astore        35
+     343: aload         35
+     345: iload         32
+     347: baload
+     348: istore        33
+     350: iload         33
+     352: iconst_2
+     353: if_icmpne     360
+     356: iconst_1
+     357: goto          454
+     360: iload         33
+     362: iconst_1
+     363: if_icmpne     370
+     366: iconst_0
+     367: goto          454
+     370: aload_2
+     371: getfield      #89                 // Field stringTable:Lio/johnsonlee/graphite/webgraph/StringTable;
+     374: iload         32
+     376: invokevirtual #1050               // Method io/johnsonlee/graphite/webgraph/StringTable.get:(I)Ljava/lang/String;
+     379: aload         10
+     381: iload         30
+     383: invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     388: checkcast     #549                // class io/johnsonlee/graphite/graph/StringPropertyPredicate
+     391: invokevirtual #798                // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getTransform:()Lio/johnsonlee/graphite/graph/StringValueTransform;
+     394: aload         10
+     396: iload         30
+     398: invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     403: checkcast     #549                // class io/johnsonlee/graphite/graph/StringPropertyPredicate
+     406: invokevirtual #802                // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getMode:()Lio/johnsonlee/graphite/graph/StringMatchMode;
+     409: aload         10
+     411: iload         30
+     413: invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     418: checkcast     #549                // class io/johnsonlee/graphite/graph/StringPropertyPredicate
+     421: invokevirtual #805                // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getExpected:()Ljava/lang/String;
+     424: invokestatic  #1054               // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.stringMatches:(Ljava/lang/String;Lio/johnsonlee/graphite/graph/StringValueTransform;Lio/johnsonlee/graphite/graph/StringMatchMode;Ljava/lang/String;)Z
+     427: istore        34
+     429: iload         34
+     431: istore        36
+     433: iconst_0
+     434: istore        37
+     436: aload         35
+     438: iload         32
+     440: iload         36
+     442: ifeq          449
+     445: iconst_2
+     446: goto          450
+     449: iconst_1
+     450: bastore
+     451: nop
+     452: iload         34
+     454: nop
+     455: ifeq          250
+     458: iconst_1
+     459: goto          463
+     462: iconst_0
+     463: istore        15
+     465: nop
+     466: nop
+     467: nop
+     468: iload         15
+     470: ifeq          774
+     473: aload         4
+     475: ifnull        608
+     478: aload         5
+     480: checkcast     #543                // class java/lang/Iterable
+     483: astore        17
+     485: iconst_0
+     486: istore        18
+     488: aload         17
+     490: astore        19
+     492: new           #718                // class java/util/ArrayList
+     495: dup
+     496: aload         17
+     498: bipush        10
+     500: invokestatic  #722                // Method kotlin/collections/CollectionsKt.collectionSizeOrDefault:(Ljava/lang/Iterable;I)I
+     503: invokespecial #725                // Method java/util/ArrayList."<init>":(I)V
+     506: checkcast     #545                // class java/util/Collection
+     509: astore        20
+     511: iconst_0
+     512: istore        21
+     514: aload         19
+     516: invokeinterface #547,  1          // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+     521: astore        22
+     523: aload         22
+     525: invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     530: ifeq          588
+     533: aload         22
+     535: invokeinterface #347,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     540: astore        23
+     542: aload         20
+     544: aload         23
+     546: checkcast     #349                // class java/lang/Number
+     549: invokevirtual #353                // Method java/lang/Number.intValue:()I
+     552: istore        24
+     554: astore        38
+     556: iconst_0
+     557: istore        25
+     559: iload         24
+     561: ifge          568
+     564: iconst_m1
+     565: goto          573
+     568: aload         9
+     570: iload         24
+     572: iaload
+     573: invokestatic  #734                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     576: aload         38
+     578: swap
+     579: invokeinterface #737,  2          // InterfaceMethod java/util/Collection.add:(Ljava/lang/Object;)Z
+     584: pop
+     585: goto          523
+     588: aload         20
+     590: checkcast     #538                // class java/util/List
+     593: nop
+     594: astore        16
+     596: aload         4
+     598: aload         16
+     600: invokevirtual #2639               // Method java/util/HashSet.contains:(Ljava/lang/Object;)Z
+     603: ifne          608
+     606: iconst_1
+     607: ireturn
+     608: aload         5
+     610: checkcast     #543                // class java/lang/Iterable
+     613: astore        17
+     615: iconst_0
+     616: istore        18
+     618: aload         17
+     620: astore        19
+     622: new           #718                // class java/util/ArrayList
+     625: dup
+     626: aload         17
+     628: bipush        10
+     630: invokestatic  #722                // Method kotlin/collections/CollectionsKt.collectionSizeOrDefault:(Ljava/lang/Iterable;I)I
+     633: invokespecial #725                // Method java/util/ArrayList."<init>":(I)V
+     636: checkcast     #545                // class java/util/Collection
+     639: astore        20
+     641: iconst_0
+     642: istore        21
+     644: aload         19
+     646: invokeinterface #547,  1          // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+     651: astore        22
+     653: aload         22
+     655: invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     660: ifeq          725
+     663: aload         22
+     665: invokeinterface #347,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     670: astore        23
+     672: aload         20
+     674: aload         23
+     676: checkcast     #349                // class java/lang/Number
+     679: invokevirtual #353                // Method java/lang/Number.intValue:()I
+     682: istore        24
+     684: astore        38
+     686: iconst_0
+     687: istore        25
+     689: iload         24
+     691: ifge          698
+     694: aconst_null
+     695: goto          713
+     698: aload_2
+     699: getfield      #89                 // Field stringTable:Lio/johnsonlee/graphite/webgraph/StringTable;
+     702: aload         9
+     704: iload         24
+     706: iaload
+     707: invokevirtual #1050               // Method io/johnsonlee/graphite/webgraph/StringTable.get:(I)Ljava/lang/String;
+     710: invokevirtual #1057               // Method java/lang/String.toString:()Ljava/lang/String;
+     713: aload         38
+     715: swap
+     716: invokeinterface #737,  2          // InterfaceMethod java/util/Collection.add:(Ljava/lang/Object;)Z
+     721: pop
+     722: goto          653
+     725: aload         20
+     727: checkcast     #538                // class java/util/List
+     730: nop
+     731: astore        16
+     733: aload         6
+     735: aload         16
+     737: invokevirtual #938                // Method java/util/HashSet.add:(Ljava/lang/Object;)Z
+     740: ifeq          774
+     743: aload         7
+     745: checkcast     #545                // class java/util/Collection
+     748: new           #934                // class io/johnsonlee/graphite/graph/StringPropertyDistinctRow
+     751: dup
+     752: aload_2
+     753: getfield      #92                 // Field nodeOffsets:Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;
+     756: iload         14
+     758: invokeinterface #382,  2          // InterfaceMethod io/johnsonlee/graphite/webgraph/NodeOffsetIndex.offset:(I)J
+     763: aload         16
+     765: invokespecial #1060               // Method io/johnsonlee/graphite/graph/StringPropertyDistinctRow."<init>":(JLjava/util/List;)V
+     768: invokeinterface #737,  2          // InterfaceMethod java/util/Collection.add:(Ljava/lang/Object;)Z
+     773: pop
+     774: aload         7
+     776: invokevirtual #939                // Method java/util/ArrayList.size:()I
+     779: iload         8
+     781: if_icmpge     788
+     784: iconst_1
+     785: goto          789
+     788: iconst_0
+     789: ireturn
+    LineNumberTable:
+      line 566: 0
+      line 567: 23
+      line 569: 39
+      line 570: 54
+      line 572: 65
+      line 573: 69
+      line 574: 72
+      line 3634: 78
+      line 3635: 95
+      line 3636: 110
+      line 3637: 121
+      line 3638: 121
+      line 3639: 131
+      line 3640: 143
+      line 3641: 153
+      line 3637: 165
+      line 575: 176
+      line 576: 182
+      line 577: 188
+      line 578: 194
+      line 579: 200
+      line 3642: 216
+      line 3643: 241
+      line 580: 277
+      line 581: 297
+      line 3281: 305
+      line 581: 308
+      line 582: 329
+      line 583: 343
+      line 584: 350
+      line 585: 360
+      line 587: 370
+      line 588: 379
+      line 589: 394
+      line 590: 409
+      line 586: 424
+      line 591: 429
+      line 592: 436
+      line 593: 451
+      line 591: 452
+      line 594: 454
+      line 3643: 455
+      line 3644: 462
+      line 579: 463
+      line 596: 465
+      line 3637: 466
+      line 3645: 467
+      line 597: 468
+      line 598: 473
+      line 599: 478
+      line 3646: 488
+      line 3647: 514
+      line 3648: 542
+      line 600: 559
+      line 3648: 579
+      line 3649: 588
+      line 3646: 593
+      line 599: 594
+      line 602: 596
+      line 604: 608
+      line 3650: 618
+      line 3651: 644
+      line 3652: 672
+      line 605: 689
+      line 3652: 716
+      line 3653: 725
+      line 3650: 730
+      line 604: 731
+      line 607: 733
+      line 608: 743
+      line 611: 774
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+        308      20    34 $i$a$-let-MappedWebGraphBackedGraph$parallelRawDistinctCallSiteStringProjection$tasks$1$1$2$1$1$1   I
+        305      23    33  sets   Ljava/util/List;
+        436      16    37 $i$a$-also-MappedWebGraphBackedGraph$parallelRawDistinctCallSiteStringProjection$tasks$1$1$2$1$1$2   I
+        433      19    36 result   Z
+        277     178    31 $i$a$-any-MappedWebGraphBackedGraph$parallelRawDistinctCallSiteStringProjection$tasks$1$1$2$1$1   I
+        297     158    32 stringId   I
+        343     112    35 states   [B
+        274     181    30 index   I
+        270     192    29 element$iv   I
+        216     247    27 $i$f$any   I
+        213     250    26 $this$any$iv   Ljava/lang/Iterable;
+        176     290    25 $i$a$-withRawCallSiteStringIds-MappedWebGraphBackedGraph$parallelRawDistinctCallSiteStringProjection$tasks$1$1$2$1   I
+        173     293    24 callerClass   I
+        173     293    23 callerName   I
+        173     293    22 calleeClass   I
+        173     293    21 calleeName   I
+         78     390    17 $i$f$withRawCallSiteStringIds   I
+         95     373    18 fields$iv   I
+        110     358    19 callerParameters$iv   I
+        121     347    20 calleeFields$iv   I
+         75     393    16 this_$iv   Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;
+        559      14    25 $i$a$-map-MappedWebGraphBackedGraph$parallelRawDistinctCallSiteStringProjection$tasks$1$1$2$ids$1   I
+        556      17    24 propertyIndex   I
+        542      43    23 item$iv$iv   Ljava/lang/Object;
+        514      76    21 $i$f$mapTo   I
+        511      79    19 $this$mapTo$iv$iv   Ljava/lang/Iterable;
+        511      79    20 destination$iv$iv   Ljava/util/Collection;
+        488     106    18 $i$f$map   I
+        485     109    17 $this$map$iv   Ljava/lang/Iterable;
+        596      12    16   ids   Ljava/util/List;
+        689      24    25 $i$a$-map-MappedWebGraphBackedGraph$parallelRawDistinctCallSiteStringProjection$tasks$1$1$2$values$1   I
+        686      27    24 propertyIndex   I
+        672      50    23 item$iv$iv   Ljava/lang/Object;
+        644      83    21 $i$f$mapTo   I
+        641      86    19 $this$mapTo$iv$iv   Ljava/lang/Iterable;
+        641      86    20 destination$iv$iv   Ljava/util/Collection;
+        618     113    18 $i$f$map   I
+        615     116    17 $this$map$iv   Ljava/lang/Iterable;
+        733      41    16 values   Ljava/util/List;
+         72     718    15 matched   Z
+          0     790     0 $inspected   Lkotlin/jvm/internal/Ref$IntRef;
+          0     790     1 $abort   Ljava/util/concurrent/atomic/AtomicBoolean;
+          0     790     2 this$0   Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;
+          0     790     3 $accounting   Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;
+          0     790     4 $selectedIdValues   Ljava/util/HashSet;
+          0     790     5 $projectedPropertyIndexes   Ljava/util/List;
+          0     790     6 $seenValues   Ljava/util/HashSet;
+          0     790     7 $rows   Ljava/util/ArrayList;
+          0     790     8 $targetSize   I
+          0     790     9 $stringIds   [I
+          0     790    10 $predicates   Ljava/util/List;
+          0     790    11 $predicatePropertyIndexes   Ljava/util/List;
+          0     790    12 $exactMatchSets   Ljava/util/List;
+          0     790    13 $matchStates   Ljava/util/List;
+          0     790    14 nodeId   I
+

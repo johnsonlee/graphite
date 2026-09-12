@@ -1,0 +1,9 @@
+[
+  "/opt/homebrew/opt/openjdk@17/bin/java",
+  "-cp",
+  "/private/tmp/graphite-distinct-phase-details:/private/tmp/graphite-main-profiling-n50joikp",
+  "DistinctPhaseDetails",
+  "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/phase-3.jfr",
+  "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/phase-3.tsv",
+  "/private/tmp/graphite-distinct-phase-details/phase-3.json"
+]

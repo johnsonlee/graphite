@@ -1,0 +1,3524 @@
+{
+  "correctnessAndIntegrityPassed": true,
+  "supplementalPairedRejectionScreen": true,
+  "notP95": true,
+  "candidateAccepted": false,
+  "localV3RejectionTriggered": true,
+  "localDecision": "reject",
+  "verifiedObservations": 216,
+  "verifiedActualRows": 37026,
+  "graphInventorySha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+  "jarHashes": {
+    "base": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "candidate": "fb58d962d349a5c526bec229b996f08d94800702688ed202c1e7e771c3e4e357"
+  },
+  "order": [
+    [
+      1,
+      "candidate"
+    ],
+    [
+      1,
+      "base"
+    ],
+    [
+      2,
+      "base"
+    ],
+    [
+      2,
+      "candidate"
+    ],
+    [
+      3,
+      "candidate"
+    ],
+    [
+      3,
+      "base"
+    ]
+  ],
+  "verifications": [
+    {
+      "pair": 1,
+      "side": "base",
+      "full36RowsVerified": true,
+      "actualResultRows": 6171,
+      "graphInventoryBeforeAfterEqual": true,
+      "runtimeJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+      "fileHashes": {
+        "run.json": "35b4fc4c8548b9f206e8f302192e5f128dc484fc721440b1048afd283c069508",
+        "fork-001.tsv": "bdd45229c402f61e0052ddd434a8bda7e343880ed07319af53bb79df8f29e4e0",
+        "fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+        "fork-001-command.json": "781cf85579a85c8461402c4b202df46f0a4f149593fe3845de6340d3c55bcce0",
+        "fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+        "graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+        "graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+      }
+    },
+    {
+      "pair": 1,
+      "side": "candidate",
+      "full36RowsVerified": true,
+      "actualResultRows": 6171,
+      "graphInventoryBeforeAfterEqual": true,
+      "runtimeJarSha256": "fb58d962d349a5c526bec229b996f08d94800702688ed202c1e7e771c3e4e357",
+      "fileHashes": {
+        "run.json": "0bbac3ebd6055a0ac9d2aa9a1a37cdb726a0fe1f3936222871585ea3c6cb9f7a",
+        "fork-001.tsv": "cdfb213cdcdb3a277299a22b00383bcfabfbf5795975e8f4cb59d9029b85a0e7",
+        "fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+        "fork-001-command.json": "c1876c3785d7a91c1fb51e7ec70443760d87c7c25a3955cdba4cd295d277a5db",
+        "fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+        "graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+        "graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+      }
+    },
+    {
+      "pair": 2,
+      "side": "base",
+      "full36RowsVerified": true,
+      "actualResultRows": 6171,
+      "graphInventoryBeforeAfterEqual": true,
+      "runtimeJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+      "fileHashes": {
+        "run.json": "cd3ca746a02a1238d3c67d02c80302a2cdc0b002b334eff04cf560b134f8a6bd",
+        "fork-001.tsv": "a777f3d5a02c8713181491f5438b7430fbdfbefbd4676d096f4115069d48b029",
+        "fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+        "fork-001-command.json": "be2dd4dfdfd46043f625a70e6b60ea33cdcf09f6dc488a6b562225abad4419d8",
+        "fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+        "graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+        "graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+      }
+    },
+    {
+      "pair": 2,
+      "side": "candidate",
+      "full36RowsVerified": true,
+      "actualResultRows": 6171,
+      "graphInventoryBeforeAfterEqual": true,
+      "runtimeJarSha256": "fb58d962d349a5c526bec229b996f08d94800702688ed202c1e7e771c3e4e357",
+      "fileHashes": {
+        "run.json": "cb424ab758fb4281882af21f667acfd38bd5cdd8aebbd2c499402cbe1c0f9144",
+        "fork-001.tsv": "d0dee01dab4f05dcc827b2dcd63e18081ab13c0c3344c61fbfc80755c61d4df7",
+        "fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+        "fork-001-command.json": "1e7e44b0ce6ba31f692576c880a01204d8349e2449221718cdb435d447cd7e62",
+        "fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+        "graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+        "graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+      }
+    },
+    {
+      "pair": 3,
+      "side": "base",
+      "full36RowsVerified": true,
+      "actualResultRows": 6171,
+      "graphInventoryBeforeAfterEqual": true,
+      "runtimeJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+      "fileHashes": {
+        "run.json": "adc5f26c0c759eef26e652b7c54a62c3b710129786e8851aec095f2cf70038f2",
+        "fork-001.tsv": "ccdb3055073873a61ca278101bfb264a76ed12b1b59100fa383257dbfd2f2102",
+        "fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+        "fork-001-command.json": "f5537bace4caa53ff730fa4b14cf2163cf8b8049e95700f23a74656243afa727",
+        "fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+        "graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+        "graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+      }
+    },
+    {
+      "pair": 3,
+      "side": "candidate",
+      "full36RowsVerified": true,
+      "actualResultRows": 6171,
+      "graphInventoryBeforeAfterEqual": true,
+      "runtimeJarSha256": "fb58d962d349a5c526bec229b996f08d94800702688ed202c1e7e771c3e4e357",
+      "fileHashes": {
+        "run.json": "0ca7db8d592f95cef13cc1808dc9891be89cfc4565f772a2883a232fde0c7e1a",
+        "fork-001.tsv": "94849913117201934db8e2256c4229eb52ed3f8f9108e1d555b2542d449a35d0",
+        "fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+        "fork-001-command.json": "7159be2ff8843b389302d8b582d4ae62720e605496a8ad48fcede332eb086c23",
+        "fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+        "graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+        "graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+      }
+    }
+  ],
+  "pureFourOrCoverage": [
+    {
+      "id": "or-four-broad",
+      "terms": [
+        "com.android.internal.app.iappopsservice$stub$proxy",
+        "recycle",
+        "org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1",
+        "visitstatementcontainer"
+      ],
+      "hitGraphPositions": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        54,
+        55,
+        56,
+        57,
+        58,
+        62,
+        63
+      ],
+      "hitGraphCount": 55,
+      "matchingNodes": 50461,
+      "exclusiveCounts": [
+        473,
+        49431,
+        260,
+        68
+      ]
+    },
+    {
+      "id": "or-four-single-early",
+      "terms": [
+        "com.android.internal.app.iappopsservice$stub$proxy",
+        "com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3",
+        "com.android.internal.org.bouncycastle.jcajce.provider.asymmetric.dsa.algorithmparametergeneratorspi",
+        "android.media.internal.guava_common.util.concurrent.closingfuture$combiner$asynccombiningcallable"
+      ],
+      "hitGraphPositions": [
+        0
+      ],
+      "hitGraphCount": 1,
+      "matchingNodes": 704,
+      "exclusiveCounts": [
+        673,
+        6,
+        24,
+        1
+      ]
+    },
+    {
+      "id": "or-four-single-middle",
+      "terms": [
+        "org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl",
+        "net.bytebuddy.dynamic.scaffold.typewriter$default$forinlining$withfullprocessing$initializationhandler$appending$framewriter$expanding",
+        "net.bytebuddy.dynamic.classfilelocator$forinstrumentation$classloadingdelegate$fordelegatingclassloader$dispatcher$creationaction",
+        "net.bytebuddy.agent.builder.agentbuilder$lambdainstrumentationstrategy$lambdametafactoryfactory$loader$usingmethodhandlelookup"
+      ],
+      "hitGraphPositions": [
+        31
+      ],
+      "hitGraphCount": 1,
+      "matchingNodes": 2646,
+      "exclusiveCounts": [
+        2547,
+        6,
+        9,
+        84
+      ]
+    },
+    {
+      "id": "or-four-single-late",
+      "terms": [
+        "org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1",
+        "org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1",
+        "org.jetbrains.kotlin.ir.backend.js.export.exportmodelgeneratorkt$isallowedfakeoverriddendeclaration$$inlined$filterisinstance$1",
+        "org.jetbrains.kotlin.ir.backend.js.lower.booleanpropertyinexternallowering$externalbooleanpropertyprocessor$whenmappings"
+      ],
+      "hitGraphPositions": [
+        63
+      ],
+      "hitGraphCount": 1,
+      "matchingNodes": 299,
+      "exclusiveCounts": [
+        289,
+        4,
+        3,
+        3
+      ]
+    },
+    {
+      "id": "or-four-few-early-late",
+      "terms": [
+        "com.android.internal.app.iappopsservice$stub$proxy",
+        "com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3",
+        "org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1",
+        "org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1"
+      ],
+      "hitGraphPositions": [
+        0,
+        63
+      ],
+      "hitGraphCount": 2,
+      "matchingNodes": 972,
+      "exclusiveCounts": [
+        673,
+        6,
+        289,
+        4
+      ]
+    },
+    {
+      "id": "or-four-all",
+      "terms": [
+        "get",
+        "set",
+        "read",
+        "write"
+      ],
+      "hitGraphPositions": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63
+      ],
+      "hitGraphCount": 64,
+      "matchingNodes": 2455554,
+      "exclusiveCounts": [
+        1215977,
+        438686,
+        210146,
+        236328
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "id": "or-single-early-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 88052042,
+      "candidateLatencyNanos": 88966458,
+      "deltaNanos": 914416,
+      "relativeIncreasePercent": 1.0384949391633642,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158842,
+      "candidateWorkUnits": 1158842,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "88052042",
+          "candidate": "88966458"
+        }
+      }
+    },
+    {
+      "id": "or-single-early-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 90210167,
+      "candidateLatencyNanos": 88543000,
+      "deltaNanos": -1667167,
+      "relativeIncreasePercent": -1.8480921335618412,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158842,
+      "candidateWorkUnits": 1158842,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "90210167",
+          "candidate": "88543000"
+        }
+      }
+    },
+    {
+      "id": "or-single-early-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 88718000,
+      "candidateLatencyNanos": 101634792,
+      "deltaNanos": 12916792,
+      "relativeIncreasePercent": 14.55938141076219,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158842,
+      "candidateWorkUnits": 1158842,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "88718000",
+          "candidate": "101634792"
+        }
+      }
+    },
+    {
+      "id": "or-single-early-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 284505208,
+      "candidateLatencyNanos": 262068167,
+      "deltaNanos": -22437041,
+      "relativeIncreasePercent": -7.886337532351956,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57725462,
+      "candidateWorkUnits": 57725462,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "284505208",
+          "candidate": "262068167"
+        }
+      }
+    },
+    {
+      "id": "or-single-early-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 281194166,
+      "candidateLatencyNanos": 248388875,
+      "deltaNanos": -32805291,
+      "relativeIncreasePercent": -11.666419494634892,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57725462,
+      "candidateWorkUnits": 57725462,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "281194166",
+          "candidate": "248388875"
+        }
+      }
+    },
+    {
+      "id": "or-single-early-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 276075292,
+      "candidateLatencyNanos": 252435958,
+      "deltaNanos": -23639334,
+      "relativeIncreasePercent": -8.562640223522791,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57725462,
+      "candidateWorkUnits": 57725462,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "276075292",
+          "candidate": "252435958"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 38995666,
+      "candidateLatencyNanos": 39588500,
+      "deltaNanos": 592834,
+      "relativeIncreasePercent": 1.520256122821444,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1115413,
+      "candidateWorkUnits": 1115413,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "38995666",
+          "candidate": "39588500"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 36398541,
+      "candidateLatencyNanos": 37185709,
+      "deltaNanos": 787168,
+      "relativeIncreasePercent": 2.1626361342340616,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1115413,
+      "candidateWorkUnits": 1115413,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "36398541",
+          "candidate": "37185709"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 37899292,
+      "candidateLatencyNanos": 39019583,
+      "deltaNanos": 1120291,
+      "relativeIncreasePercent": 2.955968148428736,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1115413,
+      "candidateWorkUnits": 1115413,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "37899292",
+          "candidate": "39019583"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 172767292,
+      "candidateLatencyNanos": 174192667,
+      "deltaNanos": 1425375,
+      "relativeIncreasePercent": 0.8250259545655204,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645747,
+      "candidateWorkUnits": 57645747,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "172767292",
+          "candidate": "174192667"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 167924833,
+      "candidateLatencyNanos": 170489125,
+      "deltaNanos": 2564292,
+      "relativeIncreasePercent": 1.5270475213156829,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645747,
+      "candidateWorkUnits": 57645747,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "167924833",
+          "candidate": "170489125"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 167583833,
+      "candidateLatencyNanos": 192696250,
+      "deltaNanos": 25112417,
+      "relativeIncreasePercent": 14.984987841876132,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645747,
+      "candidateWorkUnits": 57645747,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "167583833",
+          "candidate": "192696250"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 113059917,
+      "candidateLatencyNanos": 105544083,
+      "deltaNanos": -7515834,
+      "relativeIncreasePercent": -6.64765568508245,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31181868,
+      "candidateWorkUnits": 31181868,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "113059917",
+          "candidate": "105544083"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 104224083,
+      "candidateLatencyNanos": 107736875,
+      "deltaNanos": 3512792,
+      "relativeIncreasePercent": 3.370422553873657,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31181868,
+      "candidateWorkUnits": 31181868,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "104224083",
+          "candidate": "107736875"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 106337084,
+      "candidateLatencyNanos": 108952459,
+      "deltaNanos": 2615375,
+      "relativeIncreasePercent": 2.4595135597286077,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31181868,
+      "candidateWorkUnits": 31181868,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "106337084",
+          "candidate": "108952459"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 153974333,
+      "candidateLatencyNanos": 157623417,
+      "deltaNanos": 3649084,
+      "relativeIncreasePercent": 2.369930058407852,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57706193,
+      "candidateWorkUnits": 57706193,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "153974333",
+          "candidate": "157623417"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 153428416,
+      "candidateLatencyNanos": 160451792,
+      "deltaNanos": 7023376,
+      "relativeIncreasePercent": 4.5776240041479666,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57706193,
+      "candidateWorkUnits": 57706193,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "153428416",
+          "candidate": "160451792"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 150565000,
+      "candidateLatencyNanos": 158430833,
+      "deltaNanos": 7865833,
+      "relativeIncreasePercent": 5.224210805964201,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57706193,
+      "candidateWorkUnits": 57706193,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "150565000",
+          "candidate": "158430833"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 94410875,
+      "candidateLatencyNanos": 94567917,
+      "deltaNanos": 157042,
+      "relativeIncreasePercent": 0.16633888839606667,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31149593,
+      "candidateWorkUnits": 31149593,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "94410875",
+          "candidate": "94567917"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 91570959,
+      "candidateLatencyNanos": 94953292,
+      "deltaNanos": 3382333,
+      "relativeIncreasePercent": 3.693674323100624,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31149593,
+      "candidateWorkUnits": 31149593,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "91570959",
+          "candidate": "94953292"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 95583250,
+      "candidateLatencyNanos": 93310583,
+      "deltaNanos": -2272667,
+      "relativeIncreasePercent": -2.3776833284074357,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31149593,
+      "candidateWorkUnits": 31149593,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "95583250",
+          "candidate": "93310583"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 152697125,
+      "candidateLatencyNanos": 151615417,
+      "deltaNanos": -1081708,
+      "relativeIncreasePercent": -0.7084010258870297,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57648990,
+      "candidateWorkUnits": 57648990,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "152697125",
+          "candidate": "151615417"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 152492917,
+      "candidateLatencyNanos": 154868875,
+      "deltaNanos": 2375958,
+      "relativeIncreasePercent": 1.558077612221163,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57648990,
+      "candidateWorkUnits": 57648990,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "152492917",
+          "candidate": "154868875"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 152215958,
+      "candidateLatencyNanos": 143350375,
+      "deltaNanos": -8865583,
+      "relativeIncreasePercent": -5.824345302875536,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57648990,
+      "candidateWorkUnits": 57648990,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "152215958",
+          "candidate": "143350375"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 147170250,
+      "candidateLatencyNanos": 150573417,
+      "deltaNanos": 3403167,
+      "relativeIncreasePercent": 2.3124014534187447,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57694678,
+      "candidateWorkUnits": 57694678,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147170250",
+          "candidate": "150573417"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 147149625,
+      "candidateLatencyNanos": 142661042,
+      "deltaNanos": -4488583,
+      "relativeIncreasePercent": -3.0503529995404337,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57694678,
+      "candidateWorkUnits": 57694678,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147149625",
+          "candidate": "142661042"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 148967250,
+      "candidateLatencyNanos": 148614208,
+      "deltaNanos": -353042,
+      "relativeIncreasePercent": -0.2369930303472743,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57694678,
+      "candidateWorkUnits": 57694678,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "148967250",
+          "candidate": "148614208"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 144355083,
+      "candidateLatencyNanos": 150828083,
+      "deltaNanos": 6473000,
+      "relativeIncreasePercent": 4.484081797105821,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57699420,
+      "candidateWorkUnits": 57699420,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "144355083",
+          "candidate": "150828083"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 145545959,
+      "candidateLatencyNanos": 146606042,
+      "deltaNanos": 1060083,
+      "relativeIncreasePercent": 0.7283493181696649,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57699420,
+      "candidateWorkUnits": 57699420,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "145545959",
+          "candidate": "146606042"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 143141125,
+      "candidateLatencyNanos": 143167541,
+      "deltaNanos": 26416,
+      "relativeIncreasePercent": 0.018454514731528066,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57699420,
+      "candidateWorkUnits": 57699420,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "143141125",
+          "candidate": "143167541"
+        }
+      }
+    },
+    {
+      "id": "and-single-late-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 147896750,
+      "candidateLatencyNanos": 147603166,
+      "deltaNanos": -293584,
+      "relativeIncreasePercent": -0.1985060523642338,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147896750",
+          "candidate": "147603166"
+        }
+      }
+    },
+    {
+      "id": "and-single-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 147188625,
+      "candidateLatencyNanos": 148136750,
+      "deltaNanos": 948125,
+      "relativeIncreasePercent": 0.6441564353223627,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147188625",
+          "candidate": "148136750"
+        }
+      }
+    },
+    {
+      "id": "and-single-late-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 147974541,
+      "candidateLatencyNanos": 147004583,
+      "deltaNanos": -969958,
+      "relativeIncreasePercent": -0.655489784556926,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147974541",
+          "candidate": "147004583"
+        }
+      }
+    },
+    {
+      "id": "and-single-late-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 146690458,
+      "candidateLatencyNanos": 134736875,
+      "deltaNanos": -11953583,
+      "relativeIncreasePercent": -8.148848372945976,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146690458",
+          "candidate": "134736875"
+        }
+      }
+    },
+    {
+      "id": "and-single-late-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 149482041,
+      "candidateLatencyNanos": 149104500,
+      "deltaNanos": -377541,
+      "relativeIncreasePercent": -0.2525661259870007,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149482041",
+          "candidate": "149104500"
+        }
+      }
+    },
+    {
+      "id": "and-single-late-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 147670083,
+      "candidateLatencyNanos": 146610625,
+      "deltaNanos": -1059458,
+      "relativeIncreasePercent": -0.7174493157154926,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147670083",
+          "candidate": "146610625"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 15370542,
+      "candidateLatencyNanos": 15196042,
+      "deltaNanos": -174500,
+      "relativeIncreasePercent": -1.135288527886655,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158755,
+      "candidateWorkUnits": 1158755,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "15370542",
+          "candidate": "15196042"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 14768458,
+      "candidateLatencyNanos": 15541208,
+      "deltaNanos": 772750,
+      "relativeIncreasePercent": 5.232435234606077,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158755,
+      "candidateWorkUnits": 1158755,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "14768458",
+          "candidate": "15541208"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 11658459,
+      "candidateLatencyNanos": 15474917,
+      "deltaNanos": 3816458,
+      "relativeIncreasePercent": 32.73552705378987,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 1158755,
+      "candidateWorkUnits": 1158755,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "11658459",
+          "candidate": "15474917"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 145554750,
+      "candidateLatencyNanos": 148019875,
+      "deltaNanos": 2465125,
+      "relativeIncreasePercent": 1.6936067012584612,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724950,
+      "candidateWorkUnits": 57724950,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "145554750",
+          "candidate": "148019875"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 148322875,
+      "candidateLatencyNanos": 145297584,
+      "deltaNanos": -3025291,
+      "relativeIncreasePercent": -2.039665830371748,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724950,
+      "candidateWorkUnits": 57724950,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "148322875",
+          "candidate": "145297584"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 146777667,
+      "candidateLatencyNanos": 146081500,
+      "deltaNanos": -696167,
+      "relativeIncreasePercent": -0.4743003579693088,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724950,
+      "candidateWorkUnits": 57724950,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146777667",
+          "candidate": "146081500"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 13999541,
+      "candidateLatencyNanos": 15345875,
+      "deltaNanos": 1346334,
+      "relativeIncreasePercent": 9.616986728350593,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158758,
+      "candidateWorkUnits": 1158758,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "13999541",
+          "candidate": "15345875"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 13069875,
+      "candidateLatencyNanos": 14432375,
+      "deltaNanos": 1362500,
+      "relativeIncreasePercent": 10.424736273300242,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158758,
+      "candidateWorkUnits": 1158758,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "13069875",
+          "candidate": "14432375"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 13511417,
+      "candidateLatencyNanos": 13245125,
+      "deltaNanos": -266292,
+      "relativeIncreasePercent": -1.9708665641805,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158758,
+      "candidateWorkUnits": 1158758,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "13511417",
+          "candidate": "13245125"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 136939625,
+      "candidateLatencyNanos": 146239041,
+      "deltaNanos": 9299416,
+      "relativeIncreasePercent": 6.790887590060218,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724583,
+      "candidateWorkUnits": 57724583,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "136939625",
+          "candidate": "146239041"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 148716208,
+      "candidateLatencyNanos": 149998292,
+      "deltaNanos": 1282084,
+      "relativeIncreasePercent": 0.8621010562614668,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724583,
+      "candidateWorkUnits": 57724583,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "148716208",
+          "candidate": "149998292"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 147269416,
+      "candidateLatencyNanos": 145653209,
+      "deltaNanos": -1616207,
+      "relativeIncreasePercent": -1.0974491811660338,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724583,
+      "candidateWorkUnits": 57724583,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147269416",
+          "candidate": "145653209"
+        }
+      }
+    },
+    {
+      "id": "or-broad-all-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 4929791,
+      "candidateLatencyNanos": 4833375,
+      "deltaNanos": -96416,
+      "relativeIncreasePercent": -1.955782709652397,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 503,
+      "candidateWorkUnits": 503,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "4929791",
+          "candidate": "4833375"
+        }
+      }
+    },
+    {
+      "id": "or-broad-all-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 5134875,
+      "candidateLatencyNanos": 4905375,
+      "deltaNanos": -229500,
+      "relativeIncreasePercent": -4.469436938581757,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 503,
+      "candidateWorkUnits": 503,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "5134875",
+          "candidate": "4905375"
+        }
+      }
+    },
+    {
+      "id": "or-broad-all-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 4488625,
+      "candidateLatencyNanos": 4579583,
+      "deltaNanos": 90958,
+      "relativeIncreasePercent": 2.0264112061043194,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 503,
+      "candidateWorkUnits": 503,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "4488625",
+          "candidate": "4579583"
+        }
+      }
+    },
+    {
+      "id": "or-broad-all-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 184519500,
+      "candidateLatencyNanos": 183088291,
+      "deltaNanos": -1431209,
+      "relativeIncreasePercent": -0.7756410569072646,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58038455,
+      "candidateWorkUnits": 58038455,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "184519500",
+          "candidate": "183088291"
+        }
+      }
+    },
+    {
+      "id": "or-broad-all-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 185469417,
+      "candidateLatencyNanos": 184507083,
+      "deltaNanos": -962334,
+      "relativeIncreasePercent": -0.51886398068529,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58038455,
+      "candidateWorkUnits": 58038455,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "185469417",
+          "candidate": "184507083"
+        }
+      }
+    },
+    {
+      "id": "or-broad-all-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 186036416,
+      "candidateLatencyNanos": 185571750,
+      "deltaNanos": -464666,
+      "relativeIncreasePercent": -0.24977152860222807,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58038455,
+      "candidateWorkUnits": 58038455,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "186036416",
+          "candidate": "185571750"
+        }
+      }
+    },
+    {
+      "id": "and-broad-all-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 20458584,
+      "candidateLatencyNanos": 21678042,
+      "deltaNanos": 1219458,
+      "relativeIncreasePercent": 5.960617802287783,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1138149,
+      "candidateWorkUnits": 1138149,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "20458584",
+          "candidate": "21678042"
+        }
+      }
+    },
+    {
+      "id": "and-broad-all-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 20441250,
+      "candidateLatencyNanos": 21012459,
+      "deltaNanos": 571209,
+      "relativeIncreasePercent": 2.7943936892313337,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1138149,
+      "candidateWorkUnits": 1138149,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "20441250",
+          "candidate": "21012459"
+        }
+      }
+    },
+    {
+      "id": "and-broad-all-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 19628333,
+      "candidateLatencyNanos": 18549917,
+      "deltaNanos": -1078416,
+      "relativeIncreasePercent": -5.494180275013676,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1138149,
+      "candidateWorkUnits": 1138149,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "19628333",
+          "candidate": "18549917"
+        }
+      }
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 1027710125,
+      "candidateLatencyNanos": 986815250,
+      "deltaNanos": -40894875,
+      "relativeIncreasePercent": -3.9792227404590372,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 59629362,
+      "candidateWorkUnits": 59629362,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "1027710125",
+          "candidate": "986815250"
+        }
+      }
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 987213583,
+      "candidateLatencyNanos": 977545125,
+      "deltaNanos": -9668458,
+      "relativeIncreasePercent": -0.979368412924278,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 59629362,
+      "candidateWorkUnits": 59629362,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "987213583",
+          "candidate": "977545125"
+        }
+      }
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 998504666,
+      "candidateLatencyNanos": 935270166,
+      "deltaNanos": -63234500,
+      "relativeIncreasePercent": -6.3329198303415835,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 59629362,
+      "candidateWorkUnits": 59629362,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "998504666",
+          "candidate": "935270166"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 351063167,
+      "candidateLatencyNanos": 271282708,
+      "deltaNanos": -79780459,
+      "relativeIncreasePercent": -22.725385770817706,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 133023,
+      "candidateWorkUnits": 78214,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "351063167",
+          "candidate": "271282708"
+        },
+        "graphWorkUnits": {
+          "base": "133023",
+          "candidate": "78214"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 372238792,
+      "candidateLatencyNanos": 727403042,
+      "deltaNanos": 355164250,
+      "relativeIncreasePercent": 95.41301380539619,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 128231,
+      "candidateWorkUnits": 304905,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "372238792",
+          "candidate": "727403042"
+        },
+        "graphWorkUnits": {
+          "base": "128231",
+          "candidate": "304905"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 223453459,
+      "candidateLatencyNanos": 297224584,
+      "deltaNanos": 73771125,
+      "relativeIncreasePercent": 33.01408952456627,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 60263,
+      "candidateWorkUnits": 92920,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "223453459",
+          "candidate": "297224584"
+        },
+        "graphWorkUnits": {
+          "base": "60263",
+          "candidate": "92920"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 38930371917,
+      "candidateLatencyNanos": 39225589041,
+      "deltaNanos": 295217124,
+      "relativeIncreasePercent": 0.7583208417053048,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 19431891,
+      "candidateWorkUnits": 19431891,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "38930371917",
+          "candidate": "39225589041"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 39256033208,
+      "candidateLatencyNanos": 38688882709,
+      "deltaNanos": -567150499,
+      "relativeIncreasePercent": -1.4447473487576432,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 19431891,
+      "candidateWorkUnits": 19431891,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "39256033208",
+          "candidate": "38688882709"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 39972483250,
+      "candidateLatencyNanos": 37155943125,
+      "deltaNanos": -2816540125,
+      "relativeIncreasePercent": -7.04619752389289,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 19431891,
+      "candidateWorkUnits": 19431891,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "39972483250",
+          "candidate": "37155943125"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 146477667,
+      "candidateLatencyNanos": 136376292,
+      "deltaNanos": -10101375,
+      "relativeIncreasePercent": -6.896187799058814,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146477667",
+          "candidate": "136376292"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 146348458,
+      "candidateLatencyNanos": 149631791,
+      "deltaNanos": 3283333,
+      "relativeIncreasePercent": 2.243503652084944,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146348458",
+          "candidate": "149631791"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 143654625,
+      "candidateLatencyNanos": 146034542,
+      "deltaNanos": 2379917,
+      "relativeIncreasePercent": 1.65669361498107,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "143654625",
+          "candidate": "146034542"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 143498583,
+      "candidateLatencyNanos": 148320250,
+      "deltaNanos": 4821667,
+      "relativeIncreasePercent": 3.3600798692207294,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "143498583",
+          "candidate": "148320250"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 146158250,
+      "candidateLatencyNanos": 146661666,
+      "deltaNanos": 503416,
+      "relativeIncreasePercent": 0.34443214803132904,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146158250",
+          "candidate": "146661666"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 134775500,
+      "candidateLatencyNanos": 144712125,
+      "deltaNanos": 9936625,
+      "relativeIncreasePercent": 7.372723529128068,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "134775500",
+          "candidate": "144712125"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 35688000,
+      "candidateLatencyNanos": 24977125,
+      "deltaNanos": -10710875,
+      "relativeIncreasePercent": -30.01253922887245,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1152827,
+      "candidateWorkUnits": 1152827,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "35688000",
+          "candidate": "24977125"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 27658792,
+      "candidateLatencyNanos": 36157666,
+      "deltaNanos": 8498874,
+      "relativeIncreasePercent": 30.727567566942188,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 1152827,
+      "candidateWorkUnits": 1152827,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "27658792",
+          "candidate": "36157666"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 32379083,
+      "candidateLatencyNanos": 33510875,
+      "deltaNanos": 1131792,
+      "relativeIncreasePercent": 3.495441794939035,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1152827,
+      "candidateWorkUnits": 1152827,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "32379083",
+          "candidate": "33510875"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 152545875,
+      "candidateLatencyNanos": 148876667,
+      "deltaNanos": -3669208,
+      "relativeIncreasePercent": -2.4053144668775865,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57697051,
+      "candidateWorkUnits": 57697051,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "152545875",
+          "candidate": "148876667"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 150397208,
+      "candidateLatencyNanos": 152193541,
+      "deltaNanos": 1796333,
+      "relativeIncreasePercent": 1.1943925182440887,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57697051,
+      "candidateWorkUnits": 57697051,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "150397208",
+          "candidate": "152193541"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 154944292,
+      "candidateLatencyNanos": 149188833,
+      "deltaNanos": -5755459,
+      "relativeIncreasePercent": -3.714534382460504,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57697051,
+      "candidateWorkUnits": 57697051,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "154944292",
+          "candidate": "149188833"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-early-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 15065459,
+      "candidateLatencyNanos": 16685417,
+      "deltaNanos": 1619958,
+      "relativeIncreasePercent": 10.752795517215905,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1159025,
+      "candidateWorkUnits": 1159025,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "15065459",
+          "candidate": "16685417"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-early-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 13929750,
+      "candidateLatencyNanos": 12899208,
+      "deltaNanos": -1030542,
+      "relativeIncreasePercent": -7.398137080708556,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1159025,
+      "candidateWorkUnits": 1159025,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "13929750",
+          "candidate": "12899208"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-early-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 15736334,
+      "candidateLatencyNanos": 13546541,
+      "deltaNanos": -2189793,
+      "relativeIncreasePercent": -13.915521874408615,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1159025,
+      "candidateWorkUnits": 1159025,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "15736334",
+          "candidate": "13546541"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-early-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 150831583,
+      "candidateLatencyNanos": 147853125,
+      "deltaNanos": -2978458,
+      "relativeIncreasePercent": -1.9746912024386827,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57731891,
+      "candidateWorkUnits": 57731891,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "150831583",
+          "candidate": "147853125"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-early-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 149691791,
+      "candidateLatencyNanos": 148818125,
+      "deltaNanos": -873666,
+      "relativeIncreasePercent": -0.5836432273029588,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57731891,
+      "candidateWorkUnits": 57731891,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149691791",
+          "candidate": "148818125"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-early-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 153842625,
+      "candidateLatencyNanos": 148709667,
+      "deltaNanos": -5132958,
+      "relativeIncreasePercent": -3.33649923095111,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57731891,
+      "candidateWorkUnits": 57731891,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "153842625",
+          "candidate": "148709667"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 91256375,
+      "candidateLatencyNanos": 88133292,
+      "deltaNanos": -3123083,
+      "relativeIncreasePercent": -3.422317618906076,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31119327,
+      "candidateWorkUnits": 31119327,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "91256375",
+          "candidate": "88133292"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 92352041,
+      "candidateLatencyNanos": 92545417,
+      "deltaNanos": 193376,
+      "relativeIncreasePercent": 0.20939006643069208,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31119327,
+      "candidateWorkUnits": 31119327,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "92352041",
+          "candidate": "92545417"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 93046791,
+      "candidateLatencyNanos": 92851334,
+      "deltaNanos": -195457,
+      "relativeIncreasePercent": -0.21006312834582333,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31119327,
+      "candidateWorkUnits": 31119327,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "93046791",
+          "candidate": "92851334"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 143571792,
+      "candidateLatencyNanos": 137699625,
+      "deltaNanos": -5872167,
+      "relativeIncreasePercent": -4.090056213827853,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57710259,
+      "candidateWorkUnits": 57710259,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "143571792",
+          "candidate": "137699625"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 149322542,
+      "candidateLatencyNanos": 149978250,
+      "deltaNanos": 655708,
+      "relativeIncreasePercent": 0.43912191101059606,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57710259,
+      "candidateWorkUnits": 58610531,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149322542",
+          "candidate": "149978250"
+        },
+        "graphWorkUnits": {
+          "base": "57710259",
+          "candidate": "58610531"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 149163916,
+      "candidateLatencyNanos": 150133959,
+      "deltaNanos": 970043,
+      "relativeIncreasePercent": 0.6503201484734418,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57710259,
+      "candidateWorkUnits": 58741603,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149163916",
+          "candidate": "150133959"
+        },
+        "graphWorkUnits": {
+          "base": "57710259",
+          "candidate": "58741603"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 148273750,
+      "candidateLatencyNanos": 148909958,
+      "deltaNanos": 636208,
+      "relativeIncreasePercent": 0.42907662347515996,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57698955,
+      "candidateWorkUnits": 57698955,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "148273750",
+          "candidate": "148909958"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 146800417,
+      "candidateLatencyNanos": 149793875,
+      "deltaNanos": 2993458,
+      "relativeIncreasePercent": 2.039134534611029,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57698955,
+      "candidateWorkUnits": 57698955,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146800417",
+          "candidate": "149793875"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 149950959,
+      "candidateLatencyNanos": 152920500,
+      "deltaNanos": 2969541,
+      "relativeIncreasePercent": 1.9803414528345897,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57698955,
+      "candidateWorkUnits": 57698955,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149950959",
+          "candidate": "152920500"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 151396333,
+      "candidateLatencyNanos": 147557709,
+      "deltaNanos": -3838624,
+      "relativeIncreasePercent": -2.5354801691266857,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57703697,
+      "candidateWorkUnits": 57703697,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "151396333",
+          "candidate": "147557709"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 146673208,
+      "candidateLatencyNanos": 150829958,
+      "deltaNanos": 4156750,
+      "relativeIncreasePercent": 2.8340213299214128,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57703697,
+      "candidateWorkUnits": 57703697,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146673208",
+          "candidate": "150829958"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 150617750,
+      "candidateLatencyNanos": 145348666,
+      "deltaNanos": -5269084,
+      "relativeIncreasePercent": -3.4983154375895267,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57703697,
+      "candidateWorkUnits": 57703697,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "150617750",
+          "candidate": "145348666"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 16239375,
+      "candidateLatencyNanos": 15263208,
+      "deltaNanos": -976167,
+      "relativeIncreasePercent": -6.011111880845168,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158850,
+      "candidateWorkUnits": 1158850,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "16239375",
+          "candidate": "15263208"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 14058959,
+      "candidateLatencyNanos": 14864916,
+      "deltaNanos": 805957,
+      "relativeIncreasePercent": 5.732693295428203,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158850,
+      "candidateWorkUnits": 1158850,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "14058959",
+          "candidate": "14864916"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 14918125,
+      "candidateLatencyNanos": 15917333,
+      "deltaNanos": 999208,
+      "relativeIncreasePercent": 6.697946290167163,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158850,
+      "candidateWorkUnits": 1158850,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "14918125",
+          "candidate": "15917333"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 150508708,
+      "candidateLatencyNanos": 145088208,
+      "deltaNanos": -5420500,
+      "relativeIncreasePercent": -3.601452747837022,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57729887,
+      "candidateWorkUnits": 57729887,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "150508708",
+          "candidate": "145088208"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 147748458,
+      "candidateLatencyNanos": 149540500,
+      "deltaNanos": 1792042,
+      "relativeIncreasePercent": 1.2129006449596922,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57729887,
+      "candidateWorkUnits": 57729887,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147748458",
+          "candidate": "149540500"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 147631792,
+      "candidateLatencyNanos": 145818083,
+      "deltaNanos": -1813709,
+      "relativeIncreasePercent": -1.2285355176072104,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57729887,
+      "candidateWorkUnits": 57729887,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147631792",
+          "candidate": "145818083"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 16037666,
+      "candidateLatencyNanos": 13136167,
+      "deltaNanos": -2901499,
+      "relativeIncreasePercent": -18.09177844207505,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1123138,
+      "candidateWorkUnits": 1123138,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "16037666",
+          "candidate": "13136167"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 15327000,
+      "candidateLatencyNanos": 14927541,
+      "deltaNanos": -399459,
+      "relativeIncreasePercent": -2.60624388334312,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1123138,
+      "candidateWorkUnits": 1123138,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "15327000",
+          "candidate": "14927541"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 15551958,
+      "candidateLatencyNanos": 16163750,
+      "deltaNanos": 611792,
+      "relativeIncreasePercent": 3.9338583604713957,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1123138,
+      "candidateWorkUnits": 1123138,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "15551958",
+          "candidate": "16163750"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 180024334,
+      "candidateLatencyNanos": 181368041,
+      "deltaNanos": 1343707,
+      "relativeIncreasePercent": 0.7464029834988863,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58084676,
+      "candidateWorkUnits": 58084676,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "180024334",
+          "candidate": "181368041"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 178674667,
+      "candidateLatencyNanos": 183875917,
+      "deltaNanos": 5201250,
+      "relativeIncreasePercent": 2.911017038582196,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58084676,
+      "candidateWorkUnits": 58084676,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "178674667",
+          "candidate": "183875917"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 177941667,
+      "candidateLatencyNanos": 181258542,
+      "deltaNanos": 3316875,
+      "relativeIncreasePercent": 1.8640237870762446,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58084676,
+      "candidateWorkUnits": 58084676,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "177941667",
+          "candidate": "181258542"
+        }
+      }
+    }
+  ],
+  "slowerObservations": [
+    {
+      "id": "or-single-early-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 88052042,
+      "candidateLatencyNanos": 88966458,
+      "deltaNanos": 914416,
+      "relativeIncreasePercent": 1.0384949391633642,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158842,
+      "candidateWorkUnits": 1158842,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "88052042",
+          "candidate": "88966458"
+        }
+      }
+    },
+    {
+      "id": "or-single-early-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 88718000,
+      "candidateLatencyNanos": 101634792,
+      "deltaNanos": 12916792,
+      "relativeIncreasePercent": 14.55938141076219,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158842,
+      "candidateWorkUnits": 1158842,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "88718000",
+          "candidate": "101634792"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 38995666,
+      "candidateLatencyNanos": 39588500,
+      "deltaNanos": 592834,
+      "relativeIncreasePercent": 1.520256122821444,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1115413,
+      "candidateWorkUnits": 1115413,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "38995666",
+          "candidate": "39588500"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 36398541,
+      "candidateLatencyNanos": 37185709,
+      "deltaNanos": 787168,
+      "relativeIncreasePercent": 2.1626361342340616,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1115413,
+      "candidateWorkUnits": 1115413,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "36398541",
+          "candidate": "37185709"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 37899292,
+      "candidateLatencyNanos": 39019583,
+      "deltaNanos": 1120291,
+      "relativeIncreasePercent": 2.955968148428736,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1115413,
+      "candidateWorkUnits": 1115413,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "37899292",
+          "candidate": "39019583"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 172767292,
+      "candidateLatencyNanos": 174192667,
+      "deltaNanos": 1425375,
+      "relativeIncreasePercent": 0.8250259545655204,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645747,
+      "candidateWorkUnits": 57645747,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "172767292",
+          "candidate": "174192667"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 167924833,
+      "candidateLatencyNanos": 170489125,
+      "deltaNanos": 2564292,
+      "relativeIncreasePercent": 1.5270475213156829,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645747,
+      "candidateWorkUnits": 57645747,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "167924833",
+          "candidate": "170489125"
+        }
+      }
+    },
+    {
+      "id": "and-single-early-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 167583833,
+      "candidateLatencyNanos": 192696250,
+      "deltaNanos": 25112417,
+      "relativeIncreasePercent": 14.984987841876132,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645747,
+      "candidateWorkUnits": 57645747,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "167583833",
+          "candidate": "192696250"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 104224083,
+      "candidateLatencyNanos": 107736875,
+      "deltaNanos": 3512792,
+      "relativeIncreasePercent": 3.370422553873657,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31181868,
+      "candidateWorkUnits": 31181868,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "104224083",
+          "candidate": "107736875"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 106337084,
+      "candidateLatencyNanos": 108952459,
+      "deltaNanos": 2615375,
+      "relativeIncreasePercent": 2.4595135597286077,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31181868,
+      "candidateWorkUnits": 31181868,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "106337084",
+          "candidate": "108952459"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 153974333,
+      "candidateLatencyNanos": 157623417,
+      "deltaNanos": 3649084,
+      "relativeIncreasePercent": 2.369930058407852,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57706193,
+      "candidateWorkUnits": 57706193,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "153974333",
+          "candidate": "157623417"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 153428416,
+      "candidateLatencyNanos": 160451792,
+      "deltaNanos": 7023376,
+      "relativeIncreasePercent": 4.5776240041479666,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57706193,
+      "candidateWorkUnits": 57706193,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "153428416",
+          "candidate": "160451792"
+        }
+      }
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 150565000,
+      "candidateLatencyNanos": 158430833,
+      "deltaNanos": 7865833,
+      "relativeIncreasePercent": 5.224210805964201,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57706193,
+      "candidateWorkUnits": 57706193,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "150565000",
+          "candidate": "158430833"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 94410875,
+      "candidateLatencyNanos": 94567917,
+      "deltaNanos": 157042,
+      "relativeIncreasePercent": 0.16633888839606667,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31149593,
+      "candidateWorkUnits": 31149593,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "94410875",
+          "candidate": "94567917"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 91570959,
+      "candidateLatencyNanos": 94953292,
+      "deltaNanos": 3382333,
+      "relativeIncreasePercent": 3.693674323100624,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31149593,
+      "candidateWorkUnits": 31149593,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "91570959",
+          "candidate": "94953292"
+        }
+      }
+    },
+    {
+      "id": "and-single-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 152492917,
+      "candidateLatencyNanos": 154868875,
+      "deltaNanos": 2375958,
+      "relativeIncreasePercent": 1.558077612221163,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57648990,
+      "candidateWorkUnits": 57648990,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "152492917",
+          "candidate": "154868875"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 147170250,
+      "candidateLatencyNanos": 150573417,
+      "deltaNanos": 3403167,
+      "relativeIncreasePercent": 2.3124014534187447,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57694678,
+      "candidateWorkUnits": 57694678,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147170250",
+          "candidate": "150573417"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 144355083,
+      "candidateLatencyNanos": 150828083,
+      "deltaNanos": 6473000,
+      "relativeIncreasePercent": 4.484081797105821,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57699420,
+      "candidateWorkUnits": 57699420,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "144355083",
+          "candidate": "150828083"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 145545959,
+      "candidateLatencyNanos": 146606042,
+      "deltaNanos": 1060083,
+      "relativeIncreasePercent": 0.7283493181696649,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57699420,
+      "candidateWorkUnits": 57699420,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "145545959",
+          "candidate": "146606042"
+        }
+      }
+    },
+    {
+      "id": "or-single-late-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 143141125,
+      "candidateLatencyNanos": 143167541,
+      "deltaNanos": 26416,
+      "relativeIncreasePercent": 0.018454514731528066,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57699420,
+      "candidateWorkUnits": 57699420,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "143141125",
+          "candidate": "143167541"
+        }
+      }
+    },
+    {
+      "id": "and-single-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 147188625,
+      "candidateLatencyNanos": 148136750,
+      "deltaNanos": 948125,
+      "relativeIncreasePercent": 0.6441564353223627,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147188625",
+          "candidate": "148136750"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 14768458,
+      "candidateLatencyNanos": 15541208,
+      "deltaNanos": 772750,
+      "relativeIncreasePercent": 5.232435234606077,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158755,
+      "candidateWorkUnits": 1158755,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "14768458",
+          "candidate": "15541208"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 11658459,
+      "candidateLatencyNanos": 15474917,
+      "deltaNanos": 3816458,
+      "relativeIncreasePercent": 32.73552705378987,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 1158755,
+      "candidateWorkUnits": 1158755,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "11658459",
+          "candidate": "15474917"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-late-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 145554750,
+      "candidateLatencyNanos": 148019875,
+      "deltaNanos": 2465125,
+      "relativeIncreasePercent": 1.6936067012584612,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724950,
+      "candidateWorkUnits": 57724950,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "145554750",
+          "candidate": "148019875"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 13999541,
+      "candidateLatencyNanos": 15345875,
+      "deltaNanos": 1346334,
+      "relativeIncreasePercent": 9.616986728350593,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158758,
+      "candidateWorkUnits": 1158758,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "13999541",
+          "candidate": "15345875"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 13069875,
+      "candidateLatencyNanos": 14432375,
+      "deltaNanos": 1362500,
+      "relativeIncreasePercent": 10.424736273300242,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158758,
+      "candidateWorkUnits": 1158758,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "13069875",
+          "candidate": "14432375"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 136939625,
+      "candidateLatencyNanos": 146239041,
+      "deltaNanos": 9299416,
+      "relativeIncreasePercent": 6.790887590060218,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724583,
+      "candidateWorkUnits": 57724583,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "136939625",
+          "candidate": "146239041"
+        }
+      }
+    },
+    {
+      "id": "or-few-early-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 148716208,
+      "candidateLatencyNanos": 149998292,
+      "deltaNanos": 1282084,
+      "relativeIncreasePercent": 0.8621010562614668,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57724583,
+      "candidateWorkUnits": 57724583,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "148716208",
+          "candidate": "149998292"
+        }
+      }
+    },
+    {
+      "id": "or-broad-all-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 4488625,
+      "candidateLatencyNanos": 4579583,
+      "deltaNanos": 90958,
+      "relativeIncreasePercent": 2.0264112061043194,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 503,
+      "candidateWorkUnits": 503,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "4488625",
+          "candidate": "4579583"
+        }
+      }
+    },
+    {
+      "id": "and-broad-all-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 20458584,
+      "candidateLatencyNanos": 21678042,
+      "deltaNanos": 1219458,
+      "relativeIncreasePercent": 5.960617802287783,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1138149,
+      "candidateWorkUnits": 1138149,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "20458584",
+          "candidate": "21678042"
+        }
+      }
+    },
+    {
+      "id": "and-broad-all-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 20441250,
+      "candidateLatencyNanos": 21012459,
+      "deltaNanos": 571209,
+      "relativeIncreasePercent": 2.7943936892313337,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1138149,
+      "candidateWorkUnits": 1138149,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "20441250",
+          "candidate": "21012459"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 372238792,
+      "candidateLatencyNanos": 727403042,
+      "deltaNanos": 355164250,
+      "relativeIncreasePercent": 95.41301380539619,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 128231,
+      "candidateWorkUnits": 304905,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "372238792",
+          "candidate": "727403042"
+        },
+        "graphWorkUnits": {
+          "base": "128231",
+          "candidate": "304905"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 223453459,
+      "candidateLatencyNanos": 297224584,
+      "deltaNanos": 73771125,
+      "relativeIncreasePercent": 33.01408952456627,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 60263,
+      "candidateWorkUnits": 92920,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "223453459",
+          "candidate": "297224584"
+        },
+        "graphWorkUnits": {
+          "base": "60263",
+          "candidate": "92920"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 38930371917,
+      "candidateLatencyNanos": 39225589041,
+      "deltaNanos": 295217124,
+      "relativeIncreasePercent": 0.7583208417053048,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 19431891,
+      "candidateWorkUnits": 19431891,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "38930371917",
+          "candidate": "39225589041"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 146348458,
+      "candidateLatencyNanos": 149631791,
+      "deltaNanos": 3283333,
+      "relativeIncreasePercent": 2.243503652084944,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146348458",
+          "candidate": "149631791"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 143654625,
+      "candidateLatencyNanos": 146034542,
+      "deltaNanos": 2379917,
+      "relativeIncreasePercent": 1.65669361498107,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "143654625",
+          "candidate": "146034542"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 143498583,
+      "candidateLatencyNanos": 148320250,
+      "deltaNanos": 4821667,
+      "relativeIncreasePercent": 3.3600798692207294,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "143498583",
+          "candidate": "148320250"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 146158250,
+      "candidateLatencyNanos": 146661666,
+      "deltaNanos": 503416,
+      "relativeIncreasePercent": 0.34443214803132904,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146158250",
+          "candidate": "146661666"
+        }
+      }
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 134775500,
+      "candidateLatencyNanos": 144712125,
+      "deltaNanos": 9936625,
+      "relativeIncreasePercent": 7.372723529128068,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57645014,
+      "candidateWorkUnits": 57645014,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "134775500",
+          "candidate": "144712125"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 27658792,
+      "candidateLatencyNanos": 36157666,
+      "deltaNanos": 8498874,
+      "relativeIncreasePercent": 30.727567566942188,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 1152827,
+      "candidateWorkUnits": 1152827,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "27658792",
+          "candidate": "36157666"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 32379083,
+      "candidateLatencyNanos": 33510875,
+      "deltaNanos": 1131792,
+      "relativeIncreasePercent": 3.495441794939035,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1152827,
+      "candidateWorkUnits": 1152827,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "32379083",
+          "candidate": "33510875"
+        }
+      }
+    },
+    {
+      "id": "or-four-broad-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 150397208,
+      "candidateLatencyNanos": 152193541,
+      "deltaNanos": 1796333,
+      "relativeIncreasePercent": 1.1943925182440887,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57697051,
+      "candidateWorkUnits": 57697051,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "150397208",
+          "candidate": "152193541"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-early-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 15065459,
+      "candidateLatencyNanos": 16685417,
+      "deltaNanos": 1619958,
+      "relativeIncreasePercent": 10.752795517215905,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1159025,
+      "candidateWorkUnits": 1159025,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "15065459",
+          "candidate": "16685417"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 92352041,
+      "candidateLatencyNanos": 92545417,
+      "deltaNanos": 193376,
+      "relativeIncreasePercent": 0.20939006643069208,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 31119327,
+      "candidateWorkUnits": 31119327,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "92352041",
+          "candidate": "92545417"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 149322542,
+      "candidateLatencyNanos": 149978250,
+      "deltaNanos": 655708,
+      "relativeIncreasePercent": 0.43912191101059606,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57710259,
+      "candidateWorkUnits": 58610531,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149322542",
+          "candidate": "149978250"
+        },
+        "graphWorkUnits": {
+          "base": "57710259",
+          "candidate": "58610531"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 149163916,
+      "candidateLatencyNanos": 150133959,
+      "deltaNanos": 970043,
+      "relativeIncreasePercent": 0.6503201484734418,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57710259,
+      "candidateWorkUnits": 58741603,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149163916",
+          "candidate": "150133959"
+        },
+        "graphWorkUnits": {
+          "base": "57710259",
+          "candidate": "58741603"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 148273750,
+      "candidateLatencyNanos": 148909958,
+      "deltaNanos": 636208,
+      "relativeIncreasePercent": 0.42907662347515996,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57698955,
+      "candidateWorkUnits": 57698955,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "148273750",
+          "candidate": "148909958"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 146800417,
+      "candidateLatencyNanos": 149793875,
+      "deltaNanos": 2993458,
+      "relativeIncreasePercent": 2.039134534611029,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57698955,
+      "candidateWorkUnits": 57698955,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146800417",
+          "candidate": "149793875"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 149950959,
+      "candidateLatencyNanos": 152920500,
+      "deltaNanos": 2969541,
+      "relativeIncreasePercent": 1.9803414528345897,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57698955,
+      "candidateWorkUnits": 57698955,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149950959",
+          "candidate": "152920500"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-late-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 146673208,
+      "candidateLatencyNanos": 150829958,
+      "deltaNanos": 4156750,
+      "relativeIncreasePercent": 2.8340213299214128,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57703697,
+      "candidateWorkUnits": 57703697,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "146673208",
+          "candidate": "150829958"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 14058959,
+      "candidateLatencyNanos": 14864916,
+      "deltaNanos": 805957,
+      "relativeIncreasePercent": 5.732693295428203,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158850,
+      "candidateWorkUnits": 1158850,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "14058959",
+          "candidate": "14864916"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 14918125,
+      "candidateLatencyNanos": 15917333,
+      "deltaNanos": 999208,
+      "relativeIncreasePercent": 6.697946290167163,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1158850,
+      "candidateWorkUnits": 1158850,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "14918125",
+          "candidate": "15917333"
+        }
+      }
+    },
+    {
+      "id": "or-four-few-early-late-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 147748458,
+      "candidateLatencyNanos": 149540500,
+      "deltaNanos": 1792042,
+      "relativeIncreasePercent": 1.2129006449596922,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57729887,
+      "candidateWorkUnits": 57729887,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "147748458",
+          "candidate": "149540500"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 15551958,
+      "candidateLatencyNanos": 16163750,
+      "deltaNanos": 611792,
+      "relativeIncreasePercent": 3.9338583604713957,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 1123138,
+      "candidateWorkUnits": 1123138,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "15551958",
+          "candidate": "16163750"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 180024334,
+      "candidateLatencyNanos": 181368041,
+      "deltaNanos": 1343707,
+      "relativeIncreasePercent": 0.7464029834988863,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58084676,
+      "candidateWorkUnits": 58084676,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "180024334",
+          "candidate": "181368041"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 178674667,
+      "candidateLatencyNanos": 183875917,
+      "deltaNanos": 5201250,
+      "relativeIncreasePercent": 2.911017038582196,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58084676,
+      "candidateWorkUnits": 58084676,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "178674667",
+          "candidate": "183875917"
+        }
+      }
+    },
+    {
+      "id": "or-four-all-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 177941667,
+      "candidateLatencyNanos": 181258542,
+      "deltaNanos": 3316875,
+      "relativeIncreasePercent": 1.8640237870762446,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 58084676,
+      "candidateWorkUnits": 58084676,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "177941667",
+          "candidate": "181258542"
+        }
+      }
+    }
+  ],
+  "workChangedObservations": [
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseLatencyNanos": 351063167,
+      "candidateLatencyNanos": 271282708,
+      "deltaNanos": -79780459,
+      "relativeIncreasePercent": -22.725385770817706,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 133023,
+      "candidateWorkUnits": 78214,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "351063167",
+          "candidate": "271282708"
+        },
+        "graphWorkUnits": {
+          "base": "133023",
+          "candidate": "78214"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 372238792,
+      "candidateLatencyNanos": 727403042,
+      "deltaNanos": 355164250,
+      "relativeIncreasePercent": 95.41301380539619,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 128231,
+      "candidateWorkUnits": 304905,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "372238792",
+          "candidate": "727403042"
+        },
+        "graphWorkUnits": {
+          "base": "128231",
+          "candidate": "304905"
+        }
+      }
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 223453459,
+      "candidateLatencyNanos": 297224584,
+      "deltaNanos": 73771125,
+      "relativeIncreasePercent": 33.01408952456627,
+      "exceedsReference15PercentAnd1ms": true,
+      "baseWorkUnits": 60263,
+      "candidateWorkUnits": 92920,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "223453459",
+          "candidate": "297224584"
+        },
+        "graphWorkUnits": {
+          "base": "60263",
+          "candidate": "92920"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseLatencyNanos": 149322542,
+      "candidateLatencyNanos": 149978250,
+      "deltaNanos": 655708,
+      "relativeIncreasePercent": 0.43912191101059606,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57710259,
+      "candidateWorkUnits": 58610531,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149322542",
+          "candidate": "149978250"
+        },
+        "graphWorkUnits": {
+          "base": "57710259",
+          "candidate": "58610531"
+        }
+      }
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseLatencyNanos": 149163916,
+      "candidateLatencyNanos": 150133959,
+      "deltaNanos": 970043,
+      "relativeIncreasePercent": 0.6503201484734418,
+      "exceedsReference15PercentAnd1ms": false,
+      "baseWorkUnits": 57710259,
+      "candidateWorkUnits": 58741603,
+      "allChangedTsvFields": {
+        "latencyNanos": {
+          "base": "149163916",
+          "candidate": "150133959"
+        },
+        "graphWorkUnits": {
+          "base": "57710259",
+          "candidate": "58741603"
+        }
+      }
+    }
+  ],
+  "otherFieldChanges": [],
+  "prespecifiedThreshold": {
+    "relativeStrictlyGreaterPercent": 15,
+    "absoluteStrictlyGreaterNanos": 1000000,
+    "existingV3RejectionRule": true
+  },
+  "repeatedMaterialRegressions": {
+    "mixed-four-few-rows": 2
+  },
+  "limitations": [
+    "One observation per query in each run; three values per side are not P95 or stability evidence.",
+    "Full oracle values/order/provenance independently compared; authenticated export/reference not recomputed from all graph nodes again.",
+    "Recorded graph-content before/after inventories match byte-for-byte across runs. No large graph-content rehash by this audit; runner records the pre/post scan.",
+    "Recorded JAR identities match build and paired-run receipts; this independent audit did not rehash large JAR/graph files.",
+    "No Java, build, profile, new performance measure or retry started by this audit.",
+    "No per-query CPU/heap/RSS acceptance measurements in this v3 supplement; original34 and hosted CI remain separate."
+  ]
+}

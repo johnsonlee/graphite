@@ -1,0 +1,490 @@
+{
+  "diagnosticOnly": true,
+  "scope": "40 DISTINCT query windows in one existing CPU/alloc recording; not 40 independent JVM recordings",
+  "manifest": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+  "headerBytesRead": 4864,
+  "headerTotals": {
+    "stringCount": 2793940,
+    "callSiteCount": 5046935,
+    "trigramPostingCount": 31587846,
+    "intCallbackCalls": 23257456,
+    "longCallbackCalls": 34381786,
+    "uniquePropertyStringCount": 1534858
+  },
+  "sampleCounts": {
+    "cpuSamplesAll": 13830,
+    "cpuSamplesApplication": 12243,
+    "cpuSamplesValidator": 11183,
+    "cpuSamplesApplicationValidator": 11183,
+    "allocationSampledBytesAll": 49517467648,
+    "allocationSampledBytesApplication": 49511700480,
+    "allocationSampledBytesValidator": 49207351296,
+    "allocationSampledBytesApplicationValidator": 49207351296,
+    "validatorHeapByteBufferLeaf": 2550175744,
+    "boxedLeafAll": 46663204864,
+    "boxedLeafValidator": 46656651264,
+    "validatorIntegerLeaf": 15036579840,
+    "validatorLongLeaf": 31620071424,
+    "validatorDefaultLongLeaf": 1143996416,
+    "validatorExplicitLongLeaf": 30476075008,
+    "boxedLeafOutsideValidator": 6553600
+  },
+  "percentages": {
+    "validatorOfAllCpu": 80.86044830079537,
+    "validatorOfApplicationCpu": 91.34199134199135,
+    "boxedLeafOfAllSampledBytes": 94.23584662226708
+  },
+  "oldDense": [
+    {
+      "recording": 3,
+      "metric": "cpuSamples",
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/cpu-3-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.cpuSamples.collapsed",
+      "totalWeight": 196,
+      "validatorWeight": 0
+    },
+    {
+      "recording": 3,
+      "metric": "allocationSampledBytes",
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/cpu-3-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.allocationSampledBytes.collapsed",
+      "totalWeight": 17563648,
+      "validatorWeight": 0
+    },
+    {
+      "recording": 4,
+      "metric": "cpuSamples",
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/cpu-4-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.cpuSamples.collapsed",
+      "totalWeight": 252,
+      "validatorWeight": 0
+    },
+    {
+      "recording": 4,
+      "metric": "allocationSampledBytes",
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/cpu-4-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.allocationSampledBytes.collapsed",
+      "totalWeight": 13893632,
+      "validatorWeight": 0
+    },
+    {
+      "recording": 5,
+      "metric": "cpuSamples",
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/cpu-5-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.cpuSamples.collapsed",
+      "totalWeight": 334,
+      "validatorWeight": 0
+    },
+    {
+      "recording": 5,
+      "metric": "allocationSampledBytes",
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/cpu-5-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.allocationSampledBytes.collapsed",
+      "totalWeight": 16252928,
+      "validatorWeight": 0
+    }
+  ],
+  "collapsedInputs": [
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/02-or-four-broad-distinct-00.cpuSamples.collapsed",
+      "weight": 891,
+      "fileBytes": 722657
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/04-or-four-broad-distinct-01.cpuSamples.collapsed",
+      "weight": 485,
+      "fileBytes": 443978
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/06-or-four-broad-distinct-02.cpuSamples.collapsed",
+      "weight": 362,
+      "fileBytes": 373784
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/08-or-four-broad-distinct-03.cpuSamples.collapsed",
+      "weight": 367,
+      "fileBytes": 358774
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/10-or-four-broad-distinct-04.cpuSamples.collapsed",
+      "weight": 339,
+      "fileBytes": 314180
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/12-or-four-broad-distinct-05.cpuSamples.collapsed",
+      "weight": 408,
+      "fileBytes": 378000
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/14-or-four-broad-distinct-06.cpuSamples.collapsed",
+      "weight": 352,
+      "fileBytes": 357775
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/16-or-four-broad-distinct-07.cpuSamples.collapsed",
+      "weight": 340,
+      "fileBytes": 326185
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/18-or-four-broad-distinct-08.cpuSamples.collapsed",
+      "weight": 436,
+      "fileBytes": 403421
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/20-or-four-broad-distinct-09.cpuSamples.collapsed",
+      "weight": 290,
+      "fileBytes": 276602
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/22-or-four-broad-distinct-10.cpuSamples.collapsed",
+      "weight": 309,
+      "fileBytes": 311415
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/24-or-four-broad-distinct-11.cpuSamples.collapsed",
+      "weight": 330,
+      "fileBytes": 357907
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/26-or-four-broad-distinct-12.cpuSamples.collapsed",
+      "weight": 371,
+      "fileBytes": 334097
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/28-or-four-broad-distinct-13.cpuSamples.collapsed",
+      "weight": 310,
+      "fileBytes": 282006
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/30-or-four-broad-distinct-14.cpuSamples.collapsed",
+      "weight": 311,
+      "fileBytes": 303857
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/32-or-four-broad-distinct-15.cpuSamples.collapsed",
+      "weight": 356,
+      "fileBytes": 368089
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/34-or-four-broad-distinct-16.cpuSamples.collapsed",
+      "weight": 355,
+      "fileBytes": 333521
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/36-or-four-broad-distinct-17.cpuSamples.collapsed",
+      "weight": 319,
+      "fileBytes": 338344
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/38-or-four-broad-distinct-18.cpuSamples.collapsed",
+      "weight": 311,
+      "fileBytes": 317759
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/40-or-four-broad-distinct-19.cpuSamples.collapsed",
+      "weight": 310,
+      "fileBytes": 305758
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/42-or-four-broad-distinct-20.cpuSamples.collapsed",
+      "weight": 327,
+      "fileBytes": 274972
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/44-or-four-broad-distinct-21.cpuSamples.collapsed",
+      "weight": 325,
+      "fileBytes": 326717
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/46-or-four-broad-distinct-22.cpuSamples.collapsed",
+      "weight": 316,
+      "fileBytes": 327633
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/48-or-four-broad-distinct-23.cpuSamples.collapsed",
+      "weight": 318,
+      "fileBytes": 321728
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/50-or-four-broad-distinct-24.cpuSamples.collapsed",
+      "weight": 323,
+      "fileBytes": 305454
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/52-or-four-broad-distinct-25.cpuSamples.collapsed",
+      "weight": 344,
+      "fileBytes": 327332
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/54-or-four-broad-distinct-26.cpuSamples.collapsed",
+      "weight": 316,
+      "fileBytes": 312879
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/56-or-four-broad-distinct-27.cpuSamples.collapsed",
+      "weight": 328,
+      "fileBytes": 336147
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/58-or-four-broad-distinct-28.cpuSamples.collapsed",
+      "weight": 332,
+      "fileBytes": 300673
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/60-or-four-broad-distinct-29.cpuSamples.collapsed",
+      "weight": 319,
+      "fileBytes": 347589
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/62-or-four-broad-distinct-30.cpuSamples.collapsed",
+      "weight": 311,
+      "fileBytes": 303960
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/64-or-four-broad-distinct-31.cpuSamples.collapsed",
+      "weight": 313,
+      "fileBytes": 319570
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/66-or-four-broad-distinct-32.cpuSamples.collapsed",
+      "weight": 313,
+      "fileBytes": 302128
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/68-or-four-broad-distinct-33.cpuSamples.collapsed",
+      "weight": 388,
+      "fileBytes": 343679
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/70-or-four-broad-distinct-34.cpuSamples.collapsed",
+      "weight": 268,
+      "fileBytes": 272525
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/72-or-four-broad-distinct-35.cpuSamples.collapsed",
+      "weight": 291,
+      "fileBytes": 317592
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/74-or-four-broad-distinct-36.cpuSamples.collapsed",
+      "weight": 271,
+      "fileBytes": 241971
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/76-or-four-broad-distinct-37.cpuSamples.collapsed",
+      "weight": 284,
+      "fileBytes": 283687
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/78-or-four-broad-distinct-38.cpuSamples.collapsed",
+      "weight": 274,
+      "fileBytes": 276942
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/80-or-four-broad-distinct-39.cpuSamples.collapsed",
+      "weight": 317,
+      "fileBytes": 296717
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/02-or-four-broad-distinct-00.allocationSampledBytes.collapsed",
+      "weight": 1256719328,
+      "fileBytes": 133870
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/04-or-four-broad-distinct-01.allocationSampledBytes.collapsed",
+      "weight": 1221329824,
+      "fileBytes": 130511
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/06-or-four-broad-distinct-02.allocationSampledBytes.collapsed",
+      "weight": 1226310624,
+      "fileBytes": 107922
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/08-or-four-broad-distinct-03.allocationSampledBytes.collapsed",
+      "weight": 1219494880,
+      "fileBytes": 108846
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/10-or-four-broad-distinct-04.allocationSampledBytes.collapsed",
+      "weight": 1231029184,
+      "fileBytes": 124493
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/12-or-four-broad-distinct-05.allocationSampledBytes.collapsed",
+      "weight": 1246233552,
+      "fileBytes": 98481
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/14-or-four-broad-distinct-06.allocationSampledBytes.collapsed",
+      "weight": 1231815584,
+      "fileBytes": 113957
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/16-or-four-broad-distinct-07.allocationSampledBytes.collapsed",
+      "weight": 1237320688,
+      "fileBytes": 97350
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/18-or-four-broad-distinct-08.allocationSampledBytes.collapsed",
+      "weight": 1225524176,
+      "fileBytes": 96078
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/20-or-four-broad-distinct-09.allocationSampledBytes.collapsed",
+      "weight": 1261962192,
+      "fileBytes": 104248
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/22-or-four-broad-distinct-10.allocationSampledBytes.collapsed",
+      "weight": 1241252816,
+      "fileBytes": 105576
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/24-or-four-broad-distinct-11.allocationSampledBytes.collapsed",
+      "weight": 1273496528,
+      "fileBytes": 114248
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/26-or-four-broad-distinct-12.allocationSampledBytes.collapsed",
+      "weight": 1203241920,
+      "fileBytes": 101299
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/28-or-four-broad-distinct-13.allocationSampledBytes.collapsed",
+      "weight": 1211368432,
+      "fileBytes": 102459
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/30-or-four-broad-distinct-14.allocationSampledBytes.collapsed",
+      "weight": 1257505760,
+      "fileBytes": 106891
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/32-or-four-broad-distinct-15.allocationSampledBytes.collapsed",
+      "weight": 1268515744,
+      "fileBytes": 106890
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/34-or-four-broad-distinct-16.allocationSampledBytes.collapsed",
+      "weight": 1203241968,
+      "fileBytes": 104411
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/36-or-four-broad-distinct-17.allocationSampledBytes.collapsed",
+      "weight": 1245709248,
+      "fileBytes": 96166
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/38-or-four-broad-distinct-18.allocationSampledBytes.collapsed",
+      "weight": 1227621264,
+      "fileBytes": 101361
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/40-or-four-broad-distinct-19.allocationSampledBytes.collapsed",
+      "weight": 1267205024,
+      "fileBytes": 95786
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/42-or-four-broad-distinct-20.allocationSampledBytes.collapsed",
+      "weight": 1231815648,
+      "fileBytes": 113212
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/44-or-four-broad-distinct-21.allocationSampledBytes.collapsed",
+      "weight": 1211368448,
+      "fileBytes": 89323
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/46-or-four-broad-distinct-22.allocationSampledBytes.collapsed",
+      "weight": 1226310592,
+      "fileBytes": 105277
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/48-or-four-broad-distinct-23.allocationSampledBytes.collapsed",
+      "weight": 1208484784,
+      "fileBytes": 117294
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/50-or-four-broad-distinct-24.allocationSampledBytes.collapsed",
+      "weight": 1235485632,
+      "fileBytes": 111904
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/52-or-four-broad-distinct-25.allocationSampledBytes.collapsed",
+      "weight": 1223164880,
+      "fileBytes": 109262
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/54-or-four-broad-distinct-26.allocationSampledBytes.collapsed",
+      "weight": 1237320640,
+      "fileBytes": 123579
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/56-or-four-broad-distinct-27.allocationSampledBytes.collapsed",
+      "weight": 1236534224,
+      "fileBytes": 106810
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/58-or-four-broad-distinct-28.allocationSampledBytes.collapsed",
+      "weight": 1242563584,
+      "fileBytes": 107355
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/60-or-four-broad-distinct-29.allocationSampledBytes.collapsed",
+      "weight": 1248068560,
+      "fileBytes": 112910
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/62-or-four-broad-distinct-30.allocationSampledBytes.collapsed",
+      "weight": 1242563520,
+      "fileBytes": 102376
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/64-or-four-broad-distinct-31.allocationSampledBytes.collapsed",
+      "weight": 1248068576,
+      "fileBytes": 99336
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/66-or-four-broad-distinct-32.allocationSampledBytes.collapsed",
+      "weight": 1259340688,
+      "fileBytes": 109608
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/68-or-four-broad-distinct-33.allocationSampledBytes.collapsed",
+      "weight": 1224999920,
+      "fileBytes": 121769
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/70-or-four-broad-distinct-34.allocationSampledBytes.collapsed",
+      "weight": 1241514960,
+      "fileBytes": 101154
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/72-or-four-broad-distinct-35.allocationSampledBytes.collapsed",
+      "weight": 1250689952,
+      "fileBytes": 109143
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/74-or-four-broad-distinct-36.allocationSampledBytes.collapsed",
+      "weight": 1259602928,
+      "fileBytes": 98806
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/76-or-four-broad-distinct-37.allocationSampledBytes.collapsed",
+      "weight": 1246757808,
+      "fileBytes": 109207
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/78-or-four-broad-distinct-38.allocationSampledBytes.collapsed",
+      "weight": 1270088688,
+      "fileBytes": 116574
+    },
+    {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/four-or/cpu-analysis/collapsed/80-or-four-broad-distinct-39.allocationSampledBytes.collapsed",
+      "weight": 1215824880,
+      "fileBytes": 99513
+    }
+  ],
+  "limitations": [
+    "Existing aligned collapsed evidence is recounted; JFR alignment is not regenerated here.",
+    "Inclusive validator counts are stack unions; leaf boxing is exclusive sampled attribution.",
+    "TLAB/outside-TLAB weights are sampled bytes, not exact allocations or object counts.",
+    "Header formulas describe one successful full validation per view, not measured invocation frequency.",
+    "Only headers were read; header hashes do not authenticate sidecar bodies or CRC integrity."
+  ]
+}

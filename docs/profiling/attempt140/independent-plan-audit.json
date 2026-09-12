@@ -1,0 +1,150 @@
+{
+  "attempt": 140,
+  "scope": "Independent read-only source, prior profiling, test coverage and protocol audit; no Java/build/profiler/performance run.",
+  "candidateParent": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "source": {
+    "productionJmhFileCount": 130,
+    "onlyChangedFile": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+    "exactSinglePreparationReplacement": true,
+    "unchangedTestFileCount": 168,
+    "sourceSha256": "120d23247d266e4b9a57c7a53644154307725b32156531ce62822f914dfb98ba",
+    "otherProductionSourcesUnchanged": true,
+    "bytecodeNotClaimedByThisAudit": true,
+    "broaderBehaviorChangeFound": false,
+    "initializationDetail": "List iterator mapping becomes indexed reads into predicates to initialize one private IntArray; same ordered property mapping for stable internal predicate Lists. No change to per-node predicates.indices.any or projectedPropertyIndexes."
+  },
+  "profiling": {
+    "targetedInitialNodeLambdaLeaf": 98,
+    "targetedPredicateIndexRegion": 18,
+    "targetedBci283ListGet": 8,
+    "targetedBci291NumberIntValue": 8,
+    "denseProvenancePredicateIndexRegion": 3,
+    "newEvidence": "Previously recorded frozen-main JFR events were remapped with source/BCI/frame-type metadata, not newly measured candidate benefit.",
+    "contrast136": "Rejected136 replaced the per-node range/iterator OR traversal with while. This candidate leaves that traversal unchanged and only changes its property-index storage/access.",
+    "limits": [
+      "BCI positions are not exclusive instruction costs or promised savings.",
+      "Trace labels are not proof of unprofiled compilation state.",
+      "No pool-removal or 10x claim."
+    ]
+  },
+  "coverage": {
+    "ParallelDistinctDisjunctionTest": "4 correctness tests: 16 predicates (4 terms x 4 properties), exclusive/overlap masks, stored-order DISTINCT/LIMIT, selected/null-selected and missing tuple, persisted exact and nonpersisted raw paths, separate transform and expected-term states. Explicit raw scan count assertion.",
+    "GraphStoreTest": "Split raw/persisted exact coverage; graphId/null projection; incomplete selected; inline-only and background workers; raw DISTINCT work rejection/interruption checks join workers and preserve interruption. Other unsupported/index/fallback tests cover surrounding dispatch.",
+    "crossGraphBoundary": "Existing CrossGraphCypherExecutorTest verifies two-property OR DISTINCT source order/provenance, but does not substitute for pure-four-term mapped multi-graph testing.",
+    "honestGap": "The 4 dedicated pure-four tests use one mapped graph and fixed 4-column projection order; arbitrary projection permutations/duplicates/null and pure-four multi-graph are not all crossed in one unit test. Unchanged source and broader tests protect those paths; the required real36 full-output control and conditional v3 pairs supply pure-four single/multi coverage.",
+    "candidateTestsPassedClaim": false
+  },
+  "protocol": {
+    "runnerChecks": {
+      "run-old34-pairs.py": {
+        "sha256": "169962f4a4c2d86fba4b445f2a7f6a00055d4b960ba43a4c1376ebf6f1c2d326",
+        "byteEqualAttempt139": true
+      },
+      "run-v3-pairs.py": {
+        "sha256": "baf30b22d88faaed39b5bb400c468e94d9bcc72b6764ea6e5d3fb5c15688435e",
+        "byteEqualAttempt139": true
+      }
+    },
+    "realCatalogQueryCount": 36,
+    "pureFourQueryCount": 12,
+    "pureFourCoverage": [
+      {
+        "id": "or-four-broad-rows",
+        "hitGraphCount": 55,
+        "distinct": false,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-broad-distinct",
+        "hitGraphCount": 55,
+        "distinct": true,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-single-early-rows",
+        "hitGraphCount": 1,
+        "distinct": false,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-single-early-distinct",
+        "hitGraphCount": 1,
+        "distinct": true,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-single-middle-rows",
+        "hitGraphCount": 1,
+        "distinct": false,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-single-middle-distinct",
+        "hitGraphCount": 1,
+        "distinct": true,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-single-late-rows",
+        "hitGraphCount": 1,
+        "distinct": false,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-single-late-distinct",
+        "hitGraphCount": 1,
+        "distinct": true,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-few-early-late-rows",
+        "hitGraphCount": 2,
+        "distinct": false,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-few-early-late-distinct",
+        "hitGraphCount": 2,
+        "distinct": true,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-all-rows",
+        "hitGraphCount": 64,
+        "distinct": false,
+        "expectedRowCount": 200
+      },
+      {
+        "id": "or-four-all-distinct",
+        "hitGraphCount": 64,
+        "distinct": true,
+        "expectedRowCount": 200
+      }
+    ],
+    "sequence": [
+      "Complete build/tests/detekt/JMH packaging and bytecode validation before timing.",
+      "One real36 full values/order/provenance correctness control with hashes.",
+      "Original34 three independent C/B B/C C/B pairs, full14field oracle, unchanged regression bounds plus strict global P95 improvement in every pair.",
+      "Only old34 pass permits additional real36 three alternating pairs with all full outputs and repeated >15% AND >1ms same-query rejection.",
+      "Only local pass permits exact-head complete CI; a failure is recorded then explicitly reverted without retry-to-green."
+    ],
+    "sequencingEnforcement": "Runner files remain unchanged; root orchestrates old34-before-v3 conditional execution rather than the v3 script automatically checking old34.",
+    "perQueryThreeSamplesNotP95": true,
+    "final10xAndPoolRemovalUnmet": true,
+    "revert139FailureNotWaivedOrRerun": true
+  },
+  "inputsSha256": {
+    "/private/tmp/graphite-attempt140._5jztd0a/measurement-plan.json": "b1f303e2dd428e9be2e8d749e942f7dbd41defba251e8164d22b3404d33b74f7",
+    "/private/tmp/graphite-attempt140._5jztd0a/v3-control-command.json": "04f3256ca2998518612eb490bd3b30b72444301e8a50fb9f56d56501299c3f8b",
+    "/private/tmp/graphite-attempt140._5jztd0a/run-old34-pairs.py": "169962f4a4c2d86fba4b445f2a7f6a00055d4b960ba43a4c1376ebf6f1c2d326",
+    "/private/tmp/graphite-attempt140._5jztd0a/run-v3-pairs.py": "baf30b22d88faaed39b5bb400c468e94d9bcc72b6764ea6e5d3fb5c15688435e",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/docs/profiling/distinct-projection-work/raw-source-lines/source-mapping.json": "4f91ba3a6bf6ed86c4d38cb88688e8fe37806d67c41cb2ca6318a90c3706f8a5",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/docs/profiling/distinct-projection-work/raw-source-lines/summary.json": "b6ef1430eee993347706f379f6b02c03870914230fecba7dff386330e4afd594",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/docs/profiling/distinct-projection-work/raw-source-lines/bytecode-independent-audit.json": "0ac80a3fc32ac28f73420916dbc5ffab8382b83ea3a8092950fc683ef541a5a5",
+    "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "120d23247d266e4b9a57c7a53644154307725b32156531ce62822f914dfb98ba",
+    "/private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/ParallelDistinctDisjunctionTest.kt": "22f542ebc4021b072b7e40fe58de42fc3ff9698559ba105a01904547c743817b",
+    "/private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/GraphStoreTest.kt": "b87aa17f475565fc33fca3f3ebc8a873bdc66c2aa5cea7cc24104655d52e1f3c"
+  }
+}

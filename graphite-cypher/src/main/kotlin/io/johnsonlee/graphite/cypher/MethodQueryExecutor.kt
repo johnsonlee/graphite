@@ -1,17 +1,16 @@
 package io.johnsonlee.graphite.cypher
 
 import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.graph.GraphTaskContext
+import io.johnsonlee.graphite.graph.GraphTaskRole
+import io.johnsonlee.graphite.graph.GraphTaskScheduler
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.methodSlice
 import io.johnsonlee.graphite.graph.methods
 import java.util.PriorityQueue
 import java.util.concurrent.Callable
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
-import java.util.concurrent.ForkJoinPool
-import java.util.concurrent.ForkJoinTask
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 private const val INITIAL_METHOD_RESULT_CAPACITY = 1_024
@@ -21,42 +20,35 @@ private const val MAX_BUFFERED_PARALLEL_METHOD_ROWS = 20_000
 internal val METHOD_GRAPH_SCAN_PARALLELISM: Int =
     Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
 
-private val methodGraphScanPool = ForkJoinPool(METHOD_GRAPH_SCAN_PARALLELISM)
-
-@Suppress("ThrowsCount", "TooGenericExceptionCaught")
+@Suppress("ThrowsCount", "TooGenericExceptionCaught", "ReturnCount")
 private fun <T> runMethodGraphTasks(tasks: List<(() -> Unit) -> T>): List<T> {
     if (tasks.size == 1) return listOf(tasks.single().invoke({}))
     val cancellation = MethodTaskCancellation()
-    val remaining = CountDownLatch(tasks.size)
-    val handles = tasks.map { task ->
-        val state = AtomicInteger(METHOD_TASK_PENDING)
-        val future = methodGraphScanPool.submit(Callable {
-            if (!state.compareAndSet(METHOD_TASK_PENDING, METHOD_TASK_RUNNING)) {
-                throw ParallelMethodTaskCancelledException()
-            }
-            try {
-                cancellation.check()
-                task(cancellation::check)
-            } catch (error: Throwable) {
-                cancellation.fail(error)
-                throw error
-            } finally {
-                state.set(METHOD_TASK_FINISHED)
-                remaining.countDown()
-            }
-        })
-        MethodTaskHandle(state, future)
-    }
+    // A graph callback can re-enter either query family. It must not wait for another root
+    // lane while retaining its current lane (or an index monitor held by its caller).
+    if (GraphTaskContext.current?.role?.let { it != GraphTaskRole.REQUEST } == true) return tasks.map { it(cancellation::check) }
+    val group = GraphTaskScheduler.shared.newRootGroup<T>()
     return try {
-        handles.map { it.future.get() }
+        val handles = tasks.map { task ->
+            group.submit(Callable {
+                try {
+                    cancellation.check()
+                    task(cancellation::check)
+                } catch (error: Throwable) {
+                    cancellation.fail(error)
+                    throw error
+                }
+            })
+        }
+        handles.map { it.get() }
     } catch (_: InterruptedException) {
         cancellation.fail(CypherQueryCancelledException())
-        cancelPendingAndAwait(handles, remaining)
+        group.cancelAndJoin(mayInterruptIfRunning = false)
         Thread.currentThread().interrupt()
         throw CypherQueryCancelledException()
     } catch (error: ExecutionException) {
         cancellation.fail(error.cause ?: error)
-        cancelPendingAndAwait(handles, remaining)
+        group.cancelAndJoin(mayInterruptIfRunning = false)
         val outer = cancellation.failure() ?: error.cause ?: error
         val nested = outer.cause
         val cause = if (nested != null && nested.javaClass == outer.javaClass && outer.message == nested.toString()) {
@@ -69,25 +61,13 @@ private fun <T> runMethodGraphTasks(tasks: List<(() -> Unit) -> T>): List<T> {
             is Error -> throw cause
             else -> throw IllegalStateException("Parallel Method scan failed", cause)
         }
+    } catch (error: Throwable) {
+        cancellation.fail(error)
+        group.cancelAndJoin(mayInterruptIfRunning = false)
+        throw error
+    } finally {
+        group.close()
     }
-}
-
-private fun <T> cancelPendingAndAwait(handles: List<MethodTaskHandle<T>>, remaining: CountDownLatch) {
-    handles.forEach { handle ->
-        if (handle.state.compareAndSet(METHOD_TASK_PENDING, METHOD_TASK_CANCELLED)) {
-            handle.future.cancel(false)
-            remaining.countDown()
-        }
-    }
-    var interrupted = false
-    while (remaining.count > 0L) {
-        try {
-            remaining.await()
-        } catch (_: InterruptedException) {
-            interrupted = true
-        }
-    }
-    if (interrupted) Thread.currentThread().interrupt()
 }
 
 private class MethodTaskCancellation {
@@ -98,23 +78,15 @@ private class MethodTaskCancellation {
     }
 
     fun check() {
-        if (cause.get() != null) throw ParallelMethodTaskCancelledException()
+        if (cause.get() != null || GraphTaskContext.current?.isCancelled == true) {
+            throw ParallelMethodTaskCancelledException()
+        }
     }
 
     fun failure(): Throwable? = cause.get()
 }
 
-private data class MethodTaskHandle<T>(
-    val state: AtomicInteger,
-    val future: ForkJoinTask<T>
-)
-
 private class ParallelMethodTaskCancelledException : RuntimeException()
-
-private const val METHOD_TASK_PENDING = 0
-private const val METHOD_TASK_RUNNING = 1
-private const val METHOD_TASK_FINISHED = 2
-private const val METHOD_TASK_CANCELLED = 3
 
 /** Executes bounded Cypher reads over the graph's method metadata index. */
 @Suppress("TooManyFunctions")

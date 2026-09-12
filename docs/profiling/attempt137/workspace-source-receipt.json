@@ -1,0 +1,10 @@
+{
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "candidateParent": "d14bc77f625c515c2e5416728e1b07e0554aa67a",
+  "filesCompared": 130,
+  "onlyChangedProductionOrJmhFile": [
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt"
+  ],
+  "sourceSha256": "8a803b81cfd2b9c455276c33640cafff9963a11673eed3a504b59fa5a63b6672",
+  "measuredJarSha256": "b129029382bc6f0e8491c97c9057830c5993902b9cbeae7f21e6df10865a1fb7"
+}

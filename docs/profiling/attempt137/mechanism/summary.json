@@ -1,0 +1,90 @@
+{
+  "diagnosticOnly": true,
+  "notP95": true,
+  "notAcceptanceEvidence": true,
+  "recordingsPerRevision": 1,
+  "repetitionsPerProjectionInOneJvm": 40,
+  "groups": [
+    {
+      "revision": "base",
+      "projection": "rows",
+      "queries": 40,
+      "counters": {
+        "cpuSamples.missingStacks": 0,
+        "cpuSamples.truncatedStacks": 0,
+        "cpuSamples.all": 1235,
+        "cpuSamples.validator": 418,
+        "cpuSamples.boxedLeaf": 53,
+        "cpuSamples.validatorBoxedLeaf": 53,
+        "allocationSampledBytes.missingStacks": 0,
+        "allocationSampledBytes.truncatedStacks": 0,
+        "allocationSampledBytes.all": 991691392,
+        "allocationSampledBytes.validator": 948699776,
+        "allocationSampledBytes.validatorHeapByteBufferLeaf": 41943680,
+        "allocationSampledBytes.boxedLeaf": 906756096,
+        "allocationSampledBytes.validatorBoxedLeaf": 906756096
+      }
+    },
+    {
+      "revision": "base",
+      "projection": "distinct",
+      "queries": 40,
+      "counters": {
+        "cpuSamples.missingStacks": 0,
+        "cpuSamples.truncatedStacks": 0,
+        "cpuSamples.all": 13830,
+        "cpuSamples.validator": 11002,
+        "cpuSamples.boxedLeaf": 989,
+        "cpuSamples.validatorBoxedLeaf": 987,
+        "allocationSampledBytes.missingStacks": 0,
+        "allocationSampledBytes.truncatedStacks": 0,
+        "allocationSampledBytes.all": 49397143680,
+        "allocationSampledBytes.validator": 49086240896,
+        "allocationSampledBytes.validatorHeapByteBufferLeaf": 2558564480,
+        "allocationSampledBytes.boxedLeaf": 46533967872,
+        "allocationSampledBytes.validatorBoxedLeaf": 46526889984
+      }
+    },
+    {
+      "revision": "candidate",
+      "projection": "rows",
+      "queries": 40,
+      "counters": {
+        "cpuSamples.missingStacks": 0,
+        "cpuSamples.truncatedStacks": 0,
+        "cpuSamples.all": 1092,
+        "cpuSamples.validator": 239,
+        "allocationSampledBytes.missingStacks": 0,
+        "allocationSampledBytes.truncatedStacks": 0,
+        "allocationSampledBytes.all": 96731776,
+        "allocationSampledBytes.validator": 41943680,
+        "allocationSampledBytes.validatorHeapByteBufferLeaf": 41943680,
+        "allocationSampledBytes.boxedLeaf": 262144
+      }
+    },
+    {
+      "revision": "candidate",
+      "projection": "distinct",
+      "queries": 40,
+      "counters": {
+        "cpuSamples.missingStacks": 0,
+        "cpuSamples.truncatedStacks": 0,
+        "cpuSamples.all": 9169,
+        "cpuSamples.validator": 6673,
+        "allocationSampledBytes.missingStacks": 0,
+        "allocationSampledBytes.truncatedStacks": 0,
+        "allocationSampledBytes.all": 2952305632,
+        "allocationSampledBytes.validator": 2618858464,
+        "allocationSampledBytes.validatorHeapByteBufferLeaf": 2615188448,
+        "allocationSampledBytes.boxedLeaf": 9699328,
+        "allocationSampledBytes.validatorBoxedLeaf": 2097152
+      }
+    }
+  ],
+  "limitations": [
+    "One CPU/allocation capture per revision; repetitions share a JVM and fixed order.",
+    "Weighted allocation samples are not exact allocated bytes or object counts. Absence of samples alone is not proof of zero allocation.",
+    "Inclusive validator samples describe stack membership; remaining hotspots are not a proposal for another optimization.",
+    "Only the preplanned unprofiled pairs and exact-head CI determine acceptance."
+  ]
+}

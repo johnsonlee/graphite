@@ -1,0 +1,36 @@
+{
+  "type": "frozen-main-query-ownership-diagnostic",
+  "optimizationAttempt": false,
+  "productionChanges": false,
+  "controlForks": 1,
+  "profileForks": 3,
+  "order": [
+    "one marker-only JFR control and full marker/oracle validation",
+    "three independent native JFR + LogCompilation recordings",
+    "offline export after all recordings finish"
+  ],
+  "samplingPeriod": "2 ms",
+  "compilationThreshold": "0 ms",
+  "extraJvmOptions": [
+    "-XX:StartFlightRecording=settings=<control or profile JFC>,filename=<unique>,dumponexit=true",
+    "-XX:FlightRecorderOptions=stackdepth=256",
+    "LogCompilation options only in three profile forks"
+  ],
+  "requirements": [
+    "Control must have 34 successful, non-overlapping, continuous markers in exact original catalog order; exact query text/parameters and all 14-field oracle signatures",
+    "Do not retry a failed recording as acceptance or infer gains from elapsed time",
+    "Input JAR hashes and full real 64-graph inventory before/after",
+    "Full recordings: preserve all events and unmatched/crossing compiler intervals; keep ExecutionSample distinct from CPU time and other thread types",
+    "No new optimization/CI run or gate threshold changes"
+  ],
+  "limits": [
+    "Benchmark wrapper/class initialization, custom JFR markers, native JFR and compilation logging may perturb execution",
+    "Query duration markers exclude queueing, serialization, metric collection and marker preparation/commit; do not equate them to TSV end-to-end latency",
+    "Outer windows do not alone prove initial/provenance phase boundaries",
+    "Compilation logs have coarser clock resolution; retain separate timelines unless independently matched by compilation identity"
+  ],
+  "configs": {
+    "control.jfc": "bbb2da2133f145922c3d0c66541302d0f0ade0974c073a67e953a38f9079a1aa",
+    "profile.jfc": "b4f2be553786855fb599fadca94ce1203160d1b6f26f742d30a394fc50c6267c"
+  }
+}

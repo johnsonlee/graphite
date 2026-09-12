@@ -1,0 +1,26 @@
+[
+  {
+    "fork": 1,
+    "exitCode": 0,
+    "startedEpoch": 1788647602.922341,
+    "endedEpoch": 1788647610.9474711,
+    "jarSha256Before": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "jarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+  },
+  {
+    "fork": 2,
+    "exitCode": 0,
+    "startedEpoch": 1788647610.9936059,
+    "endedEpoch": 1788647618.954916,
+    "jarSha256Before": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "jarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+  },
+  {
+    "fork": 3,
+    "exitCode": 0,
+    "startedEpoch": 1788647619.001089,
+    "endedEpoch": 1788647627.0467572,
+    "jarSha256Before": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "jarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+  }
+]

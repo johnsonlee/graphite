@@ -1,0 +1,607 @@
+{
+  "copyOnly": true,
+  "numbersAndParsedJsonUnchanged": true,
+  "normalization": "At most trailing newline normalization; original and archived hashes retained.",
+  "files": [
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/ci-audit.md",
+      "destination": "docs/profiling/attempt137/revert-ci/ci-audit.md",
+      "sourceSha256": "49b5354aa0a9ccf4e1820e2fb809caae49f03847803a756ccdb569cb712dfbe1",
+      "archivedSha256": "49b5354aa0a9ccf4e1820e2fb809caae49f03847803a756ccdb569cb712dfbe1",
+      "sourceBytes": 4169,
+      "archivedBytes": 4169,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/ci-audit.json",
+      "destination": "docs/profiling/attempt137/revert-ci/ci-audit.json",
+      "sourceSha256": "1d161403a214cddfbdb5bd2c6df24b6663fdf91cd43deb11ac73e56ece30f733",
+      "archivedSha256": "1d161403a214cddfbdb5bd2c6df24b6663fdf91cd43deb11ac73e56ece30f733",
+      "sourceBytes": 29227,
+      "archivedBytes": 29227,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/recompute-audit.py",
+      "destination": "docs/profiling/attempt137/revert-ci/recompute-audit.py",
+      "sourceSha256": "0d5d61d4b75f65753f966f09615ea36c8815ed0797ed00eb38d3cde4f81b4172",
+      "archivedSha256": "0d5d61d4b75f65753f966f09615ea36c8815ed0797ed00eb38d3cde4f81b4172",
+      "sourceBytes": 6577,
+      "archivedBytes": 6577,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method-confirmed-failures.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method-confirmed-failures.json",
+      "sourceSha256": "1bc8494ddc9d67b8194012ab9bbfe843642fb4a0a4b90396d796f652f9dbb4cb",
+      "archivedSha256": "1bc8494ddc9d67b8194012ab9bbfe843642fb4a0a4b90396d796f652f9dbb4cb",
+      "sourceBytes": 3942,
+      "archivedBytes": 3942,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/current-unit.json",
+      "destination": "docs/profiling/attempt137/revert-ci/current-unit.json",
+      "sourceSha256": "d619e8cf7b4dee1cd17de681d40d47d1743496460ffa1d4ae0ea1f946d81c43c",
+      "archivedSha256": "d619e8cf7b4dee1cd17de681d40d47d1743496460ffa1d4ae0ea1f946d81c43c",
+      "sourceBytes": 1383,
+      "archivedBytes": 1383,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/current-benchmark.json",
+      "destination": "docs/profiling/attempt137/revert-ci/current-benchmark.json",
+      "sourceSha256": "52deef4bec45fca73bb8d15cff3ba8c6fef5a3b7877a3afa4d60aaff255a459a",
+      "archivedSha256": "52deef4bec45fca73bb8d15cff3ba8c6fef5a3b7877a3afa4d60aaff255a459a",
+      "sourceBytes": 63100,
+      "archivedBytes": 63100,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/run-33988848638.json",
+      "destination": "docs/profiling/attempt137/revert-ci/run-33988848638.json",
+      "sourceSha256": "206df02efe46dfa423a96d59039fa87126c262efe55b0049c32955ea5ebde55d",
+      "archivedSha256": "206df02efe46dfa423a96d59039fa87126c262efe55b0049c32955ea5ebde55d",
+      "sourceBytes": 2566,
+      "archivedBytes": 2566,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/run-33988848640.json",
+      "destination": "docs/profiling/attempt137/revert-ci/run-33988848640.json",
+      "sourceSha256": "a9f06dfbdd3f93a9b91ed461a5b2eaff0847afb0921d65b975aea3b50269f55e",
+      "archivedSha256": "a9f06dfbdd3f93a9b91ed461a5b2eaff0847afb0921d65b975aea3b50269f55e",
+      "sourceBytes": 103636,
+      "archivedBytes": 103636,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/base-method-compatibility-17-scan.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/base-method-compatibility-17-scan.json",
+      "sourceSha256": "4abeaa0f1d5c951ae8250f25762e08b30c2f1d4117e55d1e69d7ea9a7ca2f8d4",
+      "archivedSha256": "ed8c9dde8640162aa23352741ffe23d39edd84c1f5ae4b8012bc7743f8824488",
+      "sourceBytes": 24302,
+      "archivedBytes": 24300,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/candidate-method-compatibility-17-scan.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/candidate-method-compatibility-17-scan.json",
+      "sourceSha256": "09048e0df40bc44d03b09ef1b3c4859ca28bc62f08c41d26f0e1dabf07c8837d",
+      "archivedSha256": "a3eacf62bb79782309fd1a5e58025c88ddafb0771541b2efca02eaed4cf6f007",
+      "sourceBytes": 24345,
+      "archivedBytes": 24343,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-cpu-initial-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-cpu-initial-report.md",
+      "sourceSha256": "dafb7861ad12c615139f6f6767def89211c72aabfd20041f5180941382591d49",
+      "archivedSha256": "dafb7861ad12c615139f6f6767def89211c72aabfd20041f5180941382591d49",
+      "sourceBytes": 818,
+      "archivedBytes": 818,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-cpu-initial-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-cpu-initial-status.json",
+      "sourceSha256": "d650853b02a7e5a899fbc377d6d4a4bde67c659a3186eb96f5ec379da6b355a3",
+      "archivedSha256": "d650853b02a7e5a899fbc377d6d4a4bde67c659a3186eb96f5ec379da6b355a3",
+      "sourceBytes": 1233,
+      "archivedBytes": 1233,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-cpu-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-cpu-report.md",
+      "sourceSha256": "d0def1d2050e628188ed0982192660b298383b6294f9ea74d12fdb35b5245690",
+      "archivedSha256": "d0def1d2050e628188ed0982192660b298383b6294f9ea74d12fdb35b5245690",
+      "sourceBytes": 856,
+      "archivedBytes": 856,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-cpu-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-cpu-status.json",
+      "sourceSha256": "243b5d6c29ac5baf534305cbe4ec4fa6afe5423d24ab3991a055ace16a96ebfa",
+      "archivedSha256": "243b5d6c29ac5baf534305cbe4ec4fa6afe5423d24ab3991a055ace16a96ebfa",
+      "sourceBytes": 1372,
+      "archivedBytes": 1372,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-initial-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-initial-report.md",
+      "sourceSha256": "76cfbe0d2b2c0171bb0f16f0b6fd6b63667cc1b4bdcbb00bc5d0b7b52b73df57",
+      "archivedSha256": "76cfbe0d2b2c0171bb0f16f0b6fd6b63667cc1b4bdcbb00bc5d0b7b52b73df57",
+      "sourceBytes": 825,
+      "archivedBytes": 825,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-initial-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-initial-status.json",
+      "sourceSha256": "53badd9ede681d4398381708af085abdca183effd06bfcca9b5f88410714f2a8",
+      "archivedSha256": "53badd9ede681d4398381708af085abdca183effd06bfcca9b5f88410714f2a8",
+      "sourceBytes": 1231,
+      "archivedBytes": 1231,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-report.md",
+      "sourceSha256": "76cfbe0d2b2c0171bb0f16f0b6fd6b63667cc1b4bdcbb00bc5d0b7b52b73df57",
+      "archivedSha256": "76cfbe0d2b2c0171bb0f16f0b6fd6b63667cc1b4bdcbb00bc5d0b7b52b73df57",
+      "sourceBytes": 825,
+      "archivedBytes": 825,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-after-status.json",
+      "sourceSha256": "effd7f90aa1cc38fd3a848d44d0259bbe787975378f60ad6e7a7bb8df3a108f5",
+      "archivedSha256": "effd7f90aa1cc38fd3a848d44d0259bbe787975378f60ad6e7a7bb8df3a108f5",
+      "sourceBytes": 1206,
+      "archivedBytes": 1206,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-initial-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-initial-report.md",
+      "sourceSha256": "e9182146afefe346e463580ff70c1860fe04a32ee550141bf3706ae8591d5e90",
+      "archivedSha256": "e9182146afefe346e463580ff70c1860fe04a32ee550141bf3706ae8591d5e90",
+      "sourceBytes": 735,
+      "archivedBytes": 735,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-initial-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-initial-status.json",
+      "sourceSha256": "857f72bae4f5c5b80fa038235aad182e960e8f24cbf0105bcebeff5cf45e78ca",
+      "archivedSha256": "857f72bae4f5c5b80fa038235aad182e960e8f24cbf0105bcebeff5cf45e78ca",
+      "sourceBytes": 1317,
+      "archivedBytes": 1317,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-report.md",
+      "sourceSha256": "e9182146afefe346e463580ff70c1860fe04a32ee550141bf3706ae8591d5e90",
+      "archivedSha256": "e9182146afefe346e463580ff70c1860fe04a32ee550141bf3706ae8591d5e90",
+      "sourceBytes": 735,
+      "archivedBytes": 735,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-rss-delta-status.json",
+      "sourceSha256": "857f72bae4f5c5b80fa038235aad182e960e8f24cbf0105bcebeff5cf45e78ca",
+      "archivedSha256": "857f72bae4f5c5b80fa038235aad182e960e8f24cbf0105bcebeff5cf45e78ca",
+      "sourceBytes": 1317,
+      "archivedBytes": 1317,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-wall-initial-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-wall-initial-report.md",
+      "sourceSha256": "3dfaef5d9222e4524de547bc1d4ccc9e732241f28093502979640cebde051d10",
+      "archivedSha256": "3dfaef5d9222e4524de547bc1d4ccc9e732241f28093502979640cebde051d10",
+      "sourceBytes": 807,
+      "archivedBytes": 807,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-wall-initial-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-wall-initial-status.json",
+      "sourceSha256": "dd4883f6e4ce1bd9d4fece3286cc56ea74608130737ee83a38a05b4c8a8b8d94",
+      "archivedSha256": "dd4883f6e4ce1bd9d4fece3286cc56ea74608130737ee83a38a05b4c8a8b8d94",
+      "sourceBytes": 1251,
+      "archivedBytes": 1251,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-wall-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-wall-report.md",
+      "sourceSha256": "3dfaef5d9222e4524de547bc1d4ccc9e732241f28093502979640cebde051d10",
+      "archivedSha256": "3dfaef5d9222e4524de547bc1d4ccc9e732241f28093502979640cebde051d10",
+      "sourceBytes": 807,
+      "archivedBytes": 807,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-17-scan-wall-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-17-scan-wall-status.json",
+      "sourceSha256": "f54cfc832602c3e4d40e6ed43ec84646be8a2215c5d083977fd901321d9c238f",
+      "archivedSha256": "f54cfc832602c3e4d40e6ed43ec84646be8a2215c5d083977fd901321d9c238f",
+      "sourceBytes": 1225,
+      "archivedBytes": 1225,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-shard-17-scan-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-shard-17-scan-report.md",
+      "sourceSha256": "f0f99b7e039e2720bdea4e68782b85b6a9e2e42de2eec9d1aef1ca97b6dc9765",
+      "archivedSha256": "f0f99b7e039e2720bdea4e68782b85b6a9e2e42de2eec9d1aef1ca97b6dc9765",
+      "sourceBytes": 3223,
+      "archivedBytes": 3223,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-compatibility-shard-17-scan-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-compatibility-shard-17-scan-status.json",
+      "sourceSha256": "767cd935fd74c5e637ef562da79fbe3bdcfd29ed672113e70a89b598517c3610",
+      "archivedSha256": "767cd935fd74c5e637ef562da79fbe3bdcfd29ed672113e70a89b598517c3610",
+      "sourceBytes": 4816,
+      "archivedBytes": 4816,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-confirmation-base-17-scan.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-confirmation-base-17-scan.json",
+      "sourceSha256": "99cf20d19658615246147f07240934a272193cddf41d5c2373b0e757351db28f",
+      "archivedSha256": "cb073d5a1c019533f35e23f4ba903d705143a17290a42278374596b51fac1658",
+      "sourceBytes": 24329,
+      "archivedBytes": 24327,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method17-scan/method-confirmation-candidate-17-scan.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method17-scan/method-confirmation-candidate-17-scan.json",
+      "sourceSha256": "a90d16de623389e5eb9a797e741be1806e053e6f9cd545af8662691446bc80b0",
+      "archivedSha256": "e2d2bb7021b129c97b5b1acb76b5e151c209a7a2426c1ce83a0d4a231353037e",
+      "sourceBytes": 24314,
+      "archivedBytes": 24312,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/base-method-compatibility-36-scan.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/base-method-compatibility-36-scan.json",
+      "sourceSha256": "947756276d267d5fd1c5fb40f4dc34778a0bdb9399e68e30c1e69b499b9e6b4c",
+      "archivedSha256": "c1c9d12005395672688d39f878ee674423a9a49c5814594931e761f78abe16c4",
+      "sourceBytes": 24330,
+      "archivedBytes": 24328,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/candidate-method-compatibility-36-scan.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/candidate-method-compatibility-36-scan.json",
+      "sourceSha256": "b86e0b98b457106dd88622d26a07b35273f8f50e35f1135774421f5c78180552",
+      "archivedSha256": "7655fbe799e988ee3c3acadb51bc5e9defcd8d23dd126f57308284eadbf383df",
+      "sourceBytes": 24373,
+      "archivedBytes": 24371,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-cpu-initial-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-cpu-initial-report.md",
+      "sourceSha256": "5e911553ea7e402118aa8256ef05e23ae30c57622908e84a8c0131b4f0ccc350",
+      "archivedSha256": "5e911553ea7e402118aa8256ef05e23ae30c57622908e84a8c0131b4f0ccc350",
+      "sourceBytes": 819,
+      "archivedBytes": 819,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-cpu-initial-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-cpu-initial-status.json",
+      "sourceSha256": "e477628d2c26f90cf2c29c21186345c363bc72d10f0d4a8c4094277b3124bb4c",
+      "archivedSha256": "e477628d2c26f90cf2c29c21186345c363bc72d10f0d4a8c4094277b3124bb4c",
+      "sourceBytes": 1232,
+      "archivedBytes": 1232,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-cpu-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-cpu-report.md",
+      "sourceSha256": "111a3361201d7ef446e4c65a0273c5da7d0cc70c80cc07ce669fdf8b9026c812",
+      "archivedSha256": "111a3361201d7ef446e4c65a0273c5da7d0cc70c80cc07ce669fdf8b9026c812",
+      "sourceBytes": 857,
+      "archivedBytes": 857,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-cpu-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-cpu-status.json",
+      "sourceSha256": "620929505fb36c1e2ac2c3d936a2c12e0b7916605611d0bf4d5fbc2d1f3e5308",
+      "archivedSha256": "620929505fb36c1e2ac2c3d936a2c12e0b7916605611d0bf4d5fbc2d1f3e5308",
+      "sourceBytes": 1372,
+      "archivedBytes": 1372,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-initial-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-initial-report.md",
+      "sourceSha256": "7631636655164badd002f85c9339e0b070b5202ef79f8b4ec8071fbe63dcd86a",
+      "archivedSha256": "7631636655164badd002f85c9339e0b070b5202ef79f8b4ec8071fbe63dcd86a",
+      "sourceBytes": 824,
+      "archivedBytes": 824,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-initial-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-initial-status.json",
+      "sourceSha256": "d828bd60c122621cbeb863275676fc30599a9dcd08efa133b874e41b8b918e10",
+      "archivedSha256": "d828bd60c122621cbeb863275676fc30599a9dcd08efa133b874e41b8b918e10",
+      "sourceBytes": 1236,
+      "archivedBytes": 1236,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-report.md",
+      "sourceSha256": "7631636655164badd002f85c9339e0b070b5202ef79f8b4ec8071fbe63dcd86a",
+      "archivedSha256": "7631636655164badd002f85c9339e0b070b5202ef79f8b4ec8071fbe63dcd86a",
+      "sourceBytes": 824,
+      "archivedBytes": 824,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-after-status.json",
+      "sourceSha256": "f3160c085ab8c986c3fba5c1c131b71a0940e373c45055dd96706f5a5fa5db58",
+      "archivedSha256": "f3160c085ab8c986c3fba5c1c131b71a0940e373c45055dd96706f5a5fa5db58",
+      "sourceBytes": 1211,
+      "archivedBytes": 1211,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-initial-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-initial-report.md",
+      "sourceSha256": "37f66abeb2f0f261fde53b13d22e030f2cf8a8d89e72c120c338e56b086035ac",
+      "archivedSha256": "37f66abeb2f0f261fde53b13d22e030f2cf8a8d89e72c120c338e56b086035ac",
+      "sourceBytes": 736,
+      "archivedBytes": 736,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-initial-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-initial-status.json",
+      "sourceSha256": "281271882eb10537bf2807e2d55df653dcb726bab11dc4e10d8c27019ba551bd",
+      "archivedSha256": "281271882eb10537bf2807e2d55df653dcb726bab11dc4e10d8c27019ba551bd",
+      "sourceBytes": 1316,
+      "archivedBytes": 1316,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-report.md",
+      "sourceSha256": "37f66abeb2f0f261fde53b13d22e030f2cf8a8d89e72c120c338e56b086035ac",
+      "archivedSha256": "37f66abeb2f0f261fde53b13d22e030f2cf8a8d89e72c120c338e56b086035ac",
+      "sourceBytes": 736,
+      "archivedBytes": 736,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-rss-delta-status.json",
+      "sourceSha256": "281271882eb10537bf2807e2d55df653dcb726bab11dc4e10d8c27019ba551bd",
+      "archivedSha256": "281271882eb10537bf2807e2d55df653dcb726bab11dc4e10d8c27019ba551bd",
+      "sourceBytes": 1316,
+      "archivedBytes": 1316,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-wall-initial-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-wall-initial-report.md",
+      "sourceSha256": "00167f97f1207baa856a4dc4e878c624842e0a36ec2ba67c3bb8034338d3b1ee",
+      "archivedSha256": "00167f97f1207baa856a4dc4e878c624842e0a36ec2ba67c3bb8034338d3b1ee",
+      "sourceBytes": 806,
+      "archivedBytes": 806,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-wall-initial-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-wall-initial-status.json",
+      "sourceSha256": "866358d93d5a9a453c28d805d747e9d4352efded8a31d4a2d1a57131c067d7b7",
+      "archivedSha256": "866358d93d5a9a453c28d805d747e9d4352efded8a31d4a2d1a57131c067d7b7",
+      "sourceBytes": 1251,
+      "archivedBytes": 1251,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-wall-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-wall-report.md",
+      "sourceSha256": "00167f97f1207baa856a4dc4e878c624842e0a36ec2ba67c3bb8034338d3b1ee",
+      "archivedSha256": "00167f97f1207baa856a4dc4e878c624842e0a36ec2ba67c3bb8034338d3b1ee",
+      "sourceBytes": 806,
+      "archivedBytes": 806,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-36-scan-wall-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-36-scan-wall-status.json",
+      "sourceSha256": "63d94e4cf28e487a5cce73d9585042cf9064ff57c1ae8eac27dc81116e5d1a9c",
+      "archivedSha256": "63d94e4cf28e487a5cce73d9585042cf9064ff57c1ae8eac27dc81116e5d1a9c",
+      "sourceBytes": 1225,
+      "archivedBytes": 1225,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-shard-36-scan-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-shard-36-scan-report.md",
+      "sourceSha256": "69840167b321e291efdef4d8edb7d1131fa157c4d59e2197cfe99b05d9bde11a",
+      "archivedSha256": "69840167b321e291efdef4d8edb7d1131fa157c4d59e2197cfe99b05d9bde11a",
+      "sourceBytes": 3223,
+      "archivedBytes": 3223,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-compatibility-shard-36-scan-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-compatibility-shard-36-scan-status.json",
+      "sourceSha256": "5ddaf3de6151bd9a43e7e84e5bfc132485822a7b2620b3f01e64a487c414b184",
+      "archivedSha256": "5ddaf3de6151bd9a43e7e84e5bfc132485822a7b2620b3f01e64a487c414b184",
+      "sourceBytes": 4820,
+      "archivedBytes": 4820,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-confirmation-base-36-scan.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-confirmation-base-36-scan.json",
+      "sourceSha256": "90978a1d397c440458f488bca452c2f1e73b677510762fdf61b553ce5df77579",
+      "archivedSha256": "fb57584038150319d156a4aa29c93149978d9693b4185edadb634d2e2e8eedb0",
+      "sourceBytes": 24303,
+      "archivedBytes": 24301,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/method36-scan/method-confirmation-candidate-36-scan.json",
+      "destination": "docs/profiling/attempt137/revert-ci/method36-scan/method-confirmation-candidate-36-scan.json",
+      "sourceSha256": "2c1e50d4a32ce370804720c39e7c05ba1190810a965592fb180842d28c107b2b",
+      "archivedSha256": "f2aa9c2da2ba8f812c0aaab05812a8c509c8ac4010072baeffb77f8aab5873a9",
+      "sourceBytes": 24358,
+      "archivedBytes": 24356,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/global-wide/global-wide-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/global-wide/global-wide-report.md",
+      "sourceSha256": "0844a3b4d29177bfa88ffb47e923db77e6c3efd0c07dab8c7f513c62b9e20b6c",
+      "archivedSha256": "16987de33c84d925281244c496604c20dbb47afaa2f61f9d93b09537e4079ca4",
+      "sourceBytes": 7058,
+      "archivedBytes": 7057,
+      "trailingNewlineOnlyNormalization": true,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/global-wide/global-wide-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/global-wide/global-wide-status.json",
+      "sourceSha256": "beeac71f5fb66b45c63f414434bd61b1da8e378ec07d97d7db3f2f723249cb77",
+      "archivedSha256": "beeac71f5fb66b45c63f414434bd61b1da8e378ec07d97d7db3f2f723249cb77",
+      "sourceBytes": 14351,
+      "archivedBytes": 14351,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/global-wide/optimization-references.json",
+      "destination": "docs/profiling/attempt137/revert-ci/global-wide/optimization-references.json",
+      "sourceSha256": "5b459c5a10cfcf510aad346a054cae0d72a5b35c9a31be30502c18810aa2bacf",
+      "archivedSha256": "5b459c5a10cfcf510aad346a054cae0d72a5b35c9a31be30502c18810aa2bacf",
+      "sourceBytes": 380,
+      "archivedBytes": 380,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/routing/graph-routing-report.md",
+      "destination": "docs/profiling/attempt137/revert-ci/routing/graph-routing-report.md",
+      "sourceSha256": "847a4c0f2ffab40e10b91821a3363e17d71a79ee1cbdee79993da49f7faaaa97",
+      "archivedSha256": "847a4c0f2ffab40e10b91821a3363e17d71a79ee1cbdee79993da49f7faaaa97",
+      "sourceBytes": 190141,
+      "archivedBytes": 190141,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/routing/graph-routing-status.json",
+      "destination": "docs/profiling/attempt137/revert-ci/routing/graph-routing-status.json",
+      "sourceSha256": "fa85aa3e99d642c160de3c33dd4bc62b32c0e9f88c96ce8ed8dfb49ac0c870ce",
+      "archivedSha256": "fa85aa3e99d642c160de3c33dd4bc62b32c0e9f88c96ce8ed8dfb49ac0c870ce",
+      "sourceBytes": 899680,
+      "archivedBytes": 899680,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/routing/evidence-manifest.json",
+      "destination": "docs/profiling/attempt137/revert-ci/routing/evidence-manifest.json",
+      "sourceSha256": "2506e1f74181ea2146220966d04b8cc5fb8e07f0aada6257a0056e2e65c2863b",
+      "archivedSha256": "2506e1f74181ea2146220966d04b8cc5fb8e07f0aada6257a0056e2e65c2863b",
+      "sourceBytes": 3889,
+      "archivedBytes": 3889,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/routing/fixture-reproducibility.json",
+      "destination": "docs/profiling/attempt137/revert-ci/routing/fixture-reproducibility.json",
+      "sourceSha256": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+      "archivedSha256": "a113835942f9c413584374a985306d20333fdff32911bf39ea82fd3beff577b5",
+      "sourceBytes": 419,
+      "archivedBytes": 419,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-attempt137.dcywsuq7/revert-ci/routing/provenance.json",
+      "destination": "docs/profiling/attempt137/revert-ci/routing/provenance.json",
+      "sourceSha256": "fda8dcbeb51226c3a9284d7d8b45ac4ec966ca0d2efc97bc1a286f25870220b0",
+      "archivedSha256": "fda8dcbeb51226c3a9284d7d8b45ac4ec966ca0d2efc97bc1a286f25870220b0",
+      "sourceBytes": 1604,
+      "archivedBytes": 1604,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    }
+  ]
+}

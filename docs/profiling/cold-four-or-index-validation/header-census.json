@@ -1,0 +1,1090 @@
+[
+  {
+    "id": "fixture-android-00",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-00/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "cf94d4bf26bb300cca4e3704d9160a83f5eab139f467861fb5321e6938139520",
+    "stringCount": 61909,
+    "callSiteCount": 100606,
+    "uniquePropertyStringCounts": [
+      2440,
+      9096,
+      6319,
+      12989
+    ],
+    "trigramPostingCount": 587787,
+    "intCallbackCalls": 464112,
+    "longCallbackCalls": 649696
+  },
+  {
+    "id": "fixture-android-01",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-01/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "4e7389e08c69cb86aee69d1aeffabb4fa24e4c10c01c039ee2567de5a6fc193a",
+    "stringCount": 62746,
+    "callSiteCount": 110875,
+    "uniquePropertyStringCounts": [
+      2530,
+      9730,
+      6484,
+      12545
+    ],
+    "trigramPostingCount": 598983,
+    "intCallbackCalls": 506078,
+    "longCallbackCalls": 661729
+  },
+  {
+    "id": "fixture-android-02",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-02/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "ad587bd58473e3c5054955f1cbb59d9fdcaeec1a3daf8c65ce7c9419d1e20541",
+    "stringCount": 63385,
+    "callSiteCount": 102233,
+    "uniquePropertyStringCounts": [
+      2465,
+      9962,
+      6584,
+      14170
+    ],
+    "trigramPostingCount": 620623,
+    "intCallbackCalls": 475294,
+    "longCallbackCalls": 684008
+  },
+  {
+    "id": "fixture-android-03",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-03/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "c1a07956c4af711320d6fc31f5f3dc1be5fa493e765390d43135420f49be33b2",
+    "stringCount": 65023,
+    "callSiteCount": 108305,
+    "uniquePropertyStringCounts": [
+      2478,
+      9774,
+      6740,
+      14246
+    ],
+    "trigramPostingCount": 639194,
+    "intCallbackCalls": 499696,
+    "longCallbackCalls": 704217
+  },
+  {
+    "id": "fixture-android-04",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-04/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "788af0e145f62ec1292e463b6ef20bfd06f9f44f3dced8786f5aa5f573c994f6",
+    "stringCount": 64808,
+    "callSiteCount": 102157,
+    "uniquePropertyStringCounts": [
+      2453,
+      8863,
+      6338,
+      12473
+    ],
+    "trigramPostingCount": 573815,
+    "intCallbackCalls": 468882,
+    "longCallbackCalls": 638623
+  },
+  {
+    "id": "fixture-android-05",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-05/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "3383937018264baba1a88d4f3dc0d99e81a7fa913f5187ee1ec79bb57f494a80",
+    "stringCount": 62177,
+    "callSiteCount": 98095,
+    "uniquePropertyStringCounts": [
+      2481,
+      9025,
+      6442,
+      12696
+    ],
+    "trigramPostingCount": 584516,
+    "intCallbackCalls": 453668,
+    "longCallbackCalls": 646693
+  },
+  {
+    "id": "fixture-android-06",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-06/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "f3a77b7f6f6a152f51d79218f7e58f477057a108de97261fb27dde8e3d61595c",
+    "stringCount": 66775,
+    "callSiteCount": 114190,
+    "uniquePropertyStringCounts": [
+      2551,
+      10457,
+      6950,
+      14933
+    ],
+    "trigramPostingCount": 656694,
+    "intCallbackCalls": 526542,
+    "longCallbackCalls": 723469
+  },
+  {
+    "id": "fixture-android-07",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-07/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "509024a2b3bfdecc31e01b15876e31b7703f1afdcb75d3fa77b1e6485a812dba",
+    "stringCount": 66901,
+    "callSiteCount": 108587,
+    "uniquePropertyStringCounts": [
+      2553,
+      9904,
+      6867,
+      13802
+    ],
+    "trigramPostingCount": 620158,
+    "intCallbackCalls": 500600,
+    "longCallbackCalls": 687059
+  },
+  {
+    "id": "fixture-android-08",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-08/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "1dcabb4fd33bae063669ba37592d09188894c635f023058a8fb651418488159f",
+    "stringCount": 68236,
+    "callSiteCount": 111032,
+    "uniquePropertyStringCounts": [
+      2524,
+      10648,
+      6613,
+      14671
+    ],
+    "trigramPostingCount": 644886,
+    "intCallbackCalls": 513040,
+    "longCallbackCalls": 713122
+  },
+  {
+    "id": "fixture-android-09",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-09/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "95b6b1cb45d6d79dc5821590fadd30be45adc4a486e7ff2fd7abe187487d7066",
+    "stringCount": 67481,
+    "callSiteCount": 110050,
+    "uniquePropertyStringCounts": [
+      2484,
+      9896,
+      6723,
+      13919
+    ],
+    "trigramPostingCount": 625669,
+    "intCallbackCalls": 506244,
+    "longCallbackCalls": 693150
+  },
+  {
+    "id": "fixture-android-10",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-10/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "79e6be1ce0bae34c53caf2eda00373d05b689a80d7c2512a0928a86625fa18b3",
+    "stringCount": 70254,
+    "callSiteCount": 103391,
+    "uniquePropertyStringCounts": [
+      2455,
+      9280,
+      6666,
+      13793
+    ],
+    "trigramPostingCount": 600921,
+    "intCallbackCalls": 477952,
+    "longCallbackCalls": 671175
+  },
+  {
+    "id": "fixture-android-11",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-11/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "17ddadff4c31980d726b9acd98b4678f5a77f2779dc8329775a64d0d0fc2daac",
+    "stringCount": 61743,
+    "callSiteCount": 94712,
+    "uniquePropertyStringCounts": [
+      2464,
+      9170,
+      6416,
+      12971
+    ],
+    "trigramPostingCount": 590505,
+    "intCallbackCalls": 440890,
+    "longCallbackCalls": 652248
+  },
+  {
+    "id": "fixture-android-12",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-12/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "1b87e261716b96af8a9ae91b82ca977a949500d28fdc3e2d209a2189713c697b",
+    "stringCount": 72531,
+    "callSiteCount": 121945,
+    "uniquePropertyStringCounts": [
+      2565,
+      10619,
+      6642,
+      14486
+    ],
+    "trigramPostingCount": 635323,
+    "intCallbackCalls": 556404,
+    "longCallbackCalls": 707854
+  },
+  {
+    "id": "fixture-android-13",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-13/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "d246bae34b6e450970f2685cccfaa7d7468a46508f19455ae20bb99e445cdf22",
+    "stringCount": 66264,
+    "callSiteCount": 117348,
+    "uniquePropertyStringCounts": [
+      2489,
+      10474,
+      6502,
+      13612
+    ],
+    "trigramPostingCount": 620002,
+    "intCallbackCalls": 535546,
+    "longCallbackCalls": 686266
+  },
+  {
+    "id": "fixture-android-14",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-14/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "045d1f3c2192e0b01e31356396318a81ac7dcc8e6f336e4ad6499327b03eebba",
+    "stringCount": 64956,
+    "callSiteCount": 108560,
+    "uniquePropertyStringCounts": [
+      2586,
+      9168,
+      6703,
+      12929
+    ],
+    "trigramPostingCount": 591960,
+    "intCallbackCalls": 497012,
+    "longCallbackCalls": 656916
+  },
+  {
+    "id": "fixture-android-15",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-android-15/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "203ceab0a8fb0173ce46b9d25f744b897050b4fe096886342a1c719c02f1d54e",
+    "stringCount": 58416,
+    "callSiteCount": 94748,
+    "uniquePropertyStringCounts": [
+      2537,
+      8526,
+      6214,
+      12235
+    ],
+    "trigramPostingCount": 574103,
+    "intCallbackCalls": 438016,
+    "longCallbackCalls": 632519
+  },
+  {
+    "id": "fixture-tika-00",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-00/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "9140d6ea457291d630ef077bb7adb37de017a51d25c433c28d1ddd119c9f5d15",
+    "stringCount": 34568,
+    "callSiteCount": 55707,
+    "uniquePropertyStringCounts": [
+      1700,
+      5714,
+      4768,
+      6781
+    ],
+    "trigramPostingCount": 358542,
+    "intCallbackCalls": 260754,
+    "longCallbackCalls": 393110
+  },
+  {
+    "id": "fixture-tika-01",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-01/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "99635772472fda677df54d59563a0e710b6bb8445ecd46db03815b6aedcf0658",
+    "stringCount": 36988,
+    "callSiteCount": 67073,
+    "uniquePropertyStringCounts": [
+      1745,
+      6562,
+      5084,
+      7449
+    ],
+    "trigramPostingCount": 379566,
+    "intCallbackCalls": 309972,
+    "longCallbackCalls": 416554
+  },
+  {
+    "id": "fixture-tika-02",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-02/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "88198b16a1752489b4ce2b0380f3cedbc16cf66d002f31887463af974035a445",
+    "stringCount": 36148,
+    "callSiteCount": 60764,
+    "uniquePropertyStringCounts": [
+      1763,
+      6311,
+      5025,
+      6799
+    ],
+    "trigramPostingCount": 367060,
+    "intCallbackCalls": 282852,
+    "longCallbackCalls": 403208
+  },
+  {
+    "id": "fixture-tika-03",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-03/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "c999f1aedbf3f01a10ccc04c9b09f66d2c582c34f8a4a5fcb9bf6903fd74c42d",
+    "stringCount": 34228,
+    "callSiteCount": 54516,
+    "uniquePropertyStringCounts": [
+      1691,
+      5341,
+      4842,
+      7382
+    ],
+    "trigramPostingCount": 357524,
+    "intCallbackCalls": 256576,
+    "longCallbackCalls": 391752
+  },
+  {
+    "id": "fixture-tika-04",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-04/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "9b8153b3dddf14774c50cde45828899b634b5f697943b0499f5e5fcab110afe2",
+    "stringCount": 38548,
+    "callSiteCount": 65357,
+    "uniquePropertyStringCounts": [
+      1787,
+      6535,
+      5248,
+      7314
+    ],
+    "trigramPostingCount": 384814,
+    "intCallbackCalls": 303196,
+    "longCallbackCalls": 423362
+  },
+  {
+    "id": "fixture-tika-05",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-05/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "e8bf0c9ed81e8aa3c76d6c04ca8f9353acdac0ac164658ec8edc4a2912c11e0b",
+    "stringCount": 35531,
+    "callSiteCount": 59823,
+    "uniquePropertyStringCounts": [
+      1679,
+      6577,
+      5024,
+      6840
+    ],
+    "trigramPostingCount": 371637,
+    "intCallbackCalls": 279532,
+    "longCallbackCalls": 407168
+  },
+  {
+    "id": "fixture-tika-06",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-06/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "c012caa7a55c1a668138384bd609a597d21af20682d77612fda665699481a13d",
+    "stringCount": 37850,
+    "callSiteCount": 58836,
+    "uniquePropertyStringCounts": [
+      1716,
+      5982,
+      5107,
+      6990
+    ],
+    "trigramPostingCount": 370551,
+    "intCallbackCalls": 274934,
+    "longCallbackCalls": 408401
+  },
+  {
+    "id": "fixture-tika-07",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-07/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "45cf5dc75ebd904016e7f863fce75c8f46f8c52cc770616ddc12666b2fe0ab55",
+    "stringCount": 35220,
+    "callSiteCount": 57832,
+    "uniquePropertyStringCounts": [
+      1772,
+      5923,
+      4845,
+      7303
+    ],
+    "trigramPostingCount": 357875,
+    "intCallbackCalls": 271014,
+    "longCallbackCalls": 393095
+  },
+  {
+    "id": "fixture-tika-08",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-08/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "2b1cd458d89b08ddb3b73665fba856b2acac8134b543534a3e60af4a6f2d4111",
+    "stringCount": 38341,
+    "callSiteCount": 63677,
+    "uniquePropertyStringCounts": [
+      1754,
+      6617,
+      5300,
+      8582
+    ],
+    "trigramPostingCount": 400086,
+    "intCallbackCalls": 299214,
+    "longCallbackCalls": 438427
+  },
+  {
+    "id": "fixture-tika-09",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-09/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "d7966d459a75cedb41282066af89673f3532411412631b64d968681390a78d1e",
+    "stringCount": 36612,
+    "callSiteCount": 66311,
+    "uniquePropertyStringCounts": [
+      1814,
+      6752,
+      5195,
+      8035
+    ],
+    "trigramPostingCount": 389506,
+    "intCallbackCalls": 308836,
+    "longCallbackCalls": 426118
+  },
+  {
+    "id": "fixture-tika-10",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-10/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "ce633ae2671c6ab51fa9e3ed8b328efd07227d76aec1fb530e7f15cfb47b4a25",
+    "stringCount": 41195,
+    "callSiteCount": 68948,
+    "uniquePropertyStringCounts": [
+      1836,
+      7533,
+      5364,
+      8112
+    ],
+    "trigramPostingCount": 415913,
+    "intCallbackCalls": 321482,
+    "longCallbackCalls": 457108
+  },
+  {
+    "id": "fixture-tika-11",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-11/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "5bd86a0714e84f6acd94f709e766384e03ac508b12a5f5b8828065d58da1d00b",
+    "stringCount": 38094,
+    "callSiteCount": 62554,
+    "uniquePropertyStringCounts": [
+      1782,
+      6164,
+      5192,
+      7980
+    ],
+    "trigramPostingCount": 382652,
+    "intCallbackCalls": 292452,
+    "longCallbackCalls": 420746
+  },
+  {
+    "id": "fixture-tika-12",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-12/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "450527dbd7a3e4fdd972bb596a9544612fc66e8d949f3da872b6075488a098fc",
+    "stringCount": 38552,
+    "callSiteCount": 62181,
+    "uniquePropertyStringCounts": [
+      1778,
+      5906,
+      5343,
+      7937
+    ],
+    "trigramPostingCount": 392853,
+    "intCallbackCalls": 290652,
+    "longCallbackCalls": 431405
+  },
+  {
+    "id": "fixture-tika-13",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-13/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "b51c381b157c13b4a18ae887a5d37deb6dfc3e42bfa4c1abdb6091ac4f75941a",
+    "stringCount": 35798,
+    "callSiteCount": 59606,
+    "uniquePropertyStringCounts": [
+      1717,
+      6232,
+      4749,
+      7433
+    ],
+    "trigramPostingCount": 361125,
+    "intCallbackCalls": 278686,
+    "longCallbackCalls": 396923
+  },
+  {
+    "id": "fixture-tika-14",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-14/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "cf65967789ffbe24bba3c7946b719cf66763bac0d02ae065768ce52e5aed152c",
+    "stringCount": 37652,
+    "callSiteCount": 59770,
+    "uniquePropertyStringCounts": [
+      1719,
+      6282,
+      5161,
+      7469
+    ],
+    "trigramPostingCount": 384083,
+    "intCallbackCalls": 280342,
+    "longCallbackCalls": 421735
+  },
+  {
+    "id": "fixture-tika-15",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-tika-15/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "5d48a5eb47cbc87ac87d34898c02327b14cb924c3bf1b57f48e539f495eccf87",
+    "stringCount": 42951,
+    "callSiteCount": 79133,
+    "uniquePropertyStringCounts": [
+      1735,
+      8202,
+      5402,
+      8779
+    ],
+    "trigramPostingCount": 429770,
+    "intCallbackCalls": 364768,
+    "longCallbackCalls": 472721
+  },
+  {
+    "id": "fixture-hive-00",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-00/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "a0ead028b512a517d86f0682958d58ea51200a6d79b5c36563cbba482110a786",
+    "stringCount": 43919,
+    "callSiteCount": 102295,
+    "uniquePropertyStringCounts": [
+      2260,
+      6218,
+      7129,
+      11367
+    ],
+    "trigramPostingCount": 590273,
+    "intCallbackCalls": 463128,
+    "longCallbackCalls": 634192
+  },
+  {
+    "id": "fixture-hive-01",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-01/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "a164ef0d8fc49f165f51b8e75db94cf7ab69ab82ac2d03d1eea8ee12bc56ca5a",
+    "stringCount": 37762,
+    "callSiteCount": 81185,
+    "uniquePropertyStringCounts": [
+      2158,
+      4948,
+      5987,
+      8537
+    ],
+    "trigramPostingCount": 481042,
+    "intCallbackCalls": 368000,
+    "longCallbackCalls": 518804
+  },
+  {
+    "id": "fixture-hive-02",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-02/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "874406b99205cc45ade2b65310573e4b7345f05911a589167a133aff1171911c",
+    "stringCount": 41823,
+    "callSiteCount": 96064,
+    "uniquePropertyStringCounts": [
+      2313,
+      6270,
+      6915,
+      10462
+    ],
+    "trigramPostingCount": 563268,
+    "intCallbackCalls": 436176,
+    "longCallbackCalls": 605091
+  },
+  {
+    "id": "fixture-hive-03",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-03/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "689276acfb2474dd3abb157d6052b1db8ff2330fdda40e06356588acc53746c7",
+    "stringCount": 41400,
+    "callSiteCount": 94421,
+    "uniquePropertyStringCounts": [
+      2232,
+      6421,
+      6814,
+      10465
+    ],
+    "trigramPostingCount": 559775,
+    "intCallbackCalls": 429548,
+    "longCallbackCalls": 601175
+  },
+  {
+    "id": "fixture-hive-04",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-04/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "07ae949b85919b63f1bc26428776fdc7db1c515edf0c9b88250c54fb1cc68b40",
+    "stringCount": 40911,
+    "callSiteCount": 86012,
+    "uniquePropertyStringCounts": [
+      2242,
+      5331,
+      6455,
+      9051
+    ],
+    "trigramPostingCount": 516197,
+    "intCallbackCalls": 390206,
+    "longCallbackCalls": 557108
+  },
+  {
+    "id": "fixture-hive-05",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-05/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "48f4319b5ec01d2eb0b2c5926fcf58105c570ecb01b2b8d5ff34318cfac1154f",
+    "stringCount": 39780,
+    "callSiteCount": 82642,
+    "uniquePropertyStringCounts": [
+      2250,
+      5749,
+      6489,
+      9238
+    ],
+    "trigramPostingCount": 526020,
+    "intCallbackCalls": 378020,
+    "longCallbackCalls": 565800
+  },
+  {
+    "id": "fixture-hive-06",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-06/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "e432eb8e4263d507cf23f06fd270a0519d634ab58677ee40fc5c9b973396e708",
+    "stringCount": 40105,
+    "callSiteCount": 86251,
+    "uniquePropertyStringCounts": [
+      2250,
+      5532,
+      6739,
+      9830
+    ],
+    "trigramPostingCount": 547670,
+    "intCallbackCalls": 393706,
+    "longCallbackCalls": 587775
+  },
+  {
+    "id": "fixture-hive-07",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-07/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "ff264798573101066e535ac5f8b30d3660dcb1cebea516d24fab051a6fa51909",
+    "stringCount": 47441,
+    "callSiteCount": 102028,
+    "uniquePropertyStringCounts": [
+      2214,
+      6311,
+      6584,
+      9812
+    ],
+    "trigramPostingCount": 539876,
+    "intCallbackCalls": 457954,
+    "longCallbackCalls": 587317
+  },
+  {
+    "id": "fixture-hive-08",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-08/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "e6f3e63aca50bdeb6cb54e3421ca0615453e00085df4ab09602a66dc82dde1ca",
+    "stringCount": 46723,
+    "callSiteCount": 99087,
+    "uniquePropertyStringCounts": [
+      2298,
+      6193,
+      7118,
+      10331
+    ],
+    "trigramPostingCount": 586909,
+    "intCallbackCalls": 448228,
+    "longCallbackCalls": 633632
+  },
+  {
+    "id": "fixture-hive-09",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-09/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "4aaa089dc67c7fe0f6b206c9007e0c68d67de5600d639afb2173e8811a280ab7",
+    "stringCount": 40297,
+    "callSiteCount": 82759,
+    "uniquePropertyStringCounts": [
+      2126,
+      6027,
+      6826,
+      9945
+    ],
+    "trigramPostingCount": 570012,
+    "intCallbackCalls": 380884,
+    "longCallbackCalls": 610309
+  },
+  {
+    "id": "fixture-hive-10",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-10/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "b8de8cf12d36fc9c93e1744ddadc540fe4e6d9776b78c8e1b4e72b2d07f26108",
+    "stringCount": 38824,
+    "callSiteCount": 79356,
+    "uniquePropertyStringCounts": [
+      2239,
+      5040,
+      6390,
+      8490
+    ],
+    "trigramPostingCount": 505090,
+    "intCallbackCalls": 361742,
+    "longCallbackCalls": 543914
+  },
+  {
+    "id": "fixture-hive-11",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-11/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "a1727f5595574370301263f8ff21c0b4d879c7164a605d80c192a1cf1e1597df",
+    "stringCount": 40824,
+    "callSiteCount": 89373,
+    "uniquePropertyStringCounts": [
+      2259,
+      5892,
+      6693,
+      9559
+    ],
+    "trigramPostingCount": 538803,
+    "intCallbackCalls": 406298,
+    "longCallbackCalls": 579627
+  },
+  {
+    "id": "fixture-hive-12",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-12/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "e7c4afcaa39f6d1deffd6ca2125024e21cf18b2f861da59a1d67b4d58fee3d99",
+    "stringCount": 44676,
+    "callSiteCount": 93578,
+    "uniquePropertyStringCounts": [
+      2207,
+      5959,
+      6638,
+      9666
+    ],
+    "trigramPostingCount": 531202,
+    "intCallbackCalls": 423252,
+    "longCallbackCalls": 575878
+  },
+  {
+    "id": "fixture-hive-13",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-13/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "00379ef905937a78db64a5e68293ed14aea498ed25dbf4ba04fd575a189dbc14",
+    "stringCount": 42961,
+    "callSiteCount": 86013,
+    "uniquePropertyStringCounts": [
+      2296,
+      5473,
+      6832,
+      9036
+    ],
+    "trigramPostingCount": 547594,
+    "intCallbackCalls": 391326,
+    "longCallbackCalls": 590555
+  },
+  {
+    "id": "fixture-hive-14",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-14/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "17c502f5955ed90190052af8b2738e9516da1c1adcd0d8d83c984eb0170642db",
+    "stringCount": 44859,
+    "callSiteCount": 88637,
+    "uniquePropertyStringCounts": [
+      2136,
+      5508,
+      6352,
+      9680
+    ],
+    "trigramPostingCount": 518348,
+    "intCallbackCalls": 401900,
+    "longCallbackCalls": 563207
+  },
+  {
+    "id": "fixture-hive-15",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-hive-15/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "95895dc7496b691ad836c0e7ea89fe75938b6073fe0c4aa88f8d31b1d72a5733",
+    "stringCount": 39489,
+    "callSiteCount": 87946,
+    "uniquePropertyStringCounts": [
+      2152,
+      5947,
+      6379,
+      9129
+    ],
+    "trigramPostingCount": 516781,
+    "intCallbackCalls": 398998,
+    "longCallbackCalls": 556270
+  },
+  {
+    "id": "fixture-kotlin-compiler-00",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-00/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "dc0ed46b72923f088b696332aeb143d8860707f7bbf2c6f24e411680a2408995",
+    "stringCount": 29499,
+    "callSiteCount": 59257,
+    "uniquePropertyStringCounts": [
+      1361,
+      4796,
+      5027,
+      7911
+    ],
+    "trigramPostingCount": 451630,
+    "intCallbackCalls": 275218,
+    "longCallbackCalls": 481129
+  },
+  {
+    "id": "fixture-kotlin-compiler-01",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-01/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "e5a76ea7fc3f5e768469a32aa1bbdedf9a5a02b631d858fe73b4d7e3ab382596",
+    "stringCount": 31834,
+    "callSiteCount": 55092,
+    "uniquePropertyStringCounts": [
+      1388,
+      4700,
+      4775,
+      7563
+    ],
+    "trigramPostingCount": 430627,
+    "intCallbackCalls": 257220,
+    "longCallbackCalls": 462461
+  },
+  {
+    "id": "fixture-kotlin-compiler-02",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-02/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "3ed22db7311e80d18bf902772daac99ffb2c36cc44e876fef7fb504d344ab172",
+    "stringCount": 28404,
+    "callSiteCount": 52094,
+    "uniquePropertyStringCounts": [
+      1459,
+      4340,
+      4929,
+      7111
+    ],
+    "trigramPostingCount": 430755,
+    "intCallbackCalls": 244054,
+    "longCallbackCalls": 459159
+  },
+  {
+    "id": "fixture-kotlin-compiler-03",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-03/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "a1e42d14bac3ebcc2d845a02cacecb3beaa57129903b6018c2c31c8bd92edfd5",
+    "stringCount": 29023,
+    "callSiteCount": 48917,
+    "uniquePropertyStringCounts": [
+      1462,
+      4079,
+      4947,
+      6869
+    ],
+    "trigramPostingCount": 432278,
+    "intCallbackCalls": 230382,
+    "longCallbackCalls": 461301
+  },
+  {
+    "id": "fixture-kotlin-compiler-04",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-04/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "acaa387212102f7fad069623a17b934ff6587861514a62b9f6df05023e993921",
+    "stringCount": 29773,
+    "callSiteCount": 59098,
+    "uniquePropertyStringCounts": [
+      1463,
+      4566,
+      5300,
+      7945
+    ],
+    "trigramPostingCount": 475761,
+    "intCallbackCalls": 274940,
+    "longCallbackCalls": 505534
+  },
+  {
+    "id": "fixture-kotlin-compiler-05",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-05/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "dfc4821e24586b62576e429a5a69732c997ab33df457e8e1533007ebb375ccba",
+    "stringCount": 30875,
+    "callSiteCount": 62560,
+    "uniquePropertyStringCounts": [
+      1478,
+      4886,
+      5147,
+      7850
+    ],
+    "trigramPostingCount": 462378,
+    "intCallbackCalls": 288962,
+    "longCallbackCalls": 493253
+  },
+  {
+    "id": "fixture-kotlin-compiler-06",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-06/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "71097e34bb4e7c6fd7c0ca3b5a80a05ffce4f6ab3de7cc82138b4f40eab70f8b",
+    "stringCount": 27412,
+    "callSiteCount": 52417,
+    "uniquePropertyStringCounts": [
+      1378,
+      4475,
+      4876,
+      7330
+    ],
+    "trigramPostingCount": 432984,
+    "intCallbackCalls": 245786,
+    "longCallbackCalls": 460396
+  },
+  {
+    "id": "fixture-kotlin-compiler-07",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-07/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "ffe77e38800b5d70a02f4cf33a2bab17500ecc15368c217dd175963b5c590efb",
+    "stringCount": 29923,
+    "callSiteCount": 54757,
+    "uniquePropertyStringCounts": [
+      1410,
+      4550,
+      4826,
+      6948
+    ],
+    "trigramPostingCount": 424455,
+    "intCallbackCalls": 254496,
+    "longCallbackCalls": 454378
+  },
+  {
+    "id": "fixture-kotlin-compiler-08",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-08/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "b81c489a2255482e53a2caabb11c9ceb79b7d9871784e3034240d7ce960ce6de",
+    "stringCount": 30303,
+    "callSiteCount": 59877,
+    "uniquePropertyStringCounts": [
+      1390,
+      4992,
+      5080,
+      7323
+    ],
+    "trigramPostingCount": 452428,
+    "intCallbackCalls": 277078,
+    "longCallbackCalls": 482731
+  },
+  {
+    "id": "fixture-kotlin-compiler-09",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-09/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "16b03c964ccc195fa55fc1a1c28f1bf9624b52ad5288068a04041b5d062e80db",
+    "stringCount": 30494,
+    "callSiteCount": 59459,
+    "uniquePropertyStringCounts": [
+      1375,
+      4839,
+      4823,
+      7698
+    ],
+    "trigramPostingCount": 434772,
+    "intCallbackCalls": 275306,
+    "longCallbackCalls": 465266
+  },
+  {
+    "id": "fixture-kotlin-compiler-10",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-10/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "f789d5ade3e7ea348c4df13c7d70e80e1bcc386f20e1320d3bd04c7a4e9ef83b",
+    "stringCount": 35203,
+    "callSiteCount": 64023,
+    "uniquePropertyStringCounts": [
+      1463,
+      5108,
+      5213,
+      8944
+    ],
+    "trigramPostingCount": 492515,
+    "intCallbackCalls": 297548,
+    "longCallbackCalls": 527718
+  },
+  {
+    "id": "fixture-kotlin-compiler-11",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-11/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "38e979742df648c49d5891dffeda2289d854cdcb2f4f0a8aa89199f03175c5ad",
+    "stringCount": 26540,
+    "callSiteCount": 51565,
+    "uniquePropertyStringCounts": [
+      1341,
+      4283,
+      4612,
+      6978
+    ],
+    "trigramPostingCount": 404631,
+    "intCallbackCalls": 240688,
+    "longCallbackCalls": 431171
+  },
+  {
+    "id": "fixture-kotlin-compiler-12",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-12/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "ac306d78445feb0450011c3f2bfbd4997e57bf00b14d82a318255570b3416d89",
+    "stringCount": 32550,
+    "callSiteCount": 54287,
+    "uniquePropertyStringCounts": [
+      1396,
+      4265,
+      4796,
+      7009
+    ],
+    "trigramPostingCount": 421198,
+    "intCallbackCalls": 252080,
+    "longCallbackCalls": 453748
+  },
+  {
+    "id": "fixture-kotlin-compiler-13",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-13/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "d49c6f1034ae674f54c4836d1949798feac22fb35ba858c7c57f98bc52b43d34",
+    "stringCount": 31379,
+    "callSiteCount": 57490,
+    "uniquePropertyStringCounts": [
+      1418,
+      4931,
+      5070,
+      7967
+    ],
+    "trigramPostingCount": 461498,
+    "intCallbackCalls": 268732,
+    "longCallbackCalls": 492877
+  },
+  {
+    "id": "fixture-kotlin-compiler-14",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-14/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "808cc042175ec9287567f0494fd0800ae77d164dc83a4690aa686576c9ccf6ea",
+    "stringCount": 29241,
+    "callSiteCount": 56472,
+    "uniquePropertyStringCounts": [
+      1416,
+      4330,
+      5069,
+      7718
+    ],
+    "trigramPostingCount": 446691,
+    "intCallbackCalls": 262954,
+    "longCallbackCalls": 475932
+  },
+  {
+    "id": "fixture-kotlin-compiler-15",
+    "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/fixture-kotlin-compiler-15/graph.callsite-string-index",
+    "bytesRead": 76,
+    "headerSha256": "8177f0993c7a3345547087e7e12c6cec62c97b3ad45563c0bfba13359d5e1ecc",
+    "stringCount": 27812,
+    "callSiteCount": 53001,
+    "uniquePropertyStringCounts": [
+      1435,
+      4348,
+      4889,
+      7030
+    ],
+    "trigramPostingCount": 425689,
+    "intCallbackCalls": 247408,
+    "longCallbackCalls": 453501
+  }
+]

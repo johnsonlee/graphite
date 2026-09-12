@@ -1,0 +1,1087 @@
+{
+  "diagnosticOnly": true,
+  "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+  "pairedOrder": [
+    "candidate/base",
+    "base/candidate",
+    "candidate/base"
+  ],
+  "validationPassed": true,
+  "scriptSha256": "454ab628f9f58bc8c577772c1cf9765af350ec9d559e47318b9b71a5fb5d1a2f",
+  "captureReceipt": {
+    "diagnosticOnly": true,
+    "pairedRuns": 3,
+    "notAcceptanceTimings": true,
+    "jarHashes": {
+      "candidate": "b3d29878dd13c04578f1947951eed8da23b38862b633994e5c998b09783db496",
+      "base": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+    }
+  },
+  "semantics": [
+    "Inclusive categories are unioned once per stack and overlap; do not sum them.",
+    "Exclusive categories classify only the sampled leaf, not elapsed exclusive time.",
+    "Allocation weights are sampled TLAB/outside-TLAB bytes, not exact query allocations or object-size accounting.",
+    "CPU samples on all co-occurring threads do not establish causality or scheduling delay.",
+    "Profiled latency is diagnostic only and cannot replace the rejected unprofiled performance result.",
+    "No selected provenance stage executes: all 12 rows fit below LIMIT 200; initial projection passes selectedValues=null."
+  ],
+  "bytecodeComparison": {
+    "path": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/worker-bytecode-comparison.json",
+    "sha256": "4fb053dde5b9683516b59b4f3dd42e64c10482647cf0de9ce5a0ce0beaa43890",
+    "reportedResult": {
+      "perNode": {
+        "equalAfterConstantPoolAndLambdaNameNormalization": true,
+        "baseLines": 360,
+        "candidateLines": 360,
+        "diff": ""
+      },
+      "worker": {
+        "equalAfterConstantPoolAndLambdaNameNormalization": true,
+        "baseLines": 101,
+        "candidateLines": 101,
+        "diff": ""
+      }
+    },
+    "qualification": "Read existing parent-produced comparison; did not launch javap or independently regenerate it."
+  },
+  "conclusion": "The six profiles do not establish the cause of the original unprofiled regression. New lazy/callback inclusive samples all overlap exact discovery, with no sampled lazy/callback leaf. Dominant raw loops also dominate baseline; per-node and worker bytecode comparison reports equivalent instructions after naming normalization. No acceptance decision is changed.",
+  "runs": [
+    {
+      "side": "base",
+      "pair": 1,
+      "analysis": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-1-analysis/analysis.json",
+      "analysisSha256": "aea546e84d60baa2c5c84662eeab7bf97c839340bfe8702a12a243fd14212ba7",
+      "jfrSha256": "b2a1aeddf341ce00e8e4c8596bc61fb5270bbcc82ad8c621130ccad7d1f8b091",
+      "tsvSha256": "ab6f886db11facc737e49a9e89d3712e981ebdad2a22a337fc56df3ad965765b",
+      "traceDurationNanos": 38153958,
+      "profiledLatencyNanos": 38215458,
+      "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+      "workloadIdentity": "86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65",
+      "observations": {
+        "rowCount": "12",
+        "limit": "200",
+        "graphWorkUnits": "106706",
+        "parallelScanCount": "2",
+        "accessedGraphCount": "64",
+        "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+      },
+      "metrics": {
+        "allocationSampledBytes": {
+          "weight": 7864320,
+          "eventCount": 30,
+          "threadGroups": {
+            "segmentWorker": 3932160,
+            "graphWorker": 3932160
+          },
+          "applicationWeight": 7864320,
+          "inclusiveStackUnion": {
+            "rawDistinct": 6815744,
+            "rangeIndices": 2621440,
+            "rangeIterator": 3145728,
+            "initialProjection": 3932160,
+            "exactDiscovery": 786432
+          },
+          "exclusiveLeaf": {
+            "rangeIndices": 2621440,
+            "rangeIterator": 3145728,
+            "exactDiscovery": 262144
+          },
+          "disjointStageCombinations": {
+            "rawDistinct": 6815744,
+            "other": 262144,
+            "exactDiscovery": 786432
+          },
+          "applicationTopLeaf": [
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              3145728
+            ],
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              2621440
+            ],
+            [
+              "jdk.internal.org.objectweb.asm.SymbolTable.addType",
+              262144
+            ],
+            [
+              "java.util.Collections.singletonIterator",
+              262144
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              262144
+            ],
+            [
+              "java.util.Arrays.copyOfRange",
+              262144
+            ],
+            [
+              "java.util.concurrent.ConcurrentHashMap.putVal",
+              262144
+            ],
+            [
+              "jdk.internal.org.objectweb.asm.ByteVector.<init>",
+              262144
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds",
+              262144
+            ],
+            [
+              "java.util.HashMap.newNode",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-1-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+          "collapsedSha256": "0d44ced17036e88b3523133584d7a8971f055ab9909d9b9289db654e50391c28",
+          "weightConserved": true
+        },
+        "cpuSamples": {
+          "weight": 195,
+          "eventCount": 195,
+          "threadGroups": {
+            "compiler": 85,
+            "other": 7,
+            "request": 1,
+            "segmentWorker": 64,
+            "graphWorker": 38
+          },
+          "applicationWeight": 103,
+          "inclusiveStackUnion": {
+            "rawDistinct": 96,
+            "rangeIterator": 4,
+            "rangeIndices": 2,
+            "exactDiscovery": 3,
+            "initialProjection": 35
+          },
+          "exclusiveLeaf": {
+            "rawDistinct": 59,
+            "rangeIndices": 1,
+            "rangeIterator": 1,
+            "exactDiscovery": 1
+          },
+          "disjointStageCombinations": {
+            "other": 4,
+            "rawDistinct": 96,
+            "exactDiscovery": 3
+          },
+          "applicationTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+              58
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains",
+              12
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile",
+              5
+            ],
+            [
+              "kotlin.ranges.IntProgressionIterator.<init>",
+              3
+            ],
+            [
+              "kotlin.ranges.IntProgressionIterator.nextInt",
+              3
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x000000a8011afa70.test",
+              2
+            ],
+            [
+              "java.util.Objects.checkIndex",
+              2
+            ],
+            [
+              "libsystem_kernel.dylib.mach_absolute_time",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedNodeOffsetIndex.offset",
+              1
+            ],
+            [
+              "java.lang.Long.reverseBytes",
+              1
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              1
+            ],
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              1
+            ],
+            [
+              "java.util.ArrayList.size",
+              1
+            ],
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds",
+              1
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-1-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed",
+          "collapsedSha256": "36c660866b0954a9746cf502a58546769bcfc14e03d6d7aa3de105e259594926",
+          "weightConserved": true
+        }
+      }
+    },
+    {
+      "side": "candidate",
+      "pair": 1,
+      "analysis": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-1-analysis/analysis.json",
+      "analysisSha256": "9a77a311c09adca9cda15ff06019bdf66f039662c34e4312228e412d054b6dd5",
+      "jfrSha256": "82b0deb5136f4963aa0e19d8eb0ebcbabf8a4e51409237b7d9ffb22be9bcbcfe",
+      "tsvSha256": "837f1a2f6dc33e9db93fe17a25b8d07a0c429705b6181f1c178793bd3a949c4c",
+      "traceDurationNanos": 35953833,
+      "profiledLatencyNanos": 36025583,
+      "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+      "workloadIdentity": "86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65",
+      "observations": {
+        "rowCount": "12",
+        "limit": "200",
+        "graphWorkUnits": "106706",
+        "parallelScanCount": "2",
+        "accessedGraphCount": "64",
+        "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+      },
+      "metrics": {
+        "allocationSampledBytes": {
+          "weight": 7077888,
+          "eventCount": 27,
+          "threadGroups": {
+            "segmentWorker": 4980736,
+            "graphWorker": 2097152
+          },
+          "applicationWeight": 7077888,
+          "inclusiveStackUnion": {
+            "rawDistinct": 6815744,
+            "rangeIndices": 2097152,
+            "rangeIterator": 3670016,
+            "initialProjection": 2097152,
+            "lazyOrCallback": 262144,
+            "exactDiscovery": 262144
+          },
+          "exclusiveLeaf": {
+            "rangeIndices": 2097152,
+            "rangeIterator": 3670016
+          },
+          "disjointStageCombinations": {
+            "rawDistinct": 6553600,
+            "other": 262144,
+            "exactDiscovery+lazyOrCallback+rawDistinct": 262144
+          },
+          "applicationTopLeaf": [
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              3670016
+            ],
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              2097152
+            ],
+            [
+              "jdk.internal.org.objectweb.asm.SymbolTable.addConstantNameAndType",
+              262144
+            ],
+            [
+              "io.johnsonlee.graphite.cypher.QueryPipeline.mergeNodeSequences",
+              262144
+            ],
+            [
+              "jdk.internal.org.objectweb.asm.SymbolTable.<init>",
+              262144
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              262144
+            ],
+            [
+              "java.util.Arrays.copyOfRange",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-1-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+          "collapsedSha256": "d6013d2d012d0c28c5ec6d2becf3cab27eaa91410f24b76672205c959f6f72a7",
+          "weightConserved": true
+        },
+        "cpuSamples": {
+          "weight": 186,
+          "eventCount": 186,
+          "threadGroups": {
+            "compiler": 80,
+            "other": 9,
+            "request": 2,
+            "segmentWorker": 60,
+            "graphWorker": 35
+          },
+          "applicationWeight": 97,
+          "inclusiveStackUnion": {
+            "rawDistinct": 90,
+            "rangeIndices": 5,
+            "rangeIterator": 8,
+            "initialProjection": 34,
+            "lazyOrCallback": 2,
+            "exactDiscovery": 2
+          },
+          "exclusiveLeaf": {
+            "rawDistinct": 46,
+            "rangeIndices": 2,
+            "rangeIterator": 8
+          },
+          "disjointStageCombinations": {
+            "other": 7,
+            "rawDistinct": 88,
+            "exactDiscovery+lazyOrCallback+rawDistinct": 2
+          },
+          "applicationTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$36$lambda$35$lambda$34",
+              46
+            ],
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              8
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile",
+              7
+            ],
+            [
+              "I2C/C2I adapters",
+              4
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000003011ab258.test",
+              3
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume",
+              3
+            ],
+            [
+              "java.util.ArrayList.get",
+              3
+            ],
+            [
+              "libsystem_kernel.dylib.__psynch_cvwait",
+              2
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.access$getMappedNodeData$p",
+              2
+            ],
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              2
+            ],
+            [
+              "kotlin.ranges.IntRange.<init>",
+              2
+            ],
+            [
+              "kotlin.ranges.IntProgressionIterator.nextInt",
+              2
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains",
+              2
+            ],
+            [
+              "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$mergeSource",
+              1
+            ],
+            [
+              "slow_subtype_check Runtime1 stub",
+              1
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-1-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed",
+          "collapsedSha256": "2343b46a56873cffa982a0aa8498cd8ff709d373238d42a5c0836eff66d7fcca",
+          "weightConserved": true
+        }
+      }
+    },
+    {
+      "side": "base",
+      "pair": 2,
+      "analysis": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-2-analysis/analysis.json",
+      "analysisSha256": "910ec45f3ca237079f4d6e227d332daf534cfb506e22d2610509af0ec2071026",
+      "jfrSha256": "cf1e7f5e44151a98b0454d7b854af4bd15467966689b2a1bb9aaa7d024e15ad1",
+      "tsvSha256": "aea9a7b421988b10be64796919dcae9628c049342d084266b1d00e6564b195d8",
+      "traceDurationNanos": 23366917,
+      "profiledLatencyNanos": 23452375,
+      "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+      "workloadIdentity": "86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65",
+      "observations": {
+        "rowCount": "12",
+        "limit": "200",
+        "graphWorkUnits": "106706",
+        "parallelScanCount": "2",
+        "accessedGraphCount": "64",
+        "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+      },
+      "metrics": {
+        "allocationSampledBytes": {
+          "weight": 4194304,
+          "eventCount": 16,
+          "threadGroups": {
+            "segmentWorker": 3145728,
+            "graphWorker": 1048576
+          },
+          "applicationWeight": 4194304,
+          "inclusiveStackUnion": {
+            "rawDistinct": 3932160,
+            "rangeIndices": 1835008,
+            "rangeIterator": 1835008,
+            "initialProjection": 786432
+          },
+          "exclusiveLeaf": {
+            "rangeIndices": 1835008,
+            "rangeIterator": 1835008
+          },
+          "disjointStageCombinations": {
+            "rawDistinct": 3932160,
+            "other": 262144
+          },
+          "applicationTopLeaf": [
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              1835008
+            ],
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              1835008
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              262144
+            ],
+            [
+              "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasksInOrderUntil$submit$175$lambda$174",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-2-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+          "collapsedSha256": "817f494dfd073ecf3e047e47154e29f394645f3db132d78bb7a3d467d69eca7e",
+          "weightConserved": true
+        },
+        "cpuSamples": {
+          "weight": 121,
+          "eventCount": 121,
+          "threadGroups": {
+            "compiler": 59,
+            "request": 1,
+            "other": 3,
+            "segmentWorker": 35,
+            "graphWorker": 23
+          },
+          "applicationWeight": 59,
+          "inclusiveStackUnion": {
+            "rawDistinct": 55,
+            "rangeIndices": 1,
+            "rangeIterator": 3,
+            "initialProjection": 21,
+            "exactDiscovery": 1
+          },
+          "exclusiveLeaf": {
+            "rawDistinct": 16,
+            "rangeIterator": 1
+          },
+          "disjointStageCombinations": {
+            "other": 3,
+            "rawDistinct": 55,
+            "exactDiscovery": 1
+          },
+          "applicationTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+              16
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains",
+              8
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile",
+              4
+            ],
+            [
+              "java.nio.DirectByteBuffer.getLong",
+              2
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235.0x00000070011afaa8.test",
+              2
+            ],
+            [
+              "kotlin.ranges.IntProgressionIterator.<init>",
+              2
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              2
+            ],
+            [
+              "java.lang.invoke.LambdaForm$DMH.0x00000070011a6800.newInvokeSpecial",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.access$getMappedNodeData$p",
+              1
+            ],
+            [
+              "itable stub",
+              1
+            ],
+            [
+              "libsystem_pthread.dylib.pthread_jit_write_protect_np",
+              1
+            ],
+            [
+              "libjvm.dylib.JVM_Clone",
+              1
+            ],
+            [
+              "libjvm.dylib.ClassVerifier::verify_aload",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer.consume",
+              1
+            ],
+            [
+              "java.util.ArrayList.get",
+              1
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-2-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed",
+          "collapsedSha256": "3ab105b282bfe376e4a98480ddd74359c1c80f1c0afb031768bc3f1ff416097d",
+          "weightConserved": true
+        }
+      }
+    },
+    {
+      "side": "candidate",
+      "pair": 2,
+      "analysis": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-2-analysis/analysis.json",
+      "analysisSha256": "5453722782e57619bb7b1b363aaeb54eac99a09b309dc3855f3ed6523f01137b",
+      "jfrSha256": "885a46bafbce64b929622eb3207ffeba03d907b8b0e6022f37e2e233957194a5",
+      "tsvSha256": "5cd225eae273c71dcb43dd042f5036c27b9604eb5faed9f0da5032421632b770",
+      "traceDurationNanos": 23523333,
+      "profiledLatencyNanos": 23584625,
+      "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+      "workloadIdentity": "86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65",
+      "observations": {
+        "rowCount": "12",
+        "limit": "200",
+        "graphWorkUnits": "106706",
+        "parallelScanCount": "2",
+        "accessedGraphCount": "64",
+        "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+      },
+      "metrics": {
+        "allocationSampledBytes": {
+          "weight": 4718592,
+          "eventCount": 18,
+          "threadGroups": {
+            "request": 262144,
+            "other": 262144,
+            "segmentWorker": 2359296,
+            "graphWorker": 1835008
+          },
+          "applicationWeight": 4456448,
+          "inclusiveStackUnion": {
+            "rangeIterator": 786432,
+            "rawDistinct": 3932160,
+            "rangeIndices": 1835008,
+            "initialProjection": 1835008
+          },
+          "exclusiveLeaf": {
+            "rangeIterator": 786432,
+            "rangeIndices": 1835008
+          },
+          "disjointStageCombinations": {
+            "other": 524288,
+            "rawDistinct": 3932160
+          },
+          "applicationTopLeaf": [
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              1835008
+            ],
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              786432
+            ],
+            [
+              "jdk.internal.misc.Unsafe.allocateInstance",
+              262144
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              262144
+            ],
+            [
+              "jdk.internal.misc.Unsafe.allocateUninitializedArray",
+              262144
+            ],
+            [
+              "java.util.zip.InflaterInputStream.<init>",
+              262144
+            ],
+            [
+              "jdk.internal.org.objectweb.asm.ByteVector.<init>",
+              262144
+            ],
+            [
+              "jdk.internal.org.objectweb.asm.SymbolTable.addConstantUtf8Reference",
+              262144
+            ],
+            [
+              "io.johnsonlee.graphite.cypher.QueryPipeline.directStringCandidates",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-2-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+          "collapsedSha256": "1ea213f0870dceaa3d9f0a1a321abde67046e164a6233622e30480b07b1e5379",
+          "weightConserved": true
+        },
+        "cpuSamples": {
+          "weight": 121,
+          "eventCount": 121,
+          "threadGroups": {
+            "compiler": 56,
+            "other": 6,
+            "segmentWorker": 35,
+            "graphWorker": 24
+          },
+          "applicationWeight": 59,
+          "inclusiveStackUnion": {
+            "rawDistinct": 57,
+            "rangeIndices": 1,
+            "rangeIterator": 5,
+            "initialProjection": 24,
+            "lazyOrCallback": 1,
+            "exactDiscovery": 1
+          },
+          "exclusiveLeaf": {
+            "rawDistinct": 26,
+            "rangeIterator": 3
+          },
+          "disjointStageCombinations": {
+            "rawDistinct": 56,
+            "other": 2,
+            "exactDiscovery+lazyOrCallback+rawDistinct": 1
+          },
+          "applicationTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$36$lambda$35$lambda$34",
+              26
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile",
+              3
+            ],
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              3
+            ],
+            [
+              "java.util.ArrayList.elementData",
+              2
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains",
+              2
+            ],
+            [
+              "java.nio.Buffer.checkIndex",
+              1
+            ],
+            [
+              "libsystem_kernel.dylib.__psynch_cvbroad",
+              1
+            ],
+            [
+              "java.lang.String.indexOf",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$237.0x000000c0011ab4b0.test",
+              1
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              1
+            ],
+            [
+              "java.util.Objects.checkIndex",
+              1
+            ],
+            [
+              "itable stub",
+              1
+            ],
+            [
+              "libjvm.dylib.bool CompilerOracle::has_option_value<bool>",
+              1
+            ],
+            [
+              "kotlin.ranges.IntProgressionIterator.<init>",
+              1
+            ],
+            [
+              "kotlin.ranges.IntProgressionIterator.hasNext",
+              1
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-2-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed",
+          "collapsedSha256": "24c26c689778a97770bcf52dc45368f7aed310f3bc82ac943c0c3ae83c1102a7",
+          "weightConserved": true
+        }
+      }
+    },
+    {
+      "side": "base",
+      "pair": 3,
+      "analysis": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-3-analysis/analysis.json",
+      "analysisSha256": "ffcff1f778640ec0cdf5ea738412d6c80600538bd71a5b6a7882ca7746b93758",
+      "jfrSha256": "ea718f87a0cad19e6b15cf0d72c54528ccb67d1644e0691c3f20da452627d04d",
+      "tsvSha256": "95e5495861559f6f81f43736d29e8a57708e47395e20a41ff798c9a4896541da",
+      "traceDurationNanos": 23055875,
+      "profiledLatencyNanos": 23110334,
+      "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+      "workloadIdentity": "86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65",
+      "observations": {
+        "rowCount": "12",
+        "limit": "200",
+        "graphWorkUnits": "106706",
+        "parallelScanCount": "2",
+        "accessedGraphCount": "64",
+        "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+      },
+      "metrics": {
+        "allocationSampledBytes": {
+          "weight": 4194304,
+          "eventCount": 16,
+          "threadGroups": {
+            "segmentWorker": 2359296,
+            "graphWorker": 1835008
+          },
+          "applicationWeight": 4194304,
+          "inclusiveStackUnion": {
+            "rawDistinct": 3932160,
+            "rangeIndices": 1310720,
+            "rangeIterator": 2621440,
+            "initialProjection": 1835008,
+            "exactDiscovery": 262144
+          },
+          "exclusiveLeaf": {
+            "rangeIndices": 1310720,
+            "rangeIterator": 2621440
+          },
+          "disjointStageCombinations": {
+            "rawDistinct": 3932160,
+            "exactDiscovery": 262144
+          },
+          "applicationTopLeaf": [
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              2621440
+            ],
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              1310720
+            ],
+            [
+              "java.lang.Integer.valueOf",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-3-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+          "collapsedSha256": "37cdd84e0cb3d63d5b49a0eea4039d60536b5ead5181a19cb8086db42fb554fe",
+          "weightConserved": true
+        },
+        "cpuSamples": {
+          "weight": 104,
+          "eventCount": 104,
+          "threadGroups": {
+            "compiler": 43,
+            "request": 2,
+            "other": 2,
+            "segmentWorker": 34,
+            "graphWorker": 23
+          },
+          "applicationWeight": 59,
+          "inclusiveStackUnion": {
+            "rawDistinct": 54,
+            "rangeIndices": 1,
+            "exactDiscovery": 1,
+            "initialProjection": 23
+          },
+          "exclusiveLeaf": {
+            "rawDistinct": 30,
+            "rangeIndices": 1,
+            "initialProjection": 1
+          },
+          "disjointStageCombinations": {
+            "other": 4,
+            "rawDistinct": 54,
+            "exactDiscovery": 1
+          },
+          "applicationTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+              30
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile",
+              5
+            ],
+            [
+              "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer.consume",
+              3
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              2
+            ],
+            [
+              "libjvm.dylib.methodHandle::operator=",
+              1
+            ],
+            [
+              "java.util.concurrent.AbstractExecutorService.newTaskFor",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000070011afd00.test",
+              1
+            ],
+            [
+              "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains",
+              1
+            ],
+            [
+              "it.unimi.dsi.fastutil.HashCommon.mix",
+              1
+            ],
+            [
+              "java.lang.Integer.intValue",
+              1
+            ],
+            [
+              "java.lang.invoke.MethodTypeForm.setCachedLambdaForm",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedNodeOffsetIndex.offset",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.access$getMappedNodeData$p",
+              1
+            ],
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              1
+            ],
+            [
+              "libsystem_c.dylib._qsort",
+              1
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-cpu-3-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed",
+          "collapsedSha256": "79581101c9eedd231e8b477bd8a77cb018f6936bc28f1276fa514ae094e98d07",
+          "weightConserved": true
+        }
+      }
+    },
+    {
+      "side": "candidate",
+      "pair": 3,
+      "analysis": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-3-analysis/analysis.json",
+      "analysisSha256": "bf8eeb672fefb0a209159b2ab7a46a8ecbc7361c693e12c3ab9a176d1f3bb9bf",
+      "jfrSha256": "ce4f39839c21898aeac45ee1194c546031b26dc81258d4c19c940867d9f53097",
+      "tsvSha256": "9a027886f122ed64ca482f44b3989941881c8fc3f1442fc6f957405c9219a7e2",
+      "traceDurationNanos": 21663833,
+      "profiledLatencyNanos": 21727709,
+      "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+      "workloadIdentity": "86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65",
+      "observations": {
+        "rowCount": "12",
+        "limit": "200",
+        "graphWorkUnits": "106706",
+        "parallelScanCount": "2",
+        "accessedGraphCount": "64",
+        "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+      },
+      "metrics": {
+        "allocationSampledBytes": {
+          "weight": 4456448,
+          "eventCount": 17,
+          "threadGroups": {
+            "request": 262144,
+            "segmentWorker": 1835008,
+            "graphWorker": 2359296
+          },
+          "applicationWeight": 4456448,
+          "inclusiveStackUnion": {
+            "rangeIterator": 1835008,
+            "rawDistinct": 3670016,
+            "rangeIndices": 524288,
+            "initialProjection": 2359296
+          },
+          "exclusiveLeaf": {
+            "rangeIterator": 1835008,
+            "rangeIndices": 524288
+          },
+          "disjointStageCombinations": {
+            "other": 786432,
+            "rawDistinct": 3670016
+          },
+          "applicationTopLeaf": [
+            [
+              "kotlin.ranges.IntProgression.iterator",
+              1835008
+            ],
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              524288
+            ],
+            [
+              "java.util.Arrays.copyOf",
+              524288
+            ],
+            [
+              "java.util.concurrent.Executors.callable",
+              262144
+            ],
+            [
+              "java.util.zip.InflaterInputStream.<init>",
+              262144
+            ],
+            [
+              "java.lang.AbstractStringBuilder.<init>",
+              262144
+            ],
+            [
+              "java.lang.StringLatin1.replace",
+              262144
+            ],
+            [
+              "jdk.internal.org.objectweb.asm.ByteVector.<init>",
+              262144
+            ],
+            [
+              "java.util.HashSet.<init>",
+              262144
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-3-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+          "collapsedSha256": "715041eb8ca30d13865a2eef44d21d58305d7b4461a52fd61af47ac55d0b53c5",
+          "weightConserved": true
+        },
+        "cpuSamples": {
+          "weight": 104,
+          "eventCount": 104,
+          "threadGroups": {
+            "compiler": 53,
+            "request": 1,
+            "segmentWorker": 29,
+            "graphWorker": 21
+          },
+          "applicationWeight": 51,
+          "inclusiveStackUnion": {
+            "rawDistinct": 46,
+            "rangeIndices": 2,
+            "initialProjection": 19,
+            "rangeIterator": 1
+          },
+          "exclusiveLeaf": {
+            "rawDistinct": 15,
+            "rangeIndices": 2
+          },
+          "disjointStageCombinations": {
+            "other": 5,
+            "rawDistinct": 46
+          },
+          "applicationTopLeaf": [
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$36$lambda$35$lambda$34",
+              15
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile",
+              5
+            ],
+            [
+              "I2C/C2I adapters",
+              2
+            ],
+            [
+              "java.nio.Buffer.scope",
+              2
+            ],
+            [
+              "java.util.ArrayList.get",
+              2
+            ],
+            [
+              "kotlin.collections.CollectionsKt__CollectionsKt.getIndices",
+              2
+            ],
+            [
+              "slow_subtype_check Runtime1 stub",
+              2
+            ],
+            [
+              "java.nio.DirectByteBuffer.getInt",
+              2
+            ],
+            [
+              "io.johnsonlee.graphite.cypher.QueryPipeline.addDistinctRow",
+              1
+            ],
+            [
+              "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000070011ab000.test",
+              1
+            ],
+            [
+              "java.nio.DirectByteBuffer.getLong",
+              1
+            ],
+            [
+              "libsystem_kernel.dylib.semaphore_signal_trap",
+              1
+            ],
+            [
+              "jdk.internal.misc.Unsafe.convEndian",
+              1
+            ],
+            [
+              "java.lang.Integer.intValue",
+              1
+            ],
+            [
+              "kotlin.ranges.IntProgressionIterator.hasNext",
+              1
+            ]
+          ],
+          "collapsed": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/candidate-cpu-3-analysis/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed",
+          "collapsedSha256": "2fbd0a60ce5a0cdb1395d1d4a7dcc2ed95caa7d74aa9bb95feb5ed44030a61d6",
+          "weightConserved": true
+        }
+      }
+    }
+  ]
+}

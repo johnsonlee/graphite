@@ -1,0 +1,31 @@
+{
+  "attempt": 140,
+  "repo": "/private/tmp/graphite-attempt140._5jztd0a/repo",
+  "parent": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "normalGitDirectory": true,
+  "mainAndJmhFilesCompared": 130,
+  "onlyChangedProductionFile": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+  "testFilesByteEqualParent": 168,
+  "workspaceUnrelatedUntrackedUnchanged": true,
+  "productionDiffSha256": "8101aecc0150e7c09b1fc9c876d491134378539071d98de94acce2546013b20f",
+  "candidateSourceSha256": "120d23247d266e4b9a57c7a53644154307725b32156531ce62822f914dfb98ba",
+  "candidateJarSha256": "fb58d962d349a5c526bec229b996f08d94800702688ed202c1e7e771c3e4e357",
+  "candidateJarMode": "0o444",
+  "buildReceiptSha256": "bffeb16629bb10696c4de44ebe5b2f567809006cc45abd6cd23e7c076c4b9b5b",
+  "bytecodeReceiptSha256": "3275add579d3b4c5e465ea382ea2250412b5bfe466c4a491d3e548be04a53a74",
+  "ownedBuildSession": {
+    "id": 43629,
+    "terminal": true,
+    "exitCode": 0
+  },
+  "ownedJavapChecks": {
+    "count": 2,
+    "terminal": true,
+    "exitCode": 0
+  },
+  "ownedJavaTasksRemaining": 0,
+  "handoffCoordination": "Root independently checked no Java remained, then started its v3-control exec session64343. A later whole-machine Java absence assertion detected that new root process and was not recorded as a successful absence check. No Java/javap/build was launched by this agent afterward.",
+  "newPerformanceRunByThisAgent": false,
+  "commitCreated": false,
+  "implementationAndVerificationComplete": true
+}
