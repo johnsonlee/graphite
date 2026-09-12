@@ -761,7 +761,29 @@ fn build_source_plan(
         // used to discard the first — a term dense enough to decline the postings sent
         // the whole query to an undifferentiated sweep of all sixty-four graphs, even
         // the ones whose dictionary holds no matching string at all.
-        if tree_matches_nothing(graph, idx, tree, &mut memo) {
+        // A conjunction decides its own emptiness -- from run sizes and one side's
+        // records -- rather than resolving every literal first.
+        if let PredTree::And(children) = tree {
+            match plan_conjunction(graph, idx, children, &mut memo) {
+                Conjunction::Empty => return pruned(Candidates::Nodes(Vec::new()), true),
+                Conjunction::Nodes(nodes) => return pruned(Candidates::Nodes(nodes), true),
+                Conjunction::Intersect(sides) => {
+                    return pruned(Candidates::Intersect(sides), true)
+                }
+                Conjunction::Sweep(conjuncts) => {
+                    return SourcePlan {
+                        source,
+                        call_site: conjuncts,
+                        call_site_only,
+                        call_site_candidates: None,
+                        call_site_exact: true,
+                        no_prefilter: false,
+                        skip_annotations,
+                    }
+                }
+                Conjunction::Probe => {}
+            }
+        } else if tree_matches_nothing(graph, idx, tree, &mut memo) {
             return pruned(Candidates::Nodes(Vec::new()), true);
         }
         // A disjunction's candidates are a union of posting lists, and a union of sorted
@@ -791,26 +813,6 @@ fn build_source_plan(
                 if cost > MERGE_FLOOR {
                     return pruned(Candidates::Union(sets.pairs()), true);
                 }
-            }
-        }
-        if let PredTree::And(children) = tree {
-            match plan_conjunction(graph, idx, children, &mut memo) {
-                Conjunction::Empty => return pruned(Candidates::Nodes(Vec::new()), true),
-                Conjunction::Intersect(sides) => {
-                    return pruned(Candidates::Intersect(sides), true)
-                }
-                Conjunction::Sweep(conjuncts) => {
-                    return SourcePlan {
-                        source,
-                        call_site: conjuncts,
-                        call_site_only,
-                        call_site_candidates: None,
-                        call_site_exact: true,
-                        no_prefilter: false,
-                        skip_annotations,
-                    }
-                }
-                Conjunction::Probe => {}
             }
         }
         if let Some((candidates, exact)) = indexed_candidates(graph, idx, tree, &mut memo) {
@@ -1080,6 +1082,69 @@ enum Conjunction {
     /// not flat, or so much smaller than the others that reading its records costs less
     /// than walking theirs.
     Probe,
+    /// Already answered: the smallest side was small enough to read outright, and every
+    /// other side was decided per record by evaluating its predicates on the strings
+    /// those records actually carry.
+    Nodes(Vec<u32>),
+}
+
+/// Postings a conjunction's smallest side may have and still be read outright, with
+/// the other sides evaluated on its records rather than resolved against the dictionary.
+const PROBE_BY_PREDICATE_LIMIT: usize = 4096;
+
+/// How many dictionary entries a flat side could match, from run sizes alone -- no
+/// intersection, no verification. `Some(0)` proves the side empty; `None` means the
+/// side is not flat or a term has no trigram to size by.
+fn side_proxy(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    tree: &PredTree,
+) -> Option<usize> {
+    match tree {
+        PredTree::Leaf(p) => {
+            if p.is_seekable() {
+                return Some(seek_range(graph, p).len());
+            }
+            let trigrams = p.trigrams.as_ref().as_ref()?;
+            trigrams
+                .iter()
+                .map(|t| idx.trigram_string_ids(*t).len())
+                .min()
+        }
+        PredTree::Or(children) => children
+            .iter()
+            .map(|c| side_proxy(graph, idx, c))
+            .sum(),
+        PredTree::And(_) => None,
+    }
+}
+
+/// Whether one record's four strings satisfy a subtree, evaluating each predicate on
+/// the string itself. Memoised per (test, string id): a side's records repeat a few
+/// dozen distinct strings, and each is decided once.
+fn tree_matches_record(
+    graph: &Graph,
+    tree: &PredTree,
+    fields: &[u32; 4],
+    cache: &mut std::collections::HashMap<(usize, u32), bool>,
+) -> bool {
+    match tree {
+        PredTree::Leaf(p) => {
+            let Some(property) = CALL_SITE_PROPS.iter().position(|c| *c == p.property) else {
+                return false;
+            };
+            let sid = fields[property];
+            *cache
+                .entry((p.test, sid))
+                .or_insert_with(|| predicate_matches(graph, p, sid))
+        }
+        PredTree::Or(children) => children
+            .iter()
+            .any(|c| tree_matches_record(graph, c, fields, cache)),
+        PredTree::And(children) => children
+            .iter()
+            .all(|c| tree_matches_record(graph, c, fields, cache)),
+    }
 }
 
 fn plan_conjunction(
@@ -1088,6 +1153,50 @@ fn plan_conjunction(
     children: &[PredTree],
     memo: &mut Memo,
 ) -> Conjunction {
+    // The literals of a conjunction usually match; the conjunction usually does not.
+    // Resolving every side against the dictionary to learn that cost forty-odd
+    // microseconds per graph -- six literals, each a trigram walk and a verification --
+    // and the answer was decided by the few hundred records of the smallest side all
+    // along. So: size each side from its rarest trigram run, resolve only the smallest,
+    // read its records, and decide the other sides on the strings those records carry.
+    let proxies: Vec<Option<usize>> = children
+        .iter()
+        .map(|c| side_proxy(graph, idx, c))
+        .collect();
+    if proxies.contains(&Some(0)) {
+        return Conjunction::Empty;
+    }
+    let smallest = proxies
+        .iter()
+        .enumerate()
+        .filter_map(|(i, p)| p.map(|v| (i, v)))
+        .min_by_key(|(_, v)| *v)
+        .map(|(i, _)| i);
+    if let Some(i) = smallest {
+        if let Some(sets) = property_sets(graph, idx, &children[i], memo) {
+            let cost = sets.posting_cost_up_to(idx, PROBE_BY_PREDICATE_LIMIT);
+            if cost == 0 {
+                return Conjunction::Empty;
+            }
+            if cost <= PROBE_BY_PREDICATE_LIMIT {
+                let mut nodes = sets.nodes(idx);
+                let mut cache = std::collections::HashMap::new();
+                let data = graph.nodedata();
+                nodes.retain(|&id| {
+                    let Some(offset) = graph.node_offset(id) else {
+                        return false;
+                    };
+                    let s = read_call_site_strings(data, offset);
+                    let fields = [s.caller_class, s.caller_name, s.callee_class, s.callee_name];
+                    children
+                        .iter()
+                        .enumerate()
+                        .all(|(j, c)| j == i || tree_matches_record(graph, c, &fields, &mut cache))
+                });
+                return Conjunction::Nodes(nodes);
+            }
+        }
+    }
     let ceiling = idx.call_site_count() / POSTING_SWEEP_RATIO;
     let mut sets: Vec<PropertySets> = Vec::with_capacity(children.len());
     for c in children {
