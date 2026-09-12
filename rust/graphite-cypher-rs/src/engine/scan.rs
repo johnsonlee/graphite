@@ -211,8 +211,10 @@ impl<'a> IntersectMerge<'a> {
         idx: &'a graphite_storage::callsite_index::CallSiteStringIndex,
         sides: &[Vec<(u8, u32, u32)>],
     ) -> IntersectMerge<'a> {
-        let mut streams: Vec<PostingsMerge<'a>> =
-            sides.iter().map(|pairs| PostingsMerge::new(idx, pairs)).collect();
+        let mut streams: Vec<PostingsMerge<'a>> = sides
+            .iter()
+            .map(|pairs| PostingsMerge::new(idx, pairs))
+            .collect();
         let heads = streams.iter_mut().map(PostingsMerge::next_one).collect();
         IntersectMerge { streams, heads }
     }
@@ -380,27 +382,33 @@ impl ScanPlan {
         where_clause: Option<&Expr>,
         consume: &mut dyn FnMut(Row) -> CypherResult<bool>,
     ) -> CypherResult<bool> {
-        self.run_inner(ex, ev, row, where_clause, &mut |value, provenance, verified| {
-            let mut r = row.clone();
-            // Two inserts follow; one reservation instead of two growths.
-            r.reserve(2);
-            r.insert(self.variable.clone(), value.clone());
-            match provenance {
-                Some(p) => {
-                    r.insert(
-                        super::pipeline::INTERNAL_PROVENANCE_KEY.to_string(),
-                        p.clone(),
-                    );
+        self.run_inner(
+            ex,
+            ev,
+            row,
+            where_clause,
+            &mut |value, provenance, verified| {
+                let mut r = row.clone();
+                // Two inserts follow; one reservation instead of two growths.
+                r.reserve(2);
+                r.insert(self.variable.clone(), value.clone());
+                match provenance {
+                    Some(p) => {
+                        r.insert(
+                            super::pipeline::INTERNAL_PROVENANCE_KEY.to_string(),
+                            p.clone(),
+                        );
+                    }
+                    None => add_provenance(&mut r, ex, &value),
                 }
-                None => add_provenance(&mut r, ex, &value),
-            }
-            if let Some(w) = where_clause {
-                if !verified && ev.eval(w, &r)?.as_bool() != Some(true) {
-                    return Ok(true);
+                if let Some(w) = where_clause {
+                    if !verified && ev.eval(w, &r)?.as_bool() != Some(true) {
+                        return Ok(true);
+                    }
                 }
-            }
-            consume(r)
-        })
+                consume(r)
+            },
+        )
     }
 
     /// The scan variable.
@@ -426,6 +434,11 @@ impl ScanPlan {
         keys: &[String],
         sink: &mut dyn FnMut(Vec<Value>, std::sync::Arc<str>) -> CypherResult<bool>,
     ) -> CypherResult<bool> {
+        // Which raw CallSite field each key names, decided once per query rather than
+        // once per value: the four string-id keys, the graph id in cross mode and the
+        // node id come straight off the record; anything else takes the general path.
+        let fields: Vec<RawField> = keys.iter().map(|k| RawField::of(k, ex.cross)).collect();
+        let all_raw = fields.iter().all(|f| !matches!(f, RawField::General));
         let empty = Row::new();
         self.run_inner(ex, ev, &empty, where_clause, &mut |value, _, verified| {
             if !verified {
@@ -438,12 +451,35 @@ impl ScanPlan {
                     }
                 }
             }
-            let source = match &value {
-                Value::Node(n) => n.source,
+            let node = match &value {
+                Value::Node(n) => *n,
                 _ => return Ok(true),
             };
-            let values: Vec<Value> = keys.iter().map(|k| ev.property(&value, k)).collect();
-            sink(values, ex.sources[source as usize].id.clone())
+            let graph = ex.graph(node.source);
+            let raw = if all_raw {
+                graph.call_site_strings(node.id)
+            } else {
+                None
+            };
+            let values: Vec<Value> = match raw {
+                // One record read for the whole row instead of one per column.
+                Some(cs) => fields
+                    .iter()
+                    .map(|f| match f {
+                        RawField::CallerClass => Value::str(graph.str(cs.caller_class)),
+                        RawField::CallerName => Value::str(graph.str(cs.caller_name)),
+                        RawField::CalleeClass => Value::str(graph.str(cs.callee_class)),
+                        RawField::CalleeName => Value::str(graph.str(cs.callee_name)),
+                        RawField::GraphId => {
+                            Value::str(ex.sources[node.source as usize].id.clone())
+                        }
+                        RawField::Id => Value::Int(node.id as i64),
+                        RawField::General => unreachable!("all keys are raw fields"),
+                    })
+                    .collect(),
+                None => keys.iter().map(|k| ev.property(&value, k)).collect(),
+            };
+            sink(values, ex.sources[node.source as usize].id.clone())
         })
     }
 
@@ -765,9 +801,7 @@ fn build_source_plan(
             match plan_conjunction(graph, idx, children, &mut memo) {
                 Conjunction::Empty => return pruned(Candidates::Nodes(Vec::new()), true),
                 Conjunction::Nodes(nodes) => return pruned(Candidates::Nodes(nodes), true),
-                Conjunction::Intersect(sides) => {
-                    return pruned(Candidates::Intersect(sides), true)
-                }
+                Conjunction::Intersect(sides) => return pruned(Candidates::Intersect(sides), true),
                 Conjunction::Sweep(conjuncts) => {
                     return SourcePlan {
                         source,
@@ -1109,10 +1143,7 @@ fn side_proxy(
                 .map(|t| idx.trigram_string_ids(*t).len())
                 .min()
         }
-        PredTree::Or(children) => children
-            .iter()
-            .map(|c| side_proxy(graph, idx, c))
-            .sum(),
+        PredTree::Or(children) => children.iter().map(|c| side_proxy(graph, idx, c)).sum(),
         PredTree::And(_) => None,
     }
 }
@@ -1157,10 +1188,7 @@ fn plan_conjunction(
     // and the answer was decided by the few hundred records of the smallest side all
     // along. So: size each side from its rarest trigram run, resolve only the smallest,
     // read its records, and decide the other sides on the strings those records carry.
-    let proxies: Vec<Option<usize>> = children
-        .iter()
-        .map(|c| side_proxy(graph, idx, c))
-        .collect();
+    let proxies: Vec<Option<usize>> = children.iter().map(|c| side_proxy(graph, idx, c)).collect();
     if proxies.contains(&Some(0)) {
         return Conjunction::Empty;
     }
@@ -1564,6 +1592,35 @@ fn push_predicate(
 }
 
 /// Recognise `n.prop`, `toLower(n.prop)` and `toLower(coalesce(n.prop, ''))`.
+/// A projected key that can be answered from a CallSite record's raw string ids
+/// without decoding the node.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RawField {
+    CallerClass,
+    CallerName,
+    CalleeClass,
+    CalleeName,
+    /// Only in cross-graph mode; otherwise `graphId` is not a property at all.
+    GraphId,
+    Id,
+    /// Anything else: `ev.property` decides.
+    General,
+}
+
+impl RawField {
+    fn of(key: &str, cross: bool) -> Self {
+        match key {
+            "caller_class" => RawField::CallerClass,
+            "caller_name" => RawField::CallerName,
+            "callee_class" => RawField::CalleeClass,
+            "callee_name" => RawField::CalleeName,
+            "graphId" if cross => RawField::GraphId,
+            "id" => RawField::Id,
+            _ => RawField::General,
+        }
+    }
+}
+
 fn property_operand(e: &Expr, variable: &str) -> Option<(&'static str, Transform)> {
     match e {
         Expr::Property { expr, key } => match expr.as_ref() {

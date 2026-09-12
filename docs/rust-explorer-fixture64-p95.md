@@ -134,11 +134,13 @@ dominant query shape — one node, a pushed-down WHERE, a RETURN of that node's 
 Since then: a conjunction is decided on its smallest side's records rather than by
 resolving every literal (and-of-or 2.8 → 1.6 ms), posting ranges are resolved once, and
 the query runs on the worker that received it instead of being handed to the blocking
-pool and back — that hand-off alone was 0.1–0.15 ms of every request.
+pool and back — that hand-off alone was 0.1–0.15 ms of every request. Last, a projected
+row of CallSite properties reads its record once and takes the four string ids straight
+off it, rather than decoding the node once per column (wide-or 1.10 → 0.90 ms).
 
 Measured as an interleaved A/B on the same box (two rounds each, the only comparison this
-machine's noise allows): **P50 1.1–1.2 ms against Kotlin's 6.6 ms, 5.5–6x; P95 3.9–4.0 ms
-against 117.9 ms, 29x.** The per-request HTTP floor is 0.18 ms of that.
+machine's noise allows): **P50 1.0 ms against Kotlin's 6.6 ms, 6.6x; P95 3.7–3.9 ms
+against 117.9 ms, 30x.** The per-request HTTP floor is 0.17 ms of that.
 
 ## What changed
 
