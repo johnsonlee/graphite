@@ -66,8 +66,14 @@ struct PropertyCsr {
     posting_node_ids: I32Array,
 }
 
+/// Bits in the per-graph trigram filter. A trigram hash is folded to this many bits, so
+/// collisions only ever cause a graph to be examined that need not be.
+const TRIGRAM_FILTER_BITS: usize = 1 << 16;
+
 pub struct CallSiteStringIndex {
     map: Mmap,
+    /// Which trigrams occur anywhere in this graph, built on first use.
+    trigram_filter: std::sync::OnceLock<Vec<u64>>,
     string_count: usize,
     call_site_count: usize,
     properties: [PropertyCsr; PROPERTY_COUNT],
@@ -156,6 +162,7 @@ impl CallSiteStringIndex {
         }
         Ok(Some(CallSiteStringIndex {
             map,
+            trigram_filter: std::sync::OnceLock::new(),
             string_count: strings,
             call_site_count: call_sites,
             properties,
@@ -181,6 +188,43 @@ impl CallSiteStringIndex {
             return 0;
         }
         read_i64_at(&self.map, self.signatures + string_id * 8) as u64
+    }
+
+    /// Whether every one of these trigrams occurs somewhere in this graph.
+    ///
+    /// A string containing a term contains *all* of the term's trigrams, so one trigram
+    /// missing from the whole graph means no string in it can match — and the graph can
+    /// be skipped without a single posting lookup. That is the common case across many
+    /// graphs, where a term names something only a few of them know about.
+    ///
+    /// The filter over-approximates: hashes are folded to 16 bits, so a collision costs
+    /// a wasted probe and never a missed match.
+    pub fn may_contain_all(&self, trigrams: &[i32]) -> bool {
+        let filter = self.trigram_filter();
+        trigrams.iter().all(|t| {
+            let bit = (*t as u32 as u16) as usize;
+            filter[bit >> 6] >> (bit & 63) & 1 == 1
+        })
+    }
+
+    fn trigram_filter(&self) -> &Vec<u64> {
+        self.trigram_filter.get_or_init(|| {
+            let mut bits = vec![0u64; TRIGRAM_FILTER_BITS / 64];
+            // Postings are sorted by trigram, so the runs are contiguous and each
+            // distinct trigram is reached once per run.
+            let mut previous: Option<i32> = None;
+            for i in 0..self.trigram_posting_count {
+                let raw = read_i64_at(&self.map, self.trigram_postings + i * 8);
+                let trigram = (raw >> 32) as i32;
+                if previous == Some(trigram) {
+                    continue;
+                }
+                previous = Some(trigram);
+                let bit = (trigram as u32 as u16) as usize;
+                bits[bit >> 6] |= 1u64 << (bit & 63);
+            }
+            bits
+        })
     }
 
     /// String ids whose lowercase form contains the given trigram hash.

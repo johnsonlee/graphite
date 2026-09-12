@@ -119,7 +119,6 @@ impl StringBitset {
             None => false,
         }
     }
-    #[allow(dead_code)] // kept alongside `set`/`get` as part of the bitset surface
     fn is_empty(&self) -> bool {
         self.bits.iter().all(|w| *w == 0)
     }
@@ -385,14 +384,27 @@ fn build_source_plan(
     preds: &[StringPredicate],
 ) -> SourcePlan {
     let call_site_only = preds.iter().all(|p| CALL_SITE_PROPS.contains(&p.property));
-    if let Some(candidates) = indexed_candidates(graph, tree) {
-        return SourcePlan {
-            source,
-            call_site: [None, None, None, None],
-            call_site_only,
-            call_site_candidates: Some(candidates),
-            no_prefilter: false,
-        };
+    let pruned = |candidates: Vec<u32>| SourcePlan {
+        source,
+        call_site: [None, None, None, None],
+        call_site_only,
+        call_site_candidates: Some(candidates),
+        no_prefilter: false,
+    };
+    if let Some(idx) = usable_index(graph) {
+        let mut memo: Vec<(StringPredicate, Vec<u32>)> = Vec::new();
+        // Pruning first, and separately from enumeration. Whether a graph can match at
+        // all is a question about its dictionary; whether to reach the matches through
+        // postings or by sweeping records is a question about cost. Answering the second
+        // used to discard the first — a term dense enough to decline the postings sent
+        // the whole query to an undifferentiated sweep of all sixty-four graphs, even
+        // the ones whose dictionary holds no matching string at all.
+        if tree_matches_nothing(graph, idx, tree, &mut memo) {
+            return pruned(Vec::new());
+        }
+        if let Some(candidates) = indexed_candidates(graph, idx, tree, &mut memo) {
+            return pruned(candidates);
+        }
     }
     // The bitset sweep can only express a disjunction. A conjunction the index could not
     // answer therefore gets no pre-filter at all: every record goes to the WHERE clause.
@@ -412,18 +424,69 @@ fn build_source_plan(
 ///
 /// `None` means the accelerator cannot (or should not) answer this predicate set, and
 /// the caller must fall back to scanning the dictionary and sweeping records.
-fn indexed_candidates(graph: &Graph, tree: &PredTree) -> Option<Vec<u32>> {
+fn indexed_candidates(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    tree: &PredTree,
+    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+) -> Option<Vec<u32>> {
+    eval_tree(graph, idx, tree, memo)
+}
+
+/// The accelerator, when it describes this graph's CallSite records.
+fn usable_index(graph: &Graph) -> Option<&graphite_storage::callsite_index::CallSiteStringIndex> {
     let idx = graph.call_site_index()?;
-    // The CSRs describe the graph's CallSite records; anything else is not ours.
-    if idx.call_site_count() != graph.count_by_tag(TAG_CALL_SITE_NODE) {
-        return None;
+    (idx.call_site_count() == graph.count_by_tag(TAG_CALL_SITE_NODE)).then_some(idx)
+}
+
+/// True when no CallSite record in this graph can satisfy the clause.
+///
+/// Decided entirely from the dictionary, so it holds however dense the term is: a term
+/// present in no string cannot be present in any record. `false` means "not proven
+/// absent", never "present" — a leaf the index cannot resolve prunes nothing.
+///
+/// Annotation nodes are deliberately not covered. They expose the same property names,
+/// but the trigram index spans only the strings CallSite properties use, so absence
+/// there says nothing about them and they are still swept.
+fn tree_matches_nothing(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    tree: &PredTree,
+    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+) -> bool {
+    match tree {
+        PredTree::Leaf(p) => match resolve_strings(graph, idx, p, memo) {
+            Some(ids) => ids.is_empty(),
+            None => false,
+        },
+        // A disjunction is empty only when every branch is.
+        PredTree::Or(children) => children
+            .iter()
+            .all(|c| tree_matches_nothing(graph, idx, c, memo)),
+        // A conjunction is empty as soon as one conjunct is.
+        PredTree::And(children) => children
+            .iter()
+            .any(|c| tree_matches_nothing(graph, idx, c, memo)),
     }
-    // The same literal is usually tested against all four properties, and the matching
-    // string ids depend only on the literal, the operator and the transform — never on
-    // which property is being tested. Resolving each distinct predicate once turns four
-    // dictionary resolutions into one.
-    let mut memo: Vec<(StringPredicate, Vec<u32>)> = Vec::new();
-    eval_tree(graph, idx, tree, &mut memo)
+}
+
+/// Matching string ids for one predicate, resolved once per query and reused.
+///
+/// The same literal is usually tested against all four properties, and the matching ids
+/// depend only on the literal, the operator and the transform — never on which property
+/// is being tested.
+fn resolve_strings(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    p: &StringPredicate,
+    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+) -> Option<Vec<u32>> {
+    if let Some((_, ids)) = memo.iter().find(|(q, _)| q.same_test(p)) {
+        return Some(ids.clone());
+    }
+    let ids = matching_string_ids(graph, idx, p)?;
+    memo.push((p.clone(), ids.clone()));
+    Some(ids)
 }
 
 /// Ascending CallSite node ids that can satisfy this subtree.
@@ -503,14 +566,7 @@ fn leaf_candidates(
     memo: &mut Vec<(StringPredicate, Vec<u32>)>,
 ) -> Option<Vec<u32>> {
     let property = CALL_SITE_PROPS.iter().position(|c| *c == p.property)?;
-    let strings = match memo.iter().find(|(q, _)| q.same_test(p)) {
-        Some((_, ids)) => ids.clone(),
-        None => {
-            let ids = matching_string_ids(graph, idx, p)?;
-            memo.push((p.clone(), ids.clone()));
-            ids
-        }
-    };
+    let strings = resolve_strings(graph, idx, p, memo)?;
     let mut postings_total = 0usize;
     for &s in &strings {
         postings_total += idx.posting_len(property, s as usize);
@@ -530,23 +586,6 @@ fn leaf_candidates(
     nodes.sort_unstable();
     nodes.dedup();
     Some(nodes)
-}
-
-fn intersect_sorted(a: &[u32], b: &[u32]) -> Vec<u32> {
-    let mut out = Vec::with_capacity(a.len().min(b.len()));
-    let (mut i, mut j) = (0usize, 0usize);
-    while i < a.len() && j < b.len() {
-        match a[i].cmp(&b[j]) {
-            std::cmp::Ordering::Less => i += 1,
-            std::cmp::Ordering::Greater => j += 1,
-            std::cmp::Ordering::Equal => {
-                out.push(a[i]);
-                i += 1;
-                j += 1;
-            }
-        }
-    }
-    out
 }
 
 /// Walking postings stops paying off once they cover this fraction of the records.
@@ -580,6 +619,12 @@ fn matching_string_ids(
     let trigrams = p.trigrams.as_ref().as_ref()?;
     if trigrams.is_empty() {
         return None;
+    }
+    // Cheapest question first: does this graph contain the term's trigrams at all? A
+    // string holding the term holds every one of them, so a single missing trigram
+    // settles the whole graph without touching a posting list.
+    if !idx.may_contain_all(trigrams) {
+        return Some(Vec::new());
     }
     // A long literal has as many trigrams as characters, and sizing every one of their
     // posting lists costs more than the narrowing is worth. A spread-out handful is
@@ -725,6 +770,20 @@ fn build_sweep_plan(
                 }
             }
         }
+    }
+    // Nothing in the dictionary matched, so no record can: skip the sweep rather than
+    // reading every one of them to discover that.
+    if sets
+        .iter()
+        .all(|s| s.as_ref().is_none_or(StringBitset::is_empty))
+    {
+        return SourcePlan {
+            source,
+            call_site: sets,
+            call_site_only,
+            call_site_candidates: Some(Vec::new()),
+            no_prefilter: false,
+        };
     }
     SourcePlan {
         source,
@@ -956,15 +1015,8 @@ fn collect_property_sets(
             let Some(property) = CALL_SITE_PROPS.iter().position(|c| *c == p.property) else {
                 return false;
             };
-            let strings = match memo.iter().find(|(q, _)| q.same_test(p)) {
-                Some((_, v)) => v.clone(),
-                None => match matching_string_ids(graph, idx, p) {
-                    Some(v) => {
-                        memo.push((p.clone(), v.clone()));
-                        v
-                    }
-                    None => return false,
-                },
+            let Some(strings) = resolve_strings(graph, idx, p, memo) else {
+                return false;
             };
             out[property].extend(strings);
             true

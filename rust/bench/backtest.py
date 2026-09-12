@@ -13,7 +13,7 @@ produces a P50 over a realistic population, which is the number a backtest repor
 Servers are measured one at a time: both together do not fit in memory, and contention
 would taint whichever is being timed.
 """
-import argparse, hashlib, json, math, random, re, sys, time, urllib.request, urllib.error
+import argparse, hashlib, http.client, json, math, random, re, sys, time, urllib.parse
 
 FOUR = "n.caller_class, n.caller_name, n.callee_class, n.callee_name"
 ALIASED = ("n.caller_class AS callerClass, n.caller_name AS callerName, "
@@ -75,18 +75,49 @@ def keys_or(a, b):
             f'OR n.caller_class CONTAINS "{esc(b)}" RETURN keys(n) AS keys LIMIT 5')
 
 
-def call(base, query, timeout):
-    body = json.dumps({"query": query}).encode()
-    req = urllib.request.Request(base + "/api/cypher", data=body, method="POST")
-    req.add_header("Content-Type", "application/json")
-    started = time.perf_counter()
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return (time.perf_counter() - started) * 1000.0, r.status, r.read()
-    except urllib.error.HTTPError as e:
-        return (time.perf_counter() - started) * 1000.0, e.code, e.read()
-    except Exception as exc:
-        return (time.perf_counter() - started) * 1000.0, f"FAILED:{type(exc).__name__}", b""
+class Client:
+    """One kept-alive connection, as a backtest client would use.
+
+    Opening a TCP connection per query adds a handshake to every measurement. Both
+    servers pay it equally, so it does not flip a comparison, but it is latency no real
+    client incurs and it compresses the ratio between them.
+    """
+
+    def __init__(self, base, timeout):
+        u = urllib.parse.urlparse(base)
+        self.host, self.port, self.timeout = u.hostname, u.port or 80, timeout
+        self.conn = None
+
+    def _connect(self):
+        self.conn = http.client.HTTPConnection(self.host, self.port, timeout=self.timeout)
+
+    def post(self, path, payload):
+        body = json.dumps(payload).encode()
+        headers = {"Content-Type": "application/json", "Connection": "keep-alive"}
+        for attempt in (0, 1):
+            if self.conn is None:
+                self._connect()
+            started = time.perf_counter()
+            try:
+                self.conn.request("POST", path, body=body, headers=headers)
+                r = self.conn.getresponse()
+                data = r.read()
+                return (time.perf_counter() - started) * 1000.0, r.status, data
+            except Exception as exc:
+                # A dropped keep-alive is retried once; anything else is the result.
+                try:
+                    self.conn.close()
+                except Exception:
+                    pass
+                self.conn = None
+                if attempt == 1 or isinstance(exc, TimeoutError):
+                    return ((time.perf_counter() - started) * 1000.0,
+                            f"FAILED:{type(exc).__name__}", b"")
+        return 0.0, "FAILED:unreachable", b""
+
+
+def call(client, query, _timeout=None):
+    return client.post("/api/cypher", {"query": query})
 
 
 def digest(payload):
@@ -110,12 +141,11 @@ def percentile(values, fraction):
     return s[max(0, math.ceil(len(s) * fraction) - 1)]
 
 
-def sample_terms(base, timeout):
+def sample_terms(client, timeout):
     """Identifier fragments drawn from the corpus, so selectivities are realistic."""
     _, _, payload = call(
-        base,
+        client,
         "MATCH (n:CallSite) RETURN DISTINCT n.caller_class AS c LIMIT 400",
-        timeout,
     )
     classes = []
     try:
@@ -165,20 +195,29 @@ def main():
     ap.add_argument("--label", required=True)
     ap.add_argument("--timeout", type=float, default=60.0)
     ap.add_argument("--seed", type=int, default=20260912)
+    # A different query set is run first, to warm page cache and JIT without letting the
+    # measured queries hit any per-predicate result cache. Repeating the *same* set is
+    # what a backtest never does, and it hands a caching server a result it would not
+    # otherwise have.
+    ap.add_argument("--warmup-seed", type=int, default=777)
     ap.add_argument("--out")
     args = ap.parse_args()
 
     rng = random.Random(args.seed)
-    classes, words = sample_terms(args.base, args.timeout)
+    client = Client(args.base, args.timeout)
+    classes, words = sample_terms(client, args.timeout)
     if len(words) < 20:
         print(f"only {len(words)} terms sampled; is the server up and loaded?", file=sys.stderr)
         return 2
+    for shape, q in build(classes, words, random.Random(args.warmup_seed)):
+        call(client, q)
     queries = build(classes, words, rng)
-    print(f"{args.label}: {len(queries)} queries from {len(words)} sampled terms", flush=True)
+    print(f"{args.label}: {len(queries)} queries from {len(words)} sampled terms "
+          f"(after a {len(queries)}-query warmup on a different seed)", flush=True)
 
     rows, timeouts = [], 0
     for i, (shape, q) in enumerate(queries):
-        ms, status, payload = call(args.base, q, args.timeout)
+        ms, status, payload = call(client, q)
         if not isinstance(status, int):
             timeouts += 1
         d, n = digest(payload)
