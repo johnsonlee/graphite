@@ -157,7 +157,16 @@ fn run(cli: Cli) -> Result<(), String> {
         cli.metrics,
     ));
 
+    // Cypher queries run on the worker that received them (`block_in_place`) rather
+    // than on the blocking pool: the hand-off to that pool and back was a thread wake
+    // each way, a measurable share of a short request. A worker running a query is
+    // not serving anything else, so there are enough workers that the concurrency
+    // guard can be full and every core still has one free for the rest of the API.
+    let cores = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1);
     let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(cores + cli.max_concurrent_cypher)
         .enable_all()
         .build()
         .map_err(|e| e.to_string())?;

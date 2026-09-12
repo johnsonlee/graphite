@@ -1316,7 +1316,12 @@ async fn run_cypher(
     let timeout_millis = permit.timeout_millis;
     let guard = s.guard.clone();
     let started = Instant::now();
-    let result = tokio::task::spawn_blocking(move || {
+    // The query runs on this worker thread, with the runtime told to move its other
+    // tasks elsewhere first, rather than being handed to the blocking pool and awaited
+    // back. The hand-off was a thread wake each way -- measured at 50-100us on a
+    // request whose whole engine time is a few hundred -- and the concurrency guard
+    // already bounds how many queries run at once, so the runtime keeps workers free.
+    let result: Result<_, tokio::task::JoinError> = Ok(tokio::task::block_in_place(move || {
         let sources: Vec<Source> = leases
             .into_iter()
             .map(|l| Source {
@@ -1329,8 +1334,7 @@ async fn run_cypher(
             .with_compact();
         let out = ex.execute(&query, Some(limit.max(0) as usize));
         (out, ex)
-    })
-    .await;
+    }));
     let elapsed = started.elapsed().as_nanos() as u64;
     match result {
         Ok((Ok(r), ex)) => {

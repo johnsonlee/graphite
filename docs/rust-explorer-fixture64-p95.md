@@ -131,9 +131,14 @@ looked up rather than searched; a complete scan skips the provenance pass; and t
 dominant query shape — one node, a pushed-down WHERE, a RETURN of that node's properties
 — produces its rows as plain values with no per-row map at all.
 
+Since then: a conjunction is decided on its smallest side's records rather than by
+resolving every literal (and-of-or 2.8 → 1.6 ms), posting ranges are resolved once, and
+the query runs on the worker that received it instead of being handed to the blocking
+pool and back — that hand-off alone was 0.1–0.15 ms of every request.
+
 Measured as an interleaved A/B on the same box (two rounds each, the only comparison this
-machine's noise allows): **P50 1.2 ms against Kotlin's 6.6 ms, 5.5x; P95 4.4 ms against
-117.9 ms, 27x.** The per-request HTTP floor is 0.19 ms of that 1.2.
+machine's noise allows): **P50 1.1–1.2 ms against Kotlin's 6.6 ms, 5.5–6x; P95 3.9–4.0 ms
+against 117.9 ms, 29x.** The per-request HTTP floor is 0.18 ms of that.
 
 ## What changed
 
