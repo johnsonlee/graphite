@@ -347,6 +347,38 @@ impl TrigramPostings<'_> {
     pub fn iter(&self) -> impl Iterator<Item = u32> + '_ {
         (0..self.len()).map(|i| self.get(i))
     }
+    /// Keep only the ids of `candidates` that this run also holds. Both are ascending,
+    /// so the run is walked once, galloping forward from the last match: each candidate
+    /// costs a few reads near where the previous one landed, instead of a full binary
+    /// search from the top -- a dozen dependent cache misses into a mapped array, for
+    /// every one of hundreds of candidates, on every graph a term is planned on.
+    pub fn intersect_into(&self, candidates: &mut Vec<u32>) {
+        let n = self.len();
+        let mut pos = 0usize;
+        candidates.retain(|&id| {
+            // Gallop past everything below `id`, then binary search the last stride.
+            let mut step = 1usize;
+            let mut lo = pos;
+            while lo < n && self.get(lo) < id {
+                pos = lo;
+                lo += step;
+                step *= 2;
+            }
+            let mut hi = lo.min(n);
+            lo = pos;
+            while lo < hi {
+                let mid = (lo + hi) / 2;
+                if self.get(mid) < id {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            pos = lo;
+            lo < n && self.get(lo) == id
+        });
+    }
+
     /// Postings for one trigram are ascending, so membership is a binary search.
     pub fn contains(&self, id: u32) -> bool {
         let (mut lo, mut hi) = (0usize, self.len());
@@ -668,6 +700,43 @@ mod tests {
         // A longer literal's signature covers its prefix's bits.
         assert_eq!(literal_signature("abcd") & one, one);
     }
+    #[test]
+    fn galloping_intersection_agrees_with_membership() {
+        let dir = tempdir("gallop");
+        // Each property's postings must cover all four call sites, as the writer's do.
+        let mut b = Builder::new(3, 4);
+        b.properties[0] = vec![(0, vec![0, 1, 2, 3])];
+        b.properties[1] = vec![(1, vec![0, 1, 2, 3])];
+        b.properties[2] = vec![(2, vec![0, 1, 2, 3])];
+        b.properties[3] = vec![(0, vec![0, 1, 2, 3])];
+        b.signatures = vec![0, 0, 0];
+        // One trigram over a run of ids with gaps, and an empty neighbour.
+        let ids = [0u32, 1, 2, 5, 8, 9, 13, 21, 34, 55];
+        b.postings = ids.iter().map(|&i| key(7, i as i32)).collect();
+        b.write(&dir.join("graph.callsite-string-index"));
+        let idx = CallSiteStringIndex::load(&dir, 3, Some(&b.identity))
+            .unwrap()
+            .expect("index");
+        let run = idx.trigram_string_ids(7);
+        for probe in [
+            vec![],
+            vec![0],
+            vec![55],
+            vec![56],
+            vec![3, 4, 5, 6, 7, 8],
+            (0..60).collect::<Vec<u32>>(),
+            vec![0, 13, 34, 55, 89],
+        ] {
+            let mut got = probe.clone();
+            run.intersect_into(&mut got);
+            let want: Vec<u32> = probe.iter().copied().filter(|&i| run.contains(i)).collect();
+            assert_eq!(got, want, "probe {probe:?}");
+        }
+        let mut none = vec![1, 2, 3];
+        idx.trigram_string_ids(8).intersect_into(&mut none);
+        assert!(none.is_empty());
+    }
+
     #[test]
     fn trigram_table_matches_binary_search_for_every_trigram_and_for_absent_ones() {
         let dir = tempdir("table");

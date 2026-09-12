@@ -1122,9 +1122,7 @@ fn plan_conjunction(
 /// and a sort that fits in cache.
 const MERGE_FLOOR: usize = 4096;
 /// Below this many surviving candidates, further trigram intersection is not worth it.
-const TRIGRAM_INTERSECT_FLOOR: usize = 256;
-/// At most this many of a literal's trigrams are sized and intersected.
-const MAX_TRIGRAM_PROBES: usize = 3;
+const TRIGRAM_INTERSECT_FLOOR: usize = 32;
 
 /// Exactly the string ids satisfying one predicate, via the accelerator.
 fn matching_string_ids(
@@ -1174,13 +1172,15 @@ fn matching_string_ids(
     if lists[0].is_empty() {
         return Some(Vec::new());
     }
-    lists.truncate(MAX_TRIGRAM_PROBES);
+    // Every list is already sized, so every list is available to intersect; each one
+    // is walked once alongside the shrinking candidate set, and the walk stops as soon
+    // as few enough candidates remain that verifying them is cheaper than narrowing.
     let mut candidates: Vec<u32> = lists[0].iter().collect();
     for list in &lists[1..] {
         if candidates.len() <= TRIGRAM_INTERSECT_FLOOR {
             break;
         }
-        candidates.retain(|id| list.contains(*id));
+        list.intersect_into(&mut candidates);
     }
     // The trigram set is a filter, not an answer: check the predicate for real. The
     // signature goes first: it is one word read, where checking for real means decoding
