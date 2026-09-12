@@ -314,12 +314,16 @@ impl ScanPlan {
         // millisecond on a query that then took one graph's rows and stopped.
         let mut batches: Vec<&[SourceIdx]> = Vec::new();
         let mut rest = sources.as_slice();
-        let mut size = rayon::current_num_threads().clamp(1, PLAN_BATCH);
+        let threads = rayon::current_num_threads().clamp(1, PLAN_BATCH);
+        // The very first batch is a single graph, planned on this thread: a term dense
+        // enough to fill its LIMIT from one graph gets its rows without a thread
+        // fan-out, and a term that is not moves on to a parallel batch at once.
+        let mut size = 1;
         while !rest.is_empty() {
             let (head, tail) = rest.split_at(size.min(rest.len()));
             batches.push(head);
             rest = tail;
-            size = (size * 2).min(PLAN_BATCH);
+            size = if size == 1 { threads } else { (size * 2).min(PLAN_BATCH) };
         }
         for batch in batches {
             ex.cancel.check()?;
@@ -387,7 +391,11 @@ impl ScanPlan {
                     // When the accelerator answered exactly, the candidates are the
                     // matches: re-checking WHERE would decode four strings per record to
                     // re-derive what the dictionary already decided.
-                    let verified = indexed.is_some() && sp.call_site_exact;
+                    // Only CallSite records reached through an exact plan -- indexed
+                    // candidates or the bitset sweep -- skip it. An unfiltered source
+                    // and the Annotation tag always go through WHERE.
+                    let verified =
+                        tag == TAG_CALL_SITE_NODE && sp.call_site_exact && !sp.no_prefilter;
                     let mut hits: Vec<u32> = Vec::new();
                     let mut merged: Vec<u32> = Vec::new();
                     let mut offset = 0usize;
@@ -582,8 +590,25 @@ fn build_source_plan(
         // it the query actually consumes.
         if tree.is_flat_or() {
             if let Some(sets) = property_sets(graph, idx, tree, &mut memo) {
-                let cost = sets.posting_cost(idx);
-                if cost > MERGE_FLOOR && cost * POSTING_SWEEP_RATIO <= idx.call_site_count() {
+                let ceiling = idx.call_site_count() / POSTING_SWEEP_RATIO;
+                let cost = sets.posting_cost_up_to(idx, ceiling);
+                if cost > ceiling {
+                    // Too dense for postings, but the dictionary has already been
+                    // resolved: the sweep's bitsets come straight from those ids. This
+                    // used to fall through to a second pass over every string id and
+                    // then a full scan of the dictionary to rediscover the same sets --
+                    // over a millisecond per graph on a term like "get".
+                    return SourcePlan {
+                        source,
+                        call_site: sets.bitsets(graph.strings.len()),
+                        call_site_only,
+                        call_site_candidates: None,
+                        call_site_exact: true,
+                        no_prefilter: false,
+                        skip_annotations,
+                    };
+                }
+                if cost > MERGE_FLOOR {
                     return pruned(Candidates::Union(sets.pairs()), true);
                 }
             }
@@ -1042,12 +1067,15 @@ fn build_sweep_plan(
             skip_annotations,
         };
     }
+    // The bitset sweep tests exactly the disjunction: a record hits when any tested
+    // property carries a string one of that property's predicates matched. Nothing
+    // looser, so its survivors need no WHERE re-check either.
     SourcePlan {
         source,
         call_site: sets,
         call_site_only,
         call_site_candidates: None,
-        call_site_exact: false,
+        call_site_exact: true,
         no_prefilter: false,
         skip_annotations,
     }
@@ -1204,13 +1232,41 @@ struct PropertySets {
 impl PropertySets {
     /// Total postings behind these ids: what materialising this subtree would cost.
     fn posting_cost(&self, idx: &graphite_storage::callsite_index::CallSiteStringIndex) -> usize {
+        self.posting_cost_up_to(idx, usize::MAX)
+    }
+
+    /// Total postings, but stop counting once past `ceiling`: every string id costs a
+    /// binary search into the CSR, and a dense term has sixteen thousand of them, all
+    /// summed to learn something the first few hundred already settled.
+    fn posting_cost_up_to(
+        &self,
+        idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+        ceiling: usize,
+    ) -> usize {
         let mut total = 0usize;
         for (property, ids) in self.ids.iter().enumerate() {
             for &s in ids {
                 total += idx.posting_len(property, s as usize);
+                if total > ceiling {
+                    return total;
+                }
             }
         }
         total
+    }
+
+    /// The per-property bitsets the record sweep tests, built from the resolved ids.
+    fn bitsets(&self, dictionary_len: usize) -> [Option<StringBitset>; 4] {
+        std::array::from_fn(|p| {
+            if self.ids[p].is_empty() {
+                return None;
+            }
+            let mut set = StringBitset::new(dictionary_len);
+            for &s in &self.ids[p] {
+                set.set(s as usize);
+            }
+            Some(set)
+        })
     }
 
     /// The `(property, string id)` pairs behind these sets, for the lazy merge.
