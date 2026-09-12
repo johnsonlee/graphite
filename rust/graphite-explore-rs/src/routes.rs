@@ -33,6 +33,9 @@ pub struct AppState {
     pub version: String,
     pub metrics_enabled: bool,
     pub started: Instant,
+    /// Wall-clock start, for `process_start_time_seconds`. `Instant` is monotonic and
+    /// carries no epoch, so the epoch reading is taken once here.
+    pub start_time_epoch_seconds: f64,
     /// Built C4 workspaces, keyed by graph identity and level. Inference walks the
     /// whole graph, and a loaded graph never changes, so the result is worth keeping.
     /// Replacing a graph produces a new `Arc`, which misses and re-infers.
@@ -52,6 +55,10 @@ impl AppState {
             version,
             metrics_enabled,
             started: Instant::now(),
+            start_time_epoch_seconds: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs_f64())
+                .unwrap_or(0.0),
             c4_cache: parking_lot::Mutex::new(HashMap::new()),
         }
     }
@@ -1297,32 +1304,84 @@ async fn openapi(State(s): St) -> Response {
     ok_json(crate::openapi::build_openapi(&s.version))
 }
 
+/// Render a double the way Micrometer's Prometheus exposition does.
+///
+/// The client library formats through Java's `Double.toString`, whose visible habit is
+/// that an integral value still carries a fractional part: a bucket count is `3.0`, not
+/// `3`, and a boundary is `0.01` and `120.0`. Prometheus parses either, but a scrape
+/// diffed against the Kotlin server's should not differ on punctuation.
+///
+/// Java switches to scientific notation outside `[1e-3, 1e7)` where this stays decimal.
+/// That range is only reachable by the value columns — a sum, a max — which are
+/// wall-clock dependent and cannot be compared between two servers in any case; every
+/// constant this emits, bucket boundaries included, renders identically.
+fn prometheus_double(v: f64) -> String {
+    if v.is_nan() {
+        return "NaN".to_string();
+    }
+    if v.is_infinite() {
+        return if v > 0.0 { "+Inf" } else { "-Inf" }.to_string();
+    }
+    let s = format!("{v}");
+    if s.contains('.') || s.contains('e') || s.contains('E') {
+        s
+    } else {
+        format!("{s}.0")
+    }
+}
+
 async fn metrics(State(s): St) -> Response {
     let m = &s.guard.metrics;
     let mut out = String::new();
-    out.push_str("# HELP graphite_cypher_queries_rejected_total Cypher queries rejected by the concurrency guard\n");
-    out.push_str("# TYPE graphite_cypher_queries_rejected_total counter\n");
-    out.push_str(&format!(
-        "graphite_cypher_queries_rejected_total {}\n",
-        m.rejected.load(std::sync::atomic::Ordering::Relaxed)
-    ));
+    // Families in Micrometer's own order, which is by meter name: `graphite.cypher.
+    // queries.active`, `.limit`, `.rejected`, then `graphite.cypher.query.duration`.
+    // Ordering is not semantically meaningful to Prometheus, but it makes a scrape
+    // diffable against the Kotlin server's line for line.
     out.push_str(
         "# HELP graphite_cypher_queries_active Accepted Cypher queries that have not completed\n",
     );
     out.push_str("# TYPE graphite_cypher_queries_active gauge\n");
     out.push_str(&format!(
         "graphite_cypher_queries_active {}\n",
-        m.active.load(std::sync::atomic::Ordering::Relaxed)
+        prometheus_double(m.active.load(std::sync::atomic::Ordering::Relaxed) as f64)
     ));
     out.push_str("# HELP graphite_cypher_queries_limit Maximum concurrent Cypher queries\n");
     out.push_str("# TYPE graphite_cypher_queries_limit gauge\n");
     out.push_str(&format!(
         "graphite_cypher_queries_limit {}\n",
-        s.guard.max_concurrent
+        prometheus_double(s.guard.max_concurrent as f64)
     ));
+    out.push_str("# HELP graphite_cypher_queries_rejected_total Cypher queries rejected by the concurrency guard\n");
+    out.push_str("# TYPE graphite_cypher_queries_rejected_total counter\n");
+    out.push_str(&format!(
+        "graphite_cypher_queries_rejected_total {}\n",
+        prometheus_double(m.rejected.load(std::sync::atomic::Ordering::Relaxed) as f64)
+    ));
+    // A Micrometer `Timer` carrying service level objectives scrapes as a histogram: one
+    // cumulative `_bucket` series per boundary plus `+Inf`, then `_count` and `_sum`, and
+    // a separate `_max` gauge family. Emitting it as a summary left every latency panel
+    // bound to `_bucket` empty against this server.
+    //
+    // Counts are written as integers and everything else as a double, which looks
+    // inconsistent but is exactly what the client library does: bucket and `_count` go
+    // through `writeLong`, sums and gauges through `Double.toString`.
     out.push_str("# HELP graphite_cypher_query_duration_seconds Cypher query execution time\n");
-    out.push_str("# TYPE graphite_cypher_query_duration_seconds summary\n");
+    out.push_str("# TYPE graphite_cypher_query_duration_seconds histogram\n");
     for (outcome, count, nanos) in m.snapshot() {
+        let (buckets, _) = m.histogram(outcome);
+        for (slo, at_or_below) in crate::guard::DURATION_SLO_NANOS.iter().zip(buckets) {
+            out.push_str(&format!(
+                "graphite_cypher_query_duration_seconds_bucket{{outcome=\"{}\",le=\"{}\"}} {}\n",
+                outcome.tag(),
+                prometheus_double(*slo as f64 / 1e9),
+                at_or_below
+            ));
+        }
+        out.push_str(&format!(
+            "graphite_cypher_query_duration_seconds_bucket{{outcome=\"{}\",le=\"+Inf\"}} {}\n",
+            outcome.tag(),
+            count
+        ));
         out.push_str(&format!(
             "graphite_cypher_query_duration_seconds_count{{outcome=\"{}\"}} {}\n",
             outcome.tag(),
@@ -1331,14 +1390,37 @@ async fn metrics(State(s): St) -> Response {
         out.push_str(&format!(
             "graphite_cypher_query_duration_seconds_sum{{outcome=\"{}\"}} {}\n",
             outcome.tag(),
-            nanos as f64 / 1e9
+            prometheus_double(nanos as f64 / 1e9)
         ));
     }
-    out.push_str("# HELP process_uptime_seconds Process uptime\n");
+    out.push_str(
+        "# HELP graphite_cypher_query_duration_seconds_max Cypher query execution time\n",
+    );
+    out.push_str("# TYPE graphite_cypher_query_duration_seconds_max gauge\n");
+    for (outcome, _, _) in m.snapshot() {
+        let (_, max_nanos) = m.histogram(outcome);
+        out.push_str(&format!(
+            "graphite_cypher_query_duration_seconds_max{{outcome=\"{}\"}} {}\n",
+            outcome.tag(),
+            prometheus_double(max_nanos as f64 / 1e9)
+        ));
+    }
+    // The Kotlin server gets these from Micrometer's JVM and system binders, most of
+    // which describe a JVM and have no counterpart here. These two do: they describe the
+    // process, and a dashboard panel bound to either one works against both. Their HELP
+    // text is this server's own -- Micrometer's says "the Java virtual machine", which
+    // would be a false statement on this binary.
+    out.push_str("# HELP process_start_time_seconds Start time of the process since unix epoch.\n");
+    out.push_str("# TYPE process_start_time_seconds gauge\n");
+    out.push_str(&format!(
+        "process_start_time_seconds {}\n",
+        prometheus_double(s.start_time_epoch_seconds)
+    ));
+    out.push_str("# HELP process_uptime_seconds The uptime of the process\n");
     out.push_str("# TYPE process_uptime_seconds gauge\n");
     out.push_str(&format!(
         "process_uptime_seconds {}\n",
-        s.started.elapsed().as_secs_f64()
+        prometheus_double(s.started.elapsed().as_secs_f64())
     ));
     (
         StatusCode::OK,

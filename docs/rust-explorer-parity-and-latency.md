@@ -53,10 +53,42 @@ look covered; it only ever proved the document itself matched.
 | C4 | `/api/graphs/{id}/architecture/c4` at **`level=context` only**, in all four formats, plus an invalid level and an invalid format |
 | OpenAPI | `/openapi.json`, `/swagger.json` |
 | Cypher | 37 queries, each sent to both `/api/graphs/{id}/cypher` and `/api/cypher` — 74 cases — plus the `GET ?query=` spelling of both, and `/api/cypher/graphs` in both methods |
+| `/metrics` | The Prometheus exposition, compared structurally — see below |
 | Cross-graph routes | `/api/annotations`, `/api/endpoints`, `/api/resources`, `/api/architecture/c4` |
 | Resource bodies | `/api/resources/{path}` and `/api/graphs/{id}/resources/{path}` |
 | Registry mutation | `PUT` and `POST /api/graphs/{id}` each walked through a full lifecycle — load, describe, list, reload with a bad path, reload with no path, a malformed id, unload, unload again, describe the absent graph |
 | Web UI | `/`, `/index.html`, `/app.js`, `/ui-state.js`, `/style.css` — bytes, `Content-Type`, and `If-None-Match` → 304 |
+
+### `/metrics` is compared structurally, not byte for byte
+
+Both servers are started with `--metrics` and the exposition is parsed rather than
+diffed as text, because two things about it can never match:
+
+* Most of what the Kotlin server exposes describes a **JVM** — garbage collection, class
+  loading, JIT compilation, Jetty's thread pool, `jvm_info`. Those families have no
+  counterpart in a Rust binary. Only the `graphite_`-prefixed families are this port's
+  to reproduce; `process_start_time_seconds` and `process_uptime_seconds` are also
+  emitted, since they describe a process rather than a virtual machine.
+* Every **value** is wall-clock or workload dependent. A count, a sum, an uptime differ
+  between two processes by construction.
+
+What is compared is everything a dashboard actually binds to: the set of `graphite_*`
+families, each one's `TYPE` and `HELP` line, the full set of series including their
+label sets, the histogram bucket boundaries, and whether each series renders as an
+integer or a double. That last one is not pedantry — Micrometer writes `_bucket` and
+`_count` through `writeLong` and everything else through `Double.toString`, so a correct
+scrape mixes `2` and `0.0` in a way that looks like a bug and is not.
+
+Finding this is what the check was for. The Rust server had been emitting the Cypher
+timer as a `summary` with only `_count` and `_sum`, so every latency panel bound to
+`_bucket` was empty against it, and the `_max` gauge family was missing outright. It now
+emits the same histogram with the same service level objectives (10ms, 50ms, 100ms,
+500ms, 1s, 5s, 30s, 2m) the Kotlin server configures through Micrometer.
+
+One divergence is deliberate. Javalin answers `HEAD /metrics` with a bare `text/plain`,
+dropping the `version=0.0.4; charset=utf-8` its own `GET` sends; the Rust server sends
+the full type on both. The content type is therefore compared on the `GET`, which is
+what a scraper issues.
 
 ### Not covered
 
@@ -67,7 +99,6 @@ ported but unverified — the table says which. Neither is evidence of equivalen
 |---|---|
 | **`graphite build`** | The `build` subcommand is **not ported at all** — it runs the SootUp bytecode analysis, which this port does not implement. `graphite serve` is not ported either; the Explorer ships as its own `graphite-explore` binary. |
 | **The Explorer's own CLI** | Flags are one-for-one with the Kotlin binary and were exercised by hand, but no automated check compares them. `--help`, `--version` and error text are known to differ: picocli and clap format differently. |
-| **`/metrics`** | Never requested; the Prometheus exposition format is not compared. It is not in the OpenAPI document either, so the checklist above does not catch it. |
 | **C4 container and component levels** | Only `level=context` is compared. The other two levels produce diagram layout, which was never brought to parity. |
 | **API response headers** | For every route except the five UI assets, only status and body are compared. Content types, cache headers and error-response headers on the JSON API are unchecked. |
 | **`TopologyStore`'s binary snapshot** | The persisted format is not read by the Rust server. |

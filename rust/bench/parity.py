@@ -254,6 +254,107 @@ for path in UI_ASSETS:
         failures.append((f"GET {path} If-None-Match", "revalidation differs",
                          f"kotlin {codes[0]}", f"rust {codes[1]}"))
 
+# `/metrics` is the Prometheus exposition, and it is not in the OpenAPI document, so the
+# checklist below cannot reach it. It is compared structurally rather than byte for byte,
+# for two reasons that are worth stating rather than leaving implicit:
+#
+#   * Most of what the Kotlin server exposes describes a JVM -- garbage collection,
+#     class loading, JIT compilation, Jetty's thread pool. Those families have no
+#     counterpart in a Rust binary and never will. Only the `graphite_`-prefixed
+#     families are this port's to reproduce.
+#   * Every value is wall-clock or workload dependent. A count, a sum, an uptime will
+#     differ between two processes by construction.
+#
+# What must match is everything a dashboard binds to: the family names, their TYPE and
+# HELP lines, the label sets, the histogram bucket boundaries, and whether a given
+# series renders as an integer or a double -- Micrometer writes bucket and `_count`
+# through `writeLong` and everything else through `Double.toString`, and a scrape that
+# gets that backwards is a scrape someone will diff one day.
+def get_headers(base, path):
+    try:
+        with urllib.request.urlopen(base + path, timeout=30) as r:
+            return {k.lower(): v for k, v in r.headers.items()}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def parse_exposition(text):
+    families, series = {}, {}
+    for line in text.splitlines():
+        if line.startswith("# HELP "):
+            name, _, help_text = line[len("# HELP "):].partition(" ")
+            families.setdefault(name, {})["help"] = help_text
+        elif line.startswith("# TYPE "):
+            name, _, kind = line[len("# TYPE "):].partition(" ")
+            families.setdefault(name, {})["type"] = kind
+        elif line and not line.startswith("#"):
+            key, _, value = line.rpartition(" ")
+            # "integral" or "decimal" -- the rendering, never the value itself.
+            series[key] = "decimal" if ("." in value or "e" in value.lower()) else "integral"
+    return families, series
+
+
+def check_metrics():
+    global passed, failed
+    ks, kb = fetch(KOTLIN, "GET", "/metrics", None)
+    rs, rb = fetch(RUST, "GET", "/metrics", None)
+    if ks != 200 or rs != 200:
+        failed += 1
+        failures.append(("GET /metrics", f"status {ks} != {rs}",
+                         f"kotlin {ks}", f"rust {rs}"))
+        return
+    # Compared on the GET, not a HEAD. Javalin answers `HEAD /metrics` with a bare
+    # `text/plain`, dropping the `version=0.0.4; charset=utf-8` its own GET sends -- an
+    # artifact of how the handler's content type survives a bodyless response, not a
+    # contract a scraper relies on. Prometheus issues GETs.
+    kct = get_headers(KOTLIN, "/metrics").get("content-type")
+    rct = get_headers(RUST, "/metrics").get("content-type")
+    if kct == rct:
+        passed += 1
+    else:
+        failed += 1
+        failures.append(("GET /metrics content-type", "differs", str(kct), str(rct)))
+
+    kf, kser = parse_exposition(kb)
+    rf, rser = parse_exposition(rb)
+    own = lambda d: {n: v for n, v in d.items() if n.startswith("graphite_")}
+    kf, rf = own(kf), own(rf)
+    missing = sorted(set(kf) - set(rf))
+    extra = sorted(set(rf) - set(kf))
+    if missing or extra:
+        failed += 1
+        failures.append(("GET /metrics families", "graphite_* families differ",
+                         f"only in kotlin: {missing}", f"only in rust: {extra}"))
+    else:
+        passed += 1
+    for name in sorted(set(kf) & set(rf)):
+        if kf[name] == rf[name]:
+            passed += 1
+        else:
+            failed += 1
+            failures.append((f"GET /metrics {name}", "TYPE or HELP differs",
+                             str(kf[name]), str(rf[name])))
+    own_series = lambda d: {k: v for k, v in d.items() if k.startswith("graphite_")}
+    kser, rser = own_series(kser), own_series(rser)
+    if set(kser) == set(rser):
+        passed += 1
+    else:
+        failed += 1
+        failures.append(("GET /metrics series", "graphite_* series differ",
+                         f"only in kotlin: {sorted(set(kser) - set(rser))[:6]}",
+                         f"only in rust: {sorted(set(rser) - set(kser))[:6]}"))
+    shape_diff = [k for k in set(kser) & set(rser) if kser[k] != rser[k]]
+    if shape_diff:
+        failed += 1
+        failures.append(("GET /metrics value rendering", "integer/double differs",
+                         f"kotlin {[(k, kser[k]) for k in sorted(shape_diff)[:4]]}",
+                         f"rust {[(k, rser[k]) for k in sorted(shape_diff)[:4]]}"))
+    else:
+        passed += 1
+
+
+check_metrics()
+
 # Every method and path the OpenAPI document advertises must be exercised above. The
 # document is the server's public contract, so an endpoint it declares and this suite
 # never calls is an untested promise -- and that is how the cross-graph routes and the

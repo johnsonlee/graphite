@@ -47,12 +47,32 @@ impl Outcome {
     }
 }
 
+/// Service level objectives for `graphite.cypher.query.duration`, in nanoseconds.
+///
+/// The same ladder the Kotlin server configures through Micrometer's
+/// `serviceLevelObjectives`, so the timer scrapes as a histogram with identical bucket
+/// boundaries and a dashboard binds to either server unchanged.
+pub const DURATION_SLO_NANOS: [u64; 8] = [
+    10_000_000,
+    50_000_000,
+    100_000_000,
+    500_000_000,
+    1_000_000_000,
+    5_000_000_000,
+    30_000_000_000,
+    120_000_000_000,
+];
+
 #[derive(Default)]
 pub struct GuardMetrics {
     pub rejected: AtomicU64,
     pub active: AtomicU64,
     pub duration_nanos: [AtomicU64; 5],
     pub counts: [AtomicU64; 5],
+    /// Per outcome, how many observations fell at or below each SLO.
+    pub buckets: [[AtomicU64; DURATION_SLO_NANOS.len()]; 5],
+    /// Per outcome, the longest observation seen.
+    pub max_nanos: [AtomicU64; 5],
 }
 
 impl GuardMetrics {
@@ -69,6 +89,24 @@ impl GuardMetrics {
         let i = Self::slot(o);
         self.duration_nanos[i].fetch_add(nanos, Ordering::Relaxed);
         self.counts[i].fetch_add(1, Ordering::Relaxed);
+        // Cumulative, as Prometheus histograms are: every bucket the observation is at
+        // or below counts it.
+        for (b, slo) in self.buckets[i].iter().zip(DURATION_SLO_NANOS) {
+            if nanos <= slo {
+                b.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+        self.max_nanos[i].fetch_max(nanos, Ordering::Relaxed);
+    }
+
+    /// Per outcome: cumulative bucket counts and the longest observation.
+    pub fn histogram(&self, o: Outcome) -> ([u64; DURATION_SLO_NANOS.len()], u64) {
+        let i = Self::slot(o);
+        let mut counts = [0u64; DURATION_SLO_NANOS.len()];
+        for (out, b) in counts.iter_mut().zip(self.buckets[i].iter()) {
+            *out = b.load(Ordering::Relaxed);
+        }
+        (counts, self.max_nanos[i].load(Ordering::Relaxed))
     }
     pub fn snapshot(&self) -> Vec<(Outcome, u64, u64)> {
         [
