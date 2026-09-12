@@ -66,6 +66,14 @@ struct PropertyCsr {
     posting_node_ids: I32Array,
 }
 
+/// Which trigrams a graph holds, and where each one's postings lie.
+struct TrigramTable {
+    /// The 16-bit-folded presence bitmap: a cheap first answer for a miss.
+    bits: Vec<u64>,
+    /// Trigram to `[start, end)` in the posting array.
+    runs: std::collections::HashMap<i32, (u32, u32)>,
+}
+
 /// Bits in the per-graph trigram filter. A trigram hash is folded to this many bits, so
 /// collisions only ever cause a graph to be examined that need not be.
 const TRIGRAM_FILTER_BITS: usize = 1 << 16;
@@ -73,7 +81,7 @@ const TRIGRAM_FILTER_BITS: usize = 1 << 16;
 pub struct CallSiteStringIndex {
     map: Mmap,
     /// Which trigrams occur anywhere in this graph, built on first use.
-    trigram_filter: std::sync::OnceLock<Vec<u64>>,
+    trigram_filter: std::sync::OnceLock<TrigramTable>,
     string_count: usize,
     call_site_count: usize,
     properties: [PropertyCsr; PROPERTY_COUNT],
@@ -200,30 +208,43 @@ impl CallSiteStringIndex {
     /// The filter over-approximates: hashes are folded to 16 bits, so a collision costs
     /// a wasted probe and never a missed match.
     pub fn may_contain_all(&self, trigrams: &[i32]) -> bool {
-        let filter = self.trigram_filter();
+        let table = self.trigram_table();
         trigrams.iter().all(|t| {
             let bit = (*t as u32 as u16) as usize;
-            filter[bit >> 6] >> (bit & 63) & 1 == 1
+            // The bitmap answers most misses from two cache lines; the table settles
+            // the collisions exactly, so a graph is never planned for a trigram it
+            // does not hold.
+            table.bits[bit >> 6] >> (bit & 63) & 1 == 1 && table.runs.contains_key(t)
         })
     }
 
-    fn trigram_filter(&self) -> &Vec<u64> {
+    /// Built on first use from one pass over the trigram postings, which are sorted by
+    /// trigram: each distinct trigram is one contiguous run, recorded once.
+    fn trigram_table(&self) -> &TrigramTable {
         self.trigram_filter.get_or_init(|| {
             let mut bits = vec![0u64; TRIGRAM_FILTER_BITS / 64];
-            // Postings are sorted by trigram, so the runs are contiguous and each
-            // distinct trigram is reached once per run.
+            let mut runs: std::collections::HashMap<i32, (u32, u32)> =
+                std::collections::HashMap::new();
             let mut previous: Option<i32> = None;
+            let mut start = 0usize;
             for i in 0..self.trigram_posting_count {
                 let raw = read_i64_at(&self.map, self.trigram_postings + i * 8);
                 let trigram = (raw >> 32) as i32;
                 if previous == Some(trigram) {
                     continue;
                 }
+                if let Some(p) = previous {
+                    runs.insert(p, (start as u32, i as u32));
+                }
                 previous = Some(trigram);
+                start = i;
                 let bit = (trigram as u32 as u16) as usize;
                 bits[bit >> 6] |= 1u64 << (bit & 63);
             }
-            bits
+            if let Some(p) = previous {
+                runs.insert(p, (start as u32, self.trigram_posting_count as u32));
+            }
+            TrigramTable { bits, runs }
         })
     }
 
@@ -232,16 +253,35 @@ impl CallSiteStringIndex {
     /// Postings are `(trigram << 32) | stringId` sorted ascending, so one trigram's
     /// ids are a contiguous run found by binary search — and are themselves ascending.
     pub fn trigram_string_ids(&self, trigram: i32) -> TrigramPostings<'_> {
-        // String ids are non-negative, so a trigram's run spans `[key(t, 0), key(t+1, 0))`.
-        let lo = self.posting_lower_bound(key(trigram, 0));
-        let hi = self.posting_lower_bound(key(trigram.wrapping_add(1), 0));
+        // One hash lookup. This was two binary searches over the whole posting array
+        // -- millions of entries, so forty-odd dependent cache misses -- and a broad
+        // query sizes every trigram of every literal on every graph it plans, which
+        // for a six-literal conjunction over sixty-four graphs was most of the plan.
+        let (start, end) = self
+            .trigram_table()
+            .runs
+            .get(&trigram)
+            .map(|&(s, e)| (s as usize, e as usize))
+            .unwrap_or((0, 0));
         TrigramPostings {
             index: self,
-            start: lo,
-            end: hi,
+            start,
+            end,
         }
     }
 
+    /// Where a trigram's run would begin, by binary search; kept for the tests, which
+    /// check the table against it.
+    #[cfg(test)]
+    fn trigram_run_by_search(&self, trigram: i32) -> (usize, usize) {
+        // String ids are non-negative, so a trigram's run spans `[key(t, 0), key(t+1, 0))`.
+        (
+            self.posting_lower_bound(key(trigram, 0)),
+            self.posting_lower_bound(key(trigram.wrapping_add(1), 0)),
+        )
+    }
+
+    #[cfg(test)]
     fn posting_lower_bound(&self, target: i64) -> usize {
         let (mut lo, mut hi) = (0usize, self.trigram_posting_count);
         while lo < hi {
@@ -626,4 +666,26 @@ mod tests {
         // A longer literal's signature covers its prefix's bits.
         assert_eq!(literal_signature("abcd") & one, one);
     }
+    #[test]
+    fn trigram_table_matches_binary_search_for_every_trigram_and_for_absent_ones() {
+        let dir = tempdir("table");
+        let b = fixture(&dir);
+        let idx = CallSiteStringIndex::load(&dir, 3, Some(&b.identity))
+            .unwrap()
+            .expect("index");
+        let present: Vec<i32> = (0..idx.trigram_posting_count)
+            .map(|i| (read_i64_at(&idx.map, idx.trigram_postings + i * 8) >> 32) as i32)
+            .collect();
+        for t in present.iter().copied().chain([i32::MIN, -1, 0, 1]) {
+            let (lo, hi) = idx.trigram_run_by_search(t);
+            let run = idx.trigram_string_ids(t);
+            assert_eq!((run.start, run.end), (lo, hi), "trigram {t}");
+            assert_eq!(idx.may_contain_all(&[t]), lo < hi, "presence of {t}");
+        }
+        // The search cannot bound `i32::MAX`: its upper key wraps to the smallest key of
+        // all. The table has no such edge, and is what the reader now uses.
+        assert!(idx.trigram_string_ids(i32::MAX).is_empty());
+        assert!(!idx.may_contain_all(&[i32::MAX]));
+    }
+
 }

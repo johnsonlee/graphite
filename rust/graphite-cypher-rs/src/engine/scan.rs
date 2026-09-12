@@ -134,8 +134,11 @@ impl StringBitset {
 /// Per-source pushdown state: which string ids satisfy the predicate for each property.
 struct SourcePlan {
     source: SourceIdx,
-    /// Indexed like `CALL_SITE_PROPS`; `None` when no predicate touches that property.
-    call_site: [Option<StringBitset>; 4],
+    /// One entry per conjunct, each indexed like `CALL_SITE_PROPS` with `None` where no
+    /// predicate of that conjunct touches the property. A record is a hit when, for
+    /// every conjunct, some tested property carries a string in that conjunct's set. A
+    /// flat disjunction is the one-conjunct case.
+    call_site: Vec<[Option<StringBitset>; 4]>,
     /// True when every predicate targets a CallSite property, so only CallSite nodes
     /// (and Annotation nodes, which expose the same names) can match.
     call_site_only: bool,
@@ -171,6 +174,85 @@ enum Candidates {
     Nodes(Vec<u32>),
     /// `(property, string id)` pairs whose posting lists union to the candidates.
     Union(Vec<(u8, u32)>),
+    /// One pair list per conjunct; the candidates are the ids in every one's union.
+    ///
+    /// A conjunction used to be answered by materialising its cheapest side and then
+    /// reading the record behind each of those ids to test the others -- a random
+    /// access per candidate, which for a side of fifty thousand ids is fifty thousand
+    /// cache misses before the first row. When the sides are of comparable size it is
+    /// cheaper to merge each into an ascending stream and walk them together: every
+    /// read is sequential, no record is decoded, and a satisfied LIMIT stops the walk.
+    Intersect(Vec<Vec<(u8, u32)>>),
+}
+
+/// Either lazy candidate producer, so the sweep loop pulls chunks from one type.
+enum Lazy<'a> {
+    Union(PostingsMerge<'a>),
+    Intersect(IntersectMerge<'a>),
+}
+
+impl Lazy<'_> {
+    fn next_chunk(&mut self, want: usize, out: &mut Vec<u32>) {
+        match self {
+            Lazy::Union(m) => m.next_chunk(want, out),
+            Lazy::Intersect(m) => m.next_chunk(want, out),
+        }
+    }
+}
+
+/// Ascending ids present in every one of several ascending streams.
+struct IntersectMerge<'a> {
+    streams: Vec<PostingsMerge<'a>>,
+    heads: Vec<Option<u32>>,
+}
+
+impl<'a> IntersectMerge<'a> {
+    fn new(
+        idx: &'a graphite_storage::callsite_index::CallSiteStringIndex,
+        sides: &[Vec<(u8, u32)>],
+    ) -> IntersectMerge<'a> {
+        let mut streams: Vec<PostingsMerge<'a>> =
+            sides.iter().map(|pairs| PostingsMerge::new(idx, pairs)).collect();
+        let heads = streams.iter_mut().map(PostingsMerge::next_one).collect();
+        IntersectMerge { streams, heads }
+    }
+
+    /// Refill `out` with up to `want` further ids. Empty means exhausted.
+    fn next_chunk(&mut self, want: usize, out: &mut Vec<u32>) {
+        out.clear();
+        while out.len() < want {
+            // The largest head is the only value every stream might still hold; every
+            // stream below it is advanced up to it, and a stream that runs out ends
+            // the intersection.
+            let mut target = 0u32;
+            for h in &self.heads {
+                match h {
+                    Some(v) => target = target.max(*v),
+                    None => return,
+                }
+            }
+            let mut aligned = true;
+            for i in 0..self.streams.len() {
+                while let Some(v) = self.heads[i] {
+                    if v >= target {
+                        break;
+                    }
+                    self.heads[i] = self.streams[i].next_one();
+                }
+                match self.heads[i] {
+                    Some(v) if v == target => {}
+                    Some(_) => aligned = false,
+                    None => return,
+                }
+            }
+            if aligned {
+                out.push(target);
+                for i in 0..self.streams.len() {
+                    self.heads[i] = self.streams[i].next_one();
+                }
+            }
+        }
+    }
 }
 
 /// Ascending de-duplicated union of several ascending posting lists.
@@ -203,19 +285,27 @@ impl<'a> PostingsMerge<'a> {
         }
     }
 
-    /// Refill `out` with up to `want` further ids. Empty means exhausted.
-    fn next_chunk(&mut self, want: usize, out: &mut Vec<u32>) {
-        out.clear();
-        while out.len() < want {
-            let Some(std::cmp::Reverse((v, i))) = self.heap.pop() else {
-                return;
-            };
+    /// The next id, de-duplicated across the lists. `None` means exhausted.
+    fn next_one(&mut self) -> Option<u32> {
+        loop {
+            let std::cmp::Reverse((v, i)) = self.heap.pop()?;
             if let Some(next) = self.lists[i as usize].next() {
                 self.heap.push(std::cmp::Reverse((next, i)));
             }
             if self.last != Some(v) {
                 self.last = Some(v);
-                out.push(v);
+                return Some(v);
+            }
+        }
+    }
+
+    /// Refill `out` with up to `want` further ids. Empty means exhausted.
+    fn next_chunk(&mut self, want: usize, out: &mut Vec<u32>) {
+        out.clear();
+        while out.len() < want {
+            match self.next_one() {
+                Some(v) => out.push(v),
+                None => return,
             }
         }
     }
@@ -387,7 +477,7 @@ impl ScanPlan {
                     // so a satisfied LIMIT never pays for the postings it does not read.
                     let slice: Option<&[u32]> = match indexed {
                         Some(Candidates::Nodes(nodes)) => Some(nodes.as_slice()),
-                        Some(Candidates::Union(_)) => None,
+                        Some(Candidates::Union(_) | Candidates::Intersect(_)) => None,
                         None => Some(graph.ids_by_tag(tag)),
                     };
                     if slice.is_some_and(<[u32]>::is_empty) {
@@ -395,7 +485,10 @@ impl ScanPlan {
                     }
                     let mut merge = match (indexed, usable_index(graph)) {
                         (Some(Candidates::Union(pairs)), Some(idx)) => {
-                            Some(PostingsMerge::new(idx, pairs))
+                            Some(Lazy::Union(PostingsMerge::new(idx, pairs)))
+                        }
+                        (Some(Candidates::Intersect(sides)), Some(idx)) => {
+                            Some(Lazy::Intersect(IntersectMerge::new(idx, sides)))
                         }
                         _ => None,
                     };
@@ -490,14 +583,12 @@ fn sweep_call_sites(graph: &Graph, ids: &[u32], sp: &SourcePlan, out: &mut Vec<u
         };
         let s = read_call_site_strings(data, offset);
         let fields = [s.caller_class, s.caller_name, s.callee_class, s.callee_name];
-        for (i, set) in sp.call_site.iter().enumerate() {
-            if let Some(set) = set {
-                if set.get(fields[i] as usize) {
-                    return true;
-                }
-            }
-        }
-        false
+        sp.call_site.iter().all(|conjunct| {
+            conjunct
+                .iter()
+                .enumerate()
+                .any(|(i, set)| set.as_ref().is_some_and(|set| set.get(fields[i] as usize)))
+        })
     };
     // Parallelise only when the chunk is large enough to pay for the fan-out. Results
     // stay in id order, which is nodedata order for a type-index range.
@@ -574,7 +665,7 @@ fn build_source_plan(
             .any(|p| graph.strings.index_of(p.property).is_some());
     let pruned = |candidates: Candidates, exact: bool| SourcePlan {
         source,
-        call_site: [None, None, None, None],
+        call_site: Vec::new(),
         call_site_only,
         call_site_candidates: Some(candidates),
         call_site_exact: exact,
@@ -608,7 +699,7 @@ fn build_source_plan(
                     // over a millisecond per graph on a term like "get".
                     return SourcePlan {
                         source,
-                        call_site: sets.bitsets(graph.strings.len()),
+                        call_site: vec![sets.bitsets(graph.strings.len())],
                         call_site_only,
                         call_site_candidates: None,
                         call_site_exact: true,
@@ -621,6 +712,26 @@ fn build_source_plan(
                 }
             }
         }
+        if let PredTree::And(children) = tree {
+            match plan_conjunction(graph, idx, children, &mut memo) {
+                Conjunction::Empty => return pruned(Candidates::Nodes(Vec::new()), true),
+                Conjunction::Intersect(sides) => {
+                    return pruned(Candidates::Intersect(sides), true)
+                }
+                Conjunction::Sweep(conjuncts) => {
+                    return SourcePlan {
+                        source,
+                        call_site: conjuncts,
+                        call_site_only,
+                        call_site_candidates: None,
+                        call_site_exact: true,
+                        no_prefilter: false,
+                        skip_annotations,
+                    }
+                }
+                Conjunction::Probe => {}
+            }
+        }
         if let Some((candidates, exact)) = indexed_candidates(graph, idx, tree, &mut memo) {
             return pruned(Candidates::Nodes(candidates), exact);
         }
@@ -630,7 +741,7 @@ fn build_source_plan(
     if !tree.is_flat_or() {
         return SourcePlan {
             source,
-            call_site: [None, None, None, None],
+            call_site: Vec::new(),
             call_site_only: false,
             call_site_candidates: None,
             call_site_exact: false,
@@ -867,6 +978,64 @@ fn leaf_candidates(
 
 /// Walking postings stops paying off once they cover this fraction of the records.
 const POSTING_SWEEP_RATIO: usize = 8;
+/// A conjunction is walked as intersecting streams when its sides together hold at most
+/// this many times the postings of its smallest side. Past that, materialising the
+/// small side and probing records for the rest reads less, even at a cache miss each.
+const INTERSECT_RATIO: usize = 3;
+
+/// How a conjunction of flat sides is answered.
+enum Conjunction {
+    /// A side has no postings at all, so nothing satisfies the conjunction.
+    Empty,
+    /// Walk every side's posting stream together.
+    Intersect(Vec<Vec<(u8, u32)>>),
+    /// Every side is too dense for postings: sweep the records against each side's
+    /// bitsets. Exact, and where this used to hand every record to the generic WHERE
+    /// evaluator -- half a second on `Stub AND (... OR Stub ...)` over the Android
+    /// graphs, decoding four strings per record to re-decide what the dictionary had
+    /// already resolved.
+    Sweep(Vec<[Option<StringBitset>; 4]>),
+    /// Materialise the smallest side and probe records for the rest: the side is either
+    /// not flat, or so much smaller than the others that reading its records costs less
+    /// than walking theirs.
+    Probe,
+}
+
+fn plan_conjunction(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    children: &[PredTree],
+    memo: &mut Memo,
+) -> Conjunction {
+    let ceiling = idx.call_site_count() / POSTING_SWEEP_RATIO;
+    let mut sets: Vec<PropertySets> = Vec::with_capacity(children.len());
+    for c in children {
+        match property_sets(graph, idx, c, memo) {
+            Some(s) => sets.push(s),
+            None => return Conjunction::Probe,
+        }
+    }
+    let costs: Vec<usize> = sets
+        .iter()
+        .map(|s| s.posting_cost_up_to(idx, ceiling))
+        .collect();
+    let Some(&min) = costs.iter().min() else {
+        return Conjunction::Probe;
+    };
+    if min == 0 {
+        return Conjunction::Empty;
+    }
+    if min > ceiling {
+        let len = graph.strings.len();
+        return Conjunction::Sweep(sets.iter().map(|s| s.bitsets(len)).collect());
+    }
+    if costs.iter().any(|&c| c > ceiling)
+        || costs.iter().sum::<usize>() > min.saturating_mul(INTERSECT_RATIO)
+    {
+        return Conjunction::Probe;
+    }
+    Conjunction::Intersect(sets.iter().map(PropertySets::pairs).collect())
+}
 /// Below this many postings, building the union outright beats merging it lazily: the
 /// heap costs a comparison and a mmap read per id, where a short list is one `extend`
 /// and a sort that fits in cache.
@@ -1074,7 +1243,7 @@ fn build_sweep_plan(
     {
         return SourcePlan {
             source,
-            call_site: sets,
+            call_site: vec![sets],
             call_site_only,
             call_site_candidates: Some(Candidates::Nodes(Vec::new())),
             call_site_exact: true,
@@ -1087,7 +1256,7 @@ fn build_sweep_plan(
     // looser, so its survivors need no WHERE re-check either.
     SourcePlan {
         source,
-        call_site: sets,
+        call_site: vec![sets],
         call_site_only,
         call_site_candidates: None,
         call_site_exact: true,
