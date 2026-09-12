@@ -41,6 +41,12 @@ def norm(o):
         return [norm(v) for v in o]
     return o
 
+# Response headers observed on the last `fetch`, keyed by (base, method, path).
+# A client that only ever looks at the body will not notice a JSON route answering
+# `text/plain`, and a browser or a generated SDK will.
+seen_headers = {}
+
+
 def fetch(base, method, path, body=None, headers=None):
     url = base + path
     data = body.encode() if body else None
@@ -48,12 +54,16 @@ def fetch(base, method, path, body=None, headers=None):
     req.add_header("Content-Type", "application/json")
     for k, v in (headers or {}).items():
         req.add_header(k, v)
+    key = (base, method, path)
     try:
         with urllib.request.urlopen(req, timeout=120) as r:
+            seen_headers[key] = {k.lower(): v for k, v in r.headers.items()}
             return r.status, r.read().decode()
     except urllib.error.HTTPError as e:
+        seen_headers[key] = {k.lower(): v for k, v in e.headers.items()}
         return e.code, e.read().decode()
     except Exception as e:
+        seen_headers.pop(key, None)
         return -1, str(e)
 
 CASES = [
@@ -156,10 +166,31 @@ CASES += [
 
 passed = failed = 0
 failures = []
+
+
+def check_content_type(method, path, label):
+    """The `Content-Type` both servers put on the same response, errors included.
+
+    Only this one header is compared. `Date`, `Content-Length`, `Server` and the
+    connection headers are either volatile or the web framework's business; the media
+    type is the server's own contract, and it is the one a generated client dispatches
+    on -- including on an error body, where it is easiest to get wrong.
+    """
+    global passed, failed
+    k = seen_headers.get((KOTLIN, method, path), {}).get("content-type")
+    r = seen_headers.get((RUST, method, path), {}).get("content-type")
+    if k == r:
+        passed += 1
+    else:
+        failed += 1
+        failures.append((f"{label} [content-type]", "differs", str(k), str(r)))
+
+
 for method, path, body in CASES:
     ks, kb = fetch(KOTLIN, method, path, body)
     rs, rb = fetch(RUST, method, path, body)
     label = f"{method} {path}" + (f" {body[:90]}" if body else "")
+    check_content_type(method, path, label)
     if ks != rs:
         failed += 1
         failures.append((label, f"status {ks} != {rs}", kb[:300], rb[:300]))
@@ -201,6 +232,7 @@ for method in ("PUT", "POST"):
         ks, kb = fetch(KOTLIN, m, path, body)
         rs, rb = fetch(RUST, m, path, body)
         label = f"{m} {path}" + (f" {body}" if body else "")
+        check_content_type(m, path, label)
         try:
             same = ks == rs and strip_placeholder(norm(json.loads(kb))) == strip_placeholder(norm(json.loads(rb)))
         except Exception:

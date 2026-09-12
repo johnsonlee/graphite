@@ -54,10 +54,29 @@ look covered; it only ever proved the document itself matched.
 | OpenAPI | `/openapi.json`, `/swagger.json` |
 | Cypher | 37 queries, each sent to both `/api/graphs/{id}/cypher` and `/api/cypher` — 74 cases — plus the `GET ?query=` spelling of both, and `/api/cypher/graphs` in both methods |
 | `/metrics` | The Prometheus exposition, compared structurally — see below |
+| `Content-Type` | Compared on every case above, success and error alike — see below |
 | Cross-graph routes | `/api/annotations`, `/api/endpoints`, `/api/resources`, `/api/architecture/c4` |
 | Resource bodies | `/api/resources/{path}` and `/api/graphs/{id}/resources/{path}` |
 | Registry mutation | `PUT` and `POST /api/graphs/{id}` each walked through a full lifecycle — load, describe, list, reload with a bad path, reload with no path, a malformed id, unload, unload again, describe the absent graph |
 | Web UI | `/`, `/index.html`, `/app.js`, `/ui-state.js`, `/style.css` — bytes, `Content-Type`, and `If-None-Match` → 304 |
+
+### `Content-Type` is compared on every route
+
+Only this one header, and only because it is the server's own contract rather than the
+framework's: it is what a generated client dispatches on, and it is easiest to get wrong
+on an error body. Four real divergences surfaced the moment it was checked, and all four
+were the port being *more* correct than the baseline in a way that broke compatibility:
+
+| Route | Baseline | Port had | Why the baseline wins |
+|---|---|---|---|
+| `…/architecture/c4?format=json` | `application/json` | `application/vnd.structurizr+json; charset=utf-8` | The baseline's source sets the structurizr type and then serialises with `ctx.json()`, which replaces it. The declared type never reaches the wire. The other three formats go through `ctx.result()` and do ship as declared. |
+| `/api/architecture/c4?format=json` | `application/json` | `application/json; charset=utf-8` | Same overwrite. |
+| `DELETE /api/graphs/{id}` | `text/plain` | *(absent)* | A 204 has no body, but Javalin still puts its default type on it. |
+| `/api/topology` | `application/json;charset=utf-8` | `application/json` | The baseline serves this from its persisted `TopologyStore` snapshot, and that branch writes with `ctx.result()`, so its charset survives — without the space after the semicolon, which is how Javalin re-emits it. |
+
+The last one is worth being precise about: this server computes the topology document
+rather than reading a snapshot, and **the snapshot format is still unported**. It matches
+what a client observes on that route, which is not the same claim.
 
 ### `/metrics` is compared structurally, not byte for byte
 
@@ -100,7 +119,7 @@ ported but unverified — the table says which. Neither is evidence of equivalen
 | **`graphite build`** | The `build` subcommand is **not ported at all** — it runs the SootUp bytecode analysis, which this port does not implement. `graphite serve` is not ported either; the Explorer ships as its own `graphite-explore` binary. |
 | **The Explorer's own CLI** | Flags are one-for-one with the Kotlin binary and were exercised by hand, but no automated check compares them. `--help`, `--version` and error text are known to differ: picocli and clap format differently. |
 | **C4 container and component levels** | Only `level=context` is compared. The other two levels produce diagram layout, which was never brought to parity. |
-| **API response headers** | For every route except the five UI assets, only status and body are compared. Content types, cache headers and error-response headers on the JSON API are unchecked. |
+| **API response headers beyond `Content-Type`** | `Content-Type` is now compared on every route (see below). `Date`, `Content-Length`, `Server` and the connection headers are not — they are volatile or the web framework's business. |
 | **`TopologyStore`'s binary snapshot** | The persisted format is not read by the Rust server. |
 | **Corpus breadth** | Everything runs against one graph built from the `graphite-explore` shadow jar. A second corpus could surface encoding paths this one never exercises. |
 | **Concurrency** | Every request is issued serially. Behaviour under concurrent load, and the request guard's queuing and timeout behaviour, are not compared. |

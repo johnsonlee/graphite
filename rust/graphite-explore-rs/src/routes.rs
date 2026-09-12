@@ -251,7 +251,13 @@ async fn load_graph(
 
 async fn unload_graph(State(s): St, AxPath(id): AxPath<String>) -> Response {
     match s.registry.unload(&id) {
-        Ok(true) => StatusCode::NO_CONTENT.into_response(),
+        // A 204 has no body, but the baseline still emits Javalin's default
+        // `Content-Type: text/plain` on it, and a client that inspects headers sees it.
+        Ok(true) => (
+            StatusCode::NO_CONTENT,
+            [(header::CONTENT_TYPE, "text/plain")],
+        )
+            .into_response(),
         Ok(false) => error_json(StatusCode::NOT_FOUND, &format!("Graph not loaded: {id}")),
         Err(e) => error_json(StatusCode::BAD_REQUEST, &e),
     }
@@ -274,7 +280,14 @@ async fn topology(State(s): St) -> Response {
             })
         })
         .collect();
-    ok_json(json!({
+    // `application/json; charset=utf-8`, not `ok_json`'s bare `application/json`. The
+    // baseline serves this route from its persisted `TopologyStore` snapshot when one
+    // exists, and that branch writes the stream with `ctx.result()`, so the charset it
+    // sets survives; the fallback branch uses `ctx.json()` and does not. This server
+    // computes the same document rather than reading a snapshot -- the snapshot format
+    // is still unported -- but what a client sees on this route should match, down to
+    // the missing space after the semicolon, which is how Javalin re-emits it.
+    let body = json!({
         "nodes": nodes,
         "edges": [],
         "graphCount": leases.len(),
@@ -283,7 +296,13 @@ async fn topology(State(s): St) -> Response {
         "builtAt": now_iso8601(),
         "rules": [],
         "stale": false,
-    }))
+    });
+    (
+        StatusCode::OK,
+        [(header::CONTENT_TYPE, "application/json;charset=utf-8")],
+        pretty(&body),
+    )
+        .into_response()
 }
 
 // ---------------------------------------------------------------------------
@@ -750,7 +769,12 @@ fn c4_content_type(format: &str) -> &'static str {
         "mermaid" => "text/vnd.mermaid; charset=utf-8",
         "plantuml" => "text/vnd.plantuml; charset=utf-8",
         "dsl" => "text/vnd.structurizr.dsl; charset=utf-8",
-        _ => "application/vnd.structurizr+json; charset=utf-8",
+        // Plain `application/json`, not `application/vnd.structurizr+json`, even though
+        // the baseline's source names the latter. It sets that type and then serialises
+        // through Javalin's `ctx.json()`, which replaces it -- so the structurizr type
+        // the code declares never reaches the wire. The other three formats are written
+        // with `ctx.result()`, which leaves the type alone, and so do ship as declared.
+        _ => "application/json",
     }
 }
 
@@ -804,7 +828,8 @@ async fn all_c4(State(s): St, Query(q): Query<Params>, headers: HeaderMap) -> Re
             .collect();
         return (
             StatusCode::OK,
-            [(header::CONTENT_TYPE, "application/json; charset=utf-8")],
+            // Same as above: the baseline sets a charset here and `ctx.json()` drops it.
+            [(header::CONTENT_TYPE, "application/json")],
             pretty(&grouped_envelope(leases.len(), results)),
         )
             .into_response();
