@@ -779,7 +779,10 @@ mod tests {
                 assert_eq!(via_range, direct, "property {property} string {sid}");
             }
         }
-        assert_eq!(idx.posting_ranges(PROPERTY_COUNT, &[0, 1]), vec![(0, 0), (0, 0)]);
+        assert_eq!(
+            idx.posting_ranges(PROPERTY_COUNT, &[0, 1]),
+            vec![(0, 0), (0, 0)]
+        );
     }
 
     #[test]
@@ -840,5 +843,4 @@ mod tests {
         assert!(idx.trigram_string_ids(i32::MAX).is_empty());
         assert!(!idx.may_contain_all(&[i32::MAX]));
     }
-
 }

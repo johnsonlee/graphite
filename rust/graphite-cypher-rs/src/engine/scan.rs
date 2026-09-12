@@ -775,9 +775,12 @@ fn build_source_plan(
     // whether the whole tag can be skipped, instead of decoding every annotation record
     // to find out that none of them match.
     let skip_annotations = call_site_only
-        && !preds
-            .iter()
-            .any(|p| graph.strings.index_of(p.property).is_some());
+        && !preds.iter().any(|p| {
+            CALL_SITE_PROPS
+                .iter()
+                .position(|c| *c == p.property)
+                .is_some_and(|i| graph.property_name_in_dictionary(i))
+        });
     let pruned = |candidates: Candidates, exact: bool| SourcePlan {
         source,
         call_site: Vec::new(),
@@ -845,6 +848,10 @@ fn build_source_plan(
                 if cost > MERGE_FLOOR {
                     return pruned(Candidates::Union(sets.pairs()), true);
                 }
+                // Small enough to materialise, and the ranges are already in hand: the
+                // generic evaluation below would look every string's postings up a
+                // second time to arrive at the same union.
+                return pruned(Candidates::Nodes(sets.nodes(idx)), true);
             }
         }
         if let Some((candidates, exact)) = indexed_candidates(graph, idx, tree, &mut memo) {

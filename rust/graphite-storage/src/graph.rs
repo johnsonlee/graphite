@@ -220,6 +220,10 @@ pub struct Graph {
     pub resources: Option<Resources>,
     /// Persisted CallSite string accelerator, absent when the graph was built without it.
     call_site_index: Option<crate::callsite_index::CallSiteStringIndex>,
+    /// Whether each CallSite property name is itself a dictionary string, decided once:
+    /// the planner asks it for every graph on every query, and the answer is a fact
+    /// about the graph, not the query.
+    property_names_in_dictionary: std::sync::OnceLock<[bool; 4]>,
 }
 
 impl Graph {
@@ -300,6 +304,7 @@ impl Graph {
             class_overview,
             resources,
             call_site_index,
+            property_names_in_dictionary: std::sync::OnceLock::new(),
         })
     }
 
@@ -371,6 +376,22 @@ impl Graph {
     #[inline]
     pub fn call_site_strings_at(&self, offset: usize) -> CallSiteStrings {
         read_call_site_strings(&self.nodedata, offset)
+    }
+
+    /// Whether the name of CallSite property `property` (in
+    /// [`crate::node::CALL_SITE_PROPERTY_NAMES`] order) occurs in this graph's dictionary.
+    ///
+    /// An Annotation node can carry any dictionary string as a value-pair key, so this is
+    /// what decides whether a CallSite property name could reach one. Four binary
+    /// searches over a front-coded dictionary, done once per graph rather than per plan.
+    pub fn property_name_in_dictionary(&self, property: usize) -> bool {
+        self.property_names_in_dictionary.get_or_init(|| {
+            std::array::from_fn(|i| {
+                self.strings
+                    .index_of(crate::node::CALL_SITE_PROPERTY_NAMES[i])
+                    .is_some()
+            })
+        })[property]
     }
 
     pub fn call_site_strings(&self, id: NodeId) -> Option<CallSiteStrings> {

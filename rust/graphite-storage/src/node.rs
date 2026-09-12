@@ -388,6 +388,10 @@ pub fn tag_type_name(tag: u8) -> &'static str {
     }
 }
 
+/// The CallSite properties the string accelerator indexes, in property order.
+pub const CALL_SITE_PROPERTY_NAMES: [&str; 4] =
+    ["caller_class", "caller_name", "callee_class", "callee_name"];
+
 /// Raw CallSite string ids read straight from a record without decoding the rest.
 /// Layout after the 5-byte header: caller{class,name,paramCount,params..,ret}, callee{...}.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
