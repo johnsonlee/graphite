@@ -157,10 +157,14 @@ queries and sits at the median):
 | First-touch cost of an unseen term | ≈0.2 ms | the same query run again is 0.78 → 0.85 ms faster at P50 |
 
 Running every query three times in a row gives P50 1.0 / 0.85 / 0.78 ms: even a fully
-hot median is above the 0.66 ms that 10x would require. The remaining ways down are a
-cross-request cache of dictionary resolutions, which the Kotlin server does not have and
-this benchmark's different-seed warmup was written to keep from counting, or a smaller
-response body. Neither is taken here.
+hot median is above the 0.66 ms that 10x would require. That third run is also the
+ceiling for any cache of dictionary resolutions or plans — it has every one of them
+warm, and the rows, the body and the round trip still cost 0.78 ms. The only cache that
+reaches 0.66 ms is one that returns the previous response's bytes, which is not a
+faster query engine, and which this benchmark's different-seed warmup was written to
+keep from counting. Transparent huge pages for the mappings were tried and made no
+measurable difference, so the first-touch cost is not TLB misses. Neither a cache nor
+a smaller response body is taken here.
 
 ## What changed
 
