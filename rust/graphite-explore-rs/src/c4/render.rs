@@ -261,13 +261,11 @@ fn level_of(workspace: &J) -> String {
 fn container_elements(workspace: &J) -> Option<(Vec<Element>, Vec<Element>)> {
     let model = workspace.get("model")?;
     let systems = model.get("softwareSystems")?.as_array()?;
-    let primary = systems
-        .iter()
-        .find(|s| {
-            s.get("id")
-                .and_then(|v| v.as_str())
-                .is_some_and(|i| i.starts_with("system:"))
-        })?;
+    let primary = systems.iter().find(|s| {
+        s.get("id")
+            .and_then(|v| v.as_str())
+            .is_some_and(|i| i.starts_with("system:"))
+    })?;
     let primary_id = primary.get("id")?.as_str()?.to_string();
     let mut inner = J::Object(serde_json::Map::new());
     if let Some(o) = inner.as_object_mut() {
@@ -286,7 +284,8 @@ fn container_elements(workspace: &J) -> Option<(Vec<Element>, Vec<Element>)> {
         .filter(|s| s.get("id").and_then(|v| v.as_str()) != Some(primary_id.as_str()))
         .cloned()
         .collect();
-    let externals = collect(&json!({ "model": { "people": [], "softwareSystems": externals_json } }));
+    let externals =
+        collect(&json!({ "model": { "people": [], "softwareSystems": externals_json } }));
     Some((containers, externals))
 }
 
@@ -468,7 +467,9 @@ fn container_plan(workspace: &J) -> Option<(Vec<Element>, Vec<Edge>)> {
         // edge is true of everything and says nothing about this system.
         if let Some(e) = outgoing.iter().find(|e| {
             e.to.starts_with("dependency:")
-                && by_id.get(e.to.as_str()).is_some_and(|d| d.kind != "runtime")
+                && by_id
+                    .get(e.to.as_str())
+                    .is_some_and(|d| d.kind != "runtime")
         }) {
             selected.push(e.clone());
         }
@@ -698,7 +699,6 @@ fn plan_for(workspace: &J, level: &str) -> Plan {
     }
 }
 
-
 /// Walk a layer tree into lines, the way the baseline's document builder does: a group
 /// opens, its own elements are emitted one level in, its children recurse, it closes.
 ///
@@ -743,7 +743,11 @@ fn walk_layers(
 
 /// `level=all` renders all three diagrams in one document, each behind a comment
 /// heading, in the language's own comment syntax.
-fn render_all_sections(workspace: &J, heading: &dyn Fn(&str) -> String, one: &dyn Fn(&J, &str) -> String) -> String {
+fn render_all_sections(
+    workspace: &J,
+    heading: &dyn Fn(&str) -> String,
+    one: &dyn Fn(&J, &str) -> String,
+) -> String {
     [
         heading("Context"),
         one(workspace, "context"),
@@ -777,7 +781,14 @@ fn mermaid_at(workspace: &J, level: &str) -> String {
             )
         },
         &|depth| format!("{}end", "    ".repeat(depth + 1)),
-        &|e, depth| format!("{}{}{}", "    ".repeat(depth + 1), diagram_id(&e.id), node_shape(e)),
+        &|e, depth| {
+            format!(
+                "{}{}{}",
+                "    ".repeat(depth + 1),
+                diagram_id(&e.id),
+                node_shape(e)
+            )
+        },
     );
     for e in &p.edges {
         lines.push(format!(

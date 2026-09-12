@@ -1,8 +1,8 @@
 //! Assemble the inferred architecture into a Structurizr workspace.
 
 use super::boundary;
-use super::constants::*;
 use super::components;
+use super::constants::*;
 use super::containers;
 use super::external::DependencyKind;
 use super::subject;
@@ -108,7 +108,10 @@ fn build_container_model(g: &Graph) -> J {
                 tags("Software System", "External Dependency"),
                 props(vec![
                     ("graphite.kind", json!(d.kind.wire())),
-                    ("graphite.architectureType", json!(d.kind.architecture_type())),
+                    (
+                        "graphite.architectureType",
+                        json!(d.kind.architecture_type()),
+                    ),
                     ("graphite.source", json!(d.source)),
                     ("graphite.confidence", json!(d.confidence)),
                     ("graphite.responsibility", json!(d.responsibility)),
@@ -216,7 +219,9 @@ fn build_container_model(g: &Graph) -> J {
     let mut all_systems = vec![subject_element];
     all_systems.extend(systems);
 
-    let relationship_refs: Vec<J> = (1..=rel_id).map(|i| json!({"id": format!("rel-{i}")})).collect();
+    let relationship_refs: Vec<J> = (1..=rel_id)
+        .map(|i| json!({"id": format!("rel-{i}")}))
+        .collect();
     let level_prop = json!("container");
     let available = json!(super::LEVELS);
     let mut views = Map::new();
@@ -323,8 +328,7 @@ impl Inputs {
                     .map(|s| s.to_string())
             })
             .collect();
-        let mut endpoint_paths: indexmap::IndexMap<String, Vec<String>> =
-            indexmap::IndexMap::new();
+        let mut endpoint_paths: indexmap::IndexMap<String, Vec<String>> = indexmap::IndexMap::new();
         for e in &endpoints {
             if let (Some(c), Some(p)) = (
                 e.get("class").and_then(|v| v.as_str()),
@@ -581,7 +585,11 @@ fn build_context_model(g: &Graph, level: &str) -> J {
                 // elements, and they carry the evidence the context view leaves out.
                 (
                     "graphite.source",
-                    if want_container { json!(d.source) } else { J::Null },
+                    if want_container {
+                        json!(d.source)
+                    } else {
+                        J::Null
+                    },
                 ),
                 (
                     "graphite.confidence",
@@ -695,10 +703,7 @@ fn build_context_model(g: &Graph, level: &str) -> J {
                                 let mut entries = vec![
                                     ("graphite.type", json!("component")),
                                     ("graphite.kind", json!(comp.kind)),
-                                    (
-                                        "graphite.architectureType",
-                                        json!(comp.architecture_type),
-                                    ),
+                                    ("graphite.architectureType", json!(comp.architecture_type)),
                                     ("graphite.responsibility", json!(comp.responsibility)),
                                     ("graphite.whySelected", json!(comp.why_selected)),
                                     ("graphite.container", json!(comp.container)),

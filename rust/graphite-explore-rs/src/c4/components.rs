@@ -149,7 +149,9 @@ fn is_utility_like(
         Some(i) => &relative[..i],
         None => "",
     };
-    let package_signal = package.split('.').any(|s| UTILITY_PACKAGE_SIGNALS.contains(&s));
+    let package_signal = package
+        .split('.')
+        .any(|s| UTILITY_PACKAGE_SIGNALS.contains(&s));
     let simple = class_name.rsplit('.').next().unwrap_or(class_name);
     let helper_signal = HELPER_CLASS_SIGNALS.iter().any(|s| simple.ends_with(s));
     let naming = package_signal || helper_signal;
@@ -328,8 +330,12 @@ pub fn build_view(
     // name-ordered list, which is how the baseline's comparator reads.
     ranked.sort_by(|a, b| a.name.cmp(&b.name));
     ranked.sort_by(|a, b| {
-        capability_score(b, endpoints_of(b), calls_of(b), external_of(b))
-            .cmp(&capability_score(a, endpoints_of(a), calls_of(a), external_of(a)))
+        capability_score(b, endpoints_of(b), calls_of(b), external_of(b)).cmp(&capability_score(
+            a,
+            endpoints_of(a),
+            calls_of(a),
+            external_of(a),
+        ))
     });
     ranked.truncate(limit);
 
@@ -339,7 +345,10 @@ pub fn build_view(
             let endpoints = endpoints_of(c);
             let external = external_of(c);
             let kind = infer_kind(endpoints, c.inbound, c.outbound, external);
-            let mut classes = classes_by_capability.get(&c.id).cloned().unwrap_or_default();
+            let mut classes = classes_by_capability
+                .get(&c.id)
+                .cloned()
+                .unwrap_or_default();
             let class_count = classes.len();
             classes.sort_by(|a, b| {
                 class_score(

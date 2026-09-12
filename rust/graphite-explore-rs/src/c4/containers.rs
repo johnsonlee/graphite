@@ -64,7 +64,10 @@ pub fn architecture_type(kind: &str) -> &'static str {
         // the baseline folds the runtime kind in with the service kinds here, and the
         // distinction only surfaces at `level=container`, where the container element is
         // emitted at all.
-        "application-runtime" | "application-service" | "interface" | "orchestrator"
+        "application-runtime"
+        | "application-service"
+        | "interface"
+        | "orchestrator"
         | "integration" => "application-service",
         _ => "application-component",
     }
