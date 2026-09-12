@@ -406,6 +406,8 @@ fn binary_search_i32(data: &[u8], array: &I32Array, needle: i32) -> Option<usize
 }
 
 #[inline]
+/// Only the tests build keys now: the reader looks runs up in the trigram table.
+#[cfg(test)]
 fn key(trigram: i32, string_id: i32) -> i64 {
     ((trigram as i64) << 32) | (string_id as i64 & 0xFFFF_FFFF)
 }

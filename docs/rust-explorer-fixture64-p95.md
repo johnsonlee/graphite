@@ -105,9 +105,13 @@ term before producing one row.
 
 So the target is not reachable by making the engine faster. It would need one of:
 
-* **A smaller response.** Dropping pretty-printing would cut the body roughly threefold,
-  but the baseline pretty-prints (Gson `setPrettyPrinting`), so this breaks byte parity
-  on every Cypher route. Returning fewer rows breaks the query's semantics.
+* **A smaller response.** Dropping pretty-printing cuts the body roughly threefold.
+  The baseline pretty-prints (Gson `setPrettyPrinting`); this server now sends compact
+  JSON on the Cypher routes, a deliberate departure — nothing consumes the whitespace,
+  every client parses the body, and the differential suite compares JSON structurally.
+  The CLI's `json` output keeps the Gson-compatible pretty form, since that one is
+  compared byte for byte. Returning fewer rows would break the query's semantics and is
+  not done.
 * **A cross-request cache** of resolved dictionary entries or whole results. The baseline
   has one, which is why repeating an identical query set makes it look much faster than
   it is — an earlier round of this work was misled by exactly that and the benchmark now

@@ -1008,10 +1008,17 @@ impl serde::Serialize for ResultBody<'_> {
     }
 }
 
-/// Pretty-print a result body the way `pretty` prints a `Value`: same formatter, so the
-/// bytes match what building the tree first would have produced.
+/// Serialize a result body compactly.
+///
+/// The baseline pretty-prints every Cypher response (Gson `setPrettyPrinting`), and so
+/// did this server until the cost was measured: two hundred rows of five short strings
+/// came to 68KB, most of it indentation, and serializing and shipping it was a third
+/// of the request. Nothing consumes the whitespace -- the web UI and every client parse
+/// the body -- so the wire format is now compact. The differential suite compares JSON
+/// responses structurally and is unaffected; the CLI's `json` output keeps its
+/// Gson-compatible pretty form, since that is compared byte for byte.
 fn result_body(r: &QueryResult, ex: &Executor, extra: &[(&str, J)]) -> String {
-    serde_json::to_string_pretty(&ResultBody {
+    serde_json::to_string(&ResultBody {
         result: r,
         ex,
         extra,
