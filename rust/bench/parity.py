@@ -3,10 +3,11 @@
 
 Volatile fields (timestamps, absolute paths) are normalised before comparison.
 """
-import json, sys, urllib.request, urllib.error
+import json, os, sys, urllib.request, urllib.error
 
 KOTLIN = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:18081"
 RUST = sys.argv[2] if len(sys.argv) > 2 else "http://localhost:18080"
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 VOLATILE = {"loadedAt", "builtAt", "version"}  # build identity, not behaviour
 
@@ -131,6 +132,28 @@ for q in QUERIES:
     CASES.append(("POST", "/api/graphs/app/cypher", json.dumps({"query": q})))
     CASES.append(("POST", "/api/cypher", json.dumps({"query": q})))
 
+# The cross-graph forms of the grouped routes, and the GET spellings of the Cypher
+# routes. These are declared in the OpenAPI document and were previously untested; the
+# spec is checked against this list below so the gap cannot silently return.
+CASES += [
+    ("GET", "/api/annotations?class=java.lang.Object&member=toString", None),
+    ("GET", "/api/annotations?class=java.lang.Object", None),
+    ("GET", "/api/architecture/c4?level=context&format=json", None),
+    ("GET", "/api/architecture/c4?level=context&format=mermaid", None),
+    ("GET", "/api/architecture/c4?level=nosuch", None),
+    ("GET", "/api/endpoints?limit=5", None),
+    ("GET", "/api/resources?limit=5", None),
+    ("GET", "/api/resources/nosuch/resource.txt", None),
+    ("GET", "/api/graphs/app/resources/nosuch/resource.txt", None),
+    ("GET", "/api/cypher/graphs", None),
+    ("POST", "/api/cypher/graphs", json.dumps({"query": "MATCH (n) RETURN count(*)"})),
+    # `?query=` is the GET spelling of the same endpoints.
+    ("GET", "/api/cypher?query=MATCH+(n)+RETURN+count(*)", None),
+    ("GET", "/api/graphs/app/cypher?query=MATCH+(n)+RETURN+count(*)", None),
+    ("GET", "/api/cypher?query=MATCH+(n+RETURN+n", None),
+    ("GET", "/api/cypher", None),
+]
+
 passed = failed = 0
 failures = []
 for method, path, body in CASES:
@@ -154,6 +177,40 @@ for method, path, body in CASES:
     else:
         failed += 1
         failures.append((label, "body differs", kd, rd))
+
+# Registry mutation, last: these change server state. A graph is loaded under a fresh
+# id, described, replaced, then unloaded, and both servers must agree at every step --
+# including on the errors for a bad path and for unloading something already gone.
+GRAPH_PATH = "/home/user/fixtures/explore-graph"
+CASES_MUTATING = []
+for method in ("PUT", "POST"):
+    # Both spellings load a graph, so both are walked through the same lifecycle.
+    round_trip = [
+        (method, "/api/graphs/tmpcopy", json.dumps({"path": GRAPH_PATH})),
+        ("GET", "/api/graphs/tmpcopy", None),
+        ("GET", "/api/graphs", None),
+        (method, "/api/graphs/tmpcopy", json.dumps({"path": "/nonexistent"})),
+        (method, "/api/graphs/tmpcopy", json.dumps({})),
+        (method, "/api/graphs/bad id", json.dumps({"path": GRAPH_PATH})),
+        ("DELETE", "/api/graphs/tmpcopy", None),
+        ("DELETE", "/api/graphs/tmpcopy", None),
+        ("GET", "/api/graphs/tmpcopy", None),
+    ]
+    CASES_MUTATING += round_trip
+    for m, path, body in round_trip:
+        ks, kb = fetch(KOTLIN, m, path, body)
+        rs, rb = fetch(RUST, m, path, body)
+        label = f"{m} {path}" + (f" {body}" if body else "")
+        try:
+            same = ks == rs and strip_placeholder(norm(json.loads(kb))) == strip_placeholder(norm(json.loads(rb)))
+        except Exception:
+            same = ks == rs and kb.strip() == rb.strip()
+        if same:
+            passed += 1
+        else:
+            failed += 1
+            failures.append((label, f"status {ks} != {rs}" if ks != rs else "body differs",
+                             kb[:300], rb[:300]))
 
 # The web UI. These are served straight from the binary on one side and out of the jar
 # on the other, so both the bytes and the caching contract are worth checking: without
@@ -196,6 +253,40 @@ for path in UI_ASSETS:
         failed += 1
         failures.append((f"GET {path} If-None-Match", "revalidation differs",
                          f"kotlin {codes[0]}", f"rust {codes[1]}"))
+
+# Every method and path the OpenAPI document advertises must be exercised above. The
+# document is the server's public contract, so an endpoint it declares and this suite
+# never calls is an untested promise -- and that is how the cross-graph routes and the
+# whole of registry mutation went unchecked until someone thought to compare the two.
+def spec_coverage():
+    import re
+    spec_path = os.path.join(ROOT, "rust/graphite-explore-rs/src/openapi.json")
+    spec = json.load(open(spec_path))
+    declared = {
+        (m.upper(), path)
+        for path, ops in spec["paths"].items()
+        for m in ops
+        if m.lower() in ("get", "post", "put", "delete", "patch", "head")
+    }
+    exercised = set()
+    for m, path, _ in CASES + [(m, p, b) for m, p, b in CASES_MUTATING]:
+        p = path.split("?")[0]
+        p = re.sub(r"/node/[^/]+", "/node/{id}", p)
+        p = re.sub(r"/api/graphs/[^/]+/resources/.+", "/api/graphs/{graphId}/resources/{path}", p)
+        p = re.sub(r"/api/resources/.+", "/api/resources/{path}", p)
+        p = re.sub(r"/api/graphs/(?!\{)[^/]+", "/api/graphs/{graphId}", p)
+        exercised.add((m, p))
+    return sorted(declared - exercised)
+
+uncovered = spec_coverage()
+if uncovered:
+    failed += 1
+    failures.append((
+        "openapi.json declares endpoints this suite never calls",
+        "; ".join(f"{m} {p}" for m, p in uncovered), "", "",
+    ))
+else:
+    passed += 1
 
 print(f"parity: {passed} passed, {failed} failed of {passed+failed}")
 if placeholder_hits:

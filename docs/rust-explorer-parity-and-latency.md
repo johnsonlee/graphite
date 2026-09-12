@@ -34,6 +34,14 @@ so the count is never load-bearing for something it never touched.
 response body**. JSON bodies are parsed and compared structurally after normalising
 `loadedAt`, `builtAt` and `version`; everything else is compared as text.
 
+**The OpenAPI document is the checklist, and the suite enforces it.** Every method and
+path `/openapi.json` advertises must be exercised; a declared endpoint the suite never
+calls fails the run. That check was added after comparing the two by hand revealed that
+13 of the 30 declared method/path pairs had never been requested — the entire
+cross-graph family, both `GET` spellings of the Cypher routes, resource body serving,
+and all of registry mutation. A byte-identical OpenAPI document had made the surface
+look covered; it only ever proved the document itself matched.
+
 | | |
 |---|---|
 | Graph metadata | `/api/graphs`, `/api/graphs/{id}` — including a missing id and a malformed one |
@@ -44,7 +52,10 @@ response body**. JSON bodies are parsed and compared structurally after normalis
 | Endpoints, resources, annotations | the `/api/graphs/{id}/…` forms, annotations both with and without `member` |
 | C4 | `/api/graphs/{id}/architecture/c4` at **`level=context` only**, in all four formats, plus an invalid level and an invalid format |
 | OpenAPI | `/openapi.json`, `/swagger.json` |
-| Cypher | 37 queries, each sent to both `/api/graphs/{id}/cypher` and `/api/cypher` — 74 cases |
+| Cypher | 37 queries, each sent to both `/api/graphs/{id}/cypher` and `/api/cypher` — 74 cases — plus the `GET ?query=` spelling of both, and `/api/cypher/graphs` in both methods |
+| Cross-graph routes | `/api/annotations`, `/api/endpoints`, `/api/resources`, `/api/architecture/c4` |
+| Resource bodies | `/api/resources/{path}` and `/api/graphs/{id}/resources/{path}` |
+| Registry mutation | `PUT` and `POST /api/graphs/{id}` each walked through a full lifecycle — load, describe, list, reload with a bad path, reload with no path, a malformed id, unload, unload again, describe the absent graph |
 | Web UI | `/`, `/index.html`, `/app.js`, `/ui-state.js`, `/style.css` — bytes, `Content-Type`, and `If-None-Match` → 304 |
 
 ### Not covered
@@ -56,10 +67,7 @@ ported but unverified — the table says which. Neither is evidence of equivalen
 |---|---|
 | **`graphite build`** | The `build` subcommand is **not ported at all** — it runs the SootUp bytecode analysis, which this port does not implement. `graphite serve` is not ported either; the Explorer ships as its own `graphite-explore` binary. |
 | **The Explorer's own CLI** | Flags are one-for-one with the Kotlin binary and were exercised by hand, but no automated check compares them. `--help`, `--version` and error text are known to differ: picocli and clap format differently. |
-| **Cross-graph variants of four routes** | `/api/endpoints`, `/api/resources`, `/api/annotations`, `/api/architecture/c4` — only their single-graph counterparts are checked. |
-| **`/api/resources/{*path}`** | Resource body serving is never requested. |
-| **`/api/cypher/graphs`** | Never requested. |
-| **`/metrics`** | Never requested; the Prometheus exposition format is not compared. |
+| **`/metrics`** | Never requested; the Prometheus exposition format is not compared. It is not in the OpenAPI document either, so the checklist above does not catch it. |
 | **C4 container and component levels** | Only `level=context` is compared. The other two levels produce diagram layout, which was never brought to parity. |
 | **API response headers** | For every route except the five UI assets, only status and body are compared. Content types, cache headers and error-response headers on the JSON API are unchecked. |
 | **`TopologyStore`'s binary snapshot** | The persisted format is not read by the Rust server. |
@@ -227,7 +235,7 @@ language-and-runtime difference on its own.
 
 ## Parity results
 
-All **116** checks pass. What they do and do not reach is set out under "What the parity
+All **150** checks pass. What they do and do not reach is set out under "What the parity
 suite covers, and what it does not" above; this section records only the findings.
 
 Two baseline behaviours are reproduced deliberately rather than "fixed". `ORDER BY
@@ -263,6 +271,6 @@ java -Xmx6g -jar ../graphite-explore/build/libs/graphite-explore.jar \
 ./target/release/graphite-explore --id app /path/to/graph --port 18080 --metrics
 
 cd bench
-python3 parity.py                       # 116 differential checks
+python3 parity.py                       # 150 differential checks
 python3 bench.py --warmup 5 --iters 25  # single-graph latency comparison
 ```

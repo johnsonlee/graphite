@@ -6,7 +6,7 @@ and serves the same HTTP API, so it is a drop-in replacement for the Kotlin serv
 `graphite` (the `query` subcommand) matches the Kotlin CLI on all 148 byte-level checks
 of stdout, stderr and exit code; `build` and `serve` are not ported.
 
-The server matches the Kotlin server on all 116 differential checks, and on the 64-graph gate
+The server matches the Kotlin server on all 150 differential checks — every method and path the OpenAPI document declares, which the suite enforces as a checklist, and on the 64-graph gate
 corpus all 34 query results are byte-identical. Both counts have a boundary — the
 `graphite` CLI is not ported, and several routes and levels are untested — set out in
 [What the parity suite covers, and what it does not](../docs/rust-explorer-parity-and-latency.md#what-the-parity-suite-covers-and-what-it-does-not).
@@ -47,7 +47,7 @@ The command-line interface mirrors `graphite serve`: `--data`, `--graph id:path`
 
 ```bash
 cargo test                              # unit tests
-cd bench && python3 parity.py           # 116 differential tests against the Kotlin server
+cd bench && python3 parity.py           # 150 differential tests against the Kotlin server
 cd bench && python3 parity-cli.py       # 148 byte-level tests of `graphite query`
 cd bench && python3 bench.py            # latency comparison
 ```
