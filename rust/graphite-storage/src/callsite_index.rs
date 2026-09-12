@@ -313,6 +313,66 @@ impl CallSiteStringIndex {
         })
     }
 
+    /// The posting range of each of several ascending string ids in one property.
+    ///
+    /// Found by walking the property's used-id list once, galloping from the previous
+    /// hit: both sides are ascending. A plan used to look each id up by binary search
+    /// twice -- once to size the postings and again to read them -- and for a dense
+    /// term that was several hundred searches into a mapped array per graph before
+    /// the first row. An id the property never uses gets the empty range.
+    pub fn posting_ranges(&self, property: usize, string_ids: &[u32]) -> Vec<(u32, u32)> {
+        let Some(csr) = self.properties.get(property) else {
+            return vec![(0, 0); string_ids.len()];
+        };
+        let n = csr.used_string_ids.len;
+        let used = |i: usize| csr.used_string_ids.get(&self.map, i);
+        let mut out = Vec::with_capacity(string_ids.len());
+        let mut pos = 0usize;
+        for &sid in string_ids {
+            let target = sid as i32;
+            let mut step = 1usize;
+            let mut lo = pos;
+            while lo < n && used(lo) < target {
+                pos = lo;
+                lo += step;
+                step *= 2;
+            }
+            let mut hi = lo.min(n);
+            lo = pos;
+            while lo < hi {
+                let mid = (lo + hi) / 2;
+                if used(mid) < target {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            pos = lo;
+            if lo < n && used(lo) == target {
+                let start = if lo == 0 {
+                    0
+                } else {
+                    csr.posting_ends.get(&self.map, lo - 1) as u32
+                };
+                out.push((start, csr.posting_ends.get(&self.map, lo) as u32));
+            } else {
+                out.push((0, 0));
+            }
+        }
+        out
+    }
+
+    /// The postings in one property between two offsets from `posting_ranges`.
+    pub fn postings_in(&self, property: usize, start: u32, end: u32) -> NodePostings<'_> {
+        let array = self.properties[property].posting_node_ids;
+        NodePostings {
+            index: self,
+            array,
+            pos: start as usize,
+            end: end as usize,
+        }
+    }
+
     /// How many CallSite nodes carry `string_id` in the given property.
     pub fn posting_len(&self, property: usize, string_id: usize) -> usize {
         match self.postings(property, string_id) {
@@ -700,6 +760,28 @@ mod tests {
         // A longer literal's signature covers its prefix's bits.
         assert_eq!(literal_signature("abcd") & one, one);
     }
+    #[test]
+    fn posting_ranges_agree_with_single_lookups() {
+        let dir = tempdir("ranges");
+        let b = fixture(&dir);
+        let idx = CallSiteStringIndex::load(&dir, 3, Some(&b.identity))
+            .unwrap()
+            .expect("index");
+        for property in 0..PROPERTY_COUNT {
+            let ids: Vec<u32> = vec![0, 1, 2, 7];
+            let ranges = idx.posting_ranges(property, &ids);
+            for (&sid, &(start, end)) in ids.iter().zip(&ranges) {
+                let via_range: Vec<u32> = idx.postings_in(property, start, end).collect();
+                let direct: Vec<u32> = idx
+                    .postings(property, sid as usize)
+                    .map(|p| p.collect())
+                    .unwrap_or_default();
+                assert_eq!(via_range, direct, "property {property} string {sid}");
+            }
+        }
+        assert_eq!(idx.posting_ranges(PROPERTY_COUNT, &[0, 1]), vec![(0, 0), (0, 0)]);
+    }
+
     #[test]
     fn galloping_intersection_agrees_with_membership() {
         let dir = tempdir("gallop");

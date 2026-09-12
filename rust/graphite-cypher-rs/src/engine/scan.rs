@@ -172,8 +172,8 @@ struct SourcePlan {
 enum Candidates {
     /// Ascending node ids, already materialised.
     Nodes(Vec<u32>),
-    /// `(property, string id)` pairs whose posting lists union to the candidates.
-    Union(Vec<(u8, u32)>),
+    /// `(property, start, end)` posting ranges whose lists union to the candidates.
+    Union(Vec<(u8, u32, u32)>),
     /// One pair list per conjunct; the candidates are the ids in every one's union.
     ///
     /// A conjunction used to be answered by materialising its cheapest side and then
@@ -182,7 +182,7 @@ enum Candidates {
     /// cache misses before the first row. When the sides are of comparable size it is
     /// cheaper to merge each into an ascending stream and walk them together: every
     /// read is sequential, no record is decoded, and a satisfied LIMIT stops the walk.
-    Intersect(Vec<Vec<(u8, u32)>>),
+    Intersect(Vec<Vec<(u8, u32, u32)>>),
 }
 
 /// Either lazy candidate producer, so the sweep loop pulls chunks from one type.
@@ -209,7 +209,7 @@ struct IntersectMerge<'a> {
 impl<'a> IntersectMerge<'a> {
     fn new(
         idx: &'a graphite_storage::callsite_index::CallSiteStringIndex,
-        sides: &[Vec<(u8, u32)>],
+        sides: &[Vec<(u8, u32, u32)>],
     ) -> IntersectMerge<'a> {
         let mut streams: Vec<PostingsMerge<'a>> =
             sides.iter().map(|pairs| PostingsMerge::new(idx, pairs)).collect();
@@ -265,14 +265,12 @@ struct PostingsMerge<'a> {
 impl<'a> PostingsMerge<'a> {
     fn new(
         idx: &'a graphite_storage::callsite_index::CallSiteStringIndex,
-        pairs: &[(u8, u32)],
+        pairs: &[(u8, u32, u32)],
     ) -> PostingsMerge<'a> {
         let mut lists = Vec::with_capacity(pairs.len());
         let mut heap = std::collections::BinaryHeap::with_capacity(pairs.len());
-        for &(property, string_id) in pairs {
-            let Some(mut postings) = idx.postings(property as usize, string_id as usize) else {
-                continue;
-            };
+        for &(property, start, end) in pairs {
+            let mut postings = idx.postings_in(property as usize, start, end);
             if let Some(first) = postings.next() {
                 heap.push(std::cmp::Reverse((first, lists.len() as u32)));
                 lists.push(postings);
@@ -1071,7 +1069,7 @@ enum Conjunction {
     /// A side has no postings at all, so nothing satisfies the conjunction.
     Empty,
     /// Walk every side's posting stream together.
-    Intersect(Vec<Vec<(u8, u32)>>),
+    Intersect(Vec<Vec<(u8, u32, u32)>>),
     /// Every side is too dense for postings: sweep the records against each side's
     /// bitsets. Exact, and where this used to hand every record to the generic WHERE
     /// evaluator -- half a second on `Stub AND (... OR Stub ...)` over the Android
@@ -1601,6 +1599,9 @@ fn _strid_marker(_: StrId) {}
 /// the corresponding set — the same "any property hits" test the sweep applies.
 struct PropertySets {
     ids: [Vec<u32>; 4],
+    /// Each id's posting range in its property, resolved once: sizing, materialising and
+    /// merging all read from here instead of searching the CSR again.
+    ranges: [Vec<(u32, u32)>; 4],
 }
 
 impl PropertySets {
@@ -1617,10 +1618,11 @@ impl PropertySets {
         idx: &graphite_storage::callsite_index::CallSiteStringIndex,
         ceiling: usize,
     ) -> usize {
+        let _ = idx;
         let mut total = 0usize;
-        for (property, ids) in self.ids.iter().enumerate() {
-            for &s in ids {
-                total += idx.posting_len(property, s as usize);
+        for ranges in &self.ranges {
+            for &(start, end) in ranges {
+                total += (end - start) as usize;
                 if total > ceiling {
                     return total;
                 }
@@ -1644,10 +1646,15 @@ impl PropertySets {
     }
 
     /// The `(property, string id)` pairs behind these sets, for the lazy merge.
-    fn pairs(&self) -> Vec<(u8, u32)> {
+    fn pairs(&self) -> Vec<(u8, u32, u32)> {
         let mut out = Vec::new();
-        for (property, ids) in self.ids.iter().enumerate() {
-            out.extend(ids.iter().map(|&s| (property as u8, s)));
+        for (property, ranges) in self.ranges.iter().enumerate() {
+            out.extend(
+                ranges
+                    .iter()
+                    .filter(|(s, e)| e > s)
+                    .map(|&(s, e)| (property as u8, s, e)),
+            );
         }
         out
     }
@@ -1655,11 +1662,9 @@ impl PropertySets {
     /// Ascending node ids carrying any of these strings in its own property.
     fn nodes(&self, idx: &graphite_storage::callsite_index::CallSiteStringIndex) -> Vec<u32> {
         let mut nodes = Vec::with_capacity(self.posting_cost(idx));
-        for (property, ids) in self.ids.iter().enumerate() {
-            for &s in ids {
-                if let Some(postings) = idx.postings(property, s as usize) {
-                    nodes.extend(postings);
-                }
+        for (property, ranges) in self.ranges.iter().enumerate() {
+            for &(start, end) in ranges {
+                nodes.extend(idx.postings_in(property, start, end));
             }
         }
         nodes.sort_unstable();
@@ -1702,7 +1707,8 @@ fn property_sets(
         v.sort_unstable();
         v.dedup();
     }
-    Some(PropertySets { ids })
+    let ranges = std::array::from_fn(|p| idx.posting_ranges(p, &ids[p]));
+    Some(PropertySets { ids, ranges })
 }
 
 fn collect_property_sets(
