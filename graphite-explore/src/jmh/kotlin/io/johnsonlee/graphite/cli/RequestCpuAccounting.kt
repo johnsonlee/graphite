@@ -34,9 +34,14 @@ internal data class RequestCpuSample(
  * sampler thread excludes itself from the sum. A thread present at both ends contributes its
  * after-minus-before delta; one born inside the window contributes its whole in-window CPU.
  *
- * `processCpuNanos` is kept as an advisory figure (the whole process, read innermost so its
- * interval is contained in the thread snapshots); `jvmInternalCpuNanos` is the residual
- * `process - java`, the share spent on the JVM's native threads (and on the sampler itself).
+ * `processCpuNanos` is the whole process (read innermost so its interval is contained in the thread
+ * snapshots). It is the blocking backstop for the Java-thread sum, not merely advisory: a worker
+ * that both starts and ends between two sampler ticks is never observed, so its CPU is absent from
+ * `javaThreadCpuNanos` and cannot be read back from a dead thread -- but it still lands in the
+ * process figure. Gating keeps `processCpuNanos` blocking (with a wider allowance that absorbs the
+ * collector/JIT swing) so request work cannot be hidden by splitting it across many sub-interval
+ * workers. `jvmInternalCpuNanos` is the residual `process - java`, the share spent on the JVM's
+ * native threads (and on the sampler itself).
  */
 internal object RequestCpuAccounting {
     /** Fails closed, without allocating or starting threads, when the accounting is unavailable. */
@@ -143,6 +148,7 @@ object MethodCompatibilityCpuAccountingContract {
             checkCollidingNameWorkerIsCharged(failures)
             checkTransientWorkerIsAccounted(failures)
             checkPresentThenGoneIsAccounted(failures)
+            checkManyShortLivedWorkersAccountedByProcessBackstop(failures)
             checkProcessBound("idle action", failures) { 0L }
             checkProcessBound("collector-loaded action", failures) { collectorLoad() }
         } catch (@Suppress("TooGenericExceptionCaught") failure: RuntimeException) {
@@ -228,6 +234,42 @@ object MethodCompatibilityCpuAccountingContract {
         assertAccounted("worker present at the start that exited mid-window", workerCpu.get(), sample, failures)
     }
 
+    /**
+     * Many short-lived workers run one after another, each living entirely within a single sampler
+     * interval. The per-thread sampler never observes a worker the interval skips over, and a dead
+     * thread's CPU cannot be read back, so `javaThreadCpuNanos` undercounts this by design -- a
+     * candidate that split request work across such sub-interval workers would hide it from the
+     * Java-thread gate. The whole-process figure captures the work regardless, so this asserts the
+     * `processCpuNanos` backstop accounts it (to >=90%), which is what keeps the metric unevadable.
+     * It intentionally does not require `javaThreadCpuNanos` to account it; that is the hole the
+     * backstop closes.
+     */
+    private fun checkManyShortLivedWorkersAccountedByProcessBackstop(failures: MutableList<String>) {
+        val burned = AtomicLong()
+        val (_, sample) = RequestCpuAccounting.measure {
+            repeat(CPU_ACCOUNTING_SHORT_WORKER_COUNT) {
+                val worker = Thread {
+                    val start = ManagementFactory.getThreadMXBean().currentThreadCpuTime
+                    burnCpu(CPU_ACCOUNTING_SHORT_WORKER_NANOS)
+                    burned.addAndGet(ManagementFactory.getThreadMXBean().currentThreadCpuTime - start)
+                }
+                worker.start()
+                worker.join()
+            }
+        }
+        val expected = burned.get()
+        println("cpu-accounting-contract: $CPU_ACCOUNTING_SHORT_WORKER_COUNT short-lived workers burned " +
+            "$expected ns, process ${sample.processCpuNanos} ns, java ${sample.javaThreadCpuNanos} ns")
+        if (expected <= 0L) {
+            failures.add("the many-short-lived-workers probe recorded no CPU time")
+            return
+        }
+        if (sample.processCpuNanos < expected * CPU_ACCOUNTING_MIN_SHARE_PERCENT / PERCENT) {
+            failures.add("the process-CPU backstop did not account the many-short-lived-workers CPU: " +
+                "burned $expected ns, process ${sample.processCpuNanos} ns, java ${sample.javaThreadCpuNanos} ns")
+        }
+    }
+
     private fun assertAccounted(label: String, expected: Long, sample: RequestCpuSample, failures: MutableList<String>) {
         println("cpu-accounting-contract: $label $expected ns, accounted ${sample.javaThreadCpuNanos} ns, " +
             "process ${sample.processCpuNanos} ns")
@@ -279,10 +321,20 @@ object MethodCompatibilityCpuAccountingContract {
 
 private const val CPU_ACCOUNTING_WORKER_NANOS = 200_000_000L
 
-/** How often the background sampler refreshes per-thread CPU; the most any one vanishing thread's
- * CPU can go unattributed. Small enough that a 200 ms worker is captured to well over 90%. */
+/** How often the background sampler refreshes per-thread CPU. A thread that both starts and ends
+ * within one interval is never observed, so its whole lifetime is absent from the Java-thread sum
+ * and cannot be read back from the dead thread; the per-thread figure can therefore undercount work
+ * split across many sub-interval workers. The whole-process figure (processCpuNanos) captures that
+ * work and is the blocking backstop. Kept small so a thread that merely overlaps a sample is still
+ * captured to well over 90%. */
 private const val CPU_ACCOUNTING_SAMPLE_INTERVAL_MILLIS = 10L
 private const val CPU_ACCOUNTING_SAMPLER_THREAD_NAME = "graphite-cpu-accounting-sampler"
+
+/** The many-short-lived-workers probe: enough workers, each short enough to live inside one sample
+ * interval, that the Java-thread sampler must undercount them and only the process backstop can
+ * account the CPU. Mirrors the reviewer's 100-worker, 2 ms-each reproduction. */
+private const val CPU_ACCOUNTING_SHORT_WORKER_COUNT = 100
+private const val CPU_ACCOUNTING_SHORT_WORKER_NANOS = 2_000_000L
 
 private const val CPU_ACCOUNTING_GARBAGE_CHUNKS = 512
 private const val CPU_ACCOUNTING_GARBAGE_CHUNK_BYTES = 1 shl 20
