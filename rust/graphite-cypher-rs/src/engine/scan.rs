@@ -73,6 +73,10 @@ struct StringPredicate {
     /// The literal's trigram signature, for rejecting a candidate string without
     /// decoding it.
     signature: u64,
+    /// Index of the distinct dictionary test this predicate performs. Predicates that
+    /// differ only in which property they read share one, so a graph resolves each
+    /// literal once however many properties test it.
+    test: usize,
 }
 
 impl StringPredicate {
@@ -158,6 +162,8 @@ pub struct ScanPlan {
     tree: PredTree,
     /// Every leaf of `tree`, for the bitset fallback and for the CallSite-only test.
     predicates: Vec<StringPredicate>,
+    /// How many distinct dictionary tests the leaves perform.
+    tests: usize,
 }
 
 impl ScanPlan {
@@ -186,7 +192,8 @@ impl ScanPlan {
             return None;
         }
         let where_clause = where_clause?;
-        let tree = collect_tree(where_clause, &variable)?;
+        let mut tree = collect_tree(where_clause, &variable)?;
+        let tests = assign_test_ids(&mut tree);
         let mut preds = Vec::new();
         tree.leaves(&mut preds);
         if preds.is_empty() {
@@ -201,6 +208,7 @@ impl ScanPlan {
             tags,
             tree,
             predicates: preds,
+            tests,
         })
     }
 
@@ -225,36 +233,54 @@ impl ScanPlan {
         // produced in order, and a satisfied LIMIT must still stop the scan. Batching
         // gives both: order is preserved, and at most one batch of planning is wasted
         // when the limit lands early.
-        let sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx).collect();
+        // A cheap serial pass first: the trigram bitmap answers "can this graph hold the
+        // term at all" in a handful of bit tests, with no dictionary work and no thread
+        // hand-off. Only the survivors are planned, and only they pay for the fan-out —
+        // which for a term most graphs do not contain is nearly all of the saving, and
+        // for a term they all contain costs sixty-four bitmap probes.
+        let sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx)
+            .filter(|s| may_match(ex.graph(*s), &self.tree))
+            .collect();
         for batch in sources.chunks(PLAN_BATCH) {
             ex.cancel.check()?;
             let plans: Vec<SourcePlan> = if batch.len() > 1 {
                 batch
                     .par_iter()
-                    .map(|s| build_source_plan(*s, ex.graph(*s), &self.tree, &self.predicates))
+                    .map(|s| {
+                        build_source_plan(
+                            *s,
+                            ex.graph(*s),
+                            &self.tree,
+                            &self.predicates,
+                            self.tests,
+                        )
+                    })
                     .collect()
             } else {
                 batch
                     .iter()
-                    .map(|s| build_source_plan(*s, ex.graph(*s), &self.tree, &self.predicates))
+                    .map(|s| {
+                        build_source_plan(
+                            *s,
+                            ex.graph(*s),
+                            &self.tree,
+                            &self.predicates,
+                            self.tests,
+                        )
+                    })
                     .collect()
             };
             for sp in &plans {
                 let source = sp.source;
                 let graph = ex.graph(source);
-                let scan_tags: Vec<u8> = if sp.call_site_only {
-                    self.tags
-                        .iter()
-                        .copied()
-                        .filter(|t| {
-                            *t == TAG_CALL_SITE_NODE
-                                || (*t == TAG_ANNOTATION_NODE && !sp.skip_annotations)
-                        })
-                        .collect()
-                } else {
-                    self.tags.clone()
+                // Which tags this source contributes, decided inline: collecting them
+                // meant a vector per graph, and there are sixty-four of them per query.
+                let wanted = |t: u8| {
+                    !sp.call_site_only
+                        || t == TAG_CALL_SITE_NODE
+                        || (t == TAG_ANNOTATION_NODE && !sp.skip_annotations)
                 };
-                for tag in scan_tags {
+                for &tag in self.tags.iter().filter(|t| wanted(**t)) {
                     // When the accelerator resolved the CallSite candidates, those *are* the
                     // records to visit; nothing else needs looking at.
                     let indexed = match (tag, &sp.call_site_candidates) {
@@ -390,6 +416,7 @@ fn build_source_plan(
     graph: &Graph,
     tree: &PredTree,
     preds: &[StringPredicate],
+    tests: usize,
 ) -> SourcePlan {
     let call_site_only = preds.iter().all(|p| CALL_SITE_PROPS.contains(&p.property));
     // An Annotation node exposes `name`, `class`, `member` and `values`, and then any
@@ -411,7 +438,7 @@ fn build_source_plan(
         skip_annotations,
     };
     if let Some(idx) = usable_index(graph) {
-        let mut memo: Vec<(StringPredicate, Vec<u32>)> = Vec::new();
+        let mut memo = Memo::new(tests);
         // Pruning first, and separately from enumeration. Whether a graph can match at
         // all is a question about its dictionary; whether to reach the matches through
         // postings or by sweeping records is a question about cost. Answering the second
@@ -448,7 +475,7 @@ fn indexed_candidates(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     tree: &PredTree,
-    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+    memo: &mut Memo,
 ) -> Option<Vec<u32>> {
     eval_tree(graph, idx, tree, memo)
 }
@@ -472,7 +499,7 @@ fn tree_matches_nothing(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     tree: &PredTree,
-    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+    memo: &mut Memo,
 ) -> bool {
     match tree {
         PredTree::Leaf(p) => match resolve_strings(graph, idx, p, memo) {
@@ -495,18 +522,59 @@ fn tree_matches_nothing(
 /// The same literal is usually tested against all four properties, and the matching ids
 /// depend only on the literal, the operator and the transform — never on which property
 /// is being tested.
-fn resolve_strings(
+fn resolve_strings<'m>(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     p: &StringPredicate,
-    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
-) -> Option<Vec<u32>> {
-    if let Some((_, ids)) = memo.iter().find(|(q, _)| q.same_test(p)) {
-        return Some(ids.clone());
+    memo: &'m mut Memo,
+) -> Option<&'m [u32]> {
+    if memo.slots[p.test].is_none() {
+        // `Declined` and "resolved to nothing" are different answers and both are
+        // remembered, so a term the index cannot handle is not retried per property.
+        memo.slots[p.test] = Some(matching_string_ids(graph, idx, p));
     }
-    let ids = matching_string_ids(graph, idx, p)?;
-    memo.push((p.clone(), ids.clone()));
-    Some(ids)
+    memo.slots[p.test].as_ref()?.as_deref()
+}
+
+/// Per-graph cache of dictionary resolutions, one slot per distinct test.
+///
+/// Indexed rather than searched, and holding the ids rather than copies of them: a
+/// broad query resolves the same literal for four properties across sixty-four graphs,
+/// and the copies alone were hundreds of allocations.
+struct Memo {
+    slots: Vec<Option<Option<Vec<u32>>>>,
+}
+
+impl Memo {
+    fn new(tests: usize) -> Memo {
+        Memo {
+            slots: vec![None; tests],
+        }
+    }
+}
+
+/// Number the distinct dictionary tests in the tree, so each is resolved once per graph.
+fn assign_test_ids(tree: &mut PredTree) -> usize {
+    let mut seen: Vec<StringPredicate> = Vec::new();
+    number(tree, &mut seen);
+    seen.len()
+}
+
+fn number(tree: &mut PredTree, seen: &mut Vec<StringPredicate>) {
+    match tree {
+        PredTree::Leaf(p) => {
+            p.test = match seen.iter().position(|q| q.same_test(p)) {
+                Some(i) => i,
+                None => {
+                    seen.push(p.clone());
+                    seen.len() - 1
+                }
+            };
+        }
+        PredTree::Or(children) | PredTree::And(children) => {
+            children.iter_mut().for_each(|c| number(c, seen))
+        }
+    }
 }
 
 /// Ascending CallSite node ids that can satisfy this subtree.
@@ -519,7 +587,7 @@ fn eval_tree(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     tree: &PredTree,
-    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+    memo: &mut Memo,
 ) -> Option<Vec<u32>> {
     match tree {
         PredTree::Leaf(p) => leaf_candidates(graph, idx, p, memo),
@@ -583,12 +651,12 @@ fn leaf_candidates(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     p: &StringPredicate,
-    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+    memo: &mut Memo,
 ) -> Option<Vec<u32>> {
     let property = CALL_SITE_PROPS.iter().position(|c| *c == p.property)?;
     let strings = resolve_strings(graph, idx, p, memo)?;
     let mut postings_total = 0usize;
-    for &s in &strings {
+    for &s in strings {
         postings_total += idx.posting_len(property, s as usize);
         // A term this broad is cheaper to sweep: postings are random access into the
         // node ids, while the sweep reads the records in order.
@@ -597,7 +665,7 @@ fn leaf_candidates(
         }
     }
     let mut nodes: Vec<u32> = Vec::with_capacity(postings_total);
-    for &s in &strings {
+    for &s in strings {
         if let Some(postings) = idx.postings(property, s as usize) {
             nodes.extend(postings);
         }
@@ -924,6 +992,8 @@ fn push_predicate(
                 transform,
                 trigrams,
                 signature,
+                // Numbered once the whole tree is known.
+                test: 0,
             });
             true
         }
@@ -1021,7 +1091,7 @@ fn property_sets(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     tree: &PredTree,
-    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+    memo: &mut Memo,
 ) -> Option<PropertySets> {
     let mut ids: [Vec<u32>; 4] = Default::default();
     if !collect_property_sets(graph, idx, tree, memo, &mut ids) {
@@ -1038,7 +1108,7 @@ fn collect_property_sets(
     graph: &Graph,
     idx: &graphite_storage::callsite_index::CallSiteStringIndex,
     tree: &PredTree,
-    memo: &mut Vec<(StringPredicate, Vec<u32>)>,
+    memo: &mut Memo,
     out: &mut [Vec<u32>; 4],
 ) -> bool {
     match tree {
@@ -1056,5 +1126,25 @@ fn collect_property_sets(
             .iter()
             .all(|c| collect_property_sets(graph, idx, c, memo, out)),
         PredTree::And(_) => false,
+    }
+}
+
+/// Whether a graph can hold the clause's terms at all, from the trigram bitmap alone.
+///
+/// Deliberately weaker than `tree_matches_nothing`: it reads no dictionary and decodes
+/// no string, so it can be run over every source before any planning begins. `true`
+/// means "not ruled out" — a graph with no usable index, or a term too short or too
+/// non-ASCII for trigrams, is always planned.
+fn may_match(graph: &Graph, tree: &PredTree) -> bool {
+    let Some(idx) = usable_index(graph) else {
+        return true;
+    };
+    match tree {
+        PredTree::Leaf(p) => match p.trigrams.as_ref() {
+            Some(trigrams) if !trigrams.is_empty() => idx.may_contain_all(trigrams),
+            _ => true,
+        },
+        PredTree::Or(children) => children.iter().any(|c| may_match(graph, c)),
+        PredTree::And(children) => children.iter().all(|c| may_match(graph, c)),
     }
 }
