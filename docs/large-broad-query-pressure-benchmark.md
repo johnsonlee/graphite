@@ -266,33 +266,43 @@ regenerates all 64 persisted graphs from the pinned fixture JARs, executes the c
 startup-prepared states, verifies correctness, and reruns the comparator on the same trusted runner.
 No external URL, Gist, or author-published commit status is accepted as execution evidence.
 
-Unscoped 64-graph wide queries have a separate required component,
-`global-wide-pressure-evidence`. It requires
-three paired base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
-`candidate/base`) and currently gates the first incremental milestone at a P95 speedup of at least
-5x in every independent fork. The cumulative target remains 10x. The ten core
-query shapes are placed across the 64-graph manifest, and each targeted result is
-bound to that graph's fixture-derived workload identity. Every zero-hit observation must prove that
-all 64 distinct graph ids were accessed. This prevents first-graph-only coverage, empty-result
-shortcuts, and a base-first page-cache bias from satisfying the gate.
+Unscoped 64-graph wide queries have a separate required measurement component,
+`global-wide-pressure-evidence`, and 72 independently reported `wide-query-latency-<query-id>`
+checks. The [reviewed catalog](../.github/scripts/wide-query-catalog.json) combines the original
+34 queries with 38 multi-keyword queries: AND, OR, mixed Boolean trees, four-term OR, zero hits,
+single-graph hits at early/middle/late positions, multiple-graph hits, and ordinary and DISTINCT
+projections. These are 64 persisted shards of four real corpora, not 64 independent applications.
+Queries run sequentially over all 64 sources; this is not a concurrent-client throughput test.
 
-Four additional fixture-derived cases pin limit-filling behavior to a localized hit in the first,
-middle, or last graph and to a dense term that occurs in all 64 graphs. Their terms and exact hit
-sets are derived from the persisted graphs generated from the pinned JARs and are reverified before
-timing; they are not synthetic performance data.
+The original 34-query replay remains a cold diagnostic and correctness check. Its percentile
+across different queries is not the current latency acceptance criterion. For the repeated
+experiment against current PR main, each JVM clears retained indexes once, executes five fixed
+warmup rounds, and then executes 40 measured rounds with warmed indexes and caches preserved.
+Three independent base/candidate JVM pairs run in alternating order (`candidate/base`,
+`base/candidate`, `candidate/base`). Both the `-Xmx8g` argument and effective 8 GiB maximum heap
+are checked. Every warmup and measured result must match the base-generated full 14-field
+correctness oracle, including canonical field values, row order, and graph provenance.
 
-Each fork uses the `cold` index state: graph handles are loaded, but retained query indexes are
-cleared before the measured replay. This matches the unprepared/legacy graph state behind the
-production multi-second first wide queries. The candidate may restore a verified persisted sidecar
-inside the request; that I/O and validation remains part of the measured latency.
+Each query's P50 and P95 are nearest-rank percentiles of its own 40 measured samples per fork.
+Each paired candidate quantile must be less than 105% of current main's matching quantile.
+For both revisions, each quantile's cross-fork fluctuation `(maximum - minimum) / minimum`
+must be less than 5%. Exactly 5% fails, as does an unstable baseline; there is no absolute-latency
+exception. Missing, duplicate, incorrect, failed, or timed-out results cannot pass. The 72 CI
+checks consume the shared measurements without rerunning the workload for each check.
 
-The `global-wide` family uses the production-shaped unlabeled `MATCH (n)` with eight raw
-four-property `CONTAINS` projection/boundary variants plus both non-`DISTINCT` and `RETURN
-DISTINCT` forms of the original case-insensitive `toLower(coalesce(...)) CONTAINS ... OR ...`
-query. Those ten shapes run at zero, targeted, and dense selectivity, followed by the four
-fixture-distribution cases, for 34 correctness and latency rows. In addition to the aggregate P95
-requirement, each wrapped case-insensitive form must independently reach the same 5x milestone in
-every paired fork, so faster raw cases cannot hide a regression in either motivating query shape.
+Process CPU, peak heap, and peak RSS increases are advisory. The maximum-heap ceiling and
+measurement-integrity checks remain mandatory. Cold-start latency, historical mixed-query
+percentiles, the frozen-main 10x target, and strict improvement over the last accepted iteration
+are reporting metrics, not acceptance conditions, for both Draft and ready-for-review PRs.
+The remaining benchmark families retain their own contracts, including allocation/GC,
+correctness, cancellation, and capacity checks; see the
+[benchmark regression gate](benchmark-regression-gate.md).
+
+`benchmark-global-iteration.mjs` retains all raw observations, reports, and provenance, including
+failures. Current PR main receives the repeated 72-query experiment. Frozen starting main
+`4e328b0109e13c896b74004823fb049fcb19251a` and the latest eligible CI-green first-parent ancestor
+provide historical diagnostic comparisons; their correctness and evidence-integrity checks
+still apply. A historical speedup cannot compensate for a current-main per-query failure.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
 derives the correctness oracle itself:
@@ -304,14 +314,21 @@ derives the correctness oracle itself:
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
 
-Run the unscoped global-wide gate against the same verified manifest and fixture JARs:
+Run the warmed unscoped global-wide comparison against the same verified manifest and fixture JARs:
 
 ```bash
+GRAPHITE_PRESSURE_REGRESSION_ONLY=true GRAPHITE_PRESSURE_PUBLISH_EVIDENCE=false \
 .github/scripts/run-real64-global-wide.sh \
   /absolute/path/to/fixture64/graphs.tsv \
   graphite-webgraph/build/benchmark-fixtures \
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
+
+For iteration, CI resolves references with `benchmark-optimization-references.mjs` and invokes
+`benchmark-global-iteration.mjs`. The underlying driver accepts
+`GRAPHITE_PRESSURE_REGRESSION_ONLY=true` only with evidence publication disabled; a regression-only
+result can never publish the legacy strict-target success context. The historical speedup target remains diagnostic in this mode.
+The full current-main method, end-to-end, routing, and remaining resource checks still apply.
 
 The driver verifies both SHAs against GitHub, creates independent clones at those exact commits,
 copies the candidate-reviewed pressure harness byte-for-byte into the base worktree, and builds both
