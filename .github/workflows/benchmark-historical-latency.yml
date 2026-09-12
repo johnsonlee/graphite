@@ -15,6 +15,9 @@ concurrency:
 env:
   JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+  # Bound the scheduled known-bad diagnostic separately from the PR latency gates.
+  # The fixed 36-graph query takes minutes per invocation; retain its prior sample budget.
+  HISTORICAL_JMH_ITERATIONS: -wi 1 -i 3 -f 1
   PRE_PR_95_BASELINE_SHA: 44b57562f2b3d0c88882a9002bdc488e05e5d7a7
 
 jobs:
@@ -301,16 +304,17 @@ jobs:
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
         FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
           -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+        read -r -a HISTORICAL_ARGS <<< "${HISTORICAL_JMH_ITERATIONS}"
         PARAM_ARGS=()
         if [ -n "${BENCHMARK_PARAMETERS}" ]; then
           read -r -a PARAM_ARGS <<< "${BENCHMARK_PARAMETERS}"
         fi
         java -jar jmh-jars/fixed/fixed-webgraph-jmh.jar \
-          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
+          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" "${HISTORICAL_ARGS[@]}" \
           -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/fixed-latency-${SHARD}.json"
         java -jar jmh-jars/current/current-webgraph-jmh.jar \
-          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
+          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" "${HISTORICAL_ARGS[@]}" \
           -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/current-latency-${SHARD}.json"
 
@@ -340,16 +344,17 @@ jobs:
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
           FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
             -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+          read -r -a HISTORICAL_ARGS <<< "${HISTORICAL_JMH_ITERATIONS}"
           PARAM_ARGS=()
           if [ -n "${BENCHMARK_PARAMETERS}" ]; then
             read -r -a PARAM_ARGS <<< "${BENCHMARK_PARAMETERS}"
           fi
           java -jar jmh-jars/current/current-webgraph-jmh.jar \
-            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
+            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" "${HISTORICAL_ARGS[@]}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/current-latency-confirmation-${SHARD}.json"
           java -jar jmh-jars/fixed/fixed-webgraph-jmh.jar \
-            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
+            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" "${HISTORICAL_ARGS[@]}" \
             -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/fixed-latency-confirmation-${SHARD}.json"
           node current/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \

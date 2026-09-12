@@ -241,7 +241,13 @@ source graph is persisted and that JVM exits, the raw mmap work directory is
 deleted before the next corpus starts. Only the four final persisted graph
 directories remain for the shared query measurements. The 36-real-graph setup validates the
 positive exact-identity coverage query but no longer executes a redundant untimed zero-hit scan;
-JMH warmup and measurement iterations remain unchanged.
+Each query runs five warmup iterations followed by 40 measured iterations in each of
+three independent JVM forks, with an 8 GiB maximum heap. Warmup builds retained
+indexes; measured invocations preserve them. The reference, current base, and
+candidate use the same harness. When the base still carries the known legacy
+cold-index harness, the workflow installs the reviewed warm harness into all
+three revisions after checking both source hashes and the gate-tool tests.
+An already updated base remains authoritative; an unknown cold harness fails closed.
 
 No row may regress more than 50% against the pinned known-good anchor or more than 15% against the
 current PR base. Synthetic graphs are excluded from all performance comparisons. Missing query
@@ -253,6 +259,11 @@ remains sensitive to a new PR-local slowdown.
 The expensive proof against the known-bad pre-PR-95 commit
 `44b57562f2b3d0c88882a9002bdc488e05e5d7a7` runs in
 `.github/workflows/benchmark-historical-latency.yml` on a daily schedule and on manual dispatch.
+That historical comparison explicitly keeps its existing one warmup, three
+measurements and one fork for both revisions in both execution orders. The known-bad
+36-graph query takes roughly four minutes per invocation; applying the PR sample
+budget would exceed the runner job limit. It uses retained warm indexes but is a
+bounded historical check, not evidence for the PR’s per-query P50/P95 gates.
 That workflow preserves the previous exact correctness digest and retained-speedup contract across
 all five real-graph shards, including the 36-real-graph scan, but does not extend pull-request critical-path
 latency.
