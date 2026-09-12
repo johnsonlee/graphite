@@ -88,30 +88,6 @@ pub fn operational_responsibility(kind: &str) -> Option<&'static str> {
     }
 }
 
-pub fn infer_responsibility(
-    endpoints: i64,
-    methods: i64,
-    inbound: i64,
-    outbound: i64,
-    external: i64,
-) -> String {
-    let dominant = inbound.max(outbound).max(external);
-    if endpoints > 0 {
-        "Provides an inbound system interface and coordinates downstream execution across internal capabilities".into()
-    } else if external > 0 && external == dominant {
-        "Acts as an outward-facing capability boundary that coordinates internal work and collaborates with external dependencies".into()
-    } else if inbound > outbound {
-        "Acts as a shared internal capability boundary that is consumed by multiple collaborating subsystems".into()
-    } else if outbound > inbound {
-        "Acts as an orchestration boundary that fans out into several other internal capabilities"
-            .into()
-    } else if methods > 0 && dominant > 0 {
-        "Acts as a balanced internal collaboration boundary with both implementation depth and cross-capability traffic".into()
-    } else {
-        "Implements a cohesive internal capability boundary inferred from code concentration and collaboration patterns".into()
-    }
-}
-
 /// Union-find over package units, joined by mutual or dominant traffic.
 fn cluster_units(units: &[String], traffic: &IndexMap<(String, String), i64>) -> Vec<Vec<String>> {
     if units.is_empty() {

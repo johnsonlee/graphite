@@ -698,9 +698,6 @@ fn plan_for(workspace: &J, level: &str) -> Plan {
     }
 }
 
-fn plan(workspace: &J) -> Plan {
-    plan_for(workspace, &level_of(workspace))
-}
 
 /// Walk a layer tree into lines, the way the baseline's document builder does: a group
 /// opens, its own elements are emitted one level in, its children recurse, it closes.

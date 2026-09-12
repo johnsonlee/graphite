@@ -911,33 +911,112 @@ fn cypher_error_response(e: &CypherError, timeout_millis: u64) -> Response {
 }
 
 /// Render a result set as `{columns, rows, rowCount}`.
-fn result_json(r: &QueryResult, ex: &Executor, extra: Vec<(&str, J)>) -> J {
-    let rows: Vec<J> = r
-        .rows
-        .iter()
-        .map(|row| {
-            let mut obj = Map::new();
-            for c in &r.columns {
-                obj.insert(
-                    c.clone(),
-                    row.get(c).map(|v| materialize(v, ex)).unwrap_or(J::Null),
-                );
-            }
-            if ex.cross {
-                let ids = QueryResult::graph_ids(row);
-                obj.insert("$metadata".into(), json!({ "graphIds": ids }));
-            }
-            J::Object(obj)
-        })
-        .collect();
-    let mut out = Map::new();
-    out.insert("columns".into(), json!(r.columns));
-    out.insert("rows".into(), J::Array(rows));
-    out.insert("rowCount".into(), json!(r.rows.len()));
-    for (k, v) in extra {
-        out.insert(k.to_string(), v);
+/// A Cypher result serialized straight to JSON, without building a `Value` tree first.
+///
+/// This replaced a two-pass path that materialised every row into a `serde_json::Map`
+/// and then pretty-printed the resulting tree: two walks, a `String` clone of every
+/// column name for every row, and a `serde_json::Value` for every field. For a
+/// `LIMIT 200` query over five columns that was a thousand map insertions and two
+/// thousand allocations to emit sixty-eight kilobytes.
+///
+/// This writes the same structure in one pass. Scalars go straight to the serializer,
+/// which is where the saving is: a string field becomes a `serialize_str` of borrowed
+/// bytes rather than a `String` allocated into a tree and dropped after printing.
+/// Composite values (nodes, relationships, paths, maps, lists) still go through
+/// `materialize`, which is where the shape is defined and where correctness lives.
+///
+/// The bytes must stay identical, so the emission order is the emission order below:
+/// every column in `columns` order, then `$metadata` when cross-graph.
+struct ResultBody<'a> {
+    result: &'a QueryResult,
+    ex: &'a Executor,
+    extra: &'a [(&'a str, J)],
+}
+
+struct RowBody<'a> {
+    row: &'a graphite_cypher::engine::Row,
+    columns: &'a [String],
+    ex: &'a Executor,
+}
+
+struct ValueBody<'a> {
+    value: Option<&'a graphite_cypher::value::Value>,
+    ex: &'a Executor,
+}
+
+impl serde::Serialize for ValueBody<'_> {
+    fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        use graphite_cypher::value::Value as V;
+        match self.value {
+            None | Some(V::Null) => ser.serialize_none(),
+            Some(V::Bool(b)) => ser.serialize_bool(*b),
+            Some(V::Int(i)) => ser.serialize_i64(*i),
+            Some(V::Str(s)) => ser.serialize_str(s),
+            // Floats and every composite shape keep the materialiser's definition of
+            // themselves: Kotlin's float formatting and the node/edge field order are
+            // not worth restating here.
+            Some(other) => materialize(other, self.ex).serialize(ser),
+        }
     }
-    J::Object(out)
+}
+
+impl serde::Serialize for RowBody<'_> {
+    fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let cross = self.ex.cross;
+        let mut m = ser.serialize_map(Some(self.columns.len() + usize::from(cross)))?;
+        for c in self.columns {
+            m.serialize_entry(
+                c,
+                &ValueBody {
+                    value: self.row.get(c),
+                    ex: self.ex,
+                },
+            )?;
+        }
+        if cross {
+            m.serialize_entry(
+                "$metadata",
+                &serde_json::json!({ "graphIds": QueryResult::graph_ids(self.row) }),
+            )?;
+        }
+        m.end()
+    }
+}
+
+impl serde::Serialize for ResultBody<'_> {
+    fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let mut m = ser.serialize_map(Some(3 + self.extra.len()))?;
+        m.serialize_entry("columns", &self.result.columns)?;
+        let rows: Vec<RowBody> = self
+            .result
+            .rows
+            .iter()
+            .map(|row| RowBody {
+                row,
+                columns: &self.result.columns,
+                ex: self.ex,
+            })
+            .collect();
+        m.serialize_entry("rows", &rows)?;
+        m.serialize_entry("rowCount", &self.result.rows.len())?;
+        for (k, v) in self.extra {
+            m.serialize_entry(k, v)?;
+        }
+        m.end()
+    }
+}
+
+/// Pretty-print a result body the way `pretty` prints a `Value`: same formatter, so the
+/// bytes match what building the tree first would have produced.
+fn result_body(r: &QueryResult, ex: &Executor, extra: &[(&str, J)]) -> String {
+    serde_json::to_string_pretty(&ResultBody {
+        result: r,
+        ex,
+        extra,
+    })
+    .unwrap_or_else(|_| "null".into())
 }
 
 async fn cypher_one(
@@ -1198,7 +1277,12 @@ async fn run_cypher(
     match result {
         Ok((Ok(r), ex)) => {
             guard.finish(Outcome::Success, elapsed);
-            ok_json(result_json(&r, &ex, extra))
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "application/json")],
+                result_body(&r, &ex, &extra),
+            )
+                .into_response()
         }
         Ok((Err(e), _)) => {
             guard.finish(Outcome::of(Some(&e)), elapsed);
