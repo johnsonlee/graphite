@@ -27,6 +27,7 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
+import io.johnsonlee.graphite.graph.propertyTextFragments
 import io.johnsonlee.graphite.graph.propertyTextFragment
 import java.nio.file.Files
 import kotlin.test.Test
@@ -39,6 +40,47 @@ import kotlin.test.assertTrue
 
 /** Synthetic persisted fixtures verify correctness and source access only, never performance. */
 class MappedPropertyTextCandidatesTest {
+    @Test
+    fun `two fragments remove first-fragment-only string candidates`() = withGraph { graph ->
+        val lookup = graph as NodePropertyTextCandidates
+        val needle = "android.permission.INTERNET"
+        val fragments = propertyTextFragments(needle)
+        val single = assertNotNull(lookup.propertyTextCandidates(StringConstant::class.java, fragments.first(), null)).toList()
+        val both = assertNotNull(lookup.propertyTextCandidates(StringConstant::class.java, fragments, null)).toList()
+        assertEquals(setOf(NodeId(18), NodeId(19)), single.map { it.id }.toSet())
+        assertEquals(listOf(NodeId(19)), both.map { it.id })
+        assertTrue(both.all { matches(it, needle) })
+    }
+
+    @Test
+    fun `two fragments may match separate signature components and preserve fallback order`() = withGraph { graph ->
+        val lookup = graph as NodePropertyTextCandidates
+        val all = graph.nodes(Node::class.java).toList()
+        val needles = listOf(
+            "Service.checkVoucher(", "enumPayload, nested", "resourcePayload, nested", "annotationPayload.AnnotationNode"
+        )
+        for (needle in needles) {
+            val fragments = propertyTextFragments(needle)
+            assertEquals(2, fragments.size)
+            val candidates = assertNotNull(lookup.propertyTextCandidates(Node::class.java, fragments, null)).toList()
+            val ids = candidates.map { it.id }.toSet()
+            assertEquals(ids.size, candidates.size)
+            assertEquals(all.filter { it.id in ids }.map { it.id }, candidates.map { it.id })
+            assertEquals(all.filter { matches(it, needle) }.map { it.id }, candidates.filter { matches(it, needle) }.map { it.id })
+            assertTrue(candidates.any { it is EnumConstant })
+            assertTrue(candidates.any { it is ResourceValueNode })
+            assertTrue(candidates.any { it is AnnotationNode })
+        }
+    }
+
+    @Test
+    fun `mapped conjunction rejects more than two matcher states and invalid fragments`() = withGraph { graph ->
+        val lookup = graph as NodePropertyTextCandidates
+        for (fragments in listOf(emptyList(), listOf("alpha", "bravo", "charlie"), listOf("alpha", "alpha"), listOf("alpha", "E123"))) {
+            assertNull(lookup.propertyTextCandidates(Node::class.java, fragments, null))
+        }
+    }
+
     @Test
     fun `candidate superset preserves exact dynamic property matches and encounter order`() = withGraph { graph ->
         val all = graph.nodes(Node::class.java).toList()
@@ -156,6 +198,8 @@ class MappedPropertyTextCandidatesTest {
             FloatConstant(NodeId(3), 1.2E10f), DoubleConstant(NodeId(4), Double.POSITIVE_INFINITY),
             BooleanConstant(NodeId(5), true), NullConstant(NodeId(6)),
             StringConstant(NodeId(7), "stringPayload"),
+            StringConstant(NodeId(18), "android.permission.CAMERA"),
+            StringConstant(NodeId(19), "android.permission.INTERNET"),
             CallSiteNode(NodeId(8), method, callee, 123, null, emptyList()),
             CallSiteNode(NodeId(9), caller, callee, null, null, emptyList()),
             LocalVariable(NodeId(10), "localPayload", argument, method),

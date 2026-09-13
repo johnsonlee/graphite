@@ -13,8 +13,10 @@ internal class MappedPropertyTextCandidates(
     private val types: NodeTypeIndex,
     private val strings: StringTable
 ) {
-    fun ids(type: Class<out Node>, fragment: String, work: GraphWorkConsumer?): Sequence<Int> = sequence {
-        val matcher = BoundedStringMatcher(strings, StringPredicateKey(null, StringMatchMode.CONTAINS, fragment))
+    fun ids(type: Class<out Node>, fragments: List<String>, work: GraphWorkConsumer?): Sequence<Int> = sequence {
+        val matchers = fragments.map { fragment ->
+            BoundedStringMatcher(strings, StringPredicateKey(null, StringMatchMode.CONTAINS, fragment))
+        }.toTypedArray()
         var inspected = 0
         for (id in types.ids(type)) {
             if ((inspected++ and CANCELLATION_MASK) == 0 && Thread.currentThread().isInterrupted) {
@@ -22,7 +24,7 @@ internal class MappedPropertyTextCandidates(
             }
             work?.consume()
             val offset = offsets.offset(id).toInt()
-            if (mightMatch(offset, matcher)) yield(id)
+            if (matchers.all { matcher -> mightMatch(offset, matcher) }) yield(id)
         }
     }
 

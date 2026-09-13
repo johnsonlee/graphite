@@ -1381,3 +1381,31 @@ cold-miss shortfall without changing the existing plain-string query policy.
 **Conclusion:** keep for repeated comparisons against main and broad regression gates.
 Do not claim that every intermediate experimental score improved; the indexed warm-hit
 tradeoff is explicit.
+
+
+### 2026-09-13 - Attempt 031: Intersect two necessary dynamic-property fragments
+
+**Hypothesis:** the single longest fragment admits nodes containing permission-related
+method metadata even when their property text cannot contain the complete needle.
+Intersect up to two distinct longest eligible fragments, retaining stable ties and
+bounded selection state. Fragments may occur in different stored signature components;
+the complete ANY predicate remains authoritative. Legacy capability implementations
+can safely use only the first fragment and return a wider candidate superset.
+
+**Base/candidate:** main `144d98ef` plus the subscript correctness repair, identical V2
+harness and real Android fixture. Exact candidate JAR/source identities and commands
+are in `/tmp/graphite-slow-shapes-evidence/dual-fragment/`.
+
+**Evidence:** one isolated pair preserves all eight dynamic observations. Hit improves
+10,895 to 1,044 ms COLD (10.43x) and 10,663 to 944 ms WARM (11.30x); miss improves
+10.63x/11.28x. Query-window aggregate CPU improves 10.05–11.10x. All source hashes
+and mtimes remain unchanged and all four private snapshots are removed. No allocation
+claim is available. Core/Cypher tests, nine focused mapped tests, all three lint gates,
+and JMH build pass in `/tmp/graphite-slow-shapes-dual-fragment-tests.log`. Tests verify
+split signature components, stronger candidate filtering, residual false positives,
+fallback kinds, order, legacy capability behavior, and the two-fragment bound.
+
+**Conclusion:** keep. The cold 4–6% margin above 10x is narrow, so repeated formal
+measurements are still required. String decompression remains an evidence-backed target
+for a separate bounded-cache experiment; no change to query truth or result order is
+needed to investigate it.

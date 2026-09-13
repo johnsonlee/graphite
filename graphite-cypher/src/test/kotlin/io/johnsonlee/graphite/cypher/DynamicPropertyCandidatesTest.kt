@@ -18,6 +18,36 @@ import kotlin.test.assertTrue
 class DynamicPropertyCandidatesTest {
 
     @Test
+    fun `query passes both fragments and still applies exact residual predicate`() {
+        val nodes = listOf(
+            StringConstant(NodeId(1), "needle other tail"),
+            StringConstant(NodeId(2), "needle-tail"),
+            StringConstant(NodeId(3), "needle-other")
+        )
+        val backing = DefaultGraph.Builder().apply { nodes.forEach(::addNode) }.build()
+        val requests = mutableListOf<List<String>>()
+        val graph = object : Graph by backing, NodePropertyTextCandidates {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = error("Unexpected node scan")
+            override fun <T : Node> propertyTextCandidates(
+                type: Class<T>, fragment: String, workConsumer: GraphWorkConsumer?
+            ): Sequence<T>? = error("Conjunction-aware backend should receive both fragments")
+
+            override fun <T : Node> propertyTextCandidates(
+                type: Class<T>, fragments: List<String>, workConsumer: GraphWorkConsumer?
+            ): Sequence<T> {
+                requests += fragments
+                return nodes.asSequence().filter(type::isInstance)
+                    .filter { node -> fragments.all { fragment -> node.value.contains(fragment) } }.map(type::cast)
+            }
+        }
+        val result = CypherExecutor(graph).execute(
+            "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'needle-tail') RETURN n.id AS id LIMIT 10"
+        )
+        assertEquals(listOf(listOf("needle", "tail")), requests)
+        assertEquals(listOf(mapOf("id" to 2)), result.rows)
+    }
+
+    @Test
     fun `literal and parameter candidates preserve fields and recheck false positives`() {
         for (label in listOf("", ":StringConstant")) {
             for (term in listOf("'needle-tail'", "\$term")) {

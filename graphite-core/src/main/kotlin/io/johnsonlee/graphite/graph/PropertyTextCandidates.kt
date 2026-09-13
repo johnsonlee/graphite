@@ -25,18 +25,33 @@ private object PropertyTextFragmentSelector {
     private val identifier = Regex("[A-Za-z_][A-Za-z_0-9]*")
     private val generatedTokens = listOf("true", "false", "null", "NaN", "Infinity")
 
-    /** Returns the longest eligible fragment; ties retain their first occurrence. */
-    fun select(needle: String): String? = identifier.findAll(needle)
-        .map { it.value }
-        .filter { fragment ->
-            !fragment.all { it == 'e' || it == 'E' || it in '0'..'9' } &&
-                generatedTokens.none { it.contains(fragment) }
+    private const val MAX_FRAGMENTS = 2
+
+    /** Retains at most two distinct fragments; equal lengths keep their encounter order. */
+    fun select(needle: String): List<String> {
+        val selected = mutableListOf<String>()
+        for (match in identifier.findAll(needle)) {
+            val fragment = match.value
+            if (fragment in selected || !eligible(fragment)) continue
+            val position = selected.indexOfFirst { it.length < fragment.length }.takeIf { it >= 0 } ?: selected.size
+            if (position < MAX_FRAGMENTS) {
+                selected.add(position, fragment)
+                if (selected.size > MAX_FRAGMENTS) selected.removeAt(MAX_FRAGMENTS)
+            }
         }
-        .maxByOrNull(String::length)
+        return selected
+    }
+
+    private fun eligible(fragment: String): Boolean =
+        !fragment.all { it == 'e' || it == 'E' || it in '0'..'9' } &&
+            generatedTokens.none { it.contains(fragment) }
 }
 
 /** Returns a necessary fragment only; see [NodePropertyTextCandidates] for its safe use. */
-fun propertyTextFragment(needle: String): String? = PropertyTextFragmentSelector.select(needle)
+fun propertyTextFragment(needle: String): String? = propertyTextFragments(needle).firstOrNull()
+
+/** Up to two distinct necessary fragments, longest first with stable encounter-order ties. */
+fun propertyTextFragments(needle: String): List<String> = PropertyTextFragmentSelector.select(needle)
 
 /**
  * Optional storage prefilter for ANY(k IN keys(node) WHERE toString(node[k]) CONTAINS needle).
@@ -58,4 +73,14 @@ interface NodePropertyTextCandidates {
         fragment: String,
         workConsumer: GraphWorkConsumer?
     ): Sequence<T>?
+
+    /**
+     * A conjunction of necessary fragments, possibly present in separate signature components.
+     * Legacy backends may safely apply only the first fragment, yielding a wider superset.
+     */
+    fun <T : Node> propertyTextCandidates(
+        type: Class<T>,
+        fragments: List<String>,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? = fragments.firstOrNull()?.let { propertyTextCandidates(type, it, workConsumer) }
 }

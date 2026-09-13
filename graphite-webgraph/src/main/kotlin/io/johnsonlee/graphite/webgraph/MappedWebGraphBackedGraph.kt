@@ -275,10 +275,18 @@ internal class MappedWebGraphBackedGraph(
         type: Class<T>,
         fragment: String,
         workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? = propertyTextCandidates(type, listOf(fragment), workConsumer)
+
+    override fun <T : Node> propertyTextCandidates(
+        type: Class<T>,
+        fragments: List<String>,
+        workConsumer: GraphWorkConsumer?
     ): Sequence<T>? {
-        if (propertyTextFragment(fragment) != fragment) return null
+        if (fragments.isEmpty() || fragments.size > 2 || fragments.distinct().size != fragments.size ||
+            fragments.any { propertyTextFragment(it) != it }
+        ) return null
         return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable)
-            .ids(type, fragment, workConsumer).mapNotNull { nodeId ->
+            .ids(type, fragments, workConsumer).mapNotNull { nodeId ->
                 node(NodeId(nodeId))?.takeIf(type::isInstance)?.let(type::cast)
             }
     }

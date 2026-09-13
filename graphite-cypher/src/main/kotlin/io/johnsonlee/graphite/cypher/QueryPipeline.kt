@@ -28,7 +28,7 @@ import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
-import io.johnsonlee.graphite.graph.propertyTextFragment
+import io.johnsonlee.graphite.graph.propertyTextFragments
 import io.johnsonlee.graphite.graph.GraphScanParallelismPlan
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
@@ -4760,14 +4760,15 @@ class QueryPipeline private constructor(
             is CypherExpr.Parameter -> activeParameters.get()?.get(term.name)
             else -> null
         } as? String ?: return null
-        val fragment = propertyTextFragment(needle) ?: return null
+        val fragments = propertyTextFragments(needle)
+        val fragment = fragments.firstOrNull() ?: return null
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         return candidateSources.asSequence().flatMap { source ->
             // Metadata is not stored in the node record. A graph ID hit (including
             // the prefix of an element ID) must retain every node in that graph.
             val lookup = (source.graph as? NodePropertyTextCandidates)
                 ?.takeUnless { qualified && source.id.contains(fragment) }
-            val candidates = lookup?.propertyTextCandidates(nodeClass, fragment, tracker)
+            val candidates = lookup?.propertyTextCandidates(nodeClass, fragments, tracker)
                 ?: trackWork(source.graph.nodes(nodeClass), tracker)
             candidates.map { node -> nodeValue(source, node) }
         }

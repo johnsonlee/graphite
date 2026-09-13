@@ -7,6 +7,15 @@ import kotlin.test.assertTrue
 
 class PropertyTextCandidatesTest {
     @Test
+    fun `plural selection retains two longest distinct fragments with stable ties`() {
+        assertEquals(listOf("permission", "INTERNET"), propertyTextFragments("android.permission.INTERNET"))
+        assertEquals(listOf("alpha", "bravo"), propertyTextFragments("alpha.alpha.bravo.delta"))
+        assertEquals(listOf("longestName", "alpha"), propertyTextFragments("alpha.bravo.longestName"))
+        assertEquals(listOf("example"), propertyTextFragments("E123.true.example"))
+        assertEquals(emptyList(), propertyTextFragments("123.NaN.Infinity"))
+    }
+
+    @Test
     fun `dotted method search selects longest stored component fragment`() {
         assertEquals("checkVoucher", propertyTextFragment("com.example.Service.checkVoucher(java.lang.String)"))
         assertEquals("Service", propertyTextFragment("Service.foo("))
@@ -56,9 +65,10 @@ class PropertyTextCandidatesTest {
         for (start in signature.indices) {
             for (end in start + 1..signature.length) {
                 val needle = signature.substring(start, end)
-                val fragment = propertyTextFragment(needle) ?: continue
-                assertTrue(needle.contains(fragment), needle)
-                assertTrue(components.any { it.contains(fragment) }, "$needle -> $fragment")
+                for (fragment in propertyTextFragments(needle)) {
+                    assertTrue(needle.contains(fragment), needle)
+                    assertTrue(components.any { it.contains(fragment) }, "$needle -> $fragment")
+                }
             }
         }
     }
