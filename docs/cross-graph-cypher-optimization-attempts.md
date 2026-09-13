@@ -1021,3 +1021,51 @@ access, ABI fallback, predicate admission bounds, and admission reset after
 cache clearing or LRU eviction. Final application line coverage is `98.2569%`
 for Core, `98.1846%` for Cypher, `98.0213%` for WebGraph, and `98.1046%` for
 Explore; the complete CI-equivalent `check` gate passes after these tests.
+
+### 2026-09-13 - Attempt 019: Baseline the reported slow query shapes on current main
+
+**Hypothesis:** untyped constant search, dynamic property search, wrapped caller-class
+search, and filtered DATAFLOW expansion bypass the existing selective access paths.
+Measure identical queries on actual persisted graphs before accepting an optimization.
+
+**Baseline:** `144d98efa2bcb1f183d4f962b833c234d839d2a9` (latest remote main when
+requested). The earlier `96522d96` diagnostic runs are superseded. Candidate for this
+attempt is this harness-only commit; no production optimization is included.
+
+**Fixture and protocol:** the pinned Android corpus has 5,938,826 nodes and is loaded
+from `/tmp/graphite-cpu-vanished-diagnostic.5_7ygubx/fixtures-complete/android`.
+The same directory contains the pinned Tika, Hive, and Kotlin compiler graphs for the
+`corpus=all` matrix. Local environment: Apple M3 Max, 64 GiB RAM, OpenJDK 17.0.18;
+query processes use `-Xmx8g -XX:ActiveProcessorCount=4`. `SlowQueryShapesBenchmark`
+fixes the query text, LIMIT, projections, and exact ordered result digest. It includes
+nonempty/absent cases, source/target DATAFLOW filtering, cold mappings and warmed
+queries. Setup, result validation, and digest serialization are outside the timed
+method. COLD means query-index state, not cold OS pages.
+
+```shell
+./gradlew :webgraph:jmhJar :webgraph:detekt --max-workers=2
+java -Xmx8g -XX:ActiveProcessorCount=4 \
+  -Dandroid.graph.path=/tmp/graphite-cpu-vanished-diagnostic.5_7ygubx/fixtures-complete/android \
+  -cp graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  io.johnsonlee.graphite.webgraph.SlowQueryShapesCorrectness android valueHit
+```
+
+**Correctness evidence:** baseline build and lint passed. Nine query cases each passed
+both cold and warm executions (18 observations). `valueHit` returns one row,
+`wrappedCallerHit` 50, `dataflowSourceHit` five, and `dataflowTargetHit` 50. Missing-term
+queries return no rows. Full ordered digests, exact commands, and fixture SHA-256
+manifest are retained locally in `/tmp/graphite-slow-shapes-evidence/base-144d98ef/`.
+
+The tenth case, `dynamicHit`, exposed a functional defect: `n[k]` accepts only numeric
+subscripts on main, so the dynamic search misses a keyword that `n.value` finds.
+Do not relax that oracle to accept zero rows. Any performance comparison for the
+repaired dynamic query must identify a semantically correct reference, separately
+from unmodified main. This is not a successful speedup observation.
+
+**Performance/resource evidence:** the diagnostic runner records per-query wall and
+process CPU time, but these first single runs are not acceptance evidence. Formal
+paired latency/allocation measurements and existing method/end-to-end regression
+checks remain pending. No speedup, memory reduction, or non-regression is claimed.
+
+**Conclusion:** keep the real-data harness and strict result checks. All four requested
+shapes, including both DATAFLOW endpoints, remain in scope for the 10x objective.
