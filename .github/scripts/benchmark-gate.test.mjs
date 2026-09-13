@@ -909,7 +909,7 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
     assert.equal(sidecarCandidate.passed, true, sidecarCandidate.errors.join("\n"));
 });
 
-test("fixture64 cold graphId pressure uses a micro-latency regression guard instead of a 10x target", () => {
+test("fixture64 cold graphId pressure reports numerical regressions without gating startup", () => {
     const stable = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
@@ -925,7 +925,9 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
         graphIdObservations(1_000_000, "success", 1_000_000),
         graphIdObservations(2_000_000, "success", 2_000_000)
     );
-    assert.equal(materialRegression.passed, false);
+    assert.equal(materialRegression.passed, true);
+    assert.equal(materialRegression.latencyBlocking, false);
+    assert.ok(materialRegression.advisoryErrors.length > 0);
 
     const base = graphIdObservations(1_000_000, "success", 1_000_000);
     const candidateRows = graphIdObservations(1_000_000, "success", 1_000_000).trim().split("\n");
@@ -939,8 +941,8 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
         base,
         `${candidateRows.join("\n")}\n`
     );
-    assert.equal(hiddenFirstRequestRegression.passed, false);
-    assert.match(hiddenFirstRequestRegression.errors.join("\n"), /first K64 request latency regressed/);
+    assert.equal(hiddenFirstRequestRegression.passed, true);
+    assert.match(hiddenFirstRequestRegression.advisoryErrors.join("\n"), /first K64 request latency regressed/);
 });
 
 test("fixture64 scorer rejects detached and correlated-rotation latency rows", () => {
@@ -1005,6 +1007,15 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
     );
     assert.equal(passed.passed, true);
     assert.equal(passed.indexState, "warm");
+    const warmRegression = compareGraphIdPressure(
+        [warmBase], [warmCandidate],
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000),
+        graphIdObservations(2_000_000_000, "success", 2_000_000_000)
+    );
+    assert.equal(warmRegression.passed, false);
+    assert.equal(warmRegression.latencyBlocking, true);
+    assert.match(warmRegression.errors.join("\n"), /latency regressed/);
+
     assert.match(renderGraphIdPressureReport(passed), /Index state: \*\*warm\*\*/);
     assert.match(renderGraphIdPressureReport(passed), /Trigram-indexed graphs: \*\*0 → 64\*\*/);
 
@@ -1157,7 +1168,8 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 2_000_000_000)
     );
-    assert.equal(regressed.passed, false);
+    assert.equal(regressed.passed, true);
+    assert.match(regressed.advisoryErrors.join("\n"), /request-selected P50/);
     assert.equal(regressed.graphParameterP50Regression, 1);
     assert.equal(regressed.graphParameterP95Regression, 1);
     assert.equal(regressed.graphParameterP50Speedup, 0.5);
@@ -3410,4 +3422,43 @@ test("the authoritative aggregate depends on and enforces the CPU-accounting smo
         "the enforce step must expose the smoke job's result");
     assert.match(gate, /\[ "\$\{CPU_ACCOUNTING_SMOKE_JOB\}" != success \]/,
         "the enforce step must fail unless the smoke succeeded");
+});
+
+
+test("explicit cold diagnostics preserve numerical failures while rejecting integrity failures", () => {
+    const evidence = globalWideEvidence(35_000_000);
+    const candidateEvidence = globalWideEvidence(70_000_000);
+    const bases = Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000)]);
+    const candidates = Array.from({ length: 3 }, () => [globalWidePressureResult(70_000_000)]);
+    const args = [bases, candidates, Array(3).fill(evidence.observations), Array(3).fill(candidateEvidence.observations),
+        evidence.oracle, 5, ["candidate-base", "base-candidate", "candidate-base"], evidence.manifest];
+    const strict = compareGlobalWidePressure(...args);
+    const diagnostic = compareGlobalWidePressure(...args, { coldDiagnosticsOnly: true });
+    assert.equal(strict.passed, false);
+    assert.equal(diagnostic.passed, true, diagnostic.errors.join("\n"));
+    assert.equal(diagnostic.integrityErrors.length, 0);
+    assert.equal(diagnostic.targetErrors.length, 9);
+    assert.ok(diagnostic.latencyErrors.length > 0);
+    assert.deepEqual([...strict.errors].sort(), [...diagnostic.advisoryErrors].sort());
+    assert.match(renderGlobalWidePressureReport(diagnostic), /diagnostic; correctness and measurement integrity remain required/);
+    for (const [metric, value] of [["maxHeapBytes", 4 * 1024 ** 3], ["graphWorkerCount", 99]]) {
+        const altered = structuredClone(args);
+        altered[1][0][0].secondaryMetrics[metric].score = value;
+        const result = compareGlobalWidePressure(...altered, { coldDiagnosticsOnly: true });
+        assert.equal(result.passed, false);
+        assert.match(result.integrityErrors.join("\n"), metric === "maxHeapBytes" ? /maxHeapBytes/ : /NCPU split/);
+    }
+    const incorrect = [...args];
+    incorrect[3] = [candidateEvidence.observations.replace(/success/, "failed"), ...Array(2).fill(candidateEvidence.observations)];
+    assert.equal(compareGlobalWidePressure(...incorrect, { coldDiagnosticsOnly: true }).passed, false);
+    assert.equal(compareGlobalWidePressure(...args, { coldDiagnosticsOnly: "true" }).passed, false);
+});
+
+test("diagnostic driver refuses strict status publication before executing a benchmark", () => {
+    const driver = new URL("./run-real64-global-wide.sh", import.meta.url);
+    const result = spawnSync("bash", [driver.pathname, "missing.tsv", "missing-fixtures", "a".repeat(40), "b".repeat(40)], {
+        encoding: "utf8", env: { ...process.env, GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY: "true", GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: "true" }
+    });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /cannot publish a strict-target/);
 });

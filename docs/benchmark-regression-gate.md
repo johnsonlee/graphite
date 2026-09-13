@@ -352,3 +352,19 @@ Run the two benchmark sources directly:
 The workflow deliberately keeps benchmark execution separate from unit-test coverage. Coverage
 answers whether behavior was exercised; the benchmark gate answers whether the same behavior became
 materially slower or more memory intensive.
+
+
+## Cold diagnostics prerequisite
+
+The original 34-query global replay measures cold queries. CI explicitly enables
+`GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY=true`: historical speedup targets, aligned cold latency
+regressions, and CPU/peak-heap/RSS growth remain reported but do not block this prerequisite.
+Errors are classified where they are detected; correctness, complete paired evidence, graph
+coverage, worker accounting, and the effective 8 GiB heap requirement still fail the gate.
+Direct driver invocations retain the strict default. Diagnostic mode cannot publish the legacy
+strict-target external success status. Failed comparisons retain their provenance and observations.
+
+Graph-routing cold-state numerical latency is likewise advisory; warm and startup-prepared
+latency checks remain blocking. Every state's result and measurement-integrity checks remain
+required. This prerequisite does not implement or weaken the separate 72-query warmed P50/P95
+protocol, whose regression and stability limits remain strictly below 5%.
