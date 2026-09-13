@@ -166,6 +166,46 @@ keep from counting. Transparent huge pages for the mappings were tried and made 
 measurable difference, so the first-touch cost is not TLB misses. Neither a cache nor
 a smaller response body is taken here.
 
+## Graphs without `graph.callsite-string-index`
+
+The persisted CallSite string index was introduced on 2026-09-02 (#113). A graph built
+before that has no `graph.callsite-string-index`, and the Kotlin server handles its
+absence by building the same index in memory on first use. Until now the port only read
+the file, so on such a graph every broad query fell to a dictionary scan and a record
+sweep per graph, and a conjunction went to the generic evaluator over every record:
+
+| Server, 64 graphs without the file | P50 | P95 | max |
+|---|---:|---:|---:|
+| Kotlin main (builds the index in memory) | 6.6 ms | 118 ms | |
+| Rust `1d8a52d`, with the file | 3.1 ms | 34.0 s | 34.4 s |
+| Rust before this fix, without the file | 65.3 ms | 53.9 s | 60 s timeout |
+| Rust with this fix, without the file | 1.1 ms | 4.5 ms | 156 ms |
+
+That is the regression a measurement on pre-September graphs would see, and it is not a
+regression of the engine but of what the port was willing to read. The port now builds
+the index in memory at load when the file is absent, in the exact layout the Kotlin
+writer persists: on a fixture graph that does have the file, the in-memory build is
+byte-identical to it apart from the content identity, the size estimate and the
+checksum (`in_memory_build_reproduces_a_real_persisted_index`). Startup for the 64-graph
+corpus goes from 76 s to 80 s; the server names the graphs it built for at startup.
+
+## Under concurrent load
+
+The backtest above is one client. Under concurrent clients, both servers admit four
+Cypher queries at a time by default (`--max-concurrent-cypher`) and answer the rest
+with 429, so beyond four clients the percentiles below are over the admitted requests:
+
+| Clients | Kotlin P50 / P95 | Rust P50 / P95 | Kotlin rps | Rust rps |
+|---:|---|---|---:|---:|
+| 1 | 6.4 / 140.6 ms | 1.0 / 4.2 ms | 37 | 439 |
+| 4 | 13.3 / 314.9 ms | 2.1 / 8.1 ms | 70 | 1008 |
+| 8 | 20.5 / 608.0 ms | 4.4 / 16.3 ms | 28 | 659 |
+| 16 | 26.9 / 169.3 ms | 9.0 / 18.4 ms | 68 | 575 |
+| 32 | 22.0 / 522.6 ms | 14.4 / 31.9 ms | 32 | 392 |
+
+A load generator that counts a 429 as a failure, or that keeps its connections open past
+the limit, measures the guard rather than the engine, on both servers alike.
+
 ## What changed
 
 The port already read the same graph directory as the Kotlin server, but it ignored a

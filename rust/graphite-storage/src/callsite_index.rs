@@ -78,8 +78,26 @@ struct TrigramTable {
 /// collisions only ever cause a graph to be examined that need not be.
 const TRIGRAM_FILTER_BITS: usize = 1 << 16;
 
+/// The index bytes: the persisted file mapped read-only, or the same layout assembled
+/// in memory for a graph that was built without the file.
+enum IndexBytes {
+    Mapped(Mmap),
+    Owned(Vec<u8>),
+}
+
+impl std::ops::Deref for IndexBytes {
+    type Target = [u8];
+    #[inline]
+    fn deref(&self) -> &[u8] {
+        match self {
+            IndexBytes::Mapped(m) => m,
+            IndexBytes::Owned(v) => v,
+        }
+    }
+}
+
 pub struct CallSiteStringIndex {
-    map: Mmap,
+    map: IndexBytes,
     /// Which trigrams occur anywhere in this graph, built on first use.
     trigram_filter: std::sync::OnceLock<TrigramTable>,
     string_count: usize,
@@ -110,7 +128,155 @@ impl CallSiteStringIndex {
         // SAFETY: read-only mapping of a file we do not modify.
         let map = unsafe { Mmap::map(&file) }
             .map_err(|e| IndexError::Io(path.display().to_string(), e))?;
-        let name = || path.display().to_string();
+        Self::parse(
+            IndexBytes::Mapped(map),
+            &path.display().to_string(),
+            string_count,
+            content_identity,
+        )
+        .map(Some)
+    }
+
+    /// Build the index in memory for a graph that has no persisted one.
+    ///
+    /// The Kotlin server does the same on first use when the file is absent — graphs
+    /// built before the index existed have none — so a port that only read the file
+    /// answered every broad query on such a graph by scanning the whole dictionary and
+    /// every CallSite record, per graph, per query. The layout assembled here is the
+    /// one `MappedCallSiteStringIndex.writePersistent` produces, so every accessor
+    /// reads it exactly as it reads the file.
+    ///
+    /// `call_sites` yields each CallSite node id with its four string ids, in ascending
+    /// node id order; `string_of` decodes a dictionary entry.
+    pub fn build(
+        string_count: usize,
+        string_of: &dyn Fn(usize) -> String,
+        call_sites: &mut dyn Iterator<Item = (u32, [u32; PROPERTY_COUNT])>,
+    ) -> Result<CallSiteStringIndex, IndexError> {
+        let mut nodes: Vec<u32> = Vec::new();
+        let mut fields: Vec<[u32; PROPERTY_COUNT]> = Vec::new();
+        for (node, f) in call_sites {
+            nodes.push(node);
+            fields.push(f);
+        }
+        let call_site_count = nodes.len();
+        let mut out: Vec<u8> = Vec::new();
+        let i32be = |v: i32, out: &mut Vec<u8>| out.extend_from_slice(&v.to_be_bytes());
+        i32be(MAGIC, &mut out);
+        i32be(VERSION, &mut out);
+        i32be(string_count as i32, &mut out);
+        i32be(call_site_count as i32, &mut out);
+        out.extend_from_slice(&[0u8; CONTENT_IDENTITY_BYTES]);
+
+        // One counting sort per property: node ids arrive ascending, so each string's
+        // postings come out ascending, as the reader expects.
+        let mut used_any = vec![false; string_count];
+        let mut csrs: Vec<(Vec<i32>, Vec<i32>, Vec<i32>)> = Vec::with_capacity(PROPERTY_COUNT);
+        for property in 0..PROPERTY_COUNT {
+            let mut counts = vec![0u32; string_count];
+            for f in &fields {
+                let sid = f[property] as usize;
+                if sid >= string_count {
+                    return Err(IndexError::Mismatch(format!(
+                        "CallSite string id {sid} outside a dictionary of {string_count}"
+                    )));
+                }
+                counts[sid] += 1;
+            }
+            let mut used_ids: Vec<i32> = Vec::new();
+            let mut ends: Vec<i32> = Vec::new();
+            // Slot of each used string in the CSR, for placing its postings.
+            let mut slot = vec![u32::MAX; string_count];
+            let mut total = 0i32;
+            for (sid, &c) in counts.iter().enumerate() {
+                if c > 0 {
+                    slot[sid] = used_ids.len() as u32;
+                    used_ids.push(sid as i32);
+                    total += c as i32;
+                    ends.push(total);
+                    used_any[sid] = true;
+                }
+            }
+            let mut cursor: Vec<i32> = ends
+                .iter()
+                .zip(
+                    &counts
+                        .iter()
+                        .filter(|&&c| c > 0)
+                        .map(|&c| c as i32)
+                        .collect::<Vec<_>>(),
+                )
+                .map(|(end, c)| end - c)
+                .collect();
+            let mut postings = vec![0i32; call_site_count];
+            for (node, f) in nodes.iter().zip(&fields) {
+                let s = slot[f[property] as usize] as usize;
+                postings[cursor[s] as usize] = *node as i32;
+                cursor[s] += 1;
+            }
+            csrs.push((used_ids, ends, postings));
+        }
+        for (used_ids, _, _) in &csrs {
+            i32be(used_ids.len() as i32, &mut out);
+        }
+
+        // Signatures and trigram postings over the lowercase form of every string some
+        // property uses; an unused string keeps signature 0 and no postings.
+        let mut signatures = vec![0i64; string_count];
+        let mut postings: Vec<i64> = Vec::new();
+        let mut seen: Vec<i32> = Vec::new();
+        for (sid, &used) in used_any.iter().enumerate() {
+            if !used {
+                continue;
+            }
+            let lowered: String = string_of(sid)
+                .chars()
+                .flat_map(|c| c.to_lowercase())
+                .collect();
+            let units: Vec<u16> = lowered.encode_utf16().collect();
+            if units.len() < MIN_TRIGRAM_LENGTH {
+                continue;
+            }
+            let mut signature = 0i64;
+            seen.clear();
+            for position in 0..=units.len() - MIN_TRIGRAM_LENGTH {
+                let hash = trigram_hash(&units, position);
+                let mixed = hash ^ ((hash as u32) >> 11) as i32 ^ (hash << 7);
+                signature |= 1i64 << (hash & SIGNATURE_MASK);
+                signature |= 1i64 << (mixed & SIGNATURE_MASK);
+                if !seen.contains(&hash) {
+                    seen.push(hash);
+                    postings.push(((hash as i64) << 32) | (sid as i64 & 0xFFFF_FFFF));
+                }
+            }
+            signatures[sid] = signature;
+        }
+        postings.sort_unstable();
+        i32be(postings.len() as i32, &mut out);
+        out.extend_from_slice(&0i64.to_be_bytes()); // retained-bytes estimate
+
+        for (used_ids, ends, node_ids) in &csrs {
+            for v in used_ids.iter().chain(ends).chain(node_ids) {
+                i32be(*v, &mut out);
+            }
+        }
+        for sig in &signatures {
+            out.extend_from_slice(&sig.to_be_bytes());
+        }
+        for key in &postings {
+            out.extend_from_slice(&key.to_be_bytes());
+        }
+        out.extend_from_slice(&0i64.to_be_bytes()); // trailing checksum, not verified
+        Self::parse(IndexBytes::Owned(out), "<in-memory>", string_count, None)
+    }
+
+    fn parse(
+        map: IndexBytes,
+        name: &str,
+        string_count: usize,
+        content_identity: Option<&[u8; CONTENT_IDENTITY_BYTES]>,
+    ) -> Result<CallSiteStringIndex, IndexError> {
+        let name = || name.to_string();
         if map.len() < HEADER_BYTES {
             return Err(IndexError::BadHeader(name()));
         }
@@ -168,7 +334,7 @@ impl CallSiteStringIndex {
         if cursor + 8 != map.len() {
             return Err(IndexError::BadHeader(name()));
         }
-        Ok(Some(CallSiteStringIndex {
+        Ok(CallSiteStringIndex {
             map,
             trigram_filter: std::sync::OnceLock::new(),
             string_count: strings,
@@ -177,7 +343,12 @@ impl CallSiteStringIndex {
             signatures,
             trigram_postings,
             trigram_posting_count,
-        }))
+        })
+    }
+
+    /// Whether the index was assembled in memory rather than read from the file.
+    pub fn is_in_memory(&self) -> bool {
+        matches!(self.map, IndexBytes::Owned(_))
     }
 
     pub fn string_count(&self) -> usize {
@@ -644,6 +815,113 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
+    }
+
+    /// The in-memory build must read exactly like the file the Kotlin writer produces
+    /// for the same records: same postings, same trigram runs, same signatures.
+    #[test]
+    fn in_memory_build_matches_the_written_layout() {
+        let dir = tempdir("build");
+        let strings = ["Foo", "bar", "quxx"];
+        // Node 0..4 with (caller_class, caller_name, callee_class, callee_name).
+        let records: Vec<(u32, [u32; 4])> = vec![
+            (0, [0, 2, 0, 1]),
+            (1, [1, 2, 0, 1]),
+            (2, [0, 2, 0, 1]),
+            (3, [1, 2, 0, 1]),
+        ];
+        let built = CallSiteStringIndex::build(
+            3,
+            &|i| strings[i].to_string(),
+            &mut records.clone().into_iter(),
+        )
+        .unwrap();
+        assert!(built.is_in_memory());
+        // The writer's view of the same records, through the test Builder.
+        let mut b = Builder::new(3, 4);
+        b.properties[0] = vec![(0, vec![0, 2]), (1, vec![1, 3])];
+        b.properties[1] = vec![(2, vec![0, 1, 2, 3])];
+        b.properties[2] = vec![(0, vec![0, 1, 2, 3])];
+        b.properties[3] = vec![(1, vec![0, 1, 2, 3])];
+        b.signatures = strings
+            .iter()
+            .map(|s| literal_signature(s) as i64)
+            .collect();
+        for (sid, s) in strings.iter().enumerate() {
+            for t in literal_trigrams(s).unwrap() {
+                b.postings.push(key(t, sid as i32));
+            }
+        }
+        b.postings.sort_unstable();
+        b.write(&dir.join("graph.callsite-string-index"));
+        let written = CallSiteStringIndex::load(&dir, 3, Some(&b.identity))
+            .unwrap()
+            .expect("index");
+        // Everything after the header's identity and estimate is byte-identical.
+        let (a, w): (&[u8], &[u8]) = (&built.map, &written.map);
+        assert_eq!(a.len(), w.len());
+        assert_eq!(&a[..16], &w[..16]);
+        assert_eq!(
+            &a[16 + CONTENT_IDENTITY_BYTES..a.len() - 8],
+            &w[16 + CONTENT_IDENTITY_BYTES..w.len() - 8]
+        );
+        for property in 0..PROPERTY_COUNT {
+            for sid in 0..3 {
+                let x: Vec<u32> = built
+                    .postings(property, sid)
+                    .map(|p| p.collect())
+                    .unwrap_or_default();
+                let y: Vec<u32> = written
+                    .postings(property, sid)
+                    .map(|p| p.collect())
+                    .unwrap_or_default();
+                assert_eq!(x, y, "property {property} string {sid}");
+            }
+        }
+        for t in literal_trigrams("quxx").unwrap() {
+            assert_eq!(
+                built.trigram_string_ids(t).iter().collect::<Vec<_>>(),
+                written.trigram_string_ids(t).iter().collect::<Vec<_>>()
+            );
+        }
+    }
+
+    /// With a real graph directory at hand, the in-memory build reproduces the
+    /// persisted file byte for byte, apart from the identity, estimate and checksum.
+    #[test]
+    fn in_memory_build_reproduces_a_real_persisted_index() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            return;
+        };
+        let graph = crate::graph::Graph::load(Path::new(&dir)).unwrap();
+        let persisted = graph.call_site_index().expect("fixture has the file");
+        assert!(!persisted.is_in_memory());
+        let mut ids: Vec<u32> = graph.ids_by_tag(crate::node::TAG_CALL_SITE_NODE).to_vec();
+        ids.sort_unstable();
+        let mut call_sites = ids.iter().filter_map(|&id| {
+            let s = graph.call_site_strings(id)?;
+            Some((
+                id,
+                [s.caller_class, s.caller_name, s.callee_class, s.callee_name],
+            ))
+        });
+        let built = CallSiteStringIndex::build(
+            graph.strings.len(),
+            &|i| graph.strings.get(i).to_string(),
+            &mut call_sites,
+        )
+        .unwrap();
+        let (a, w): (&[u8], &[u8]) = (&built.map, &persisted.map);
+        assert_eq!(a.len(), w.len(), "length");
+        assert_eq!(&a[..16], &w[..16], "header");
+        let body = HEADER_BYTES;
+        assert_eq!(
+            &a[16 + CONTENT_IDENTITY_BYTES..body - 8],
+            &w[16 + CONTENT_IDENTITY_BYTES..body - 8],
+            "counts"
+        );
+        let first_diff = (body..a.len() - 8).find(|&i| a[i] != w[i]);
+        assert_eq!(first_diff, None, "first differing byte");
     }
 
     #[test]

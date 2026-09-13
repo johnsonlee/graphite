@@ -288,7 +288,7 @@ impl Graph {
         )
         .map_err(|e| GraphError::CallSiteIndex(e.to_string()))?;
 
-        Ok(Graph {
+        let mut graph = Graph {
             dir,
             node_version,
             strings,
@@ -305,7 +305,31 @@ impl Graph {
             resources,
             call_site_index,
             property_names_in_dictionary: std::sync::OnceLock::new(),
-        })
+        };
+        if graph.call_site_index.is_none() && graph.count_by_tag(TAG_CALL_SITE_NODE) > 0 {
+            // No persisted index: build the same structure in memory, as the Kotlin
+            // server does for a graph written before the index existed.
+            let mut ids: Vec<NodeId> = graph.ids_by_tag(TAG_CALL_SITE_NODE).to_vec();
+            ids.sort_unstable();
+            let data = &graph.nodedata;
+            let mut call_sites = ids.iter().filter_map(|&id| {
+                let off = graph.node_offset(id)?;
+                let s = read_call_site_strings(data, off);
+                Some((
+                    id,
+                    [s.caller_class, s.caller_name, s.callee_class, s.callee_name],
+                ))
+            });
+            let strings = &graph.strings;
+            let built = crate::callsite_index::CallSiteStringIndex::build(
+                strings.len(),
+                &|i| strings.get(i).to_string(),
+                &mut call_sites,
+            )
+            .map_err(|e| GraphError::CallSiteIndex(e.to_string()))?;
+            graph.call_site_index = Some(built);
+        }
+        Ok(graph)
     }
 
     /// The persisted CallSite string accelerator, when the graph directory carries one.

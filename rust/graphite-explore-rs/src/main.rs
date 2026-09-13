@@ -181,6 +181,22 @@ fn run(cli: Cli) -> Result<(), String> {
         }
         eprintln!("Data: {}", root.display());
         eprintln!("Loaded graphs: {}", registry.ids().join(", "));
+        // A graph written before `graph.callsite-string-index` existed gets the same
+        // index built in memory at load; say which, since it costs startup time and
+        // memory that the file would not.
+        let built: Vec<String> = registry
+            .list()
+            .iter()
+            .filter(|g| g.graph.call_site_index().is_some_and(|i| i.is_in_memory()))
+            .map(|g| g.id.clone())
+            .collect();
+        if !built.is_empty() {
+            eprintln!(
+                "CallSite string index built in memory for {} graph(s) without graph.callsite-string-index: {}",
+                built.len(),
+                built.join(", ")
+            );
+        }
         eprintln!("Topology: {} graphs, {} relations", registry.ids().len(), 0);
         let _ = topology_queries;
         eprintln!(
