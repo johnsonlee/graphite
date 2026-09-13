@@ -34,6 +34,11 @@ async function monitor(name, snapshots, { apiError, clock = Date } = {}) {
 const completed = (name, conclusion = 'success') => ({ name, status: 'completed', conclusion, html_url: `https://example.test/${name}` });
 const active = name => ({ name, status: 'in_progress', conclusion: null });
 const verdicts = () => Array.from({ length: 72 }, (_, i) => completed(`wide-query-latency-query-${i}`));
+const requiredNames = needs('benchmark-regression-gate')
+    .filter(name => !['benchmark-fail-fast', 'benchmark-fail-fast-late', 'wide-query-latency-gate'].includes(name))
+    .map(name => jobs.get(name).match(/^    name: (.*)$/m)[1]);
+const requiredChecks = () => requiredNames.map(name => completed(name));
+
 
 test('cheap contracts gate expensive entry jobs and real CPU accounting gates fixture64 without DAG cycles', () => {
     const visited = new Set(), visiting = new Set();
@@ -108,8 +113,8 @@ test('late monitor ends after all work without waiting on itself or dependent re
     const excluded = [active('benchmark-fail-fast'), active('benchmark-fail-fast-late'),
         active('benchmark-regression-gate'), completed('benchmark-comment', 'failure')];
     const result = await monitor('benchmark-fail-fast-late', [
-        [...verdicts(), ...excluded, active('large-corpus-benchmarks')],
-        [...verdicts(), ...excluded, completed('large-corpus-benchmarks')],
+        [...verdicts(), ...excluded, ...requiredChecks().filter(job => job.name !== 'large-corpus-benchmarks'), active('large-corpus-benchmarks')],
+        [...verdicts(), ...excluded, ...requiredChecks()],
     ]);
     assert.equal(result.calls.length, 2);
     assert.equal(result.cancellations.length, 0);
@@ -186,5 +191,40 @@ test('aggregation runs after ordinary failures but does not survive workflow can
         'wide-latency-measurements', 'global-wide-pressure-evidence', 'benchmark-prerequisites']) {
         assert.match(jobs.get(name), /^      if: always\(\)/m,
             `${name} must retain step-level diagnostic artifact cleanup`);
+    }
+});
+
+
+test('late completion uses exact required check names and tolerates stale auxiliary API state only', async () => {
+    const configured = JSON.parse(script('benchmark-fail-fast-late').match(/const requiredChecks = (\[[^;]+\]);/)[1]);
+    assert.deepEqual(configured, requiredNames, 'monitor completion stays aligned with the authoritative gate dependencies');
+    const staleParent = active('build-explore-jmh-base');
+    const result = await monitor('benchmark-fail-fast-late', [[...requiredChecks(), ...verdicts(), staleParent]]);
+    assert.equal(result.calls.length, 1);
+    assert.equal(result.cancellations.length, 0);
+    assert.equal(staleParent.status, 'in_progress', 'do not claim the auxiliary parent became terminal');
+    for (const unresolved of requiredNames) {
+        const result = await monitor('benchmark-fail-fast-late', [
+            [...requiredChecks().filter(job => job.name !== unresolved), active(unresolved), ...verdicts(), staleParent],
+            [...requiredChecks(), ...verdicts(), staleParent],
+        ]);
+        assert.equal(result.calls.length, 2, `${unresolved} must actually be terminal before monitor completion`);
+    }
+    const failedAuxiliary = await monitor('benchmark-fail-fast-late', [
+        [...requiredChecks(), ...verdicts(), completed('build-explore-jmh-base', 'failure')],
+    ]);
+    assert.equal(failedAuxiliary.cancellations.length, 1, 'failure detection must still include auxiliary jobs');
+});
+
+test('missing or duplicate query verdicts and required checks cannot finish the late monitor', async () => {
+    for (const incomplete of [
+        [...requiredChecks(), ...verdicts().slice(1)],
+        [...requiredChecks(), ...verdicts().slice(1), verdicts()[1]],
+        [...requiredChecks().slice(1), ...verdicts()],
+        [...requiredChecks(), requiredChecks()[0], ...verdicts()],
+    ]) {
+        const result = await monitor('benchmark-fail-fast-late', [incomplete, [...requiredChecks(), ...verdicts()]]);
+        assert.equal(result.calls.length, 2);
+        assert.equal(result.cancellations.length, 0);
     }
 });

@@ -245,14 +245,15 @@ jobs:
       uses: actions/github-script@v8
       with:
         script: |
-          const ignored = new Set(['benchmark-fail-fast', 'benchmark-fail-fast-late', 'benchmark-regression-gate', 'benchmark-comment']);
+          // Exact required checks, not auxiliary build/cache parents whose API state may lag.
+          // Terminal downstream checks do not relabel those parents as completed.
+          const requiredChecks = ["benchmark-prerequisites", "candidate-gate-tests", "method-level-benchmarks", "explorer-benchmarks", "method-compatibility-gate", "cypher-capacity-gate", "budgeted-collection-latency", "budgeted-mapped-string-latency", "large-corpus-benchmarks", "wrapped-query-latency", "wrapped-query-resources", "graph-routing-pressure-evidence", "global-wide-pressure-evidence", "validate-cpu-accounting"];
           const hardFailures = new Set(['failure', 'timed_out', 'action_required', 'startup_failure']);
           const deadline = Date.now() + 359 * 60 * 1000;
           while (Date.now() < deadline) {
             const jobs = await github.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/jobs', {
               ...context.repo, run_id: context.runId, attempt_number: Number(process.env.GITHUB_RUN_ATTEMPT), per_page: 100
             });
-            const work = jobs.filter(job => !ignored.has(job.name));
             const failed = jobs.find(job => job.name !== 'benchmark-fail-fast-late' &&
               !['benchmark-regression-gate', 'benchmark-comment'].includes(job.name) &&
               job.status === 'completed' && hardFailures.has(job.conclusion));
@@ -262,8 +263,14 @@ jobs:
               await github.rest.actions.cancelWorkflowRun({ ...context.repo, run_id: context.runId });
               return;
             }
-            const verdicts = work.filter(job => job.name.startsWith('wide-query-latency-'));
-            if (verdicts.length === 72 && work.every(job => job.status === 'completed')) return;
+            const verdicts = jobs.filter(job => job.name.startsWith('wide-query-latency-'));
+            const requiredFinished = requiredChecks.every(name => {
+              const matches = jobs.filter(job => job.name === name);
+              return matches.length === 1 && matches[0].status === 'completed';
+            });
+            if (requiredFinished && verdicts.length === 72 &&
+              new Set(verdicts.map(job => job.name)).size === 72 &&
+              verdicts.every(job => job.status === 'completed')) return;
             await new Promise(resolve => setTimeout(resolve, 15000));
           }
           throw new Error('Benchmark cancellation monitor exceeded its bounded observation window');
