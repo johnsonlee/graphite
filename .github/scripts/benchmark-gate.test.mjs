@@ -838,7 +838,7 @@ test("fixture64 global-wide driver binds pinned JAR provenance and alternates pa
     assert.match(driver, /gh gist create --public/);
 });
 
-test("fixture64 startup-prepared graphId pressure guards the optimization already on main", () => {
+test("fixture64 startup-prepared graphId pressure preserves index checks and reports startup ratios", () => {
     const startupBase = graphIdPressureResult({
         callSiteIndexAdmittedGraphs: 64,
         callSiteIndexRetainedBytes: 1024,
@@ -876,7 +876,8 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
         graphIdObservations(1_000_000, "success", 1_000_000),
         graphIdObservations(2_000_000, "success", 2_000_000)
     );
-    assert.equal(materiallyRegressed.passed, false);
+    assert.equal(materiallyRegressed.passed, true);
+    assert.match(materiallyRegressed.advisoryErrors.join("\n"), /latency regressed/);
     assert.equal(materiallyRegressed.p50Speedup, 0.5);
     assert.equal(materiallyRegressed.p95Speedup, 0.5);
 
@@ -3517,4 +3518,40 @@ test("workflow applies withdrawn resource growth constraints in both initial and
     assert.match(block, /"\$\{COMPARATOR\}" confirm-latency-resources/);
     assert.match(workflow, /secondaryMetrics\.processCpuNanos\.score > 0/);
     assert.match(workflow, /secondaryMetrics\.residentSetAfterBytes\.score > 0/);
+});
+
+
+test("startup-prepared numeric regression is diagnostic but warm regression still blocks", () => {
+    const counters = { callSiteIndexAdmittedGraphs: 64, callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64, callSiteParallelScanCount: 0 };
+    const before = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
+    const after = graphIdObservations(2_000_000_000, "success", 2_000_000_000);
+    const startup = compareGraphIdPressure([graphIdPressureResult(counters, "startup-prepared")],
+        [graphIdPressureResult(counters, "startup-prepared")], before, after);
+    assert.equal(startup.passed, true, startup.errors.join("\n"));
+    assert.equal(startup.latencyBlocking, false);
+    assert.match(startup.advisoryErrors.join("\n"), /latency regressed/);
+    assert.match(renderGraphIdPressureReport(startup), /Unwarmed query latency/);
+    const warm = compareGraphIdPressure([graphIdPressureResult(counters, "warm")],
+        [graphIdPressureResult(counters, "warm")], before, after);
+    assert.equal(warm.passed, false);
+    assert.equal(warm.latencyBlocking, true);
+    assert.match(warm.errors.join("\n"), /latency regressed/);
+});
+
+test("startup-prepared diagnostics still reject incorrect results and missing prepared indexes", () => {
+    const counters = { callSiteIndexAdmittedGraphs: 64, callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64, callSiteParallelScanCount: 0 };
+    const result = graphIdPressureResult(counters, "startup-prepared");
+    const observations = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
+    const incorrect = compareGraphIdPressure([result], [result], observations, observations.replace("success", "failed"));
+    assert.equal(incorrect.passed, false);
+    assert.ok(incorrect.errors.length > 0);
+    const missing = compareGraphIdPressure([result], [graphIdPressureResult({ ...counters,
+        callSiteTrigramIndexedGraphs: 63 }, "startup-prepared")], observations, observations);
+    assert.equal(missing.passed, false);
+    assert.match(missing.errors.join("\n"), /all 64 graphs/);
+    const invalidState = compareGraphIdPressure([result], [graphIdPressureResult(counters, "unknown")], observations, observations);
+    assert.equal(invalidState.passed, false);
+    assert.match(invalidState.errors.join("\n"), /indexState/);
 });

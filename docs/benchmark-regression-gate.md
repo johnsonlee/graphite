@@ -364,8 +364,9 @@ coverage, worker accounting, and the effective 8 GiB heap requirement still fail
 Direct driver invocations retain the strict default. Diagnostic mode cannot publish the legacy
 strict-target external success status. Failed comparisons retain their provenance and observations.
 
-Graph-routing cold-state numerical latency is likewise advisory; warm and startup-prepared
-latency checks remain blocking. Every state's result and measurement-integrity checks remain
+Graph-routing `cold` and `startup-prepared` numerical latency is likewise advisory.
+`startup-prepared` prepares indexes at load time but performs no query warmup; it does not measure
+steady-state query latency. Only `warm` numerical latency remains blocking under its existing limits. Every state's result and measurement-integrity checks remain
 required. This prerequisite does not implement or weaken the separate 72-query warmed P50/P95
 protocol, whose regression and stability limits remain strictly below 5%.
 
@@ -377,3 +378,9 @@ and Explorer memory-stability checks are unchanged. CPU accounting remains stric
 a CPU growth threshold does not authorize missing, negative, or invalid CPU measurements.
 The wrapped resource job uses the reviewed SHA-pinned candidate comparator for both initial
 and reverse-order confirmation comparisons; the paired execution harness remains base-owned.
+
+
+This state classification follows `setupInvocation()`: `warm` performs one untimed replay,
+whereas `startup-prepared` performs none. It does not establish that the legacy warm protocol
+(one replay and one measured sample per query, with mixed-query percentiles) meets the separate
+per-query timed warmup and repeated P50/P95 protocol. That protocol remains independent.

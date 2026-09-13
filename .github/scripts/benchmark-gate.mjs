@@ -1497,8 +1497,9 @@ export function compareGraphIdPressure(
         ["request-selected P50", graphParameterP50Passed], ["request-selected P95", graphParameterP95Passed]]) {
         if (!passed) latencyErrors.push(`${label}: latency regressed beyond the relative and absolute limits`);
     }
-    // Keep cold observations for correctness and diagnostics, without gating startup performance.
-    const latencyBlocking = candidateIndexState !== "cold";
+    // Only warm executes query warmup. startup-prepared builds indexes at load time but
+    // performs no query warmup, so its first-query timings are startup diagnostics too.
+    const latencyBlocking = candidateIndexState === "warm";
     const advisoryErrors = latencyBlocking ? [] : latencyErrors;
     if (latencyBlocking) errors.push(...latencyErrors);
     const passed = errors.length === 0;
@@ -2154,7 +2155,7 @@ export function renderGraphIdPressureReport(comparison) {
         `Index state: **${comparison.indexState}**`,
         "",
         comparison.latencyBlocking === false
-            ? "Cold-state latency and the first cold request are advisory; correctness and evidence integrity remain blocking."
+            ? "Unwarmed query latency (cold or startup-prepared) is advisory; correctness and evidence integrity remain blocking."
             : `Post-optimization regression gate: query-level graphId and request-selected P50/P95 may regress by at most ` +
                 `${(comparison.maximumGraphParameterRegression * 100).toFixed(0)}% or 0.25ms of absolute jitter.`,
         "",
@@ -2211,7 +2212,7 @@ export function renderGraphIdPressureReport(comparison) {
             `${(row.candidateLatencyNanos / 1e9).toFixed(3)}s | ${row.speedup.toFixed(2)}x |`);
     }
     if (comparison.advisoryErrors?.length > 0) {
-        lines.push("", "Cold latency diagnostics (advisory):", ...comparison.advisoryErrors.map((error) => `- ${error}`));
+        lines.push("", "Unwarmed latency diagnostics (advisory):", ...comparison.advisoryErrors.map((error) => `- ${error}`));
     }
     if (comparison.errors.length > 0) {
         lines.push("", "Errors:", ...comparison.errors.map((error) => `- ${error}`));
