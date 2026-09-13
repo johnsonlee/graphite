@@ -17,6 +17,8 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
+import io.johnsonlee.graphite.graph.propertyTextFragment
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
@@ -157,6 +159,7 @@ internal class MappedWebGraphBackedGraph(
     private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>
 ) : Graph,
+    NodePropertyTextCandidates,
     StreamingMethodLookup,
     WorkAwareStringPropertyLookup,
     WorkAwareTransformedStringPropertyLookup,
@@ -267,6 +270,18 @@ internal class MappedWebGraphBackedGraph(
         nodeTypeIndex.count(type)
 
     override fun stringPropertyNodeOrder(node: Node): Long = nodeOffsets.offset(node.id.value)
+
+    override fun <T : Node> propertyTextCandidates(
+        type: Class<T>,
+        fragment: String,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? {
+        if (propertyTextFragment(fragment) != fragment) return null
+        return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable)
+            .ids(type, fragment, workConsumer).mapNotNull { nodeId ->
+                node(NodeId(nodeId))?.takeIf(type::isInstance)?.let(type::cast)
+            }
+    }
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
     override fun <T : Node> nodesByStringProperty(
@@ -2624,7 +2639,7 @@ internal data class RawStringMatchKey(
     val expected: String
 )
 
-private data class StringPredicateKey(
+internal data class StringPredicateKey(
     val transform: StringValueTransform?,
     val mode: StringMatchMode,
     val expected: String
@@ -2665,7 +2680,7 @@ private class RawProjectionMatches {
  * Serial, allocation-bounded predicate state for scans over a large global string table.
  * A cache collision only repeats the deterministic comparison and cannot change its result.
  */
-private class BoundedStringMatcher(
+internal class BoundedStringMatcher(
     private val stringTable: StringTable,
     private val predicate: StringPredicateKey,
     cacheCapacity: Int = LOCAL_STRING_MATCH_CACHE_CAPACITY

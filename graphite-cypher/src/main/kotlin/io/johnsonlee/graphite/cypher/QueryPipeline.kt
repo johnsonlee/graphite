@@ -27,6 +27,8 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
+import io.johnsonlee.graphite.graph.propertyTextFragment
 import io.johnsonlee.graphite.graph.GraphScanParallelismPlan
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
@@ -1511,7 +1513,10 @@ class QueryPipeline private constructor(
             null
         }
         val predicateBindings = mutableMapOf<String, Any?>(variable to null)
-        for (candidate in nodeCandidates(nodeClass, candidateSources)) {
+        val propertyCandidates = if (nodePattern.properties.isEmpty()) {
+            dynamicPropertyCandidates(nodeClass, filterCondition, variable, candidateSources)
+        } else null
+        for (candidate in propertyCandidates ?: nodeCandidates(nodeClass, candidateSources)) {
             if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
 
             predicateBindings[variable] = candidate
@@ -4697,6 +4702,33 @@ class QueryPipeline private constructor(
 
     private fun findLastBoundNode(bindings: Map<String, Any?>): NodeCursor? =
         nodeCursor(bindings[INTERNAL_CURRENT_NODE_KEY])
+
+    /** A storage candidate is never an answer: the complete ANY predicate still runs on every survivor. */
+    private fun dynamicPropertyCandidates(
+        nodeClass: Class<out Node>,
+        condition: CypherExpr,
+        variable: String,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Any>? {
+        val expression = condition as? CypherExpr.PredicateFunction ?: return null
+        val plan = DynamicPropertyContainsPlan.compile(expression)?.takeIf { it.nodeVariable == variable } ?: return null
+        val needle = when (val term = plan.term) {
+            is CypherExpr.Literal -> term.value
+            is CypherExpr.Parameter -> activeParameters.get()?.get(term.name)
+            else -> null
+        } as? String ?: return null
+        val fragment = propertyTextFragment(needle) ?: return null
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        return candidateSources.asSequence().flatMap { source ->
+            // Metadata is not stored in the node record. A graph ID hit (including
+            // the prefix of an element ID) must retain every node in that graph.
+            val lookup = (source.graph as? NodePropertyTextCandidates)
+                ?.takeUnless { qualified && source.id.contains(fragment) }
+            val candidates = lookup?.propertyTextCandidates(nodeClass, fragment, tracker)
+                ?: trackWork(source.graph.nodes(nodeClass), tracker)
+            candidates.map { node -> nodeValue(source, node) }
+        }
+    }
 
     private fun <T : Node> nodeCandidates(
         type: Class<T>,

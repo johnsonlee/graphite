@@ -1282,3 +1282,39 @@ is used.
 
 **Conclusion:** keep. A string candidate cannot justify string-only aggregation or
 raw JVM equality over a heterogeneous projected property.
+
+
+### 2026-09-13 - Attempt 028: Prefilter dynamic properties using raw string references
+
+**Hypothesis:** avoid decoding every node for ANY/keys/toString/CONTAINS. Select a
+necessary ASCII identifier fragment and inspect raw string references in supported
+persisted node records. Preserve source order and fully evaluate the original predicate
+on every survivor. Numeric/generated-token-only needles, external graph metadata hits,
+unknown schemas, enums, resource values, and dynamic annotations retain safe fallbacks.
+The matcher is query-local and bounded; no new persisted index is introduced.
+
+**Base/candidate:** semantic reference is main `144d98ef` plus only the string-subscript
+repair. Frozen V2 candidate JAR SHA-256 is
+`760e4cfa924a10f8a22b19bdb268650544676212f3501a290c395280e83f2c18`.
+Exact source files, manifest, protocol, commands, and environment are in
+`/tmp/graphite-slow-shapes-evidence/third-isolated/`. This snapshot also includes the
+independent deferred target probe, which is not entered by these node queries.
+
+**Evidence:** one isolated real Android paired diagnostic (5,938,826 nodes) preserves
+all dynamic hit/miss ordered rows and digests. Hit improves 11,109 to 1,276 ms COLD
+(8.70x), 10,846 to 1,129 ms WARM (9.61x). Miss improves 11,031 to 1,060 ms COLD
+(10.41x), 10,953 to 928 ms WARM (11.80x). Query-window aggregate process CPU improves
+6.04x/8.18x for hit and 10.11x/11.58x for miss. No query-allocation claim is available.
+All shared fixture hashes/mtimes remain unchanged and all private copies are removed.
+Core 440 tests, Cypher 1,294 tests, six mapped-candidate tests, and three module lint
+gates pass. Synthetic fixtures verify candidate supersets, residual semantics, binary
+field layouts, encounter order, fallback, work accounting, and cancellation only.
+
+A separate JFR diagnostic attributes 36 of 64 execution samples to raw prefiltering,
+18 to surviving-node materialization, and four to ANY evaluation. String decompression
+is the largest sampled raw leaf; these sparse samples are diagnostic, not percentages
+of wall latency or precise candidate counts.
+
+**Conclusion:** keep as an intermediate optimization. Dynamic hits remain below 10x;
+further work should reduce repeated string decoding and false-positive materialization.
+Final repeated paired measurements and broad regression gates remain outstanding.
