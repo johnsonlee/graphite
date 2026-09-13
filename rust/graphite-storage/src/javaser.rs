@@ -282,8 +282,10 @@ impl<'a> Parser<'a> {
                     b'C' => {
                         let b = self.bytes(n * 2)?;
                         Value::CharArray(
-                            b.chunks_exact(2)
-                                .map(|c| u16::from_be_bytes([c[0], c[1]]))
+                            b.as_chunks::<2>()
+                                .0
+                                .iter()
+                                .map(|c| u16::from_be_bytes(*c))
                                 .collect(),
                         )
                     }
@@ -291,16 +293,20 @@ impl<'a> Parser<'a> {
                     b'I' => {
                         let b = self.bytes(n * 4)?;
                         Value::IntArray(
-                            b.chunks_exact(4)
-                                .map(|c| i32::from_be_bytes([c[0], c[1], c[2], c[3]]))
+                            b.as_chunks::<4>()
+                                .0
+                                .iter()
+                                .map(|c| i32::from_be_bytes(*c))
                                 .collect(),
                         )
                     }
                     b'J' => {
                         let b = self.bytes(n * 8)?;
                         Value::LongArray(
-                            b.chunks_exact(8)
-                                .map(|c| i64::from_be_bytes(c.try_into().unwrap()))
+                            b.as_chunks::<8>()
+                                .0
+                                .iter()
+                                .map(|c| i64::from_be_bytes(*c))
                                 .collect(),
                         )
                     }
