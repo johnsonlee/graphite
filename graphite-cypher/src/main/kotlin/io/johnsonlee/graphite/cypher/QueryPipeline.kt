@@ -1624,7 +1624,10 @@ class QueryPipeline private constructor(
         nodeClass: Class<out Node>,
         filter: DirectStringFilter
     ): Boolean = DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
-        nodeClass.isAssignableFrom(candidateType) && filter.property in properties
+        // Concrete value labels already have single-property index admission and budget semantics.
+        // Only polymorphic value discovery needs the new merge of typed candidate streams.
+        nodeClass.isAssignableFrom(candidateType) && filter.property in properties &&
+            (filter.property != "value" || nodeClass != candidateType)
     }
 
     @Suppress("LongParameterList")

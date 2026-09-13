@@ -1472,3 +1472,28 @@ only after full checks.
 **Conclusion:** keep explicit resource scope and unavailable-counter handling. Final
 reports must continue distinguishing query-window allocated bytes, bounded cache payload,
 and lifecycle/peak-memory observations.
+
+
+### 2026-09-13 - Attempt 034: Preserve existing concrete-label value index admission
+
+**Hypothesis:** adding value to typed candidate discovery unintentionally redirects an
+already labeled StringConstant query from its established single-property lookup to
+the disjunction capability. Preserve the original route for concrete value labels;
+only polymorphic Node/Constant discovery needs the new merge of typed streams.
+
+**Base/candidate:** latest main remains `144d98ef`. This is a compatibility correction
+to Attempt 021; final candidate measurements must use the rebuilt corrected head.
+The eight main-baseline target benchmark query shapes are untyped, so their intended
+candidate selection is unchanged, but earlier candidate JARs are not the final artifact.
+
+**Evidence:** full check exposed the existing
+`MappedCypherBudgetTest.mapped existing string index charges internal candidate scans`:
+two labeled queries admitted zero indexes instead of the established one. Restoring
+single-property lookup preserves admission, cached late-match values, and internal
+scan-budget failures. The unchanged three-test mapped budget suite, all Cypher tests,
+and Cypher lint now pass in `/tmp/graphite-slow-shapes-typed-value-tests.log`.
+This is a concrete regression found by the broad gate, not a changed test expectation.
+No new performance speedup is claimed. Full checks and final comparisons remain pending.
+
+**Conclusion:** keep the compatibility correction. An optimization of untyped discovery
+must not silently change existing labeled-query index policy or work accounting.
