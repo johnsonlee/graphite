@@ -1409,3 +1409,35 @@ fallback kinds, order, legacy capability behavior, and the two-fragment bound.
 measurements are still required. String decompression remains an evidence-backed target
 for a separate bounded-cache experiment; no change to query truth or result order is
 needed to investigate it.
+
+
+### 2026-09-13 - Attempt 032: Bound dense matcher state to avoid repeated decompression
+
+**Hypothesis:** JFR identified front-coded string decompression as the largest raw-scan
+cost. For dynamic-property dictionaries with at most 1,048,576 strings, use the existing
+matcher byte-state mode so each string is decoded once per fragment. Larger dictionaries
+retain the existing 64K collision cache. This changes no predicate, scan order, work
+accounting, persisted file, or index lifecycle.
+
+**Base/candidate:** main `144d98ef` plus the string-subscript repair, identical V2
+harness and real Android fixture. `/tmp/graphite-slow-shapes-evidence/dense-cache/`
+freezes the build-clone JAR/source identities and the exact diff versus Attempt 031;
+only `MappedPropertyTextCandidates.kt` differs in this experiment.
+
+**Evidence:** all eight dynamic observations match ordered rows/digests. Hit is 589 ms
+COLD (18.49x semantic reference) and 501 ms WARM (21.78x); miss is 637 ms COLD
+(17.15x) and 536 ms WARM (20.29x). Query-window CPU improves approximately 15–20x.
+Attempt 031 hit was about 1,044/944 ms, so the separately measured cache change removes
+much of the remaining decompression cost. All shared source hashes/mtimes remain
+unchanged and all private snapshots are removed. Nine mapped correctness tests, WebGraph
+lint, and JMH build pass in `/tmp/graphite-slow-shapes-dense-matcher-tests.log`.
+
+The state-array payload is bounded to at most 1 MiB per fragment, 2 MiB for both,
+plus array/object headers and the existing reusable decode buffers. Android's two
+arrays total 1,065,574 bytes versus 655,360 bytes of previous key/state payload. This
+is an explicit small transient-space tradeoff, not a measured heap/peak-memory claim;
+query allocation and broader lifecycle evidence will be collected separately.
+
+**Conclusion:** keep for final repeated paired comparisons and broad regression gates.
+The dynamic-query speedup now has substantially more margin than the prior 10.4x cold
+observation, while retained index policy and unrelated query paths remain unchanged.

@@ -15,7 +15,14 @@ internal class MappedPropertyTextCandidates(
 ) {
     fun ids(type: Class<out Node>, fragments: List<String>, work: GraphWorkConsumer?): Sequence<Int> = sequence {
         val matchers = fragments.map { fragment ->
-            BoundedStringMatcher(strings, StringPredicateKey(null, StringMatchMode.CONTAINS, fragment))
+            val predicate = StringPredicateKey(null, StringMatchMode.CONTAINS, fragment)
+            // A byte per string avoids repeated decompression while capping each cache at 1 MiB.
+            // Larger dictionaries retain the existing small collision cache.
+            if (strings.size() <= DENSE_MATCHER_LIMIT) {
+                BoundedStringMatcher(strings, predicate, DENSE_MATCHER_LIMIT)
+            } else {
+                BoundedStringMatcher(strings, predicate)
+            }
         }.toTypedArray()
         var inspected = 0
         for (id in types.ids(type)) {
@@ -74,6 +81,7 @@ internal class MappedPropertyTextCandidates(
     }
 
     private companion object {
+        const val DENSE_MATCHER_LIMIT = 1 shl 20
         const val NODE_HEADER_BYTES = Int.SIZE_BYTES + 1
         const val METHOD_FIXED_INTS = 4
         const val FIELD_STRING_BYTES = 3 * Int.SIZE_BYTES
