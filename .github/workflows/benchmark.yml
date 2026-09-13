@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         revision: [base, candidate]
 
@@ -165,13 +165,116 @@ jobs:
         overwrite: true
         retention-days: 2
 
+  benchmark-prerequisites:
+    name: benchmark-prerequisites
+    needs: [candidate-gate-tests, build-explore-jmh]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+    - uses: actions/download-artifact@v8
+      with:
+        name: jmh-explore-candidate-${{ github.event.pull_request.number }}
+        path: prerequisite-jmh
+    - name: Check server lifecycle and CPU accounting before expensive benchmarks
+      run: |
+        mkdir -p prerequisite-results
+        cd prerequisite-jmh
+        sha256sum -c candidate-explore-jmh.jar.sha256
+        java -cp candidate-explore-jmh.jar io.johnsonlee.graphite.cli.MethodBenchmarkServerLifecycleContract \
+          2>&1 | tee ../prerequisite-results/server-lifecycle.log
+        java -cp candidate-explore-jmh.jar io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract \
+          2>&1 | tee ../prerequisite-results/cpu-accounting.log
+    - uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: benchmark-prerequisites-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: prerequisite-results/
+        if-no-files-found: warn
+
+  benchmark-fail-fast:
+    name: benchmark-fail-fast
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    needs: [benchmark-prerequisites]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    # Never run checked-out benchmark code with the cancellation token.
+    permissions:
+      actions: write
+    steps:
+    - name: Cancel independent work after a hard benchmark failure
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const ignored = new Set(['benchmark-fail-fast', 'benchmark-regression-gate', 'benchmark-comment']);
+          const hardFailures = new Set(['failure', 'timed_out', 'action_required', 'startup_failure']);
+          const deadline = Date.now() + 355 * 60 * 1000;
+          while (Date.now() < deadline) {
+            const jobs = await github.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/jobs', {
+              ...context.repo, run_id: context.runId, attempt_number: Number(process.env.GITHUB_RUN_ATTEMPT), per_page: 100
+            });
+            const work = jobs.filter(job => !ignored.has(job.name));
+            const failed = work.find(job => job.status === 'completed' && hardFailures.has(job.conclusion));
+            if (failed) {
+              // Terminal jobs have already finished their always() diagnostic uploads.
+              core.error(`Stopping independent benchmark work after ${failed.name}: ${failed.conclusion}. Logs: ${failed.html_url}`);
+              await github.rest.actions.cancelWorkflowRun({ ...context.repo, run_id: context.runId });
+              return;
+            }
+            // Keep observing while the late monitor is queued: there is no unmonitored handoff gap.
+            const late = jobs.find(job => job.name === 'benchmark-fail-fast-late');
+            if (late?.status === 'in_progress' || (late?.status === 'completed' && late.conclusion === 'success')) return;
+            await new Promise(resolve => setTimeout(resolve, 15000));
+          }
+          throw new Error('Benchmark cancellation monitor exceeded its bounded observation window');
+
+  benchmark-fail-fast-late:
+    name: benchmark-fail-fast-late
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    needs: [build-wide-latency-bundle]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    # Never run checked-out benchmark code with the cancellation token.
+    permissions:
+      actions: write
+    steps:
+    - name: Cancel independent work after a hard benchmark failure
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const ignored = new Set(['benchmark-fail-fast', 'benchmark-fail-fast-late', 'benchmark-regression-gate', 'benchmark-comment']);
+          const hardFailures = new Set(['failure', 'timed_out', 'action_required', 'startup_failure']);
+          const deadline = Date.now() + 359 * 60 * 1000;
+          while (Date.now() < deadline) {
+            const jobs = await github.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/jobs', {
+              ...context.repo, run_id: context.runId, attempt_number: Number(process.env.GITHUB_RUN_ATTEMPT), per_page: 100
+            });
+            const work = jobs.filter(job => !ignored.has(job.name));
+            const failed = jobs.find(job => job.name !== 'benchmark-fail-fast-late' &&
+              !['benchmark-regression-gate', 'benchmark-comment'].includes(job.name) &&
+              job.status === 'completed' && hardFailures.has(job.conclusion));
+            if (failed) {
+              // Terminal jobs have already finished their always() diagnostic uploads.
+              core.error(`Stopping independent benchmark work after ${failed.name}: ${failed.conclusion}. Logs: ${failed.html_url}`);
+              await github.rest.actions.cancelWorkflowRun({ ...context.repo, run_id: context.runId });
+              return;
+            }
+            const verdicts = work.filter(job => job.name.startsWith('wide-query-latency-'));
+            if (verdicts.length === 72 && work.every(job => job.status === 'completed')) return;
+            await new Promise(resolve => setTimeout(resolve, 15000));
+          }
+          throw new Error('Benchmark cancellation monitor exceeded its bounded observation window');
+
   build-wrapped-query-jmh:
     name: build-wrapped-query-jmh-${{ matrix.revision }}
-    needs: [candidate-gate-tests]
+    needs: [candidate-gate-tests, benchmark-prerequisites]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         revision: [reference, base, candidate]
 
@@ -289,6 +392,7 @@ jobs:
 
   method-level:
     name: method-level-benchmarks
+    needs: [benchmark-prerequisites]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -546,7 +650,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
         - graph_count: 4
@@ -1192,6 +1296,7 @@ jobs:
 
   budgeted-collection:
     name: budgeted-collection-latency
+    needs: [benchmark-prerequisites]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -1316,6 +1421,7 @@ jobs:
 
   budgeted-mapped-string:
     name: budgeted-mapped-string-latency
+    needs: [benchmark-prerequisites]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -1439,7 +1545,7 @@ jobs:
 
   large-corpus:
     name: large-corpus-benchmarks
-    needs: [candidate-gate-tests]
+    needs: [candidate-gate-tests, benchmark-prerequisites]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -1653,7 +1759,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
         - shard: real-a
@@ -2115,6 +2221,7 @@ jobs:
 
   prepare-fixture64:
     name: prepare-fixture64
+    needs: [benchmark-prerequisites, validate-cpu-accounting]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -2145,9 +2252,9 @@ jobs:
       with:
         path: |
           shared-fixture64/graphs
-          fixture64-repeat-cache
+          shared-fixture64/fixture-reproducibility.json
         key: >-
-          ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v1-temurin17-${{
+          ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v2-temurin17-${{
           hashFiles('candidate/graphite-webgraph/build/benchmark-fixtures/*.jar',
           'candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties',
           'candidate/settings.gradle.kts', 'candidate/build.gradle.kts',
@@ -2159,31 +2266,44 @@ jobs:
           'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt',
           'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt',
           'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt',
+          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeTypeIndex.kt',
+          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeOffsetIndex.kt',
+          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt',
           'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/PersistedResourceAccessor.kt',
           'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt',
           'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt',
           'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt',
           'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt',
           'candidate/.github/scripts/prepare-fixture64-graphs.sh',
-          'candidate/.github/scripts/test-fixture64-reproducibility.sh') }}
+          'candidate/.github/scripts/test-fixture64-reproducibility.sh',
+          'candidate/.github/scripts/reuse-fixture64-receipt.sh',
+          'candidate/.github/scripts/verify-shared-fixture64.sh') }}
 
     - name: Generate and authenticate one shared fixture64 artifact
       env:
         CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
         FIXTURE64_CACHE_HIT: ${{ steps.fixture64-cache.outputs.cache-hit }}
+        FIXTURE64_INPUT_KEY: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
       run: |
         CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
           -maxdepth 1 -name '*-jmh.jar' -print -quit)
         FIXTURE_DIR=candidate/graphite-webgraph/build/benchmark-fixtures
         test -f "${CANDIDATE_JAR}"
         mkdir -p shared-fixture64
-        if [[ "${FIXTURE64_CACHE_HIT}" != true ]]; then
+        if [[ "${FIXTURE64_CACHE_HIT}" == true ]]; then
+          candidate/.github/scripts/reuse-fixture64-receipt.sh \
+            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
+            shared-fixture64/fixture-reproducibility.json "${FIXTURE64_INPUT_KEY}"
+        else
           candidate/.github/scripts/prepare-fixture64-graphs.sh \
             "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs
+          candidate/.github/scripts/test-fixture64-reproducibility.sh \
+            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
+            fixture64-repeat-cache shared-fixture64/fixture-reproducibility.json
+          jq --arg inputKey "${FIXTURE64_INPUT_KEY}" '. + {inputKey: $inputKey}' \
+            shared-fixture64/fixture-reproducibility.json > shared-fixture64/receipt.tmp
+          mv shared-fixture64/receipt.tmp shared-fixture64/fixture-reproducibility.json
         fi
-        candidate/.github/scripts/test-fixture64-reproducibility.sh \
-          "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
-          fixture64-repeat-cache shared-fixture64/fixture-reproducibility.json
         mapfile -t FIXTURE_JARS < <(find "${FIXTURE_DIR}" -maxdepth 1 -type f -name '*.jar' -print | sort)
         test "${#FIXTURE_JARS[@]}" -eq 4
         FIXTURE_JAR_SET_SHA=$(
@@ -2212,7 +2332,7 @@ jobs:
       with:
         path: |
           shared-fixture64/graphs
-          fixture64-repeat-cache
+          shared-fixture64/fixture-reproducibility.json
         key: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
 
     - name: Upload shared fixture64 corpus
@@ -2653,8 +2773,8 @@ jobs:
       if: always()
       run: jq -e '.passed == true' benchmark-results/graph-routing-status.json >/dev/null
 
-  global-wide-pressure-evidence:
-    name: global-wide-pressure-evidence
+  global-wide-historical-evidence:
+    name: global-wide-historical-evidence
     needs: [prepare-fixture64]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -2719,6 +2839,7 @@ jobs:
       run: |
         cd candidate
         node .github/scripts/benchmark-global-iteration.mjs \
+          --legacy-diagnostics-only \
           --references ../benchmark-results/optimization-references.json \
           --manifest ../shared-fixture64/graphs/graphs.tsv \
           --fixtures graphite-webgraph/build/benchmark-fixtures \
@@ -2729,7 +2850,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-global-wide-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        name: global-wide-history-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: error
         retention-days: 14
@@ -2737,6 +2858,138 @@ jobs:
     - name: Enforce trusted global-wide result
       if: always()
       run: jq -e '.passed == true' benchmark-results/global-wide-status.json >/dev/null
+
+  build-wide-latency-bundle:
+    name: build-wide-latency-bundle
+    needs: [candidate-gate-tests, prepare-fixture64]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        fetch-depth: 0
+        persist-credentials: false
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+    - uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+    - uses: actions/download-artifact@v8
+      with:
+        name: shared-fixture64-${{ github.event.pull_request.head.sha }}
+        path: shared-fixture64
+    - name: Build identical harnesses and record the complete base oracle
+      run: |
+        candidate/.github/scripts/build-wide-latency-bundle.sh \
+          candidate shared-fixture64 \
+          '${{ github.event.pull_request.base.sha }}' \
+          '${{ github.event.pull_request.head.sha }}' \
+          wide-latency-bundle
+    - uses: actions/upload-artifact@v7
+      with:
+        name: wide-latency-bundle-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: wide-latency-bundle/
+        if-no-files-found: error
+        retention-days: 14
+
+  wide-latency-measurements:
+    name: wide-latency-measurements-${{ matrix.shard }}
+    needs: [build-wide-latency-bundle]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: true
+      matrix:
+        shard: [standard, full-scan]
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+    - uses: actions/download-artifact@v8
+      with:
+        name: wide-latency-bundle-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: wide-latency-bundle
+    - uses: actions/download-artifact@v8
+      with:
+        name: shared-fixture64-${{ github.event.pull_request.head.sha }}
+        path: shared-fixture64
+    - name: Measure every raw query invocation in three pairs on this runner
+      run: |
+        candidate/.github/scripts/run-wide-latency-shard.sh \
+          wide-latency-bundle shared-fixture64 '${{ matrix.shard }}' \
+          '${{ github.event.pull_request.base.sha }}' \
+          '${{ github.event.pull_request.head.sha }}' \
+          wide-latency-samples
+    - uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: wide-latency-samples-${{ matrix.shard }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: wide-latency-samples/
+        if-no-files-found: error
+        retention-days: 14
+
+  global-wide-pressure-evidence:
+    name: global-wide-pressure-evidence
+    needs: [global-wide-historical-evidence, build-wide-latency-bundle, wide-latency-measurements]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+    - uses: actions/download-artifact@v8
+      with:
+        name: global-wide-history-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: legacy-results
+    - uses: actions/download-artifact@v8
+      with:
+        name: wide-latency-bundle-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: wide-latency-bundle
+    - uses: actions/download-artifact@v8
+      with:
+        name: wide-latency-samples-standard-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: samples-standard
+    - uses: actions/download-artifact@v8
+      with:
+        name: wide-latency-samples-full-scan-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: samples-full-scan
+    - name: Require both exact shards and all 72 query verdicts
+      run: |
+        node candidate/.github/scripts/benchmark-wide-shards.mjs aggregate \
+          --legacy legacy-results --bundle wide-latency-bundle \
+          --standard samples-standard --full-scan samples-full-scan \
+          --output benchmark-results \
+          --base '${{ github.event.pull_request.base.sha }}' \
+          --candidate '${{ github.event.pull_request.head.sha }}'
+    - uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: benchmark-global-wide-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 14
 
   global-wide-pressure-external-evidence-disabled:
     name: legacy-global-wide-external-evidence-disabled
@@ -3026,7 +3279,7 @@ jobs:
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, wide-query-latency-gate, validate-cpu-accounting, slow-query-shapes]
+    needs: [benchmark-fail-fast, benchmark-fail-fast-late, benchmark-prerequisites, candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, wide-query-latency-gate, validate-cpu-accounting, slow-query-shapes]
     runs-on: ubuntu-latest
 
     steps:
@@ -3148,6 +3401,10 @@ jobs:
     - name: Enforce benchmark gate
       if: always()
       env:
+        MONITORS_REQUIRED: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        PREREQUISITE_JOB: ${{ needs.benchmark-prerequisites.result }}
+        FAIL_FAST_JOB: ${{ needs.benchmark-fail-fast.result }}
+        FAIL_FAST_LATE_JOB: ${{ needs.benchmark-fail-fast-late.result }}
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
         METHOD_JOB: ${{ needs.method-level.result }}
         EXPLORER_JOB: ${{ needs.explorer.result }}
@@ -3164,6 +3421,17 @@ jobs:
         CPU_ACCOUNTING_SMOKE_JOB: ${{ needs.validate-cpu-accounting.result }}
         SLOW_QUERY_SHAPES_JOB: ${{ needs.slow-query-shapes.result }}
       run: |
+        case "${MONITORS_REQUIRED}" in
+          true) EXPECTED_MONITOR_RESULT=success ;;
+          false) EXPECTED_MONITOR_RESULT=skipped ;;
+          *) echo 'Invalid cancellation monitor policy'; exit 1 ;;
+        esac
+        if [ "${PREREQUISITE_JOB}" != success ] || \
+          [ "${FAIL_FAST_JOB}" != "${EXPECTED_MONITOR_RESULT}" ] || \
+          [ "${FAIL_FAST_LATE_JOB}" != "${EXPECTED_MONITOR_RESULT}" ]; then
+          echo 'Benchmark prerequisite or cancellation monitor failed'
+          exit 1
+        fi
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
           [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
           [ "${METHOD_COMPATIBILITY_JOB}" != success ] || \

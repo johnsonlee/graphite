@@ -25,6 +25,7 @@ import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup
 import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
+import java.io.BufferedWriter
 import java.io.Closeable
 import java.lang.management.ManagementFactory
 import java.nio.file.Files
@@ -94,6 +95,11 @@ open class LargeBroadQueryPressureBenchmark {
                 "max heap was ${Runtime.getRuntime().maxMemory()} bytes"
         }
         require(timeoutMillis > 0L)
+        if (latencyOnly()) {
+            require(!System.getProperty(LATENCY_OUTPUT_PROPERTY).isNullOrBlank()) {
+                "Latency-only mode requires -D$LATENCY_OUTPUT_PROPERTY=<raw-samples.tsv>"
+            }
+        }
         require(indexState in BROAD_QUERY_INDEX_STATES) {
             "Unknown indexState '$indexState'; expected ${BROAD_QUERY_INDEX_STATES.joinToString()}"
         }
@@ -143,11 +149,12 @@ open class LargeBroadQueryPressureBenchmark {
         queryExecutor = Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "broad-query-pressure-worker").apply { isDaemon = true }
         }
-        sampler = BroadQueryResourceSampler()
+        if (!latencyOnly()) sampler = BroadQueryResourceSampler()
     }
 
     @Setup(Level.Invocation)
     fun setupInvocation() {
+        if (latencyOnly()) return
         when (indexState) {
             COLD_INDEX_STATE -> graphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
             WARM_INDEX_STATE -> {
@@ -177,6 +184,7 @@ open class LargeBroadQueryPressureBenchmark {
 
     @Benchmark
     fun replayBroadQueries(counters: LargeBroadQueryPressureCounters): Long {
+        if (latencyOnly()) return replayDiverseLatencySamples()
         val before = sampler.current()
         val beforeCpu = processCpuTimeNanos()
         val beforeGc = gcSnapshot()
@@ -196,41 +204,88 @@ open class LargeBroadQueryPressureBenchmark {
         return samples.sumOf(BroadQuerySample::responseBytes) + samples.sumOf(BroadQuerySample::rowCount)
     }
 
-    /** Keep historic cold diagnostics separate from repeated, steady-state query latency. */
-    private fun replayDiverseLatencySamples() {
-        val output = System.getProperty(LATENCY_OUTPUT_PROPERTY) ?: return
+    /** Keep historic cold diagnostics separate from contiguous, steady-state query latency. */
+    private fun replayDiverseLatencySamples(): Long {
+        val output = System.getProperty(LATENCY_OUTPUT_PROPERTY) ?: return 0L
         val oraclePath = Path.of(requireNotNull(System.getProperty(LATENCY_ORACLE_PROPERTY)))
         val ids = diverseWorkload.mapTo(mutableSetOf(), BroadQueryCase::id)
         val expected = when (correctnessMode) {
             BroadQueryCorrectnessMode.RECORD -> {
+                // The trusted oracle always covers all 72 queries, including when a shard is selected.
                 graphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
                 val records = replay(true, diverseWorkload).map(BroadQuerySample::correctnessRecord)
                 QueryCorrectnessManifest.requireRecordable(records, ids)
                 QueryCorrectnessManifest.write(oraclePath, records)
-                records
+                return records.sumOf { it.responseBytes + it.rowCount }
             }
             BroadQueryCorrectnessMode.VERIFY -> QueryCorrectnessManifest.selectCompleteOracle(
                 QueryCorrectnessManifest.read(oraclePath), ids, oraclePath.toString()
             )
         }
-        if (correctnessMode == BroadQueryCorrectnessMode.RECORD) return
-        // Clear once before fixed warmup; retain the resulting indexes throughout measurement.
-        // This measures steady-state latency rather than repeatedly charging startup/index builds.
-        // Every warmup and measured replay verifies the same complete oracle. No adaptive retries.
+        val selected = latencyShardWorkload()
+        val expectedById = expected.associateBy(QueryCorrectnessRecord::id)
+        // Clear only before warmup, then retain indexes through each contiguous query experiment.
         graphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
-        repeat(DIVERSE_WARMUP_ROUNDS + DIVERSE_MEASURED_ROUNDS) { index ->
-            val samples = replay(true, diverseWorkload)
-            QueryCorrectnessManifest.verify(expected, samples.map(BroadQuerySample::correctnessRecord))
-            if (index >= DIVERSE_WARMUP_ROUNDS) {
-                writeObservations(samples, output, index - DIVERSE_WARMUP_ROUNDS + 1)
+        var consumed = 0L
+        Files.newBufferedWriter(Path.of(output)).use { writer ->
+            writer.write("phase\tround\tphaseElapsedNanos\t${observationHeader()}\n")
+            for (case in selected) {
+                val oracle = listOf(checkNotNull(expectedById[case.id]))
+                consumed += replayLatencyPhase(case, oracle, "warmup", DIVERSE_WARMUP_MIN_CALLS, writer)
+                consumed += replayLatencyPhase(case, oracle, "measurement", DIVERSE_MEASURED_MIN_CALLS, writer)
+                writer.flush()
             }
         }
+        return consumed
     }
+
+    private fun replayLatencyPhase(
+        case: BroadQueryCase,
+        expected: List<QueryCorrectnessRecord>,
+        phase: String,
+        minimumInvocations: Int,
+        writer: BufferedWriter
+    ): Long {
+        val selected = listOf(case)
+        var round = 0
+        var elapsedNanos: Long
+        var consumed = 0L
+        val started = System.nanoTime()
+        do {
+            val sample = replay(true, selected).single()
+            elapsedNanos = System.nanoTime() - started
+            round++
+            // Record even a mismatching result before the hard correctness check aborts this run.
+            writer.write("$phase\t$round\t$elapsedNanos\t${observationRow(sample)}\n")
+            QueryCorrectnessManifest.verify(expected, listOf(sample.correctnessRecord()))
+            consumed += sample.responseBytes + sample.rowCount
+        } while (round < minimumInvocations || elapsedNanos < DIVERSE_PHASE_MIN_NANOS)
+        return consumed
+    }
+
+    private fun latencyShardWorkload(): List<BroadQueryCase> = when (
+        val shard = System.getProperty(LATENCY_SHARD_PROPERTY, "all")
+    ) {
+        "all" -> diverseWorkload
+        "standard" -> diverseWorkload.filterNot { it.id == FULL_SCAN_LATENCY_QUERY }
+        "full-scan" -> diverseWorkload.filter { it.id == FULL_SCAN_LATENCY_QUERY }
+        else -> error("Unknown latency shard '$shard'; expected all, standard, or full-scan")
+    }
+
+    private fun latencyOnly(): Boolean = java.lang.Boolean.getBoolean(LATENCY_ONLY_PROPERTY)
 
     private fun configureCorrectnessGate() {
         correctnessMode = BroadQueryCorrectnessMode.parse(
             System.getProperty(CORRECTNESS_MODE_PROPERTY) ?: BroadQueryCorrectnessMode.VERIFY.id
         )
+        if (latencyOnly()) {
+            // The standalone protocol reads or records the full diverse oracle directly.
+            require(!System.getProperty(LATENCY_ORACLE_PROPERTY).isNullOrBlank()) {
+                "Latency-only mode requires -D$LATENCY_ORACLE_PROPERTY=<complete-oracle>"
+            }
+            correctnessOracle = null
+            return
+        }
         val workloadIds = workload.mapTo(mutableSetOf(), BroadQueryCase::id)
         correctnessOracle = when (correctnessMode) {
             BroadQueryCorrectnessMode.RECORD -> {
@@ -654,94 +709,90 @@ open class LargeBroadQueryPressureBenchmark {
 
     private fun writeObservations(
         samples: List<BroadQuerySample>,
-        configured: String? = System.getProperty(OBSERVATIONS_OUTPUT_PROPERTY),
-        round: Int? = null
+        configured: String? = System.getProperty(OBSERVATIONS_OUTPUT_PROPERTY)
     ) {
         if (configured == null) return
-        val header = listOf(
-            "id",
-            "family",
-            "shape",
-            "selectivity",
-            "operator",
-            "boundary",
-            "projection",
-            "limit",
-            "targetGraphId",
-            "targetGraphIds",
-            "selectedGraphCount",
-            "workloadIdentity",
-            "outcome",
-            "rowCount",
-            "responseBytes",
-            "digest",
-            "latencyNanos",
-            "fixtureDistributionId",
-            "hitGraphIds",
-            "executionPath",
-            "inputSourceCount",
-            "accessedGraphCount",
-            "accessedGraphIds",
-            "targetGraphAccessCount",
-            "nonTargetGraphAccessCount",
-            "parallelScanCount",
-            "indexLookupCount",
-            "peakActiveWorkers",
-            "graphWorkUnits",
-            "graphIdSourceSelections",
-            "graphIdSourcePruningExecutions",
-            "graphIdSourcesPruned",
-            "filteredNodeLimitFastPathExecutions",
-            "generalFallbackExecutions"
-        ).joinToString("\t")
-        val lines = samples.joinToString("\n", prefix = "$header\n", postfix = "\n") { sample ->
-            listOf(
-                sample.case.id,
-                sample.case.family.id,
-                sample.case.shape,
-                sample.case.selectivity.id,
-                sample.case.operator,
-                sample.case.boundary,
-                sample.case.projection,
-                sample.case.limit,
-                sample.case.targetGraphId.orEmpty(),
-                sample.case.targetGraphIds.joinToString(","),
-                sample.case.targetGraphIds.size,
-                sample.case.workloadIdentity.orEmpty(),
-                sample.outcome.name.lowercase(),
-                sample.rowCount,
-                sample.responseBytes,
-                sample.digest,
-                sample.latencyNanos,
-                sample.case.fixtureDistributionId.orEmpty(),
-                sample.hitGraphIds.joinToString(","),
-                sample.execution.path.id,
-                sample.execution.inputSourceCount,
-                sample.execution.accessedGraphIds.size,
-                sample.execution.accessedGraphIds.sorted().joinToString(","),
-                sample.execution.targetGraphAccessCount,
-                sample.execution.nonTargetGraphAccessCount,
-                sample.execution.parallelScanCount,
-                sample.execution.indexLookupCount,
-                sample.execution.peakActiveWorkers,
-                sample.execution.graphWorkUnits,
-                sample.execution.graphIdSourceSelections,
-                sample.execution.graphIdSourcePruningExecutions,
-                sample.execution.graphIdSourcesPruned,
-                sample.execution.filteredNodeLimitFastPathExecutions,
-                sample.execution.generalFallbackExecutions
-            ).joinToString("\t")
-        }
-        if (round == null) {
-            Files.writeString(Path.of(configured), lines)
-        } else {
-            val output = Path.of(configured)
-            val rows = lines.lineSequence().drop(1).filter(String::isNotEmpty)
-                .joinToString("\n", postfix = "\n") { "$round\t$it" }
-            if (round == 1) Files.writeString(output, "round\t$header\n")
-            Files.writeString(output, rows, java.nio.file.StandardOpenOption.APPEND)
+        Files.newBufferedWriter(Path.of(configured)).use { writer ->
+            writer.write("${observationHeader()}\n")
+            for (sample in samples) writer.write("${observationRow(sample)}\n")
         }
     }
+
+    private fun observationHeader(): String = listOf(
+        "id",
+        "family",
+        "shape",
+        "selectivity",
+        "operator",
+        "boundary",
+        "projection",
+        "limit",
+        "targetGraphId",
+        "targetGraphIds",
+        "selectedGraphCount",
+        "workloadIdentity",
+        "outcome",
+        "rowCount",
+        "responseBytes",
+        "digest",
+        "latencyNanos",
+        "fixtureDistributionId",
+        "hitGraphIds",
+        "executionPath",
+        "inputSourceCount",
+        "accessedGraphCount",
+        "accessedGraphIds",
+        "targetGraphAccessCount",
+        "nonTargetGraphAccessCount",
+        "parallelScanCount",
+        "indexLookupCount",
+        "peakActiveWorkers",
+        "graphWorkUnits",
+        "graphIdSourceSelections",
+        "graphIdSourcePruningExecutions",
+        "graphIdSourcesPruned",
+        "filteredNodeLimitFastPathExecutions",
+        "generalFallbackExecutions"
+    ).joinToString("\t")
+
+
+    private fun observationRow(sample: BroadQuerySample): String = listOf(
+        sample.case.id,
+        sample.case.family.id,
+        sample.case.shape,
+        sample.case.selectivity.id,
+        sample.case.operator,
+        sample.case.boundary,
+        sample.case.projection,
+        sample.case.limit,
+        sample.case.targetGraphId.orEmpty(),
+        sample.case.targetGraphIds.joinToString(","),
+        sample.case.targetGraphIds.size,
+        sample.case.workloadIdentity.orEmpty(),
+        sample.outcome.name.lowercase(),
+        sample.rowCount,
+        sample.responseBytes,
+        sample.digest,
+        sample.latencyNanos,
+        sample.case.fixtureDistributionId.orEmpty(),
+        sample.hitGraphIds.joinToString(","),
+        sample.execution.path.id,
+        sample.execution.inputSourceCount,
+        sample.execution.accessedGraphIds.size,
+        sample.execution.accessedGraphIds.sorted().joinToString(","),
+        sample.execution.targetGraphAccessCount,
+        sample.execution.nonTargetGraphAccessCount,
+        sample.execution.parallelScanCount,
+        sample.execution.indexLookupCount,
+        sample.execution.peakActiveWorkers,
+        sample.execution.graphWorkUnits,
+        sample.execution.graphIdSourceSelections,
+        sample.execution.graphIdSourcePruningExecutions,
+        sample.execution.graphIdSourcesPruned,
+        sample.execution.filteredNodeLimitFastPathExecutions,
+        sample.execution.generalFallbackExecutions
+    ).joinToString("\t")
+
 
     private fun digest(canonicalResult: ByteArray): String = MessageDigest.getInstance("SHA-256")
         .digest(canonicalResult)
@@ -2319,5 +2370,9 @@ private fun supplementalWideQueries(): List<BroadQueryCase> {
 
 private const val LATENCY_OUTPUT_PROPERTY = "graphite.broad.pressure.latency.output"
 private const val LATENCY_ORACLE_PROPERTY = "graphite.broad.pressure.latency.oracle"
-private const val DIVERSE_WARMUP_ROUNDS = 5
-private const val DIVERSE_MEASURED_ROUNDS = 40
+private const val LATENCY_SHARD_PROPERTY = "graphite.broad.pressure.latency.shard"
+private const val LATENCY_ONLY_PROPERTY = "graphite.broad.pressure.latency.only"
+private const val FULL_SCAN_LATENCY_QUERY = "mixed-four-few-distinct"
+private const val DIVERSE_WARMUP_MIN_CALLS = 5
+private const val DIVERSE_MEASURED_MIN_CALLS = 40
+private const val DIVERSE_PHASE_MIN_NANOS = 10_000_000_000L

@@ -279,14 +279,20 @@ Queries run sequentially over all 64 sources; this is not a concurrent-client th
 
 The original 34-query replay remains a cold diagnostic and correctness check. Its percentile
 across different queries is not the current latency acceptance criterion. For the repeated
-experiment against current PR main, each JVM clears retained indexes once, executes five fixed
-warmup rounds, and then executes 40 measured rounds with warmed indexes and caches preserved.
+experiment against current PR main, each JVM clears retained indexes once. It then runs each
+query contiguously: warmup lasts at least 10 seconds **and** five calls, followed by measurement
+lasting at least 10 seconds **and** 40 calls. Warmed indexes and caches are preserved. Both
+minimum conditions must hold before a phase ends. Every raw warmup and measured row is retained
+with `phase`, `round`, and `phaseElapsedNanos`; warmup rows do not enter latency quantiles.
 Three independent base/candidate JVM pairs run in alternating order (`candidate/base`,
-`base/candidate`, `candidate/base`). Both the `-Xmx8g` argument and effective 8 GiB maximum heap
+`base/candidate`, `candidate/base`), with all six JVMs for a query on the same host and no
+overlapping base/candidate execution. Both the `-Xmx8g` argument and effective 8 GiB maximum heap
 are checked. Every warmup and measured result must match the base-generated full 14-field
 correctness oracle, including canonical field values, row order, and graph provenance.
 
-Each query's P50 and P95 are nearest-rank percentiles of its own 40 measured samples per fork.
+Each query's P50 and P95 are nearest-rank percentiles of all its measured samples per fork.
+Sample counts may exceed 40; no truncation discards calls completed during the timed phase.
+Reports retain each fork's actual phase counts and durations.
 Each paired candidate quantile must be less than 105% of current main's matching quantile.
 For both revisions, each quantile's cross-fork fluctuation `(maximum - minimum) / minimum`
 must be less than 5%. Exactly 5% fails, as does an unstable baseline; there is no absolute-latency
@@ -301,11 +307,29 @@ The remaining benchmark families retain their own contracts, including allocatio
 correctness, cancellation, and capacity checks; see the
 [benchmark regression gate](benchmark-regression-gate.md).
 
-`benchmark-global-iteration.mjs` retains all raw observations, reports, and provenance, including
-failures. Current PR main receives the repeated 72-query experiment. Frozen starting main
-`4e328b0109e13c896b74004823fb049fcb19251a` and the latest eligible CI-green first-parent ancestor
-provide historical diagnostic comparisons; their correctness and evidence-integrity checks
-still apply. A historical speedup cannot compensate for a current-main per-query failure.
+`build-wide-latency-bundle` builds the exact base and candidate with identical reviewed harness
+and correctness code, records the full base-derived oracle once, and shares hash-bound JARs,
+catalog, oracle, and verified fixture identities. Two fixed measurement jobs consume that bundle:
+`standard` runs 71 queries; `full-scan` runs only `mixed-four-few-distinct`. Each job keeps its
+queries' six JVM executions on one host. The long full scan retains the same protocol and query;
+it is separated to fit the runner's job time limit, not excluded or given fewer observations.
+
+`benchmark-wide-shards.mjs` verifies the build and shard receipts, paired order and runner
+identities, exact disjoint 71+1 catalog coverage, and raw phase measurements. It combines the
+shards without rerunning queries. Missing shards, changed hashes, insufficient phase durations,
+or incorrect results fail. The 72 query checks consume the resulting aggregate artifact.
+
+`benchmark-global-iteration.mjs` separately retains the original 34-query evidence against
+current main, frozen starting main `4e328b0109e13c896b74004823fb049fcb19251a`, and the latest
+eligible CI-green first-parent ancestor. CI uses `legacy-diagnostics-only` mode: numerical
+latencies are advisory, while correctness and evidence-integrity failures remain blocking.
+The final aggregate combines this legacy integrity verdict with the new per-query acceptance
+verdicts. Historical speedups cannot compensate for a current-main per-query failure.
+
+The protocol replaces fixed, interleaved query rounds that left individual queries insufficiently
+warmed for JIT compilation in prior CI. It does not claim that all 72 queries pass; only complete
+measurements can establish that. The separate nine-key wrapped latency gate retains its
+five-warmup / 40-measurement / three-fork protocol, and its historical workflow retains 1/3/1.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
 derives the correctness oracle itself:
@@ -317,22 +341,29 @@ derives the correctness oracle itself:
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
 
-Run the warmed unscoped global-wide comparison against the same verified manifest and fixture JARs:
+For warmed per-query measurements, use the split drivers with an exact candidate checkout and
+an already verified shared fixture64 artifact. Use fresh output directories. In CI, the two shard
+commands execute on separate runners, with each shard's six JVMs kept together:
 
 ```bash
-GRAPHITE_PRESSURE_REGRESSION_ONLY=true GRAPHITE_PRESSURE_PUBLISH_EVIDENCE=false \
-.github/scripts/run-real64-global-wide.sh \
-  /absolute/path/to/fixture64/graphs.tsv \
-  graphite-webgraph/build/benchmark-fixtures \
-  "$BASE_SHA" "$CANDIDATE_SHA"
+.github/scripts/build-wide-latency-bundle.sh \
+  /absolute/path/to/candidate /absolute/path/to/shared-fixture64 \
+  "$BASE_SHA" "$CANDIDATE_SHA" /absolute/path/to/wide-bundle
+.github/scripts/run-wide-latency-shard.sh \
+  /absolute/path/to/wide-bundle /absolute/path/to/shared-fixture64 standard \
+  "$BASE_SHA" "$CANDIDATE_SHA" /absolute/path/to/standard-results
+.github/scripts/run-wide-latency-shard.sh \
+  /absolute/path/to/wide-bundle /absolute/path/to/shared-fixture64 full-scan \
+  "$BASE_SHA" "$CANDIDATE_SHA" /absolute/path/to/full-scan-results
 ```
 
-For iteration, CI resolves references with `benchmark-optimization-references.mjs` and invokes
-`benchmark-global-iteration.mjs`. The underlying driver accepts
-`GRAPHITE_PRESSURE_REGRESSION_ONLY=true` only with evidence publication disabled; a regression-only
-result can never publish the legacy strict-target success context. The historical speedup target remains diagnostic in this mode.
+The shard driver records the GitHub run ID, attempt, job, runner, hostname, and fixed paired order;
+those environment values must also be supplied when reproducing the driver outside CI.
+`benchmark-optimization-references.mjs` resolves the legacy references, and
+`benchmark-global-iteration.mjs --legacy-diagnostics-only` collects their separate evidence.
 The full current-main method, end-to-end, routing, and remaining resource checks still apply.
 
+The existing graph-routing driver has its own provenance contract, described below.
 The driver verifies both SHAs against GitHub, creates independent clones at those exact commits,
 copies the candidate-reviewed pressure harness byte-for-byte into the base worktree, and builds both
 JMH JARs itself. It records the two commit SHAs plus SHA-256 for the harness, comparator, driver,

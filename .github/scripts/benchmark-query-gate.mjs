@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import { WIDE_SCHEMA, WIDE_PROTOCOL } from './benchmark-wide-latency.mjs';
 import { pathToFileURL } from 'node:url';
 
 export function queryMatrix(catalog) {
@@ -23,11 +24,14 @@ export function checkQuery(status, catalog, id, { baseSha, headSha } = {}) {
         throw new Error('Missing or failed current-main benchmark execution');
     }
     const evidence = comparison.status;
-    const repeated = evidence?.repeatedLatency;
+    const separated = status.evidenceMode === 'separate-query-latency';
+    if (status.evidenceMode !== undefined && !separated) throw new Error('Unsupported benchmark evidence mode');
+    const repeated = separated ? status.repeatedLatency : evidence?.repeatedLatency;
     if (![evidence?.integrityErrors, repeated?.integrityErrors, repeated?.sharedIntegrityErrors]
         .every(errors => Array.isArray(errors) && errors.every(error => typeof error === 'string')) ||
         repeated.sharedIntegrityErrors.length ||
-        evidence.integrityErrors.some(error => !repeated.integrityErrors.includes(error))) {
+        (separated ? evidence.integrityErrors.length > 0 :
+            evidence.integrityErrors.some(error => !repeated.integrityErrors.includes(error)))) {
         throw new Error('Shared benchmark measurement integrity failed');
     }
     // A query-specific correctness error must not turn unrelated query checks red.
@@ -36,7 +40,8 @@ export function checkQuery(status, catalog, id, { baseSha, headSha } = {}) {
     if (repeated.integrityErrors.some(error => !matrix.some(query => belongsToQuery(error, query.id)))) {
         throw new Error('Shared benchmark measurement integrity failed');
     }
-    if (repeated.queryCount !== 72 || repeated.samplesPerQuery !== 40 || repeated.forkCount !== 3 ||
+    if (repeated.queryCount !== 72 || repeated.schema !== WIDE_SCHEMA || repeated.shard !== null ||
+        Object.entries(WIDE_PROTOCOL).some(([key, value]) => repeated.protocol?.[key] !== value) || repeated.forkCount !== 3 ||
         !Array.isArray(repeated.queries)) throw new Error('Incomplete repeated query measurements');
     const ids = repeated.queries.map(query => query.id).sort();
     if (JSON.stringify(ids) !== JSON.stringify(matrix.map(query => query.id).sort())) {
@@ -52,6 +57,19 @@ export function checkQuery(status, catalog, id, { baseSha, headSha } = {}) {
         run.fork !== index + 1 || ['baseP50Nanos', 'baseP95Nanos', 'candidateP50Nanos', 'candidateP95Nanos']
             .some(key => !Number.isSafeInteger(run[key]) || run[key] <= 0))) {
         throw new Error(`${id}: missing finite P50/P95 measurements for three paired forks`);
+    }
+    for (const run of query.runs) for (const revision of ['base', 'candidate']) {
+        for (const [phase, minimumCalls, minimumNanos] of [
+            ['Warmup', WIDE_PROTOCOL.warmupMinCalls, WIDE_PROTOCOL.warmupMinNanos],
+            ['Measurement', WIDE_PROTOCOL.measurementMinCalls, WIDE_PROTOCOL.measurementMinNanos],
+        ]) {
+            const calls = run[`${revision}${phase}Calls`];
+            const elapsed = run[`${revision}${phase}ElapsedNanos`];
+            if (!Number.isSafeInteger(calls) || calls < minimumCalls ||
+                !Number.isSafeInteger(elapsed) || elapsed < minimumNanos) {
+                throw new Error(`${id}: incomplete timed ${revision} ${phase} measurements`);
+            }
+        }
     }
     if (query.runs.some(run => run.baseP50Nanos > run.baseP95Nanos ||
         run.candidateP50Nanos > run.candidateP95Nanos)) {

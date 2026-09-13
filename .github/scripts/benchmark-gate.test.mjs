@@ -3210,7 +3210,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(fixture64Job, /test-fixture64-reproducibility\.sh/);
     assert.match(fixture64Job, /actions\/cache\/restore@v5/);
     assert.match(fixture64Job, /actions\/cache\/save@v5/);
-    assert.match(fixture64Job, /fixture64-real-v1-temurin17/);
+    assert.match(fixture64Job, /fixture64-real-v2-temurin17/);
     assert.match(fixture64Job, /graphite-webgraph\/build\/benchmark-fixtures\/\*\.jar/);
     assert.match(fixture64Job, /graphite-core\/src\/main\/\*\*/);
     assert.match(fixture64Job, /graphite-sootup\/src\/main\/\*\*/);
@@ -3219,14 +3219,29 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         fixture64Job,
         /graphite-webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/CallSiteIndexPersistenceInput\.kt/
     );
+    for (const dependency of ["NodeTypeIndex.kt", "NodeOffsetIndex.kt", "MappedWebGraphBackedGraph.kt"]) {
+        assert.ok(fixture64Job.includes(`/webgraph/${dependency}`), `${dependency} affects fixture verification`);
+    }
     assert.doesNotMatch(fixture64Job, /graphite-webgraph\/src\/main\/\*\*/);
     assert.doesNotMatch(fixture64Job, /MappedCallSiteStringIndexView\.kt/);
     assert.match(fixture64Job, /FIXTURE64_CACHE_HIT/);
     assert.match(fixture64Job, /if: steps\.fixture64-cache\.outputs\.cache-hit != 'true'/);
     assert.match(
         fixture64Job,
-        /path: \|\n\s+shared-fixture64\/graphs\n\s+fixture64-repeat-cache/
+        /path: \|\n\s+shared-fixture64\/graphs\n\s+shared-fixture64\/fixture-reproducibility\.json/
     );
+    const cachedBranch = fixture64Job.slice(fixture64Job.indexOf('if [[ "${FIXTURE64_CACHE_HIT}" == true ]]'),
+        fixture64Job.indexOf('        else', fixture64Job.indexOf('if [[ "${FIXTURE64_CACHE_HIT}" == true ]]')));
+    assert.match(cachedBranch, /reuse-fixture64-receipt\.sh/);
+    assert.match(cachedBranch, /"\$\{FIXTURE64_INPUT_KEY\}"/);
+    assert.doesNotMatch(cachedBranch, /test-fixture64-reproducibility|prepare-fixture64-graphs|jq --arg inputKey/);
+    const newProofBranch = fixture64Job.slice(fixture64Job.indexOf('        else',
+        fixture64Job.indexOf('if [[ "${FIXTURE64_CACHE_HIT}" == true ]]')),
+        fixture64Job.indexOf('        mapfile -t FIXTURE_JARS'));
+    assert.match(newProofBranch, /test-fixture64-reproducibility\.sh/);
+    assert.match(newProofBranch, /jq --arg inputKey "\$\{FIXTURE64_INPUT_KEY\}"/);
+    assert.ok(newProofBranch.indexOf('test-fixture64-reproducibility.sh') < newProofBranch.indexOf('jq --arg inputKey'));
+    assert.doesNotMatch(fixture64Job, /restore-keys:/);
     assert.match(fixture64Job, /fixture64\.complete\.json/);
     assert.match(fixture64Job, /Upload shared fixture64 corpus/);
     assert.match(fixture64Job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
@@ -3247,27 +3262,51 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(graphRoutingJob, /github\.event\.pull_request\.base\.sha/);
     assert.match(graphRoutingJob, /github\.event\.pull_request\.head\.sha/);
     assert.doesNotMatch(graphRoutingJob, /gist|EVIDENCE_CONTEXT|materializeGistFiles/);
-    const globalWideJob = workflow.match(
-        /^  global-wide-pressure-evidence:\n[\s\S]*?(?=^  global-wide-pressure-external-evidence-disabled:)/m
+    const historicalWideJob = workflow.match(
+        /^  global-wide-historical-evidence:\n[\s\S]*?(?=^  build-wide-latency-bundle:)/m
     )?.[0] ?? "";
-    assert.match(globalWideJob, /:webgraph:jmhJar :webgraph:prepareBenchmarkFixtures/);
-    assert.match(globalWideJob, /needs: \[prepare-fixture64\]/);
-    assert.match(globalWideJob, /Download shared fixture64 corpus/);
-    assert.match(globalWideJob, /verify-shared-fixture64\.sh/);
-    assert.doesNotMatch(globalWideJob, /Generate 64 persisted graphs|prepare-fixture64-graphs\.sh/);
-    assert.match(globalWideJob, /benchmark-global-iteration\.mjs/);
-    assert.match(globalWideJob, /benchmark-optimization-references\.mjs/);
-    assert.match(globalWideJob, /fetch-depth: 0/);
-    assert.match(globalWideJob, /actions: read/);
-    assert.match(globalWideJob, /--references \.\.\/benchmark-results\/optimization-references\.json/);
-    assert.match(globalWideJob, /--manifest \.\.\/shared-fixture64\/graphs\/graphs\.tsv/);
-    assert.doesNotMatch(globalWideJob, /REQUIRE_TARGET|TARGET_OPTIONS|--require-target/);
+    assert.match(historicalWideJob, /:webgraph:jmhJar :webgraph:prepareBenchmarkFixtures/);
+    assert.match(historicalWideJob, /needs: \[prepare-fixture64\]/);
+    assert.match(historicalWideJob, /Download shared fixture64 corpus/);
+    assert.match(historicalWideJob, /verify-shared-fixture64\.sh/);
+    assert.doesNotMatch(historicalWideJob, /Generate 64 persisted graphs|prepare-fixture64-graphs\.sh/);
+    assert.match(historicalWideJob, /benchmark-global-iteration\.mjs/);
+    assert.match(historicalWideJob, /benchmark-optimization-references\.mjs/);
+    assert.match(historicalWideJob, /fetch-depth: 0/);
+    assert.match(historicalWideJob, /actions: read/);
+    assert.match(historicalWideJob, /--references \.\.\/benchmark-results\/optimization-references\.json/);
+    assert.match(historicalWideJob, /--manifest \.\.\/shared-fixture64\/graphs\/graphs\.tsv/);
+    assert.doesNotMatch(historicalWideJob, /REQUIRE_TARGET|TARGET_OPTIONS|--require-target/);
     assert.match(workflow, /types: \[opened, synchronize, reopened, ready_for_review, converted_to_draft\]/);
-    assert.match(globalWideJob, /GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:/);
-    assert.match(globalWideJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
-    assert.match(globalWideJob, /github\.event\.pull_request\.base\.sha/);
-    assert.match(globalWideJob, /github\.event\.pull_request\.head\.sha/);
-    assert.doesNotMatch(globalWideJob, /gist|EVIDENCE_CONTEXT|materializeGistFiles/);
+    assert.match(historicalWideJob, /GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:/);
+    assert.match(historicalWideJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
+    assert.match(historicalWideJob, /github\.event\.pull_request\.base\.sha/);
+    assert.match(historicalWideJob, /github\.event\.pull_request\.head\.sha/);
+    assert.doesNotMatch(historicalWideJob, /gist|EVIDENCE_CONTEXT|materializeGistFiles/);
+    assert.match(historicalWideJob, /--legacy-diagnostics-only/);
+    const job = name => workflow.match(new RegExp(`^  ${name}:\\n[\\s\\S]*?(?=^  [a-z][a-z0-9-]*:|$(?![\\s\\S]))`, "m"))?.[0] ?? "";
+    const bundle = job("build-wide-latency-bundle");
+    const measurements = job("wide-latency-measurements");
+    const aggregate = job("global-wide-pressure-evidence");
+    assert.match(bundle, /needs: \[candidate-gate-tests, prepare-fixture64\]/);
+    assert.match(bundle, /build-wide-latency-bundle\.sh/);
+    assert.match(measurements, /needs: \[build-wide-latency-bundle\]/);
+    assert.match(measurements, /fail-fast: true/);
+    assert.match(measurements, /shard: \[standard, full-scan\]/);
+    assert.match(measurements, /run-wide-latency-shard\.sh/);
+    assert.doesNotMatch(measurements, /gradlew|jmhJar|matrix\.revision/,
+        "each shard consumes the same built pair and runs both revisions on one runner");
+    for (const section of [bundle, measurements, aggregate]) {
+        assert.match(section, /name: wide-latency-bundle-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
+    }
+    assert.match(aggregate, /needs: \[global-wide-historical-evidence, build-wide-latency-bundle, wide-latency-measurements\]/);
+    assert.match(aggregate, /if: always\(\)/);
+    assert.match(aggregate, /benchmark-wide-shards\.mjs aggregate/);
+    assert.match(aggregate, /--legacy legacy-results --bundle wide-latency-bundle/);
+    assert.match(aggregate, /--standard samples-standard --full-scan samples-full-scan/);
+    for (const shard of ["standard", "full-scan"]) {
+        assert.ok(aggregate.includes(`name: wide-latency-samples-${shard}-`), "both sealed shards must be downloaded");
+    }
     const sharedFixtureVerifier = fs.readFileSync(
         new URL("./verify-shared-fixture64.sh", import.meta.url),
         "utf8"
@@ -3938,4 +3977,81 @@ test("capacity gate reports CPU and RSS growth but still blocks tail latency reg
     assert.equal(compare().status, 0);
     candidate.secondaryMetrics.tailLatencyNanos.score = 120;
     assert.equal(compare().status, 1);
+});
+
+test("wide bundle installs identical reviewed harness and correctness code before either build", () => {
+    const script = fs.readFileSync(new URL("./build-wide-latency-bundle.sh", import.meta.url), "utf8");
+    const start = script.indexOf("HARNESS=graphite-webgraph/");
+    const end = script.indexOf('"$BASE_TREE/gradlew"', start);
+    assert.ok(start > 0 && end > start);
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "wide-harness-overlay-"));
+    const relativeFiles = [
+        "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt",
+        "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt",
+    ];
+    try {
+        for (const revision of ["base", "candidate"]) for (const relative of relativeFiles) {
+            const file = path.join(directory, revision, relative);
+            fs.mkdirSync(path.dirname(file), { recursive: true });
+            fs.writeFileSync(file, `${revision}: ${relative}`);
+        }
+        const result = spawnSync("bash", ["-euc", script.slice(start, end)], {
+            encoding: "utf8", env: { ...process.env,
+                BASE_TREE: path.join(directory, "base"), CANDIDATE_TREE: path.join(directory, "candidate") },
+        });
+        assert.equal(result.status, 0, result.stderr);
+        for (const relative of relativeFiles) {
+            assert.equal(fs.readFileSync(path.join(directory, "base", relative), "utf8"), `candidate: ${relative}`);
+            assert.equal(fs.readFileSync(path.join(directory, "candidate", relative), "utf8"), `candidate: ${relative}`);
+        }
+    } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("each wide shard executes the same six sequential JVMs with fixed heap and internal timed protocol", () => {
+    const script = fs.readFileSync(new URL("./run-wide-latency-shard.sh", import.meta.url), "utf8");
+    for (const shard of ["standard", "full-scan"]) {
+        const directory = fs.mkdtempSync(path.join(os.tmpdir(), "wide-shard-runner-"));
+        try {
+            for (const subdirectory of ["bin", "bundle/fixtures", "shared/graphs", "scripts"]) {
+                fs.mkdirSync(path.join(directory, subdirectory), { recursive: true });
+            }
+            const bundle = path.join(directory, "bundle");
+            const shared = path.join(directory, "shared");
+            for (const file of ["graphs.tsv", "fixture-provenance.tsv", "fixture-reproducibility.json", "fixture64.complete.json"]) {
+                fs.writeFileSync(path.join(bundle, file), file);
+                fs.writeFileSync(path.join(shared, ["graphs.tsv", "fixture-provenance.tsv"].includes(file) ? "graphs" : "", file), file);
+            }
+            fs.writeFileSync(path.join(bundle, "build.json"), "{}");
+            const scriptFile = path.join(directory, "scripts", "run.sh");
+            fs.writeFileSync(scriptFile, script);
+            fs.writeFileSync(path.join(directory, "scripts", "verify-shared-fixture64.sh"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+            fs.writeFileSync(path.join(directory, "bin", "node"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+            const log = path.join(directory, "java.jsonl");
+            fs.writeFileSync(path.join(directory, "bin", "java"), `#!${process.execPath}\n` +
+                `require('node:fs').appendFileSync(process.env.WIDE_JAVA_LOG, JSON.stringify(process.argv.slice(2)) + '\\n');\n`,
+                { mode: 0o755 });
+            const result = spawnSync("bash", [scriptFile, bundle, shared, shard, "b".repeat(40), "c".repeat(40), path.join(directory, "output")], {
+                encoding: "utf8", env: { ...process.env, PATH: `${path.join(directory, "bin")}:${process.env.PATH}`, WIDE_JAVA_LOG: log },
+            });
+            assert.equal(result.status, 0, result.stderr);
+            const calls = fs.readFileSync(log, "utf8").trim().split("\n").map(JSON.parse);
+            assert.deepEqual(calls.map(args => path.basename(args[args.indexOf("-jar") + 1])),
+                ["candidate.jar", "base.jar", "base.jar", "candidate.jar", "candidate.jar", "base.jar"]);
+            for (const [index, args] of calls.entries()) {
+                const options = flag => args[args.indexOf(flag) + 1];
+                assert.equal(options("-wi"), "0");
+                assert.equal(options("-i"), "1");
+                assert.equal(options("-f"), "1", "JMH invokes the internal timed experiment exactly once per fresh JVM");
+                assert.equal(options("-foe"), "true");
+                const jvm = options("-jvmArgs");
+                assert.match(jvm, /(?:^|\s)-Xmx8g(?:\s|$)/);
+                assert.ok(jvm.includes(`-Dgraphite.broad.pressure.latency.shard=${shard}`));
+                assert.ok(jvm.includes(`-Dgraphite.broad.pressure.latency.oracle=${bundle}/oracle.correctness`));
+                assert.ok(jvm.includes("-Dgraphite.broad.pressure.correctness.mode=verify"));
+                assert.doesNotMatch(jvm, /warmup|measurement|rounds|MinNanos|MinCalls/,
+                    "caller must not override the fixed internal warmup and measurement floors");
+                assert.ok(options("-rff").endsWith(`-${Math.floor(index / 2) + 1}.json`));
+            }
+        } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+    }
 });

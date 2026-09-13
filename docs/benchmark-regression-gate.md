@@ -27,13 +27,29 @@ it does not represent 64 independent applications or concurrent client requests.
 
 Each `wide-query-latency-<query-id>` CI check independently accepts or rejects one query. All
 checks consume the same paired experiment artifact; they do not rerun the workload 72 times.
-Every JVM executes **five fixed warmup rounds, then 40 measured rounds**, preserving warmed
-indexes and caches between rounds. There are three independent base/candidate JVM pairs in
-candidate/base, base/candidate, candidate/base order. The effective JVM maximum heap is checked
-in addition to passing `-Xmx8g`. This is workload pressure over all 64 sources, with queries
-submitted sequentially; it is not a multi-client throughput test.
+Within each JVM, **each query** runs contiguously: warmup continues until both **10 seconds
+and five calls** have completed, then measurement continues until both **10 seconds and 40
+calls** have completed. The JVM clears retained indexes once before warmup and preserves warmed
+indexes and caches throughout the experiment. These are minimums: every measured call is
+retained, so fast queries can produce more than 40 samples. Warmup observations are retained
+for correctness and protocol validation but excluded from latency quantiles. Each raw TSV row
+records its phase, round, and cumulative phase elapsed nanoseconds.
 
-For **each query**, compute nearest-rank P50 and P95 from its own 40 samples in each fork:
+There are three independent base/candidate JVM pairs in candidate/base, base/candidate,
+candidate/base order. All six JVMs for any one query run sequentially on the same host. The
+effective JVM maximum heap is checked in addition to passing `-Xmx8g`. This is workload pressure
+over all 64 sources, with queries submitted sequentially; it is not a multi-client throughput test.
+
+`build-wide-latency-bundle` builds both exact production revisions with the same reviewed
+harness, records the full 72-query oracle from base, and binds their artifacts to the verified
+shared fixtures. Two fixed measurement shards consume this bundle: `standard` contains 71
+queries and `full-scan` contains only `mixed-four-few-distinct`. This separates the long scan
+without changing its query or reducing its samples. `global-wide-pressure-evidence` verifies
+artifact hashes, revisions, runner identities, phase durations, and the complete disjoint shard
+union before producing the 72 verdicts. Missing or malformed shards fail the gate.
+
+For **each query**, compute nearest-rank P50 and P95 from **all** of its measured calls in each
+fork. The report includes actual warmup and measurement counts and durations:
 
 - Each paired candidate P50 and P95 must be **less than 105%** of the matching main value.
 - For each quantile and each revision, cross-fork fluctuation is `(maximum - minimum) / minimum`
@@ -47,13 +63,50 @@ For **each query**, compute nearest-rank P50 and P95 from its own 40 samples in 
 The mixed-query percentile over the original 34 cases is diagnostic only for this warmed
 acceptance policy. Cold-start latency, the historical 10x target, and strict improvement over the
 last accepted iteration are not current PR acceptance criteria. Only the current PR main base
-runs the expanded repeated experiment; historical reference latency is diagnostic, while its
-correctness and evidence-integrity checks remain hard requirements. Raw sample TSVs, per-query
+runs the expanded repeated experiment. A separate legacy-diagnostics job retains original
+34-query comparisons against current main and historical references; their numerical latency
+results are advisory, while correctness and evidence-integrity failures remain blocking. Raw sample TSVs, per-query
 verdicts, all paired quantiles, and fluctuation calculations are retained in the CI artifact.
 
 Other existing benchmark families do not all share this warmup protocol: some use normal JMH
 warmup/measurement iterations, while startup/session and cold-replay probes use SingleShot runs.
-Those measurements must not be described as warmed per-query P50/P95 evidence.
+Those measurements must not be described as this timed per-query P50/P95 evidence. The nine-key
+wrapped-query latency harness retains its separate five warmup / 40 measured invocations / three
+fork protocol; the historical wrapped comparison retains one warmup / three measurements / one
+fork. Neither protocol changes with this 72-query rollout.
+
+The timed protocol addresses insufficient per-query JIT warmup exposed by earlier CI runs that
+interleaved different queries with fixed invocation counts. Defining this protocol does not establish
+that all 72 queries pass; acceptance still requires their actual complete CI measurements.
+
+## Failure handling and fixture preparation
+
+Server lifecycle and CPU accounting contracts run before the expensive benchmark jobs. The
+64-graph fixture also waits for the real CPU-accounting smoke to succeed. Expensive matrices
+cancel their sibling jobs on failure. Isolated monitors cancel independent work after a blocking
+job finishes with a failure, including its diagnostic uploads; they inspect only the current run
+attempt. The monitors do not check out or execute benchmark code with their cancellation token. They run only for
+same-repository pull requests, where GitHub grants the cancellation token. Fork pull requests
+retain the prerequisite barriers, matrix cancellation, and per-pair fail-fast checks; cancellation
+of unrelated jobs is unavailable with the fork's read-only token. Only this explicit fork policy
+allows both monitors to be skipped. Failed or cancelled monitors never satisfy acceptance.
+The early monitor hands off only when the late monitor is running. Hosted jobs have a 360-minute
+limit; the late monitor fails visibly at 359 minutes if work has not finished, rather than silently
+leaving the remaining run unmonitored.
+
+Each timed measurement shard validates the completed base/candidate pair before starting the
+next pair. A paired P50/P95 regression of at least 5%, or an already observed cross-fork spread
+of at least 5%, cannot be repaired by later forks and stops the shard immediately. Partial raw
+samples and checkpoint failure reasons remain available, but partial evidence can never pass
+the final gate. Successful acceptance still requires all three pairs for all 72 queries.
+
+The fixture cache stores one prepared 64-graph corpus and its completed reproducibility receipt,
+bound to the exact generator, verifier and pinned input JAR cache key. On an exact cache hit,
+the workflow checks that binding, relocates only path columns, and verifies the actual graph
+contents against the original JARs. It does not repeat the independent second build and tamper
+self-tests. On a miss, both independent builds and the full self-tests must pass before a new
+receipt can be cached. This reduces repeat preparation work; the first uncached preparation
+still pays the full validation cost.
 
 ## Report coverage taxonomy
 

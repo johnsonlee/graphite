@@ -1,10 +1,12 @@
+import { WIDE_SCHEMA, WIDE_PROTOCOL } from "./benchmark-wide-latency.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
     FROZEN_TARGET_REF,
     aggregateIteration,
     renderIterationReport,
-    validateReferences
+    validateReferences,
+    parseArgs
 } from "./benchmark-global-iteration.mjs";
 
 // These JSON fixtures verify gate decisions only; they are not performance measurements.
@@ -58,7 +60,7 @@ function status({ regressionPassed = true, targetAchieved = false, progressAchie
         regressionOnly: true,
         minimumSpeedup: 10,
         repeatedLatency: { passed: true, integrityErrors: [], latencyErrors: [],
-            samplesPerQuery: 40, forkCount: 3, queryCount: 72, queries: [] },
+            schema: WIDE_SCHEMA, protocol: { ...WIDE_PROTOCOL }, shard: null, forkCount: 3, queryCount: 72, queries: [] },
         errors: regressionPassed ? [] : ["paired P95 exceeds the regression limit"],
         integrityErrors: [],
         latencyErrors: regressionPassed ? [] : ["paired P95 exceeds the regression limit"],
@@ -391,7 +393,7 @@ test("each aggregate and wrapped fork independently binds the target flags and e
 test("current-main acceptance requires repeated latency evidence with the full sampling protocol", () => {
     const refs = references();
     const valid = status().repeatedLatency;
-    for (const repeatedLatency of [null, undefined, { ...valid, samplesPerQuery: 39 },
+    for (const repeatedLatency of [null, undefined, { ...valid, protocol: { ...WIDE_PROTOCOL, measurementMinCalls: 39 } },
         { ...valid, forkCount: 2 }, { ...valid, queryCount: 34 }, { ...valid, passed: false },
         { ...valid, latencyErrors: ["unbound instability"] }]) {
         const result = aggregateIteration(refs, executions(refs, {
@@ -405,4 +407,55 @@ test("current-main acceptance requires repeated latency evidence with the full s
         [FROZEN_TARGET_REF]: { status: { ...status(), repeatedLatency: null } }
     }));
     assert.equal(historicalOnly.passed, true);
+});
+
+
+test("missing repeated evidence is accepted only in explicit legacy diagnostics mode", () => {
+    const refs = references();
+    const raw = executions(refs).map(execution => ({ ...execution,
+        status: { ...status({ regressionPassed: false }), repeatedLatency: null }, exitCode: 1 }));
+    assert.equal(aggregateIteration(refs, raw).passed, false);
+    const result = aggregateIteration(refs, raw, { legacyDiagnosticsOnly: true });
+    assert.equal(result.passed, true);
+    assert.equal(result.evidenceMode, "legacy-diagnostics-only");
+    assert.equal(result.blockingLatencyRef, null);
+    assert.equal(result.advisoryErrors.length, 3);
+    assert.ok(Object.values(result.comparisons).every(comparison => comparison.latencyBlocking === false));
+    const report = renderIterationReport(result);
+    assert.match(report, /Legacy correctness and execution checks: \*\*passed\*\*/);
+    assert.match(report, /separate full 72-query timed gate is still required/);
+    assert.doesNotMatch(report, /Current-main latency and all-reference integrity checks|Current-main latency and integrity are blocking/);
+    assert.match(renderIterationReport(aggregateIteration(refs, executions(refs))),
+        /Current-main latency and all-reference integrity checks/);
+});
+
+test("legacy diagnostics retains correctness failures and invalid driver failures", () => {
+    const refs = references();
+    const raw = executions(refs).map(execution => ({ ...execution,
+        status: { ...status({ regressionPassed: false }), repeatedLatency: null }, exitCode: 1 }));
+    for (const mutate of [
+        execution => { execution.status.integrityErrors = ["incorrect result digest"];
+            execution.status.errors = [...execution.status.integrityErrors, ...execution.status.latencyErrors]; },
+        execution => { execution.exitCode = 2; },
+        execution => { execution.exitCode = null; },
+        execution => { execution.error = "driver did not publish complete evidence"; },
+        execution => { execution.status.runs[0].p95LatencyNanos = NaN; },
+    ]) {
+        const changed = structuredClone(raw);
+        mutate(changed[0]);
+        const result = aggregateIteration(refs, changed, { legacyDiagnosticsOnly: true });
+        assert.equal(result.passed, false);
+        assert.ok(result.errors.length > 0);
+    }
+});
+
+test("CLI requires an explicit diagnostics flag and rejects target enforcement in that mode", () => {
+    const args = ['--references', 'refs.json', '--manifest', 'graphs.tsv', '--fixtures', 'fixtures',
+        '--repository', 'owner/repo', '--output', 'output'];
+    assert.equal(parseArgs(args)['legacy-diagnostics-only'], undefined);
+    assert.equal(parseArgs([...args, '--legacy-diagnostics-only'])['legacy-diagnostics-only'], true);
+    assert.throws(() => parseArgs([...args, '--legacy-diagnostics-only', '--require-target']), /cannot enforce/);
+    assert.throws(() => parseArgs([...args, '--legacy-diagnostics-only', '--legacy-diagnostics-only']), /duplicate/);
+    assert.throws(() => aggregateIteration(references(), executions(references()),
+        { legacyDiagnosticsOnly: true, requireTarget: true }), /cannot enforce/);
 });

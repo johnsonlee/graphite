@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { WIDE_SCHEMA, WIDE_PROTOCOL } from './benchmark-wide-latency.mjs';
 import { checkQuery, queryMatrix } from './benchmark-query-gate.mjs';
 
 const catalog = JSON.parse(fs.readFileSync(new URL('./wide-query-catalog.json', import.meta.url)));
@@ -10,10 +11,14 @@ function statusFixture() {
         passed: true, currentPrBase: 'main-sha', currentHead: 'head-sha',
         comparisons: { 'main-sha': { exitCode: 0, error: null, status: {
             integrityErrors: [], repeatedLatency: {
-                queryCount: 72, samplesPerQuery: 40, forkCount: 3, integrityErrors: [], sharedIntegrityErrors: [],
+                queryCount: 72, schema: WIDE_SCHEMA, protocol: { ...WIDE_PROTOCOL }, shard: null, forkCount: 3, integrityErrors: [], sharedIntegrityErrors: [],
                 queries: catalog.queries.map(({ id }) => ({ id, passed: true, errors: [],
                     runs: [1, 2, 3].map(fork => ({ fork, baseP50Nanos: 100, baseP95Nanos: 200,
-                        candidateP50Nanos: 100, candidateP95Nanos: 200 })),
+                        candidateP50Nanos: 100, candidateP95Nanos: 200,
+                        ...Object.fromEntries(["base", "candidate"].flatMap(revision => [
+                            [`${revision}WarmupCalls`, 5], [`${revision}WarmupElapsedNanos`, 10_000_000_000],
+                            [`${revision}MeasurementCalls`, 40], [`${revision}MeasurementElapsedNanos`, 10_000_000_000],
+                        ])) })),
                     stability: { baseP50SpreadPercent: 0, baseP95SpreadPercent: 0,
                         candidateP50SpreadPercent: 0, candidateP95SpreadPercent: 0 }
                 }))
@@ -124,4 +129,33 @@ test('both revisions must have P50 at or below P95', () => {
         queries(status)[0].runs.forEach(run => { run[`${revision}P50Nanos`] = 201; });
         assert.throws(() => checkQuery(status, catalog, selectedId), /P50 must not exceed P95/);
     }
+});
+
+
+test('each query gate requires actual timed phase counts and durations', () => {
+    for (const revision of ['base', 'candidate']) for (const [field, value] of [
+        ['WarmupCalls', 4], ['MeasurementCalls', 39],
+        ['WarmupElapsedNanos', 9_999_999_999], ['MeasurementElapsedNanos', 9_999_999_999],
+    ]) {
+        const status = statusFixture();
+        queries(status)[0].runs[0][`${revision}${field}`] = value;
+        assert.throws(() => checkQuery(status, catalog, selectedId), /incomplete timed/);
+    }
+    const status = statusFixture();
+    status.comparisons['main-sha'].status.repeatedLatency.shard = 'standard';
+    assert.throws(() => checkQuery(status, catalog, selectedId), /Incomplete/);
+});
+
+
+test('separate-query-latency envelope reads the full root comparison and retains legacy integrity', () => {
+    const status = statusFixture();
+    status.evidenceMode = 'separate-query-latency';
+    status.repeatedLatency = status.comparisons['main-sha'].status.repeatedLatency;
+    delete status.comparisons['main-sha'].status.repeatedLatency;
+    assert.equal(checkQuery(status, catalog, selectedId).passed, true);
+    status.comparisons['main-sha'].status.integrityErrors.push('legacy result mismatch');
+    assert.throws(() => checkQuery(status, catalog, selectedId), /Shared benchmark/);
+    status.comparisons['main-sha'].status.integrityErrors = [];
+    status.evidenceMode = 'legacy-diagnostics-only';
+    assert.throws(() => checkQuery(status, catalog, selectedId), /Unsupported/);
 });

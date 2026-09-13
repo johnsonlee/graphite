@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
+import { WIDE_SCHEMA, WIDE_PROTOCOL } from "./benchmark-wide-latency.mjs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -71,9 +72,11 @@ function validateComparison(status, requireRepeatedLatency = false) {
             repeated.passed !== (repeated.integrityErrors.length === 0 && repeated.latencyErrors.length === 0) ||
             repeated.integrityErrors.some(error => !status.integrityErrors.includes(error)) ||
             repeated.latencyErrors.some(error => !status.latencyErrors.includes(error)) ||
-            repeated.samplesPerQuery !== 40 || repeated.forkCount !== 3 || repeated.queryCount !== 72 ||
+            repeated.schema !== WIDE_SCHEMA || repeated.shard !== null ||
+            Object.entries(WIDE_PROTOCOL).some(([key, value]) => repeated.protocol?.[key] !== value) ||
+            repeated.forkCount !== 3 || repeated.queryCount !== 72 ||
             !Array.isArray(repeated.queries)
-        ) return "Current-main repeated latency evidence requires 72 queries, 40 samples, three forks, and consistent error partitions";
+        ) return "Current-main repeated latency evidence requires 72 queries, timed protocol v2, three forks, and consistent error partitions";
     }
     if (status.passed !== status.regressionPassed ||
         status.regressionPassed !== (status.errors.length === 0) ||
@@ -113,9 +116,12 @@ function validateComparison(status, requireRepeatedLatency = false) {
     return null;
 }
 
-export function aggregateIteration(references, executions, { requireTarget = false } = {}) {
+export function aggregateIteration(references, executions, { requireTarget = false, legacyDiagnosticsOnly = false } = {}) {
     const refs = validateReferences(references);
-    if (typeof requireTarget !== "boolean") throw new Error("requireTarget must be a boolean");
+    if (typeof requireTarget !== "boolean" || typeof legacyDiagnosticsOnly !== "boolean") {
+        throw new Error("requireTarget and legacyDiagnosticsOnly must be booleans");
+    }
+    if (requireTarget && legacyDiagnosticsOnly) throw new Error("Legacy diagnostics cannot enforce a latency target");
     if (!Array.isArray(executions)) throw new Error("Executions must be an array");
     const errors = [];
     const advisoryErrors = [];
@@ -130,10 +136,10 @@ export function aggregateIteration(references, executions, { requireTarget = fal
             continue;
         }
         const execution = matches[0];
-        const invalid = validateComparison(execution.status, ref === references.currentPrBase);
+        const invalid = validateComparison(execution.status, !legacyDiagnosticsOnly && ref === references.currentPrBase);
         const executionError = typeof execution.error === "string" ? execution.error : null;
         let failure = invalid ?? executionError;
-        if (!failure && (!Number.isInteger(execution.exitCode) || execution.exitCode < 0 ||
+        if (!failure && (![0, 1].includes(execution.exitCode) ||
             (execution.exitCode !== 0 && execution.status.passed)
         )) failure = "Driver failed without a valid failed comparison status";
         results[ref] = {
@@ -141,12 +147,12 @@ export function aggregateIteration(references, executions, { requireTarget = fal
             status: execution.status ?? null,
             error: failure,
             report: `reference-${ref}/global-wide-report.md`,
-            latencyBlocking: ref === references.currentPrBase
+            latencyBlocking: !legacyDiagnosticsOnly && ref === references.currentPrBase
         };
         if (failure) errors.push(`${ref}: ${failure}`);
         else if (!execution.status.regressionPassed) {
             errors.push(...execution.status.integrityErrors.map((error) => `${ref}: ${error}`));
-            const latencyDestination = ref === references.currentPrBase ? errors : advisoryErrors;
+            const latencyDestination = !legacyDiagnosticsOnly && ref === references.currentPrBase ? errors : advisoryErrors;
             latencyDestination.push(...execution.status.latencyErrors.map((error) => `${ref}: ${error}`));
         }
     }
@@ -181,13 +187,14 @@ export function aggregateIteration(references, executions, { requireTarget = fal
     }
     return {
         schema: "graphite-global-iteration-v1",
+        ...(legacyDiagnosticsOnly ? { evidenceMode: "legacy-diagnostics-only" } : {}),
         passed: iterationPassed && (!requireTarget || targetAchieved),
         iterationPassed,
         regressionPassed,
         progressAchieved,
         progressErrors,
         advisoryErrors,
-        blockingLatencyRef: references.currentPrBase,
+        blockingLatencyRef: legacyDiagnosticsOnly ? null : references.currentPrBase,
         targetAchieved,
         frozenTargetAchieved,
         requireTarget,
@@ -208,10 +215,15 @@ export function aggregateIteration(references, executions, { requireTarget = fal
 }
 
 export function renderIterationReport(comparison, reports = {}) {
+    const diagnostics = comparison.evidenceMode === "legacy-diagnostics-only";
     const lines = [
-        "### Global-query iteration verification", "",
-        `Iteration acceptance: **${comparison.iterationPassed ? "passed" : "failed"}**.`,
-        `Current-main latency and all-reference integrity checks: **${comparison.regressionPassed ? "passed" : "failed"}**.`,
+        diagnostics ? "### Legacy global-query diagnostics" : "### Global-query iteration verification", "",
+        diagnostics
+            ? `Legacy correctness and execution checks: **${comparison.iterationPassed ? "passed" : "failed"}**.`
+            : `Iteration acceptance: **${comparison.iterationPassed ? "passed" : "failed"}**.`,
+        diagnostics
+            ? "Latency values from the legacy query mix are advisory. The separate full 72-query timed gate is still required."
+            : `Current-main latency and all-reference integrity checks: **${comparison.regressionPassed ? "passed" : "failed"}**.`,
         `P95 progress against the last accepted iteration in every paired fork (advisory): ` +
             `**${comparison.progressAchieved ? "achieved" : "not achieved"}**.`,
         `Final 10x target against frozen main \`${comparison.frozenTargetRef}\`: ` +
@@ -222,29 +234,33 @@ export function renderIterationReport(comparison, reports = {}) {
         "Acceptance does not require strict iteration progress or the historical 10x objective unless --require-target is explicit.", ""
     ];
     if (comparison.errors.length) lines.push("Blocking failures:", "", ...comparison.errors.map((error) => `- ${error}`), "");
-    if (comparison.advisoryErrors.length) lines.push("Historical latency comparisons (advisory):", "", ...comparison.advisoryErrors.map((error) => `- ${error}`), "");
+    if (comparison.advisoryErrors.length) lines.push(diagnostics ? "Legacy latency comparisons (advisory):" : "Historical latency comparisons (advisory):", "", ...comparison.advisoryErrors.map((error) => `- ${error}`), "");
     if (comparison.progressErrors.length) lines.push("Historical progress evidence (advisory):", "", ...comparison.progressErrors.map((error) => `- ${error}`), "");
     if (comparison.targetErrors.length) lines.push("Final target evidence:", "", ...comparison.targetErrors.map((error) => `- ${error}`), "");
     for (const ref of comparison.evaluatedRefs) {
         lines.push(`#### Reference ${ref}`, "",
             ref === comparison.blockingLatencyRef
                 ? "Current-main latency and integrity are blocking."
-                : "Historical latency is advisory; integrity failures remain blocking.", "",
+                : diagnostics ? "Legacy latency is advisory; integrity failures remain blocking."
+                    : "Historical latency is advisory; integrity failures remain blocking.", "",
             `[Individual report](reference-${ref}/global-wide-report.md)`, "",
             reports[ref] ?? "Individual report unavailable; inspect the recorded execution failure.", "");
     }
     return lines.join("\n");
 }
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
     const values = {};
     const valued = new Set(["references", "manifest", "fixtures", "repository", "output"]);
     for (let index = 0; index < argv.length; index++) {
         const key = argv[index].replace(/^--/, "");
         if (argv[index] !== `--${key}` || key in values) throw new Error(`Invalid or duplicate argument: ${argv[index]}`);
-        if (key === "require-target") values[key] = true;
+        if (["require-target", "legacy-diagnostics-only"].includes(key)) values[key] = true;
         else if (valued.has(key) && argv[index + 1] && !argv[index + 1].startsWith("--")) values[key] = argv[++index];
         else throw new Error(`Unknown argument or missing value: ${argv[index]}`);
+    }
+    if (values["require-target"] && values["legacy-diagnostics-only"]) {
+        throw new Error("Legacy diagnostics cannot enforce a latency target");
     }
     for (const key of valued) if (!values[key]) throw new Error(`Missing --${key}`);
     if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(values.repository)) throw new Error("Invalid --repository");
@@ -278,7 +294,7 @@ export function main(argv) {
                     env: {
                         ...process.env,
                         GRAPHITE_PRESSURE_REGRESSION_ONLY: "true",
-                        GRAPHITE_PRESSURE_REPEATED_LATENCY: ref === references.currentPrBase ? "true" : "false",
+                        GRAPHITE_PRESSURE_REPEATED_LATENCY: !args["legacy-diagnostics-only"] && ref === references.currentPrBase ? "true" : "false",
                         GRAPHITE_PRESSURE_MINIMUM_SPEEDUP: "10",
                         GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: "false"
                     }
@@ -293,7 +309,10 @@ export function main(argv) {
         }
         executions.push({ referenceSha: ref, exitCode, status, error });
     }
-    const comparison = aggregateIteration(references, executions, { requireTarget: args["require-target"] === true });
+    const comparison = aggregateIteration(references, executions, {
+        requireTarget: args["require-target"] === true,
+        legacyDiagnosticsOnly: args["legacy-diagnostics-only"] === true
+    });
     fs.writeFileSync(path.join(output, "global-wide-status.json"), `${JSON.stringify(comparison, null, 2)}\n`);
     fs.writeFileSync(path.join(output, "global-wide-report.md"), renderIterationReport(comparison, reports));
     if (!comparison.passed) process.exitCode = 1;

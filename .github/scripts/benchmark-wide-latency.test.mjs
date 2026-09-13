@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { compareWideLatency, renderWideLatency } from "./benchmark-wide-latency.mjs";
+import { compareWideLatency, renderWideLatency, selectWideCatalog, WIDE_PROTOCOL } from "./benchmark-wide-latency.mjs";
 
 const catalog = JSON.parse(fs.readFileSync(new URL("./wide-query-catalog.json", import.meta.url), "utf8")).queries;
 const fields = ["id", "family", "shape", "selectivity", "operator", "boundary", "projection", "targetGraphId",
@@ -15,19 +15,23 @@ const row = q => ({ ...q, targetGraphId: "", workloadIdentity: q.workloadIdentit
     hitGraphIds: q.selectivity === "zero" ? "" : (q.expectedMatchingGraphIds?.[0] ?? graphIds[0]),
     executionPath: "cross-graph-query", inputSourceCount: "64" });
 const oracle = catalog.map(q => fields.map(f => row(q)[f]).join("|")).join("\n");
-const headers = ["round", ...fields, "latencyNanos", "hitGraphIds", "executionPath", "inputSourceCount"];
-function evidence(transform = r => r) {
+const headers = ["phase", "round", "phaseElapsedNanos", ...fields, "latencyNanos", "hitGraphIds", "executionPath", "inputSourceCount"];
+function evidence(transform = r => r, queries = catalog, measurementCalls = 40) {
     return Array.from({ length: 3 }, (_, fork) => [headers.join("\t"),
-        ...Array.from({ length: 40 }, (_, i) => catalog.map(q => {
-            const sample = transform({ ...row(q), round: i + 1, latencyNanos: 1_000_000 }, fork);
-            return headers.map(h => sample[h]).join("\t");
-        })).flat()].join("\n"));
+        ...queries.flatMap(q => ["warmup", "measurement"].flatMap(phase => {
+            const count = phase === "warmup" ? 5 : measurementCalls;
+            return Array.from({ length: count }, (_, i) => {
+                const sample = transform({ ...row(q), phase, round: i + 1,
+                    phaseElapsedNanos: Math.ceil(10_000_000_000 / count) * (i + 1), latencyNanos: 1_000_000 }, fork);
+                return headers.map(h => sample[h]).join("\t");
+            });
+        }))].join("\n"));
 }
 const base = evidence();
 const compare = (candidate = base, originals = base, expected = oracle) =>
     compareWideLatency(originals, candidate, expected, manifest);
 
-test("all 72 identical queries pass independently with 40 samples and three forks", () => {
+test("all 72 identical queries pass independently with timed warmup, 40 minimum samples and three forks", () => {
     const result = compare();
     assert.equal(result.passed, true, result.integrityErrors.join("\n"));
     assert.equal(result.queries.length, 72);
@@ -101,4 +105,109 @@ test("changed query identity cannot pass by changing oracle and every sample tog
     const result = compare(candidate, candidate, detachedOracle);
     assert.equal(result.passed, false);
     assert.match(result.integrityErrors.join("\n"), /workloadIdentity differs from reviewed catalog/);
+});
+
+
+test("timed phases reject absent, short, reordered and noncontiguous evidence", () => {
+    const id = catalog[0].id;
+    for (const transform of [
+        r => ({ ...r, phaseElapsedNanos: r.phaseElapsedNanos - 1 }),
+        r => ({ ...r, phase: r.phase === "warmup" ? "measurement" : r.phase }),
+        r => ({ ...r, round: r.round + 1 }),
+        r => ({ ...r, phaseElapsedNanos: 1 }),
+        r => ({ ...r, latencyNanos: r.phaseElapsedNanos + 1 }),
+    ]) {
+        const result = compare(evidence(r => r.id === id ? transform(r) : r));
+        assert.equal(result.passed, false);
+        assert.ok(result.integrityErrors.length);
+    }
+    const corruptWarmup = compare(evidence(r => r.id === id && r.phase === "warmup"
+        ? { ...r, digest: "c".repeat(64) } : r));
+    assert.match(corruptWarmup.integrityErrors.join("\n"), /digest differs from correctness oracle/);
+    const lines = base[0].split("\n");
+    // Move the first query's final measurement past the next query's first warmup.
+    [lines[45], lines[46]] = [lines[46], lines[45]];
+    assert.match(compare([lines.join("\n"), ...base.slice(1)]).integrityErrors.join("\n"), /must be contiguous/);
+});
+
+test("every measured call contributes to quantiles and actual run metadata", () => {
+    const expanded = evidence(r => r.phase === "measurement" && r.round > 40
+        ? { ...r, latencyNanos: 2_000_000 } : r, catalog, 80);
+    const result = compare(expanded, expanded);
+    assert.equal(result.passed, true, result.integrityErrors.join("\n"));
+    assert.deepEqual(result.protocol, WIDE_PROTOCOL);
+    const run = result.queries[0].runs[0];
+    assert.equal(run.candidateMeasurementCalls, 80);
+    assert.equal(run.candidateWarmupCalls, 5);
+    assert.equal(run.candidateMeasurementElapsedNanos, 10_000_000_000);
+    assert.equal(run.candidateP95Nanos, 2_000_000);
+});
+
+test("declared shards can be parsed independently but default aggregation requires all 72", () => {
+    const standard = selectWideCatalog(catalog, { shard: "standard" });
+    const fullScan = selectWideCatalog(catalog, { shard: "full-scan" });
+    assert.equal(standard.length, 71);
+    assert.deepEqual(fullScan.map(q => q.id), ["mixed-four-few-distinct"]);
+    assert.throws(() => selectWideCatalog(catalog, { shard: "invented" }), /Unknown/);
+    for (const [shard, subset] of [["standard", standard], ["full-scan", fullScan]]) {
+        const subsetOracle = oracle.split("\n").filter(line => subset.some(q => line.startsWith(`${q.id}|`))).join("\n");
+        const raw = evidence(r => r, subset);
+        const result = compareWideLatency(raw, raw, subsetOracle, manifest, catalog, { shard });
+        assert.equal(result.passed, true, result.integrityErrors.join("\n"));
+        assert.equal(compareWideLatency(raw, raw, subsetOracle, manifest).passed, false,
+            "missing shard must never produce a green full aggregate");
+    }
+});
+
+
+test("fork evidence accepts one-pass line generators without materializing whole files", () => {
+    let consumed = 0;
+    function* lines(content) {
+        for (const line of content.split("\n")) { consumed++; yield line; }
+    }
+    const result = compareWideLatency(base.map(lines), base.map(lines), oracle, manifest);
+    assert.equal(result.passed, true);
+    assert.equal(consumed, 6 * (1 + 72 * 45));
+    assert.equal(result.queries[0].runs[0].baseP95Nanos, 1_000_000);
+});
+
+
+test("reviewed catalog declares the exact timed protocol and a complete disjoint shard partition", () => {
+    const document = JSON.parse(fs.readFileSync(new URL("./wide-query-catalog.json", import.meta.url), "utf8"));
+    assert.equal(document.schema, "graphite-wide-query-supplemental-v2");
+    assert.deepEqual(document.protocol, WIDE_PROTOCOL);
+    assert.deepEqual(Object.keys(document.shards).sort(), ["full-scan", "standard"]);
+    const ids = Object.values(document.shards).flat();
+    assert.equal(ids.length, 72);
+    assert.equal(new Set(ids).size, 72);
+    assert.deepEqual(ids.sort(), catalog.map(q => q.id).sort());
+});
+
+test('partial checkpoints never pass final acceptance, even with all three completed pairs', () => {
+    for (const count of [1, 2, 3]) {
+        const checkpoint = compareWideLatency(base.slice(0, count), base.slice(0, count), oracle, manifest, catalog, { partial: true });
+        assert.equal(checkpoint.canContinue, true);
+        assert.equal(checkpoint.passed, false);
+        assert.equal(checkpoint.partial, true);
+        assert.ok(checkpoint.queries.every(query => query.passed === false));
+    }
+});
+test('first-pair regression and second-pair spread stop partial validation irreversibly', () => {
+    const slower = evidence(r => ({ ...r, latencyNanos: 1_050_000 }));
+    const first = compareWideLatency(base.slice(0, 1), slower.slice(0, 1), oracle, manifest, catalog, { partial: true });
+    assert.equal(first.canContinue, false);
+    assert.match(first.latencyErrors.join('\n'), /P50 regression/);
+    const unstable = evidence((r, fork) => ({ ...r, latencyNanos: fork === 1 ? 1_050_000 : 1_000_000 }));
+    const second = compareWideLatency(unstable.slice(0, 2), unstable.slice(0, 2), oracle, manifest, catalog, { partial: true });
+    assert.equal(second.canContinue, false);
+    assert.match(second.latencyErrors.join('\n'), /cross-fork spread/);
+});
+test('partial validation cannot hide incomplete pairs or malformed warmup', () => {
+    const unmatched = compareWideLatency(base.slice(0, 1), [], oracle, manifest, catalog, { partial: true });
+    assert.equal(unmatched.canContinue, false);
+    const short = evidence(r => ({ ...r, phaseElapsedNanos: r.phaseElapsedNanos / 2 }));
+    const invalid = compareWideLatency(base.slice(0, 1), short.slice(0, 1), oracle, manifest, catalog, { partial: true });
+    assert.equal(invalid.canContinue, false);
+    assert.ok(invalid.integrityErrors.length > 0);
+    assert.equal(compareWideLatency(base.slice(0, 1), base.slice(0, 1), oracle, manifest).passed, false);
 });
