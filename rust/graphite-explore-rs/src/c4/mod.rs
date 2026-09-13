@@ -12,6 +12,7 @@ pub mod util;
 mod boundary;
 mod components;
 mod containers;
+mod edges;
 mod external;
 mod model;
 mod render;

@@ -1035,11 +1035,7 @@ mod tests {
         assert_eq!(literal_signature("ab"), 0);
         let one = literal_signature("abc");
         assert_ne!(one, 0);
-        assert_eq!(
-            one.count_ones() <= 2,
-            true,
-            "one trigram sets at most two bits"
-        );
+        assert!(one.count_ones() <= 2, "one trigram sets at most two bits");
         assert_eq!(literal_signature("ABC"), one);
         // A longer literal's signature covers its prefix's bits.
         assert_eq!(literal_signature("abcd") & one, one);

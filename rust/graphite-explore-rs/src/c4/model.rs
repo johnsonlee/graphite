@@ -309,6 +309,85 @@ fn container_dependency_relationships(
         .collect()
 }
 
+/// Component relationships as Structurizr entries, keyed by source component, with ids
+/// handed out in the view's order so they follow whatever the container level issued.
+fn component_relationships(
+    view: &components::ComponentView,
+    next_rel: &mut dyn FnMut() -> String,
+) -> Vec<(String, J)> {
+    view.relationships
+        .iter()
+        .map(|r| {
+            let evidence = json!({ "calls": r.weight });
+            let entry = json!({
+                "id": next_rel(),
+                "destinationId": r.to,
+                "description": r.description,
+                "technology": r.kind,
+                "tags": format!("Relationship,{GRAPHITE_TAG},{}", r.kind),
+                "properties": {
+                    "graphite.view": "component",
+                    "graphite.relationshipKind": r.kind,
+                    "graphite.evidence": serde_json::to_string_pretty(&evidence)
+                        .unwrap_or_default(),
+                    "graphite.weight": r.weight.to_string(),
+                },
+            });
+            (r.from.clone(), entry)
+        })
+        .collect()
+}
+
+/// Attach each component's relationships inside `containers_json`, returning per
+/// container the view refs of every relationship whose source component sits in it,
+/// in relationship order.
+fn attach_component_relationships(
+    containers_json: &mut [J],
+    relationships: &[(String, J)],
+) -> indexmap::IndexMap<String, Vec<J>> {
+    let mut refs: indexmap::IndexMap<String, Vec<J>> = indexmap::IndexMap::new();
+    for container in containers_json.iter_mut() {
+        let Some(container_id) = container
+            .get("id")
+            .and_then(|v| v.as_str())
+            .map(str::to_string)
+        else {
+            continue;
+        };
+        let Some(comps) = container
+            .get_mut("components")
+            .and_then(|c| c.as_array_mut())
+        else {
+            continue;
+        };
+        let mut members: std::collections::HashSet<String> = std::collections::HashSet::new();
+        for comp in comps.iter_mut() {
+            let Some(id) = comp.get("id").and_then(|v| v.as_str()).map(str::to_string) else {
+                continue;
+            };
+            let rels: Vec<&J> = relationships
+                .iter()
+                .filter(|(from, _)| *from == id)
+                .map(|(_, r)| r)
+                .collect();
+            if rels.is_empty() {
+                continue;
+            }
+            comp["relationships"] = json!(rels);
+            members.insert(id);
+        }
+        let container_refs: Vec<J> = relationships
+            .iter()
+            .filter(|(from, _)| members.contains(from))
+            .filter_map(|(_, r)| r.get("id").map(|i| json!({ "id": i })))
+            .collect();
+        if !container_refs.is_empty() {
+            refs.insert(container_id, container_refs);
+        }
+    }
+    refs
+}
+
 /// What every level's inference starts from, gathered once.
 struct Inputs {
     endpoint_classes: Vec<String>,
@@ -449,6 +528,13 @@ fn build_component_model(g: &Graph) -> J {
                 "containers": [],
                 "components": components_json.clone(),
             }));
+            let mut rel_id = 0usize;
+            let mut next_rel = || {
+                rel_id += 1;
+                format!("rel-{rel_id}")
+            };
+            let rels = component_relationships(view, &mut next_rel);
+            let refs = attach_component_relationships(&mut containers_json, &rels);
             component_views.push(json!({
                 "key": format!("graphite-component-{}", slugify(&view.container.id)),
                 "description": format!(
@@ -460,7 +546,7 @@ fn build_component_model(g: &Graph) -> J {
                     .iter()
                     .filter_map(|c| c.get("id").map(|i| json!({"id": i})))
                     .collect::<Vec<_>>(),
-                "relationships": [],
+                "relationships": refs.get(&view.container.id).cloned().unwrap_or_default(),
                 "properties": {
                     "graphite.level": level_prop,
                     "graphite.containerId": view.container.id,
@@ -687,7 +773,7 @@ fn build_context_model(g: &Graph, level: &str) -> J {
             })
         })
         .collect();
-    let containers_json: Vec<J> = if want_container || want_component {
+    let mut containers_json: Vec<J> = if want_container || want_component {
         runtime_layout
             .containers
             .iter()
@@ -820,6 +906,15 @@ fn build_context_model(g: &Graph, level: &str) -> J {
             ),
         ]),
     );
+    // Component relationships take their ids after every container relationship, and
+    // go into the containers before those are placed on the subject.
+    let component_refs = match component_view.as_ref().and_then(|v| v.as_ref()) {
+        Some(v) if want_component => {
+            let rels = component_relationships(v, &mut next_rel);
+            attach_component_relationships(&mut containers_json, &rels)
+        }
+        _ => indexmap::IndexMap::new(),
+    };
     if let Some(o) = subject_element.as_object_mut() {
         o.insert("containers".into(), json!(containers_json));
         o.insert("relationships".into(), json!(subject_rels));
@@ -843,7 +938,7 @@ fn build_context_model(g: &Graph, level: &str) -> J {
                             "graphite.view": "context",
                             "graphite.relationshipKind": "uses",
                             "graphite.evidence": serde_json::to_string_pretty(
-                                &json!({ "endpoints": endpoint_classes.len() })
+                                &subject::invocation_evidence(&subject, endpoint_classes.len())
                             ).unwrap_or_default(),
                         },
                     }]),
@@ -924,7 +1019,7 @@ fn build_context_model(g: &Graph, level: &str) -> J {
                     "description": format!("Graphite-derived C4 component view for {name}"),
                     "containerId": id,
                     "elements": comps.iter().filter_map(|c| c.get("id").map(|i| json!({"id": i}))).collect::<Vec<_>>(),
-                    "relationships": [],
+                    "relationships": component_refs.get(id).cloned().unwrap_or_default(),
                     "properties": {
                         "graphite.level": level_prop,
                         "graphite.containerId": id,

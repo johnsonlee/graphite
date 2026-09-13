@@ -90,6 +90,9 @@ pub enum AnyValue {
 }
 
 impl AnyValue {
+    /// `version` is threaded through for the nested values; it only matters to the
+    /// annotation reader.
+    #[allow(clippy::only_used_in_recursion)]
     pub fn read(c: &mut Cursor, version: u8) -> Result<Self, Truncated> {
         Ok(match c.u8()? {
             0 => AnyValue::Int(c.i32()?),

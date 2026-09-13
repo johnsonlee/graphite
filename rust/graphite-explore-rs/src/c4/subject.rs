@@ -333,6 +333,16 @@ pub fn describe_invocation(subject: &Subject, endpoint_count: usize) -> String {
     }
 }
 
+/// The evidence behind the actor's relationship to the subject, as the baseline
+/// records it: a library is used by a host, an application is invoked.
+pub fn invocation_evidence(subject: &Subject, endpoint_count: usize) -> serde_json::Value {
+    if subject.role == "library" {
+        serde_json::json!({ "role": "library-consumer" })
+    } else {
+        serde_json::json!({ "endpoints": endpoint_count })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

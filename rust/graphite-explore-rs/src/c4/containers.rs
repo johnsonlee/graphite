@@ -121,14 +121,14 @@ fn cluster_units(units: &[String], traffic: &IndexMap<(String, String), i64>) ->
         })
         .collect();
     let mut parents: Vec<usize> = (0..units.len()).collect();
-    fn find(parents: &mut Vec<usize>, mut i: usize) -> usize {
+    fn find(parents: &mut [usize], mut i: usize) -> usize {
         while parents[i] != i {
             parents[i] = parents[parents[i]];
             i = parents[i];
         }
         i
     }
-    fn union(parents: &mut Vec<usize>, l: usize, r: usize) {
+    fn union(parents: &mut [usize], l: usize, r: usize) {
         let (a, b) = (find(parents, l), find(parents, r));
         parents[b] = a;
     }
@@ -155,9 +155,9 @@ fn cluster_units(units: &[String], traffic: &IndexMap<(String, String), i64>) ->
         }
     }
     let mut groups: IndexMap<usize, Vec<String>> = IndexMap::new();
-    for i in 0..units.len() {
+    for (i, unit) in units.iter().enumerate() {
         let root = find(&mut parents, i);
-        groups.entry(root).or_default().push(units[i].clone());
+        groups.entry(root).or_default().push(unit.clone());
     }
     let mut out: Vec<Vec<String>> = groups
         .into_values()

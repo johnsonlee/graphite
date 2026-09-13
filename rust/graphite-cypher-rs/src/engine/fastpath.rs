@@ -4,7 +4,9 @@
 //! pipeline stays the single source of truth for everything else.
 
 use super::matching::{resolve_node_class, NodeClass};
-use super::pipeline::{add_provenance_id, QueryResult, Row, INTERNAL_PROVENANCE_KEY};
+use super::pipeline::{
+    add_provenance_id, merge_provenance, QueryResult, Row, INTERNAL_PROVENANCE_KEY,
+};
 use super::Executor;
 use crate::ast::{Clause, Expr, OrderItem, Pattern, ReturnItem};
 use crate::render::to_cypher_string;
@@ -161,8 +163,12 @@ pub fn grouped_call_site_property(
             .clone()
             .unwrap_or_else(|| to_cypher_string(&items[1].expr)),
     ];
-    // Counting by string id keeps the whole aggregation in integers.
+    // Counting by string id keeps each graph's aggregation in integers. Groups are
+    // one per value across every graph, as the baseline aggregates the union of the
+    // sources' rows: a value seen in two graphs is one row, its counts summed and
+    // both graphs in its provenance, in first-seen order.
     let mut rows: Vec<Row> = Vec::new();
+    let mut at: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for s in &ex.sources {
         let graph = &s.graph;
         let data = graph.nodedata();
@@ -182,23 +188,30 @@ pub fn grouped_call_site_property(
             ][field];
             *counts.entry(key).or_insert(0) += 1;
         }
-        let mut entries: Vec<(StrId, i64)> = counts.into_iter().collect();
-        if descending_by_count {
-            entries.sort_by(|a, b| b.1.cmp(&a.1));
-        }
-        for (key, count) in entries {
+        for (key, count) in counts {
+            let value = graph.str(key);
+            if let Some(&i) = at.get(value) {
+                if let Some(Value::Int(n)) = rows[i].get_mut(&columns[1]) {
+                    *n += count;
+                }
+                if ex.cross {
+                    add_provenance_id(&mut rows[i], s.id.clone());
+                }
+                continue;
+            }
             let mut row = Row::new();
-            row.insert(columns[0].clone(), Value::str(graph.str(key)));
+            row.insert(columns[0].clone(), Value::str(value));
             row.insert(columns[1].clone(), Value::Int(count));
             if ex.cross {
                 add_provenance_id(&mut row, s.id.clone());
             }
+            at.insert(value.to_string(), rows.len());
             rows.push(row);
         }
     }
-    // With several sources the per-source orders must be merged.
-    if descending_by_count && ex.sources.len() > 1 {
+    if descending_by_count {
         let count_column = columns[1].clone();
+        // Stable, so equal counts keep first-seen order.
         rows.sort_by(|a, b| {
             let get = |r: &Row| match r.get(&count_column) {
                 Some(Value::Int(i)) => *i,
@@ -327,17 +340,22 @@ pub fn distinct_string_property(
             rows.push(row);
         }
     }
-    // Several sources produce several ordered runs, which must be merged and re-deduped.
+    // Several sources produce several ordered runs, which must be merged and
+    // re-deduped -- a value's later occurrences add their graph to the row kept.
     if ex.sources.len() > 1 {
-        let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
+        let mut at: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
         let mut merged: Vec<Row> = Vec::new();
         for r in rows {
             let key = match r.get(&column) {
                 Some(Value::Str(s)) => s.to_string(),
                 _ => String::new(),
             };
-            if seen.insert(key) {
-                merged.push(r);
+            match at.get(&key) {
+                Some(&i) => merge_provenance(&mut merged[i], &r),
+                None => {
+                    at.insert(key, merged.len());
+                    merged.push(r);
+                }
             }
         }
         rows = merged;

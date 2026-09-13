@@ -1,4 +1,4 @@
-use graphite_cypher::engine::{Executor, Source};
+use graphite_cypher::engine::Executor;
 use graphite_cypher::materialize::materialize;
 use graphite_storage::Graph;
 use std::sync::Arc;

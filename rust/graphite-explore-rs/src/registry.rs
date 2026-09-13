@@ -191,8 +191,19 @@ impl GraphRegistry {
     }
 
     pub fn unload(&self, id: &str) -> Result<bool, String> {
+        Ok(self.take(id)?.is_some())
+    }
+
+    /// Remove a graph and hand it back, so a caller can restore it if what follows
+    /// the removal fails.
+    pub fn take(&self, id: &str) -> Result<Option<Arc<ServedGraph>>, String> {
         let id = validate_graph_id(id)?;
-        Ok(self.graphs.lock().remove(&id).is_some())
+        Ok(self.graphs.lock().remove(&id))
+    }
+
+    /// Put a removed graph back under its id, keeping its generation.
+    pub fn restore(&self, served: Arc<ServedGraph>) {
+        self.graphs.lock().insert(served.id.clone(), served);
     }
 
     pub fn describe(&self, id: &str) -> Result<Option<Arc<ServedGraph>>, String> {
@@ -306,9 +317,9 @@ pub fn format_instant(t: chrono::DateTime<chrono::Utc>) -> String {
     let nanos = t.nanosecond();
     if nanos == 0 {
         t.format("%Y-%m-%dT%H:%M:%SZ").to_string()
-    } else if nanos % 1_000_000 == 0 {
+    } else if nanos.is_multiple_of(1_000_000) {
         t.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()
-    } else if nanos % 1_000 == 0 {
+    } else if nanos.is_multiple_of(1_000) {
         t.format("%Y-%m-%dT%H:%M:%S%.6fZ").to_string()
     } else {
         t.format("%Y-%m-%dT%H:%M:%S%.9fZ").to_string()

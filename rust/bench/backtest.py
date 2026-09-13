@@ -13,7 +13,8 @@ produces a P50 over a realistic population, which is the number a backtest repor
 Servers are measured one at a time: both together do not fit in memory, and contention
 would taint whichever is being timed.
 """
-import argparse, hashlib, http.client, json, math, random, re, sys, time, urllib.parse
+import argparse
+import collections, hashlib, http.client, json, math, random, re, sys, time, urllib.parse
 
 FOUR = "n.caller_class, n.caller_name, n.callee_class, n.callee_name"
 ALIASED = ("n.caller_class AS callerClass, n.caller_name AS callerName, "
@@ -22,6 +23,11 @@ ALIASED = ("n.caller_class AS callerClass, n.caller_name AS callerName, "
 
 def esc(t):
     return t.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def re_esc(t):
+    """Quote a term for use inside a single-quoted regex literal."""
+    return "".join("\\\\" + c if c in "\\.^$|?*+()[]{}" else c for c in t).replace("'", "\\'")
 
 
 def wide_or(t):
@@ -43,6 +49,19 @@ def class_pair_node(t):
 def value_contains(t):
     """The production log's other common shape: a constant's value, whole node."""
     return f'MATCH (n) WHERE n.value CONTAINS "{esc(t)}" RETURN n LIMIT 25'
+
+
+def regex_pair_node(t):
+    """The repo's own pressure benchmark shape: a regex-contains against the two
+    class properties, the whole node returned."""
+    t = re_esc(t)
+    return (f"MATCH (n) WHERE n.caller_class =~ '.*{t}.*' OR n.callee_class =~ '.*{t}.*' "
+            f"RETURN n LIMIT 25")
+
+
+def regex_prefix(t):
+    """A package prefix as a regex, the way the explorer UI writes one."""
+    return f"MATCH (n) WHERE n.callee_class =~ '{re_esc(t)}.*' RETURN n.callee_class LIMIT 25"
 
 
 def two_term_or(a, b):
@@ -185,6 +204,11 @@ MIXES = {
     "v2": [("class-pair-node", 50), ("value-contains", 40), ("wide-or", 30),
            ("two-term-or", 15), ("and-of-or", 10), ("or-and-or", 10), ("and-two", 5),
            ("equality-or", 5), ("distinct-or", 3), ("keys-or", 2)],
+    # v2 with a third of the class-pair and value shapes written as `=~` patterns.
+    "v3": [("class-pair-node", 30), ("regex-pair-node", 20), ("value-contains", 30),
+           ("regex-prefix", 10), ("wide-or", 30), ("two-term-or", 15), ("and-of-or", 10),
+           ("or-and-or", 10), ("and-two", 5), ("equality-or", 5), ("distinct-or", 3),
+           ("keys-or", 2)],
 }
 
 
@@ -197,6 +221,8 @@ def build(classes, words, rng, mix="v2"):
         "wide-or": lambda: wide_or(rng.choice(pool)),
         "class-pair-node": lambda: class_pair_node(rng.choice(pool)),
         "value-contains": lambda: value_contains(rng.choice(pool)),
+        "regex-pair-node": lambda: regex_pair_node(rng.choice(pool)),
+        "regex-prefix": lambda: regex_prefix(rng.choice(classes).rsplit(".", 1)[0] if classes else "x"),
         "two-term-or": lambda: two_term_or(rng.choice(pool), rng.choice(pool)),
         "and-of-or": lambda: and_of_or(rng.choice(pool), [rng.choice(pool) for _ in range(5)]),
         "or-and-or": lambda: or_and_or(rng.choice(pool), rng.choice(pool)),
@@ -239,29 +265,43 @@ def main():
     print(f"{args.label}: {len(queries)} queries from {len(words)} sampled terms "
           f"(after a {len(queries)}-query warmup on a different seed)", flush=True)
 
-    rows, timeouts = [], 0
+    # A query counts only when it succeeded: HTTP 200 and a parseable body with rows.
+    # A rejected or failed request answers fast, and a fast failure inside the latency
+    # distribution would flatter the server that failed; a slow one would smear its
+    # timeouts over the percentiles. Failures are counted and reported separately, and
+    # a run with any of them exits non-zero, so its numbers are never quoted unnoticed.
+    rows, failures = [], collections.Counter()
     for i, (shape, q) in enumerate(queries):
         ms, status, payload = call(client, q)
-        if not isinstance(status, int):
-            timeouts += 1
         d, n = digest(payload)
+        ok = status == 200 and n is not None
+        if not ok:
+            failures[str(status)] += 1
         rows.append({"i": i, "shape": shape, "query": q, "ms": round(ms, 1),
-                     "status": status, "rows": n, "digest": d})
+                     "status": status, "ok": ok, "rows": n, "digest": d})
         if (i + 1) % 25 == 0:
             print(f"  {i + 1}/{len(queries)}", flush=True)
 
-    lat = [r["ms"] for r in rows]
+    lat = [r["ms"] for r in rows if r["ok"]]
     summary = {
         "label": args.label,
+        "mix": args.mix,
         "queries": len(rows),
-        "p50_ms": round(percentile(lat, 0.50), 2),
-        "p95_ms": round(percentile(lat, 0.95), 2),
-        "max_ms": round(max(lat), 2),
-        "failures": timeouts,
+        "succeeded": len(lat),
+        "failures": sum(failures.values()),
+        "failure_statuses": dict(failures),
+        "p50_ms": round(percentile(lat, 0.50), 2) if lat else None,
+        "p95_ms": round(percentile(lat, 0.95), 2) if lat else None,
+        "max_ms": round(max(lat), 2) if lat else None,
     }
     print(json.dumps(summary, indent=2))
     if args.out:
         json.dump({"summary": summary, "queries": rows}, open(args.out, "w"), indent=2)
+    if failures:
+        print(f"{args.label}: {sum(failures.values())} of {len(rows)} queries failed "
+              f"({dict(failures)}); the percentiles above cover the successes only",
+              file=sys.stderr)
+        return 3
     return 0
 
 

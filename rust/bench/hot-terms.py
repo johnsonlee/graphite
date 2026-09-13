@@ -138,24 +138,35 @@ def main():
         for shape, q in shapes(t):
             ms, status, payload = client.post(q)
             d, n = digest(payload)
+            ok = status == 200 and n is not None
             rows.append({"term": t, "shape": shape, "ms": round(ms, 1),
-                         "status": status, "rows": n, "digest": d})
+                         "status": status, "ok": ok, "rows": n, "digest": d})
             print(f"  {t:20s} {shape:9s} {ms:9.1f}ms  {status}  rows={n}", flush=True)
 
+    # Only a successful response -- HTTP 200 with a body that parsed to rows -- is a
+    # latency sample. A rejected or failed request is fast, and would flatter the
+    # server that failed it. Failures are counted separately and fail the run.
+    failed = [r for r in rows if not r["ok"]]
     by_shape = collections.defaultdict(list)
     for r in rows:
-        by_shape[r["shape"]].append(r["ms"])
-    summary = {"label": args.label, "terms": len(terms)}
+        if r["ok"]:
+            by_shape[r["shape"]].append(r["ms"])
+    summary = {"label": args.label, "terms": len(terms), "queries": len(rows),
+               "failures": len(failed),
+               "failure_statuses": dict(collections.Counter(str(r["status"]) for r in failed))}
     for shape, lat in by_shape.items():
         summary[f"{shape}_p50_ms"] = round(statistics.median(lat), 2)
         summary[f"{shape}_p95_ms"] = round(percentile(lat, 0.95), 2)
-    lat = [r["ms"] for r in rows]
-    summary["p50_ms"] = round(statistics.median(lat), 2)
-    summary["p95_ms"] = round(percentile(lat, 0.95), 2)
-    summary["failures"] = sum(1 for r in rows if not isinstance(r["status"], int))
+    lat = [r["ms"] for r in rows if r["ok"]]
+    summary["p50_ms"] = round(statistics.median(lat), 2) if lat else None
+    summary["p95_ms"] = round(percentile(lat, 0.95), 2) if lat else None
     print(json.dumps(summary, indent=2))
     if args.out:
         json.dump({"summary": summary, "queries": rows}, open(args.out, "w"), indent=2)
+    if failed:
+        print(f"{args.label}: {len(failed)} of {len(rows)} queries failed; the percentiles "
+              f"above cover the successes only", file=sys.stderr)
+        return 3
     return 0
 
 

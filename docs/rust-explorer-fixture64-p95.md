@@ -216,12 +216,98 @@ rest as before. `--mix v1` keeps the earlier all-CallSite mix.
 | v2 mix, 64 graphs | P50 | P95 | max |
 |---|---:|---:|---:|
 | Rust | 0.9 ms | 3.8 ms | 8.4 ms |
-| Kotlin main | 11.2 ms | 17.8 s | 19.3 s |
+| Kotlin main (155 of 170 succeeded) | 14.2 ms | 18.8 s | 19.3 s |
 
 Same protocol as the v1 numbers: one client, a 170-query warmup on a different seed,
-each query once. On the production-shaped mix the port is 12x at P50 and three orders
-of magnitude at P95, because forty of the 170 queries are `value CONTAINS`, which the
-Kotlin server answers by decoding every node.
+each query once. Percentiles are over successful responses only — HTTP 200 with a
+parseable body — and the backtest now counts anything else as a failure, reports the
+status breakdown, and exits non-zero, so a failed run's numbers are never quoted by
+accident. Kotlin main failed 15 of the 170 v2 queries with HTTP 400 (`Unsafe expression
+reached parallel string projection`, on class-pair `RETURN n` queries); those fast
+rejections are excluded above, which raises its P50 from the 11.2 ms a naive average
+gave to 14.2 ms. Every Rust run in this document succeeded on all 170. On the
+production-shaped mix the port is 16x at P50 and three orders of magnitude at P95,
+because forty of the 170 queries are `value CONTAINS`, which the Kotlin server answers
+by decoding every node.
+
+## Relationship patterns with a predicate
+
+`MATCH (c)-[r:DATAFLOW]->(n) WHERE n.callee_class CONTAINS "x" RETURN c, n LIMIT 25`
+had no plan on either server: every node is enumerated as `c`, its edges walked, and
+WHERE evaluated on each `n` reached. The Kotlin server's single-hop fast path covers
+only the pattern without a WHERE. The port now anchors such a pattern on the end the
+clause's pushable conjunct names — the target first, then the source — resolves that
+end through the same scan the single-node shape uses, reaches the other end back across
+the adjacency, and expands only those source nodes, in ascending id order, with the
+whole WHERE still evaluated on every row. Eight such queries produce exactly the rows,
+in exactly the order, that the exhaustive walk produced.
+
+| 64 graphs, `RETURN c, n LIMIT 25` unless noted | Rust before | Rust now (warm) | Kotlin main |
+|---|---:|---:|---:|
+| `WHERE n.callee_class CONTAINS "Spooler"` | 98 ms | 20 ms | 904 ms |
+| `WHERE c.value CONTAINS "Spooler"` | 2.6 s | 1.5 ms | 20.7 s |
+| `WHERE n.callee_class CONTAINS "zzqqxxvv"` (absent) | 35.0 s | 0.7 ms | 60 s timeout |
+| `WHERE n.callee_class CONTAINS "Spooler" RETURN count(*)` | 30.4 s | 34 ms | `Java heap space` |
+| `(c)-[r]->(n) WHERE n.callee_class CONTAINS "Spooler"` | 88 ms | 18 ms | 158 ms |
+
+The first query's remaining 20 ms is the expansion itself: the source nodes reached
+from the matched CallSites are expanded through the general matcher, each edge's target
+decoded for the WHERE. Against Kotlin the row sets differ only where the source end is
+unlabelled, for the type-order reason given above; the Kotlin server also returns rows
+without a key for a projected property that is null (`c.value` on a node without one),
+which the port matches.
+
+## `=~` patterns
+
+The repository's own pressure benchmark writes the wide query as
+`n.caller_class =~ '.*x.*' OR n.callee_class =~ '.*x.*'`, and the explorer UI writes a
+package prefix as `n.callee_class =~ 'com.example.*'`. The port never pushed `=~` down:
+every such query decoded every node of every graph and ran the pattern on each, which
+is the shape of the seconds-long medians reported from a 42-graph production corpus
+whose graphs reach 7.2M nodes.
+
+A pattern made of literal characters, backslash-escaped metacharacters and the `.`,
+`.*`, `.+` and `.?` wildcards has a longest literal run that every match must contain
+(`example` in `com.example.*`, `x` in `.*x.*`). That run now drives the trigram
+candidates exactly as a `CONTAINS` literal does, and the compiled pattern -- the same
+one the evaluator would have run -- decides each candidate, so the string ids are
+exact and everything downstream is unchanged. A pattern with a class, group,
+alternation, anchor or a quantifier on a literal, or applied to a `toLower(...)`
+operand, is left to the evaluator as before. Ten parity cases cover both kinds.
+
+The v3 backtest mix is v2 with a third of its class-pair and value shapes written as
+patterns (20 `regex-pair-node`, 10 `regex-prefix`); everything else is identical.
+Per-shape medians, 64 graphs, two rounds each:
+
+| v3 mix, 170 queries | before | after |
+|---|---:|---:|
+| P50 | 1.5 ms | 1.0 ms |
+| P95 | 406 / 421 ms | 3.9 / 3.4 ms |
+| max | 19.7 s | 9.4 ms |
+| `regex-pair-node` median | 127 ms | 1.0 ms |
+| `regex-prefix` median | 189 ms | 0.8 ms |
+| every other shape | unchanged | unchanged |
+
+## Component relationships, and a graph that has some
+
+The C4 component level used to hard-code an empty relationship list, and the parity
+corpus could not tell: a library graph infers no runtime container and therefore no
+components. `rust/bench/fixtures/acme` is a six-class application with a `main` and
+five packages calling each other; built as a graph it yields three components and
+eight cross-capability call edges. The selector now accumulates call weights per
+canonical component pair, ranks and reads them the way the baseline's
+`ComponentSelector` does (architectural kinds over collaboration, transitive
+reduction, two edges out of and into a component, twelve in a view, relaxed when that
+leaves fewer than six), and the mapper hands out their ids after the container
+level's. Every level in every format is byte-identical on that graph, on the library
+graph, and on four fixture64 graphs, and the diagram planner gained the baseline's
+visible-slice selection and truncation notes along the way, which the larger
+graphs' context diagrams needed.
+
+Serving two *different* graphs also exposed two cross-graph defects the single-graph
+and same-graph-twice runs could not: the grouped `count(*)` fast path emitted one row
+per graph instead of summing a value's counts across them, and the DISTINCT fast path
+dropped a later graph from a value's provenance. Both are fixed and covered.
 
 ## Debug builds
 
@@ -242,10 +328,12 @@ sweep per graph, and a conjunction went to the generic evaluator over every reco
 |---|---:|---:|---:|
 | Kotlin main (builds the index in memory) | 13.8 ms | 93.1 ms | 727 ms |
 | Rust `1d8a52d`, with the file | 3.1 ms | 34.0 s | 34.4 s |
-| Rust before this fix, without the file | 65.3 ms | 53.9 s | 60 s timeout |
+| Rust before this fix, without the file (162 of 170 succeeded) | 16.0 ms | 23.0 s | 53.9 s |
 | Rust with this fix, without the file | 1.1 ms | 4.5 ms | 156 ms |
 
-That is the regression a measurement on pre-September graphs would see, and it is not a
+Eight of that run's queries failed with HTTP 504 at the 60 s timeout and are excluded
+from its percentiles; every other row in the table succeeded on all 170. That is the
+regression a measurement on pre-September graphs would see, and it is not a
 regression of the engine but of what the port was willing to read. The port now builds
 the index in memory at load when the file is absent, in the exact layout the Kotlin
 writer persists: on a fixture graph that does have the file, the in-memory build is

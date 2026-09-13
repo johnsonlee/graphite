@@ -430,9 +430,7 @@ impl Parser {
     fn remove_items(&mut self) -> CypherResult<()> {
         loop {
             let _ = self.variable()?;
-            if self.eat(T::Dot) {
-                let _ = self.symbolic_name()?;
-            } else if self.eat(T::Colon) {
+            if self.eat(T::Dot) || self.eat(T::Colon) {
                 let _ = self.symbolic_name()?;
             } else {
                 return Err(self.mismatched("{'.', ':'}"));

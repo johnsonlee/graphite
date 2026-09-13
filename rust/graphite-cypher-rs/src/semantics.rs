@@ -921,6 +921,7 @@ pub fn is_truthy(value: &Value) -> bool {
 }
 
 #[cfg(test)]
+#[allow(clippy::approx_constant)]
 mod tests {
     use super::*;
 

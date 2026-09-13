@@ -65,7 +65,7 @@ struct RegexCache {
 }
 
 /// A compiled `=~` pattern. Literal and literal-prefix patterns bypass the regex engine.
-enum CompiledRegex {
+pub(crate) enum CompiledRegex {
     /// Whole-string equality.
     Literal(String),
     /// `X.*` — prefix match, and the remainder must contain no Java line terminator.
@@ -76,7 +76,7 @@ enum CompiledRegex {
 }
 
 impl CompiledRegex {
-    fn matches(&self, input: &str) -> CypherResult<bool> {
+    pub(crate) fn matches(&self, input: &str) -> CypherResult<bool> {
         match self {
             CompiledRegex::Literal(l) => Ok(input == l),
             CompiledRegex::Prefix(p) => {
@@ -131,7 +131,7 @@ fn literal_fast_path(pattern: &str) -> Option<CompiledRegex> {
     })
 }
 
-fn compile_regex(pattern: &str) -> Arc<CompiledRegex> {
+pub(crate) fn compile_regex(pattern: &str) -> Arc<CompiledRegex> {
     if let Some(fast) = literal_fast_path(pattern) {
         return Arc::new(fast);
     }
@@ -556,7 +556,7 @@ impl<'a> Evaluator<'a> {
         }
         let any_null = results.iter().any(|r| r.is_none());
         let true_count = results.iter().filter(|r| **r == Some(true)).count();
-        let any_false = results.iter().any(|r| *r == Some(false));
+        let any_false = results.contains(&Some(false));
         Ok(match name.to_ascii_lowercase().as_str() {
             "any" => {
                 if true_count > 0 {

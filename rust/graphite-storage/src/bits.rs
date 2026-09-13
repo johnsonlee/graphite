@@ -140,7 +140,7 @@ mod tests {
             }
         }
         fn bit(&mut self, b: u64) {
-            if self.nbits % 8 == 0 {
+            if self.nbits.is_multiple_of(8) {
                 self.bytes.push(0);
             }
             if b != 0 {

@@ -7,7 +7,13 @@
 //! local size only breaking ties.
 
 use super::boundary::{internal_package_unit, is_internal_class, is_runtime_class};
+use super::constants::component_limits::{
+    MAX_INCOMING_EDGES_PER_COMPONENT, MAX_OUTGOING_EDGES_PER_COMPONENT, MAX_VIEW_EDGES,
+    MIN_EDGES_AFTER_CAP_RELAXATION,
+};
+use super::constants::container_layer_ranks;
 use super::containers::{self, Container, ContainerLayout};
+use super::edges::{reduce_transitive, DirectedEdge};
 use graphite_storage::Graph;
 use indexmap::IndexMap;
 
@@ -48,6 +54,33 @@ pub struct Component {
     pub why_selected: Vec<String>,
 }
 
+/// A call dependency between two selected components.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ComponentRelationship {
+    pub from: String,
+    pub to: String,
+    /// `routes-to`, `orchestrates`, `uses` or `collaborates-with`; also the wire type.
+    pub kind: String,
+    pub description: String,
+    /// Cross-capability call sites behind the edge.
+    pub weight: i64,
+}
+
+impl DirectedEdge for ComponentRelationship {
+    fn from(&self) -> &str {
+        &self.from
+    }
+    fn to(&self) -> &str {
+        &self.to
+    }
+    fn kind(&self) -> &str {
+        &self.kind
+    }
+    fn weight(&self) -> Option<i64> {
+        Some(self.weight)
+    }
+}
+
 /// The component view, or `None` when no runtime container was inferred.
 ///
 /// Library and package code is deliberately not promoted to component scope without a
@@ -55,6 +88,121 @@ pub struct Component {
 pub struct ComponentView {
     pub components: Vec<Component>,
     pub container: Container,
+    /// The readable subset of the cross-capability call edges, strongest first.
+    pub relationships: Vec<ComponentRelationship>,
+}
+
+/// Where a capability sits in the dependency layering, by its container kind.
+fn dependency_layer_rank(kind: &str) -> i64 {
+    match kind {
+        "interface" | "entrypoint" => container_layer_ranks::INTERFACE,
+        "orchestrator" | "integration" => container_layer_ranks::ORCHESTRATION,
+        "shared-capability" => container_layer_ranks::SHARED_CAPABILITY,
+        _ => container_layer_ranks::CAPABILITY,
+    }
+}
+
+/// Orient an edge downward through the layers: whichever end sits higher is the source.
+fn canonical_pair(
+    source: String,
+    target: String,
+    source_kind: &str,
+    target_kind: &str,
+) -> (String, String) {
+    if dependency_layer_rank(source_kind) > dependency_layer_rank(target_kind) {
+        (target, source)
+    } else {
+        (source, target)
+    }
+}
+
+pub fn infer_dependency_kind(source_kind: &str, target_kind: &str) -> &'static str {
+    if source_kind == "interface" || source_kind == "entrypoint" {
+        "routes-to"
+    } else if source_kind == "orchestrator" {
+        "orchestrates"
+    } else if target_kind == "shared-capability" || target_kind == "integration" {
+        "uses"
+    } else {
+        "collaborates-with"
+    }
+}
+
+pub fn describe_dependency(kind: &str, source: &str, target: &str) -> String {
+    match kind {
+        "routes-to" => format!("{source} routes work to {target}"),
+        "orchestrates" => format!("{source} orchestrates {target}"),
+        "uses" => format!("{source} uses {target}"),
+        _ => format!("{source} collaborates with {target}"),
+    }
+}
+
+/// Keep the edges a component diagram can show: architectural kinds over plain
+/// collaboration, transitively reduced, at most two out of and into each component,
+/// twelve in all -- and the caps relaxed when they would leave the diagram too sparse.
+pub fn select_readable_relationships(
+    relationships: Vec<ComponentRelationship>,
+) -> Vec<ComponentRelationship> {
+    if relationships.len() <= 1 {
+        return relationships;
+    }
+    let mut architectural: Vec<ComponentRelationship> = relationships
+        .iter()
+        .filter(|r| r.kind != "collaborates-with")
+        .cloned()
+        .collect();
+    if architectural.is_empty() {
+        architectural = relationships;
+    }
+    let mut seen = std::collections::HashSet::new();
+    architectural.retain(|r| seen.insert(format!("{}:{}:{}", r.from, r.to, r.kind)));
+    architectural.sort_by(|a, b| b.weight.cmp(&a.weight));
+    let reduced = reduce_transitive(architectural, false);
+
+    let mut selected: Vec<ComponentRelationship> = Vec::new();
+    let mut outgoing: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
+    let mut incoming: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
+    let mut try_add = |selected: &mut Vec<ComponentRelationship>,
+                       edge: &ComponentRelationship,
+                       enforce_caps: bool| {
+        if edge.from.trim().is_empty() || edge.to.trim().is_empty() {
+            return;
+        }
+        if selected
+            .iter()
+            .any(|s| s.from == edge.from && s.to == edge.to && s.kind == edge.kind)
+        {
+            return;
+        }
+        if enforce_caps
+            && (outgoing.get(&edge.from).copied().unwrap_or(0) >= MAX_OUTGOING_EDGES_PER_COMPONENT
+                || incoming.get(&edge.to).copied().unwrap_or(0) >= MAX_INCOMING_EDGES_PER_COMPONENT)
+        {
+            return;
+        }
+        selected.push(edge.clone());
+        *outgoing.entry(edge.from.clone()).or_default() += 1;
+        *incoming.entry(edge.to.clone()).or_default() += 1;
+    };
+    for edge in &reduced {
+        if selected.len() >= MAX_VIEW_EDGES {
+            break;
+        }
+        try_add(&mut selected, edge, true);
+    }
+    if selected.len()
+        < MAX_VIEW_EDGES
+            .min(reduced.len())
+            .min(MIN_EDGES_AFTER_CAP_RELAXATION)
+    {
+        for edge in &reduced {
+            if selected.len() >= MAX_VIEW_EDGES {
+                break;
+            }
+            try_add(&mut selected, edge, false);
+        }
+    }
+    selected
 }
 
 pub fn architecture_type(kind: &str) -> &'static str {
@@ -216,9 +364,24 @@ pub fn build_view(
         }
     }
 
+    let capability_by_id: IndexMap<&str, &Container> = capability_layout
+        .containers
+        .iter()
+        .map(|c| (c.id.as_str(), c))
+        .collect();
+    let component_id = |capability_id: &str| {
+        format!(
+            "component:{}",
+            capability_id
+                .strip_prefix("container:")
+                .unwrap_or(capability_id)
+        )
+    };
     let mut call_counts: IndexMap<String, i64> = IndexMap::new();
     let mut external_by_capability: IndexMap<String, i64> = IndexMap::new();
     let mut calls_by_capability: IndexMap<String, i64> = IndexMap::new();
+    // Cross-capability call sites per canonical (source, target) pair, first seen first.
+    let mut relationship_weights: IndexMap<(String, String), i64> = IndexMap::new();
     for &id in g.ids_by_tag(graphite_storage::node::TAG_CALL_SITE_NODE) {
         let Some(s) = g.call_site_strings(id) else {
             continue;
@@ -265,6 +428,24 @@ pub fn build_view(
                 if let Some(c) = &caller_capability {
                     *external_by_capability.entry(c.clone()).or_default() += 1;
                 }
+            }
+            continue;
+        }
+        if let (Some(from), Some(to)) = (&caller_capability, &callee_capability) {
+            if from != to {
+                let kind_of = |id: &str| {
+                    capability_by_id
+                        .get(id)
+                        .map(|c| containers::container_kind(c))
+                        .unwrap_or_else(|| "capability".to_string())
+                };
+                let pair = canonical_pair(
+                    component_id(from),
+                    component_id(to),
+                    &kind_of(from),
+                    &kind_of(to),
+                );
+                *relationship_weights.entry(pair).or_default() += 1;
             }
         }
     }
@@ -338,13 +519,78 @@ pub fn build_view(
         ))
     });
     ranked.truncate(limit);
+    let kind_by_id: IndexMap<&str, &'static str> = ranked
+        .iter()
+        .map(|c| {
+            (
+                c.id.as_str(),
+                infer_kind(endpoints_of(c), c.inbound, c.outbound, external_of(c)),
+            )
+        })
+        .collect();
+
+    let capability_of = |component: &str| {
+        format!(
+            "container:{}",
+            component.strip_prefix("component:").unwrap_or(component)
+        )
+    };
+    let mut candidate_edges: Vec<(&(String, String), i64)> = relationship_weights
+        .iter()
+        .filter(|((from, to), _)| {
+            kind_by_id.contains_key(capability_of(from).as_str())
+                && kind_by_id.contains_key(capability_of(to).as_str())
+        })
+        .map(|(pair, w)| (pair, *w))
+        .collect();
+    candidate_edges.sort_by(|a, b| b.1.cmp(&a.1));
+    let relationships = select_readable_relationships(
+        candidate_edges
+            .into_iter()
+            .map(|((from, to), weight)| {
+                let source_capability = capability_of(from);
+                let target_capability = capability_of(to);
+                let source_kind = kind_by_id
+                    .get(source_capability.as_str())
+                    .copied()
+                    .unwrap_or("domain-component");
+                let target_kind = kind_by_id
+                    .get(target_capability.as_str())
+                    .copied()
+                    .unwrap_or("domain-component");
+                let kind = infer_dependency_kind(source_kind, target_kind);
+                let name_of = |capability: &str, component: &str| {
+                    capability_by_id
+                        .get(capability)
+                        .map(|c| c.name.clone())
+                        .unwrap_or_else(|| {
+                            component
+                                .strip_prefix("component:")
+                                .unwrap_or(component)
+                                .to_string()
+                        })
+                };
+                ComponentRelationship {
+                    from: from.clone(),
+                    to: to.clone(),
+                    kind: kind.to_string(),
+                    description: describe_dependency(
+                        kind,
+                        &name_of(&source_capability, from),
+                        &name_of(&target_capability, to),
+                    ),
+                    weight,
+                }
+            })
+            .collect(),
+    );
 
     let components = ranked
         .into_iter()
         .map(|c| {
             let endpoints = endpoints_of(c);
             let external = external_of(c);
-            let kind = infer_kind(endpoints, c.inbound, c.outbound, external);
+            let kind = kind_by_id[c.id.as_str()];
             let mut classes = classes_by_capability
                 .get(&c.id)
                 .cloned()
@@ -379,7 +625,7 @@ pub fn build_view(
             let mut units = c.package_units.clone();
             units.sort();
             Component {
-                id: format!("component:{}", c.id.trim_start_matches("container:")),
+                id: component_id(&c.id),
                 name: c.name.clone(),
                 kind: kind.to_string(),
                 architecture_type: architecture_type(kind),
@@ -407,5 +653,6 @@ pub fn build_view(
     Some(ComponentView {
         components,
         container: runtime_container,
+        relationships,
     })
 }

@@ -40,6 +40,84 @@ pub struct AppState {
     /// whole graph, and a loaded graph never changes, so the result is worth keeping.
     /// Replacing a graph produces a new `Arc`, which misses and re-infers.
     c4_cache: parking_lot::Mutex<HashMap<(usize, String), Arc<J>>>,
+    /// The topology rules from `--topology`, and the graph built from them, with the
+    /// registry catalog it was built against so a later load or unload marks it stale
+    /// until the rebuild that follows it lands.
+    pub topology_queries: Vec<crate::topology::TopologyQuery>,
+    topology: parking_lot::RwLock<Option<ServedTopology>>,
+}
+
+/// A built topology and the catalog version it describes.
+struct ServedTopology {
+    graph: crate::topology::TopologyGraph,
+    catalog: std::collections::BTreeMap<String, u64>,
+}
+
+impl AppState {
+    /// Rebuild the topology from the rules over every loaded graph, as the Kotlin
+    /// server does at startup and after each load and unload. A rule that fails leaves
+    /// the previous topology in place and is reported to the caller.
+    pub fn rebuild_topology(&self) -> Result<(usize, usize), String> {
+        let leases = self.registry.acquire_all();
+        let mut stats: indexmap::IndexMap<String, GraphStats> = indexmap::IndexMap::new();
+        for l in &leases {
+            stats.insert(l.id.clone(), l.stats);
+        }
+        let catalog = self.registry.catalog_version();
+        let graph = if self.topology_queries.is_empty() {
+            crate::topology::TopologyGraph::nodes_only(&stats)
+        } else {
+            let sources: Vec<Source> = leases
+                .iter()
+                .map(|l| Source {
+                    id: Arc::from(l.id.as_str()),
+                    graph: l.graph.clone(),
+                })
+                .collect();
+            let ex = Executor::new(sources, true);
+            crate::topology::build(&stats, &self.topology_queries, |cypher, max_rows| {
+                let result = ex
+                    .execute(cypher, Some(max_rows))
+                    .map_err(|e| e.to_string())?;
+                let rows = result
+                    .rows
+                    .iter()
+                    .map(|row| {
+                        row.iter()
+                            .filter(|(k, _)| !k.starts_with('$'))
+                            .map(|(k, v)| (k.clone(), materialize(v, &ex)))
+                            .collect::<indexmap::IndexMap<String, J>>()
+                    })
+                    .collect();
+                Ok(crate::topology::QueryRows {
+                    columns: result.columns.clone(),
+                    rows,
+                })
+            })?
+        };
+        let summary = (graph.nodes.len(), graph.edges.len());
+        *self.topology.write() = Some(ServedTopology { graph, catalog });
+        Ok(summary)
+    }
+
+    /// The topology as the API serves it: the last build, flagged stale when the
+    /// registry catalog has changed since.
+    fn topology_api_map(&self) -> J {
+        let current = self.topology.read();
+        match current.as_ref() {
+            Some(t) => t
+                .graph
+                .to_api_map(t.catalog != self.registry.catalog_version()),
+            None => {
+                let leases = self.registry.acquire_all();
+                let mut stats: indexmap::IndexMap<String, GraphStats> = indexmap::IndexMap::new();
+                for l in &leases {
+                    stats.insert(l.id.clone(), l.stats);
+                }
+                crate::topology::TopologyGraph::nodes_only(&stats).to_api_map(false)
+            }
+        }
+    }
 }
 
 impl AppState {
@@ -60,6 +138,8 @@ impl AppState {
                 .map(|d| d.as_secs_f64())
                 .unwrap_or(0.0),
             c4_cache: parking_lot::Mutex::new(HashMap::new()),
+            topology_queries: Vec::new(),
+            topology: parking_lot::RwLock::new(None),
         }
     }
 
@@ -244,59 +324,55 @@ async fn load_graph(
         None => None,
     };
     match s.registry.load(&id, std::path::Path::new(&path), mode) {
-        Ok(g) => ok_json(json!({ "graph": g.to_api_map() })),
+        Ok(g) => {
+            // The topology follows the catalog. A rule that fails against the new
+            // catalog fails the load, and the graph is withdrawn again, as the Kotlin
+            // registry rolls its load back when the rebuild throws.
+            if let Err(e) = s.rebuild_topology() {
+                let _ = s.registry.unload(&id);
+                return error_json(StatusCode::BAD_REQUEST, &e);
+            }
+            ok_json(json!({ "graph": g.to_api_map() }))
+        }
         Err(e) => error_json(StatusCode::BAD_REQUEST, &e),
     }
 }
 
 async fn unload_graph(State(s): St, AxPath(id): AxPath<String>) -> Response {
-    match s.registry.unload(&id) {
+    let removed = match s.registry.take(&id) {
+        Ok(r) => r,
+        Err(e) => return error_json(StatusCode::BAD_REQUEST, &e),
+    };
+    if let Some(served) = removed.as_ref() {
+        if let Err(e) = s.rebuild_topology() {
+            // Put the graph back, as the Kotlin registry restores it when the rebuild
+            // after an unload throws.
+            s.registry.restore(served.clone());
+            return error_json(StatusCode::BAD_REQUEST, &e);
+        }
+    }
+    if removed.is_some() {
         // A 204 has no body, but the baseline still emits Javalin's default
         // `Content-Type: text/plain` on it, and a client that inspects headers sees it.
-        Ok(true) => (
+        (
             StatusCode::NO_CONTENT,
             [(header::CONTENT_TYPE, "text/plain")],
         )
-            .into_response(),
-        Ok(false) => error_json(StatusCode::NOT_FOUND, &format!("Graph not loaded: {id}")),
-        Err(e) => error_json(StatusCode::BAD_REQUEST, &e),
+            .into_response()
+    } else {
+        error_json(StatusCode::NOT_FOUND, &format!("Graph not loaded: {id}"))
     }
 }
 
 async fn topology(State(s): St) -> Response {
-    let leases = s.registry.acquire_all();
-    let nodes: Vec<J> = leases
-        .iter()
-        .map(|l| {
-            json!({
-                "id": l.id,
-                "graphId": l.id,
-                "type": "Graph",
-                "label": l.id,
-                "nodes": l.stats.nodes,
-                "edges": l.stats.edges,
-                "methods": l.stats.methods,
-                "callSites": l.stats.call_sites,
-            })
-        })
-        .collect();
     // `application/json; charset=utf-8`, not `ok_json`'s bare `application/json`. The
-    // baseline serves this route from its persisted `TopologyStore` snapshot when one
-    // exists, and that branch writes the stream with `ctx.result()`, so the charset it
-    // sets survives; the fallback branch uses `ctx.json()` and does not. This server
-    // computes the same document rather than reading a snapshot -- the snapshot format
-    // is still unported -- but what a client sees on this route should match, down to
-    // the missing space after the semicolon, which is how Javalin re-emits it.
-    let body = json!({
-        "nodes": nodes,
-        "edges": [],
-        "graphCount": leases.len(),
-        "relationCount": 0,
-        "matchedRows": 0,
-        "builtAt": now_iso8601(),
-        "rules": [],
-        "stale": false,
-    });
+    // baseline serves this route from its persisted `TopologyStore` snapshot, and that
+    // branch writes the stream with `ctx.result()`, so the charset it sets survives.
+    // This server keeps the built topology in memory rather than in a snapshot file --
+    // the snapshot format is still unported -- but what a client sees on this route
+    // should match, down to the missing space after the semicolon, which is how
+    // Javalin re-emits it.
+    let body = s.topology_api_map();
     (
         StatusCode::OK,
         [(header::CONTENT_TYPE, "application/json;charset=utf-8")],
@@ -310,6 +386,7 @@ async fn topology(State(s): St) -> Response {
 // ---------------------------------------------------------------------------
 
 /// Resolve `{graphId}` to a lease, or produce the matching error response.
+#[allow(clippy::result_large_err)]
 fn lease(s: &AppState, id: &str) -> Result<GraphLease, Response> {
     match s.registry.acquire(id) {
         Ok(Some(l)) => Ok(l),
@@ -464,6 +541,7 @@ async fn all_annotations(State(s): St, Query(q): Query<Params>) -> Response {
     ok_json(grouped_envelope(leases.len(), results))
 }
 
+#[allow(clippy::result_large_err)]
 fn annotations_payload(l: &GraphLease, q: &Params) -> Result<J, Response> {
     let class = match q.get("class") {
         Some(c) => c,
@@ -595,6 +673,7 @@ async fn all_resources(State(s): St, Query(q): Query<Params>) -> Response {
 const RESOURCE_STORE_MISSING: &str =
     "Persisted resources are unavailable because graph.resources is missing; rebuild this graph with the current Graphite CLI";
 
+#[allow(clippy::result_large_err)]
 fn resources_payload(
     l: &GraphLease,
     q: &Params,
@@ -741,6 +820,7 @@ fn resolve_c4_format(accept: Option<&str>, query_format: Option<&str>) -> String
     }
 }
 
+#[allow(clippy::result_large_err)]
 fn c4_params(headers: &HeaderMap, q: &Params) -> Result<(String, String), Response> {
     let level = q
         .get("level")
@@ -868,6 +948,7 @@ fn read_query(body: &str, q: &Params) -> Option<String> {
     q.get("query").cloned()
 }
 
+#[allow(clippy::result_large_err)]
 fn read_timeout(body: &str, q: &Params) -> Result<Option<u64>, Response> {
     const BAD: &str = "'timeoutMs' must be a positive integer";
     let raw: Option<String> = if !body.trim().is_empty() {
@@ -964,15 +1045,15 @@ impl serde::Serialize for RowBody<'_> {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
         let cross = self.ex.cross;
-        let mut m = ser.serialize_map(Some(self.columns.len() + usize::from(cross)))?;
+        let mut m = ser.serialize_map(None)?;
         for c in self.columns {
-            m.serialize_entry(
-                c,
-                &ValueBody {
-                    value: self.row.get(c),
-                    ex: self.ex,
-                },
-            )?;
+            // A projected value that is null has no key at all in the Kotlin server's
+            // rows; the column list still names it.
+            let value = self.row.get(c);
+            if value.is_none_or(|v| matches!(v, graphite_cypher::value::Value::Null)) {
+                continue;
+            }
+            m.serialize_entry(c, &ValueBody { value, ex: self.ex })?;
         }
         if cross {
             m.serialize_entry(
@@ -995,8 +1076,11 @@ struct CompactRowBody<'a> {
 impl serde::Serialize for CompactRowBody<'_> {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
-        let mut m = ser.serialize_map(Some(self.columns.len() + 1))?;
+        let mut m = ser.serialize_map(None)?;
         for (c, v) in self.columns.iter().zip(self.values) {
+            if matches!(v, graphite_cypher::value::Value::Null) {
+                continue;
+            }
             m.serialize_entry(
                 c,
                 &ValueBody {
@@ -1171,7 +1255,7 @@ async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> R
     if !ids.iter().all(|i| dedup.insert(i.clone())) {
         return cypher_request_error("Graph ids must be unique");
     }
-    if all_graphs == !ids.is_empty() {
+    if all_graphs != ids.is_empty() {
         return cypher_request_error(
             "Specify exactly one of 'allGraphs=true' or a non-empty 'graphs' list",
         );

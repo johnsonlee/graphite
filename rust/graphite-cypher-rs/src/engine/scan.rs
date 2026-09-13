@@ -42,6 +42,10 @@ use graphite_storage::node::{
 use graphite_storage::Graph;
 use rayon::prelude::*;
 
+/// What a scan hands each surviving node to: the node, the source's shared provenance
+/// value when one serves every row, and whether the plan was exact.
+pub type Emit<'a> = dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool> + 'a;
+
 /// Properties readable straight out of a `CallSiteNode` record without decoding it.
 const CALL_SITE_PROPS: [&str; 4] = ["caller_class", "caller_name", "callee_class", "callee_name"];
 
@@ -78,14 +82,21 @@ enum PushOp {
     Contains,
     StartsWith,
     EndsWith,
+    /// `=~` over a pattern whose required literal text is known: the literal drives
+    /// the trigram candidates, the compiled pattern decides each candidate.
+    Regex,
 }
 
 #[derive(Clone)]
 struct StringPredicate {
     property: &'static str,
     op: PushOp,
+    /// The text every match must contain. For `Regex` it is the pattern's longest
+    /// literal run, a superset filter; the pattern itself is what is checked.
     literal: String,
     transform: Transform,
+    /// The `=~` pattern and its compiled form; `None` for every other operator.
+    regex: Option<(String, std::sync::Arc<crate::eval::CompiledRegex>)>,
     /// The literal's trigrams, computed once for the query rather than once per graph.
     /// They depend only on the literal, and there are sixty-four graphs.
     trigrams: std::sync::Arc<Option<Vec<i32>>>,
@@ -106,6 +117,20 @@ impl StringPredicate {
             PushOp::Contains => candidate.contains(&self.literal),
             PushOp::StartsWith => candidate.starts_with(&self.literal),
             PushOp::EndsWith => candidate.ends_with(&self.literal),
+            // Only a pattern the evaluator supports is ever pushed, so a failure here
+            // cannot happen; reading it as "no match" keeps the filter a subset.
+            PushOp::Regex => self
+                .regex
+                .as_ref()
+                .is_some_and(|(_, r)| r.matches(candidate).unwrap_or(false)),
+        }
+    }
+
+    /// What decides a match: the literal, or for `=~` the pattern.
+    fn test_text(&self) -> &str {
+        match &self.regex {
+            Some((pattern, _)) => pattern,
+            None => &self.literal,
         }
     }
 
@@ -113,7 +138,9 @@ impl StringPredicate {
     /// deliberately not part of this: it decides which records to look in, not which
     /// strings match.
     fn same_test(&self, other: &StringPredicate) -> bool {
-        self.op == other.op && self.transform == other.transform && self.literal == other.literal
+        self.op == other.op
+            && self.transform == other.transform
+            && self.test_text() == other.test_text()
     }
 
     /// True when the dictionary's sort order lets us find matches without scanning.
@@ -515,6 +542,33 @@ impl ScanPlan {
         })
     }
 
+    /// The matching nodes themselves, after the WHERE where the plan was not exact,
+    /// in scan order. For callers that need the references rather than rows.
+    pub fn matching_refs(
+        &self,
+        ex: &Executor,
+        ev: &Evaluator,
+        where_clause: Option<&Expr>,
+        sink: &mut dyn FnMut(NodeRef) -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        let empty = Row::new();
+        self.run_inner(ex, ev, &empty, where_clause, &mut |value, _, verified| {
+            let Value::Node(n) = value else {
+                return Ok(true);
+            };
+            if !verified {
+                if let Some(w) = where_clause {
+                    let mut r = Row::with_capacity(1);
+                    r.insert(self.variable.clone(), Value::Node(n));
+                    if ev.eval(w, &r)?.as_bool() != Some(true) {
+                        return Ok(true);
+                    }
+                }
+            }
+            sink(n)
+        })
+    }
+
     /// The scan proper. `emit` receives each surviving node, the source's provenance
     /// value when one row-independent value serves every row, and whether the plan
     /// that produced it was exact -- in which case WHERE need not be re-checked.
@@ -524,7 +578,7 @@ impl ScanPlan {
         ev: &Evaluator,
         row: &Row,
         where_clause: Option<&Expr>,
-        emit: &mut dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool>,
+        emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
         // The clause itself is `emit`'s business; the scan only needs to know it exists
         // to decide whether an inexact plan's survivors are still worth producing.
@@ -589,19 +643,23 @@ impl ScanPlan {
         // cost of doing that is dominated by how many times the work is fanned out and
         // joined, not by the work. Doubling from four to sixteen meant seven batches
         // for sixty-four graphs, and seven joins to learn that none of them matched.
+        // Bounded, not unbounded: one graph, one per thread, then doubling up to four
+        // per thread. Planning everything left in one batch meant a LIMIT satisfied by
+        // the sixth graph waited for the other fifty-nine to be planned; capping the
+        // batch keeps a late first hit's wait proportional to where it lands.
         let threads = rayon::current_num_threads().max(1);
         let mut batches: Vec<&[SourceIdx]> = Vec::new();
         let mut rest = sources.as_slice();
-        for size in [1, threads] {
-            if rest.is_empty() {
-                break;
-            }
+        let mut size = 1usize;
+        while !rest.is_empty() {
             let (head, tail) = rest.split_at(size.min(rest.len()));
             batches.push(head);
             rest = tail;
-        }
-        if !rest.is_empty() {
-            batches.push(rest);
+            size = if size == 1 {
+                threads
+            } else {
+                (size * 2).min(threads * 4)
+            };
         }
         for batch in batches {
             ex.cancel.check()?;
@@ -656,7 +714,7 @@ impl ScanPlan {
         ex: &Executor,
         source: SourceIdx,
         row: &Row,
-        emit: &mut dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool>,
+        emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
         let graph = ex.graph(source);
         let tag = TAG_ANNOTATION_NODE;
@@ -705,7 +763,7 @@ impl ScanPlan {
         sources: &[SourceIdx],
         cs_tree: Option<&PredTree>,
         cs_preds: &[StringPredicate],
-        emit: &mut dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool>,
+        emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
         let _ = ev;
         for &source in sources {
@@ -805,7 +863,7 @@ impl ScanPlan {
         ex: &Executor,
         sp: &SourcePlan,
         row: &Row,
-        emit: &mut dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool>,
+        emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
         let source = sp.source;
         let graph = ex.graph(source);
@@ -1843,8 +1901,7 @@ fn collect_leaf(e: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> boo
                 StrOp::Contains => PushOp::Contains,
                 StrOp::StartsWith => PushOp::StartsWith,
                 StrOp::EndsWith => PushOp::EndsWith,
-                // Regex is never pushed down.
-                StrOp::Regex => return false,
+                StrOp::Regex => return push_regex(left, right, variable, out),
             };
             push_predicate(op, left, right, variable, out)
         }
@@ -1855,6 +1912,83 @@ fn collect_leaf(e: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> boo
         } => push_predicate(PushOp::Equals, left, right, variable, out),
         _ => false,
     }
+}
+
+/// The longest run of literal text a `=~` pattern requires, when the pattern is
+/// simple enough to be sure of one.
+///
+/// Accepted: literal characters, backslash-escaped metacharacters, and `.`, `.*`, `.+`,
+/// `.?` wildcards. Anything else -- classes, groups, alternation, anchors, a quantifier
+/// on a literal -- makes the required text uncertain, and the pattern is not pushed.
+/// `None` also for a pattern with no literal text at all, such as `.*`.
+pub(crate) fn regex_required_literal(pattern: &str) -> Option<String> {
+    const META: &[char] = &[
+        '\\', '.', '^', '$', '|', '?', '*', '+', '(', ')', '[', ']', '{', '}',
+    ];
+    let mut best = String::new();
+    let mut run = String::new();
+    let mut chars = pattern.chars().peekable();
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => match chars.next() {
+                Some(n) if META.contains(&n) => run.push(n),
+                _ => return None,
+            },
+            '.' => {
+                if matches!(chars.peek(), Some('*' | '+' | '?')) {
+                    chars.next();
+                }
+                if run.chars().count() > best.chars().count() {
+                    best = std::mem::take(&mut run);
+                } else {
+                    run.clear();
+                }
+            }
+            c if META.contains(&c) => return None,
+            c => run.push(c),
+        }
+    }
+    if run.chars().count() > best.chars().count() {
+        best = run;
+    }
+    (!best.is_empty()).then_some(best)
+}
+
+/// Record one `<property> =~ <pattern>` predicate when the pattern's required text is
+/// known and the evaluator can run the pattern; lowercased operands are left alone,
+/// since the pattern would then apply to text the dictionary does not hold.
+fn push_regex(left: &Expr, right: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> bool {
+    let pattern = match right {
+        Expr::Literal(crate::ast::Literal::Str(s)) => s.clone(),
+        _ => return false,
+    };
+    let Some(literal) = regex_required_literal(&pattern) else {
+        return false;
+    };
+    let compiled = crate::eval::compile_regex(&pattern);
+    if matches!(*compiled, crate::eval::CompiledRegex::Unsupported(_)) {
+        return false;
+    }
+    let Some((property, Transform::None)) = property_operand(left, variable) else {
+        return false;
+    };
+    let trigrams = std::sync::Arc::new(if literal.is_ascii() {
+        graphite_storage::callsite_index::literal_trigrams(&literal)
+    } else {
+        None
+    });
+    let signature = graphite_storage::callsite_index::literal_signature(&literal);
+    out.push(StringPredicate {
+        property,
+        op: PushOp::Regex,
+        literal,
+        transform: Transform::None,
+        regex: Some((pattern, compiled)),
+        trigrams,
+        signature,
+        test: 0,
+    });
+    true
 }
 
 /// Record one `<property> <op> <literal>` predicate, if both sides are recognised.
@@ -1871,14 +2005,23 @@ fn push_predicate(
     };
     match property_operand(left, variable) {
         Some((property, transform)) => {
-            let trigrams =
-                std::sync::Arc::new(graphite_storage::callsite_index::literal_trigrams(&literal));
+            // Trigrams exist only for an ASCII literal. The index was written from the
+            // JVM's `String.lowercase()`, which is context-sensitive (a final sigma
+            // lowers differently from a medial one), while a Rust `char` lowers alone;
+            // a non-ASCII literal's trigrams could therefore miss the string that
+            // matches it, and every pruning step treats `None` as "cannot prune".
+            let trigrams = std::sync::Arc::new(if literal.is_ascii() {
+                graphite_storage::callsite_index::literal_trigrams(&literal)
+            } else {
+                None
+            });
             let signature = graphite_storage::callsite_index::literal_signature(&literal);
             out.push(StringPredicate {
                 property,
                 op,
                 literal,
                 transform,
+                regex: None,
                 trigrams,
                 signature,
                 // Numbered once the whole tree is known.
@@ -2045,7 +2188,7 @@ fn resolve_column_leaf(
     column: &graphite_storage::columns::StringColumn,
     p: &StringPredicate,
 ) -> std::sync::Arc<Vec<u32>> {
-    let key = (p.op as u8, p.transform as u8, p.literal.clone());
+    let key = (p.op as u8, p.transform as u8, p.test_text().to_string());
     if let Some(hit) = column.cached(&key) {
         return hit;
     }
@@ -2396,6 +2539,7 @@ mod tests {
             op,
             literal: literal.to_string(),
             transform: Transform::None,
+            regex: None,
             trigrams: std::sync::Arc::new(graphite_storage::callsite_index::literal_trigrams(
                 literal,
             )),
@@ -2499,5 +2643,50 @@ mod tests {
             tag_plan(&callee, TAG_STRING_CONSTANT, never),
             TagPlan::Skip
         ));
+    }
+
+    #[test]
+    fn regex_required_literal_reads_simple_patterns() {
+        assert_eq!(regex_required_literal(".*Foo.*").as_deref(), Some("Foo"));
+        assert_eq!(
+            regex_required_literal("com.example.*").as_deref(),
+            Some("example")
+        );
+        assert_eq!(
+            regex_required_literal("com\\.example\\..*").as_deref(),
+            Some("com.example.")
+        );
+        assert_eq!(regex_required_literal("a.b").as_deref(), Some("a"));
+        assert_eq!(regex_required_literal("plain").as_deref(), Some("plain"));
+        assert_eq!(regex_required_literal(".+x.?yz"), Some("yz".to_string()));
+        assert_eq!(regex_required_literal(".*"), None);
+        assert_eq!(regex_required_literal("ab*c"), None);
+        assert_eq!(regex_required_literal("[a-z]+"), None);
+        assert_eq!(regex_required_literal("a|b"), None);
+        assert_eq!(regex_required_literal("^abc$"), None);
+        assert_eq!(regex_required_literal("(abc)"), None);
+        assert_eq!(regex_required_literal("\\d+abc"), None);
+        assert_eq!(regex_required_literal("abc\\"), None);
+    }
+
+    #[test]
+    fn regex_predicates_push_when_the_pattern_is_simple() {
+        let parse = |q: &str| {
+            let clauses = crate::parser::parse(q).unwrap();
+            let crate::ast::Clause::Match { patterns, .. } = &clauses[0] else {
+                panic!("expected MATCH")
+            };
+            let where_clause = match clauses.get(1) {
+                Some(crate::ast::Clause::Where(e)) => Some(e.clone()),
+                _ => None,
+            };
+            (patterns.clone(), where_clause)
+        };
+        let (p, w) = parse(r#"MATCH (n) WHERE n.callee_class =~ '.*Foo.*' RETURN n"#);
+        assert!(ScanPlan::build(&p, w.as_ref()).is_some());
+        let (p, w) = parse(r#"MATCH (n) WHERE n.callee_class =~ '[a-z]+' RETURN n"#);
+        assert!(ScanPlan::build(&p, w.as_ref()).is_none());
+        let (p, w) = parse(r#"MATCH (n) WHERE toLower(n.callee_class) =~ '.*foo.*' RETURN n"#);
+        assert!(ScanPlan::build(&p, w.as_ref()).is_none());
     }
 }

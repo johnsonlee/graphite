@@ -1,6 +1,7 @@
 //! Query executor over one or more persisted graphs.
 
 pub mod fastpath;
+pub mod hop;
 pub mod matching;
 pub mod pipeline;
 pub mod props;

@@ -88,7 +88,7 @@ pub fn add_provenance_id(row: &mut Row, gid: Arc<str>) {
     row.insert(INTERNAL_PROVENANCE_KEY.to_string(), Value::list(ids));
 }
 
-fn merge_provenance(into: &mut Row, from: &Row) {
+pub(crate) fn merge_provenance(into: &mut Row, from: &Row) {
     if let Some(Value::List(l)) = from.get(INTERNAL_PROVENANCE_KEY) {
         for v in l.iter() {
             if let Value::Str(s) = v {
@@ -412,7 +412,7 @@ impl Executor {
                 shape.distinct,
                 shape.order.as_deref(),
             )?;
-            return Ok(finish_fused(ev, cols, out, shape)?);
+            return finish_fused(ev, cols, out, shape);
         }
         let skip = match &shape.skip {
             Some(e) => Some(eval_count(ev, e, None)?),
@@ -438,6 +438,11 @@ impl Executor {
         };
         let items = shape.items.as_deref();
         let scan = super::scan::ScanPlan::build(patterns, shape.where_clause.as_ref());
+        let hop = if scan.is_none() {
+            super::hop::HopPlan::build(patterns, shape.where_clause.as_ref())
+        } else {
+            None
+        };
 
         if aggregated {
             // Streaming group-by.
@@ -483,6 +488,7 @@ impl Executor {
                     patterns,
                     shape.where_clause.as_ref(),
                     &scan,
+                    &hop,
                     &mut consume,
                 )?;
             }
@@ -522,6 +528,15 @@ impl Executor {
                     if let Some(keys) = simple_property_keys(items, plan.variable()) {
                         let mut values: Vec<Vec<Value>> = Vec::new();
                         let mut graph_ids: Vec<Arc<str>> = Vec::new();
+                        // A zero budget means no rows: the sink below only checks the
+                        // budget after keeping a row, so it must not run at all.
+                        if budget == Some(0) {
+                            return Ok(QueryResult {
+                                columns,
+                                rows: Vec::new(),
+                                compact: Some(CompactRows { values, graph_ids }),
+                            });
+                        }
                         plan.run_nodes(
                             self,
                             ev,
@@ -555,6 +570,20 @@ impl Executor {
             .then(|| provenance_property(items))
             .flatten();
         let needs_all = shape.order.is_some() || (distinct_provenance && targeted.is_none());
+        // The baseline streams `MATCH .. WHERE .. RETURN DISTINCT .. ORDER BY .. LIMIT n`
+        // through one pass that ranks each distinct row by sort values read from its
+        // first match's bindings, so `ORDER BY n.x` sorts there even though the
+        // projected row has no `n`. Its general pipeline, which every other DISTINCT
+        // shape takes, sorts the projected rows and so leaves scan order untouched.
+        let order_before_distinct = shape.distinct
+            && shape.where_clause.is_some()
+            && shape.order.is_some()
+            && budget.is_some_and(|b| b > 0)
+            && items.is_some_and(|items| {
+                !items
+                    .iter()
+                    .any(|it| matches!(&it.expr, Expr::Variable(v) if v == "*"))
+            });
         let mut consume = |row: Row| -> CypherResult<bool> {
             let projected = project_row(
                 ev,
@@ -563,6 +592,7 @@ impl Executor {
                 &names,
                 shape.order.as_deref(),
                 shape.distinct,
+                order_before_distinct,
                 &mut columns,
             )?;
             if shape.distinct {
@@ -574,8 +604,13 @@ impl Executor {
                     }
                     None => {
                         // Past the limit the scan continues only to complete provenance,
-                        // so further distinct rows are not collected.
-                        if distinct_provenance && budget.is_some_and(|b| out.len() >= b) {
+                        // so further distinct rows are not collected -- unless every
+                        // row is needed anyway: with ORDER BY the winning values can
+                        // occur after the budget and must still be collected.
+                        if distinct_provenance
+                            && !needs_all
+                            && budget.is_some_and(|b| out.len() >= b)
+                        {
                             return Ok(true);
                         }
                         seen.insert(k, out.len());
@@ -602,6 +637,7 @@ impl Executor {
                 patterns,
                 shape.where_clause.as_ref(),
                 &scan,
+                &hop,
                 &mut consume,
             )?;
             if !cont {
@@ -609,6 +645,8 @@ impl Executor {
                 break;
             }
         }
+        // `consume` borrowed `out` and `seen`; its last use is above.
+        #[allow(clippy::drop_non_drop)]
         drop(consume);
 
         // Second pass: complete the provenance of the rows already chosen.
@@ -641,6 +679,7 @@ impl Executor {
                         &names,
                         shape.order.as_deref(),
                         shape.distinct,
+                        order_before_distinct,
                         &mut columns,
                     )?;
                     if let Some(&at) = seen.get(&visible_key(&projected)) {
@@ -656,6 +695,7 @@ impl Executor {
                         patterns,
                         Some(&combined),
                         &scan2,
+                        &None,
                         &mut merge,
                     )?;
                 }
@@ -674,11 +714,17 @@ impl Executor {
         patterns: &[Pattern],
         where_clause: Option<&Expr>,
         scan: &Option<super::scan::ScanPlan>,
+        hop: &Option<super::hop::HopPlan>,
         consume: &mut dyn FnMut(Row) -> CypherResult<bool>,
     ) -> CypherResult<bool> {
         if let Some(plan) = scan {
             if row.is_empty() {
                 return plan.run(self, ev, row, where_clause, consume);
+            }
+        }
+        if let Some(plan) = hop {
+            if row.is_empty() {
+                return plan.run(self, ev, matcher, patterns, where_clause, consume);
             }
         }
         let mut emit = |r: Row| -> CypherResult<bool> {
@@ -948,6 +994,7 @@ fn item_names(items: &[ReturnItem]) -> Vec<String> {
         .collect()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn project_row(
     ev: &Evaluator,
     row: &Row,
@@ -955,6 +1002,7 @@ fn project_row(
     names: &[String],
     order: Option<&[OrderItem]>,
     distinct: bool,
+    order_before_distinct: bool,
     columns: &mut Vec<String>,
 ) -> CypherResult<Row> {
     // Sized up front: a row holds every column plus its provenance, and an `IndexMap`
@@ -981,7 +1029,7 @@ fn project_row(
     if let Some(p) = row.get(INTERNAL_PROVENANCE_KEY) {
         out.insert(INTERNAL_PROVENANCE_KEY.to_string(), p.clone());
     }
-    if !distinct {
+    if !distinct || order_before_distinct {
         stash_order_values(ev, row, &mut out, order, columns)?;
     }
     Ok(out)
@@ -1298,6 +1346,7 @@ fn project(
                 &names,
                 order,
                 distinct,
+                false,
                 &mut cols,
             )?);
         }

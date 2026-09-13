@@ -27,16 +27,16 @@ const APPLICATION_LAYERS: [(&str, &str); 5] = [
 ];
 
 /// Diagram budgets, from `C4ViewLimits`.
+const DEFAULT_CONTEXT_DIAGRAM_ELEMENTS: usize = 12;
 const DEFAULT_CONTAINER_DIAGRAM_ELEMENTS: usize = 12;
+const DEFAULT_COMPONENT_DIAGRAM_ELEMENTS: usize = 16;
+/// Edges a text diagram draws at most; the rest are counted in a note.
+const MAX_TEXT_DIAGRAM_EDGES: usize = 200;
 const MAX_INTERNAL_EDGES_PER_CONTAINER: usize = 1;
-/// Above this many edges transitive reduction is skipped outright.
-const MAX_TRANSITIVE_REDUCTION_EDGES: usize = 200;
 const MAX_CONTAINER_ENTRYPOINTS_PER_SHARED_DEPENDENCY: usize = 2;
 const MAX_ENTRYPOINTS_PER_SHARED_CONTAINER: usize = 3;
-/// Kinds where plain reachability is enough to call a direct edge redundant: `A -> B -> C`
-/// already communicates the layering.
-const HIERARCHY_REDUCTION_KINDS: [&str; 2] = ["runs-on", "builds-on"];
 
+#[derive(Clone)]
 struct Element {
     id: String,
     label: String,
@@ -46,6 +46,7 @@ struct Element {
     relationships: Vec<Relationship>,
 }
 
+#[derive(Clone)]
 struct Relationship {
     destination: String,
     label: String,
@@ -118,24 +119,6 @@ fn relationship_label(kind: &str) -> &'static str {
         "collaborates-with" => "collaborates with",
         _ => "uses",
     }
-}
-
-/// Edges across all elements, deduplicated and ordered by descending weight.
-fn ordered_edges(elements: &[Element]) -> Vec<(&str, &Relationship)> {
-    let mut seen: std::collections::HashSet<(String, String, String)> =
-        std::collections::HashSet::new();
-    let mut out: Vec<(&str, &Relationship)> = Vec::new();
-    for e in elements {
-        for r in &e.relationships {
-            let key = (e.id.clone(), r.destination.clone(), r.label.clone());
-            if seen.insert(key) {
-                out.push((e.id.as_str(), r));
-            }
-        }
-    }
-    // A stable sort keeps collection order among equal weights.
-    out.sort_by(|a, b| b.1.weight.cmp(&a.1.weight));
-    out
 }
 
 /// Element ids in the order the first view lists them, when a view declares one.
@@ -317,83 +300,23 @@ fn dedupe_and_sort(edges: Vec<Edge>) -> Vec<Edge> {
     out
 }
 
-/// Drop a direct edge that another path already carries.
-///
-/// For a hierarchy edge plain reachability settles it. For an evidence-bearing edge the
-/// alternate path must be at least as strong at its narrowest point, so a heavy direct
-/// dependency is not hidden behind a thin indirect one.
-fn reduce_transitive(edges: Vec<Edge>, preserve_runtime: bool) -> Vec<Edge> {
-    let reducible: Vec<usize> = (0..edges.len())
-        .filter(|&i| !(preserve_runtime && edges[i].kind == "runs-on"))
-        .collect();
-    if reducible.len() > MAX_TRANSITIVE_REDUCTION_EDGES {
-        return edges;
+impl super::edges::DirectedEdge for Edge {
+    fn from(&self) -> &str {
+        &self.from
     }
-    let weight = |e: &Edge| e.weight.max(1);
-    // Reachability from `source`, ignoring the edge under test.
-    let has_path = |source: &str, destination: &str, omit: usize| -> bool {
-        let mut queue = std::collections::VecDeque::from([source.to_string()]);
-        let mut visited = std::collections::HashSet::new();
-        while let Some(current) = queue.pop_front() {
-            if !visited.insert(current.clone()) {
-                continue;
-            }
-            for &i in &reducible {
-                if i == omit || edges[i].from != current {
-                    continue;
-                }
-                if edges[i].to == destination {
-                    return true;
-                }
-                if !visited.contains(&edges[i].to) {
-                    queue.push_back(edges[i].to.clone());
-                }
-            }
-        }
-        false
-    };
-    // Widest-path capacity, so an alternate route is only "as good" if its bottleneck is.
-    let capacity = |source: &str, destination: &str, omit: usize| -> i64 {
-        let mut queue = std::collections::VecDeque::from([(source.to_string(), i64::MAX)]);
-        let mut best: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
-        while let Some((current, cap)) = queue.pop_front() {
-            if best.get(&current).is_some_and(|&b| b >= cap) {
-                continue;
-            }
-            best.insert(current.clone(), cap);
-            for &i in &reducible {
-                if i == omit || edges[i].from != current {
-                    continue;
-                }
-                let next_cap = cap.min(weight(&edges[i]));
-                if edges[i].to == destination {
-                    return next_cap;
-                }
-                if best.get(&edges[i].to).is_none_or(|&b| b < next_cap) {
-                    queue.push_back((edges[i].to.clone(), next_cap));
-                }
-            }
-        }
-        -1
-    };
-    let redundant: std::collections::HashSet<usize> = reducible
-        .iter()
-        .copied()
-        .filter(|&i| {
-            let e = &edges[i];
-            if HIERARCHY_REDUCTION_KINDS.contains(&e.kind.as_str()) {
-                has_path(&e.from, &e.to, i)
-            } else {
-                capacity(&e.from, &e.to, i) >= weight(e)
-            }
-        })
-        .collect();
-    edges
-        .into_iter()
-        .enumerate()
-        .filter(|(i, _)| !redundant.contains(i))
-        .map(|(_, e)| e)
-        .collect()
+    fn to(&self) -> &str {
+        &self.to
+    }
+    fn kind(&self) -> &str {
+        &self.kind
+    }
+    fn weight(&self) -> Option<i64> {
+        Some(self.weight)
+    }
+}
+
+fn reduce_transitive(edges: Vec<Edge>, preserve_runtime: bool) -> Vec<Edge> {
+    super::edges::reduce_transitive(edges, preserve_runtime)
 }
 
 /// Keep only the strongest few edges into a target many containers share.
@@ -442,18 +365,18 @@ fn container_plan(workspace: &J) -> Option<(Vec<Element>, Vec<Edge>)> {
     let (containers, externals) = container_elements(workspace)?;
     let mut all: Vec<Element> = Vec::new();
     all.extend(containers);
-    let container_count = all.len();
+    let container_range = 0..all.len();
     all.extend(externals);
     let allowed: std::collections::HashSet<String> = all.iter().map(|e| e.id.clone()).collect();
     let by_id: std::collections::HashMap<&str, &Element> =
         all.iter().map(|e| (e.id.as_str(), e)).collect();
 
-    let every_container_edge: Vec<Edge> = all[..container_count]
+    let every_container_edge: Vec<Edge> = all[container_range.clone()]
         .iter()
         .flat_map(|c| raw_edges(c, &allowed))
         .collect();
     let mut selected: Vec<Edge> = Vec::new();
-    for c in &all[..container_count] {
+    for c in &all[container_range] {
         let mut outgoing = raw_edges(c, &allowed);
         outgoing.sort_by(|a, b| b.weight.cmp(&a.weight));
         selected.extend(
@@ -507,13 +430,77 @@ fn container_plan(workspace: &J) -> Option<(Vec<Element>, Vec<Edge>)> {
             .filter(|e| connected.contains(e.id.as_str()))
             .collect()
     };
-    let visible_ids: std::collections::HashSet<&str> =
-        visible.iter().map(|e| e.id.as_str()).collect();
-    let edges = edges
-        .into_iter()
-        .filter(|e| visible_ids.contains(e.from.as_str()) && visible_ids.contains(e.to.as_str()))
-        .collect();
     Some((visible, edges))
+}
+
+/// The elements and edges a diagram has room for.
+struct VisibleSlice {
+    elements: Vec<Element>,
+    edges: Vec<Edge>,
+    omitted: usize,
+}
+
+/// Admit edges strongest first while both ends fit within `max_elements`; an element
+/// is drawn only if an admitted edge touches it, and with no edges at all the first
+/// `max_elements` are drawn instead. Edges left out are counted for the note.
+fn select_visible_slice(
+    elements: Vec<Element>,
+    edges: Vec<Edge>,
+    max_elements: usize,
+) -> VisibleSlice {
+    if max_elements == 0 {
+        return VisibleSlice {
+            elements: Vec::new(),
+            omitted: edges.len(),
+            edges: Vec::new(),
+        };
+    }
+    if edges.is_empty() {
+        return VisibleSlice {
+            elements: elements.into_iter().take(max_elements).collect(),
+            edges: Vec::new(),
+            omitted: 0,
+        };
+    }
+    let ids: std::collections::HashSet<&str> = elements.iter().map(|e| e.id.as_str()).collect();
+    let mut visible: Vec<&str> = Vec::new();
+    for e in &edges {
+        if !ids.contains(e.from.as_str()) || !ids.contains(e.to.as_str()) {
+            continue;
+        }
+        let mut missing: Vec<&str> = Vec::new();
+        for end in [e.from.as_str(), e.to.as_str()] {
+            if !visible.contains(&end) && !missing.contains(&end) {
+                missing.push(end);
+            }
+        }
+        if visible.len() + missing.len() <= max_elements {
+            visible.extend(missing);
+        }
+    }
+    if visible.is_empty() {
+        visible = elements
+            .iter()
+            .take(max_elements)
+            .map(|e| e.id.as_str())
+            .collect();
+    }
+    let visible: std::collections::HashSet<String> =
+        visible.into_iter().map(str::to_string).collect();
+    let elements: Vec<Element> = elements
+        .into_iter()
+        .filter(|e| visible.contains(&e.id))
+        .collect();
+    let total = edges.len();
+    let edges: Vec<Edge> = edges
+        .into_iter()
+        .filter(|e| visible.contains(&e.from) && visible.contains(&e.to))
+        .collect();
+    VisibleSlice {
+        elements,
+        omitted: total - edges.len(),
+        edges,
+    }
 }
 
 /// A group of elements in a diagram, possibly containing further groups.
@@ -538,12 +525,8 @@ impl Layer {
 struct Plan {
     layers: Vec<Layer>,
     edges: Vec<Edge>,
-}
-
-impl Plan {
-    fn is_empty(&self) -> bool {
-        self.layers.iter().all(Layer::is_empty)
-    }
+    /// Edges the diagram had no room for, reported in a closing note.
+    truncated: usize,
 }
 
 /// Group elements into the five top-level layers, optionally subdividing the application
@@ -606,8 +589,8 @@ fn component_plan(workspace: &J) -> Option<Plan> {
             .and_then(|v| v.as_str())
             .is_some_and(|i| i.starts_with("system:"))
     })?;
-    let mut children: Vec<Layer> = Vec::new();
-    let mut every: Vec<Element> = Vec::new();
+    // Every container's components, in model order, before any selection.
+    let mut groups: Vec<(String, String, Vec<Element>)> = Vec::new();
     for container in primary
         .get("containers")
         .and_then(|v| v.as_array())
@@ -622,37 +605,54 @@ fn component_plan(workspace: &J) -> Option<Plan> {
                 "softwareSystems": container.get("components").cloned().unwrap_or(json!([])),
             }
         }));
-        if components.is_empty() {
-            continue;
-        }
-        every.extend(components.iter().map(|e| Element {
-            id: e.id.clone(),
-            label: e.label.clone(),
-            architecture_type: e.architecture_type.clone(),
-            kind: e.kind.clone(),
-            relationships: Vec::new(),
-        }));
-        children.push(Layer {
-            id: if id.is_empty() {
-                if name.is_empty() { "container" } else { name }.to_string()
-            } else {
-                id.to_string()
-            },
-            title: if name.is_empty() { "Container" } else { name }.to_string(),
-            elements: components,
-            children: Vec::new(),
-        });
+        groups.push((id.to_string(), name.to_string(), components));
     }
-    if children.is_empty() {
-        return None;
-    }
+    let every: Vec<&Element> = groups.iter().flat_map(|(_, _, c)| c.iter()).collect();
     let allowed: std::collections::HashSet<String> = every.iter().map(|e| e.id.clone()).collect();
-    let mut edges: Vec<Edge> = children
-        .iter()
-        .flat_map(|l| l.elements.iter())
-        .flat_map(|e| raw_edges(e, &allowed))
+    let mut all_edges: Vec<Edge> = every.iter().flat_map(|e| raw_edges(e, &allowed)).collect();
+    all_edges.sort_by(|a, b| b.weight.cmp(&a.weight));
+    let total = all_edges.len();
+    all_edges.truncate(MAX_TEXT_DIAGRAM_EDGES);
+    let over_cap = total - all_edges.len();
+    // The slice decides which components are connected enough to draw; with none
+    // connected the first few are drawn instead.
+    let slice = select_visible_slice(
+        every.iter().map(|e| (*e).clone()).collect::<Vec<Element>>(),
+        all_edges,
+        DEFAULT_COMPONENT_DIAGRAM_ELEMENTS,
+    );
+    let visible: std::collections::HashSet<String> = if slice.elements.is_empty() {
+        every
+            .iter()
+            .take(DEFAULT_COMPONENT_DIAGRAM_ELEMENTS)
+            .map(|e| e.id.clone())
+            .collect()
+    } else {
+        slice.elements.iter().map(|e| e.id.clone()).collect()
+    };
+    // No components is still a plan: the baseline frames an empty component document.
+    let children: Vec<Layer> = groups
+        .into_iter()
+        .filter_map(|(id, name, components)| {
+            let components: Vec<Element> = components
+                .into_iter()
+                .filter(|c| visible.contains(&c.id))
+                .collect();
+            if components.is_empty() {
+                return None;
+            }
+            Some(Layer {
+                id: if id.is_empty() {
+                    if name.is_empty() { "container" } else { &name }.to_string()
+                } else {
+                    id
+                },
+                title: if name.is_empty() { "Container" } else { &name }.to_string(),
+                elements: components,
+                children: Vec::new(),
+            })
+        })
         .collect();
-    edges.sort_by(|a, b| b.weight.cmp(&a.weight));
     Some(Plan {
         layers: vec![Layer {
             id: "application".to_string(),
@@ -660,43 +660,49 @@ fn component_plan(workspace: &J) -> Option<Plan> {
             elements: Vec::new(),
             children,
         }],
-        edges,
+        edges: slice.edges,
+        truncated: over_cap + slice.omitted,
     })
 }
 
-fn plan_for(workspace: &J, level: &str) -> Plan {
-    match level {
-        "container" => container_plan(workspace)
-            .map(|(elements, edges)| Plan {
-                layers: top_level_layers(elements, true),
-                edges,
-            })
-            .unwrap_or(Plan {
-                layers: Vec::new(),
-                edges: Vec::new(),
-            }),
-        "component" => component_plan(workspace).unwrap_or(Plan {
-            layers: Vec::new(),
-            edges: Vec::new(),
-        }),
-        _ => {
-            let elements = collect(workspace);
-            let edges = ordered_edges(&elements)
-                .into_iter()
-                .map(|(from, r)| Edge {
-                    from: from.to_string(),
-                    to: r.destination.clone(),
-                    label: r.label.clone(),
-                    kind: r.kind.clone(),
-                    weight: r.weight,
-                })
-                .collect();
+/// `None` when the workspace has no primary system to plan from, which the baseline
+/// renders as its empty document; a plan with nothing in it still gets the document
+/// frame.
+fn plan_for(workspace: &J, level: &str) -> Option<Plan> {
+    Some(match level {
+        "container" => {
+            let (elements, edges) = container_plan(workspace)?;
+            let slice = select_visible_slice(elements, edges, DEFAULT_CONTAINER_DIAGRAM_ELEMENTS);
             Plan {
-                layers: top_level_layers(elements, false),
-                edges,
+                layers: top_level_layers(slice.elements, true),
+                edges: slice.edges,
+                truncated: slice.omitted,
             }
         }
-    }
+        "component" => component_plan(workspace)?,
+        _ => {
+            // Actors and systems: every edge among them, deduplicated and strongest
+            // first, transitively reduced, capped, then cut to what twelve elements
+            // can show.
+            let elements = collect(workspace);
+            let allowed: std::collections::HashSet<String> =
+                elements.iter().map(|e| e.id.clone()).collect();
+            let raw: Vec<Edge> = elements
+                .iter()
+                .flat_map(|e| raw_edges(e, &allowed))
+                .collect();
+            let reduced = reduce_transitive(dedupe_and_sort(raw), false);
+            let total = reduced.len();
+            let kept: Vec<Edge> = reduced.into_iter().take(MAX_TEXT_DIAGRAM_EDGES).collect();
+            let over_cap = total - kept.len();
+            let slice = select_visible_slice(elements, kept, DEFAULT_CONTEXT_DIAGRAM_ELEMENTS);
+            Plan {
+                layers: top_level_layers(slice.elements, false),
+                edges: slice.edges,
+                truncated: over_cap + slice.omitted,
+            }
+        }
+    })
 }
 
 /// Walk a layer tree into lines, the way the baseline's document builder does: a group
@@ -762,10 +768,9 @@ fn render_all_sections(
 }
 
 fn mermaid_at(workspace: &J, level: &str) -> String {
-    let p = plan_for(workspace, level);
-    if p.is_empty() {
+    let Some(p) = plan_for(workspace, level) else {
         return "graph TD".to_string();
-    }
+    };
     let mut lines = vec!["graph TD".to_string()];
     walk_layers(
         &p.layers,
@@ -796,6 +801,12 @@ fn mermaid_at(workspace: &J, level: &str) -> String {
             diagram_id(&e.from),
             edge_label(&e.label),
             diagram_id(&e.to)
+        ));
+    }
+    if p.truncated > 0 {
+        lines.push(format!(
+            "    graph_note[\"Mermaid view truncated: {} edges omitted\"]",
+            p.truncated
         ));
     }
     lines.join("\n")
@@ -834,10 +845,9 @@ fn plantuml_keyword(e: &Element) -> &'static str {
 }
 
 fn plantuml_at(workspace: &J, level: &str) -> String {
-    let p = plan_for(workspace, level);
-    if p.is_empty() {
+    let Some(p) = plan_for(workspace, level) else {
         return "@startuml\n@enduml".to_string();
-    }
+    };
     let mut lines = vec![
         "@startuml".to_string(),
         "top to bottom direction".to_string(),
@@ -874,6 +884,14 @@ fn plantuml_at(workspace: &J, level: &str) -> String {
             diagram_id(&e.to),
             escape(&e.label)
         ));
+    }
+    if p.truncated > 0 {
+        lines.push("note as N1".to_string());
+        lines.push(format!(
+            "PlantUML view truncated: {} edges omitted",
+            p.truncated
+        ));
+        lines.push("end note".to_string());
     }
     lines.push("@enduml".to_string());
     lines.join("\n")
@@ -1108,8 +1126,7 @@ pub fn render_dsl(workspace: &J) -> String {
 fn dsl_string(v: &str) -> String {
     v.replace('\\', "\\\\")
         .replace('"', "\\\"")
-        .replace('\r', " ")
-        .replace('\n', " ")
+        .replace(['\r', '\n'], " ")
 }
 
 #[cfg(test)]
@@ -1161,10 +1178,20 @@ mod tests {
     }
 
     #[test]
-    fn empty_models_render_minimal_documents() {
+    fn empty_models_render_framed_documents() {
+        // A context diagram always has a plan, so an empty model still gets the
+        // document frame, as the baseline's renderer emits its header and footer.
         let empty = json!({"name": "x", "model": {"people": [], "softwareSystems": []}});
         assert_eq!(render_mermaid(&empty), "graph TD");
-        assert_eq!(render_plantuml(&empty), "@startuml\n@enduml");
+        assert_eq!(
+            render_plantuml(&empty),
+            "@startuml\ntop to bottom direction\nskinparam shadowing false\n@enduml"
+        );
+        // Without a primary system there is no container plan at all: the empty
+        // document, not a frame.
+        let mut container = empty.clone();
+        container["properties"] = json!({"graphite.level": "container"});
+        assert_eq!(render_plantuml(&container), "@startuml\n@enduml");
     }
 
     #[test]

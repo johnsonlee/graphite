@@ -86,17 +86,17 @@ CASES = [
     ("GET", "/api/graphs/app/resources?limit=5", None),
     ("GET", "/api/graphs/app/annotations?class=java.lang.Object&member=toString", None),
     ("GET", "/api/graphs/app/annotations?class=java.lang.Object", None),
-    # C4: the context level matches byte-for-byte in all four formats. The container
-    # and component levels are not yet at parity (their diagram planning is not fully
-    # ported), so they are checked for status only, below.
-    # Every level in every format. Only `context` used to be compared, and the other
-    # levels turned out to be rendering the context model: the level reached the
-    # workspace's inference but never its diagram plan.
+    # C4: every level in every format, byte for byte. `app` is a library graph, whose
+    # component level is empty; `acme` (rust/bench/fixtures/acme) is an application
+    # with several capabilities calling each other, so its component and `all` levels
+    # carry component relationships.
     *[
-        ("GET", f"/api/graphs/app/architecture/c4?level={level}&format={fmt}", None)
+        ("GET", f"/api/graphs/{graph}/architecture/c4?level={level}&format={fmt}", None)
+        for graph in ("app", "acme")
         for level in ("context", "container", "component", "all")
         for fmt in ("json", "mermaid", "plantuml", "dsl")
     ],
+    ("GET", "/api/graphs/acme/cypher?query=MATCH%20(n:CallSite)%20WHERE%20n.callee_class%20CONTAINS%20%22acme%22%20RETURN%20count(*)", None),
     ("GET", "/api/graphs/app/architecture/c4?level=nosuch", None),
     ("GET", "/api/graphs/app/architecture/c4?format=nosuch", None),
     ("GET", "/openapi.json", None),
@@ -145,6 +145,60 @@ QUERIES = [
     "RETURN nosuchfunction(1)",
     "MATCH (n RETURN n",
     "CREATE (n:Foo)",
+    # LIMIT 0 on the compact path must return no rows.
+    'MATCH (n) WHERE n.caller_class CONTAINS "a" RETURN n.caller_class LIMIT 0',
+    'MATCH (n) WHERE n.caller_class CONTAINS "a" RETURN n.caller_class, n.callee_class LIMIT 0',
+    # Ordered DISTINCT: the winning values occur after the first LIMIT's worth of
+    # distinct values in scan order, so an early drop at the budget loses them.
+    'MATCH (n) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class ORDER BY n.callee_class LIMIT 5',
+    'MATCH (n) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class AS c ORDER BY c DESC LIMIT 5',
+    # Non-ASCII literals must not prune a graph by trigrams the JVM would have
+    # lowercased differently: a leaf, and a conjunction whose other side matches.
+    'MATCH (n) WHERE n.callee_class CONTAINS "AΟΣ" RETURN n.callee_class LIMIT 5',
+    'MATCH (n) WHERE n.callee_class CONTAINS "Ärger" OR n.caller_name CONTAINS "toString" RETURN n.caller_name LIMIT 5',
+    'MATCH (n) WHERE n.callee_class CONTAINS "java" AND n.caller_name CONTAINS "ΣΑΣ" RETURN n.caller_name LIMIT 5',
+    # A projected property that is null has no key in the row.
+    "MATCH (n:CallSiteNode) RETURN n.nonexistent, n.callee_class LIMIT 3",
+    "MATCH (n) RETURN n.value LIMIT 3",
+    "MATCH (c)-[r:DATAFLOW]->(n) RETURN c.value, n.callee_class ORDER BY id(c), id(n) LIMIT 3",
+    'MATCH (n) WHERE n.value CONTAINS "java" RETURN DISTINCT n.value ORDER BY n.value LIMIT 5',
+    # Cross-graph grouping: one row per value across graphs, counts summed, both
+    # graphs in the provenance; without ORDER BY the groups come first-seen.
+    "MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS c LIMIT 5",
+    "MATCH (n:CallSiteNode) WHERE n.callee_class CONTAINS \"java.util\" RETURN n.callee_class, count(*) AS c ORDER BY c DESC LIMIT 5",
+    "MATCH (n:StringConstant) RETURN DISTINCT n.value AS v ORDER BY v LIMIT 12",
+    'MATCH (n:CallSite) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class ORDER BY n.callee_class DESC LIMIT 5',
+    'MATCH (n:CallSite) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class AS c ORDER BY c LIMIT 5',
+    'MATCH (n:LocalVariable) RETURN n LIMIT 3',
+    'MATCH (n:LocalVariable) RETURN n.method LIMIT 3',
+    'MATCH (n:Parameter) RETURN n LIMIT 3',
+    # Non-CallSite string properties take the column path.
+    # Unlabelled scans over several node types are ordered here, since the Kotlin
+    # server visits the types it has no direct index for in a hash order that varies
+    # between runs.
+    'MATCH (n) WHERE n.value CONTAINS "java" RETURN n.value ORDER BY n.value LIMIT 10',
+    'MATCH (n) WHERE n.name CONTAINS "size" AND n.type CONTAINS "int" RETURN n.name, n.type, labels(n) ORDER BY id(n) LIMIT 10',
+    'MATCH (n:StringConstant) WHERE n.value STARTS WITH "java" RETURN n.value LIMIT 10',
+    'MATCH (n) WHERE n.value CONTAINS "java" RETURN count(*)',
+    # A single hop anchored on the end the predicate names.
+    'MATCH (c)-[r:DATAFLOW]->(n) WHERE n.callee_class CONTAINS "java" RETURN c, n ORDER BY id(c), id(n) LIMIT 10',
+    'MATCH (c:StringConstant)-[r:DATAFLOW]->(n) WHERE n.callee_class CONTAINS "java" RETURN c, n LIMIT 10',
+    'MATCH (c:StringConstant)-[r:DATAFLOW]->(n) WHERE c.value CONTAINS "java" RETURN c.value, n.callee_class LIMIT 10',
+    'MATCH (c)-[r:DATAFLOW]->(n:CallSite) WHERE n.callee_class CONTAINS "nosuchclass" RETURN c, n LIMIT 10',
+    'MATCH (c:StringConstant)-[r]->(n) WHERE n.callee_class CONTAINS "java" AND c.value CONTAINS "a" RETURN c.value, n.callee_class LIMIT 10',
+    'MATCH (c)-[r:DATAFLOW]->(n) WHERE n.callee_class CONTAINS "java" RETURN count(*)',
+    # `=~` with a simple pattern is answered from the trigram index, with the pattern
+    # itself deciding each candidate; the rest go through the evaluator as before.
+    "MATCH (n) WHERE n.caller_class =~ '.*java.*' OR n.callee_class =~ '.*java.*' RETURN n LIMIT 10",
+    "MATCH (n) WHERE n.callee_class =~ 'java\\\\.util\\\\..*' RETURN n.callee_class LIMIT 10",
+    "MATCH (n) WHERE n.callee_class =~ 'java.util.*' RETURN count(*)",
+    "MATCH (n) WHERE n.value =~ '.*java.*' RETURN n.value ORDER BY n.value LIMIT 10",
+    "MATCH (n:StringConstant) WHERE n.value =~ '.*a.*' RETURN count(*)",
+    "MATCH (n:CallSite) WHERE n.callee_name =~ '[a-z]+' RETURN count(*)",
+    "MATCH (n) WHERE n.callee_name =~ 'toString' RETURN count(*)",
+    "MATCH (n) WHERE n.callee_class =~ '.*Nosuchclass.*' RETURN count(*)",
+    "MATCH (n) WHERE toLower(n.callee_class) =~ '.*java.*' RETURN count(*)",
+    "MATCH (c)-[r:DATAFLOW]->(n) WHERE n.callee_class =~ '.*java.*' RETURN count(*)",
 ]
 for q in QUERIES:
     CASES.append(("POST", "/api/graphs/app/cypher", json.dumps({"query": q})))

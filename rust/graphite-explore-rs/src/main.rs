@@ -12,6 +12,7 @@ use std::sync::Arc;
 /// cost shows up directly in P50. jemalloc's thread-local caches make those close to
 /// free, and it also returns memory to the OS on a schedule rather than on a whim,
 /// which matters for a process holding sixty-four memory-mapped graphs.
+#[cfg(not(target_env = "msvc"))]
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
@@ -160,12 +161,17 @@ fn run(cli: Cli) -> Result<(), String> {
         cli.max_concurrent_cypher,
         cli.cypher_max_timeout_ms,
     ));
-    let state = Arc::new(AppState::new(
+    let mut app_state = AppState::new(
         registry.clone(),
         guard.clone(),
         VERSION.to_string(),
         cli.metrics,
-    ));
+    );
+    app_state.topology_queries = topology_queries;
+    // Built before the server listens, as the Kotlin server builds it: a rule that
+    // fails against the loaded graphs is a startup error, not a runtime surprise.
+    let (topology_graphs, topology_relations) = app_state.rebuild_topology()?;
+    let state = Arc::new(app_state);
 
     // Cypher queries run on the worker that received them (`block_in_place`) rather
     // than on the blocking pool: the hand-off to that pool and back was a thread wake
@@ -207,8 +213,7 @@ fn run(cli: Cli) -> Result<(), String> {
                 built.join(", ")
             );
         }
-        eprintln!("Topology: {} graphs, {} relations", registry.ids().len(), 0);
-        let _ = topology_queries;
+        eprintln!("Topology: {topology_graphs} graphs, {topology_relations} relations");
         eprintln!(
             "Cypher limits: {} concurrent, {}ms maximum timeout",
             cli.max_concurrent_cypher, cli.cypher_max_timeout_ms

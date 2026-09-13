@@ -274,9 +274,11 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
             var_type,
             method,
         } => {
+            // The baseline's node map carries a local variable's name and type only;
+            // `n.method` still reads the signature.
+            let _ = method;
             put("name", s(g, *name));
             put("type", s(g, *var_type));
-            put("method", sig(g, method));
         }
         NodeKind::Field {
             declaring_class,

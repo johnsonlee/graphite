@@ -147,8 +147,11 @@ pub struct StringColumn {
     cache: Mutex<MatchCache>,
 }
 
+/// `(op, transform, literal)` as the caller encodes it.
+pub type MatchKey = (u8, u8, String);
+
 struct MatchCache {
-    entries: Vec<((u8, u8, String), std::sync::Arc<Vec<u32>>)>,
+    entries: Vec<(MatchKey, std::sync::Arc<Vec<u32>>)>,
     ids: usize,
 }
 
@@ -263,7 +266,7 @@ impl StringColumn {
     }
 
     /// A remembered resolution of `(op, transform, literal)` on this column.
-    pub fn cached(&self, key: &(u8, u8, String)) -> Option<std::sync::Arc<Vec<u32>>> {
+    pub fn cached(&self, key: &MatchKey) -> Option<std::sync::Arc<Vec<u32>>> {
         let cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
         cache
             .entries
@@ -273,7 +276,7 @@ impl StringColumn {
     }
 
     /// Remember a resolution; the oldest entries go when the bound is reached.
-    pub fn remember(&self, key: (u8, u8, String), ids: std::sync::Arc<Vec<u32>>) {
+    pub fn remember(&self, key: MatchKey, ids: std::sync::Arc<Vec<u32>>) {
         let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
         if ids.len() > MAX_MATCH_CACHE_IDS {
             return;

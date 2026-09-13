@@ -50,6 +50,9 @@ impl ComparisonOp {
     }
 }
 
+/// One annotation on a member: its type and its value pairs.
+pub type MemberAnnotation = (StrId, Vec<(StrId, AnyValue)>);
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BranchComparison {
     pub op: ComparisonOp,
@@ -76,7 +79,7 @@ pub struct Metadata {
     pub class_origins: Vec<(StrId, StrId)>,
     pub artifact_dependencies: Vec<(StrId, Vec<(StrId, i32)>)>,
     /// key "$class#$member" -> [(annotation fqn, [(attr, value)])]
-    pub member_annotations: Vec<(StrId, Vec<(StrId, Vec<(StrId, AnyValue)>)>)>,
+    pub member_annotations: Vec<(StrId, Vec<MemberAnnotation>)>,
     pub branch_scopes: Vec<BranchScope>,
     // Lookup maps
     pub supertypes_index: HashMap<StrId, usize>,

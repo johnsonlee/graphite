@@ -179,21 +179,6 @@ fn json_to_string(j: &serde_json::Value) -> String {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::json_to_string;
-    use serde_json::json;
-
-    #[test]
-    fn renders_java_collection_syntax() {
-        assert_eq!(json_to_string(&json!({"a": 1, "b": null})), "{a=1, b=null}");
-        assert_eq!(json_to_string(&json!([1, "x", true])), "[1, x, true]");
-        // Nesting composes, and a string never gains quotes.
-        assert_eq!(json_to_string(&json!({"k": ["a"]})), "{k=[a]}");
-        assert_eq!(json_to_string(&json!("plain")), "plain");
-    }
-}
-
 /// A path flattened to the alternating node/edge sequence the baseline holds it as.
 fn path_elements(p: &crate::value::PathValue, _ctx: &dyn GraphContext) -> Vec<Value> {
     let mut out = Vec::with_capacity(p.nodes.len() + p.edges.len());
@@ -210,4 +195,19 @@ fn path_elements(p: &crate::value::PathValue, _ctx: &dyn GraphContext) -> Vec<Va
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::json_to_string;
+    use serde_json::json;
+
+    #[test]
+    fn renders_java_collection_syntax() {
+        assert_eq!(json_to_string(&json!({"a": 1, "b": null})), "{a=1, b=null}");
+        assert_eq!(json_to_string(&json!([1, "x", true])), "[1, x, true]");
+        // Nesting composes, and a string never gains quotes.
+        assert_eq!(json_to_string(&json!({"k": ["a"]})), "{k=[a]}");
+        assert_eq!(json_to_string(&json!("plain")), "plain");
+    }
 }
