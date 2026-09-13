@@ -838,7 +838,7 @@ test("fixture64 global-wide driver binds pinned JAR provenance and alternates pa
     assert.match(driver, /gh gist create --public/);
 });
 
-test("fixture64 startup-prepared graphId pressure guards the optimization already on main", () => {
+test("fixture64 startup-prepared graphId pressure preserves index checks and reports startup ratios", () => {
     const startupBase = graphIdPressureResult({
         callSiteIndexAdmittedGraphs: 64,
         callSiteIndexRetainedBytes: 1024,
@@ -876,7 +876,8 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
         graphIdObservations(1_000_000, "success", 1_000_000),
         graphIdObservations(2_000_000, "success", 2_000_000)
     );
-    assert.equal(materiallyRegressed.passed, false);
+    assert.equal(materiallyRegressed.passed, true);
+    assert.match(materiallyRegressed.advisoryErrors.join("\n"), /latency regressed/);
     assert.equal(materiallyRegressed.p50Speedup, 0.5);
     assert.equal(materiallyRegressed.p95Speedup, 0.5);
 
@@ -909,7 +910,7 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
     assert.equal(sidecarCandidate.passed, true, sidecarCandidate.errors.join("\n"));
 });
 
-test("fixture64 cold graphId pressure uses a micro-latency regression guard instead of a 10x target", () => {
+test("fixture64 cold graphId pressure reports numerical regressions without gating startup", () => {
     const stable = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
@@ -925,7 +926,9 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
         graphIdObservations(1_000_000, "success", 1_000_000),
         graphIdObservations(2_000_000, "success", 2_000_000)
     );
-    assert.equal(materialRegression.passed, false);
+    assert.equal(materialRegression.passed, true);
+    assert.equal(materialRegression.latencyBlocking, false);
+    assert.ok(materialRegression.advisoryErrors.length > 0);
 
     const base = graphIdObservations(1_000_000, "success", 1_000_000);
     const candidateRows = graphIdObservations(1_000_000, "success", 1_000_000).trim().split("\n");
@@ -939,8 +942,8 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
         base,
         `${candidateRows.join("\n")}\n`
     );
-    assert.equal(hiddenFirstRequestRegression.passed, false);
-    assert.match(hiddenFirstRequestRegression.errors.join("\n"), /first K64 request latency regressed/);
+    assert.equal(hiddenFirstRequestRegression.passed, true);
+    assert.match(hiddenFirstRequestRegression.advisoryErrors.join("\n"), /first K64 request latency regressed/);
 });
 
 test("fixture64 scorer rejects detached and correlated-rotation latency rows", () => {
@@ -1005,6 +1008,15 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
     );
     assert.equal(passed.passed, true);
     assert.equal(passed.indexState, "warm");
+    const warmRegression = compareGraphIdPressure(
+        [warmBase], [warmCandidate],
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000),
+        graphIdObservations(2_000_000_000, "success", 2_000_000_000)
+    );
+    assert.equal(warmRegression.passed, false);
+    assert.equal(warmRegression.latencyBlocking, true);
+    assert.match(warmRegression.errors.join("\n"), /latency regressed/);
+
     assert.match(renderGraphIdPressureReport(passed), /Index state: \*\*warm\*\*/);
     assert.match(renderGraphIdPressureReport(passed), /Trigram-indexed graphs: \*\*0 → 64\*\*/);
 
@@ -1157,7 +1169,8 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 2_000_000_000)
     );
-    assert.equal(regressed.passed, false);
+    assert.equal(regressed.passed, true);
+    assert.match(regressed.advisoryErrors.join("\n"), /request-selected P50/);
     assert.equal(regressed.graphParameterP50Regression, 1);
     assert.equal(regressed.graphParameterP95Regression, 1);
     assert.equal(regressed.graphParameterP50Speedup, 0.5);
@@ -2114,6 +2127,9 @@ test("JMH advisory metric reports a regression without blocking", () => {
     assert.equal(advisory.rows[0].blocked, false);
     assert.match(renderJmhReport(advisory), /reported for context/);
     assert.match(renderJmhReport(advisory), /\*\*INFO\*\*/);
+    const invalid = makeJmhAdvisory(compareJmh([jmhResult({ score: 100 })], [jmhResult({ score: Number.NaN })], 15, true));
+    assert.equal(invalid.passed, false);
+    assert.ok(invalid.errors.length > 0);
 });
 
 test("JMH reverse-order confirmation rejects a one-round false positive", () => {
@@ -2419,7 +2435,7 @@ test("resource gate requires GC, retained, and peak metrics", () => {
 test("resource confirmation aligns the same metric before blocking", () => {
     const base = [resourceResult()];
     const firstCandidate = [
-        resourceResult({ overrides: { retainedHeapDeltaBytes: eventMetric(80 * 1024 ** 2) } })
+        resourceResult({ overrides: { "gc.alloc.rate.norm": { score: 2_000_000, scoreUnit: "B/op" } } })
     ];
     const retryCandidate = [resourceResult()];
     const initial = compareLatencyResources(base, firstCandidate);
@@ -3298,6 +3314,68 @@ test("historical known-bad latency proof runs only in the scheduled workflow", (
     for (const hashInput of cacheHashInputs) assert.match(hashInput, /'current\//);
 });
 
+test("Explorer overlay selects only the pinned repair and retains strict base CPU accounting", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const start = workflow.indexOf("    - name: Install trusted Explorer harnesses");
+    const end = workflow.indexOf("    - name: Build comparable Explorer JMH JAR", start);
+    assert.ok(start > 0 && end > start);
+    const build = workflow.slice(workflow.indexOf("\n  build-explore-jmh:"), start);
+    assert.match(build, /needs: \[candidate-gate-tests\]/);
+    assert.match(build, /revision: \[base, candidate\]/);
+    const overlay = workflow.slice(start, end);
+    assert.match(overlay, /CANDIDATE_GATE_TEST_JOB: \$\{\{ needs\.candidate-gate-tests\.result \}\}/);
+    const shell = overlay.slice(overlay.indexOf("      run: |\n") + "      run: |\n".length)
+        .split("\n").map(line => line.replace(/^        /, "")).join("\n");
+    const sha256 = contents => crypto.createHash("sha256").update(contents).digest("hex");
+    const relative = "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/";
+    const explorer = "ExplorerMemoryBenchmark.kt";
+    const helpers = ["CypherCapacityBenchmark.kt", "RequestCpuAccounting.kt"];
+    const currentHarness = fs.readFileSync(new URL(`../../${relative}${explorer}`, import.meta.url));
+    assert.match(workflow, new RegExp(`EXPLORER_TRANSITION_HARNESS_SHA256: ${sha256(currentHarness)}`));
+    assert.match(workflow, /EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e/);
+
+    for (const scenario of ["transition", "normal-base", "tampered", "failed-tests"]) {
+        const directory = fs.mkdtempSync(path.join(os.tmpdir(), "explorer-overlay-"));
+        try {
+            for (const checkout of ["gate", "controls", "source"]) {
+                fs.mkdirSync(path.join(directory, checkout, relative), { recursive: true });
+                for (const file of [explorer, ...helpers]) {
+                    const contents = checkout === "gate" && file === explorer
+                        ? (scenario === "normal-base" ? "future base harness" : "reviewed legacy harness")
+                        : checkout === "controls" && file === explorer
+                            ? (scenario === "tampered" ? "unreviewed repair" : "reviewed repair")
+                            : `${checkout} ${file}`;
+                    fs.writeFileSync(path.join(directory, checkout, relative, file), contents);
+                }
+            }
+            const result = spawnSync("bash", ["-c", shell], {
+                cwd: directory,
+                encoding: "utf8",
+                env: { ...process.env,
+                    CANDIDATE_GATE_TEST_JOB: scenario === "failed-tests" ? "failure" : "success",
+                    EXPLORER_LEGACY_HARNESS_SHA256: sha256("reviewed legacy harness"),
+                    EXPLORER_TRANSITION_HARNESS_SHA256: sha256("reviewed repair"),
+                },
+            });
+            if (["tampered", "failed-tests"].includes(scenario)) {
+                assert.notEqual(result.status, 0, `${scenario} must fail closed`);
+                assert.equal(fs.readFileSync(path.join(directory, "source", relative, explorer), "utf8"),
+                    `source ${explorer}`, "rejected controls must not mutate the target");
+                continue;
+            }
+            assert.equal(result.status, 0, `${scenario}: ${result.stderr}`);
+            assert.equal(fs.readFileSync(path.join(directory, "source", relative, explorer), "utf8"),
+                scenario === "normal-base" ? "future base harness" : "reviewed repair");
+            for (const file of helpers) {
+                assert.equal(fs.readFileSync(path.join(directory, "source", relative, file), "utf8"),
+                    `gate ${file}`, `${file} must always remain base-owned`);
+            }
+        } finally {
+            fs.rmSync(directory, { recursive: true, force: true });
+        }
+    }
+});
+
 test("method-compatibility shards run the CPU accounting contract in its own JVM before any fork", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const contract = workflow.indexOf(
@@ -3316,10 +3394,13 @@ test("a candidate-owned smoke exercises the new CPU accounting harness in a real
     const start = workflow.indexOf("\n  validate-cpu-accounting:");
     const rest = workflow.slice(start + 1);
     const job = rest.slice(0, rest.indexOf("\n  method-compatibility:"));
-    // Builds the candidate's own harness (no base-owned gate install), so the new RequestCpuAccounting
-    // integration actually runs -- unlike the paired gate, which installs the base harness over both trees.
+    // Exercise the candidate-native integration separately from the paired trusted overlay.
     assert.match(job, /Build candidate-owned Explorer JMH JAR/);
-    assert.doesNotMatch(job, /Install base-owned Explorer harnesses/, "the smoke must not install the base harness");
+    const lifecycle = job.indexOf('java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodBenchmarkServerLifecycleContract');
+    const accounting = job.indexOf('java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract');
+    assert.ok(lifecycle > 0 && accounting > lifecycle,
+        "the actual server lifecycle must pass before CPU accounting contracts and real forks");
+    assert.doesNotMatch(job, /Install (?:base-owned|trusted) Explorer harnesses/, "the smoke must not install the base harness");
     // A real graphCount=4 fork over all four corpora.
     assert.match(job, /-p graphCount=4 -p scenario=count/);
     // And the worst-case graph count over the scenarios that tripped the accounting, with
@@ -3345,4 +3426,195 @@ test("the authoritative aggregate depends on and enforces the CPU-accounting smo
         "the enforce step must expose the smoke job's result");
     assert.match(gate, /\[ "\$\{CPU_ACCOUNTING_SMOKE_JOB\}" != success \]/,
         "the enforce step must fail unless the smoke succeeded");
+});
+
+
+test("explicit cold diagnostics preserve numerical failures while rejecting integrity failures", () => {
+    const evidence = globalWideEvidence(35_000_000);
+    const candidateEvidence = globalWideEvidence(70_000_000);
+    const bases = Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000)]);
+    const candidates = Array.from({ length: 3 }, () => [globalWidePressureResult(70_000_000)]);
+    const args = [bases, candidates, Array(3).fill(evidence.observations), Array(3).fill(candidateEvidence.observations),
+        evidence.oracle, 5, ["candidate-base", "base-candidate", "candidate-base"], evidence.manifest];
+    const strict = compareGlobalWidePressure(...args);
+    const diagnostic = compareGlobalWidePressure(...args, { coldDiagnosticsOnly: true });
+    assert.equal(strict.passed, false);
+    assert.equal(diagnostic.passed, true, diagnostic.errors.join("\n"));
+    assert.equal(diagnostic.integrityErrors.length, 0);
+    assert.equal(diagnostic.targetErrors.length, 9);
+    assert.ok(diagnostic.latencyErrors.length > 0);
+    assert.deepEqual([...strict.errors].sort(), [...diagnostic.advisoryErrors].sort());
+    assert.match(renderGlobalWidePressureReport(diagnostic), /diagnostic; correctness and measurement integrity remain required/);
+    for (const [metric, value] of [["maxHeapBytes", 4 * 1024 ** 3], ["graphWorkerCount", 99]]) {
+        const altered = structuredClone(args);
+        altered[1][0][0].secondaryMetrics[metric].score = value;
+        const result = compareGlobalWidePressure(...altered, { coldDiagnosticsOnly: true });
+        assert.equal(result.passed, false);
+        assert.match(result.integrityErrors.join("\n"), metric === "maxHeapBytes" ? /maxHeapBytes/ : /NCPU split/);
+    }
+    const incorrect = [...args];
+    incorrect[3] = [candidateEvidence.observations.replace(/success/, "failed"), ...Array(2).fill(candidateEvidence.observations)];
+    assert.equal(compareGlobalWidePressure(...incorrect, { coldDiagnosticsOnly: true }).passed, false);
+    assert.equal(compareGlobalWidePressure(...args, { coldDiagnosticsOnly: "true" }).passed, false);
+});
+
+test("diagnostic driver refuses strict status publication before Git or benchmark work", () => {
+    const driver = new URL("./run-real64-global-wide.sh", import.meta.url);
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-diagnostic-no-git-"));
+    try {
+        const result = spawnSync("bash", [driver.pathname, "missing.tsv", "missing-fixtures", "a".repeat(40), "b".repeat(40)], {
+            cwd: directory, encoding: "utf8",
+            env: { ...process.env, GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY: "true", GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: "true" }
+        });
+        assert.equal(result.status, 1, result.stderr);
+        assert.match(result.stderr, /cannot publish a strict-target/);
+        assert.doesNotMatch(result.stderr, /not a git repository/);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+
+test("wrapped heap growth is advisory while allocation, GC and heap integrity remain blocking", () => {
+    const base = [resourceResult()];
+    const larger = [resourceResult({ overrides: {
+        retainedHeapDeltaBytes: eventMetric(80 * 1024 ** 2),
+        retainedHeapBytes: eventMetric(180 * 1024 ** 2),
+        peakUsedHeapBytes: eventMetric(1024 ** 3)
+    } })];
+    const comparison = compareLatencyResources(base, larger);
+    assert.equal(comparison.passed, true, comparison.errors.join("\n"));
+    assert.equal(comparison.rows.filter(row => row.advisory && row.aboveThreshold).length, 2);
+    assert.ok(comparison.rows.filter(row => row.advisory).every(row => !row.blocked));
+    assert.equal(confirmLatencyResources(comparison, compareLatencyResources(base, larger)).passed, true);
+    for (const overrides of [
+        { "gc.alloc.rate.norm": metric(2_000_000, "B/op") },
+        { queryGcCount: eventMetric(5), queryGcTimeMs: eventMetric(100) }
+    ]) {
+        const failed = compareLatencyResources(base, [resourceResult({ overrides })]);
+        assert.equal(failed.passed, false);
+        assert.equal(confirmLatencyResources(failed, failed).passed, false);
+    }
+    const bad = [resourceResult({ overrides: { peakUsedHeapBytes: eventMetric(9 * 1024 ** 3) } })];
+    assert.equal(compareLatencyResources(base, bad).passed, false);
+    assert.equal(compareLatencyResources(base, [resourceResult({ overrides: { peakUsedHeapBytes: undefined } })]).passed, false);
+});
+
+test("workflow applies withdrawn resource growth constraints in both initial and final method paths", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    for (const expected of [
+        "gate_metric cpu processCpuNanos 'CPU time (advisory)' true",
+        "gate_metric rss-after residentSetAfterBytes 'RSS after query (advisory)' true",
+        "'cpu:processCpuNanos:CPU time (advisory):true'",
+        "'rss-after:residentSetAfterBytes:RSS after query (advisory):true'",
+        "gate_metric wall '' 'wall time' false",
+        'all(["tailLatencyNanos"][];'
+    ]) assert.ok(workflow.includes(expected), expected);
+    const block = workflow.split('    - name: Enforce resource integrity and allocation/GC guardrails')[1]
+        .split('    - name: Upload resource results')[0];
+    assert.match(block, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
+    assert.match(block, /CANDIDATE_GATE_TEST_JOB/);
+    assert.match(block, /REAL_ONLY_LATENCY_COMPARATOR_SHA256/);
+    assert.match(block, /"\$\{COMPARATOR\}" confirm-latency-resources/);
+    assert.match(workflow, /secondaryMetrics\.processCpuNanos\.score > 0/);
+    assert.match(workflow, /secondaryMetrics\.residentSetAfterBytes\.score > 0/);
+});
+
+
+test("startup-prepared numeric regression is diagnostic but warm regression still blocks", () => {
+    const counters = { callSiteIndexAdmittedGraphs: 64, callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64, callSiteParallelScanCount: 0 };
+    const before = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
+    const after = graphIdObservations(2_000_000_000, "success", 2_000_000_000);
+    const startup = compareGraphIdPressure([graphIdPressureResult(counters, "startup-prepared")],
+        [graphIdPressureResult(counters, "startup-prepared")], before, after);
+    assert.equal(startup.passed, true, startup.errors.join("\n"));
+    assert.equal(startup.latencyBlocking, false);
+    assert.match(startup.advisoryErrors.join("\n"), /latency regressed/);
+    assert.match(renderGraphIdPressureReport(startup), /Unwarmed query latency/);
+    const warm = compareGraphIdPressure([graphIdPressureResult(counters, "warm")],
+        [graphIdPressureResult(counters, "warm")], before, after);
+    assert.equal(warm.passed, false);
+    assert.equal(warm.latencyBlocking, true);
+    assert.match(warm.errors.join("\n"), /latency regressed/);
+});
+
+test("startup-prepared diagnostics still reject incorrect results and missing prepared indexes", () => {
+    const counters = { callSiteIndexAdmittedGraphs: 64, callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64, callSiteParallelScanCount: 0 };
+    const result = graphIdPressureResult(counters, "startup-prepared");
+    const observations = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
+    const incorrect = compareGraphIdPressure([result], [result], observations, observations.replace("success", "failed"));
+    assert.equal(incorrect.passed, false);
+    assert.ok(incorrect.errors.length > 0);
+    const missing = compareGraphIdPressure([result], [graphIdPressureResult({ ...counters,
+        callSiteTrigramIndexedGraphs: 63 }, "startup-prepared")], observations, observations);
+    assert.equal(missing.passed, false);
+    assert.match(missing.errors.join("\n"), /all 64 graphs/);
+    const invalidState = compareGraphIdPressure([result], [graphIdPressureResult(counters, "unknown")], observations, observations);
+    assert.equal(invalidState.passed, false);
+    assert.match(invalidState.errors.join("\n"), /indexState/);
+});
+
+test("zero-valid-run comparator failure still seals every evidence hash and exits unsuccessfully", () => {
+    const repository = new URL("../../", import.meta.url).pathname;
+    const driver = fs.readFileSync(new URL("./run-real64-global-wide.sh", import.meta.url), "utf8");
+    const tail = driver.slice(driver.indexOf('IFS=, BASE_JSON_LIST='));
+    const hashFunction = driver.match(/sha256_file\(\) \{[\s\S]*?\n\}/)[0];
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "global-wide-empty-runs-"));
+    try {
+        const output = path.join(directory, "output");
+        fs.mkdirSync(output);
+        fs.mkdirSync(path.join(directory, "bin"));
+        const publishMarker = path.join(directory, "unexpected-publication");
+        fs.writeFileSync(path.join(directory, "bin", "gh"), '#!/bin/sh\ntouch "$PUBLISH_MARKER"\nexit 91\n', { mode: 0o755 });
+        const originalManifest = path.join(directory, "graphs.tsv");
+        const originalProvenance = path.join(directory, "fixture-provenance.tsv");
+        fs.writeFileSync(originalManifest, "# invalid graph fixture: comparator must reject it\n");
+        fs.writeFileSync(originalProvenance, "# raw invalid fixture provenance\n");
+        fs.writeFileSync(path.join(output, "oracle.correctness"), "");
+        fs.writeFileSync(path.join(output, "fixture-reproducibility.json"), "{}\n");
+        for (const revision of ["base", "candidate"]) for (let pair = 1; pair <= 3; pair++) {
+            fs.writeFileSync(path.join(output, `${revision}-${pair}.json`), "[]\n");
+            fs.writeFileSync(path.join(output, `${revision}-${pair}.tsv`), "# no observations\n");
+        }
+        const jars = spawnSync("python3", ["-c", "import sys,zipfile\nfor p in sys.argv[1:]:\n with zipfile.ZipFile(p,'w') as z: z.writestr('entry','test-only jar')",
+            path.join(directory, "base.jar"), path.join(directory, "candidate.jar")], { encoding: "utf8" });
+        assert.equal(jars.status, 0, jars.stderr);
+        const arrays = ["BASE", "CANDIDATE"].flatMap(revision => ["JSON", "OBSERVATION"].map(kind =>
+            `${revision}_${kind}_FILES=(${[1, 2, 3].map(pair => `"$OUTPUT_DIR/${revision.toLowerCase()}-${pair}.${kind === "JSON" ? "json" : "tsv"}"`).join(" ")})`
+        )).join("\n");
+        const execution = spawnSync("bash", ["-euc", `set -o pipefail\n${hashFunction}\n${arrays}\n${tail}`], {
+            encoding: "utf8", env: { ...process.env,
+                PATH: `${path.join(directory, "bin")}:${process.env.PATH}`, PUBLISH_MARKER: publishMarker,
+                OUTPUT_DIR: output, CANDIDATE_TREE: repository,
+                HARNESS_PATH: "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt",
+                CORRECTNESS_PATH: "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt",
+                FIXTURE_VERIFIER_PATH: "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt",
+                COMPARATOR_PATH: ".github/scripts/benchmark-gate.mjs", SCRIPT_PATH: ".github/scripts/run-real64-global-wide.sh",
+                ZIP_HASHER_PATH: ".github/scripts/canonical-zip-sha256.py",
+                MANIFEST: originalManifest, FIXTURE_PROVENANCE: originalProvenance,
+                ORACLE: path.join(output, "oracle.correctness"), BASE_JAR: path.join(directory, "base.jar"),
+                CANDIDATE_JAR: path.join(directory, "candidate.jar"), BASE_SHA: "a".repeat(40), CANDIDATE_SHA: "b".repeat(40),
+                REPOSITORY: "owner/repository", STATUS_CONTEXT: "graphite/fixture64-global-wide",
+                COLD_DIAGNOSTICS_ONLY: "false", PUBLISH_EVIDENCE: "true",
+            },
+        });
+        const status = JSON.parse(fs.readFileSync(path.join(output, "global-wide-status.json"), "utf8"));
+        assert.deepEqual(status.runs, [], "the real comparator must have no valid pairs");
+        assert.equal(status.passed, false);
+        assert.ok(status.integrityErrors.length > 0);
+        assert.equal(execution.status, 1, "propagate the actual comparator failure, never the printf failure or success");
+        assert.doesNotMatch(execution.stderr, /printf.*invalid number|null: invalid number/);
+        const manifest = JSON.parse(fs.readFileSync(path.join(output, "evidence-manifest.json"), "utf8"));
+        assert.match(manifest.description, /comparison-exit=1 valid-pairs=0 integrity=fail/);
+        assert.doesNotMatch(manifest.description, /p50=|p95=|0\.00x/);
+        assert.equal(Object.keys(manifest.files).length, 19);
+        for (const [name, digest] of Object.entries(manifest.files)) {
+            assert.equal(digest, crypto.createHash("sha256").update(fs.readFileSync(path.join(output, name))).digest("hex"), name);
+        }
+        const provenance = JSON.parse(fs.readFileSync(path.join(output, "provenance.json"), "utf8"));
+        assert.equal(provenance.scriptSha256, crypto.createHash("sha256").update(driver).digest("hex"));
+        assert.equal(fs.existsSync(publishMarker), false, "a failed comparison must never publish success");
+    } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 });

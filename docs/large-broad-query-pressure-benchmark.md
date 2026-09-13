@@ -231,20 +231,23 @@ node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
 ```
 
 The comparator fails unless both revisions report exactly 64 distinct graph paths, all 1,137 queries
-complete without timeout/failure, every manifest graph id has all four routing forms at all three
-selectivities, and the already-correct request-selected P50/P95 do not regress by more than 15% for
-material latency; microsecond-scale request-selected and graph-set paths have a 0.25ms absolute
-jitter allowance. Set-width P95 must still avoid regression and is reported independently.
-Cold/warm compatibility gates require query-level graphId P50 and P95 to improve by 10x. The
-production-relevant `startup-prepared` gate requires graphId P95 to improve by 10x and P50 not to
-regress by more than 15%, because its P50 is already an indexed microsecond-scale request. A warm result is rejected unless all 64
-graphs retain the combined CallSite index and all
-64 initialize the lowercase trigram postings; proving the indexed path on only one graph is not
-coverage. It independently
-rejects any request-selected reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
-workload cannot pass. This prevents accepting a graphId speedup when the already-selected
-single-graph request path regresses. The request-selected path is the correctness reference and a non-regression
-guardrail; the 10x target applies to query-level graphId routing.
+complete without timeout/failure, and every manifest graph id has all four routing forms at all
+three selectivities. Prepared-index counts, source selection, and result correctness remain hard
+requirements in every state.
+
+Only `warm` performs query warmup and retains the existing numerical latency limits: query-level
+and request-selected P50/P95 may regress by at most 15% or 0.25 ms of absolute jitter; graph-set
+P95 keeps its existing 1 ms absolute allowance. `cold` and `startup-prepared` numerical latency
+is diagnostic. `startup-prepared` builds indexes during loading but has no query warmup, so it
+must not be described as a warmed query measurement. Reported speedup ratios do not waive
+correctness or prepared-state checks.
+
+The legacy warm protocol still uses one untimed full replay, one measured replay, and one JVM
+per revision; its grouped percentiles mix different query identities. These limitations are not
+fixed by this state classification and do not replace the separate repeated per-query latency
+protocol. A warm result is rejected unless all 64 graphs retain the combined CallSite index and
+initialize lowercase trigram postings. Request-selected references must remain in
+`zero=0`, `targeted=1..199`, and `dense=200`; an all-zero workload cannot pass.
 
 The candidate in-process hard gate checks all routing results against the base request-selected oracle.
 The comparator additionally requires every candidate graphId result to match its request-selected

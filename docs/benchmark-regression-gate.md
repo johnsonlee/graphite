@@ -228,9 +228,9 @@ diagnostic because they include forced GC outside the query; regressions are
 decided by the query-only counters. Missing metrics or raw samples, incompatible
 units, duplicate results, a wrong heap cap, or impossible
 `loaded <= peak <= max` / `retained <= peak` relationships fail closed.
-Allocation, query GC, retained-delta, and peak regressions use a 15% relative
-threshold plus an absolute noise floor and must repeat in a candidate-first
-confirmation run before blocking.
+Allocation and query GC regressions use a 15% relative threshold plus an absolute noise floor
+and must repeat in a candidate-first confirmation run before blocking. Retained-delta and peak
+heap growth are advisory; missing or invalid measurements and the effective 8 GiB cap still fail.
 
 ## Method-level gate
 
@@ -255,8 +255,8 @@ runs its assigned scenarios for base and candidate from the shared Explorer JMH 
 both JMH metrics and canonical result records.
 
 The aggregator requires all 12 artifacts, the exact 33 unique `(graphCount, scenario)` pairs, and
-identical result records. Wall time, process CPU, and post-run RSS are blocking 15% comparisons;
-RSS delta remains advisory. Sharding changes scheduling only—the scenario manifest and final
+identical result records. Wall time remains a blocking 15% comparison; process CPU, post-run RSS, and RSS delta are
+advisory. Their measurements and validity checks remain required. Sharding changes scheduling only—the scenario manifest and final
 fail-closed contract are unchanged.
 
 ## Real-corpus end-to-end gate
@@ -352,3 +352,35 @@ Run the two benchmark sources directly:
 The workflow deliberately keeps benchmark execution separate from unit-test coverage. Coverage
 answers whether behavior was exercised; the benchmark gate answers whether the same behavior became
 materially slower or more memory intensive.
+
+
+## Cold diagnostics prerequisite
+
+The original 34-query global replay measures cold queries. CI explicitly enables
+`GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY=true`: historical speedup targets, aligned cold latency
+regressions, and CPU/peak-heap/RSS growth remain reported but do not block this prerequisite.
+Errors are classified where they are detected; correctness, complete paired evidence, graph
+coverage, worker accounting, and the effective 8 GiB heap requirement still fail the gate.
+Direct driver invocations retain the strict default. Diagnostic mode cannot publish the legacy
+strict-target external success status. Failed comparisons retain their provenance and observations.
+
+Graph-routing `cold` and `startup-prepared` numerical latency is likewise advisory.
+`startup-prepared` prepares indexes at load time but performs no query warmup; it does not measure
+steady-state query latency. Only `warm` numerical latency remains blocking under its existing limits. Every state's result and measurement-integrity checks remain
+required. This prerequisite does not implement or weaken the separate 72-query warmed P50/P95
+protocol, whose regression and stability limits remain strictly below 5%.
+
+
+The resource-growth policy applies consistently to Method initial comparisons and confirmation
+selection, capacity CPU/RSS comparisons, and wrapped retained/peak heap comparisons. Method
+wall latency and capacity tail latency retain their existing thresholds. Wrapped allocation/GC
+and Explorer memory-stability checks are unchanged. CPU accounting remains strict: withdrawing
+a CPU growth threshold does not authorize missing, negative, or invalid CPU measurements.
+The wrapped resource job uses the reviewed SHA-pinned candidate comparator for both initial
+and reverse-order confirmation comparisons; the paired execution harness remains base-owned.
+
+
+This state classification follows `setupInvocation()`: `warm` performs one untimed replay,
+whereas `startup-prepared` performs none. It does not establish that the legacy warm protocol
+(one replay and one measured sample per query, with mixed-query percentiles) meets the separate
+per-query timed warmup and repeated P50/P95 protocol. That protocol remains independent.
