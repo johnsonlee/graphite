@@ -159,7 +159,10 @@ QUERIES = [
     'MATCH (n) WHERE n.callee_class CONTAINS "java" AND n.caller_name CONTAINS "ΣΑΣ" RETURN n.caller_name LIMIT 5',
     # A projected property that is null has no key in the row.
     "MATCH (n:CallSiteNode) RETURN n.nonexistent, n.callee_class LIMIT 3",
-    "MATCH (n) RETURN n.value LIMIT 3",
+    # Unlabelled, so ordered: the baseline visits node types in a hash order that
+    # differs between JVM runs, and the first three nodes it reaches are not stable.
+    "MATCH (n) RETURN n.value, id(n) AS i ORDER BY i LIMIT 5",
+    "MATCH (n:IntConstant) RETURN n.value LIMIT 3",
     "MATCH (c)-[r:DATAFLOW]->(n) RETURN c.value, n.callee_class ORDER BY id(c), id(n) LIMIT 3",
     'MATCH (n) WHERE n.value CONTAINS "java" RETURN DISTINCT n.value ORDER BY n.value LIMIT 5',
     # Cross-graph grouping: one row per value across graphs, counts summed, both
@@ -492,4 +495,5 @@ if placeholder_hits:
           f'internal "single" graphId placeholder (known divergence)')
 for label, why, k, r in failures:
     print(f"\n--- {label}\n  {why}\n  kotlin: {k}\n  rust:   {r}")
-sys.exit(0)
+# A differential that found a difference is a failed run; CI must go red on it.
+sys.exit(1 if failed else 0)
