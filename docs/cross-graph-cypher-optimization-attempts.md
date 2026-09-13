@@ -1200,3 +1200,28 @@ which has 80,960 outgoing edges. A later attempt will defer preflight until the 
 stream actually requests a second source. The probe source and output are retained in
 `/tmp/graphite-target-prefix-probe/`. Candidate regressions must be removed, not hidden
 by aggregate speedups elsewhere.
+
+### 2026-09-13 - Attempt 025: Compile exact dynamic-property ANY predicates
+
+**Hypothesis:** eliminate per-property binding copies, function argument lists, repeated
+AST evaluation, and per-node static property maps for the exact ANY/keys/toString/
+CONTAINS shape. Retain eager property access, three-valued results, cancellation,
+annotation key/accessor differences, parameter shadowing, and unsupported-shape fallback.
+The per-evaluator plan cache is bounded to 256 entries; static key caches are bounded by
+the sealed node schema, and dynamic annotations do not use the static cache.
+
+**Base/candidate:** the semantic reference is main `144d98ef` plus only Attempt 020's
+string-subscript repair; its exact patch identity is in
+`/tmp/graphite-slow-shapes-evidence/dynamic-reference-144d98ef/`. Unmodified main cannot
+correctly execute dynamicHit. Candidate is this experiment commit; the measured second
+snapshot is frozen under `evidence/second/` as recorded in Attempt 024.
+
+**Evidence:** real Android hit and miss queries retain exact results and improve about
+2.0–2.16x, including a one-row hit. Hit is 10.949 to 5.453 seconds COLD, 11.149 to
+5.160 seconds WARM. Process CPU observations are in the same report; query allocation
+and broad non-regression are not yet established. Full Cypher tests and detekt pass,
+including compiled-versus-general equivalence, all node kinds, dynamic annotations,
+method/graph metadata keys, literal/parameter terms, cache eviction, and eager errors.
+
+**Conclusion:** keep as an intermediate implementation. It is explicitly short of 10x;
+loading every node remains a likely bottleneck and requires a separate storage experiment.

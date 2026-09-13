@@ -47,6 +47,8 @@ class ExpressionEvaluator private constructor(
             size > MAX_REGEX_CACHE_SIZE
     }
 
+    private val dynamicPropertyContainsCache = DynamicPropertyContainsCache()
+
     /**
      * Evaluate a parsed expression node.
      * The expression is represented as a sealed class hierarchy.
@@ -82,12 +84,20 @@ class ExpressionEvaluator private constructor(
         is CypherExpr.ListLiteral -> expr.elements.map { evaluate(it, bindings) }
         is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }
         is CypherExpr.ListComprehension -> evaluateListComprehension(expr, bindings)
-        is CypherExpr.PredicateFunction -> evaluatePredicateFunction(
-            expr,
-            bindings,
-            { expression, row -> evaluate(expression, row) },
-            checkCancelled
-        )
+        is CypherExpr.PredicateFunction -> {
+            val plan = dynamicPropertyContainsCache.get(expr)
+            val target = plan?.let { bindings[it.nodeVariable] }
+            val nodeTarget = target is Node || target is QualifiedNode || target is MethodValue
+            // The legacy evaluator resolves parameters from the inner ANY binding when
+            // no explicit parameter resolver was supplied. Preserve iterator shadowing.
+            val shadowedParameter = parameterResolver == null &&
+                (plan?.term as? CypherExpr.Parameter)?.name == plan?.keyVariable
+            if (plan != null && nodeTarget && !shadowedParameter) {
+                plan.evaluate(checkNotNull(target), evaluate(plan.term, bindings), ::resolveProperty, checkCancelled)
+            } else {
+                evaluatePredicateFunction(expr, bindings, { expression, row -> evaluate(expression, row) }, checkCancelled)
+            }
+        }
         is CypherExpr.Subscript -> evaluateSubscript(expr, bindings)
         is CypherExpr.Slice -> evaluateSlice(expr, bindings)
         is CypherExpr.Not -> {
