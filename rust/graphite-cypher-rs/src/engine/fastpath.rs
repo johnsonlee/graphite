@@ -45,6 +45,9 @@ pub fn count_star(ex: &Executor, clauses: &[Clause]) -> CypherResult<Option<Quer
         return Ok(None);
     }
     let variable = single_node_variable(p);
+    // The baseline derives a row's provenance from the nodes bound in it: a pattern
+    // without a variable binds nothing, so its count names no graph.
+    let named = variable.is_some();
     let counts_rows = match &item.expr {
         Expr::CountStar => true,
         Expr::FunctionCall { name, args, .. } if name.eq_ignore_ascii_case("count") => {
@@ -68,11 +71,11 @@ pub fn count_star(ex: &Executor, clauses: &[Clause]) -> CypherResult<Option<Quer
                 .iter()
                 .map(|s| s.graph.method_count() as i64)
                 .collect();
-            return Ok(Some(count_result(ex, item, &per_source)));
+            return Ok(Some(count_result(ex, item, &per_source, named)));
         }
         NodeClass::None => {
             let per_source = vec![0i64; ex.sources.len()];
-            return Ok(Some(count_result(ex, item, &per_source)));
+            return Ok(Some(count_result(ex, item, &per_source, named)));
         }
     };
     let per_source: Vec<i64> = ex
@@ -80,10 +83,10 @@ pub fn count_star(ex: &Executor, clauses: &[Clause]) -> CypherResult<Option<Quer
         .iter()
         .map(|s| tags.iter().map(|&t| s.graph.count_by_tag(t) as i64).sum())
         .collect();
-    Ok(Some(count_result(ex, item, &per_source)))
+    Ok(Some(count_result(ex, item, &per_source, named)))
 }
 
-fn count_result(ex: &Executor, item: &ReturnItem, per_source: &[i64]) -> QueryResult {
+fn count_result(ex: &Executor, item: &ReturnItem, per_source: &[i64], named: bool) -> QueryResult {
     let column = item
         .alias
         .clone()
@@ -94,7 +97,7 @@ fn count_result(ex: &Executor, item: &ReturnItem, per_source: &[i64]) -> QueryRe
         // Provenance names the graphs that actually contributed a row, so a label that
         // matches nothing leaves it empty.
         for (s, count) in ex.sources.iter().zip(per_source) {
-            if *count > 0 {
+            if named && *count > 0 {
                 add_provenance_id(&mut row, s.id.clone());
             }
         }
