@@ -60,9 +60,40 @@ test('only cheap publisher survives cancellation; normal steps cannot checkout o
     const normal = job.split('    - name: Publish bounded cancellation evidence')[0];
     const steps = normal.split('    - name: ').slice(1);
     assert.equal(steps.length, 3);
-    for (const step of steps) assert.match(step, /if: \$\{\{ !cancelled\(\) \}\}/);
-    assert.match(cancellation, /if: \$\{\{ cancelled\(\) \}\}/);
+    for (const step of steps) assert.match(step, /if: \$\{\{ !cancelled\(\) && needs.benchmark-regression-gate.result != 'cancelled' \}\}/);
+    assert.match(cancellation, /if: \$\{\{ cancelled\(\) \|\| needs.benchmark-regression-gate.result == 'cancelled' \}\}/);
     assert.doesNotMatch(source, /require\(|import\(|setTimeout|setInterval|downloadArtifact|child_process|exec\(/);
     assert.doesNotMatch(cancellation, /actions\/checkout|actions\/download-artifact|\brun:|java |gradlew|compareWideLatency/);
     assert.doesNotMatch(job, /actions: write|contents: write|continue-on-error/);
+});
+
+test('post-cancellation job routes to API cleanup even when its own cancelled() is false', async () => {
+    const stepBlocks = job.split('    - name: ').slice(1);
+    const eligible = (block, ownCancelled, upstreamResult) => {
+        const expression = block.match(/if: \$\{\{ (.+) \}\}/)[1]
+            .replaceAll('needs.benchmark-regression-gate.result', 'upstreamResult');
+        return new Function('cancelled', 'upstreamResult', `return (${expression});`)(() => ownCancelled, upstreamResult);
+    };
+    for (const ownCancelled of [false, true]) {
+        for (const upstreamResult of ['success', 'failure', 'skipped', 'cancelled']) {
+            const selected = stepBlocks.filter(block => eligible(block, ownCancelled, upstreamResult));
+            const cancellationExpected = ownCancelled || upstreamResult === 'cancelled';
+            if (cancellationExpected) {
+                assert.equal(selected.length, 1);
+                assert.ok(selected[0].startsWith('Publish bounded cancellation evidence'));
+            } else {
+                assert.equal(selected.length, 3);
+                assert.ok(selected.every(block => !block.startsWith('Publish bounded cancellation evidence')));
+            }
+        }
+    }
+    // Reproduce run 34739834718: the new job itself was not cancelled, its prerequisite was.
+    const selected = stepBlocks.filter(block => eligible(block, false, 'cancelled'));
+    assert.equal(selected.length, 1);
+    assert.equal(selected[0].split('        script: |\n')[1].split('\n')
+        .map(line => line.replace(/^          /, '')).join('\n'), source);
+    const result = await run();
+    assert.equal(result.writes.length, 1);
+    assert.match(result.writes[0].body, /CANCELLED — complete benchmark verdict unavailable/);
+    assert.equal(result.failures.length, 1);
 });

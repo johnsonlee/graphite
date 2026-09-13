@@ -3483,21 +3483,21 @@ jobs:
 
     steps:
     - name: Checkout exact-head publication code
-      if: ${{ !cancelled() }}
+      if: ${{ !cancelled() && needs.benchmark-regression-gate.result != 'cancelled' }}
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         persist-credentials: false
 
     - name: Download aggregate benchmark report
-      if: ${{ !cancelled() }}
+      if: ${{ !cancelled() && needs.benchmark-regression-gate.result != 'cancelled' }}
       uses: actions/download-artifact@v8
       with:
         name: benchmark-report-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results
 
     - name: Attach bounded exact-head benchmark summary to PR
-      if: ${{ !cancelled() }}
+      if: ${{ !cancelled() && needs.benchmark-regression-gate.result != 'cancelled' }}
       uses: actions/github-script@v9
       env:
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -3528,7 +3528,7 @@ jobs:
             runAttempt: process.env.RUN_ATTEMPT, body });
 
     - name: Publish bounded cancellation evidence
-      if: ${{ cancelled() }}
+      if: ${{ cancelled() || needs.benchmark-regression-gate.result == 'cancelled' }}
       uses: actions/github-script@v9
       env:
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
