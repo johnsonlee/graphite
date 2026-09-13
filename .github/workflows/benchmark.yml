@@ -3458,9 +3458,10 @@ jobs:
 
   benchmark-comment:
     name: benchmark-comment
-    if: ${{ !cancelled() }}
+    if: ${{ always() }}
     needs: [benchmark-regression-gate]
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     concurrency:
       group: benchmark-publication-${{ github.event.pull_request.number }}
       cancel-in-progress: false
@@ -3471,18 +3472,21 @@ jobs:
 
     steps:
     - name: Checkout exact-head publication code
+      if: ${{ !cancelled() }}
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         persist-credentials: false
 
     - name: Download aggregate benchmark report
+      if: ${{ !cancelled() }}
       uses: actions/download-artifact@v8
       with:
         name: benchmark-report-${{ github.event.pull_request.number }}
         path: benchmark-results
 
     - name: Attach bounded exact-head benchmark summary to PR
+      if: ${{ !cancelled() }}
       uses: actions/github-script@v9
       env:
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -3511,3 +3515,63 @@ jobs:
           await publishBenchmarkSummary({ github, scope, issueNumber: context.issue.number,
             candidateSha: process.env.HEAD_SHA, runId: context.runId,
             runAttempt: process.env.RUN_ATTEMPT, body });
+
+    - name: Publish bounded cancellation evidence
+      if: ${{ cancelled() }}
+      uses: actions/github-script@v9
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        RUN_ATTEMPT: ${{ github.run_attempt }}
+      with:
+        script: |
+          // API-only cancellation cleanup: no checkout, artifact download, waits or benchmark work.
+          const scope = { owner: context.repo.owner, repo: context.repo.repo };
+          const head = process.env.HEAD_SHA;
+          const base = process.env.BASE_SHA;
+          const attempt = Number(process.env.RUN_ATTEMPT);
+          if (![head, base].every(sha => /^[a-f0-9]{40}$/.test(sha)) || !Number.isInteger(attempt) || attempt < 1) {
+            throw new Error('Invalid cancellation evidence identity');
+          }
+          const marker = '<!-- graphite-benchmark-regression-gate -->';
+          const runUrl = `${context.serverUrl}/${scope.owner}/${scope.repo}/actions/runs/${context.runId}`;
+          const jobs = await github.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/jobs',
+            { ...scope, run_id: context.runId, attempt_number: attempt, per_page: 100 });
+          const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts,
+            { ...scope, run_id: context.runId, per_page: 100 });
+          const hard = new Set(['failure', 'timed_out', 'action_required', 'startup_failure']);
+          const failed = jobs.filter(job => job.status === 'completed' && hard.has(job.conclusion));
+          const available = artifacts.filter(artifact => !artifact.expired && artifact.name.endsWith(`-${attempt}`));
+          const clean = value => String(value).replace(/[\r\n`<>|()[\]]/g, ' ').slice(0, 160);
+          const body = [marker,
+            `<!-- graphite-benchmark-publication ${JSON.stringify({ candidateSha: head, runId: String(context.runId), runAttempt: attempt })} -->`,
+            '## Benchmark Regression Gate', '', '**CANCELLED — complete benchmark verdict unavailable**', '',
+            `Base: \`${base}\``, `PR head: \`${head}\``, `Run: ${context.runId}, attempt ${attempt}`, '',
+            `Observed terminal hard failures: ${failed.length}. Remaining checks may be incomplete.`,
+            ...failed.slice(0, 8).map(job => `- ${clean(job.name)}: ${clean(job.conclusion)}`), '',
+            'This is cancellation evidence, not a completed 72-query result or a passing gate.',
+            'Available artifacts for this attempt (may contain partial measurements):',
+            ...available.slice(0, 8).map(artifact => `- [${clean(artifact.name)}](${runUrl}/artifacts/${artifact.id})`), '',
+            `[All jobs, logs and raw artifacts](${runUrl})`, ''].join('\n');
+          if (Buffer.byteLength(body, 'utf8') > 16000) throw new Error('Cancellation summary exceeds byte budget');
+          const comments = await github.paginate(github.rest.issues.listComments,
+            { ...scope, issue_number: context.issue.number, per_page: 100 });
+          const existing = comments.filter(comment => comment.user?.login === 'github-actions[bot]' && comment.body?.includes(marker));
+          const { data: pr } = await github.rest.pulls.get({ ...scope, pull_number: context.issue.number });
+          if (pr.head.sha !== head) throw new Error('Refusing publication for superseded PR head');
+          for (const comment of existing) {
+            const match = comment.body.match(/<!-- graphite-benchmark-publication (\{[^\n]+\}) -->/);
+            if (!match) continue;
+            const previous = JSON.parse(match[1]);
+            if (!/^\d+$/.test(previous.runId) || !Number.isInteger(previous.runAttempt)) throw new Error('Invalid previous publication identity');
+            if (previous.candidateSha === head && (BigInt(previous.runId) > BigInt(context.runId) ||
+                previous.runId === String(context.runId) && previous.runAttempt > attempt)) {
+              throw new Error('Refusing to overwrite newer benchmark evidence');
+            }
+          }
+          if (existing.length) {
+            await github.rest.issues.updateComment({ ...scope, comment_id: existing[0].id, body });
+          } else {
+            await github.rest.issues.createComment({ ...scope, issue_number: context.issue.number, body });
+          }
+          core.setFailed('Benchmark run cancelled; complete current-head evidence is unavailable.');

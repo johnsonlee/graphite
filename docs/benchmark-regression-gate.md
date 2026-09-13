@@ -478,8 +478,8 @@ materially slower or more memory intensive.
 
 ## Cold diagnostics prerequisite
 
-The original 34-query global replay measures cold queries. CI explicitly enables
-`GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY=true`: historical speedup targets, aligned cold latency
+The original 34-query global replay measures cold queries. CI uses the iteration driver's
+`--legacy-diagnostics-only` mode: historical speedup targets, aligned cold latency
 regressions, and CPU/peak-heap/RSS growth remain reported but do not block this prerequisite.
 Errors are classified where they are detected; correctness, complete paired evidence, graph
 coverage, worker accounting, and the effective 8 GiB heap requirement still fail the gate.
@@ -506,3 +506,11 @@ This state classification follows `setupInvocation()`: `warm` performs one untim
 whereas `startup-prepared` performs none. It does not establish that the legacy warm protocol
 (one replay and one measured sample per query, with mixed-query percentiles) meets the separate
 per-query timed warmup and repeated P50/P95 protocol. That protocol remains independent.
+
+PR publication uses a bounded, exact-head summary linked to the unchanged full report artifacts.
+After fail-fast cancellation, only the three-minute publication job may continue: its cancellation
+branch reads GitHub job and artifact metadata, publishes an explicitly incomplete cancellation
+summary, and fails visibly. It performs no checkout, artifact download, aggregation or benchmark
+execution. Heavy jobs remain cancellation-aware. Superseded heads and older attempts cannot replace
+newer evidence. Force cancellation or runner failure can prevent even this cleanup; a same-run
+comment is not guaranteed in those cases, and the workflow/check state remains the authority.
