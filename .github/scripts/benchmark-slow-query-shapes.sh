@@ -20,7 +20,6 @@ if [[ "$STEADY_STATE" == true ]]; then
 fi
 HARNESS=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt
 CORPUS=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt
-CORRECTNESS=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
 EVALUATOR=graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt
 COMPARATOR="$CONTROLS/.github/scripts/benchmark-slow-query-shapes.mjs"
 PATCH="$CONTROLS/.github/scripts/benchmark-slow-query-shapes-subscript.patch"
@@ -60,11 +59,6 @@ build() {
   test ! -L "$source/$HARNESS" && test ! -L "$source/$CORPUS"
   install -m 0644 "$CONTROLS/$HARNESS" "$source/$HARNESS"
   install -m 0644 "$GATE/$CORPUS" "$source/$CORPUS"
-  if [[ "$STEADY_STATE" == true ]]; then
-    test ! -L "$source/$CORRECTNESS" && test ! -L "$GATE/$CORRECTNESS"
-    install -m 0644 "$GATE/$CORRECTNESS" "$source/$CORRECTNESS"
-    cmp "$GATE/$CORRECTNESS" "$source/$CORRECTNESS"
-  fi
   cmp "$CONTROLS/$HARNESS" "$source/$HARNESS"
   cmp "$GATE/$CORPUS" "$source/$CORPUS"
   "$source/gradlew" -p "$source" -I "$ISOLATION/$INIT" \

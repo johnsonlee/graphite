@@ -96,3 +96,52 @@ test('a failed query process stops the driver and still verifies fixture bytes',
     assert.equal(fs.readFileSync(path.join(output, 'slow-shapes-fixture-before.json'), 'utf8'),
         fs.readFileSync(path.join(output, 'slow-shapes-fixture-after.json'), 'utf8'));
 });
+
+test('steady-state setup reaches Gradle with correctness helper only in its real production path', t => {
+    // Execute the actual setup; the Gradle sentinel stops before compilation or any query.
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'slow-shapes-build-setup-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const directories = Object.fromEntries(['controls', 'gate', 'base', 'candidate', 'fixture', 'output']
+        .map(name => [name, path.join(root, name)]));
+    for (const directory of Object.values(directories)) fs.mkdirSync(directory);
+    const harness = 'graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt';
+    const corpus = 'graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt';
+    const correctness = 'graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt';
+    const evaluator = 'graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt';
+    const install = (directory, file) => {
+        const destination = path.join(directory, file);
+        fs.mkdirSync(path.dirname(destination), { recursive: true });
+        fs.copyFileSync(new URL(file, repo), destination);
+    };
+    install(directories.controls, harness);
+    for (const directory of [directories.gate, directories.base, directories.candidate]) {
+        for (const file of [harness, corpus, correctness, evaluator]) install(directory, file);
+        assert.equal(fs.existsSync(path.join(directory, correctness.replace('/src/main/', '/src/jmh/'))), false);
+    }
+    for (const file of ['.github/scripts/benchmark-jmh-isolation.init.gradle',
+        '.github/scripts/verify-jmh-jar-isolation.sh']) install(directories.gate, file);
+    const before = Object.fromEntries(['base', 'candidate'].map(name =>
+        [name, digest(fs.readFileSync(path.join(directories[name], correctness)))]));
+    const calls = path.join(root, 'gradle-calls');
+    for (const name of ['base', 'candidate']) fs.writeFileSync(path.join(directories[name], 'gradlew'),
+        '#!/bin/sh\nprintf "%s\\n" "$*" >> "$TEST_GRADLE_CALLS"\nexit 42\n', { mode: 0o755 });
+    const result = spawnSync('bash', [fileURLToPath(new URL('.github/scripts/benchmark-slow-query-shapes.sh', repo)),
+        directories.controls, directories.gate, directories.base, directories.candidate,
+        directories.fixture, directories.output, '--steady-state'], {
+        encoding: 'utf8', env: { ...process.env, TEST_GRADLE_CALLS: calls },
+    });
+    assert.equal(result.status, 42, `Expected Gradle sentinel, not an earlier setup error: ${result.stderr}`);
+    const invocations = fs.readFileSync(calls, 'utf8').trim().split('\n');
+    assert.equal(invocations.length, 1, 'stop at the first build; no candidate build or benchmark runs');
+    assert.ok(invocations[0].includes(`-p ${fs.realpathSync(directories.base)}`));
+    assert.match(invocations[0], /:webgraph:testClasses :webgraph:jmhJar/);
+    assert.deepEqual(fs.readFileSync(path.join(directories.base, harness)),
+        fs.readFileSync(path.join(directories.controls, harness)));
+    assert.deepEqual(fs.readFileSync(path.join(directories.base, corpus)),
+        fs.readFileSync(path.join(directories.gate, corpus)));
+    for (const name of ['base', 'candidate']) {
+        assert.equal(digest(fs.readFileSync(path.join(directories[name], correctness))), before[name],
+            'production correctness helper must remain revision-owned');
+        assert.equal(fs.existsSync(path.join(directories[name], correctness.replace('/src/main/', '/src/jmh/'))), false);
+    }
+});
