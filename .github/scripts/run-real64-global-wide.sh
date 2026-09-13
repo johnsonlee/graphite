@@ -244,11 +244,18 @@ jq -n \
     fixtureSource:"four-pinned-fixture-jars",runOrder:"candidate-base,base-candidate,candidate-base"}' \
   > "${OUTPUT_DIR}/provenance.json"
 
-WORST_P50=$(jq '[.runs[].p50Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
-WORST_P95=$(jq '[.runs[].p95Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
 INTEGRITY_STATUS=$(jq -r 'if (.integrityErrors | length) == 0 then "pass" else "fail" end' "${OUTPUT_DIR}/global-wide-status.json")
-DESCRIPTION=$(printf 'fixture64-wide base=%.12s p50=%.2fx p95=%.2fx pairs=3 integrity=%s' \
-  "${BASE_SHA}" "${WORST_P50}" "${WORST_P95}" "${INTEGRITY_STATUS}")
+if (( COMPARISON_EXIT != 0 )); then
+  # Failed comparisons may have no valid runs. Preserve evidence without formatting null speedups.
+  VALID_PAIRS=$(jq '.runs | length' "${OUTPUT_DIR}/global-wide-status.json")
+  DESCRIPTION=$(printf 'fixture64-wide base=%.12s comparison-exit=%s valid-pairs=%s integrity=%s' \
+    "${BASE_SHA}" "${COMPARISON_EXIT}" "${VALID_PAIRS}" "${INTEGRITY_STATUS}")
+else
+  WORST_P50=$(jq '[.runs[].p50Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
+  WORST_P95=$(jq '[.runs[].p95Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
+  DESCRIPTION=$(printf 'fixture64-wide base=%.12s p50=%.2fx p95=%.2fx pairs=3 integrity=%s' \
+    "${BASE_SHA}" "${WORST_P50}" "${WORST_P95}" "${INTEGRITY_STATUS}")
+fi
 test "${#DESCRIPTION}" -le 140
 EVIDENCE_FILES=(
   "${OUTPUT_DIR}/provenance.json" "${OUTPUT_DIR}/graphs.tsv"

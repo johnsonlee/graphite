@@ -3555,3 +3555,66 @@ test("startup-prepared diagnostics still reject incorrect results and missing pr
     assert.equal(invalidState.passed, false);
     assert.match(invalidState.errors.join("\n"), /indexState/);
 });
+
+test("zero-valid-run comparator failure still seals every evidence hash and exits unsuccessfully", () => {
+    const repository = new URL("../../", import.meta.url).pathname;
+    const driver = fs.readFileSync(new URL("./run-real64-global-wide.sh", import.meta.url), "utf8");
+    const tail = driver.slice(driver.indexOf('IFS=, BASE_JSON_LIST='));
+    const hashFunction = driver.match(/sha256_file\(\) \{[\s\S]*?\n\}/)[0];
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "global-wide-empty-runs-"));
+    try {
+        const output = path.join(directory, "output");
+        fs.mkdirSync(output);
+        fs.mkdirSync(path.join(directory, "bin"));
+        const publishMarker = path.join(directory, "unexpected-publication");
+        fs.writeFileSync(path.join(directory, "bin", "gh"), '#!/bin/sh\ntouch "$PUBLISH_MARKER"\nexit 91\n', { mode: 0o755 });
+        const originalManifest = path.join(directory, "graphs.tsv");
+        const originalProvenance = path.join(directory, "fixture-provenance.tsv");
+        fs.writeFileSync(originalManifest, "# invalid graph fixture: comparator must reject it\n");
+        fs.writeFileSync(originalProvenance, "# raw invalid fixture provenance\n");
+        fs.writeFileSync(path.join(output, "oracle.correctness"), "");
+        fs.writeFileSync(path.join(output, "fixture-reproducibility.json"), "{}\n");
+        for (const revision of ["base", "candidate"]) for (let pair = 1; pair <= 3; pair++) {
+            fs.writeFileSync(path.join(output, `${revision}-${pair}.json`), "[]\n");
+            fs.writeFileSync(path.join(output, `${revision}-${pair}.tsv`), "# no observations\n");
+        }
+        const jars = spawnSync("python3", ["-c", "import sys,zipfile\nfor p in sys.argv[1:]:\n with zipfile.ZipFile(p,'w') as z: z.writestr('entry','test-only jar')",
+            path.join(directory, "base.jar"), path.join(directory, "candidate.jar")], { encoding: "utf8" });
+        assert.equal(jars.status, 0, jars.stderr);
+        const arrays = ["BASE", "CANDIDATE"].flatMap(revision => ["JSON", "OBSERVATION"].map(kind =>
+            `${revision}_${kind}_FILES=(${[1, 2, 3].map(pair => `"$OUTPUT_DIR/${revision.toLowerCase()}-${pair}.${kind === "JSON" ? "json" : "tsv"}"`).join(" ")})`
+        )).join("\n");
+        const execution = spawnSync("bash", ["-euc", `set -o pipefail\n${hashFunction}\n${arrays}\n${tail}`], {
+            encoding: "utf8", env: { ...process.env,
+                PATH: `${path.join(directory, "bin")}:${process.env.PATH}`, PUBLISH_MARKER: publishMarker,
+                OUTPUT_DIR: output, CANDIDATE_TREE: repository,
+                HARNESS_PATH: "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt",
+                CORRECTNESS_PATH: "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt",
+                FIXTURE_VERIFIER_PATH: "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt",
+                COMPARATOR_PATH: ".github/scripts/benchmark-gate.mjs", SCRIPT_PATH: ".github/scripts/run-real64-global-wide.sh",
+                ZIP_HASHER_PATH: ".github/scripts/canonical-zip-sha256.py",
+                MANIFEST: originalManifest, FIXTURE_PROVENANCE: originalProvenance,
+                ORACLE: path.join(output, "oracle.correctness"), BASE_JAR: path.join(directory, "base.jar"),
+                CANDIDATE_JAR: path.join(directory, "candidate.jar"), BASE_SHA: "a".repeat(40), CANDIDATE_SHA: "b".repeat(40),
+                REPOSITORY: "owner/repository", STATUS_CONTEXT: "graphite/fixture64-global-wide",
+                COLD_DIAGNOSTICS_ONLY: "false", PUBLISH_EVIDENCE: "true",
+            },
+        });
+        const status = JSON.parse(fs.readFileSync(path.join(output, "global-wide-status.json"), "utf8"));
+        assert.deepEqual(status.runs, [], "the real comparator must have no valid pairs");
+        assert.equal(status.passed, false);
+        assert.ok(status.integrityErrors.length > 0);
+        assert.equal(execution.status, 1, "propagate the actual comparator failure, never the printf failure or success");
+        assert.doesNotMatch(execution.stderr, /printf.*invalid number|null: invalid number/);
+        const manifest = JSON.parse(fs.readFileSync(path.join(output, "evidence-manifest.json"), "utf8"));
+        assert.match(manifest.description, /comparison-exit=1 valid-pairs=0 integrity=fail/);
+        assert.doesNotMatch(manifest.description, /p50=|p95=|0\.00x/);
+        assert.equal(Object.keys(manifest.files).length, 19);
+        for (const [name, digest] of Object.entries(manifest.files)) {
+            assert.equal(digest, crypto.createHash("sha256").update(fs.readFileSync(path.join(output, name))).digest("hex"), name);
+        }
+        const provenance = JSON.parse(fs.readFileSync(path.join(output, "provenance.json"), "utf8"));
+        assert.equal(provenance.scriptSha256, crypto.createHash("sha256").update(driver).digest("hex"));
+        assert.equal(fs.existsSync(publishMarker), false, "a failed comparison must never publish success");
+    } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});
