@@ -22,6 +22,8 @@ import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
@@ -273,13 +275,16 @@ private class WorkTrackingSequence<T>(
 
 private val QUALIFIED_NODE_PROPERTIES = setOf(GRAPH_ID_PROPERTY, ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY)
 private val DIRECT_STRING_NODE_PROPERTIES = listOf(
-    EnumConstant::class.java to setOf("name"),
+    StringConstant::class.java to setOf("value"),
+    ResourceValueNode::class.java to setOf("value"),
+    EnumConstant::class.java to setOf("name", "value"),
     LocalVariable::class.java to setOf("name"),
     FieldNode::class.java to setOf("class", "name"),
     CallSiteNode::class.java to setOf("caller_class", "caller_name", "callee_class", "callee_name"),
     AnnotationNode::class.java to setOf(
         "class",
         "name",
+        "value",
         "caller_class",
         "caller_name",
         "callee_class",
@@ -2865,6 +2870,12 @@ class QueryPipeline private constructor(
         mappedView: Boolean = false
     ): Sequence<Node> {
         if (limit <= 0) return emptySequence()
+        // Only merge polymorphic value candidates when the backend exposes their order.
+        if (disjunction.filters.any { it.property == "value" } && graph !is StringPropertyLookupOrder) {
+            return interruptible(trackWork(graph.nodes(nodeClass), tracker))
+                .filter { node -> node.javaClass !in excludedTypes && disjunction.matches(node) }
+                .take(limit)
+        }
         val candidateSequences = mutableListOf<Sequence<Node>>()
         for (candidateFilter in disjunction.candidateFilters) {
             val candidateType = candidateFilter.type

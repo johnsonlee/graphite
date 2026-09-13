@@ -1097,3 +1097,31 @@ all other shapes. Latency, CPU, allocation, and full regression evidence remain 
 
 **Conclusion:** keep the functional repair. It is a prerequisite for valid dynamic
 search comparison, not evidence of progress toward a 10x speedup by itself.
+
+### 2026-09-13 - Attempt 021: Route polymorphic value strings through typed lookup
+
+**Hypothesis:** string constants already have raw persisted lookup support; untyped
+`value` predicates should use it, while also retaining string-valued enum, resource,
+and annotation attributes. Backends without canonical lookup ordering retain their
+original scan for these polymorphic predicates.
+
+**Base/candidate:** main `144d98efa2bcb1f183d4f962b833c234d839d2a9`; candidate is this
+experiment commit. The paired measurement snapshot also contains the independent
+wrapper and source-expansion attempts recorded below. Its exact patch and frozen JAR
+identities are in `/tmp/graphite-slow-shapes-evidence/paired-first/manifest.json`.
+
+**Evidence:** same real Android fixture and JVM protocol as Attempt 019, three alternating
+main/candidate pairs, one JMH fork per pair, zero warmup iterations, one measurement,
+COLD and WARM mappings. Across all eight non-dynamic cases, 96 ordered digests and
+row counts agree. Median valueHit acceleration is 26.0x COLD / 60.0x WARM; valueMiss
+27.4x / 76.2x. First diagnostic CPU reductions are 16–17x COLD and 40–43x WARM.
+The raw JMH GC profiler observations are whole-trial allocation (including setup/primer),
+not isolated query allocations; see `paired-first/summary.md` and the six raw JSON files.
+
+Focused value tests verify resource/enum strings, storage access, encounter order,
+numeric equality, numeric toString, and nulls. The second snapshot adds annotation
+coverage; the full Cypher test task and detekt passed. Full repository, real-corpus
+regression, and final combined-head benchmarks are still pending.
+
+**Conclusion:** keep; value cases exceed 10x on this fixture. This does not prove the
+remaining shapes or the complete no-regression requirement.
