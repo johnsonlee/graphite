@@ -1349,3 +1349,35 @@ identical work counts or identical success boundaries at every artificial budget
 **Conclusion:** retain provisionally for repeated broad real-data regression validation.
 Dense-hit latency and extra preflight work remain explicit checks; no timing or budget
 exception is hidden or reclassified as a successful query.
+
+
+### 2026-09-13 - Attempt 030: Keep wrapped string discovery on bounded raw scans
+
+**Hypothesis:** the newly recognized toString caller/callee predicates inherit a cold
+parallel lookup that captures a complete index. Request the existing bounded raw scan
+only when every direct string predicate is coerced. Leave plain and mixed predicates'
+storage policy unchanged, and preserve the Annotation conversion fallback.
+
+**Base/candidate:** main `144d98ef`, identical V2 harness, real Android persisted graph.
+Frozen build-clone sources, full candidate JAR SHA, commands and environment are in
+`/tmp/graphite-slow-shapes-evidence/raw-wrapper/`. This experiment predates the separate
+two-fragment dynamic-property change; root and build clone were deliberately frozen
+independently while that other change was developed.
+
+**Evidence:** all eight observations preserve ordered rows/digests. Wrapped hit is
+186.3 ms COLD (19.53x main) and 142.4 ms WARM (23.98x main). Wrapped miss is 190.5 ms
+COLD (18.98x) and 79.5 ms WARM (42.27x). Query-window process CPU improves roughly
+12–22x; no query-allocation measurement is claimed. Source files remain immutable and
+all private snapshots are removed. Full Cypher tests and lint pass, including explicit
+raw-consumer selection, ordinary/mixed policy parity, Annotation values/order, and
+charged work.
+
+**Tradeoff:** warm hit is slower than the earlier experimental retained-index path
+(roughly 40 ms versus 142 ms), because this query no longer builds that index first.
+Both remain much faster than the actual main baseline, which does not recognize the
+wrapped predicate. This experiment favors bounded discovery cost and removes the
+cold-miss shortfall without changing the existing plain-string query policy.
+
+**Conclusion:** keep for repeated comparisons against main and broad regression gates.
+Do not claim that every intermediate experimental score improved; the indexed warm-hit
+tradeoff is explicit.

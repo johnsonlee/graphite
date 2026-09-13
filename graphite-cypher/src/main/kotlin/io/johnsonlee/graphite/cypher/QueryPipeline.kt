@@ -2934,7 +2934,7 @@ class QueryPipeline private constructor(
                 tracker,
                 storageSourceCount,
                 serialStorage,
-                rawStorage,
+                rawStorage || disjunction.filters.all { it.coercesToString },
                 mappedView
             )
             if (fused != null) {
