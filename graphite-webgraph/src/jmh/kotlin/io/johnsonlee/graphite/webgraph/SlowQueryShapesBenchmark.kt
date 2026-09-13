@@ -22,6 +22,8 @@ import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
 import java.io.Closeable
 import java.lang.management.ManagementFactory
+import java.nio.file.Files
+import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
@@ -30,6 +32,12 @@ import java.util.concurrent.TimeUnit
  * Run with -prof gc for normalized allocation; result digests are emitted outside
  * the timed region. COLD clears query indexes, but does not claim cold OS pages.
  * A fresh fork (the default) is required to measure the first query on a mapping.
+ * Each workload copies the real persisted graph into a private directory, omitting
+ * graph.callsite-string-index. WARM primes that same private mapping. Neither
+ * index creation nor graph close writes to the shared source fixture. Setup and
+ * cleanup are outside primary latency; first-trial GC profiling includes them.
+ * This isolated fixture protocol must not be pooled with earlier measurements
+ * that loaded a shared writable fixture directory directly.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
@@ -57,11 +65,14 @@ open class SlowQueryShapesBenchmark {
 
     @Setup(Level.Trial)
     fun setup() {
-        workload = SlowQueryShapesWorkload(corpus)
         queryCase = slowQueryShapeCases.single { it.name == queryName }
         require(cacheState == "COLD" || cacheState == "WARM")
+        workload = SlowQueryShapesWorkload(corpus)
         if (cacheState == "WARM") {
-            queryCase.validate(workload.execute(queryCase))
+            runCatching { queryCase.validate(workload.execute(queryCase)) }.getOrElse { failure ->
+                runCatching { workload.close() }.exceptionOrNull()?.let(failure::addSuppressed)
+                throw failure
+            }
         }
     }
 
@@ -117,18 +128,46 @@ internal object SlowQueryShapesCorrectness {
 
 private class SlowQueryShapesWorkload(corpus: String) : Closeable {
     private val loaded = mutableListOf<Graph>()
+    private val snapshotRoot: Path
     private val executor: CrossGraphCypherExecutor
 
     init {
         require(corpus == "android" || corpus == "all") { "Unsupported corpus: $corpus" }
-        val kinds = if (corpus == "all") BenchmarkCorpusKind.entries else listOf(BenchmarkCorpusKind.ANDROID)
-        val sources = kinds.map { kind ->
-            val graph = GraphStore.loadMapped(BenchmarkCorpus.persistedGraph(kind))
-            loaded += graph
-            check(graph.nodeCount(Node::class.java) == kind.expectedNodeCount)
-            CypherGraph(kind.id, graph)
+        snapshotRoot = Files.createTempDirectory("graphite-slow-query-shapes-")
+        executor = runCatching {
+            val kinds = if (corpus == "all") BenchmarkCorpusKind.entries else listOf(BenchmarkCorpusKind.ANDROID)
+            val sources = kinds.map { kind ->
+                val graph = GraphStore.loadMapped(copyFixture(kind))
+                loaded += graph
+                check(graph.nodeCount(Node::class.java) == kind.expectedNodeCount)
+                CypherGraph(kind.id, graph)
+            }
+            CrossGraphCypherExecutor(sources, CypherExecutionBudget(2_000_000_000L))
+        }.getOrElse { failure ->
+            cleanupFailure()?.let(failure::addSuppressed)
+            throw failure
         }
-        executor = CrossGraphCypherExecutor(sources, CypherExecutionBudget(2_000_000_000L))
+    }
+
+    private fun copyFixture(kind: BenchmarkCorpusKind): Path {
+        // Do not call BenchmarkCorpus.persistedGraph for configured shared paths:
+        // its identity check opens/closes that graph and may persist a sidecar.
+        val source = System.getProperty(kind.graphPathProperty)?.let(Path::of)
+            ?: BenchmarkCorpus.persistedGraph(kind)
+        require(Files.isDirectory(source)) { "Persisted graph directory not found: $source" }
+        val destination = Files.createDirectory(snapshotRoot.resolve(kind.id))
+        Files.list(source).use { files ->
+            files.filter { it.fileName.toString() != "graph.callsite-string-index" }.forEach { file ->
+                require(Files.isRegularFile(file)) { "Unexpected persisted graph entry: $file" }
+                Files.copy(file, destination.resolve(file.fileName))
+            }
+        }
+        check(Files.notExists(destination.resolve("graph.callsite-string-index")))
+        println(
+            "SLOW_QUERY_SHAPE_FIXTURE\tprotocol=private-copy-no-callsite-index-v2" +
+                "\tcorpus=${kind.id}\tsource=$source\tsnapshot=$destination\tindexAbsent=true"
+        )
+        return destination
     }
 
     fun execute(queryCase: SlowQueryShapeCase): CypherResult = executor.execute(queryCase.query)
@@ -141,7 +180,20 @@ private class SlowQueryShapesWorkload(corpus: String) : Closeable {
         }
     }
 
-    override fun close() = loaded.asReversed().forEach { (it as? Closeable)?.close() }
+    override fun close() {
+        cleanupFailure()?.let { throw it }
+    }
+
+    private fun cleanupFailure(): Throwable? {
+        val failures = loaded.asReversed().mapNotNull { graph ->
+            runCatching { (graph as? Closeable)?.close() }.exceptionOrNull()
+        }.toMutableList()
+        loaded.clear()
+        runCatching {
+            check(snapshotRoot.toFile().deleteRecursively()) { "Unable to remove private fixture: $snapshotRoot" }
+        }.exceptionOrNull()?.let(failures::add)
+        return failures.firstOrNull()?.also { first -> failures.drop(1).forEach(first::addSuppressed) }
+    }
 }
 
 private data class SlowQueryShapeCase(val name: String, val query: String, val expectsHit: Boolean) {

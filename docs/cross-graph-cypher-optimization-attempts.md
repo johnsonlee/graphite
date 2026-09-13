@@ -1225,3 +1225,33 @@ method/graph metadata keys, literal/parameter terms, cache eviction, and eager e
 
 **Conclusion:** keep as an intermediate implementation. It is explicitly short of 10x;
 loading every node remains a likely bottleneck and requires a separate storage experiment.
+
+
+### 2026-09-13 - Attempt 026: Isolate persisted fixture state between query runs
+
+**Hypothesis:** measurements that open the shared fixture directly can inherit a
+call-site index written by an earlier graph close. Exact results matched within each
+paired batch, but historical batches produced different ordered target-prefix digests
+with the same main JAR. The cause of that ordering difference is not established;
+those batches must not be pooled.
+
+**Base/candidate:** main remains `144d98efa2bcb1f183d4f962b833c234d839d2a9`.
+Install this identical harness in main, the dynamic-property semantic reference, and
+candidate builds. Each workload copies the real Android/Tika/Hive/Kotlin persisted
+fixture to a private directory, excludes `graph.callsite-string-index`, and opens only
+that copy. COLD starts with no persisted call-site index; WARM primes the same private
+mapping. This is protocol `private-copy-no-callsite-index-v2`.
+
+**Evidence:** all 64 immutable fixture files are fingerprinted in
+`/tmp/graphite-slow-shapes-evidence/fixture-protocol-v2/fixtures.json`; shared sizes and
+mtimes, including the excluded sidecar, are recorded separately. Main and semantic
+reference JMH builds pass with the identical revised harness. A failed-constructor
+check verifies temporary-directory cleanup. The verifier also checks source hashes,
+shared-file state, and removal of every logged private copy after a run. Query text,
+ordered result digest, and timed execute boundaries are unchanged. No speedup is
+claimed by this protocol change. Query CPU is measured around execute; first-trial
+JMH GC statistics include setup, priming, and cleanup and are not query-only allocation.
+
+**Conclusion:** keep the isolated protocol and repeat paired measurements before any
+final performance claim. Earlier records remain historical diagnostics, not pooled
+samples for the final comparison.
