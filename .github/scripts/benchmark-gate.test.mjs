@@ -3901,7 +3901,7 @@ test("zero-valid-run comparator failure still seals every evidence hash and exit
         const arrays = ["BASE", "CANDIDATE"].flatMap(revision => ["JSON", "OBSERVATION"].map(kind =>
             `${revision}_${kind}_FILES=(${[1, 2, 3].map(pair => `"$OUTPUT_DIR/${revision.toLowerCase()}-${pair}.${kind === "JSON" ? "json" : "tsv"}"`).join(" ")})`
         )).join("\n");
-        const execution = spawnSync("bash", ["-euc", `set -o pipefail\n${hashFunction}\n${arrays}\n${tail}`], {
+        const execution = spawnSync("bash", ["-euc", `set -o pipefail\n${hashFunction}\n${arrays}\nCOMPARISON_OPTIONS=(--regression-only)\n${tail}`], {
             encoding: "utf8", env: { ...process.env,
                 PATH: `${path.join(directory, "bin")}:${process.env.PATH}`, PUBLISH_MARKER: publishMarker,
                 OUTPUT_DIR: output, CANDIDATE_TREE: repository,
@@ -3915,6 +3915,7 @@ test("zero-valid-run comparator failure still seals every evidence hash and exit
                 CANDIDATE_JAR: path.join(directory, "candidate.jar"), BASE_SHA: "a".repeat(40), CANDIDATE_SHA: "b".repeat(40),
                 REPOSITORY: "owner/repository", STATUS_CONTEXT: "graphite/fixture64-global-wide",
                 COLD_DIAGNOSTICS_ONLY: "false", PUBLISH_EVIDENCE: "true",
+                REPEATED_LATENCY: "false", MINIMUM_SPEEDUP: "10",
             },
         });
         const status = JSON.parse(fs.readFileSync(path.join(output, "global-wide-status.json"), "utf8"));
