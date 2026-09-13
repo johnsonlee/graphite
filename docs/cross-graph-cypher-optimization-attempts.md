@@ -1173,3 +1173,30 @@ pending.
 
 **Conclusion:** keep. Source-filtered cases exceed 10x on this real fixture; this does
 not improve target-only predicates, which remain a separate experiment.
+
+### 2026-09-13 - Attempt 024: Reject eager target-existence preflight
+
+**Hypothesis:** a necessary target string predicate can prove a graph has no matching
+relationship, eliminating all source and edge work without initializing a reverse graph.
+Probe for one target, then retain ordinary traversal if any candidate exists.
+
+**Base/candidate:** main `144d98ef` versus the frozen second snapshot at
+`/tmp/graphite-slow-shapes-evidence/second/`; candidate JAR SHA-256 is
+`4ba17379a02be9e1681119c1369dea2f5bc491cfe4fd9913c47d184cfd81a33c`.
+Same real Android fixture/JVM settings as Attempt 019. Exact corresponding results
+match, but the historical target-hit digest differs between the first and second
+batches. Do not pool them; sidecar state was not fully frozen in the first protocol.
+The core six graph files rehash identically; a persisted CallSite index was generated.
+
+**Evidence:** the diagnostic targetMiss improves about 19.17x COLD / 61.09x WARM.
+TargetHit regresses from 220 to 280 ms COLD and 108 to 153 ms WARM (27% / 41%).
+Process CPU rises 36% / 86% on that hit. Full Cypher tests and detekt pass; result
+correctness alone is insufficient. This single paired diagnostic is sufficient to
+reject the eager hypothesis, not to accept latency or resource guarantees.
+
+**Conclusion:** reject the eager production change; this commit retains only the record.
+A baseline source-access probe shows the hit fills LIMIT 50 inside the first source,
+which has 80,960 outgoing edges. A later attempt will defer preflight until the normal
+stream actually requests a second source. The probe source and output are retained in
+`/tmp/graphite-target-prefix-probe/`. Candidate regressions must be removed, not hidden
+by aggregate speedups elsewhere.
