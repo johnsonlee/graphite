@@ -2,7 +2,7 @@ export const COMMENT_MARKER = '<!-- graphite-benchmark-regression-gate -->';
 export const MAX_COMMENT_BYTES = 16000;
 const metadataPattern = /<!-- graphite-benchmark-publication (\{[^\n]+\}) -->/;
 
-export function renderBenchmarkSummary({ status, report, baseSha, candidateSha, runId, runAttempt, runUrl, artifactUrl }) {
+export function renderBenchmarkSummary({ status, report, baseSha, candidateSha, runId, runAttempt, runUrl, artifactUrl, gateResult }) {
     if (![baseSha, candidateSha].every(value => /^[a-f0-9]{40}$/.test(value))) throw new Error('Invalid evidence SHA');
     if (status.baseSha !== baseSha || status.candidateSha !== candidateSha || status.runUrl !== runUrl || status.body !== report) {
         throw new Error('Report does not match exact-head evidence');
@@ -12,14 +12,17 @@ export function renderBenchmarkSummary({ status, report, baseSha, candidateSha, 
     for (const url of [runUrl, artifactUrl]) {
         if (!/^https:\/\/[^\s<>()[\]]+$/.test(url)) throw new Error('Invalid evidence URL');
     }
+    if (!['success', 'failure', 'skipped', 'cancelled'].includes(gateResult)) throw new Error('Missing required gate job result');
+    const passed = status.passed && status.errors.length === 0 && gateResult === 'success';
     const coverage = report.split('### Coverage summary')[1]?.split('### Product performance')[0] ?? '';
     const gates = [...coverage.matchAll(/\| `([^`\n]+)` \| \*\*(PASS|FAIL|MISSING)\*\* \|/g)];
     const clean = value => String(value).replace(/[\r\n`<>|]/g, ' ').slice(0, 180);
     const lines = [COMMENT_MARKER,
         `<!-- graphite-benchmark-publication ${JSON.stringify({ candidateSha, runId: String(runId), runAttempt: Number(runAttempt) })} -->`,
-        '## Benchmark Regression Gate', '', `**${status.passed ? 'PASS' : 'FAIL'}**`, '',
+        '## Benchmark Regression Gate', '', `**${passed ? 'PASS' : 'FAIL'}**`, '',
         `Base: \`${baseSha}\``, `PR head: \`${candidateSha}\``,
-        `Run: ${runId}, attempt ${runAttempt}`, '',
+        `Run: ${runId}, attempt ${runAttempt}`,
+        `Required benchmark-regression-gate job: ${gateResult}. Component report aggregate: ${status.passed ? 'PASS' : 'FAIL'}.`, '',
         '| Component report | Result |', '|---|---|',
         ...gates.slice(0, 32).map(([, name, verdict]) => `| ${clean(name)} | ${verdict} |`), '',
         `Aggregate infrastructure errors: ${status.errors.length}. Component failures and every query verdict are in the full report.`,
@@ -62,4 +65,14 @@ export async function publishBenchmarkSummary({ github, scope, issueNumber, cand
         return github.rest.issues.updateComment({ ...scope, comment_id: existing[0].id, body });
     }
     return github.rest.issues.createComment({ ...scope, issue_number: issueNumber, body });
+}
+
+export function currentAttemptReportArtifact(artifacts, issueNumber, runAttempt) {
+    if (!/^[1-9]\d*$/.test(String(issueNumber)) || !/^[1-9]\d*$/.test(String(runAttempt))) {
+        throw new Error('Invalid report artifact identity');
+    }
+    const name = `benchmark-report-${issueNumber}-${runAttempt}`;
+    const matches = artifacts.filter(item => item.name === name && !item.expired);
+    if (matches.length !== 1) throw new Error('Full benchmark report artifact for current attempt is unavailable or ambiguous');
+    return matches[0];
 }

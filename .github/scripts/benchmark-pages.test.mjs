@@ -334,3 +334,44 @@ test("Pages deployment refuses stale main reruns immediately before publishing",
     assert.match(deployJob.slice(staleGuard, deployAction), /core\.setFailed/);
     assert.doesNotMatch(deployJob.slice(deployAction), /github\.rest\.repos\.getBranch/);
 });
+
+test("Pages selects the successful run attempt and never falls back to an unscoped report", async () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark-pages.yml", import.meta.url), "utf8");
+    const step = workflow.split("    - name: Find the merged PR benchmark evidence\n")[1]
+        .split("    - name: Download paired PR benchmark report\n")[0];
+    const source = step.split("        script: |\n")[1].split("\n")
+        .map(line => line.replace(/^          /, "")).join("\n");
+    const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+    for (const attempt of [3, undefined, 0]) {
+        const outputs = {}, writes = [];
+        const github = {
+            paginate: async route => route === "pulls" ? [{ number: 125, merged_at: "2026-09-13", base: { ref: "main" },
+                merge_commit_sha: INTEGRATION_SHA, head: { sha: CANDIDATE_SHA } }] :
+                [{ id: 456, conclusion: "success", created_at: "2026-09-13" }],
+            rest: {
+                repos: { listPullRequestsAssociatedWithCommit: "pulls", getCommit: async ({ ref }) => ({ data: {
+                    parents: [{ sha: BASE_SHA }], commit: { tree: { sha: TREE_SHA } }
+                } }) },
+                actions: { listWorkflowRuns: "runs", getWorkflowRun: async () => ({ data: {
+                    id: 456, run_attempt: attempt, head_sha: CANDIDATE_SHA, html_url: SOURCE_RUN_URL,
+                    pull_requests: [{ number: 125, base: { sha: BASE_SHA }, head: { sha: CANDIDATE_SHA } }]
+                } }) }
+            }
+        };
+        await new AsyncFunction("github", "context", "core", "require", source)(github,
+            { repo: { owner: "owner", repo: "repo" }, sha: INTEGRATION_SHA },
+            { info() {}, setOutput: (key, value) => { outputs[key] = value; } },
+            () => ({ mkdirSync() {}, writeFileSync: (file, value) => writes.push(JSON.parse(value)) }));
+        if (attempt === 3) {
+            assert.equal(outputs.found, "true");
+            assert.equal(outputs.run_attempt, "3");
+            assert.equal(writes[0].sourceRunAttempt, 3);
+        } else {
+            assert.equal(outputs.found, "false");
+            assert.equal(writes.length, 0);
+        }
+    }
+    const download = workflow.split("    - name: Download paired PR benchmark report\n")[1]
+        .split("    - name: Recover")[0];
+    assert.match(download, /name: benchmark-report-\$\{\{ steps.source.outputs.source_pr \}\}-\$\{\{ steps.source.outputs.run_attempt \}\}/);
+});

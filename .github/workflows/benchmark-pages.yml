@@ -149,6 +149,7 @@ jobs:
               repo: context.repo.repo,
               run_id: run.id
             })).data;
+            if (!Number.isInteger(detailed.run_attempt) || detailed.run_attempt < 1) continue;
             const runPull = detailed.pull_requests?.find((item) => item.number === pull.number);
             const baseSha = runPull?.base?.sha;
             const candidateSha = runPull?.head?.sha;
@@ -174,6 +175,7 @@ jobs:
               candidateTreeSha,
               sourcePr: pull.number,
               sourceRunId: detailed.id,
+              sourceRunAttempt: detailed.run_attempt,
               sourceRunUrl: detailed.html_url
             };
             break;
@@ -187,6 +189,7 @@ jobs:
           fs.writeFileSync('benchmark-source/paired-provenance.json', `${JSON.stringify(evidence, null, 2)}\n`);
           core.setOutput('found', 'true');
           core.setOutput('run_id', String(evidence.sourceRunId));
+          core.setOutput('run_attempt', String(evidence.sourceRunAttempt));
           core.setOutput('run_url', evidence.sourceRunUrl);
           core.setOutput('source_pr', String(evidence.sourcePr));
 
@@ -195,7 +198,7 @@ jobs:
       continue-on-error: true
       uses: actions/download-artifact@v8
       with:
-        name: benchmark-report-${{ steps.source.outputs.source_pr }}
+        name: benchmark-report-${{ steps.source.outputs.source_pr }}-${{ steps.source.outputs.run_attempt }}
         path: benchmark-source/paired
         github-token: ${{ secrets.GITHUB_TOKEN }}
         repository: ${{ github.repository }}
