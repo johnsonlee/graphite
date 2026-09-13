@@ -1245,7 +1245,8 @@ class QueryPipeline private constructor(
             val predicates = filters.map { filter ->
                 StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
             }
-            val canAggregateProperty = countedExpression == null || countedProperty in properties
+            val canAggregateProperty = (countedExpression == null || countedProperty in properties) &&
+                !(candidateType == AnnotationNode::class.java && filters.any { it.coercesToString })
             val aggregate = if (canAggregateProperty) {
                 if (workTracker == null) {
                     storageAggregation?.aggregateStringPropertyDisjunction(
@@ -2870,8 +2871,15 @@ class QueryPipeline private constructor(
         mappedView: Boolean = false
     ): Sequence<Node> {
         if (limit <= 0) return emptySequence()
-        // Only merge polymorphic value candidates when the backend exposes their order.
-        if (disjunction.filters.any { it.property == "value" } && graph !is StringPropertyLookupOrder) {
+        // A polymorphic value search must retain source encounter order, including
+        // resource values and enum constructor values. Only merge typed streams
+        // when the backend exposes the ordering needed to do so.
+        val coercedAnnotationCandidates = nodeClass.isAssignableFrom(AnnotationNode::class.java) &&
+            AnnotationNode::class.java !in excludedTypes && disjunction.filters.any { it.coercesToString } &&
+            graph.nodeCount(AnnotationNode::class.java) != 0L
+        if ((disjunction.filters.any { it.property == "value" } || coercedAnnotationCandidates) &&
+            graph !is StringPropertyLookupOrder
+        ) {
             return interruptible(trackWork(graph.nodes(nodeClass), tracker))
                 .filter { node -> node.javaClass !in excludedTypes && disjunction.matches(node) }
                 .take(limit)
@@ -2882,6 +2890,17 @@ class QueryPipeline private constructor(
             if (candidateType in excludedTypes) continue
             if (!nodeClass.isAssignableFrom(candidateType)) continue
             val filters = candidateFilter.filters
+
+            // Annotation attributes can be numbers or containers even when their names
+            // coincide with string-only CallSite fields. Storage string predicates cannot
+            // represent toString() for these values.
+            if (candidateType == AnnotationNode::class.java && filters.any { it.coercesToString }) {
+                if (graph.nodeCount(candidateType) != 0L) {
+                    candidateSequences += interruptible(trackWork(graph.nodes(candidateType), tracker))
+                        .filter(disjunction::matches).take(limit)
+                }
+                continue
+            }
 
             val completeScanLimit = graph.nodeCount(candidateType)
                 ?.takeIf { it < Int.MAX_VALUE }
@@ -2997,10 +3016,12 @@ class QueryPipeline private constructor(
         val property: String,
         val mode: StringMatchMode,
         val expected: String,
-        val transform: StringValueTransform? = null
+        val transform: StringValueTransform? = null,
+        val coercesToString: Boolean = false
     ) {
         fun matches(node: Node): Boolean {
-            val raw = NodePropertyAccessor.getProperty(node, property) as? String ?: return false
+            val value = NodePropertyAccessor.getProperty(node, property)
+            val raw = (if (coercesToString) value?.toString() else value as? String) ?: return false
             val actual = when (transform) {
                 null -> raw
                 StringValueTransform.LOWERCASE -> raw.lowercase()
@@ -3044,7 +3065,7 @@ class QueryPipeline private constructor(
                 if (owner.name != variable) return null
                 if (property.propertyName in QUALIFIED_NODE_PROPERTIES) return null
                 if (operand.coalescesMissingToEmpty && expected.isEmpty()) return null
-                return DirectStringFilter(property.propertyName, mode, expected, operand.transform)
+                return DirectStringFilter(property.propertyName, mode, expected, operand.transform, operand.coercesToString)
             }
 
             fun compileRegexCandidate(
@@ -3081,6 +3102,15 @@ class QueryPipeline private constructor(
             private fun compileOperand(expression: CypherExpr): StringOperand? {
                 if (expression is CypherExpr.Property) return StringOperand(expression)
                 val lower = expression as? CypherExpr.FunctionCall ?: return null
+                // These are strings on CallSite nodes, but annotations can expose arbitrary
+                // values under the same names. Retain the conversion for annotation scans.
+                if (!lower.distinct && lower.name.equals("toString", ignoreCase = true)) {
+                    val property = lower.args.singleOrNull() as? CypherExpr.Property ?: return null
+                    if (property.propertyName in setOf("caller_class", "caller_name", "callee_class", "callee_name")) {
+                        return StringOperand(property, coercesToString = true)
+                    }
+                    return null
+                }
                 if (lower.distinct || lower.args.size != 1 ||
                     !(lower.name.equals("toLower", ignoreCase = true) ||
                         lower.name.equals("toLowercase", ignoreCase = true))
@@ -3104,7 +3134,8 @@ class QueryPipeline private constructor(
             private data class StringOperand(
                 val property: CypherExpr.Property,
                 val transform: StringValueTransform? = null,
-                val coalescesMissingToEmpty: Boolean = false
+                val coalescesMissingToEmpty: Boolean = false,
+                val coercesToString: Boolean = false
             )
         }
     }

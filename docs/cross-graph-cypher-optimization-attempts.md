@@ -1125,3 +1125,27 @@ regression, and final combined-head benchmarks are still pending.
 
 **Conclusion:** keep; value cases exceed 10x on this fixture. This does not prove the
 remaining shapes or the complete no-regression requirement.
+
+### 2026-09-13 - Attempt 022: Preserve toString while reusing string-field lookup
+
+**Hypothesis:** CallSite caller/callee class/name values are already strings, so the
+wrapper can reuse their direct lookup. Annotation attributes with the same names may
+be numbers or lists: retain explicit coercion, bypass string-only lookup/aggregation
+for those attributes, and preserve canonical mixed-node order.
+
+**Base/candidate:** main `144d98ef`; candidate is this experiment commit. Measurement
+identities, real Android fixture, JVM protocol, and combined-snapshot qualification
+are the same as Attempt 021. Three-pair medians: wrappedCallerHit 26.6x COLD / 86.5x
+WARM; wrappedCallerMiss 7.18x / 20.7x. Exact ordered result parity passed in all pairs.
+Diagnostic CPU improvement for the missing case is only about 4.5–4.9x, so wall-time
+speedup must not be misrepresented as CPU speedup.
+
+**Correctness/resources:** seven wrapper tests and five annotation regressions cover
+native/numeric/list values, nulls, parameters, distinct/order/skip, overlapping graph IDs,
+canonical order, unknown annotation counts, and unsupported AST fallback. Full Cypher
+tests and detekt passed in the second snapshot. Whole-trial GC evidence is retained
+under `paired-first/`; isolated query allocation and final broader regressions remain
+unproven. The annotation corrections do not change the annotation-free Android fixture.
+
+**Conclusion:** keep the semantic repair and fast path. The COLD missing-term case has
+not reached 10x and remains an explicit shortfall.
