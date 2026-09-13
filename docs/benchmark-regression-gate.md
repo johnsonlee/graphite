@@ -553,15 +553,27 @@ comment is not guaranteed in those cases, and the workflow/check state remains t
 
 ## Slow-query family gate inherited from main
 
-The separate `slow-query-shapes` job covers 12 hit/miss queries in COLD and WARM states on
-real persisted Android graphs. It retains three single-shot forks and the existing 15% mean
-latency threshold with a reverse-order confirmation for WARM. Its one priming invocation is
-not the 72-query timed warmup or P50/P95 protocol. COLD latency is diagnostic only under the
-current CI policy and does not trigger numerical confirmation. Every COLD and WARM result,
-private fixture, sample set and ordered digest remains mandatory and authenticated.
+The separate `slow-query-shapes` job covers 12 hit/miss queries on real persisted Android
+graphs. CI selects `--steady-state`: each query runs in three fresh JVM pairs, serially
+candidate/base, base/candidate, candidate/base on one runner. Each JVM warms the same private
+mapping for at least 10 seconds AND 5 calls, then measures for at least 10 seconds AND 40
+calls. Both phases stop at their first eligible boundary. Every call's complete ordered
+result is checked against the base oracle, and every measured call contributes to that
+query's P50 and P95. Each paired percentile must increase by less than 5%; cross-fork spread
+is diagnostic. Partial evidence cannot pass. These 12 Android-specific queries remain
+separate from the 72-query, 64-graph catalog so their original fixture and query identities
+are preserved.
+
+The first warmup call also checks the result on a fresh mapping. Cold-start latency is not
+an acceptance metric. The original single-shot JMH entry point remains available for
+explicit standalone diagnostics; it is no longer the CI latency measurement. Raw samples,
+runtime identity, ordered run receipts, and the exact executable JARs are retained. Shared
+fixture bytes are checked even when measurement fails. The job allows 180 minutes for
+builds, private fixture copies, and all 72 measurement JVMs; its minimum query-phase time
+alone is 24 minutes, before slower calls and setup costs.
 
 The new component remains required by aggregation and by the late failure monitor. CI selects
 SHA-pinned candidate controls when the base has the known pre-diagnostic controls manifest;
 other supported base controls retain ownership. Standalone invocations keep their original
-strict default unless `--cold-diagnostics-only` is explicitly selected. This transition changes
-acceptance and reporting, not the inherited harness, production implementation or measurements.
+strict default unless `--cold-diagnostics-only` or `--steady-state` is explicitly selected.
+This transition changes benchmark measurement and validation, with no production-code change.

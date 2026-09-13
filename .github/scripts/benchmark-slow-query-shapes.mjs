@@ -12,7 +12,7 @@ export const QUERIES = [
 export const DYNAMIC_QUERIES = ["dynamicHit", "dynamicMiss"];
 export const COMPONENT = {
     name: "slow-query-shapes", report: "slow-query-shapes-report.md", status: "slow-query-shapes-status.json",
-    coverage: "partial", gap: "Five query families on real Android, hit/miss and cold/warm; other corpora and arbitrary expressions remain uncovered."
+    coverage: "partial", gap: "Five query families on real Android, hit/miss with per-query warmed P50/P95; other corpora and arbitrary expressions remain uncovered."
 };
 const BENCHMARK = "io.johnsonlee.graphite.webgraph.SlowQueryShapesBenchmark.execute";
 const STATES = ["COLD", "WARM"];
@@ -138,6 +138,41 @@ export function addComponent(baseModule) {
     domain.components.push(COMPONENT.name);
 }
 
+export function validateSteadyStateStatus(status, baseSha, candidateSha) {
+    require(status.schema === "graphite-slow-query-warm-v1" &&
+        status.acceptance === "paired-regression-lt5-spread-diagnostic-v1",
+    "Slow-query result does not use the required steady-state policy");
+    require(status.baseSha === baseSha && status.candidateSha === candidateSha,
+        "Slow-query result belongs to different revisions");
+    if (status.passed !== true) return;
+    require(status.complete === true && status.queryCount === 12 && status.forkCount === 3,
+        "Incomplete slow-query measurements cannot pass");
+    require(status.integrityErrors?.length === 0 && status.latencyErrors?.length === 0,
+        "Slow-query failures cannot pass");
+    require(Array.isArray(status.queries) && status.queries.length === 12 &&
+        new Set(status.queries.map(query => query.queryName)).size === 12 &&
+        QUERIES.every(name => status.queries.some(query => query.queryName === name &&
+            query.passed === true && query.runs?.length === 3)),
+    "Missing slow-query coverage or paired measurements");
+    for (const query of status.queries) {
+        for (const [index, run] of query.runs.entries()) {
+            require(run?.pair === index + 1, "Missing or duplicate slow-query pair identity");
+            for (const revision of ["base", "candidate"]) {
+                const metrics = run[revision];
+                require(metrics && ["p50", "p95", "warmupCalls", "warmupElapsedNanos",
+                    "measurementCalls", "measurementElapsedNanos"].every(field =>
+                    Number.isSafeInteger(metrics[field]) && metrics[field] > 0), "Invalid slow-query metrics");
+                require(metrics.p50 <= metrics.p95 && metrics.warmupCalls >= 5 &&
+                    metrics.warmupElapsedNanos >= 10_000_000_000 && metrics.measurementCalls >= 40 &&
+                    metrics.measurementElapsedNanos >= 10_000_000_000, "Incomplete slow-query phases");
+            }
+            for (const quantile of ["p50", "p95"]) require(
+                BigInt(run.candidate[quantile]) * 100n < BigInt(run.base[quantile]) * 105n,
+                "A slow-query percentile exceeding the threshold cannot pass");
+        }
+    }
+}
+
 function fingerprint(directory) {
     return fs.readdirSync(directory).sort().map(name => {
         const file = path.join(directory, name), stat = fs.lstatSync(file, { bigint: true });
@@ -163,6 +198,12 @@ async function main(argv) {
         } else if (command === "aggregate") {
             const base = await import(pathToFileURL(path.resolve(needed("base-comparator"))).href);
             addComponent(base);
+            if (args["require-steady-state"] === "true") {
+                const statusFile = path.join(needed("directory"), COMPONENT.status);
+                if (fs.existsSync(statusFile)) {
+                    validateSteadyStateStatus(read(statusFile), needed("base-sha"), needed("candidate-sha"));
+                }
+            }
             const result = base.aggregateReports(needed("directory"), { baseSha: needed("base-sha"), candidateSha: needed("candidate-sha"), runner: needed("runner"), runUrl: needed("run-url") });
             write(needed("report"), result.body); write(needed("status"), result);
             // Match the base reporter: publish a failed verdict completely, then let the

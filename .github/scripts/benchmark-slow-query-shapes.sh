@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "$#" -eq 6 || ( "$#" -eq 7 && "$7" == --cold-diagnostics-only ) ]] || { echo 'Usage: slow-shapes <controls> <base-gate> <base-source> <candidate-source> <android-fixture> <output> [--cold-diagnostics-only]' >&2; exit 2; }
+[[ "$#" -eq 6 || ( "$#" -eq 7 && ( "$7" == --cold-diagnostics-only || "$7" == --steady-state ) ) ]] || { echo 'Usage: slow-shapes <controls> <base-gate> <base-source> <candidate-source> <android-fixture> <output> [--cold-diagnostics-only|--steady-state]' >&2; exit 2; }
 COLD_DIAGNOSTICS_ONLY=false
-if [[ "$#" -eq 7 ]]; then COLD_DIAGNOSTICS_ONLY=true; fi
+STEADY_STATE=false
+if [[ "${7:-}" == --cold-diagnostics-only ]]; then COLD_DIAGNOSTICS_ONLY=true; fi
+if [[ "${7:-}" == --steady-state ]]; then STEADY_STATE=true; fi
 CONTROLS=$(realpath "$1")
 GATE=$(realpath "$2")
 BASE=$(realpath "$3")
@@ -11,8 +13,14 @@ FIXTURE=$(realpath "$5")
 mkdir -p "$6"
 OUTPUT=$(realpath "$6")
 test ! -e "$OUTPUT/initial-base-slow-shapes.json" || { echo 'Existing measurement series; use a fresh output directory.' >&2; exit 1; }
+if [[ "$STEADY_STATE" == true ]]; then
+  test ! -e "$OUTPUT/slow-warm-runs.jsonl" && test ! -e "$OUTPUT/slow-warm-oracle.tsv" || {
+    echo 'Existing steady-state evidence; use a fresh output directory.' >&2; exit 1;
+  }
+fi
 HARNESS=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt
 CORPUS=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt
+CORRECTNESS=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
 EVALUATOR=graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt
 COMPARATOR="$CONTROLS/.github/scripts/benchmark-slow-query-shapes.mjs"
 PATCH="$CONTROLS/.github/scripts/benchmark-slow-query-shapes-subscript.patch"
@@ -52,6 +60,11 @@ build() {
   test ! -L "$source/$HARNESS" && test ! -L "$source/$CORPUS"
   install -m 0644 "$CONTROLS/$HARNESS" "$source/$HARNESS"
   install -m 0644 "$GATE/$CORPUS" "$source/$CORPUS"
+  if [[ "$STEADY_STATE" == true ]]; then
+    test ! -L "$source/$CORRECTNESS" && test ! -L "$GATE/$CORRECTNESS"
+    install -m 0644 "$GATE/$CORRECTNESS" "$source/$CORRECTNESS"
+    cmp "$GATE/$CORRECTNESS" "$source/$CORRECTNESS"
+  fi
   cmp "$CONTROLS/$HARNESS" "$source/$HARNESS"
   cmp "$GATE/$CORPUS" "$source/$CORPUS"
   "$source/gradlew" -p "$source" -I "$ISOLATION/$INIT" \
@@ -67,6 +80,12 @@ build() {
 build base "$BASE"
 build candidate "$CANDIDATE"
 if [[ "$REFERENCE_KIND" == base-plus-subscript-correctness-repair ]]; then build reference "$REFERENCE"; fi
+
+if [[ "$STEADY_STATE" == true ]]; then
+  bash "$CONTROLS/.github/scripts/benchmark-slow-query-warm.sh" \
+    "$CONTROLS" "$BASE" "$CANDIDATE" "$FIXTURE" "$OUTPUT" "$REFERENCE_KIND"
+  exit 0
+fi
 
 node "$COMPARATOR" fingerprint --fixture "$FIXTURE" --output "$OUTPUT/slow-shapes-fixture-before.json"
 ORACLE_JAR="$OUTPUT/base-slow-shapes.jar"

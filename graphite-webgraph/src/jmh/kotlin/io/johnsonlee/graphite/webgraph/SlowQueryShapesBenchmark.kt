@@ -296,3 +296,151 @@ private fun canonicalSlowQueryShape(value: Any?): String = when (value) {
     is Iterable<*> -> value.joinToString(prefix = "list:[", postfix = "]", transform = ::canonicalSlowQueryShape)
     else -> error("Unexpected benchmark result type: ${value::class.java.name}")
 }
+
+/**
+ * Per-query steady-state evidence. The driver starts a fresh JVM for every query/revision/pair.
+ * Fixture creation and complete ordered-result verification remain outside each query timer.
+ * The original single-shot benchmark above remains available for separate cold diagnostics.
+ */
+internal object SlowQueryShapesSteadyState {
+    private const val PHASE_MIN_NANOS = 10_000_000_000L
+    private const val WARMUP_MIN_CALLS = 5
+    private const val MEASUREMENT_MIN_CALLS = 40
+    private const val MIN_HEAP_BYTES = 7L * 1_024L * 1_024L * 1_024L
+    private const val MAX_HEAP_BYTES = 8L * 1_024L * 1_024L * 1_024L
+    private val identities = slowQueryShapeCases.associate { it.name to sha256(it.query.toByteArray(Charsets.UTF_8)) }
+    private val header = listOf(
+        "phase", "round", "phaseElapsedNanos", "id", "family", "shape", "selectivity", "operator",
+        "boundary", "projection", "targetGraphId", "workloadIdentity", "limit", "outcome", "rowCount",
+        "responseBytes", "digest", "latencyNanos", "maxHeapBytes"
+    ).joinToString("\t")
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        require(args.size == 4) {
+            "Usage: SlowQueryShapesSteadyState <query-name> <record|verify> <oracle-path> <raw-path>"
+        }
+        val queryCase = slowQueryShapeCases.single { it.name == args[0] }
+        val mode = args[1]
+        require(mode == "record" || mode == "verify") { "Unknown correctness mode: $mode" }
+        val heapArguments = ManagementFactory.getRuntimeMXBean().inputArguments.filter { it.startsWith("-Xmx") }
+        require(heapArguments == listOf("-Xmx8g")) { "Expected exactly one -Xmx8g argument: $heapArguments" }
+        require(Runtime.getRuntime().availableProcessors() == 4) { "Expected exactly four available processors" }
+        val heap = Runtime.getRuntime().maxMemory()
+        check(heap in MIN_HEAP_BYTES..MAX_HEAP_BYTES) { "Expected 8GiB heap configuration; actual=$heap" }
+        println(
+            "SLOW_QUERY_SHAPE_STEADY_ENV\tprotocol=slow-shapes-timed-v1\tquery=${queryCase.name}" +
+                "\tmaxHeapBytes=$heap\tavailableProcessors=${Runtime.getRuntime().availableProcessors()}" +
+                "\tjavaRuntimeVersion=${System.getProperty("java.runtime.version")}" +
+                "\twarmupMinNanos=$PHASE_MIN_NANOS\twarmupMinCalls=$WARMUP_MIN_CALLS" +
+                "\tmeasurementMinNanos=$PHASE_MIN_NANOS\tmeasurementMinCalls=$MEASUREMENT_MIN_CALLS"
+        )
+        println(
+            "SLOW_QUERY_WARM_RUNTIME\tvmVersion=${System.getProperty("java.runtime.version")}" +
+                "\tmaxHeapBytes=$heap\tactiveProcessorCount=${Runtime.getRuntime().availableProcessors()}"
+        )
+        val oraclePath = Path.of(args[2])
+        val rawPath = Path.of(args[3])
+        require(Files.notExists(rawPath)) { "Refusing to overwrite raw evidence: $rawPath" }
+        val oracle = if (mode == "verify") completeOracle(oraclePath, queryCase) else emptyList()
+        if (mode == "record") require(Files.notExists(oraclePath)) { "Refusing to overwrite oracle: $oraclePath" }
+        rawPath.toAbsolutePath().parent?.let(Files::createDirectories)
+        SlowQueryShapesWorkload("android").use { workload ->
+            Files.newBufferedWriter(rawPath).use { writer ->
+                writer.write("$header\n")
+                writer.flush()
+                if (mode == "record") {
+                    val started = System.nanoTime()
+                    val sample = sample(workload, queryCase)
+                    writeSample(writer, "record", 1, System.nanoTime() - started, sample, heap)
+                    sample.failure?.let { throw it }
+                    QueryCorrectnessManifest.requireRecordable(listOf(sample.record), setOf(sample.record.id))
+                    QueryCorrectnessManifest.write(oraclePath, listOf(sample.record))
+                } else {
+                    phase(workload, queryCase, oracle, writer, "warmup", WARMUP_MIN_CALLS, heap)
+                    phase(workload, queryCase, oracle, writer, "measurement", MEASUREMENT_MIN_CALLS, heap)
+                }
+            }
+        }
+    }
+
+    private fun completeOracle(path: Path, queryCase: SlowQueryShapeCase): List<QueryCorrectnessRecord> {
+        val records = QueryCorrectnessManifest.read(path)
+        val ids = slowQueryShapeCases.mapTo(mutableSetOf()) { "slow-shapes-${it.name}" }
+        QueryCorrectnessManifest.requireRecordable(records, ids)
+        return records.filter { it.id == "slow-shapes-${queryCase.name}" }
+    }
+
+    private fun phase(
+        workload: SlowQueryShapesWorkload,
+        queryCase: SlowQueryShapeCase,
+        oracle: List<QueryCorrectnessRecord>,
+        writer: java.io.BufferedWriter,
+        name: String,
+        minimumCalls: Int,
+        heap: Long
+    ) {
+        var round = 0
+        var elapsed: Long
+        val started = System.nanoTime()
+        do {
+            val sample = sample(workload, queryCase)
+            elapsed = System.nanoTime() - started
+            round++
+            writeSample(writer, name, round, elapsed, sample, heap)
+            sample.failure?.let { throw it }
+            QueryCorrectnessManifest.verify(oracle, listOf(sample.record))
+        } while (round < minimumCalls || elapsed < PHASE_MIN_NANOS)
+    }
+
+    private fun sample(workload: SlowQueryShapesWorkload, queryCase: SlowQueryShapeCase): SteadySample {
+        val started = System.nanoTime()
+        val executed = runCatching { workload.execute(queryCase) }
+        val latency = System.nanoTime() - started
+        // The execution timer stops before validation, canonicalization, hashing and raw output.
+        val result = executed.getOrNull()
+        val encoding = runCatching {
+            result?.let { canonicalSlowQueryShape(listOf(it.columns, it.rows)).toByteArray(Charsets.UTF_8) }
+        }
+        val encoded = encoding.getOrNull()
+        val failure = executed.exceptionOrNull() ?: encoding.exceptionOrNull()
+            ?: result?.let { runCatching { queryCase.validate(it) }.exceptionOrNull() }
+        val record = QueryCorrectnessRecord(
+            id = "slow-shapes-${queryCase.name}",
+            family = "slow-query-shapes",
+            shape = queryCase.name.removeSuffix("Hit").removeSuffix("Miss"),
+            selectivity = if (queryCase.expectsHit) "targeted" else "zero",
+            operator = "cypher",
+            boundary = "single-graph",
+            projection = "ordered-full-result",
+            targetGraphId = "android",
+            workloadIdentity = identities.getValue(queryCase.name),
+            limit = 50L,
+            outcome = if (failure == null) "success" else "failed",
+            rowCount = result?.rows?.size?.toLong() ?: 0L,
+            responseBytes = encoded?.size?.toLong() ?: 0L,
+            digest = sha256(encoded ?: ByteArray(0))
+        )
+        return SteadySample(record, latency, failure)
+    }
+
+    private fun writeSample(
+        writer: java.io.BufferedWriter,
+        phase: String,
+        round: Int,
+        elapsed: Long,
+        sample: SteadySample,
+        heap: Long
+    ) {
+        writer.write(
+            "$phase\t$round\t$elapsed\t${sample.record.encode().replace('|', '\t')}" +
+                "\t${sample.latencyNanos}\t$heap\n"
+        )
+        writer.flush()
+    }
+
+    private fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256").digest(bytes)
+        .joinToString("") { byte -> "%02x".format(byte) }
+
+    private data class SteadySample(val record: QueryCorrectnessRecord, val latencyNanos: Long, val failure: Throwable?)
+}

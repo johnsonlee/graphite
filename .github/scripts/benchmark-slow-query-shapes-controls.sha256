@@ -1,4 +1,6 @@
-dee5ebd32ec95e89e6b120dfeed0d5d9824f2dbc94613df1e330c6822c313d8e  .github/scripts/benchmark-slow-query-shapes.mjs
-cc67a6862696ba0f93a12542c7c8a0adfba2a0b7c03e1f06cbffd51d697773b7  .github/scripts/benchmark-slow-query-shapes.sh
+f994a32002e7525706d88622d58f45446e658c161d8b6d7e27a86f729970e87c  .github/scripts/benchmark-slow-query-shapes.mjs
+6ed44aa0dd581fdd185518eabcb7a5ed91158dc6ae0f58382162ab49313b49c4  .github/scripts/benchmark-slow-query-shapes.sh
 1ed0f211886dec1bfb2557983400afb34586405583acfbeef0f3f9c07136557a  .github/scripts/benchmark-slow-query-shapes-subscript.patch
-6b112a1bb6f12184fa27fa8b72f87f35a2071c2d354c8236f10e4e51662ca8fb  graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt
+94093bb3910c8b05b32fe5e78ff5652bbf276c7bd18a6291cb63e4b4d526cb6e  graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt
+3443f307e62ac46770951d691516c2bb81df939daf95f22a9b286474c6150d0b  .github/scripts/benchmark-slow-query-warm.mjs
+cf63d645a0f8fd275e8ed9f6696922bc6f40da9ce8107293540b0b15c1a51963  .github/scripts/benchmark-slow-query-warm.sh

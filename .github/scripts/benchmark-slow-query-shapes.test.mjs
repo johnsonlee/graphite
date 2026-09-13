@@ -5,7 +5,29 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { QUERIES, measurements, resultMarkers, compare, confirm, addComponent, COMPONENT } from "./benchmark-slow-query-shapes.mjs";
+import { QUERIES, measurements, resultMarkers, compare, confirm, addComponent, COMPONENT, validateSteadyStateStatus } from "./benchmark-slow-query-shapes.mjs";
+
+test("steady-state aggregation rejects stale single-shot and incomplete passing verdicts", () => {
+    const metrics = { p50: 100, p95: 120, warmupCalls: 5, warmupElapsedNanos: 10_000_000_000,
+        measurementCalls: 40, measurementElapsedNanos: 10_000_000_000 };
+    const status = { schema: "graphite-slow-query-warm-v1", acceptance: "paired-regression-lt5-spread-diagnostic-v1",
+        baseSha: "base", candidateSha: "candidate", passed: true, complete: true, queryCount: 12, forkCount: 3,
+        integrityErrors: [], latencyErrors: [], queries: QUERIES.map(queryName => ({ queryName, passed: true,
+            runs: [1, 2, 3].map(pair => ({ pair, base: { ...metrics }, candidate: { ...metrics } })) })) };
+    assert.doesNotThrow(() => validateSteadyStateStatus(status, "base", "candidate"));
+    for (const mutate of [
+        item => { delete item.schema; }, item => { item.baseSha = "old"; },
+        item => { item.complete = false; }, item => { item.latencyErrors.push("failure"); },
+        item => { item.queries.pop(); }, item => { item.queries[0].runs.pop(); },
+        item => { item.queries[0].runs[0] = null; },
+        item => { item.queries[0].runs[0].pair = 2; },
+        item => { item.queries[0].runs[0].candidate.p50 = 105; },
+        item => { item.queries[0].runs[0].candidate.measurementCalls = 39; },
+    ]) {
+        const invalid = structuredClone(status); mutate(invalid);
+        assert.throws(() => validateSteadyStateStatus(invalid, "base", "candidate"));
+    }
+});
 
 const fixture = "/real/android";
 const hash = "a".repeat(64);

@@ -32,7 +32,7 @@ env:
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
-  SLOW_QUERY_SHAPES_CONTROLS_SHA256: e96592b24a1fb7b9937b8616050d03977bdd61f23bbb8ed393a8326760ae76c7
+  SLOW_QUERY_SHAPES_CONTROLS_SHA256: 5ef8809403ff6103fdc3fe8c5716ddefd8f15260bf90fa79bbafaaf755930f09
 
 jobs:
   candidate-gate-tests:
@@ -3290,7 +3290,7 @@ jobs:
     name: slow-query-shapes
     needs: [candidate-gate-tests, prepare-latency-fixtures]
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
     - name: Checkout base-owned controls
       uses: actions/checkout@v7
@@ -3362,7 +3362,19 @@ jobs:
         test -f fixture-graphs/android/graph.nodedata
         bash '${{ steps.slow-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.sh' \
           '${{ steps.slow-controls.outputs.directory }}' gate base candidate \
-          fixture-graphs/android benchmark-results/slow-shapes --cold-diagnostics-only
+          fixture-graphs/android benchmark-results/slow-shapes --steady-state
+    # Keep executable bytes for same-code/noise investigations. Use a separate
+    # artifact so the aggregate report does not download the large JMH jars.
+    - name: Upload slow-query executable evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: slow-query-binaries-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: |
+          benchmark-results/slow-shapes/*-slow-shapes.jar
+          benchmark-results/slow-shapes/slow-shapes-jars.sha256
+        if-no-files-found: error
+        retention-days: 14
     - name: Upload slow-query evidence
       if: always()
       uses: actions/upload-artifact@v7
@@ -3375,6 +3387,8 @@ jobs:
           benchmark-results/slow-shapes/*.patch
           benchmark-results/slow-shapes/*.kt
           benchmark-results/slow-shapes/*.sha256
+          benchmark-results/slow-shapes/*.tsv
+          benchmark-results/slow-shapes/*.jsonl
         if-no-files-found: error
         retention-days: 14
 
@@ -3499,6 +3513,7 @@ jobs:
           grep -q '"global-wide-pressure"' "${COMPARATOR}"
         fi
         node '${{ steps.slow-report-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.mjs' aggregate \
+          --require-steady-state true \
           --base-comparator "${COMPARATOR}" \
           --directory benchmark-results \
           --base-sha "${BASE_SHA}" \
@@ -3520,6 +3535,7 @@ jobs:
           test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             "${BENCHMARK_REPORT_TRANSITION_SHA256}"
           node '${{ steps.slow-report-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.mjs' aggregate \
+            --require-steady-state true \
             --base-comparator reporter/.github/scripts/benchmark-gate.mjs \
             --directory benchmark-results \
             --base-sha "${BASE_SHA}" \
