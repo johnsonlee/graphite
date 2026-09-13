@@ -22,6 +22,10 @@ kover {
                     "*Fixture64GraphPreparation*",
                     "*LargeBroadQueryPressureCounters",
                     "*GraphBuildPersist*",
+                    // JMH-only helpers without Benchmark in their names; absent from the application JAR.
+                    "io.johnsonlee.graphite.webgraph.SlowQueryShapesCorrectness",
+                    "io.johnsonlee.graphite.webgraph.SlowQueryShapesWorkload",
+                    "io.johnsonlee.graphite.webgraph.SlowQueryShapeCase",
                     "io.johnsonlee.graphite.webgraph.BroadQuery*",
                     "io.johnsonlee.graphite.webgraph.GcSnapshot"
                 )

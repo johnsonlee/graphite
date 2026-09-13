@@ -119,6 +119,7 @@ java -Xmx8g -XX:ActiveProcessorCount=4 -Dandroid.graph.path="$android_graph" \
 - 环境、fixture 身份与复现命令已列于上文；原始命令、JSON 和日志位于 `/tmp/graphite-slow-shapes-evidence/final-paired/`。
 - 完整检查：`./gradlew check koverLog --max-workers=2` 通过，耗时 3 分 17 秒。常规测试 2,498 个、单独内存契约测试 7 个、真实大图端到端测试 3 个，均无失败或跳过；所有现有 lint 和覆盖率门槛通过。另有前端 `node --test graphite-explore/src/test/js/ui-state.test.js` 通过。
 - 行覆盖率：core 98.1149%、cypher 98.004%、explore 98.0353%、query 98.9011%、sootup 98.4449%、webgraph 96.892%。XML 证据归档在 `/tmp/graphite-slow-shapes-evidence/final-check/`。
+- PR CI 复核修正：初始 WebGraph 的 96.892% 包含三个仅在 `src/jmh` 中的辅助类，共 75 行。这些类不在应用 JAR 中。沿用已有基准辅助类排除规则，精确排除这三个名称后，应用覆盖率为 **98.1019%**（5,892 行覆盖、114 行未覆盖）；生产类和 CI 的 98% 门槛不变。重新运行 `:webgraph:koverLog :webgraph:koverXmlReport :webgraph:detekt`，包含 193 个 WebGraph 测试，全部通过。原始测量快照保留初始统计值，不改写历史证据。
 - Android / LargeCorpus 既有查询回归：20 个用例、120 个分数验证完成，120 个私有副本全部清理，共同输入未改变。
 - 既有查询耗时中位数变化为 −5.8% 到 +5.2%，没有超过 10% 的增加。首轮 Android simpleNodeMatch +16.85%、Tika intConstantFilter +13.12% 的信号在反向轮次变为改善；三轮中位数分别为 −1.0%、+5.2%。保留全部原始分数，未删除较慢观测。
 - 真实大图端到端检查：Hive 30,642 ms、Kotlin compiler 20,726 ms、Tika 19,034 ms，均在现有时间上限内；每个测试独立使用 4 GiB 堆。该检查证明通过现有门槛，不等于同机 main/candidate 端到端加速比。
