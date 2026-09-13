@@ -1246,6 +1246,9 @@ class QueryPipeline private constructor(
                 StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
             }
             val canAggregateProperty = (countedExpression == null || countedProperty in properties) &&
+                (countedProperty != "value" || candidateType == StringConstant::class.java) &&
+                (candidateType != AnnotationNode::class.java || countedExpression == null ||
+                    countedProperty == "class" || countedProperty == "name") &&
                 !(candidateType == AnnotationNode::class.java && filters.any { it.coercesToString })
             val aggregate = if (canAggregateProperty) {
                 if (workTracker == null) {
@@ -1351,6 +1354,12 @@ class QueryPipeline private constructor(
         val preferPersistedStorage = graphScoped
         val preferMappedView = usesBalancedStringSplit(candidateSources.size)
         val stringParameters = activeParameters.get().orEmpty()
+        // Annotation projections can contain numerically equal values with different JVM
+        // types. The streaming DISTINCT path normalizes them and merges their provenance.
+        if (ret.distinct && nodeClass.isAssignableFrom(AnnotationNode::class.java) &&
+            candidateSources.any { it.graph.nodeCount(AnnotationNode::class.java) != 0L } &&
+            DirectStringCandidatePlan.compile(filterCondition, variable, stringParameters) != null
+        ) return null
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
             return executeDirectStringFilter(
@@ -2179,6 +2188,9 @@ class QueryPipeline private constructor(
         preferMappedView: Boolean = false
     ): CypherResult? {
         if (!nodeClass.isAssignableFrom(CallSiteNode::class.java)) return null
+        if (nodeClass.isAssignableFrom(AnnotationNode::class.java) &&
+            candidateSources.any { it.graph.nodeCount(AnnotationNode::class.java) != 0L }
+        ) return null
         val projectedProperties = items.map { item ->
             val property = item.expression as? CypherExpr.Property ?: return null
             if (property.expression != CypherExpr.Variable(variable)) return null
@@ -3242,7 +3254,11 @@ class QueryPipeline private constructor(
                 val left = DirectStringFilter.compile(and.left, variable, parameters)
                 val right = DirectStringFilter.compile(and.right, variable, parameters)
                 if (left != null && right != null) {
+                    val leftSupported = DIRECT_STRING_NODE_PROPERTIES.any { (_, properties) -> left.property in properties }
+                    val rightSupported = DIRECT_STRING_NODE_PROPERTIES.any { (_, properties) -> right.property in properties }
+                    if (!leftSupported && !rightSupported) return null
                     val (required, residual) = if (
+                        !leftSupported || rightSupported &&
                         right.mode == StringMatchMode.EQUALS && left.mode != StringMatchMode.EQUALS
                     ) {
                         right to left

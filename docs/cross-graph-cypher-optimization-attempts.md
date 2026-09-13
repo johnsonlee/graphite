@@ -1255,3 +1255,30 @@ JMH GC statistics include setup, priming, and cleanup and are not query-only all
 **Conclusion:** keep the isolated protocol and repeat paired measurements before any
 final performance claim. Earlier records remain historical diagnostics, not pooled
 samples for the final comparison.
+
+
+### 2026-09-13 - Attempt 027: Preserve heterogeneous aggregate and DISTINCT semantics
+
+**Hypothesis:** new value and wrapped-field candidates can expose heterogeneous
+Annotation values to pre-existing string-only aggregate/projection shortcuts. Keep
+candidate selection, but decline those shortcuts when they cannot preserve Cypher
+numeric equality, null counts, or arbitrary annotation values.
+
+**Base/candidate:** current main remains `144d98ef`; this is a correctness follow-up
+to Attempts 021–022, applied to the isolated V2 candidate before fresh timing.
+Property-count storage aggregation admits `value` only for StringConstant; Annotation
+property aggregation admits only declared nonnull string class/name. Possible
+Annotation DISTINCT projections use the normalized streaming path and retain merged
+graph provenance. A conjunction chooses a supported candidate property and leaves an
+unsupported custom property to residual evaluation, or falls back if neither is supported.
+
+**Evidence:** full Core and Cypher tests, focused mapped candidate correctness tests,
+three module detekt gates, and the JMH build pass in
+`/tmp/graphite-slow-shapes-v2-tests.log`. New regressions cover missing/numeric values,
+count and count-distinct, both conjunction orders, Int/Long and nested-list equality,
+SKIP/LIMIT, and cross-graph provenance. This commit claims semantic preservation;
+separate isolated real-data timing is pending and no synthetic performance evidence
+is used.
+
+**Conclusion:** keep. A string candidate cannot justify string-only aggregation or
+raw JVM equality over a heterogeneous projected property.
