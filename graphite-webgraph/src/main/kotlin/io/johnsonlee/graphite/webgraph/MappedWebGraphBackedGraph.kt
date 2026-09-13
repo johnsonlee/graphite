@@ -17,6 +17,10 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
+import java.util.function.IntPredicate
+import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
+import io.johnsonlee.graphite.graph.propertyTextFragment
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
@@ -157,6 +161,8 @@ internal class MappedWebGraphBackedGraph(
     private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>
 ) : Graph,
+    NodePropertyTextCandidates,
+    NodeIdCandidateLookup,
     StreamingMethodLookup,
     WorkAwareStringPropertyLookup,
     WorkAwareTransformedStringPropertyLookup,
@@ -267,6 +273,45 @@ internal class MappedWebGraphBackedGraph(
         nodeTypeIndex.count(type)
 
     override fun stringPropertyNodeOrder(node: Node): Long = nodeOffsets.offset(node.id.value)
+
+    override fun <T : Node> nodesMatchingId(
+        type: Class<T>,
+        predicate: IntPredicate,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T> = sequence {
+        val ids = nodeTypeIndex.idIterator(type)
+        var inspected = 0
+        while (ids.hasNext()) {
+            if ((inspected++ and NODE_ID_SCAN_CANCELLATION_MASK) == 0 && Thread.currentThread().isInterrupted) {
+                throw CancellationException("Node ID candidate scan interrupted")
+            }
+            val id = ids.nextInt()
+            workConsumer?.consume()
+            if (predicate.test(id)) {
+                node(NodeId(id))?.takeIf(type::isInstance)?.let { yield(type.cast(it)) }
+            }
+        }
+    }
+
+    override fun <T : Node> propertyTextCandidates(
+        type: Class<T>,
+        fragment: String,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? = propertyTextCandidates(type, listOf(fragment), workConsumer)
+
+    override fun <T : Node> propertyTextCandidates(
+        type: Class<T>,
+        fragments: List<String>,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? {
+        if (fragments.isEmpty() || fragments.size > 2 || fragments.distinct().size != fragments.size ||
+            fragments.any { propertyTextFragment(it) != it }
+        ) return null
+        return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable)
+            .ids(type, fragments, workConsumer).mapNotNull { nodeId ->
+                node(NodeId(nodeId))?.takeIf(type::isInstance)?.let(type::cast)
+            }
+    }
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
     override fun <T : Node> nodesByStringProperty(
@@ -2542,6 +2587,7 @@ internal class MappedWebGraphBackedGraph(
     }
 }
 
+private const val NODE_ID_SCAN_CANCELLATION_MASK = 255
 private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
 private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
 private const val GRAPH_ID_PROJECTION_PROPERTY = "graphId"
@@ -2624,7 +2670,7 @@ internal data class RawStringMatchKey(
     val expected: String
 )
 
-private data class StringPredicateKey(
+internal data class StringPredicateKey(
     val transform: StringValueTransform?,
     val mode: StringMatchMode,
     val expected: String
@@ -2665,7 +2711,7 @@ private class RawProjectionMatches {
  * Serial, allocation-bounded predicate state for scans over a large global string table.
  * A cache collision only repeats the deterministic comparison and cannot change its result.
  */
-private class BoundedStringMatcher(
+internal class BoundedStringMatcher(
     private val stringTable: StringTable,
     private val predicate: StringPredicateKey,
     cacheCapacity: Int = LOCAL_STRING_MATCH_CACHE_CAPACITY

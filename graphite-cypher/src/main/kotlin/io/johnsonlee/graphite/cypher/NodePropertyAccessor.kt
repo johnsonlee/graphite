@@ -25,11 +25,23 @@ import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.ValueNode
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Resolves Cypher property names to actual values on Graphite nodes.
  */
 object NodePropertyAccessor {
+    private val propertyNamesByType = ConcurrentHashMap<Class<out Node>, List<String>>()
+
+    internal fun getPropertyNames(node: Node): List<String> = if (node is AnnotationNode) {
+        getAllProperties(node).keys.toList()
+    } else {
+        propertyNamesByType[node.javaClass] ?: propertyNamesByType.computeIfAbsent(node.javaClass) {
+            Collections.unmodifiableList(getAllProperties(node).keys.toList())
+        }
+    }
+
     private const val PROPERTY_ID = "id"
     private const val PROPERTY_TYPE = "type"
     private const val PROPERTY_VALUE = "value"

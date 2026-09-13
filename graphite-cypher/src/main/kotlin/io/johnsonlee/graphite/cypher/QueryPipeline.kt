@@ -22,9 +22,15 @@ import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
+import java.util.function.IntPredicate
+import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
+import io.johnsonlee.graphite.graph.propertyTextFragments
 import io.johnsonlee.graphite.graph.GraphScanParallelismPlan
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
@@ -42,6 +48,8 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
+import io.johnsonlee.graphite.graph.StringPropertyLookup
+import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -273,13 +281,16 @@ private class WorkTrackingSequence<T>(
 
 private val QUALIFIED_NODE_PROPERTIES = setOf(GRAPH_ID_PROPERTY, ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY)
 private val DIRECT_STRING_NODE_PROPERTIES = listOf(
-    EnumConstant::class.java to setOf("name"),
+    StringConstant::class.java to setOf("value"),
+    ResourceValueNode::class.java to setOf("value"),
+    EnumConstant::class.java to setOf("name", "value"),
     LocalVariable::class.java to setOf("name"),
     FieldNode::class.java to setOf("class", "name"),
     CallSiteNode::class.java to setOf("caller_class", "caller_name", "callee_class", "callee_name"),
     AnnotationNode::class.java to setOf(
         "class",
         "name",
+        "value",
         "caller_class",
         "caller_name",
         "callee_class",
@@ -572,7 +583,16 @@ class QueryPipeline private constructor(
                     val soughtRows = pushedWhere
                         ?.takeIf { it.condition is CypherExpr.Comparison }
                         ?.let { tryElementIdSeek(clause, it, rows) }
-                    rows = if (soughtRows != null) {
+                    val qualifiedRows = if (clauseIndex == 0 && !clause.optional && clause.where == null &&
+                        clause.patterns.size == 1 && rows.size == 1 && rows.single().isEmpty()
+                    ) {
+                        pushedWhere?.let { where ->
+                            qualifiedIdBindings(clause.patterns.single(), where.condition, sources)?.toList()
+                        }
+                    } else null
+                    rows = if (qualifiedRows != null) {
+                        qualifiedRows
+                    } else if (soughtRows != null) {
                         consumedWhereIndex = clauseIndex + 1
                         soughtRows
                     } else if (clause.optional) {
@@ -1240,7 +1260,11 @@ class QueryPipeline private constructor(
             val predicates = filters.map { filter ->
                 StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
             }
-            val canAggregateProperty = countedExpression == null || countedProperty in properties
+            val canAggregateProperty = (countedExpression == null || countedProperty in properties) &&
+                (countedProperty != "value" || candidateType == StringConstant::class.java) &&
+                (candidateType != AnnotationNode::class.java || countedExpression == null ||
+                    countedProperty == "class" || countedProperty == "name") &&
+                !(candidateType == AnnotationNode::class.java && filters.any { it.coercesToString })
             val aggregate = if (canAggregateProperty) {
                 if (workTracker == null) {
                     storageAggregation?.aggregateStringPropertyDisjunction(
@@ -1345,6 +1369,12 @@ class QueryPipeline private constructor(
         val preferPersistedStorage = graphScoped
         val preferMappedView = usesBalancedStringSplit(candidateSources.size)
         val stringParameters = activeParameters.get().orEmpty()
+        // Annotation projections can contain numerically equal values with different JVM
+        // types. The streaming DISTINCT path normalizes them and merges their provenance.
+        if (ret.distinct && nodeClass.isAssignableFrom(AnnotationNode::class.java) &&
+            candidateSources.any { it.graph.nodeCount(AnnotationNode::class.java) != 0L } &&
+            DirectStringCandidatePlan.compile(filterCondition, variable, stringParameters) != null
+        ) return null
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
             return executeDirectStringFilter(
@@ -1496,7 +1526,11 @@ class QueryPipeline private constructor(
             null
         }
         val predicateBindings = mutableMapOf<String, Any?>(variable to null)
-        for (candidate in nodeCandidates(nodeClass, candidateSources)) {
+        val propertyCandidates = if (nodePattern.properties.isEmpty()) {
+            qualifiedIdCandidates(nodeClass, filterCondition, variable, candidateSources)
+                ?: dynamicPropertyCandidates(nodeClass, filterCondition, variable, candidateSources)
+        } else null
+        for (candidate in propertyCandidates ?: nodeCandidates(nodeClass, candidateSources)) {
             if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
 
             predicateBindings[variable] = candidate
@@ -1602,7 +1636,10 @@ class QueryPipeline private constructor(
         nodeClass: Class<out Node>,
         filter: DirectStringFilter
     ): Boolean = DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
-        nodeClass.isAssignableFrom(candidateType) && filter.property in properties
+        // Concrete value labels already have single-property index admission and budget semantics.
+        // Only polymorphic value discovery needs the new merge of typed candidate streams.
+        nodeClass.isAssignableFrom(candidateType) && filter.property in properties &&
+            (filter.property != "value" || nodeClass != candidateType)
     }
 
     @Suppress("LongParameterList")
@@ -2173,6 +2210,9 @@ class QueryPipeline private constructor(
         preferMappedView: Boolean = false
     ): CypherResult? {
         if (!nodeClass.isAssignableFrom(CallSiteNode::class.java)) return null
+        if (nodeClass.isAssignableFrom(AnnotationNode::class.java) &&
+            candidateSources.any { it.graph.nodeCount(AnnotationNode::class.java) != 0L }
+        ) return null
         val projectedProperties = items.map { item ->
             val property = item.expression as? CypherExpr.Property ?: return null
             if (property.expression != CypherExpr.Variable(variable)) return null
@@ -2865,12 +2905,36 @@ class QueryPipeline private constructor(
         mappedView: Boolean = false
     ): Sequence<Node> {
         if (limit <= 0) return emptySequence()
+        // A polymorphic value search must retain source encounter order, including
+        // resource values and enum constructor values. Only merge typed streams
+        // when the backend exposes the ordering needed to do so.
+        val coercedAnnotationCandidates = nodeClass.isAssignableFrom(AnnotationNode::class.java) &&
+            AnnotationNode::class.java !in excludedTypes && disjunction.filters.any { it.coercesToString } &&
+            graph.nodeCount(AnnotationNode::class.java) != 0L
+        if ((disjunction.filters.any { it.property == "value" } || coercedAnnotationCandidates) &&
+            graph !is StringPropertyLookupOrder
+        ) {
+            return interruptible(trackWork(graph.nodes(nodeClass), tracker))
+                .filter { node -> node.javaClass !in excludedTypes && disjunction.matches(node) }
+                .take(limit)
+        }
         val candidateSequences = mutableListOf<Sequence<Node>>()
         for (candidateFilter in disjunction.candidateFilters) {
             val candidateType = candidateFilter.type
             if (candidateType in excludedTypes) continue
             if (!nodeClass.isAssignableFrom(candidateType)) continue
             val filters = candidateFilter.filters
+
+            // Annotation attributes can be numbers or containers even when their names
+            // coincide with string-only CallSite fields. Storage string predicates cannot
+            // represent toString() for these values.
+            if (candidateType == AnnotationNode::class.java && filters.any { it.coercesToString }) {
+                if (graph.nodeCount(candidateType) != 0L) {
+                    candidateSequences += interruptible(trackWork(graph.nodes(candidateType), tracker))
+                        .filter(disjunction::matches).take(limit)
+                }
+                continue
+            }
 
             val completeScanLimit = graph.nodeCount(candidateType)
                 ?.takeIf { it < Int.MAX_VALUE }
@@ -2885,7 +2949,7 @@ class QueryPipeline private constructor(
                 tracker,
                 storageSourceCount,
                 serialStorage,
-                rawStorage,
+                rawStorage || disjunction.filters.all { it.coercesToString },
                 mappedView
             )
             if (fused != null) {
@@ -2986,10 +3050,12 @@ class QueryPipeline private constructor(
         val property: String,
         val mode: StringMatchMode,
         val expected: String,
-        val transform: StringValueTransform? = null
+        val transform: StringValueTransform? = null,
+        val coercesToString: Boolean = false
     ) {
         fun matches(node: Node): Boolean {
-            val raw = NodePropertyAccessor.getProperty(node, property) as? String ?: return false
+            val value = NodePropertyAccessor.getProperty(node, property)
+            val raw = (if (coercesToString) value?.toString() else value as? String) ?: return false
             val actual = when (transform) {
                 null -> raw
                 StringValueTransform.LOWERCASE -> raw.lowercase()
@@ -3033,7 +3099,7 @@ class QueryPipeline private constructor(
                 if (owner.name != variable) return null
                 if (property.propertyName in QUALIFIED_NODE_PROPERTIES) return null
                 if (operand.coalescesMissingToEmpty && expected.isEmpty()) return null
-                return DirectStringFilter(property.propertyName, mode, expected, operand.transform)
+                return DirectStringFilter(property.propertyName, mode, expected, operand.transform, operand.coercesToString)
             }
 
             fun compileRegexCandidate(
@@ -3070,6 +3136,15 @@ class QueryPipeline private constructor(
             private fun compileOperand(expression: CypherExpr): StringOperand? {
                 if (expression is CypherExpr.Property) return StringOperand(expression)
                 val lower = expression as? CypherExpr.FunctionCall ?: return null
+                // These are strings on CallSite nodes, but annotations can expose arbitrary
+                // values under the same names. Retain the conversion for annotation scans.
+                if (!lower.distinct && lower.name.equals("toString", ignoreCase = true)) {
+                    val property = lower.args.singleOrNull() as? CypherExpr.Property ?: return null
+                    if (property.propertyName in setOf("caller_class", "caller_name", "callee_class", "callee_name")) {
+                        return StringOperand(property, coercesToString = true)
+                    }
+                    return null
+                }
                 if (lower.distinct || lower.args.size != 1 ||
                     !(lower.name.equals("toLower", ignoreCase = true) ||
                         lower.name.equals("toLowercase", ignoreCase = true))
@@ -3093,7 +3168,8 @@ class QueryPipeline private constructor(
             private data class StringOperand(
                 val property: CypherExpr.Property,
                 val transform: StringValueTransform? = null,
-                val coalescesMissingToEmpty: Boolean = false
+                val coalescesMissingToEmpty: Boolean = false,
+                val coercesToString: Boolean = false
             )
         }
     }
@@ -3200,7 +3276,11 @@ class QueryPipeline private constructor(
                 val left = DirectStringFilter.compile(and.left, variable, parameters)
                 val right = DirectStringFilter.compile(and.right, variable, parameters)
                 if (left != null && right != null) {
+                    val leftSupported = DIRECT_STRING_NODE_PROPERTIES.any { (_, properties) -> left.property in properties }
+                    val rightSupported = DIRECT_STRING_NODE_PROPERTIES.any { (_, properties) -> right.property in properties }
+                    if (!leftSupported && !rightSupported) return null
                     val (required, residual) = if (
+                        !leftSupported || rightSupported &&
                         right.mode == StringMatchMode.EQUALS && left.mode != StringMatchMode.EQUALS
                     ) {
                         right to left
@@ -3306,6 +3386,15 @@ class QueryPipeline private constructor(
             ?.let { graphId -> sources.filter { it.id == graphId } }
             ?: sources
 
+        qualifiedIdBindings(pattern, where.condition, candidateSources)?.let { matches ->
+            for (bindings in matches) {
+                if (evaluator.evaluate(where.condition, bindings) != true) continue
+                rows.add(projectRow(ret.items, columns, bindings))
+            }
+            checkCancelled()
+            return CypherResult(columns, rows)
+        }
+
         for (candidate in nodeElementCandidates(nodePattern, emptyMap(), candidateSources)) {
             if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
             predicateBindings[variable] = candidate
@@ -3357,7 +3446,9 @@ class QueryPipeline private constructor(
             ?.let { graphId -> sources.filter { it.id == graphId } }
             ?: sources
 
-        val directMatches = (pattern.elements.singleOrNull() as? PatternElement.NodePattern)?.let { node ->
+        val directMatches = (if (match.where == null) {
+            qualifiedIdBindings(pattern, where.condition, candidateSources)
+        } else null) ?: (pattern.elements.singleOrNull() as? PatternElement.NodePattern)?.let { node ->
             directStringBindings(node, where.condition, candidateSources)
         }
         if (orderBy == null && ret.distinct) {
@@ -3401,11 +3492,29 @@ class QueryPipeline private constructor(
                 )?.let { return it }
             }
         }
+        val seedCondition = firstNode?.variable
+            ?.takeIf { sourceVariable ->
+                pattern.elements.size == 3 &&
+                    (pattern.elements[1] as? PatternElement.RelationshipPattern)?.let { relationship ->
+                        !relationship.variableLength && relationship.properties.isEmpty() &&
+                            relationship.variable != sourceVariable
+                    } == true &&
+                    (pattern.elements[2] as? PatternElement.NodePattern)?.properties?.isEmpty() == true
+            }
+            ?.let { SourcePredicatePushdown.compile(where.condition, it) }
         val matches = directMatches ?: matchPatternLazily(
             pattern,
             emptyMap(),
             candidateSources,
-            finalResultPredicate = { bindings -> evaluator.evaluate(where.condition, bindings) == true }
+            finalResultPredicate = { bindings -> evaluator.evaluate(where.condition, bindings) == true },
+            seedPredicate = seedCondition?.let { predicate ->
+                { bindings -> evaluator.evaluate(predicate, bindings) == true }
+            },
+            seedMatches = if (seedCondition != null) {
+                firstNode?.let { node -> orderedSourceMatches(node, seedCondition, candidateSources) }
+            } else {
+                targetPreflightSourceMatches(pattern, where.condition, candidateSources)
+            }
         )
         if (orderBy != null) {
             return projectOrderedFilteredRows(
@@ -3431,6 +3540,72 @@ class QueryPipeline private constructor(
             if (rows.size >= limitCount) break
         }
         return CypherResult(columns, rows)
+    }
+
+    /** Defer target absence detection until the first source fails to satisfy the caller. */
+    private fun targetPreflightSourceMatches(
+        pattern: CypherPattern,
+        condition: CypherExpr,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Map<String, Any?>>? {
+        if (pattern.elements.size != 3 || pattern.pathVariable != null) return null
+        val sourceNode = pattern.elements[0] as? PatternElement.NodePattern ?: return null
+        val relationship = pattern.elements[1] as? PatternElement.RelationshipPattern ?: return null
+        val targetNode = pattern.elements[2] as? PatternElement.NodePattern ?: return null
+        val sourceVariable = sourceNode.variable ?: return null
+        val targetVariable = targetNode.variable ?: return null
+        if (relationship.variableLength || sourceNode.properties.isNotEmpty() ||
+            relationship.properties.isNotEmpty() || targetNode.properties.isNotEmpty() ||
+            sourceVariable == targetVariable || relationship.variable in setOf(sourceVariable, targetVariable)
+        ) return null
+        val targetCondition = SourcePredicatePushdown.compile(condition, targetVariable) ?: return null
+        val plan = DirectStringCandidatePlan.compile(
+            targetCondition, targetVariable, activeParameters.get().orEmpty()
+        ) ?: return null
+        val targetClass = resolveNodeClass(targetNode.labels) ?: return null
+        return candidateSources.asSequence().flatMap { source ->
+            val canLookup = source.graph is StringPropertyLookup && source.graph is StringPropertyLookupOrder &&
+                (plan.candidates.filters.none { it.transform != null } || source.graph is TransformedStringPropertyLookup)
+            val matches = matchNodeElementLazily(
+                sourceNode, emptyMap(), listOf(source), navigate = true, trackSegments = false
+            )
+            if (!canLookup) matches else sequence {
+                val iterator = matches.iterator()
+                // Let a high-degree first source satisfy LIMIT before paying for any target lookup.
+                // Probe only when another source is needed; a completed short scan needs no lookup.
+                if (!iterator.hasNext()) return@sequence
+                yield(iterator.next())
+                if (!iterator.hasNext()) return@sequence
+                if (directStringCandidates(source.graph, targetClass, plan.candidates, limit = 1).iterator().hasNext()) {
+                    yieldAll(iterator)
+                }
+            }
+        }
+    }
+
+    @Suppress("ReturnCount")
+    private fun orderedSourceMatches(
+        node: PatternElement.NodePattern,
+        condition: CypherExpr,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Map<String, Any?>>? {
+        // Selecting candidates before inline constraints could suppress their errors or volatility.
+        if (node.properties.isNotEmpty() || candidateSources.any { it.graph !is StringPropertyLookupOrder }) return null
+        val variable = node.variable ?: return null
+        val nodeClass = resolveNodeClass(node.labels) ?: return null
+        val plan = DirectStringCandidatePlan.compile(condition, variable, activeParameters.get().orEmpty()) ?: return null
+        return candidateSources.asSequence().flatMap { source ->
+            // Never limit seeds: matching nodes may have no relationships that survive the final WHERE.
+            directStringCandidates(source.graph, nodeClass, plan.candidates, rawStorage = true).mapNotNull { candidate ->
+                bindNodeCandidate(
+                    nodeValue(source, candidate),
+                    node,
+                    emptyMap(),
+                    navigate = true,
+                    trackSegments = false
+                )
+            }
+        }
     }
 
     private fun directStringBindings(
@@ -4019,6 +4194,8 @@ class QueryPipeline private constructor(
         existingBindings: Map<String, Any?>,
         candidateSources: List<CypherGraph> = sources,
         finalResultPredicate: ((Map<String, Any?>) -> Boolean)? = null,
+        seedPredicate: ((Map<String, Any?>) -> Boolean)? = null,
+        seedMatches: Sequence<Map<String, Any?>>? = null,
         trackSegments: Boolean = pattern.pathVariable != null ||
             pattern.elements.count { it is PatternElement.RelationshipPattern } > 1
     ): Sequence<Map<String, Any?>> {
@@ -4026,13 +4203,14 @@ class QueryPipeline private constructor(
         if (elements.isEmpty()) return sequenceOf(existingBindings)
         val initialBindings = prepareRelationshipMatchState(pattern, existingBindings)
 
-        var currentMatches: Sequence<Map<String, Any?>> = matchNodeElementLazily(
+        var currentMatches: Sequence<Map<String, Any?>> = seedMatches ?: matchNodeElementLazily(
             elements[0] as PatternElement.NodePattern,
             initialBindings,
             candidateSources,
             navigate = elements.size > 1,
             trackSegments = trackSegments
         )
+        if (seedPredicate != null) currentMatches = currentMatches.filter(seedPredicate)
         var i = 1
         while (i < elements.size) {
             val sourceNode = elements[i - 1] as PatternElement.NodePattern
@@ -4593,6 +4771,86 @@ class QueryPipeline private constructor(
 
     private fun findLastBoundNode(bindings: Map<String, Any?>): NodeCursor? =
         nodeCursor(bindings[INTERNAL_CURRENT_NODE_KEY])
+
+    /** Bind selected IDs through the ordinary single-node matcher; callers retain the full WHERE. */
+    private fun qualifiedIdBindings(
+        pattern: CypherPattern,
+        condition: CypherExpr,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Map<String, Any?>>? {
+        if (!qualified || pattern.pathVariable != null) return null
+        val node = pattern.elements.singleOrNull() as? PatternElement.NodePattern ?: return null
+        if (node.properties.isNotEmpty()) return null
+        val variable = node.variable ?: return null
+        val nodeClass = resolveNodeClass(node.labels) ?: return null
+        val candidates = qualifiedIdCandidates(nodeClass, condition, variable, candidateSources) ?: return null
+        return candidates.mapNotNull { candidate ->
+            bindNodeCandidate(candidate, node, emptyMap(), navigate = false, trackSegments = false)
+        }
+    }
+
+    /** Generated qualified identities can be checked using only namespace and graph-local ID. */
+    private fun qualifiedIdCandidates(
+        nodeClass: Class<out Node>,
+        condition: CypherExpr,
+        variable: String,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Any>? {
+        if (!qualified) return null
+        val predicate = condition as? CypherExpr.StringOp ?: return null
+        if (predicate.op != "CONTAINS") return null
+        val property = predicate.left as? CypherExpr.Property ?: return null
+        if (property.expression != CypherExpr.Variable(variable) ||
+            property.propertyName !in setOf(QUALIFIED_ID_PROPERTY, ELEMENT_ID_PROPERTY)
+        ) return null
+        val needle = when (val term = predicate.right) {
+            is CypherExpr.Literal -> term.value
+            is CypherExpr.Parameter -> activeParameters.get()?.get(term.name)
+            else -> null
+        } as? String ?: return null
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        return candidateSources.asSequence().flatMap { source ->
+            val prefix = source.id + ":"
+            val lookup = (source.graph as? NodeIdCandidateLookup)?.takeUnless { prefix.contains(needle) }
+            val candidates = if (lookup == null) null else {
+                val text = StringBuilder(prefix)
+                lookup.nodesMatchingId(nodeClass, IntPredicate { id ->
+                    text.setLength(prefix.length)
+                    text.append(id)
+                    text.indexOf(needle) >= 0
+                }, tracker)
+            }
+            (candidates ?: trackWork(source.graph.nodes(nodeClass), tracker)).map { node -> nodeValue(source, node) }
+        }
+    }
+
+    /** A storage candidate is never an answer: the complete ANY predicate still runs on every survivor. */
+    private fun dynamicPropertyCandidates(
+        nodeClass: Class<out Node>,
+        condition: CypherExpr,
+        variable: String,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Any>? {
+        val expression = condition as? CypherExpr.PredicateFunction ?: return null
+        val plan = DynamicPropertyContainsPlan.compile(expression)?.takeIf { it.nodeVariable == variable } ?: return null
+        val needle = when (val term = plan.term) {
+            is CypherExpr.Literal -> term.value
+            is CypherExpr.Parameter -> activeParameters.get()?.get(term.name)
+            else -> null
+        } as? String ?: return null
+        val fragments = propertyTextFragments(needle)
+        val fragment = fragments.firstOrNull() ?: return null
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        return candidateSources.asSequence().flatMap { source ->
+            // Metadata is not stored in the node record. A graph ID hit (including
+            // the prefix of an element ID) must retain every node in that graph.
+            val lookup = (source.graph as? NodePropertyTextCandidates)
+                ?.takeUnless { qualified && source.id.contains(fragment) }
+            val candidates = lookup?.propertyTextCandidates(nodeClass, fragments, tracker)
+                ?: trackWork(source.graph.nodes(nodeClass), tracker)
+            candidates.map { node -> nodeValue(source, node) }
+        }
+    }
 
     private fun <T : Node> nodeCandidates(
         type: Class<T>,

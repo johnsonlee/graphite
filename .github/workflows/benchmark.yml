@@ -29,6 +29,7 @@ env:
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
+  SLOW_QUERY_SHAPES_CONTROLS_SHA256: aed5523d4d84b92555b3a92da29b689bd2e30f7424084a3d3069c1f5ff854862
 
 jobs:
   candidate-gate-tests:
@@ -2863,10 +2864,96 @@ jobs:
       if: always()
       run: jq -e '.passed == true' benchmark-results/global-wide-status.json >/dev/null
 
+  slow-query-shapes:
+    name: slow-query-shapes
+    needs: [candidate-gate-tests, prepare-latency-fixtures]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+    - name: Checkout base-owned controls
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: gate
+        persist-credentials: false
+    - name: Checkout base implementation
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+        persist-credentials: false
+    - name: Checkout candidate implementation
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+    - name: Checkout candidate bootstrap controls
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: controls
+        persist-credentials: false
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+    - name: Select trusted slow-shape controls
+      id: slow-controls
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+      run: |
+        set -euo pipefail
+        OWNER=gate
+        MANIFEST=.github/scripts/benchmark-slow-query-shapes-controls.sha256
+        if [[ ! -f "gate/${MANIFEST}" ]]; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum gate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
+          test ! -L "controls/${MANIFEST}"
+          test "$(sha256sum "controls/${MANIFEST}" | cut -d' ' -f1)" = \
+            "${SLOW_QUERY_SHAPES_CONTROLS_SHA256}"
+          OWNER=controls
+        fi
+        (cd "${OWNER}" && sha256sum -c "${MANIFEST}")
+        echo "directory=${OWNER}" >> "${GITHUB_OUTPUT}"
+    - name: Restore real persisted fixture graphs
+      uses: actions/cache/restore@v5
+      with:
+        path: fixture-graphs
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+    - name: Compare all five real slow-query families
+      run: |
+        test -f fixture-graphs/.complete
+        test -f fixture-graphs/android/graph.metadata
+        test -f fixture-graphs/android/graph.nodedata
+        bash '${{ steps.slow-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.sh' \
+          '${{ steps.slow-controls.outputs.directory }}' gate base candidate \
+          fixture-graphs/android benchmark-results/slow-shapes
+    - name: Upload slow-query evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-slow-query-shapes-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: |
+          benchmark-results/slow-shapes/*.json
+          benchmark-results/slow-shapes/*.log
+          benchmark-results/slow-shapes/*.md
+          benchmark-results/slow-shapes/*.patch
+          benchmark-results/slow-shapes/*.kt
+          benchmark-results/slow-shapes/*.sha256
+        if-no-files-found: error
+        retention-days: 14
+
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting, slow-query-shapes]
     runs-on: ubuntu-latest
 
     steps:
@@ -2882,6 +2969,26 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         path: reporter
         persist-credentials: false
+
+    - name: Select additive slow-shape report controls
+      id: slow-report-controls
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+      run: |
+        set -euo pipefail
+        OWNER=.
+        MANIFEST=.github/scripts/benchmark-slow-query-shapes-controls.sha256
+        if [[ ! -f "${MANIFEST}" ]]; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum .github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
+          test ! -L "reporter/${MANIFEST}"
+          test "$(sha256sum "reporter/${MANIFEST}" | cut -d' ' -f1)" = \
+            "${SLOW_QUERY_SHAPES_CONTROLS_SHA256}"
+          OWNER=reporter
+        fi
+        (cd "${OWNER}" && sha256sum -c "${MANIFEST}")
+        echo "directory=${OWNER}" >> "${GITHUB_OUTPUT}"
 
     - name: Download method-level results
       continue-on-error: true
@@ -2915,7 +3022,8 @@ jobs:
           COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
           grep -q '"global-wide-pressure"' "${COMPARATOR}"
         fi
-        node "${COMPARATOR}" aggregate \
+        node '${{ steps.slow-report-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.mjs' aggregate \
+          --base-comparator "${COMPARATOR}" \
           --directory benchmark-results \
           --base-sha "${BASE_SHA}" \
           --candidate-sha "${CANDIDATE_SHA}" \
@@ -2935,7 +3043,8 @@ jobs:
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             "${BENCHMARK_REPORT_TRANSITION_SHA256}"
-          node reporter/.github/scripts/benchmark-gate.mjs aggregate \
+          node '${{ steps.slow-report-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.mjs' aggregate \
+            --base-comparator reporter/.github/scripts/benchmark-gate.mjs \
             --directory benchmark-results \
             --base-sha "${BASE_SHA}" \
             --candidate-sha "${CANDIDATE_SHA}" \
@@ -2979,6 +3088,7 @@ jobs:
         GRAPH_ROUTING_JOB: ${{ needs.graph-routing-pressure-evidence.result }}
         GLOBAL_WIDE_JOB: ${{ needs.global-wide-pressure-evidence.result }}
         CPU_ACCOUNTING_SMOKE_JOB: ${{ needs.validate-cpu-accounting.result }}
+        SLOW_QUERY_SHAPES_JOB: ${{ needs.slow-query-shapes.result }}
       run: |
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
           [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
@@ -2989,7 +3099,8 @@ jobs:
           [ "${LARGE_CORPUS_JOB}" != success ] || \
           [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ] || \
           [ "${GRAPH_ROUTING_JOB}" != success ] || [ "${GLOBAL_WIDE_JOB}" != success ] || \
-          [ "${CPU_ACCOUNTING_SMOKE_JOB}" != success ]; then
+          [ "${CPU_ACCOUNTING_SMOKE_JOB}" != success ] || \
+          [ "${SLOW_QUERY_SHAPES_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"
           exit 1
         fi
