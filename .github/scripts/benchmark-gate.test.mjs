@@ -3454,11 +3454,18 @@ test("explicit cold diagnostics preserve numerical failures while rejecting inte
     assert.equal(compareGlobalWidePressure(...args, { coldDiagnosticsOnly: "true" }).passed, false);
 });
 
-test("diagnostic driver refuses strict status publication before executing a benchmark", () => {
+test("diagnostic driver refuses strict status publication before Git or benchmark work", () => {
     const driver = new URL("./run-real64-global-wide.sh", import.meta.url);
-    const result = spawnSync("bash", [driver.pathname, "missing.tsv", "missing-fixtures", "a".repeat(40), "b".repeat(40)], {
-        encoding: "utf8", env: { ...process.env, GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY: "true", GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: "true" }
-    });
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /cannot publish a strict-target/);
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-diagnostic-no-git-"));
+    try {
+        const result = spawnSync("bash", [driver.pathname, "missing.tsv", "missing-fixtures", "a".repeat(40), "b".repeat(40)], {
+            cwd: directory, encoding: "utf8",
+            env: { ...process.env, GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY: "true", GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: "true" }
+        });
+        assert.equal(result.status, 1, result.stderr);
+        assert.match(result.stderr, /cannot publish a strict-target/);
+        assert.doesNotMatch(result.stderr, /not a git repository/);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
 });

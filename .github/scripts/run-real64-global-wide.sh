@@ -25,8 +25,6 @@ REPRODUCIBILITY_SCRIPT_PATH=.github/scripts/test-fixture64-reproducibility.sh
 ZIP_HASHER_PATH=.github/scripts/canonical-zip-sha256.py
 GIST_EVIDENCE_PATH=.github/scripts/gist-evidence.mjs
 STATUS_CONTEXT=graphite/fixture64-global-wide
-REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
-REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 PUBLISH_EVIDENCE=${GRAPHITE_PRESSURE_PUBLISH_EVIDENCE:-true}
 COLD_DIAGNOSTICS_ONLY=${GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY:-false}
@@ -35,6 +33,8 @@ if [[ "$COLD_DIAGNOSTICS_ONLY" == true && "$PUBLISH_EVIDENCE" != false ]]; then
   echo 'Cold diagnostic evaluation cannot publish a strict-target success context' >&2
   exit 1
 fi
+REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
+REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 SHARED_REPRODUCIBILITY_RECEIPT=${GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:-}
 
 test -f "${MANIFEST}"
