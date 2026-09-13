@@ -426,6 +426,10 @@ pub struct ScanPlan {
     /// Some leaf reads a synthetic key, whose truth depends on the graph: the per-type
     /// plans are then settled per source instead of once here.
     has_synthetic: bool,
+    /// The clause the rows are checked against when the pattern carried a property
+    /// map: the map's equalities conjoined with the WHERE clause, if any. `None` when
+    /// the WHERE clause alone is the whole test.
+    clause: Option<Expr>,
 }
 
 impl ScanPlan {
@@ -443,9 +447,6 @@ impl ScanPlan {
         }
         let np = &p.nodes[0];
         let variable = np.variable.clone()?;
-        if !np.properties.is_empty() {
-            return None;
-        }
         let tags = match np.labels.first() {
             None => (0..graphite_storage::node::TAG_COUNT as u8).collect::<Vec<u8>>(),
             Some(l) => label_tags(l)?,
@@ -453,8 +454,36 @@ impl ScanPlan {
         if np.labels.len() > 1 {
             return None;
         }
-        let where_clause = where_clause?;
-        let mut tree = collect_tree(where_clause, &variable)?;
+        // A property map `{k: v}` is `n.k = v` for every entry: planned like a
+        // conjunct of the WHERE clause, and re-checked with it. Only literal values;
+        // anything else stays with the matcher.
+        let mut clause: Option<Expr> = where_clause.cloned();
+        for (key, value) in &np.properties {
+            if !matches!(
+                value,
+                Expr::Literal(
+                    crate::ast::Literal::Str(_)
+                        | crate::ast::Literal::Int(_)
+                        | crate::ast::Literal::Float(_)
+                )
+            ) {
+                return None;
+            }
+            let eq = Expr::Comparison {
+                op: crate::ast::CmpOp::Eq,
+                left: Box::new(Expr::Property {
+                    expr: Box::new(Expr::Variable(variable.clone())),
+                    key: key.clone(),
+                }),
+                right: Box::new(value.clone()),
+            };
+            clause = Some(match clause {
+                Some(w) => Expr::And(Box::new(eq), Box::new(w)),
+                None => eq,
+            });
+        }
+        let combined = clause.as_ref()?;
+        let mut tree = collect_tree(combined, &variable)?;
         let tests = assign_test_ids(&mut tree);
         let mut preds = Vec::new();
         tree.leaves(&mut preds);
@@ -490,6 +519,11 @@ impl ScanPlan {
             tag_plans,
             call_site,
             has_synthetic,
+            clause: if np.properties.is_empty() {
+                None
+            } else {
+                clause
+            },
         })
     }
 
@@ -507,6 +541,7 @@ impl ScanPlan {
         where_clause: Option<&Expr>,
         consume: &mut dyn FnMut(Row) -> CypherResult<bool>,
     ) -> CypherResult<bool> {
+        let where_clause = self.clause.as_ref().or(where_clause);
         self.run_inner(
             ex,
             ev,
@@ -565,6 +600,7 @@ impl ScanPlan {
         let fields: Vec<RawField> = keys.iter().map(|k| RawField::of(k, ex.cross)).collect();
         let all_raw = fields.iter().all(|f| !matches!(f, RawField::General));
         let empty = Row::new();
+        let where_clause = self.clause.as_ref().or(where_clause);
         self.run_inner(ex, ev, &empty, where_clause, &mut |value, _, verified| {
             if !verified {
                 if let Some(w) = where_clause {
@@ -618,6 +654,7 @@ impl ScanPlan {
         sink: &mut dyn FnMut(NodeRef) -> CypherResult<bool>,
     ) -> CypherResult<bool> {
         let empty = Row::new();
+        let where_clause = self.clause.as_ref().or(where_clause);
         self.run_inner(ex, ev, &empty, where_clause, &mut |value, _, verified| {
             let Value::Node(n) = value else {
                 return Ok(true);
@@ -4428,6 +4465,37 @@ mod tests {
         assert_eq!(p[TAG_PARAMETER_NODE as usize], "column");
         assert_eq!(p[TAG_FIELD_NODE as usize], "column");
         assert_eq!(p[TAG_LOCAL_VARIABLE as usize], "skip");
+    }
+
+    #[test]
+    fn property_maps_plan_as_equalities() {
+        let (p, w) = parse_where(
+            r#"MATCH (n:CallSite {callee_class: "java.lang.String", callee_name: "length"}) RETURN n"#,
+        );
+        assert!(w.is_none());
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(matches!(
+            plan.tag_plans[TAG_CALL_SITE_NODE as usize],
+            TagPlan::CallSite(_)
+        ));
+        assert!(plan.clause.is_some());
+        let (_, leaves) = plan.call_site.as_ref().expect("a CallSite tree");
+        assert_eq!(leaves.len(), 2);
+        // With a WHERE clause the map is conjoined with it; a number is a numeric
+        // leaf; a non-literal value leaves the pattern to the matcher.
+        let p = plans(r#"MATCH (n {value: 0}) WHERE n.callee_class CONTAINS "x" RETURN n"#);
+        assert!(p.iter().enumerate().all(|(tag, k)| {
+            *k == if tag == TAG_ANNOTATION_NODE as usize {
+                "generic"
+            } else {
+                "skip"
+            }
+        }));
+        let p = plans(r#"MATCH (n {value: 0}) RETURN n"#);
+        assert_eq!(p[TAG_INT_CONSTANT as usize], "column");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        let (p, w) = parse_where(r#"MATCH (n {value: n.name}) RETURN n"#);
+        assert!(ScanPlan::build(&p, w.as_ref()).is_none());
     }
 
     #[test]

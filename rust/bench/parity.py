@@ -283,6 +283,16 @@ QUERIES = [
     'MATCH (n) WHERE n.value = -1 RETURN count(*)',
     'MATCH (n:LongConstant) WHERE n.value = 0 RETURN count(*)',
     'MATCH (n) WHERE toString(n.id) = "5" RETURN n',
+    # A property map in the pattern is planned like `n.k = v` conjuncts.
+    'MATCH (n:CallSite {callee_class: "java.lang.String"}) RETURN count(*)',
+    'MATCH (n:CallSite {callee_class: "java.lang.String", callee_name: "length"}) RETURN n.caller_class ORDER BY id(n) LIMIT 10',
+    'MATCH (n:CallSite {callee_name: "length"}) WHERE n.caller_class CONTAINS "java" RETURN count(*)',
+    'MATCH (n {value: "UNKNOWN"}) RETURN n ORDER BY id(n) LIMIT 5',
+    'MATCH (n:IntConstant {value: 0}) RETURN count(*)',
+    'MATCH (n {value: 0}) RETURN labels(n)[0] AS l, count(*) ORDER BY l',
+    'MATCH (n:CallSite {nosuch: "x"}) RETURN count(*)',
+    'MATCH (n:CallSite {callee_class: "java.lang.String"}) RETURN n LIMIT 0',
+    'MATCH (n:StringConstant {value: "UNKNOWN"})-[r:DATAFLOW]->(m) RETURN count(*)',
 ]
 for q in QUERIES:
     CASES.append(("POST", "/api/graphs/app/cypher", json.dumps({"query": q})))
