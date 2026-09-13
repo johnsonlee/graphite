@@ -1,0 +1,39 @@
+{
+  "graphs": 64,
+  "repeat": 11,
+  "failures": 0,
+  "positions": {
+    "early": {
+      "graph": "fixture-android-00",
+      "term": "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "rows": 25,
+      "samples": 11,
+      "median_ms": 0.56,
+      "max_ms": 0.84
+    },
+    "middle": {
+      "graph": "fixture-kotlin-compiler-00",
+      "term": "org.jetbrains.kotlin.resolve.calls.inference.model.NewConstraintSystemImpl$TransactionState",
+      "rows": 25,
+      "samples": 11,
+      "median_ms": 1.06,
+      "max_ms": 1.55
+    },
+    "late": {
+      "graph": "fixture-tika-15",
+      "term": "org.openxmlformats.schemas.wordprocessingml.x2006.main.impl.CTTblPrImpl",
+      "rows": 19,
+      "samples": 11,
+      "median_ms": 0.84,
+      "max_ms": 1.56
+    },
+    "absent": {
+      "graph": null,
+      "term": "__graphite_hit_position_absent__",
+      "rows": 0,
+      "samples": 11,
+      "median_ms": 0.29,
+      "max_ms": 0.43
+    }
+  }
+}

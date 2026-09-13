@@ -152,6 +152,31 @@ def call(client, query, _timeout=None):
     return client.post("/api/cypher", {"query": query})
 
 
+def engine_seconds(client):
+    """Cumulative engine time from `/metrics`, summed over outcomes.
+
+    The server's histogram times only the engine, so two scrapes around a request
+    split its wall time into the engine and everything around it: HTTP, JSON, the
+    body on the wire. `None` when the server exposes no such series."""
+    try:
+        if client.conn is None:
+            client._connect()
+        client.conn.request("GET", "/metrics")
+        r = client.conn.getresponse()
+        text = r.read().decode("utf-8", "replace")
+    except Exception:
+        return None
+    total, seen = 0.0, False
+    for line in text.splitlines():
+        if line.startswith("graphite_cypher_query_duration_seconds_sum"):
+            try:
+                total += float(line.rsplit(" ", 1)[1])
+                seen = True
+            except ValueError:
+                pass
+    return total if seen else None
+
+
 def digest(payload):
     try:
         d = json.loads(payload)
@@ -250,6 +275,9 @@ def main():
     # otherwise have.
     ap.add_argument("--warmup-seed", type=int, default=777)
     ap.add_argument("--mix", choices=sorted(MIXES), default="v2")
+    ap.add_argument("--split", action="store_true",
+                    help="scrape /metrics around each query to split engine time from "
+                         "the rest, and record the response body size")
     ap.add_argument("--out")
     args = ap.parse_args()
 
@@ -271,14 +299,26 @@ def main():
     # timeouts over the percentiles. Failures are counted and reported separately, and
     # a run with any of them exits non-zero, so its numbers are never quoted unnoticed.
     rows, failures = [], collections.Counter()
+    if args.split and engine_seconds(client) is None:
+        print("--split needs a server exposing graphite_cypher_query_duration_seconds "
+              "on /metrics (start it with --metrics)", file=sys.stderr)
+        return 2
     for i, (shape, q) in enumerate(queries):
+        before = engine_seconds(client) if args.split else None
         ms, status, payload = call(client, q)
+        after = engine_seconds(client) if args.split else None
         d, n = digest(payload)
         ok = status == 200 and n is not None
         if not ok:
             failures[str(status)] += 1
-        rows.append({"i": i, "shape": shape, "query": q, "ms": round(ms, 1),
-                     "status": status, "ok": ok, "rows": n, "digest": d})
+        row = {"i": i, "shape": shape, "query": q, "ms": round(ms, 1),
+               "status": status, "ok": ok, "rows": n, "digest": d}
+        if args.split:
+            engine = (after - before) * 1000.0 if before is not None and after is not None else None
+            row["engine_ms"] = round(engine, 3) if engine is not None else None
+            row["outside_ms"] = round(ms - engine, 3) if engine is not None else None
+            row["bytes"] = len(payload)
+        rows.append(row)
         if (i + 1) % 25 == 0:
             print(f"  {i + 1}/{len(queries)}", flush=True)
 
@@ -294,6 +334,12 @@ def main():
         "p95_ms": round(percentile(lat, 0.95), 2) if lat else None,
         "max_ms": round(max(lat), 2) if lat else None,
     }
+    if args.split:
+        ok_rows = [r for r in rows if r["ok"] and r.get("engine_ms") is not None]
+        for key in ("engine_ms", "outside_ms", "bytes"):
+            vals = [r[key] for r in ok_rows]
+            summary[f"p50_{key}"] = round(percentile(vals, 0.50), 2) if vals else None
+            summary[f"p95_{key}"] = round(percentile(vals, 0.95), 2) if vals else None
     print(json.dumps(summary, indent=2))
     if args.out:
         json.dump({"summary": summary, "queries": rows}, open(args.out, "w"), indent=2)

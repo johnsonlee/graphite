@@ -82,21 +82,26 @@ P95 clears 10x; P50 does not, and it is worth writing down why rather than leavi
 an open task. The reason is measurable and it is not the query engine.
 
 The `/metrics` histogram times only the engine — the `spawn_blocking` body — so a request
-can be split into engine and everything-else by bracketing it with two scrapes. Over the
-170-query backtest population, paired per request:
+can be split into engine and everything-else by bracketing it with two scrapes.
+`backtest.py --split` does exactly that for every measured query and records the
+response size alongside; the raw output of the run below is committed as
+`rust/bench/results/backtest-v2-split.json` (every query, its status, timings and
+bytes; 170 of 170 succeeded). Over the v2 population, paired per request:
 
-| | |
-|---|---:|
-| P50 total | 2.18 ms |
-| P50 engine | 1.51 ms |
-| P50 outside the engine | 0.63 ms |
-| P50 response body | 63.5 KB |
+| | P50 | P95 |
+|---|---:|---:|
+| total | 0.90 ms | 3.7 ms |
+| engine | 0.45 ms | 3.27 ms |
+| outside the engine | 0.41 ms | 0.57 ms |
+| response body | 9.4 KB | 57.7 KB |
 
-The median request is a `wide-or` returning 200 rows — about 75 KB of pretty-printed
-JSON. Measured against body size, the response path costs roughly **8.8 µs/KB**, so that
-body alone is about **0.66 ms** to serialize and write. An empty response
-(`RETURN 1`, 0.2 KB) costs 0.19 ms, which is the HTTP round trip and is not going
-anywhere.
+Outside the engine is nearly constant: HTTP, JSON and the body on the wire cost about
+0.4 ms whatever the query, and an empty response (`RETURN 1`, 0.2 KB) costs 0.19 ms,
+which is the round trip itself and is not going anywhere. At the median the engine
+and everything around it are the same size, so halving the engine again would move
+P50 by a quarter. (An earlier revision of this section quoted 2.18 / 1.51 / 0.63 ms
+over the v1 mix from an uncommitted script; those figures are superseded by this
+committed, fail-closed measurement.)
 
 Kotlin's P50 on this corpus is 6.6 ms, so 10x means **0.66 ms total**. The median
 query's response body already costs that much on its own, before the engine plans a
@@ -308,6 +313,28 @@ Serving two *different* graphs also exposed two cross-graph defects the single-g
 and same-graph-twice runs could not: the grouped `count(*)` fast path emitted one row
 per graph instead of summing a value's counts across them, and the DISTINCT fast path
 dropped a later graph from a value's provenance. Both are fixed and covered.
+
+## Where the first hit sits
+
+Graphs are planned and swept in id order, in batches: the first alone, then the next
+`threads` graphs, then doubling up to `4 × threads` per batch, so a LIMIT satisfied
+by an early graph pays for one plan and a late hit does not wait for every remaining
+graph to be planned at once. `rust/bench/hit-position.py` measures that directly with
+the production's commonest shape (`caller_class CONTAINS t OR callee_class CONTAINS t
+RETURN n LIMIT 25`), choosing for each position a `callee_class` whose cross-graph
+provenance is exactly that graph, plus a term present nowhere; every request must
+succeed. 64 graphs, 11 repetitions, medians:
+
+| First hit in | Graph | Median | Max |
+|---|---|---:|---:|
+| the first graph | `fixture-android-00` | 0.56 ms | 0.84 ms |
+| the 33rd graph | `fixture-kotlin-compiler-00` | 1.06 ms | 1.55 ms |
+| the last graph | `fixture-tika-15` | 0.84 ms | 1.56 ms |
+| no graph | -- | 0.29 ms | 0.43 ms |
+
+The late hit costs less than the middle one because the term's rarest trigram is
+absent from most graphs' bitmaps, which settles them before any planning; the absent
+term is the cheapest of all for the same reason.
 
 ## Debug builds
 
