@@ -3300,7 +3300,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         assert.match(section, /name: wide-latency-bundle-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
     }
     assert.match(aggregate, /needs: \[global-wide-historical-evidence, build-wide-latency-bundle, wide-latency-measurements\]/);
-    assert.match(aggregate, /if: always\(\)/);
+    assert.match(aggregate, /^    if: \$\{\{ !cancelled\(\) \}\}/m);
     assert.match(aggregate, /benchmark-wide-shards\.mjs aggregate/);
     assert.match(aggregate, /--legacy legacy-results --bundle wide-latency-bundle/);
     assert.match(aggregate, /--standard samples-standard --full-scan samples-full-scan/);

@@ -1055,7 +1055,7 @@ jobs:
 
   method-compatibility:
     name: method-compatibility-gate
-    if: always()
+    if: ${{ !cancelled() }}
     needs: [method-compatibility-shard]
     runs-on: ubuntu-latest
 
@@ -1987,7 +1987,7 @@ jobs:
 
   wrapped-query-latency:
     name: wrapped-query-latency
-    if: always()
+    if: ${{ !cancelled() }}
     needs: [candidate-gate-tests, wrapped-query-latency-shard]
     runs-on: ubuntu-latest
 
@@ -2947,7 +2947,7 @@ jobs:
   global-wide-pressure-evidence:
     name: global-wide-pressure-evidence
     needs: [global-wide-historical-evidence, build-wide-latency-bundle, wide-latency-measurements]
-    if: always()
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -3248,7 +3248,7 @@ jobs:
   wide-query-latency-gate:
     name: wide-query-latency-${{ matrix.query.id }}
     needs: [candidate-gate-tests, global-wide-pressure-evidence]
-    if: ${{ always() && needs.candidate-gate-tests.result == 'success' }}
+    if: ${{ !cancelled() && needs.candidate-gate-tests.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
@@ -3278,7 +3278,7 @@ jobs:
 
   benchmark-regression-gate:
     name: benchmark-regression-gate
-    if: always()
+    if: ${{ !cancelled() }}
     needs: [benchmark-fail-fast, benchmark-fail-fast-late, benchmark-prerequisites, candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, wide-query-latency-gate, validate-cpu-accounting, slow-query-shapes]
     runs-on: ubuntu-latest
 
@@ -3451,7 +3451,7 @@ jobs:
 
   benchmark-comment:
     name: benchmark-comment
-    if: always()
+    if: ${{ !cancelled() }}
     needs: [benchmark-regression-gate]
     runs-on: ubuntu-latest
     permissions:

@@ -158,3 +158,33 @@ test('fork policy skips write-token monitors explicitly without accepting failed
     assert.notEqual(failedPrerequisite.status, 0, 'fork policy never waives prerequisite failures');
     assert.doesNotMatch(workflow, /pull_request_target:/);
 });
+
+
+test('aggregation runs after ordinary failures but does not survive workflow cancellation', () => {
+    const aggregators = ['method-compatibility', 'wrapped-query-latency', 'global-wide-pressure-evidence',
+        'wide-query-latency-gate', 'benchmark-regression-gate', 'benchmark-comment'];
+    for (const name of aggregators) {
+        const condition = jobs.get(name).match(/^    if: \$\{\{ (.*) \}\}$/m)?.[1];
+        assert.ok(condition, `${name} has an explicit cancellation-aware job condition`);
+        assert.match(condition, /!cancelled\(\)/);
+        const evaluate = new Function('cancelled', 'success', 'candidateTestsPassed',
+            `return (${condition.replace("needs.candidate-gate-tests.result == 'success'", 'candidateTestsPassed')});`);
+        for (const upstreamPassed of [true, false]) {
+            assert.equal(evaluate(() => false, () => upstreamPassed, true), true,
+                `${name} must retain diagnostic aggregation after upstream failure`);
+            assert.equal(evaluate(() => true, () => upstreamPassed, true), false,
+                `${name} must stop artifact downloads and processing after run cancellation`);
+        }
+        if (name === 'wide-query-latency-gate') {
+            assert.equal(evaluate(() => false, () => false, false), false,
+                'a failed query catalog prerequisite still prevents the verdict matrix');
+        }
+    }
+    assert.doesNotMatch(workflow, /^    if: .*always\(\)/m,
+        'no job-level always() may keep expensive reporting alive after cancellation');
+    for (const name of ['method-compatibility-shard', 'wrapped-query-latency-shard',
+        'wide-latency-measurements', 'global-wide-pressure-evidence', 'benchmark-prerequisites']) {
+        assert.match(jobs.get(name), /^      if: always\(\)/m,
+            `${name} must retain step-level diagnostic artifact cleanup`);
+    }
+});

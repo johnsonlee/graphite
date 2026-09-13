@@ -71,7 +71,7 @@ test('workflow matrix reuses measurements and is mandatory even when another que
     const matrix = workflow.slice(workflow.indexOf('  wide-query-latency-gate:'),
         workflow.indexOf('  benchmark-regression-gate:'));
     assert.match(matrix, /name: wide-query-latency-\$\{\{ matrix.query.id \}\}/);
-    assert.match(matrix, /always\(\)/);
+    assert.match(matrix, /!cancelled\(\)/);
     assert.match(matrix, /fail-fast: false/);
     assert.match(matrix, /fromJSON\(needs.candidate-gate-tests.outputs.queries\)/);
     assert.match(matrix, /benchmark-query-gate.mjs check/);

@@ -85,7 +85,7 @@ Server lifecycle and CPU accounting contracts run before the expensive benchmark
 64-graph fixture also waits for the real CPU-accounting smoke to succeed. Expensive matrices
 cancel their sibling jobs on failure. Isolated monitors cancel independent work after a blocking
 job finishes with a failure, including its diagnostic uploads; they inspect only the current run
-attempt. The monitors do not check out or execute benchmark code with their cancellation token. They run only for
+attempt. The monitors do not check out or execute benchmark code with their cancellation token. Aggregate and reporting jobs use `!cancelled()` so ordinary failures still produce diagnostics, while workflow cancellation stops further artifact downloads and processing; step-level diagnostic uploads retain `always()`. They run only for
 same-repository pull requests, where GitHub grants the cancellation token. Fork pull requests
 retain the prerequisite barriers, matrix cancellation, and per-pair fail-fast checks; cancellation
 of unrelated jobs is unavailable with the fork's read-only token. Only this explicit fork policy
