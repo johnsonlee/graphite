@@ -176,7 +176,7 @@ sweep per graph, and a conjunction went to the generic evaluator over every reco
 
 | Server, 64 graphs without the file | P50 | P95 | max |
 |---|---:|---:|---:|
-| Kotlin main (builds the index in memory) | 6.6 ms | 118 ms | |
+| Kotlin main (builds the index in memory) | 13.8 ms | 93.1 ms | 727 ms |
 | Rust `1d8a52d`, with the file | 3.1 ms | 34.0 s | 34.4 s |
 | Rust before this fix, without the file | 65.3 ms | 53.9 s | 60 s timeout |
 | Rust with this fix, without the file | 1.1 ms | 4.5 ms | 156 ms |
