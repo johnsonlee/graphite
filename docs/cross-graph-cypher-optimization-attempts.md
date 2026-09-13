@@ -1497,3 +1497,42 @@ No new performance speedup is claimed. Full checks and final comparisons remain 
 
 **Conclusion:** keep the compatibility correction. An optimization of untyped discovery
 must not silently change existing labeled-query index policy or work accounting.
+
+### 2026-09-13 - Attempt 035: Keep source discovery lazy for dense DATAFLOW matches
+
+**Hypothesis:** source pushdown must select raw serial storage explicitly. Its unlimited
+seed count otherwise rejects the bounded parallel scan and admits an eager CallSite
+index before yielding the first seed, even when that seed supplies all 50 output rows.
+
+**Base/candidate:** main `144d98efa2bcb1f183d4f962b833c234d839d2a9` versus
+`522a81f9` plus the raw-source policy correction and correctness tests. The frozen
+candidate JAR SHA-256 is
+`5cc950355a2a91024a3af468c3f57f54b362ff9b292ec1e0a6dc48ba4d89b940`;
+exact source identities and patch are in
+`/tmp/graphite-slow-shapes-evidence/dense-source-corrected/`.
+
+**Fixture/method:** two diagnostic pairs in reversed revision order, each process
+opening an independent private copy of the real persisted Android graph (5,938,826
+nodes). Query: `MATCH (c:CallSiteNode)-[r:DATAFLOW]->(n) WHERE c.caller_class
+CONTAINS 'android' RETURN c.id,n.id,type(r) LIMIT 50`. Cold means a fresh mapping,
+not flushed operating-system pages. These observations are not pooled with final JMH.
+
+| Observation | Main | Corrected candidate |
+| --- | ---: | ---: |
+| Cold wall, two runs | 133.41 / 131.02 ms | 70.34 / 69.02 ms |
+| Warm wall, two runs | 36.96 / 36.83 ms | 9.20 / 8.89 ms |
+| Cold process CPU, two runs | 359.97 / 358.69 ms | 133.96 / 131.31 ms |
+
+The preceding candidate had regressed cold wall to 452.70 ms versus main 133.79 ms.
+The correction removes that regression. All eight corrected observations have the
+same ordered 50-row digest. Neither revision initializes or persists the CallSite
+index; all four private copies were removed and shared fixture verification passed.
+No measured allocation or peak-memory claim is made for this diagnostic probe.
+
+**Verification:** the source-access test requires serial raw storage, unrestricted
+seed discovery, and consumption/expansion of only the first seed when it supplies
+the requested 50 rows. Full Cypher tests, lint, and coverage passed after this change;
+Cypher line coverage is 98.004%. Full repository checks and final paired timings follow.
+
+**Conclusion:** keep. The planner can push source predicates down while preserving
+lazy output-limit behavior and avoiding eager index construction for dense matches.

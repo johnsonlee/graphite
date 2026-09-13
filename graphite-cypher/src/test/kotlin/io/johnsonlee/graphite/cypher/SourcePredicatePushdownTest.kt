@@ -1,5 +1,8 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.Edge
@@ -9,6 +12,11 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
+import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
@@ -16,6 +24,7 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class SourcePredicatePushdownTest {
     @Test
@@ -153,6 +162,53 @@ class SourcePredicatePushdownTest {
         assertEquals(listOf(NodeId(8), NodeId(4)), accessed)
         kotlin.test.assertTrue(lookupLimits.isNotEmpty())
         kotlin.test.assertTrue(lookupLimits.all { it > 1 })
+    }
+
+    @Test
+    fun `dense typed relationship source requests lazy raw storage and reads only first seed`() {
+        val method = MethodDescriptor(TypeDescriptor("android.Service"), "call", emptyList(), TypeDescriptor("void"))
+        val sources = (1..3).map { id -> CallSiteNode(NodeId(id), method, method, null, null, emptyList()) }
+        val targets = (0 until 50).map { index -> IntConstant(NodeId(100 + index), index) }
+        val backing = DefaultGraph.Builder().apply {
+            sources.forEach(::addNode)
+            targets.forEach(::addNode)
+            targets.forEach { target -> addEdge(DataFlowEdge(sources.first().id, target.id, DataFlowKind.ASSIGN)) }
+        }.build()
+        val consumedSources = mutableListOf<NodeId>()
+        val expandedSources = mutableListOf<NodeId>()
+        val graph = object : Graph by backing, WorkAwareStringPropertyDisjunctionLookup, StringPropertyLookupOrder {
+            override fun stringPropertyNodeOrder(node: Node) = node.id.value.toLong()
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = error("Unexpected ordinary source scan")
+            override fun outgoing(id: NodeId): Sequence<Edge> {
+                expandedSources += id
+                return backing.outgoing(id)
+            }
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>, predicates: List<StringPropertyPredicate>, limit: Int
+            ): Sequence<T>? = error("Storage consumer must accompany candidate selection")
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>, predicates: List<StringPropertyPredicate>, limit: Int, workConsumer: GraphWorkConsumer
+            ): Sequence<T> {
+                // A parallel consumer plus limit == nodeCount makes mapped storage fall through
+                // to eager index construction. Raw serial preference must reach storage explicitly.
+                assertTrue(workConsumer is PreferredRawGraphWorkBatchConsumer)
+                assertTrue(workConsumer is SerialGraphWorkBatchConsumer)
+                assertEquals(sources.size, limit)
+                assertEquals<Class<*>>(CallSiteNode::class.java, type)
+                assertEquals(listOf(StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "android")), predicates)
+                return sources.asSequence().onEach { source ->
+                    consumedSources += source.id
+                    workConsumer.consume()
+                }.map(type::cast)
+            }
+        }
+        val result = CypherExecutor(graph, CypherExecutionBudget(1_000)).execute(
+            "MATCH (c:CallSiteNode)-[:DATAFLOW]->(n) WHERE c.caller_class CONTAINS 'android' " +
+                "RETURN n.value AS value LIMIT 50"
+        )
+        assertEquals(targets.map { mapOf("value" to it.value) }, result.rows)
+        assertEquals(listOf(sources.first().id), consumedSources)
+        assertEquals(listOf(sources.first().id), expandedSources)
     }
 
     private fun query(predicate: String, suffix: String = "LIMIT 10"): String =

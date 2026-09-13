@@ -3573,7 +3573,7 @@ class QueryPipeline private constructor(
         val plan = DirectStringCandidatePlan.compile(condition, variable, activeParameters.get().orEmpty()) ?: return null
         return candidateSources.asSequence().flatMap { source ->
             // Never limit seeds: matching nodes may have no relationships that survive the final WHERE.
-            directStringCandidates(source.graph, nodeClass, plan.candidates).mapNotNull { candidate ->
+            directStringCandidates(source.graph, nodeClass, plan.candidates, rawStorage = true).mapNotNull { candidate ->
                 bindNodeCandidate(
                     nodeValue(source, candidate),
                     node,
