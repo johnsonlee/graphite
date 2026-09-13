@@ -304,12 +304,7 @@ object CypherFunctions {
         else -> null
     }
 
-    private fun keys(value: Any?): List<String>? = when (value) {
-        is MethodValue -> value.properties().keys.toList()
-        is Node -> NodePropertyAccessor.getAllProperties(value).keys.toList()
-        is QualifiedNode -> properties(value)?.keys?.toList()
-        else -> null
-    }
+    private fun keys(value: Any?): List<String>? = dynamicPropertyKeys(value)
 
     internal fun labels(value: Any?): List<String> = when (value) {
         is MethodValue -> listOf(METHOD_LABEL)

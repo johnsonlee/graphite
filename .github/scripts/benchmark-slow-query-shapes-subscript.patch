@@ -1,0 +1,31 @@
+diff --git a/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt b/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt
+index dbfadc97..f01e984b 100644
+--- a/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt
++++ b/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt
+@@ -316,13 +316,19 @@ class ExpressionEvaluator private constructor(
+ 
+     private fun evaluateSubscript(expr: CypherExpr.Subscript, bindings: Map<String, Any?>): Any? {
+         val collection = evaluate(expr.expression, bindings)
+-        val index = (evaluate(expr.index, bindings) as? Number)?.toInt() ?: return null
+-
+-        return when (collection) {
+-            is List<*> -> collection.getOrNull(if (index < 0) collection.size + index else index)
+-            is String -> collection.getOrNull(
+-                if (index < 0) collection.length + index else index
+-            )?.toString()
++        val key = evaluate(expr.index, bindings)
++        return when (key) {
++            is String -> resolveProperty(collection, key)
++            is Number -> {
++                val index = key.toInt()
++                when (collection) {
++                    is List<*> -> collection.getOrNull(if (index < 0) collection.size + index else index)
++                    is String -> collection.getOrNull(
++                        if (index < 0) collection.length + index else index
++                    )?.toString()
++                    else -> null
++                }
++            }
+             else -> null
+         }
+     }

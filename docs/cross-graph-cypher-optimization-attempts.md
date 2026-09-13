@@ -1021,3 +1021,634 @@ access, ABI fallback, predicate admission bounds, and admission reset after
 cache clearing or LRU eviction. Final application line coverage is `98.2569%`
 for Core, `98.1846%` for Cypher, `98.0213%` for WebGraph, and `98.1046%` for
 Explore; the complete CI-equivalent `check` gate passes after these tests.
+
+### 2026-09-13 - Attempt 019: Baseline the reported slow query shapes on current main
+
+**Hypothesis:** untyped constant search, dynamic property search, wrapped caller-class
+search, and filtered DATAFLOW expansion bypass the existing selective access paths.
+Measure identical queries on actual persisted graphs before accepting an optimization.
+
+**Baseline:** `144d98efa2bcb1f183d4f962b833c234d839d2a9` (latest remote main when
+requested). The earlier `96522d96` diagnostic runs are superseded. Candidate for this
+attempt is this harness-only commit; no production optimization is included.
+
+**Fixture and protocol:** the pinned Android corpus has 5,938,826 nodes and is loaded
+from `/tmp/graphite-cpu-vanished-diagnostic.5_7ygubx/fixtures-complete/android`.
+The same directory contains the pinned Tika, Hive, and Kotlin compiler graphs for the
+`corpus=all` matrix. Local environment: Apple M3 Max, 64 GiB RAM, OpenJDK 17.0.18;
+query processes use `-Xmx8g -XX:ActiveProcessorCount=4`. `SlowQueryShapesBenchmark`
+fixes the query text, LIMIT, projections, and exact ordered result digest. It includes
+nonempty/absent cases, source/target DATAFLOW filtering, cold mappings and warmed
+queries. Setup, result validation, and digest serialization are outside the timed
+method. COLD means query-index state, not cold OS pages.
+
+```shell
+./gradlew :webgraph:jmhJar :webgraph:detekt --max-workers=2
+java -Xmx8g -XX:ActiveProcessorCount=4 \
+  -Dandroid.graph.path=/tmp/graphite-cpu-vanished-diagnostic.5_7ygubx/fixtures-complete/android \
+  -cp graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  io.johnsonlee.graphite.webgraph.SlowQueryShapesCorrectness android valueHit
+```
+
+**Correctness evidence:** baseline build and lint passed. Nine query cases each passed
+both cold and warm executions (18 observations). `valueHit` returns one row,
+`wrappedCallerHit` 50, `dataflowSourceHit` five, and `dataflowTargetHit` 50. Missing-term
+queries return no rows. Full ordered digests, exact commands, and fixture SHA-256
+manifest are retained locally in `/tmp/graphite-slow-shapes-evidence/base-144d98ef/`.
+
+The tenth case, `dynamicHit`, exposed a functional defect: `n[k]` accepts only numeric
+subscripts on main, so the dynamic search misses a keyword that `n.value` finds.
+Do not relax that oracle to accept zero rows. Any performance comparison for the
+repaired dynamic query must identify a semantically correct reference, separately
+from unmodified main. This is not a successful speedup observation.
+
+**Performance/resource evidence:** the diagnostic runner records per-query wall and
+process CPU time, but these first single runs are not acceptance evidence. Formal
+paired latency/allocation measurements and existing method/end-to-end regression
+checks remain pending. No speedup, memory reduction, or non-regression is claimed.
+
+**Conclusion:** keep the real-data harness and strict result checks. All four requested
+shapes, including both DATAFLOW endpoints, remain in scope for the 10x objective.
+
+### 2026-09-13 - Attempt 020: Repair the dynamic-property correctness baseline
+
+**Hypothesis:** the dynamic search's empty result is caused by treating every
+subscript as a numeric list/string index. A string subscript must resolve the same
+property as a static property expression before an optimized search can be evaluated.
+
+**Base/candidate:** main `144d98efa2bcb1f183d4f962b833c234d839d2a9`; candidate is this
+correctness-fix commit. `ExpressionEvaluator` evaluates both operands once, dispatches
+string keys through existing property resolution, and retains numeric indexing,
+negative indices, out-of-range nulls, and null/invalid-key behavior.
+
+**Correctness:** the focused Cypher run passed all 28 tests, including six new dynamic
+property tests for node fields, numeric values converted to strings, qualified graph
+identity, Method metadata, maps, and unchanged list/string indexing. Cypher detekt
+passed. Command: `./gradlew :cypher:test --tests '*ToStringLookupTest' --tests
+'*ValueStringLookupTest' --tests '*SourcePredicatePushdownTest' --tests
+'*DynamicPropertyAccessTest' :cypher:detekt :webgraph:jmhJar --max-workers=2`.
+The broader focused run contains separately uncommitted optimization experiments;
+this commit includes only the subscript fix and its own tests.
+
+**Performance/resources:** no optimization claim. Real Android fixture and environment
+are unchanged from Attempt 019. A separate main-plus-this-fix reference build will
+measure correct dynamic searches; unmodified main still supplies the baseline for
+all other shapes. Latency, CPU, allocation, and full regression evidence remain pending.
+
+**Conclusion:** keep the functional repair. It is a prerequisite for valid dynamic
+search comparison, not evidence of progress toward a 10x speedup by itself.
+
+### 2026-09-13 - Attempt 021: Route polymorphic value strings through typed lookup
+
+**Hypothesis:** string constants already have raw persisted lookup support; untyped
+`value` predicates should use it, while also retaining string-valued enum, resource,
+and annotation attributes. Backends without canonical lookup ordering retain their
+original scan for these polymorphic predicates.
+
+**Base/candidate:** main `144d98efa2bcb1f183d4f962b833c234d839d2a9`; candidate is this
+experiment commit. The paired measurement snapshot also contains the independent
+wrapper and source-expansion attempts recorded below. Its exact patch and frozen JAR
+identities are in `/tmp/graphite-slow-shapes-evidence/paired-first/manifest.json`.
+
+**Evidence:** same real Android fixture and JVM protocol as Attempt 019, three alternating
+main/candidate pairs, one JMH fork per pair, zero warmup iterations, one measurement,
+COLD and WARM mappings. Across all eight non-dynamic cases, 96 ordered digests and
+row counts agree. Median valueHit acceleration is 26.0x COLD / 60.0x WARM; valueMiss
+27.4x / 76.2x. First diagnostic CPU reductions are 16–17x COLD and 40–43x WARM.
+The raw JMH GC profiler observations are whole-trial allocation (including setup/primer),
+not isolated query allocations; see `paired-first/summary.md` and the six raw JSON files.
+
+Focused value tests verify resource/enum strings, storage access, encounter order,
+numeric equality, numeric toString, and nulls. The second snapshot adds annotation
+coverage; the full Cypher test task and detekt passed. Full repository, real-corpus
+regression, and final combined-head benchmarks are still pending.
+
+**Conclusion:** keep; value cases exceed 10x on this fixture. This does not prove the
+remaining shapes or the complete no-regression requirement.
+
+### 2026-09-13 - Attempt 022: Preserve toString while reusing string-field lookup
+
+**Hypothesis:** CallSite caller/callee class/name values are already strings, so the
+wrapper can reuse their direct lookup. Annotation attributes with the same names may
+be numbers or lists: retain explicit coercion, bypass string-only lookup/aggregation
+for those attributes, and preserve canonical mixed-node order.
+
+**Base/candidate:** main `144d98ef`; candidate is this experiment commit. Measurement
+identities, real Android fixture, JVM protocol, and combined-snapshot qualification
+are the same as Attempt 021. Three-pair medians: wrappedCallerHit 26.6x COLD / 86.5x
+WARM; wrappedCallerMiss 7.18x / 20.7x. Exact ordered result parity passed in all pairs.
+Diagnostic CPU improvement for the missing case is only about 4.5–4.9x, so wall-time
+speedup must not be misrepresented as CPU speedup.
+
+**Correctness/resources:** seven wrapper tests and five annotation regressions cover
+native/numeric/list values, nulls, parameters, distinct/order/skip, overlapping graph IDs,
+canonical order, unknown annotation counts, and unsupported AST fallback. Full Cypher
+tests and detekt passed in the second snapshot. Whole-trial GC evidence is retained
+under `paired-first/`; isolated query allocation and final broader regressions remain
+unproven. The annotation corrections do not change the annotation-free Android fixture.
+
+**Conclusion:** keep the semantic repair and fast path. The COLD missing-term case has
+not reached 10x and remains an explicit shortfall.
+
+### 2026-09-13 - Attempt 023: Filter and select sources before single-hop expansion
+
+**Hypothesis:** pure source-only conjuncts can reject a seed before adjacency access.
+When storage exposes canonical candidate ordering, reuse typed lookup without applying
+the result LIMIT to seeds: early candidates can have no surviving relationships.
+Retain the full original WHERE and normal edge/provenance binding.
+
+**Base/candidate:** main `144d98ef`; candidate is this experiment commit, depending on
+the preceding typed-value support. Frozen first measurement snapshot and real-data/JVM
+protocol are recorded in Attempt 021. Three-pair medians for sourceHit are 80.1x COLD /
+247.6x WARM; sourceMiss 92.4x / 268.2x. Exact five-row hit results, absent results,
+ordering, and provenance match main in every observation. Diagnostic CPU reductions
+are about 44–47x COLD and 71–128x WARM. Whole-trial allocations are in the frozen report.
+
+**Correctness:** source-access tests prove rejected adjacency is not visited, ordered
+lookup does not scan all nodes or truncate dead seeds, and fallback preserves mixed OR,
+right-only conditions, inline-property errors, volatility, non-Boolean NOT errors,
+work budgets, LIMIT/SKIP/DISTINCT/order, and graph identity. Full Cypher tests and lint
+passed in the second snapshot. Other repository and final-head regression gates remain
+pending.
+
+**Conclusion:** keep. Source-filtered cases exceed 10x on this real fixture; this does
+not improve target-only predicates, which remain a separate experiment.
+
+### 2026-09-13 - Attempt 024: Reject eager target-existence preflight
+
+**Hypothesis:** a necessary target string predicate can prove a graph has no matching
+relationship, eliminating all source and edge work without initializing a reverse graph.
+Probe for one target, then retain ordinary traversal if any candidate exists.
+
+**Base/candidate:** main `144d98ef` versus the frozen second snapshot at
+`/tmp/graphite-slow-shapes-evidence/second/`; candidate JAR SHA-256 is
+`4ba17379a02be9e1681119c1369dea2f5bc491cfe4fd9913c47d184cfd81a33c`.
+Same real Android fixture/JVM settings as Attempt 019. Exact corresponding results
+match, but the historical target-hit digest differs between the first and second
+batches. Do not pool them; sidecar state was not fully frozen in the first protocol.
+The core six graph files rehash identically; a persisted CallSite index was generated.
+
+**Evidence:** the diagnostic targetMiss improves about 19.17x COLD / 61.09x WARM.
+TargetHit regresses from 220 to 280 ms COLD and 108 to 153 ms WARM (27% / 41%).
+Process CPU rises 36% / 86% on that hit. Full Cypher tests and detekt pass; result
+correctness alone is insufficient. This single paired diagnostic is sufficient to
+reject the eager hypothesis, not to accept latency or resource guarantees.
+
+**Conclusion:** reject the eager production change; this commit retains only the record.
+A baseline source-access probe shows the hit fills LIMIT 50 inside the first source,
+which has 80,960 outgoing edges. A later attempt will defer preflight until the normal
+stream actually requests a second source. The probe source and output are retained in
+`/tmp/graphite-target-prefix-probe/`. Candidate regressions must be removed, not hidden
+by aggregate speedups elsewhere.
+
+### 2026-09-13 - Attempt 025: Compile exact dynamic-property ANY predicates
+
+**Hypothesis:** eliminate per-property binding copies, function argument lists, repeated
+AST evaluation, and per-node static property maps for the exact ANY/keys/toString/
+CONTAINS shape. Retain eager property access, three-valued results, cancellation,
+annotation key/accessor differences, parameter shadowing, and unsupported-shape fallback.
+The per-evaluator plan cache is bounded to 256 entries; static key caches are bounded by
+the sealed node schema, and dynamic annotations do not use the static cache.
+
+**Base/candidate:** the semantic reference is main `144d98ef` plus only Attempt 020's
+string-subscript repair; its exact patch identity is in
+`/tmp/graphite-slow-shapes-evidence/dynamic-reference-144d98ef/`. Unmodified main cannot
+correctly execute dynamicHit. Candidate is this experiment commit; the measured second
+snapshot is frozen under `evidence/second/` as recorded in Attempt 024.
+
+**Evidence:** real Android hit and miss queries retain exact results and improve about
+2.0–2.16x, including a one-row hit. Hit is 10.949 to 5.453 seconds COLD, 11.149 to
+5.160 seconds WARM. Process CPU observations are in the same report; query allocation
+and broad non-regression are not yet established. Full Cypher tests and detekt pass,
+including compiled-versus-general equivalence, all node kinds, dynamic annotations,
+method/graph metadata keys, literal/parameter terms, cache eviction, and eager errors.
+
+**Conclusion:** keep as an intermediate implementation. It is explicitly short of 10x;
+loading every node remains a likely bottleneck and requires a separate storage experiment.
+
+
+### 2026-09-13 - Attempt 026: Isolate persisted fixture state between query runs
+
+**Hypothesis:** measurements that open the shared fixture directly can inherit a
+call-site index written by an earlier graph close. Exact results matched within each
+paired batch, but historical batches produced different ordered target-prefix digests
+with the same main JAR. The cause of that ordering difference is not established;
+those batches must not be pooled.
+
+**Base/candidate:** main remains `144d98efa2bcb1f183d4f962b833c234d839d2a9`.
+Install this identical harness in main, the dynamic-property semantic reference, and
+candidate builds. Each workload copies the real Android/Tika/Hive/Kotlin persisted
+fixture to a private directory, excludes `graph.callsite-string-index`, and opens only
+that copy. COLD starts with no persisted call-site index; WARM primes the same private
+mapping. This is protocol `private-copy-no-callsite-index-v2`.
+
+**Evidence:** all 64 immutable fixture files are fingerprinted in
+`/tmp/graphite-slow-shapes-evidence/fixture-protocol-v2/fixtures.json`; shared sizes and
+mtimes, including the excluded sidecar, are recorded separately. Main and semantic
+reference JMH builds pass with the identical revised harness. A failed-constructor
+check verifies temporary-directory cleanup. The verifier also checks source hashes,
+shared-file state, and removal of every logged private copy after a run. Query text,
+ordered result digest, and timed execute boundaries are unchanged. No speedup is
+claimed by this protocol change. Query CPU is measured around execute; first-trial
+JMH GC statistics include setup, priming, and cleanup and are not query-only allocation.
+
+**Conclusion:** keep the isolated protocol and repeat paired measurements before any
+final performance claim. Earlier records remain historical diagnostics, not pooled
+samples for the final comparison.
+
+
+### 2026-09-13 - Attempt 027: Preserve heterogeneous aggregate and DISTINCT semantics
+
+**Hypothesis:** new value and wrapped-field candidates can expose heterogeneous
+Annotation values to pre-existing string-only aggregate/projection shortcuts. Keep
+candidate selection, but decline those shortcuts when they cannot preserve Cypher
+numeric equality, null counts, or arbitrary annotation values.
+
+**Base/candidate:** current main remains `144d98ef`; this is a correctness follow-up
+to Attempts 021–022, applied to the isolated V2 candidate before fresh timing.
+Property-count storage aggregation admits `value` only for StringConstant; Annotation
+property aggregation admits only declared nonnull string class/name. Possible
+Annotation DISTINCT projections use the normalized streaming path and retain merged
+graph provenance. A conjunction chooses a supported candidate property and leaves an
+unsupported custom property to residual evaluation, or falls back if neither is supported.
+
+**Evidence:** full Core and Cypher tests, focused mapped candidate correctness tests,
+three module detekt gates, and the JMH build pass in
+`/tmp/graphite-slow-shapes-v2-tests.log`. New regressions cover missing/numeric values,
+count and count-distinct, both conjunction orders, Int/Long and nested-list equality,
+SKIP/LIMIT, and cross-graph provenance. This commit claims semantic preservation;
+separate isolated real-data timing is pending and no synthetic performance evidence
+is used.
+
+**Conclusion:** keep. A string candidate cannot justify string-only aggregation or
+raw JVM equality over a heterogeneous projected property.
+
+
+### 2026-09-13 - Attempt 028: Prefilter dynamic properties using raw string references
+
+**Hypothesis:** avoid decoding every node for ANY/keys/toString/CONTAINS. Select a
+necessary ASCII identifier fragment and inspect raw string references in supported
+persisted node records. Preserve source order and fully evaluate the original predicate
+on every survivor. Numeric/generated-token-only needles, external graph metadata hits,
+unknown schemas, enums, resource values, and dynamic annotations retain safe fallbacks.
+The matcher is query-local and bounded; no new persisted index is introduced.
+
+**Base/candidate:** semantic reference is main `144d98ef` plus only the string-subscript
+repair. Frozen V2 candidate JAR SHA-256 is
+`760e4cfa924a10f8a22b19bdb268650544676212f3501a290c395280e83f2c18`.
+Exact source files, manifest, protocol, commands, and environment are in
+`/tmp/graphite-slow-shapes-evidence/third-isolated/`. This snapshot also includes the
+independent deferred target probe, which is not entered by these node queries.
+
+**Evidence:** one isolated real Android paired diagnostic (5,938,826 nodes) preserves
+all dynamic hit/miss ordered rows and digests. Hit improves 11,109 to 1,276 ms COLD
+(8.70x), 10,846 to 1,129 ms WARM (9.61x). Miss improves 11,031 to 1,060 ms COLD
+(10.41x), 10,953 to 928 ms WARM (11.80x). Query-window aggregate process CPU improves
+6.04x/8.18x for hit and 10.11x/11.58x for miss. No query-allocation claim is available.
+All shared fixture hashes/mtimes remain unchanged and all private copies are removed.
+Core 440 tests, Cypher 1,294 tests, six mapped-candidate tests, and three module lint
+gates pass. Synthetic fixtures verify candidate supersets, residual semantics, binary
+field layouts, encounter order, fallback, work accounting, and cancellation only.
+
+A separate JFR diagnostic attributes 36 of 64 execution samples to raw prefiltering,
+18 to surviving-node materialization, and four to ANY evaluation. String decompression
+is the largest sampled raw leaf; these sparse samples are diagnostic, not percentages
+of wall latency or precise candidate counts.
+
+**Conclusion:** keep as an intermediate optimization. Dynamic hits remain below 10x;
+further work should reduce repeated string decoding and false-positive materialization.
+Final repeated paired measurements and broad regression gates remain outstanding.
+
+
+### 2026-09-13 - Attempt 029: Defer target absence detection until a second source is needed
+
+**Hypothesis:** the eager target probe rejected in Attempt 024 delays a high-degree
+first source that can satisfy LIMIT immediately. Stream that source normally and only
+probe target existence when another source is requested. A provably absent necessary
+string target permits skipping the remaining relationship expansion. Retain full WHERE,
+source order, lazy later graphs, and fallback for unsafe expressions/patterns/capabilities.
+
+**Base/candidate:** main `144d98ef` versus the frozen isolated V2 snapshot documented
+in Attempt 028. Real Android fixture and commands are in
+`/tmp/graphite-slow-shapes-evidence/third-isolated/`.
+
+**Evidence:** target miss improves 9,585 to 713 ms COLD (13.44x) and 9,242 to 292 ms
+WARM (31.60x), with exact ordered results and CPU speedups of 6.85x/8.08x. Dense
+target hit is 227.68 to 228.58 ms COLD and 118.03 to 125.16 ms WARM: the previous
+27–41% regression is removed, but a single pair's 6% warm difference needs repeated
+validation. No allocation conclusion is available. Full Cypher tests and lint pass,
+including first-source LIMIT, graph laziness, complete positive continuation, unsupported
+and unsafe fallbacks, and work-budget/cancellation tests.
+
+The extra probe is real charged work. On a tiny graph with two unconnected nodes it
+can consume four units where ordinary traversal consumes two; an exactly two-unit
+budget therefore fails with the probe. Tests explicitly preserve this accounting and
+propagate the original budget/cancellation exceptions. This optimization does not claim
+identical work counts or identical success boundaries at every artificial budget limit.
+
+**Conclusion:** retain provisionally for repeated broad real-data regression validation.
+Dense-hit latency and extra preflight work remain explicit checks; no timing or budget
+exception is hidden or reclassified as a successful query.
+
+
+### 2026-09-13 - Attempt 030: Keep wrapped string discovery on bounded raw scans
+
+**Hypothesis:** the newly recognized toString caller/callee predicates inherit a cold
+parallel lookup that captures a complete index. Request the existing bounded raw scan
+only when every direct string predicate is coerced. Leave plain and mixed predicates'
+storage policy unchanged, and preserve the Annotation conversion fallback.
+
+**Base/candidate:** main `144d98ef`, identical V2 harness, real Android persisted graph.
+Frozen build-clone sources, full candidate JAR SHA, commands and environment are in
+`/tmp/graphite-slow-shapes-evidence/raw-wrapper/`. This experiment predates the separate
+two-fragment dynamic-property change; root and build clone were deliberately frozen
+independently while that other change was developed.
+
+**Evidence:** all eight observations preserve ordered rows/digests. Wrapped hit is
+186.3 ms COLD (19.53x main) and 142.4 ms WARM (23.98x main). Wrapped miss is 190.5 ms
+COLD (18.98x) and 79.5 ms WARM (42.27x). Query-window process CPU improves roughly
+12–22x; no query-allocation measurement is claimed. Source files remain immutable and
+all private snapshots are removed. Full Cypher tests and lint pass, including explicit
+raw-consumer selection, ordinary/mixed policy parity, Annotation values/order, and
+charged work.
+
+**Tradeoff:** warm hit is slower than the earlier experimental retained-index path
+(roughly 40 ms versus 142 ms), because this query no longer builds that index first.
+Both remain much faster than the actual main baseline, which does not recognize the
+wrapped predicate. This experiment favors bounded discovery cost and removes the
+cold-miss shortfall without changing the existing plain-string query policy.
+
+**Conclusion:** keep for repeated comparisons against main and broad regression gates.
+Do not claim that every intermediate experimental score improved; the indexed warm-hit
+tradeoff is explicit.
+
+
+### 2026-09-13 - Attempt 031: Intersect two necessary dynamic-property fragments
+
+**Hypothesis:** the single longest fragment admits nodes containing permission-related
+method metadata even when their property text cannot contain the complete needle.
+Intersect up to two distinct longest eligible fragments, retaining stable ties and
+bounded selection state. Fragments may occur in different stored signature components;
+the complete ANY predicate remains authoritative. Legacy capability implementations
+can safely use only the first fragment and return a wider candidate superset.
+
+**Base/candidate:** main `144d98ef` plus the subscript correctness repair, identical V2
+harness and real Android fixture. Exact candidate JAR/source identities and commands
+are in `/tmp/graphite-slow-shapes-evidence/dual-fragment/`.
+
+**Evidence:** one isolated pair preserves all eight dynamic observations. Hit improves
+10,895 to 1,044 ms COLD (10.43x) and 10,663 to 944 ms WARM (11.30x); miss improves
+10.63x/11.28x. Query-window aggregate CPU improves 10.05–11.10x. All source hashes
+and mtimes remain unchanged and all four private snapshots are removed. No allocation
+claim is available. Core/Cypher tests, nine focused mapped tests, all three lint gates,
+and JMH build pass in `/tmp/graphite-slow-shapes-dual-fragment-tests.log`. Tests verify
+split signature components, stronger candidate filtering, residual false positives,
+fallback kinds, order, legacy capability behavior, and the two-fragment bound.
+
+**Conclusion:** keep. The cold 4–6% margin above 10x is narrow, so repeated formal
+measurements are still required. String decompression remains an evidence-backed target
+for a separate bounded-cache experiment; no change to query truth or result order is
+needed to investigate it.
+
+
+### 2026-09-13 - Attempt 032: Bound dense matcher state to avoid repeated decompression
+
+**Hypothesis:** JFR identified front-coded string decompression as the largest raw-scan
+cost. For dynamic-property dictionaries with at most 1,048,576 strings, use the existing
+matcher byte-state mode so each string is decoded once per fragment. Larger dictionaries
+retain the existing 64K collision cache. This changes no predicate, scan order, work
+accounting, persisted file, or index lifecycle.
+
+**Base/candidate:** main `144d98ef` plus the string-subscript repair, identical V2
+harness and real Android fixture. `/tmp/graphite-slow-shapes-evidence/dense-cache/`
+freezes the build-clone JAR/source identities and the exact diff versus Attempt 031;
+only `MappedPropertyTextCandidates.kt` differs in this experiment.
+
+**Evidence:** all eight dynamic observations match ordered rows/digests. Hit is 589 ms
+COLD (18.49x semantic reference) and 501 ms WARM (21.78x); miss is 637 ms COLD
+(17.15x) and 536 ms WARM (20.29x). Query-window CPU improves approximately 15–20x.
+Attempt 031 hit was about 1,044/944 ms, so the separately measured cache change removes
+much of the remaining decompression cost. All shared source hashes/mtimes remain
+unchanged and all private snapshots are removed. Nine mapped correctness tests, WebGraph
+lint, and JMH build pass in `/tmp/graphite-slow-shapes-dense-matcher-tests.log`.
+
+The state-array payload is bounded to at most 1 MiB per fragment, 2 MiB for both,
+plus array/object headers and the existing reusable decode buffers. Android's two
+arrays total 1,065,574 bytes versus 655,360 bytes of previous key/state payload. This
+is an explicit small transient-space tradeoff, not a measured heap/peak-memory claim;
+query allocation and broader lifecycle evidence will be collected separately.
+
+**Conclusion:** keep for final repeated paired comparisons and broad regression gates.
+The dynamic-query speedup now has substantially more margin than the prior 10.4x cold
+observation, while retained index policy and unrelated query paths remain unchanged.
+
+
+### 2026-09-13 - Attempt 033: Measure allocation around the query execution window
+
+**Hypothesis:** first-trial JMH GC profiling includes private fixture setup, priming,
+and cleanup. Add a separate oracle counter around execute so query-window allocation
+can be compared without mislabeling lifecycle allocation as query-only cost.
+
+**Base/candidate:** the same revised harness is installed in main `144d98ef`, the
+subscript-only semantic reference, and candidate. A fresh `git fetch origin main`
+confirms the latest remote baseline remains full SHA
+`144d98efa2bcb1f183d4f962b833c234d839d2a9`. Fixture isolation remains V2. This new
+instrumented series will not be pooled with earlier harness measurements.
+
+**Method:** Java 17's supported ThreadMXBean total-thread allocation counter is enabled
+outside timing. Its difference brackets execute, while the existing wall and process-CPU
+boundaries stay unchanged. The counter includes all Java/background threads active in
+the query window; it measures allocated bytes, not retained heap or peak memory.
+Unsupported, failed, or nonmonotonic counters emit -1 rather than fabricated zero.
+JMH's primary execute method and query text are unchanged.
+
+**Evidence:** local Java 17 API inspection confirms the counter interface. Identical
+harness SHA-256 is `39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a`;
+sequential build logs and final frozen identities are recorded under
+`/tmp/graphite-slow-shapes-evidence/final-build/`. This instrumentation change claims
+no speedup; final paired latency, correctness, CPU, and allocation evidence follows
+only after full checks.
+
+**Conclusion:** keep explicit resource scope and unavailable-counter handling. Final
+reports must continue distinguishing query-window allocated bytes, bounded cache payload,
+and lifecycle/peak-memory observations.
+
+
+### 2026-09-13 - Attempt 034: Preserve existing concrete-label value index admission
+
+**Hypothesis:** adding value to typed candidate discovery unintentionally redirects an
+already labeled StringConstant query from its established single-property lookup to
+the disjunction capability. Preserve the original route for concrete value labels;
+only polymorphic Node/Constant discovery needs the new merge of typed streams.
+
+**Base/candidate:** latest main remains `144d98ef`. This is a compatibility correction
+to Attempt 021; final candidate measurements must use the rebuilt corrected head.
+The eight main-baseline target benchmark query shapes are untyped, so their intended
+candidate selection is unchanged, but earlier candidate JARs are not the final artifact.
+
+**Evidence:** full check exposed the existing
+`MappedCypherBudgetTest.mapped existing string index charges internal candidate scans`:
+two labeled queries admitted zero indexes instead of the established one. Restoring
+single-property lookup preserves admission, cached late-match values, and internal
+scan-budget failures. The unchanged three-test mapped budget suite, all Cypher tests,
+and Cypher lint now pass in `/tmp/graphite-slow-shapes-typed-value-tests.log`.
+This is a concrete regression found by the broad gate, not a changed test expectation.
+No new performance speedup is claimed. Full checks and final comparisons remain pending.
+
+**Conclusion:** keep the compatibility correction. An optimization of untyped discovery
+must not silently change existing labeled-query index policy or work accounting.
+
+### 2026-09-13 - Attempt 035: Keep source discovery lazy for dense DATAFLOW matches
+
+**Hypothesis:** source pushdown must select raw serial storage explicitly. Its unlimited
+seed count otherwise rejects the bounded parallel scan and admits an eager CallSite
+index before yielding the first seed, even when that seed supplies all 50 output rows.
+
+**Base/candidate:** main `144d98efa2bcb1f183d4f962b833c234d839d2a9` versus
+`522a81f9` plus the raw-source policy correction and correctness tests. The frozen
+candidate JAR SHA-256 is
+`5cc950355a2a91024a3af468c3f57f54b362ff9b292ec1e0a6dc48ba4d89b940`;
+exact source identities and patch are in
+`/tmp/graphite-slow-shapes-evidence/dense-source-corrected/`.
+
+**Fixture/method:** two diagnostic pairs in reversed revision order, each process
+opening an independent private copy of the real persisted Android graph (5,938,826
+nodes). Query: `MATCH (c:CallSiteNode)-[r:DATAFLOW]->(n) WHERE c.caller_class
+CONTAINS 'android' RETURN c.id,n.id,type(r) LIMIT 50`. Cold means a fresh mapping,
+not flushed operating-system pages. These observations are not pooled with final JMH.
+
+| Observation | Main | Corrected candidate |
+| --- | ---: | ---: |
+| Cold wall, two runs | 133.41 / 131.02 ms | 70.34 / 69.02 ms |
+| Warm wall, two runs | 36.96 / 36.83 ms | 9.20 / 8.89 ms |
+| Cold process CPU, two runs | 359.97 / 358.69 ms | 133.96 / 131.31 ms |
+
+The preceding candidate had regressed cold wall to 452.70 ms versus main 133.79 ms.
+The correction removes that regression. All eight corrected observations have the
+same ordered 50-row digest. Neither revision initializes or persists the CallSite
+index; all four private copies were removed and shared fixture verification passed.
+No measured allocation or peak-memory claim is made for this diagnostic probe.
+
+**Verification:** the source-access test requires serial raw storage, unrestricted
+seed discovery, and consumption/expansion of only the first seed when it supplies
+the requested 50 rows. Full Cypher tests, lint, and coverage passed after this change;
+Cypher line coverage is 98.004%. Full repository checks and final paired timings follow.
+
+**Conclusion:** keep. The planner can push source predicates down while preserving
+lazy output-limit behavior and avoiding eager index construction for dense matches.
+
+### 2026-09-13 - Attempt 036: Final isolated acceptance against the updated main
+
+**Hypothesis:** the retained changes satisfy the 10x target for the measured slow
+cases without a material regression in existing mapped queries. Freeze the final
+candidate and repeat complete comparisons, including resource scope and result order.
+
+**Base/candidate:** main `144d98efa2bcb1f183d4f962b833c234d839d2a9`, candidate source
+`b8fc966ee6614806babc79f21fbef625b5f0b0f3`. Dynamic queries use main plus only the
+string-subscript correctness repair; incorrect empty main results are not a speedup
+baseline. Candidate JAR SHA-256:
+`5cc950355a2a91024a3af468c3f57f54b362ff9b292ec1e0a6dc48ba4d89b940`.
+All three revisions use identical harness
+`39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a`.
+
+**Fixture/method:** real persisted Android 14 graph, 5,938,826 nodes; independent
+private copies omit the writable CallSite index. Java 17.0.18, M3 Max, 8 GiB heap,
+four active processors. Three alternating pairs of fresh-JVM SingleShot measurements
+yield 120 observations; 40 separate oracle observations measure query-window process
+CPU and all-Java-thread allocation. Cold does not mean flushed OS pages. Exact commands,
+inputs, identities, every paired latency, ordered digest, and scope qualifications are in
+[the report](slow-query-shapes-optimization.md) and
+[machine-readable evidence](slow-query-shapes-results.json).
+
+| Slow cases | Cold wall speedup | Warm wall speedup |
+| --- | ---: | ---: |
+| value hit/miss | 25.08–27.53x | 61.07–81.00x |
+| dynamic hit/miss, repaired reference | 18.18–18.50x | 20.79–21.10x |
+| wrapped caller hit/miss | 23.28–25.17x | 26.93–67.19x |
+| DATAFLOW source hit/miss | 82.76–89.71x | 136.92–272.59x |
+| DATAFLOW target miss | 15.29x | 34.43x |
+
+The already-fast target-hit guard improves from 260.10 to 236.55 ms cold and 157.93
+to 127.92 ms warm; it is not a 10x claim. Exact full ordered results agree across all
+160 observations. Main/semantic-reference query allocation for the four primary slow
+cases is 7.1–41.8 GB versus candidate 2.1–43.6 MB, with CPU improvements 12.28–126.82x.
+The additional target-miss case has CPU improvement 7.51x/9.14x and allocation
+327.8/359.9 MB; fast target-hit CPU/allocation are effectively level. Allocation is
+allocated bytes during the query window, not live heap or peak memory.
+
+**Broader evidence:** existing AndroidQueryBenchmark and LargeCorpusQueryBenchmark
+mapped simpleNodeMatch, intConstantFilter, countStar, singleHopRelationship and
+returnDistinct on Android, Tika, Hive and Kotlin compiler: 20 cases, 120 scores,
+three alternating pairs with two 500 ms warmups and three 500 ms measurements.
+Median latency changes range from -5.8% to +5.2%; no case exceeds a 10% increase.
+First-pair Android simpleNodeMatch +16.85% and Tika intConstantFilter +13.12% were
+retained and examined; reversed pairs improve, and final medians are -1.0%/+5.2%.
+There are small allocation increases: countStar +80 B/op (~5.1%), and Tika/Kotlin
+simpleNodeMatch +3,280 B/op (~1.3–1.4%). These are reported, not called zero-cost.
+All 260 private copies across both series were removed and shared input verification
+passed. Existing broad methods do not assert result digests; correctness evidence is
+separate. Synthetic CypherBenchmark timings are excluded by the real-fixture rule.
+
+**Verification:** `./gradlew check koverLog --max-workers=2` passes: 2,498 regular
+tests, seven memory-contract tests, and three independent real-corpus 4 GiB end-to-end
+gates. Existing lint and coverage gates pass, including Cypher 98.004%. Frontend
+ui-state tests pass. End-to-end gates pass their existing ceilings; they are not a
+paired main/candidate end-to-end speedup claim. No PR or hosted benchmark-regression-gate
+has been run, and local evidence does not substitute for that required PR check.
+
+**Conclusion:** keep the frozen implementation. The measured slow cases exceed 10x,
+ordered results agree, and the existing-query series shows no >10% median regression.
+Unsupported/numeric search-text fallbacks and every possible query of the same shape
+are outside this empirical 10x claim. Complete evidence is preserved rather than
+pooling earlier prototypes or fixture protocols into the final result.
+
+### 2026-09-13 - Attempt 037: Prune qualified identity candidates before node decoding
+
+**Hypothesis:** qualifiedId is generated from the external graph namespace and local
+node ID. Testing that exact string while iterating primitive IDs can reject nodes
+without decoding their payload, preserving full residual predicates and encounter order.
+Use the same candidate binding for LIMIT, no-LIMIT, ordering and initial aggregate paths.
+
+**Base/candidate:** unmodified main `144d98efa2bcb1f183d4f962b833c234d839d2a9`,
+re-fetched after implementation. Candidate is parent `7351f9696558e2341c90c246a2c1450a636ef105`
+plus the source files frozen in `qualifiedIdExtension.artifacts` of
+[the machine-readable evidence](slow-query-shapes-results.json). Candidate JAR SHA-256
+`3f46433e7d4cd0279a39525001c4aa3dceb07aa4aff0da16ba6674b326e7b6f7`;
+main JAR `59094b5cf634ca2f5dcbc1f1c0fae6794e6494ba7f0d77ee4f6162596846d5ce`.
+Both use the twelve-case harness
+`6b112a1bb6f12184fa27fa8b72f87f35a2071c2d354c8236f10e4e51662ca8fb`.
+Previous four-family measurements retain their original source/harness identities.
+
+**Fixture/method:** the same real persisted Android 14 graph (5,938,826 nodes), private
+copies without a CallSite index, Java 17.0.18, M3 Max, 8 GiB heap and four active CPUs.
+`SlowQueryShapesBenchmark.execute`, queryName `qualifiedIdHit,qualifiedIdMiss`,
+`-f 1 -wi 0 -i 1 -prof gc`, COLD/WARM, three alternating revision pairs. Search
+texts are `938826` (six hits, including the last persisted node) and `93882699`
+(no hits). Cold does not flush OS pages. Separate correctness-oracle processes
+measure query-window CPU and all-Java-thread allocated bytes; allocation is not peak heap.
+
+| Case/state | Main wall | Candidate wall | Speedup | CPU speedup | Main/candidate query allocation |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Hit cold | 3,440.852 ms | 153.040 ms | 22.48x | 14.88x | 8,582.790 / 8.871 MB |
+| Miss cold | 3,577.282 ms | 138.692 ms | 25.79x | 19.27x | 8,581.685 / 8.119 MB |
+| Hit warm | 3,340.300 ms | 77.246 ms | 43.24x | 35.60x | 8,563.272 / 0.024 MB |
+| Miss warm | 3,347.210 ms | 78.405 ms | 42.69x | 33.49x | 8,563.260 / 0.003 MB |
+
+**Verification:** all 24 JMH and eight resource-oracle observations preserve exact
+full ordered result digests; all 28 private copies were removed and shared input
+hashes/mtimes remain unchanged. Ten Cypher tests verify namespaces, colon boundaries,
+sparse/negative IDs, plain Annotation metadata, parameters, errors, budgets,
+order/provenance, no-LIMIT/order/count/group paths, and safe fallback. Five mapped tests
+verify ordered primitive traversal, one work charge per tested ID, lazy consumption,
+interrupts, and zero rejected-node decoding using poisoned payloads with a decode control.
+Full repository checks passed with the initial extension; complete Cypher tests,
+lint, coverage and JMH compilation passed again after adding the general paths.
+Combined current suite: 2,513 regular, seven memory-contract and three real-corpus tests.
+Cypher coverage is 98.0033%, WebGraph 98.1051%. Independent code review found no blocker.
+
+**Conclusion:** keep. The measured qualifiedId cases exceed 10x without loading
+rejected nodes. Generated identity semantics apply only to qualified bindings;
+plain graph properties and unsupported expressions retain normal evaluation.
+Namespace-only matches retain the ordinary lazy scan. No-LIMIT/order/aggregate
+paths have source-access correctness evidence, not separate latency claims.
+The subsequent required-gate integration is recorded separately from this experiment.
