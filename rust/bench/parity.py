@@ -293,6 +293,11 @@ QUERIES = [
     'MATCH (n:CallSite {nosuch: "x"}) RETURN count(*)',
     'MATCH (n:CallSite {callee_class: "java.lang.String"}) RETURN n LIMIT 0',
     'MATCH (n:StringConstant {value: "UNKNOWN"})-[r:DATAFLOW]->(m) RETURN count(*)',
+    # A relationship pattern or a property map is never a plain type count.
+    'MATCH (c)-[r:DATAFLOW]->(n) RETURN count(*)',
+    'MATCH (c:StringConstant)-[r:DATAFLOW]->(n) RETURN count(*)',
+    'MATCH (:CallSite) RETURN count(*)',
+    'MATCH p = (c)-[r:DATAFLOW]->(n) RETURN count(*)',
 ]
 for q in QUERIES:
     CASES.append(("POST", "/api/graphs/app/cypher", json.dumps({"query": q})))

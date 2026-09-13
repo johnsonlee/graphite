@@ -34,7 +34,17 @@ pub fn count_star(ex: &Executor, clauses: &[Clause]) -> CypherResult<Option<Quer
         return Ok(None);
     }
     let item = &items[0];
-    let variable = single_node_variable(&patterns[0]);
+    // Only a bare node pattern is a type count: a relationship or a property map
+    // narrows the rows, and the pattern's own variable may be absent.
+    let p = &patterns[0];
+    if !p.rels.is_empty()
+        || p.nodes.len() != 1
+        || p.path_variable.is_some()
+        || !p.nodes[0].properties.is_empty()
+    {
+        return Ok(None);
+    }
+    let variable = single_node_variable(p);
     let counts_rows = match &item.expr {
         Expr::CountStar => true,
         Expr::FunctionCall { name, args, .. } if name.eq_ignore_ascii_case("count") => {
