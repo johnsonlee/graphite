@@ -188,7 +188,9 @@ decoding (an annotation's value pairs, an enum's `value`) goes through WHERE, an
 rest are swept by column. Candidates of the types a graph contributes are merged by
 node id, which is the order the Kotlin server produces where its own order is defined
 (it merges direct-property candidates by record position; for the types it reaches
-through a type-keyed hash map the order varies between JVM runs).
+through a type-keyed hash map the order varies between JVM runs — two runs of
+`n.type CONTAINS "String"` against the same Kotlin build listed `ParameterNode` rows
+first in one and `LocalVariable` rows first in the other).
 
 | Query, 64 graphs | Rust before | Rust now | Kotlin main |
 |---|---:|---:|---:|
@@ -214,7 +216,12 @@ rest as before. `--mix v1` keeps the earlier all-CallSite mix.
 | v2 mix, 64 graphs | P50 | P95 | max |
 |---|---:|---:|---:|
 | Rust | 0.9 ms | 3.8 ms | 8.4 ms |
-| Kotlin main | measured separately below |  |  |
+| Kotlin main | 11.2 ms | 17.8 s | 19.3 s |
+
+Same protocol as the v1 numbers: one client, a 170-query warmup on a different seed,
+each query once. On the production-shaped mix the port is 12x at P50 and three orders
+of magnitude at P95, because forty of the 170 queries are `value CONTAINS`, which the
+Kotlin server answers by decoding every node.
 
 ## Debug builds
 
