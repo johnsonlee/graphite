@@ -2462,6 +2462,26 @@ class ExploreCommandTest {
     }
 
     @Test
+    fun `buildSubgraph caps edges independently of nodes`() {
+        val builder = DefaultGraph.Builder()
+        val fanOut = 5_100
+        builder.addNode(IntConstant(NodeId(0), 0))
+        repeat(fanOut) { index ->
+            val leaf = index + 1
+            builder.addNode(IntConstant(NodeId(leaf), leaf))
+            builder.addEdge(DataFlowEdge(NodeId(0), NodeId(leaf), DataFlowKind.ASSIGN))
+        }
+
+        val result = ExploreCommand().buildSubgraph(builder.build(), NodeId(0), 1)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = result["nodes"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val edges = result["edges"] as List<Map<String, Any?>>
+        assertEquals(2_000, nodes.size, "Node cap applies before the edge cap on a wide fan-out")
+        assertEquals(5_000, edges.size, "Edges keep accumulating up to their own cap after the node cap")
+    }
+
+    @Test
     fun `buildC4Model does not invent containers or components for library-only graphs`() {
         val graph = GraphStore.load(graphDir)
         val explore = ExploreCommand()

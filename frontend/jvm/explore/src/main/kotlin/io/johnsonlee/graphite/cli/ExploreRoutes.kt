@@ -1035,7 +1035,12 @@ internal class ExploreRoutes(
     internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> =
         buildSubgraph(graph, center, depth, SubgraphDirection.BOTH)
 
-    @Suppress("NestedBlockDepth")
+    /**
+     * Depth-first from [center], outgoing edges before incoming ones, each edge fully
+     * explored before the next. The walk keeps its own stack of edge iterators instead of
+     * recursing, so a long chain (the node cap alone allows 2,000 hops) cannot overflow the
+     * thread stack.
+     */
     private fun buildSubgraph(
         graph: Graph,
         center: NodeId,
@@ -1045,31 +1050,42 @@ internal class ExploreRoutes(
         val visitedNodes = mutableSetOf<Int>()
         val nodes = mutableListOf<Map<String, Any?>>()
         val edges = mutableListOf<Map<String, Any?>>()
+        val pending = ArrayDeque<SubgraphFrame>()
 
-        fun visit(nodeId: NodeId, remaining: Int) {
-            fun traverse(candidates: Sequence<Edge>, nextNode: (Edge) -> NodeId) {
-                for (edge in candidates) {
-                    if (edges.size >= MAX_SUBGRAPH_EDGES) break
-                    edges.add(edgeToMap(edge))
-                    visit(nextNode(edge), remaining - 1)
+        fun enter(nodeId: NodeId, remaining: Int) {
+            val admitted = nodes.size < MAX_SUBGRAPH_NODES && visitedNodes.add(nodeId.value) && remaining >= 0
+            val node = if (admitted) graph.node(nodeId) else null
+            if (node != null) {
+                nodes.add(nodeToMap(node))
+                // Pushed in reverse so outgoing edges are walked first.
+                if (remaining > 0 && direction.includeIncoming) {
+                    pending.addLast(SubgraphFrame(graph.incoming(nodeId).iterator(), Edge::from, remaining - 1))
                 }
-            }
-
-            if (nodes.size < MAX_SUBGRAPH_NODES && visitedNodes.add(nodeId.value) && remaining >= 0) {
-                val node = graph.node(nodeId)
-                if (node != null) {
-                    nodes.add(nodeToMap(node))
-                    if (remaining > 0) {
-                        if (direction.includeOutgoing) traverse(graph.outgoing(nodeId)) { it.to }
-                        if (direction.includeIncoming) traverse(graph.incoming(nodeId)) { it.from }
-                    }
+                if (remaining > 0 && direction.includeOutgoing) {
+                    pending.addLast(SubgraphFrame(graph.outgoing(nodeId).iterator(), Edge::to, remaining - 1))
                 }
             }
         }
 
-        visit(center, depth)
+        enter(center, depth)
+        while (pending.isNotEmpty()) {
+            val frame = pending.last()
+            if (!frame.candidates.hasNext() || edges.size >= MAX_SUBGRAPH_EDGES) {
+                pending.removeLast()
+                continue
+            }
+            val edge = frame.candidates.next()
+            edges.add(edgeToMap(edge))
+            enter(frame.nextNode(edge), frame.remaining)
+        }
         return mapOf(API_FIELD_NODES to nodes, API_FIELD_EDGES to edges)
     }
+
+    private class SubgraphFrame(
+        val candidates: Iterator<Edge>,
+        val nextNode: (Edge) -> NodeId,
+        val remaining: Int
+    )
 
     private fun resolveResourceEntry(graph: Graph, path: String): ResourceEntry? =
         graph.resources.list("**").firstOrNull { it.path == path }
