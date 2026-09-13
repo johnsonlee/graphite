@@ -39,6 +39,11 @@ cargo build --release
 ./target/release/graphite-explore --id app /path/to/graph --port 8080
 ```
 
+`--release` is not optional for any measurement. A plain `cargo build` produces an
+unoptimized binary under `target/debug/` that runs the 64-graph backtest at P50 6.7 ms
+and P95 42 ms, against 1.0 ms and 3.9 ms for the release build — no faster than the
+Kotlin server. The debug binary prints a warning at startup for that reason.
+
 The command-line interface mirrors `graphite serve`: `--data`, `--graph id:path`,
 `--id`, `--port`, `--load-mode`, `--topology`, `--max-concurrent-cypher`,
 `--cypher-max-timeout-ms` and `--metrics`.

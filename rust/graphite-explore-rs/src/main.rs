@@ -77,6 +77,16 @@ struct Cli {
 
 fn main() -> std::process::ExitCode {
     let cli = Cli::parse();
+    if cfg!(debug_assertions) {
+        // A plain `cargo build` produces this binary. On the 64-graph corpus it runs
+        // the backtest at P50 6.7 ms and P95 42 ms, against 1.0 ms and 3.9 ms for
+        // `--release`: no faster than the Kotlin server it is meant to replace. Say so
+        // before anyone benchmarks it.
+        eprintln!(
+            "WARNING: this is an unoptimized debug build (cargo build without --release); \
+             its latency is 6-10x worse than a release build. Build with `cargo build --release`."
+        );
+    }
     match run(cli) {
         Ok(()) => std::process::ExitCode::SUCCESS,
         Err(e) => {

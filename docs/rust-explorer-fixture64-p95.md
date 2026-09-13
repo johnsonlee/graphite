@@ -166,6 +166,13 @@ keep from counting. Transparent huge pages for the mappings were tried and made 
 measurable difference, so the first-touch cost is not TLB misses. Neither a cache nor
 a smaller response body is taken here.
 
+## Debug builds
+
+Every number in this document is from `cargo build --release`. The binary a plain
+`cargo build` writes to `target/debug/` measures P50 6.7 ms and P95 41.8 ms on the same
+corpus with the same protocol — 1.0x and 2.8x against Kotlin, not 6.6x and 30x — with
+a maximum of 1.6 s. The explorer prints a warning at startup when it was built that way.
+
 ## Graphs without `graph.callsite-string-index`
 
 The persisted CallSite string index was introduced on 2026-09-02 (#113). A graph built
