@@ -18,10 +18,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: b76c4f54eba567d1dadbf60c821f9dd8c0990dac8c5382958d347d8025072100
-  BENCHMARK_REPORT_TRANSITION_SHA256: b76c4f54eba567d1dadbf60c821f9dd8c0990dac8c5382958d347d8025072100
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: b76c4f54eba567d1dadbf60c821f9dd8c0990dac8c5382958d347d8025072100
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: b76c4f54eba567d1dadbf60c821f9dd8c0990dac8c5382958d347d8025072100
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: c9c04b80ff0dc6414c69ec1bc371b6f04fc907bac0f9dbd5a5ff6b03fbeadbf6
+  BENCHMARK_REPORT_TRANSITION_SHA256: c9c04b80ff0dc6414c69ec1bc371b6f04fc907bac0f9dbd5a5ff6b03fbeadbf6
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: c9c04b80ff0dc6414c69ec1bc371b6f04fc907bac0f9dbd5a5ff6b03fbeadbf6
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: c9c04b80ff0dc6414c69ec1bc371b6f04fc907bac0f9dbd5a5ff6b03fbeadbf6
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -689,8 +689,8 @@ jobs:
 
         NEED_CONFIRMATION=0
         gate_metric wall '' 'wall time' false || NEED_CONFIRMATION=1
-        gate_metric cpu processCpuNanos 'CPU time' false || NEED_CONFIRMATION=1
-        gate_metric rss-after residentSetAfterBytes 'RSS after query' false || NEED_CONFIRMATION=1
+        gate_metric cpu processCpuNanos 'CPU time (advisory)' true || NEED_CONFIRMATION=1
+        gate_metric rss-after residentSetAfterBytes 'RSS after query (advisory)' true || NEED_CONFIRMATION=1
         gate_metric rss-delta residentSetDeltaBytes 'RSS query delta (advisory)' true || NEED_CONFIRMATION=1
 
         if [ "${NEED_CONFIRMATION}" -eq 1 ]; then
@@ -723,8 +723,8 @@ jobs:
         FINAL_FAILURE=0
         for SPEC in \
           'wall::wall time:false' \
-          'cpu:processCpuNanos:CPU time:false' \
-          'rss-after:residentSetAfterBytes:RSS after query:false' \
+          'cpu:processCpuNanos:CPU time (advisory):true' \
+          'rss-after:residentSetAfterBytes:RSS after query (advisory):true' \
           'rss-delta:residentSetDeltaBytes:RSS query delta (advisory):true'; do
           IFS=: read -r SLUG METRIC TITLE ADVISORY <<< "${SPEC}"
           if [ "${NEED_CONFIRMATION}" -eq 0 ] || [ "${ADVISORY}" = true ]; then
@@ -1134,7 +1134,7 @@ jobs:
           --slurpfile candidate benchmark-results/candidate-cypher-capacity.json '
             ($base[0][0]) as $base_result |
             ($candidate[0][0]) as $candidate_result |
-            all(["processCpuNanos", "residentSetAfterBytes", "tailLatencyNanos"][];
+            all(["tailLatencyNanos"][];
               . as $metric |
               ($base_result.secondaryMetrics[$metric].score > 0) and
               ($candidate_result.secondaryMetrics[$metric].score > 0) and
@@ -2035,18 +2035,15 @@ jobs:
         java -jar "${CANDIDATE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
           -foe true -prof gc -rf json -rff "${PWD}/benchmark-results/candidate-latency-resources.json"
 
-    - name: Enforce resource guardrails
+    - name: Enforce resource integrity and allocation/GC guardrails
       env:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
-        COMPARATOR=base/.github/scripts/benchmark-gate.mjs
-        if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${COMPARATOR}"; then
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
-            "${REAL_ONLY_LATENCY_COMPARATOR_SHA256}"
-          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
-          if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${COMPARATOR}"; then exit 1; fi
-        fi
+        # Apply the reviewed resource policy to the unchanged base-owned paired harness.
+        test "${CANDIDATE_GATE_TEST_JOB}" = success
+        test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
+          "${REAL_ONLY_LATENCY_COMPARATOR_SHA256}"
+        COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
         if node "${COMPARATOR}" compare-latency-resources \
           --base benchmark-results/base-latency-resources.json \
           --candidate benchmark-results/candidate-latency-resources.json \

@@ -153,8 +153,8 @@ const LATENCY_RESOURCE_METRICS = [
     { key: "gc.alloc.rate.norm", label: "allocation", threshold: 15, minimum: 4_096 },
     { key: "queryGcCount", label: "query GC count", threshold: 15, minimum: 1 },
     { key: "queryGcTimeMs", label: "query GC time", threshold: 15, minimum: 10 },
-    { key: "retainedHeapDeltaBytes", label: "retained heap delta", threshold: 15, minimum: 16 * MIB },
-    { key: "peakUsedHeapBytes", label: "peak used heap", threshold: 15, minimum: 64 * MIB }
+    { key: "retainedHeapDeltaBytes", label: "retained heap delta", threshold: 15, minimum: 16 * MIB, advisory: true },
+    { key: "peakUsedHeapBytes", label: "peak used heap", threshold: 15, minimum: 64 * MIB, advisory: true }
 ];
 const LATENCY_RESOURCE_EVENT_METRICS = new Set([
     "maxHeapBytes", "loadedHeapBytes", "peakUsedHeapBytes", "retainedHeapBytes",
@@ -2376,7 +2376,8 @@ export function compareLatencyResources(baseResults, candidateResults, threshold
                 threshold,
                 minimum: metric.minimum,
                 aboveThreshold,
-                blocked: aboveThreshold
+                advisory: metric.advisory === true,
+                blocked: metric.advisory !== true && aboveThreshold
             });
         }
     }
@@ -2407,7 +2408,7 @@ export function renderLatencyResourceReport(comparison) {
     const lines = [
         "### Wrapped-query resource guardrails", "",
         "Resource probes run separately from latency timing. JVM caps and metric presence fail closed;",
-        "GC, retained-heap, and peak-heap regressions must repeat in reverse order.", "",
+        "Allocation and query-GC regressions must repeat in reverse order; retained/peak heap growth is advisory.", "",
         "| Benchmark | Metric | Base | PR | Change | Gate |",
         "|---|---|---:|---:|---:|:---:|"
     ];

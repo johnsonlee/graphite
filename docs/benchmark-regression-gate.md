@@ -228,9 +228,9 @@ diagnostic because they include forced GC outside the query; regressions are
 decided by the query-only counters. Missing metrics or raw samples, incompatible
 units, duplicate results, a wrong heap cap, or impossible
 `loaded <= peak <= max` / `retained <= peak` relationships fail closed.
-Allocation, query GC, retained-delta, and peak regressions use a 15% relative
-threshold plus an absolute noise floor and must repeat in a candidate-first
-confirmation run before blocking.
+Allocation and query GC regressions use a 15% relative threshold plus an absolute noise floor
+and must repeat in a candidate-first confirmation run before blocking. Retained-delta and peak
+heap growth are advisory; missing or invalid measurements and the effective 8 GiB cap still fail.
 
 ## Method-level gate
 
@@ -255,8 +255,8 @@ runs its assigned scenarios for base and candidate from the shared Explorer JMH 
 both JMH metrics and canonical result records.
 
 The aggregator requires all 12 artifacts, the exact 33 unique `(graphCount, scenario)` pairs, and
-identical result records. Wall time, process CPU, and post-run RSS are blocking 15% comparisons;
-RSS delta remains advisory. Sharding changes scheduling only—the scenario manifest and final
+identical result records. Wall time remains a blocking 15% comparison; process CPU, post-run RSS, and RSS delta are
+advisory. Their measurements and validity checks remain required. Sharding changes scheduling only—the scenario manifest and final
 fail-closed contract are unchanged.
 
 ## Real-corpus end-to-end gate
@@ -368,3 +368,12 @@ Graph-routing cold-state numerical latency is likewise advisory; warm and startu
 latency checks remain blocking. Every state's result and measurement-integrity checks remain
 required. This prerequisite does not implement or weaken the separate 72-query warmed P50/P95
 protocol, whose regression and stability limits remain strictly below 5%.
+
+
+The resource-growth policy applies consistently to Method initial comparisons and confirmation
+selection, capacity CPU/RSS comparisons, and wrapped retained/peak heap comparisons. Method
+wall latency and capacity tail latency retain their existing thresholds. Wrapped allocation/GC
+and Explorer memory-stability checks are unchanged. CPU accounting remains strict: withdrawing
+a CPU growth threshold does not authorize missing, negative, or invalid CPU measurements.
+The wrapped resource job uses the reviewed SHA-pinned candidate comparator for both initial
+and reverse-order confirmation comparisons; the paired execution harness remains base-owned.

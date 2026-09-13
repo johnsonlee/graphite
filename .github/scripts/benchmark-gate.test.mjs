@@ -2126,6 +2126,9 @@ test("JMH advisory metric reports a regression without blocking", () => {
     assert.equal(advisory.rows[0].blocked, false);
     assert.match(renderJmhReport(advisory), /reported for context/);
     assert.match(renderJmhReport(advisory), /\*\*INFO\*\*/);
+    const invalid = makeJmhAdvisory(compareJmh([jmhResult({ score: 100 })], [jmhResult({ score: Number.NaN })], 15, true));
+    assert.equal(invalid.passed, false);
+    assert.ok(invalid.errors.length > 0);
 });
 
 test("JMH reverse-order confirmation rejects a one-round false positive", () => {
@@ -2431,7 +2434,7 @@ test("resource gate requires GC, retained, and peak metrics", () => {
 test("resource confirmation aligns the same metric before blocking", () => {
     const base = [resourceResult()];
     const firstCandidate = [
-        resourceResult({ overrides: { retainedHeapDeltaBytes: eventMetric(80 * 1024 ** 2) } })
+        resourceResult({ overrides: { "gc.alloc.rate.norm": { score: 2_000_000, scoreUnit: "B/op" } } })
     ];
     const retryCandidate = [resourceResult()];
     const initial = compareLatencyResources(base, firstCandidate);
@@ -3468,4 +3471,50 @@ test("diagnostic driver refuses strict status publication before Git or benchmar
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
+});
+
+
+test("wrapped heap growth is advisory while allocation, GC and heap integrity remain blocking", () => {
+    const base = [resourceResult()];
+    const larger = [resourceResult({ overrides: {
+        retainedHeapDeltaBytes: eventMetric(80 * 1024 ** 2),
+        retainedHeapBytes: eventMetric(180 * 1024 ** 2),
+        peakUsedHeapBytes: eventMetric(1024 ** 3)
+    } })];
+    const comparison = compareLatencyResources(base, larger);
+    assert.equal(comparison.passed, true, comparison.errors.join("\n"));
+    assert.equal(comparison.rows.filter(row => row.advisory && row.aboveThreshold).length, 2);
+    assert.ok(comparison.rows.filter(row => row.advisory).every(row => !row.blocked));
+    assert.equal(confirmLatencyResources(comparison, compareLatencyResources(base, larger)).passed, true);
+    for (const overrides of [
+        { "gc.alloc.rate.norm": metric(2_000_000, "B/op") },
+        { queryGcCount: eventMetric(5), queryGcTimeMs: eventMetric(100) }
+    ]) {
+        const failed = compareLatencyResources(base, [resourceResult({ overrides })]);
+        assert.equal(failed.passed, false);
+        assert.equal(confirmLatencyResources(failed, failed).passed, false);
+    }
+    const bad = [resourceResult({ overrides: { peakUsedHeapBytes: eventMetric(9 * 1024 ** 3) } })];
+    assert.equal(compareLatencyResources(base, bad).passed, false);
+    assert.equal(compareLatencyResources(base, [resourceResult({ overrides: { peakUsedHeapBytes: undefined } })]).passed, false);
+});
+
+test("workflow applies withdrawn resource growth constraints in both initial and final method paths", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    for (const expected of [
+        "gate_metric cpu processCpuNanos 'CPU time (advisory)' true",
+        "gate_metric rss-after residentSetAfterBytes 'RSS after query (advisory)' true",
+        "'cpu:processCpuNanos:CPU time (advisory):true'",
+        "'rss-after:residentSetAfterBytes:RSS after query (advisory):true'",
+        "gate_metric wall '' 'wall time' false",
+        'all(["tailLatencyNanos"][];'
+    ]) assert.ok(workflow.includes(expected), expected);
+    const block = workflow.split('    - name: Enforce resource integrity and allocation/GC guardrails')[1]
+        .split('    - name: Upload resource results')[0];
+    assert.match(block, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
+    assert.match(block, /CANDIDATE_GATE_TEST_JOB/);
+    assert.match(block, /REAL_ONLY_LATENCY_COMPARATOR_SHA256/);
+    assert.match(block, /"\$\{COMPARATOR\}" confirm-latency-resources/);
+    assert.match(workflow, /secondaryMetrics\.processCpuNanos\.score > 0/);
+    assert.match(workflow, /secondaryMetrics\.residentSetAfterBytes\.score > 0/);
 });
