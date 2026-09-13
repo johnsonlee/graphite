@@ -141,7 +141,7 @@ pub fn derive(primary_classes: &[String]) -> String {
             })
             .map(|(p, w)| (p, *w))
             .collect();
-        children.sort_by(|a, b| b.1.cmp(&a.1));
+        children.sort_by_key(|c| std::cmp::Reverse(c.1));
         let strongest = match children.first() {
             Some(c) => (c.0.clone(), c.1),
             None => break,

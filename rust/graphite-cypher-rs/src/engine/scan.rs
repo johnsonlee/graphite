@@ -830,17 +830,14 @@ impl ScanPlan {
                 *head = stream.next(ex, graph)?;
             }
             streams.retain(|(head, _)| head.is_some());
-            loop {
-                // The smallest head across streams is the next node in id order.
-                let Some(best) = streams
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(i, (h, _))| h.map(|id| (id, i)))
-                    .min()
-                    .map(|(_, i)| i)
-                else {
-                    break;
-                };
+            // The smallest head across streams is the next node in id order.
+            while let Some(best) = streams
+                .iter()
+                .enumerate()
+                .filter_map(|(i, (h, _))| h.map(|id| (id, i)))
+                .min()
+                .map(|(_, i)| i)
+            {
                 let (head, stream) = &mut streams[best];
                 let id = head.take().expect("a head");
                 ex.tick()?;

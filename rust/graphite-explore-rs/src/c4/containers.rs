@@ -417,7 +417,7 @@ pub fn infer_layout(
         }
         let mut ranked: Vec<(&&String, usize)> =
             class_counts.iter().map(|(k, v)| (k, *v)).collect();
-        ranked.sort_by(|a, b| b.1.cmp(&a.1));
+        ranked.sort_by_key(|r| std::cmp::Reverse(r.1));
         let primary_classes: Vec<String> = ranked
             .iter()
             .take(MAX_PRIMARY_CLASSES_PER_CONTAINER)

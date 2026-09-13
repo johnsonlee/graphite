@@ -296,7 +296,7 @@ fn dedupe_and_sort(edges: Vec<Edge>) -> Vec<Edge> {
         .into_iter()
         .filter(|e| seen.insert((e.from.clone(), e.to.clone(), e.kind.clone())))
         .collect();
-    out.sort_by(|a, b| b.weight.cmp(&a.weight));
+    out.sort_by_key(|e| std::cmp::Reverse(e.weight));
     out
 }
 
@@ -378,7 +378,7 @@ fn container_plan(workspace: &J) -> Option<(Vec<Element>, Vec<Edge>)> {
     let mut selected: Vec<Edge> = Vec::new();
     for c in &all[container_range] {
         let mut outgoing = raw_edges(c, &allowed);
-        outgoing.sort_by(|a, b| b.weight.cmp(&a.weight));
+        outgoing.sort_by_key(|e| std::cmp::Reverse(e.weight));
         selected.extend(
             outgoing
                 .iter()
@@ -610,7 +610,7 @@ fn component_plan(workspace: &J) -> Option<Plan> {
     let every: Vec<&Element> = groups.iter().flat_map(|(_, _, c)| c.iter()).collect();
     let allowed: std::collections::HashSet<String> = every.iter().map(|e| e.id.clone()).collect();
     let mut all_edges: Vec<Edge> = every.iter().flat_map(|e| raw_edges(e, &allowed)).collect();
-    all_edges.sort_by(|a, b| b.weight.cmp(&a.weight));
+    all_edges.sort_by_key(|e| std::cmp::Reverse(e.weight));
     let total = all_edges.len();
     all_edges.truncate(MAX_TEXT_DIAGRAM_EDGES);
     let over_cap = total - all_edges.len();

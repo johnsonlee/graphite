@@ -156,7 +156,7 @@ pub fn select_readable_relationships(
     }
     let mut seen = std::collections::HashSet::new();
     architectural.retain(|r| seen.insert(format!("{}:{}:{}", r.from, r.to, r.kind)));
-    architectural.sort_by(|a, b| b.weight.cmp(&a.weight));
+    architectural.sort_by_key(|r| std::cmp::Reverse(r.weight));
     let reduced = reduce_transitive(architectural, false);
 
     let mut selected: Vec<ComponentRelationship> = Vec::new();
@@ -543,7 +543,7 @@ pub fn build_view(
         })
         .map(|(pair, w)| (pair, *w))
         .collect();
-    candidate_edges.sort_by(|a, b| b.1.cmp(&a.1));
+    candidate_edges.sort_by_key(|e| std::cmp::Reverse(e.1));
     let relationships = select_readable_relationships(
         candidate_edges
             .into_iter()

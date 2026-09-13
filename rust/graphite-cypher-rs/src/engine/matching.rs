@@ -237,16 +237,13 @@ impl<'a> Matcher<'a> {
                         .map(|&tag| (src.graph.ids_by_tag(tag), 0usize))
                         .filter(|(ids, _)| !ids.is_empty())
                         .collect();
-                    loop {
-                        let Some(best) = lists
-                            .iter()
-                            .enumerate()
-                            .map(|(i, (ids, pos))| (ids[*pos], i))
-                            .min()
-                            .map(|(_, i)| i)
-                        else {
-                            break;
-                        };
+                    while let Some(best) = lists
+                        .iter()
+                        .enumerate()
+                        .map(|(i, (ids, pos))| (ids[*pos], i))
+                        .min()
+                        .map(|(_, i)| i)
+                    {
                         let (ids, pos) = &mut lists[best];
                         let id = ids[*pos];
                         *pos += 1;

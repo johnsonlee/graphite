@@ -457,7 +457,7 @@ fn build_component_model(g: &Graph) -> J {
         &inputs.system_boundary,
         &inputs.endpoint_classes,
         &inputs.endpoint_paths,
-        usize::MAX.max(components::MIN_CAPABILITY_LAYOUT_CANDIDATES),
+        usize::MAX,
     );
     let view = components::build_view(
         g,

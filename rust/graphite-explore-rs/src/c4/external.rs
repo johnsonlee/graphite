@@ -240,7 +240,7 @@ pub fn summarize(g: &Graph, external_weights: &IndexMap<String, i64>) -> Vec<Ext
         })
         .collect();
     // Stable sort keeps insertion order for equal weights.
-    out.sort_by(|a, b| b.weight.cmp(&a.weight));
+    out.sort_by_key(|d| std::cmp::Reverse(d.weight));
     out
 }
 
