@@ -417,12 +417,13 @@ call sites and takes about 5 s, because every one of them is handed to the aggre
 as a row. A count over a type the plan admits whole could be taken from the type's
 size instead; it is not a production shape and is left as it is.
 
-Kotlin main answers the all-properties search with no rows at all: it evaluates
-`n[k]` on a node to null, so `toString(n[k])` is `"null"` and never contains the
-term. The port evaluates `n[k]` as the property, as openCypher does, so the
-differential harness plans that shape but does not compare its rows; the other shapes
-above are compared and byte-identical on the fixture graphs, `n.type`'s fallback
-included.
+Until #128, Kotlin main answered the all-properties search with no rows at all: it
+evaluated `n[k]` on a node to null, so `toString(n[k])` was `"null"` and never
+contained the term. #128 reads the property, as the port always did, and prunes
+candidates for the same five families (`value`, `qualifiedId`, the all-properties
+search, `toString`-wrapped fields, DATAFLOW expansion). With main merged in, the
+differential harness compares this shape too; every shape above is byte-identical on
+the fixture graphs, `n.type`'s fallback included.
 
 ## Debug builds
 
