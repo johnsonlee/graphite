@@ -3443,11 +3443,29 @@ class QueryPipeline private constructor(
                 )?.let { return it }
             }
         }
+        val seedCondition = firstNode?.variable
+            ?.takeIf { sourceVariable ->
+                pattern.elements.size == 3 &&
+                    (pattern.elements[1] as? PatternElement.RelationshipPattern)?.let { relationship ->
+                        !relationship.variableLength && relationship.properties.isEmpty() &&
+                            relationship.variable != sourceVariable
+                    } == true &&
+                    (pattern.elements[2] as? PatternElement.NodePattern)?.properties?.isEmpty() == true
+            }
+            ?.let { SourcePredicatePushdown.compile(where.condition, it) }
         val matches = directMatches ?: matchPatternLazily(
             pattern,
             emptyMap(),
             candidateSources,
-            finalResultPredicate = { bindings -> evaluator.evaluate(where.condition, bindings) == true }
+            finalResultPredicate = { bindings -> evaluator.evaluate(where.condition, bindings) == true },
+            seedPredicate = seedCondition?.let { predicate ->
+                { bindings -> evaluator.evaluate(predicate, bindings) == true }
+            },
+            seedMatches = if (seedCondition != null) {
+                firstNode?.let { node -> orderedSourceMatches(node, seedCondition, candidateSources) }
+            } else {
+                null
+            }
         )
         if (orderBy != null) {
             return projectOrderedFilteredRows(
@@ -3473,6 +3491,31 @@ class QueryPipeline private constructor(
             if (rows.size >= limitCount) break
         }
         return CypherResult(columns, rows)
+    }
+
+    @Suppress("ReturnCount")
+    private fun orderedSourceMatches(
+        node: PatternElement.NodePattern,
+        condition: CypherExpr,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Map<String, Any?>>? {
+        // Selecting candidates before inline constraints could suppress their errors or volatility.
+        if (node.properties.isNotEmpty() || candidateSources.any { it.graph !is StringPropertyLookupOrder }) return null
+        val variable = node.variable ?: return null
+        val nodeClass = resolveNodeClass(node.labels) ?: return null
+        val plan = DirectStringCandidatePlan.compile(condition, variable, activeParameters.get().orEmpty()) ?: return null
+        return candidateSources.asSequence().flatMap { source ->
+            // Never limit seeds: matching nodes may have no relationships that survive the final WHERE.
+            directStringCandidates(source.graph, nodeClass, plan.candidates).mapNotNull { candidate ->
+                bindNodeCandidate(
+                    nodeValue(source, candidate),
+                    node,
+                    emptyMap(),
+                    navigate = true,
+                    trackSegments = false
+                )
+            }
+        }
     }
 
     private fun directStringBindings(
@@ -4061,6 +4104,8 @@ class QueryPipeline private constructor(
         existingBindings: Map<String, Any?>,
         candidateSources: List<CypherGraph> = sources,
         finalResultPredicate: ((Map<String, Any?>) -> Boolean)? = null,
+        seedPredicate: ((Map<String, Any?>) -> Boolean)? = null,
+        seedMatches: Sequence<Map<String, Any?>>? = null,
         trackSegments: Boolean = pattern.pathVariable != null ||
             pattern.elements.count { it is PatternElement.RelationshipPattern } > 1
     ): Sequence<Map<String, Any?>> {
@@ -4068,13 +4113,14 @@ class QueryPipeline private constructor(
         if (elements.isEmpty()) return sequenceOf(existingBindings)
         val initialBindings = prepareRelationshipMatchState(pattern, existingBindings)
 
-        var currentMatches: Sequence<Map<String, Any?>> = matchNodeElementLazily(
+        var currentMatches: Sequence<Map<String, Any?>> = seedMatches ?: matchNodeElementLazily(
             elements[0] as PatternElement.NodePattern,
             initialBindings,
             candidateSources,
             navigate = elements.size > 1,
             trackSegments = trackSegments
         )
+        if (seedPredicate != null) currentMatches = currentMatches.filter(seedPredicate)
         var i = 1
         while (i < elements.size) {
             val sourceNode = elements[i - 1] as PatternElement.NodePattern

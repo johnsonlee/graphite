@@ -1149,3 +1149,27 @@ unproven. The annotation corrections do not change the annotation-free Android f
 
 **Conclusion:** keep the semantic repair and fast path. The COLD missing-term case has
 not reached 10x and remains an explicit shortfall.
+
+### 2026-09-13 - Attempt 023: Filter and select sources before single-hop expansion
+
+**Hypothesis:** pure source-only conjuncts can reject a seed before adjacency access.
+When storage exposes canonical candidate ordering, reuse typed lookup without applying
+the result LIMIT to seeds: early candidates can have no surviving relationships.
+Retain the full original WHERE and normal edge/provenance binding.
+
+**Base/candidate:** main `144d98ef`; candidate is this experiment commit, depending on
+the preceding typed-value support. Frozen first measurement snapshot and real-data/JVM
+protocol are recorded in Attempt 021. Three-pair medians for sourceHit are 80.1x COLD /
+247.6x WARM; sourceMiss 92.4x / 268.2x. Exact five-row hit results, absent results,
+ordering, and provenance match main in every observation. Diagnostic CPU reductions
+are about 44–47x COLD and 71–128x WARM. Whole-trial allocations are in the frozen report.
+
+**Correctness:** source-access tests prove rejected adjacency is not visited, ordered
+lookup does not scan all nodes or truncate dead seeds, and fallback preserves mixed OR,
+right-only conditions, inline-property errors, volatility, non-Boolean NOT errors,
+work budgets, LIMIT/SKIP/DISTINCT/order, and graph identity. Full Cypher tests and lint
+passed in the second snapshot. Other repository and final-head regression gates remain
+pending.
+
+**Conclusion:** keep. Source-filtered cases exceed 10x on this real fixture; this does
+not improve target-only predicates, which remain a separate experiment.
