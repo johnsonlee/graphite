@@ -1760,6 +1760,18 @@ jobs:
           test -d "fixture-graphs/${CORPUS}"
         done
 
+    # Keep the exact persisted bytes available for follow-up profiling. Rebuilding
+    # the graph changes properties-file timestamps even with identical inputs.
+    # Use a separate prefix so benchmark report aggregation does not download it.
+    - name: Preserve original Android fixture for diagnosis
+      uses: actions/upload-artifact@v7
+      with:
+        name: slow-query-fixture-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: fixture-graphs/android/
+        include-hidden-files: true
+        if-no-files-found: error
+        retention-days: 14
+
   wrapped-query-latency-shard:
     name: wrapped-query-latency-shard-${{ matrix.shard }}
     needs: [candidate-gate-tests, prepare-latency-fixtures, build-wrapped-query-jmh]
