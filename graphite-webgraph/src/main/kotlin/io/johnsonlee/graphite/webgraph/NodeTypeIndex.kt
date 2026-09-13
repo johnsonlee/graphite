@@ -52,6 +52,9 @@ internal class MappedNodeTypeIndex private constructor(
     private val rangesByType: Map<Class<out Node>, NodeTypeRange>
 ) : NodeTypeIndex {
 
+    // Class identity hashes differ between JVMs; superclass scans must follow the persisted ranges.
+    private val rangesInStorageOrder = rangesByType.entries.sortedBy { it.value.offset }
+
     override fun ids(type: Class<out Node>): Sequence<Int> = Sequence { idIterator(type) }
 
     override fun idIterator(type: Class<out Node>): IntIterator = MappedNodeIdIterator(buffer, ranges(type))
@@ -85,7 +88,7 @@ internal class MappedNodeTypeIndex private constructor(
 
     private fun ranges(type: Class<out Node>): List<NodeTypeRange> {
         rangesByType[type]?.let { return listOf(it) }
-        return rangesByType.entries
+        return rangesInStorageOrder
             .filter { type.isAssignableFrom(it.key) }
             .map { it.value }
     }
