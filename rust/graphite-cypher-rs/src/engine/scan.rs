@@ -51,7 +51,7 @@ const CALL_SITE_PROPS: [&str; 4] = ["caller_class", "caller_name", "callee_class
 
 /// Every property name the scan can read raw off some record: CallSite's four through
 /// the CallSite index, the rest through a per-type string column.
-const PUSHABLE_PROPS: [&str; 14] = [
+const PUSHABLE_PROPS: [&str; 25] = [
     "caller_class",
     "caller_name",
     "callee_class",
@@ -66,7 +66,31 @@ const PUSHABLE_PROPS: [&str; 14] = [
     "format",
     "key",
     "member",
+    // Answered by decoding the record, or never true for the type; the planner
+    // decides per type, so a predicate on them still skips every other type.
+    "callee_signature",
+    "caller_signature",
+    "line",
+    "static",
+    "index",
+    "method",
+    "actual_type",
+    "profile",
+    // Synthesised from the graph id and the node id in cross-graph mode; folded per
+    // graph without decoding anything.
+    "graphId",
+    "elementId",
+    "qualifiedId",
 ];
+
+/// Every property key a node map can carry, in cross-graph mode: what
+/// `any(k IN keys(n) WHERE ...)` ranges over. An annotation's value pairs add keys of
+/// their own, which is why the Annotation type is always decoded for that shape.
+const ALL_KEYS: [&str; 25] = PUSHABLE_PROPS;
+
+fn is_synthetic_key(property: &str) -> bool {
+    matches!(property, "graphId" | "elementId" | "qualifiedId")
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Transform {
@@ -97,6 +121,12 @@ struct StringPredicate {
     transform: Transform,
     /// The `=~` pattern and its compiled form; `None` for every other operator.
     regex: Option<(String, std::sync::Arc<crate::eval::CompiledRegex>)>,
+    /// The operand was `toString(<property>)`: identity on a string, and the only
+    /// way a numeric or boolean property can satisfy a string predicate.
+    via_to_string: bool,
+    /// Produced by expanding `any(k IN keys(n) WHERE ...)`: the leaf stands for one
+    /// possible key, and a type whose keys are open-ended (Annotation) must decode.
+    from_keys: bool,
     /// The literal's trigrams, computed once for the query rather than once per graph.
     /// They depend only on the literal, and there are sixty-four graphs.
     trigrams: std::sync::Arc<Option<Vec<i32>>>,
@@ -364,6 +394,9 @@ pub struct ScanPlan {
     /// The clause restricted to CallSite's raw strings, with its leaves, when the
     /// CallSite type takes the indexed path.
     call_site: Option<(PredTree, Vec<StringPredicate>)>,
+    /// Some leaf reads a synthetic key, whose truth depends on the graph: the per-type
+    /// plans are then settled per source instead of once here.
+    has_synthetic: bool,
 }
 
 impl ScanPlan {
@@ -401,12 +434,15 @@ impl ScanPlan {
         }
         // Per type: which leaves it can answer raw, and whether it needs decoding at all.
         // Annotation keys are settled per graph, since any dictionary string can be one.
+        let has_synthetic = preds.iter().any(|p| is_synthetic_key(p.property));
+        // A synthetic leaf is unknown here: it makes its type generic until a source
+        // folds it, and every source re-plans when any leaf is synthetic.
         let tag_plans: Vec<TagPlan> = (0..graphite_storage::node::TAG_COUNT as u8)
             .map(|tag| {
                 if !tags.contains(&tag) {
                     return TagPlan::Skip;
                 }
-                tag_plan(&tree, tag, &|_| false)
+                tag_plan(&tree, tag, &|_| false, &|_| None)
             })
             .collect();
         let call_site = match &tag_plans[TAG_CALL_SITE_NODE as usize] {
@@ -424,6 +460,7 @@ impl ScanPlan {
             tests,
             tag_plans,
             call_site,
+            has_synthetic,
         })
     }
 
@@ -618,6 +655,7 @@ impl ScanPlan {
         // annotation's value pairs can carry any key: that type is settled per graph
         // after the graph's CallSite records, as it always was.
         let cs_only = cs_tree.is_some()
+            && !self.has_synthetic
             && self.tag_plans.iter().enumerate().all(|(tag, p)| {
                 tag == TAG_CALL_SITE_NODE as usize
                     || matches!(p, TagPlan::Skip)
@@ -721,12 +759,21 @@ impl ScanPlan {
         if graph.ids_by_tag(tag).is_empty() {
             return Ok(true);
         }
-        let plan = tag_plan(&self.tree, tag, &|key| {
-            !matches!(key, "name" | "class" | "member" | "values")
-                && graph.strings.index_of(key).is_none()
-        });
+        let plan = tag_plan(
+            &self.tree,
+            tag,
+            &|key| {
+                !matches!(key, "name" | "class" | "member" | "values")
+                    && graph.strings.index_of(key).is_none()
+            },
+            &|p| synthetic_truth(ex, source, p),
+        );
         let mut stream = match plan {
             TagPlan::Skip | TagPlan::CallSite(_) => return Ok(true),
+            TagPlan::All => TypeStream::All {
+                ids: graph.ids_by_tag(tag),
+                pos: 0,
+            },
             TagPlan::Generic => TypeStream::Generic {
                 ids: graph.ids_by_tag(tag),
                 pos: 0,
@@ -777,31 +824,66 @@ impl ScanPlan {
             // a LIMIT must cut the same rows here.
             // There is one CallSite type, so at most one CallSite plan per graph; it
             // lives here so its stream can borrow it.
-            let cs_plan: Option<SourcePlan> = match self.tag_plans[TAG_CALL_SITE_NODE as usize] {
-                TagPlan::CallSite(_) => {
-                    let t = cs_tree.expect("CallSite plan");
+            // With a synthetic key in the clause the per-type plans depend on this
+            // graph's id: fold the leaves for it and plan again.
+            let synthetic = |p: &StringPredicate| synthetic_truth(ex, source, p);
+            let source_plans: Option<Vec<TagPlan>> = self.has_synthetic.then(|| {
+                (0..graphite_storage::node::TAG_COUNT as u8)
+                    .map(|tag| {
+                        if !self.tags.contains(&tag) {
+                            TagPlan::Skip
+                        } else {
+                            tag_plan(&self.tree, tag, &|_| false, &synthetic)
+                        }
+                    })
+                    .collect()
+            });
+            let plans: &[TagPlan] = source_plans.as_deref().unwrap_or(&self.tag_plans);
+            let source_cs_leaves: Vec<StringPredicate>;
+            let cs_plan: Option<SourcePlan> = match &plans[TAG_CALL_SITE_NODE as usize] {
+                TagPlan::CallSite(t) => {
+                    let (t, preds): (&PredTree, &[StringPredicate]) = if source_plans.is_some() {
+                        let mut leaves = Vec::new();
+                        t.leaves(&mut leaves);
+                        source_cs_leaves = leaves;
+                        (t, &source_cs_leaves)
+                    } else {
+                        (cs_tree.expect("CallSite plan"), cs_preds)
+                    };
                     may_match(graph, t)
-                        .then(|| build_source_plan(source, graph, t, cs_preds, self.tests))
+                        .then(|| build_source_plan(source, graph, t, preds, self.tests))
                 }
                 _ => None,
             };
             let mut streams: Vec<(Option<u32>, TypeStream)> = Vec::new();
             for &tag in &self.tags {
-                let plan = &self.tag_plans[tag as usize];
+                let plan = &plans[tag as usize];
                 // An annotation's keys are whatever strings its value pairs carry, so a
                 // key absent from this graph's dictionary reaches no annotation here.
                 let annotation_plan;
                 let plan = if tag == TAG_ANNOTATION_NODE && matches!(plan, TagPlan::Generic) {
-                    annotation_plan = tag_plan(&self.tree, tag, &|key| {
-                        !matches!(key, "name" | "class" | "member" | "values")
-                            && graph.strings.index_of(key).is_none()
-                    });
+                    annotation_plan = tag_plan(
+                        &self.tree,
+                        tag,
+                        &|key| {
+                            !matches!(key, "name" | "class" | "member" | "values")
+                                && graph.strings.index_of(key).is_none()
+                        },
+                        &synthetic,
+                    );
                     &annotation_plan
                 } else {
                     plan
                 };
                 let stream = match plan {
                     TagPlan::Skip => continue,
+                    TagPlan::All => {
+                        let ids = graph.ids_by_tag(tag);
+                        if ids.is_empty() {
+                            continue;
+                        }
+                        TypeStream::All { ids, pos: 0 }
+                    }
                     TagPlan::Generic => {
                         let ids = graph.ids_by_tag(tag);
                         if ids.is_empty() {
@@ -1015,6 +1097,11 @@ enum TypeStream<'a> {
         ids: &'a [u32],
         pos: usize,
     },
+    /// Every record of the type, each already known to satisfy the clause.
+    All {
+        ids: &'a [u32],
+        pos: usize,
+    },
     /// The column rows that satisfy the resolved plan; exact.
     Column {
         tree: ColumnTree,
@@ -1028,6 +1115,7 @@ impl TypeStream<'_> {
     fn verified(&self) -> bool {
         match self {
             TypeStream::Generic { .. } => false,
+            TypeStream::All { .. } => true,
             TypeStream::Column { .. } => true,
             TypeStream::CallSite(s) => s.verified,
         }
@@ -1035,7 +1123,7 @@ impl TypeStream<'_> {
 
     fn next(&mut self, ex: &Executor, graph: &Graph) -> CypherResult<Option<u32>> {
         match self {
-            TypeStream::Generic { ids, pos } => {
+            TypeStream::Generic { ids, pos } | TypeStream::All { ids, pos } => {
                 if *pos >= ids.len() {
                     return Ok(None);
                 }
@@ -1881,6 +1969,9 @@ fn collect_tree(e: &Expr, variable: &str) -> Option<PredTree> {
         ])),
         _ => {
             let mut out = Vec::new();
+            if expand_keys_predicate(e, variable, &mut out) {
+                return Some(PredTree::Or(out.into_iter().map(PredTree::Leaf).collect()));
+            }
             if collect_leaf(e, variable, &mut out) && out.len() == 1 {
                 Some(PredTree::Leaf(out.pop()?))
             } else {
@@ -1966,7 +2057,7 @@ fn push_regex(left: &Expr, right: &Expr, variable: &str, out: &mut Vec<StringPre
     if matches!(*compiled, crate::eval::CompiledRegex::Unsupported(_)) {
         return false;
     }
-    let Some((property, Transform::None)) = property_operand(left, variable) else {
+    let Some((property, Transform::None, via_to_string)) = property_operand(left, variable) else {
         return false;
     };
     let trigrams = std::sync::Arc::new(if literal.is_ascii() {
@@ -1981,6 +2072,8 @@ fn push_regex(left: &Expr, right: &Expr, variable: &str, out: &mut Vec<StringPre
         literal,
         transform: Transform::None,
         regex: Some((pattern, compiled)),
+        via_to_string,
+        from_keys: false,
         trigrams,
         signature,
         test: 0,
@@ -2001,7 +2094,7 @@ fn push_predicate(
         _ => return false,
     };
     match property_operand(left, variable) {
-        Some((property, transform)) => {
+        Some((property, transform, via_to_string)) => {
             // Trigrams exist only for an ASCII literal. The index was written from the
             // JVM's `String.lowercase()`, which is context-sensitive (a final sigma
             // lowers differently from a medial one), while a Rust `char` lowers alone;
@@ -2019,6 +2112,8 @@ fn push_predicate(
                 literal,
                 transform,
                 regex: None,
+                via_to_string,
+                from_keys: false,
                 trigrams,
                 signature,
                 // Numbered once the whole tree is known.
@@ -2070,15 +2165,62 @@ enum Exposure {
     /// The type has no such property, or not a string one: a string predicate on it is
     /// never true, and the type need not be looked at for that leaf.
     Absent,
+    /// `graphId`, `elementId` or `qualifiedId`: synthesised from the graph id and the
+    /// node id, so the leaf folds to a constant per graph, or needs the node id.
+    Synthetic,
     /// A value only decoding the record reveals: the type must go through WHERE.
     Dynamic,
 }
 
 fn exposure(tag: u8, property: &str) -> Exposure {
+    exposure_of(tag, property, false, None)
+}
+
+/// What `tag` exposes for a leaf: the property, whether the operand was `toString()`,
+/// and the leaf itself when its literal decides whether a number or boolean could ever
+/// satisfy it.
+fn exposure_of(
+    tag: u8,
+    property: &str,
+    via_to_string: bool,
+    leaf: Option<&StringPredicate>,
+) -> Exposure {
     use graphite_storage::node::*;
+    if is_synthetic_key(property) {
+        return Exposure::Synthetic;
+    }
+    // A property whose value is a number or a boolean: a string predicate on it is
+    // never true, unless the operand was `toString()` and the literal looks the part.
+    let non_string = match tag {
+        TAG_INT_CONSTANT | TAG_LONG_CONSTANT | TAG_FLOAT_CONSTANT | TAG_DOUBLE_CONSTANT => {
+            (property == "value").then_some(false)
+        }
+        TAG_BOOLEAN_CONSTANT => (property == "value").then_some(true),
+        TAG_FIELD_NODE => (property == "static").then_some(true),
+        TAG_PARAMETER_NODE => (property == "index").then_some(false),
+        TAG_CALL_SITE_NODE => (property == "line").then_some(false),
+        _ => None,
+    };
+    if let Some(boolean) = non_string {
+        let possible = via_to_string
+            && leaf.is_some_and(|p| {
+                if boolean {
+                    boolean_text_can_satisfy(p)
+                } else {
+                    number_text_can_satisfy(p)
+                }
+            });
+        return if possible {
+            Exposure::Dynamic
+        } else {
+            Exposure::Absent
+        };
+    }
     if tag == TAG_CALL_SITE_NODE {
         return if CALL_SITE_PROPS.contains(&property) {
             Exposure::CallSite
+        } else if matches!(property, "callee_signature" | "caller_signature") {
+            Exposure::Dynamic
         } else {
             Exposure::Absent
         };
@@ -2103,10 +2245,114 @@ fn exposure(tag: u8, property: &str) -> Exposure {
     }
 }
 
+/// Fold a synthetic-key leaf for one graph: `Some(true)` when every node of the graph
+/// satisfies it, `Some(false)` when none can, `None` when the node id decides.
+///
+/// `qualifiedId` and `elementId` read `<graph id>:<node id>`, `graphId` the graph id;
+/// none exist outside cross-graph mode. A graph id never contains a colon and a node
+/// id is a run of digits, so a literal splits at its colon into a graph-id part and
+/// a node-id part, and each side is settled on its own.
+fn synthetic_truth(ex: &Executor, source: SourceIdx, p: &StringPredicate) -> Option<bool> {
+    fold_synthetic(ex.cross, &ex.sources[source as usize].id, p)
+}
+
+fn fold_synthetic(cross: bool, graph_id: &str, p: &StringPredicate) -> Option<bool> {
+    if !cross {
+        return Some(false);
+    }
+    if p.op == PushOp::Regex {
+        return None;
+    }
+    let gid: String = match p.transform {
+        Transform::None => graph_id.to_string(),
+        Transform::Lowercase => graph_id.chars().flat_map(|c| c.to_lowercase()).collect(),
+    };
+    let lit = p.literal.as_str();
+    if p.property == "graphId" {
+        return Some(match p.op {
+            PushOp::Equals => gid == lit,
+            PushOp::Contains => gid.contains(lit),
+            PushOp::StartsWith => gid.starts_with(lit),
+            PushOp::EndsWith => gid.ends_with(lit),
+            PushOp::Regex => unreachable!(),
+        });
+    }
+    let all_digits = |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit());
+    let mut parts = lit.split(':');
+    let head = parts.next().unwrap_or("");
+    let tail = parts.next();
+    if parts.next().is_some() {
+        return Some(false);
+    }
+    match (p.op, tail) {
+        // No colon: the literal lies wholly in the graph id or wholly in the node id.
+        (PushOp::Contains, None) => {
+            if gid.contains(head) {
+                Some(true)
+            } else if all_digits(head) {
+                None
+            } else {
+                Some(false)
+            }
+        }
+        (PushOp::StartsWith, None) => Some(gid.starts_with(head)),
+        (PushOp::EndsWith, None) => {
+            if head.is_empty() {
+                Some(true)
+            } else if all_digits(head) {
+                None
+            } else {
+                Some(false)
+            }
+        }
+        (PushOp::Equals, None) => Some(false),
+        // One colon: `head` ends the graph id, `tail` starts the node id.
+        (PushOp::Contains, Some(tail)) => {
+            if !gid.ends_with(head) {
+                Some(false)
+            } else if tail.is_empty() {
+                Some(true)
+            } else if all_digits(tail) {
+                None
+            } else {
+                Some(false)
+            }
+        }
+        (PushOp::StartsWith, Some(tail)) => {
+            if gid != head {
+                Some(false)
+            } else if tail.is_empty() {
+                Some(true)
+            } else if all_digits(tail) {
+                None
+            } else {
+                Some(false)
+            }
+        }
+        (PushOp::EndsWith, Some(tail)) => {
+            if gid.ends_with(head) && all_digits(tail) {
+                None
+            } else {
+                Some(false)
+            }
+        }
+        (PushOp::Equals, Some(tail)) => {
+            if gid == head && all_digits(tail) {
+                None
+            } else {
+                Some(false)
+            }
+        }
+        (PushOp::Regex, _) => unreachable!(),
+    }
+}
+
 /// What the scan does for one node type.
 enum TagPlan {
     /// No record of this type can satisfy the clause.
     Skip,
+    /// Every record of this type satisfies the clause: emitted without decoding.
+    All,
     /// Every record goes through WHERE: some leaf needs the record decoded.
     Generic,
     /// The clause, restricted to the leaves this type answers raw, for the CallSite
@@ -2118,6 +2364,8 @@ enum TagPlan {
 
 enum Pruned {
     False,
+    /// Every record of the type satisfies the subtree.
+    True,
     Generic,
     Tree(PredTree),
 }
@@ -2125,22 +2373,43 @@ enum Pruned {
 /// Restrict the clause to what `tag`'s records expose. A leaf the type lacks is false;
 /// a disjunction of only such leaves is false; a conjunction with one is false. A leaf
 /// only decoding can answer makes the whole type generic.
-fn prune(tree: &PredTree, tag: u8, dynamic_is_absent: &dyn Fn(&str) -> bool) -> Pruned {
+fn prune(
+    tree: &PredTree,
+    tag: u8,
+    dynamic_is_absent: &dyn Fn(&str) -> bool,
+    synthetic: &dyn Fn(&StringPredicate) -> Option<bool>,
+) -> Pruned {
     match tree {
-        PredTree::Leaf(p) => match exposure(tag, p.property) {
-            Exposure::Column(_) | Exposure::CallSite => Pruned::Tree(tree.clone()),
-            Exposure::Absent => Pruned::False,
-            Exposure::Dynamic if dynamic_is_absent(p.property) => Pruned::False,
-            Exposure::Dynamic => Pruned::Generic,
-        },
+        PredTree::Leaf(p) => {
+            // A key an annotation's value pairs may carry: only decoding tells.
+            if p.from_keys && tag == TAG_ANNOTATION_NODE {
+                return Pruned::Generic;
+            }
+            match exposure_of(tag, p.property, p.via_to_string, Some(p)) {
+                Exposure::Column(_) | Exposure::CallSite => Pruned::Tree(tree.clone()),
+                Exposure::Absent => Pruned::False,
+                Exposure::Synthetic => match synthetic(p) {
+                    Some(true) => Pruned::True,
+                    Some(false) => Pruned::False,
+                    None => Pruned::Generic,
+                },
+                Exposure::Dynamic if dynamic_is_absent(p.property) => Pruned::False,
+                Exposure::Dynamic => Pruned::Generic,
+            }
+        }
         PredTree::Or(children) => {
             let mut kept = Vec::new();
+            let mut generic = false;
             for c in children {
-                match prune(c, tag, dynamic_is_absent) {
+                match prune(c, tag, dynamic_is_absent, synthetic) {
                     Pruned::False => {}
-                    Pruned::Generic => return Pruned::Generic,
+                    Pruned::True => return Pruned::True,
+                    Pruned::Generic => generic = true,
                     Pruned::Tree(t) => kept.push(t),
                 }
+            }
+            if generic {
+                return Pruned::Generic;
             }
             match kept.len() {
                 0 => Pruned::False,
@@ -2152,8 +2421,9 @@ fn prune(tree: &PredTree, tag: u8, dynamic_is_absent: &dyn Fn(&str) -> bool) -> 
             let mut kept = Vec::new();
             let mut generic = false;
             for c in children {
-                match prune(c, tag, dynamic_is_absent) {
+                match prune(c, tag, dynamic_is_absent, synthetic) {
                     Pruned::False => return Pruned::False,
+                    Pruned::True => {}
                     Pruned::Generic => generic = true,
                     Pruned::Tree(t) => kept.push(t),
                 }
@@ -2162,6 +2432,7 @@ fn prune(tree: &PredTree, tag: u8, dynamic_is_absent: &dyn Fn(&str) -> bool) -> 
                 return Pruned::Generic;
             }
             match kept.len() {
+                0 => Pruned::True,
                 1 => Pruned::Tree(kept.pop().unwrap()),
                 _ => Pruned::Tree(PredTree::And(kept)),
             }
@@ -2169,9 +2440,15 @@ fn prune(tree: &PredTree, tag: u8, dynamic_is_absent: &dyn Fn(&str) -> bool) -> 
     }
 }
 
-fn tag_plan(tree: &PredTree, tag: u8, dynamic_is_absent: &dyn Fn(&str) -> bool) -> TagPlan {
-    match prune(tree, tag, dynamic_is_absent) {
+fn tag_plan(
+    tree: &PredTree,
+    tag: u8,
+    dynamic_is_absent: &dyn Fn(&str) -> bool,
+    synthetic: &dyn Fn(&StringPredicate) -> Option<bool>,
+) -> TagPlan {
+    match prune(tree, tag, dynamic_is_absent, synthetic) {
         Pruned::False => TagPlan::Skip,
+        Pruned::True => TagPlan::All,
         Pruned::Generic => TagPlan::Generic,
         Pruned::Tree(t) if tag == TAG_CALL_SITE_NODE => TagPlan::CallSite(t),
         Pruned::Tree(t) => TagPlan::Column(t),
@@ -2333,12 +2610,12 @@ impl ColumnTree {
     }
 }
 
-fn property_operand(e: &Expr, variable: &str) -> Option<(&'static str, Transform)> {
+fn property_operand(e: &Expr, variable: &str) -> Option<(&'static str, Transform, bool)> {
     match e {
         Expr::Property { expr, key } => match expr.as_ref() {
             Expr::Variable(v) if v == variable => {
                 let prop = PUSHABLE_PROPS.iter().find(|p| *p == key)?;
-                Some((prop, Transform::None))
+                Some((prop, Transform::None, false))
             }
             _ => None,
         },
@@ -2346,18 +2623,136 @@ fn property_operand(e: &Expr, variable: &str) -> Option<(&'static str, Transform
             let lower = name.to_ascii_lowercase();
             match lower.as_str() {
                 "tolower" | "tolowercase" => {
-                    let (p, _) = property_operand(args.first()?, variable)?;
-                    Some((p, Transform::Lowercase))
+                    let (p, _, via) = property_operand(args.first()?, variable)?;
+                    Some((p, Transform::Lowercase, via))
                 }
                 "coalesce" => {
-                    let (p, t) = property_operand(args.first()?, variable)?;
-                    Some((p, t))
+                    let (p, t, via) = property_operand(args.first()?, variable)?;
+                    Some((p, t, via))
+                }
+                // `toString` of a string is the string; of a number or boolean it is the
+                // only form a string predicate can match, which `exposure` weighs.
+                "tostring" => {
+                    if args.len() != 1 {
+                        return None;
+                    }
+                    let (p, t, _) = property_operand(&args[0], variable)?;
+                    Some((p, t, true))
                 }
                 _ => None,
             }
         }
         _ => None,
     }
+}
+
+/// `any(k IN keys(<variable>) WHERE <test of toString(<variable>[k]) or <variable>[k]>)`:
+/// the shape of a search over every property. One leaf per key a node map can carry,
+/// as a disjunction, which the per-type pruning then narrows to the keys each type has;
+/// a type with open-ended keys decodes instead. Only the leaf structure is used for
+/// planning -- rows of a decoded type are still judged by the original clause.
+fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> bool {
+    let Expr::PredicateFunction {
+        name,
+        variable: key_var,
+        list,
+        predicate: Some(predicate),
+    } = e
+    else {
+        return false;
+    };
+    if !name.eq_ignore_ascii_case("any") {
+        return false;
+    }
+    match list.as_ref() {
+        Expr::FunctionCall { name, args, .. }
+            if name.eq_ignore_ascii_case("keys")
+                && matches!(args.as_slice(), [Expr::Variable(v)] if v == variable) => {}
+        _ => return false,
+    }
+    // The operand must read `<variable>[k]`, possibly under toString().
+    let subscripted = |operand: &Expr| -> Option<bool> {
+        let (inner, via) = match operand {
+            Expr::FunctionCall { name, args, .. } if name.eq_ignore_ascii_case("tostring") => {
+                (args.first()?, true)
+            }
+            other => (other, false),
+        };
+        match inner {
+            Expr::Subscript { expr, index } => match (expr.as_ref(), index.as_ref()) {
+                (Expr::Variable(v), Expr::Variable(k)) if v == variable && k == key_var => {
+                    Some(via)
+                }
+                _ => None,
+            },
+            _ => None,
+        }
+    };
+    let (op, left, right): (PushOp, &Expr, &Expr) = match predicate.as_ref() {
+        Expr::StringOp { op, left, right } => (
+            match op {
+                StrOp::Contains => PushOp::Contains,
+                StrOp::StartsWith => PushOp::StartsWith,
+                StrOp::EndsWith => PushOp::EndsWith,
+                StrOp::Regex => return false,
+            },
+            left,
+            right,
+        ),
+        Expr::Comparison {
+            op: crate::ast::CmpOp::Eq,
+            left,
+            right,
+        } => (PushOp::Equals, left, right),
+        _ => return false,
+    };
+    let Some(via_to_string) = subscripted(left) else {
+        return false;
+    };
+    let Expr::Literal(crate::ast::Literal::Str(literal)) = right else {
+        return false;
+    };
+    for property in ALL_KEYS {
+        // Trigrams only for an ASCII literal, as `push_predicate` reasons.
+        let trigrams = std::sync::Arc::new(if literal.is_ascii() {
+            graphite_storage::callsite_index::literal_trigrams(literal)
+        } else {
+            None
+        });
+        out.push(StringPredicate {
+            property,
+            op,
+            literal: literal.clone(),
+            transform: Transform::None,
+            regex: None,
+            via_to_string,
+            from_keys: true,
+            trigrams,
+            signature: graphite_storage::callsite_index::literal_signature(literal),
+            test: 0,
+        });
+    }
+    true
+}
+
+/// Could a number's `toString()` satisfy the predicate at all? Integers print as digits
+/// with an optional sign; floating point adds a point, an exponent, `Infinity` and
+/// `NaN`. A literal with any other character never matches.
+fn number_text_can_satisfy(p: &StringPredicate) -> bool {
+    let text = p.test_text();
+    text.chars()
+        .all(|c| c.is_ascii_digit() || "+-.EeInfityNa".contains(c))
+}
+
+/// Could a boolean's `toString()` -- `true` or `false` -- satisfy the predicate?
+fn boolean_text_can_satisfy(p: &StringPredicate) -> bool {
+    ["true", "false"].iter().any(|b| match p.op {
+        PushOp::Equals => *b == p.literal,
+        PushOp::Contains => b.contains(&p.literal),
+        PushOp::StartsWith => b.starts_with(&p.literal),
+        PushOp::EndsWith => b.ends_with(&p.literal),
+        PushOp::Regex => true,
+    })
 }
 
 #[allow(dead_code)]
@@ -2516,6 +2911,9 @@ fn may_match(graph: &Graph, tree: &PredTree) -> bool {
         return true;
     };
     match tree {
+        // A synthetic key is not in any dictionary, and a number's text is not either:
+        // their trigrams say nothing about whether the graph can match.
+        PredTree::Leaf(p) if is_synthetic_key(p.property) || p.via_to_string => true,
         PredTree::Leaf(p) => match p.trigrams.as_ref() {
             Some(trigrams) if !trigrams.is_empty() => idx.may_contain_all(trigrams),
             _ => true,
@@ -2537,6 +2935,8 @@ mod tests {
             literal: literal.to_string(),
             transform: Transform::None,
             regex: None,
+            via_to_string: false,
+            from_keys: false,
             trigrams: std::sync::Arc::new(graphite_storage::callsite_index::literal_trigrams(
                 literal,
             )),
@@ -2548,6 +2948,7 @@ mod tests {
     fn kind(p: &Pruned) -> &'static str {
         match p {
             Pruned::False => "false",
+            Pruned::True => "true",
             Pruned::Generic => "generic",
             Pruned::Tree(_) => "tree",
         }
@@ -2580,64 +2981,90 @@ mod tests {
         let value = leaf("value", PushOp::Contains, "abc");
         let callee = leaf("callee_class", PushOp::Contains, "abc");
         let never = &|_: &str| false;
+        let unknown = &|_: &StringPredicate| None;
         // A leaf the type lacks is false; a disjunction of one raw and one absent leaf
         // keeps the raw one; a conjunction with an absent leaf is false.
-        assert_eq!(kind(&prune(&value, TAG_CALL_SITE_NODE, never)), "false");
-        assert_eq!(kind(&prune(&value, TAG_STRING_CONSTANT, never)), "tree");
+        assert_eq!(
+            kind(&prune(&value, TAG_CALL_SITE_NODE, never, unknown)),
+            "false"
+        );
+        assert_eq!(
+            kind(&prune(&value, TAG_STRING_CONSTANT, never, unknown)),
+            "tree"
+        );
         let or = PredTree::Or(vec![value.clone(), callee.clone()]);
-        match prune(&or, TAG_CALL_SITE_NODE, never) {
+        match prune(&or, TAG_CALL_SITE_NODE, never, unknown) {
             Pruned::Tree(PredTree::Leaf(p)) => assert_eq!(p.property, "callee_class"),
             other => panic!("expected the callee leaf, got {}", kind(&other)),
         }
-        match prune(&or, TAG_STRING_CONSTANT, never) {
+        match prune(&or, TAG_STRING_CONSTANT, never, unknown) {
             Pruned::Tree(PredTree::Leaf(p)) => assert_eq!(p.property, "value"),
             other => panic!("expected the value leaf, got {}", kind(&other)),
         }
-        assert_eq!(kind(&prune(&or, TAG_INT_CONSTANT, never)), "false");
+        assert_eq!(kind(&prune(&or, TAG_INT_CONSTANT, never, unknown)), "false");
         let and = PredTree::And(vec![value.clone(), callee.clone()]);
-        assert_eq!(kind(&prune(&and, TAG_CALL_SITE_NODE, never)), "false");
-        assert_eq!(kind(&prune(&and, TAG_STRING_CONSTANT, never)), "false");
-        // A dynamic leaf sends the type through WHERE, unless the graph rules it out.
-        assert_eq!(kind(&prune(&value, TAG_ANNOTATION_NODE, never)), "generic");
-        assert_eq!(kind(&prune(&or, TAG_ANNOTATION_NODE, never)), "generic");
-        // A key no string in the graph's dictionary spells cannot be an annotation's.
-        let absent = &|key: &str| key == "value" || key == "callee_class";
-        assert_eq!(kind(&prune(&or, TAG_ANNOTATION_NODE, absent)), "false");
-        let only_value = &|key: &str| key == "value";
         assert_eq!(
-            kind(&prune(&or, TAG_ANNOTATION_NODE, only_value)),
+            kind(&prune(&and, TAG_CALL_SITE_NODE, never, unknown)),
+            "false"
+        );
+        assert_eq!(
+            kind(&prune(&and, TAG_STRING_CONSTANT, never, unknown)),
+            "false"
+        );
+        // A dynamic leaf sends the type through WHERE, unless the graph rules it out.
+        assert_eq!(
+            kind(&prune(&value, TAG_ANNOTATION_NODE, never, unknown)),
             "generic"
         );
-        assert_eq!(kind(&prune(&value, TAG_ENUM_CONSTANT, never)), "generic");
+        assert_eq!(
+            kind(&prune(&or, TAG_ANNOTATION_NODE, never, unknown)),
+            "generic"
+        );
+        // A key no string in the graph's dictionary spells cannot be an annotation's.
+        let absent = &|key: &str| key == "value" || key == "callee_class";
+        assert_eq!(
+            kind(&prune(&or, TAG_ANNOTATION_NODE, absent, unknown)),
+            "false"
+        );
+        let only_value = &|key: &str| key == "value";
+        assert_eq!(
+            kind(&prune(&or, TAG_ANNOTATION_NODE, only_value, unknown)),
+            "generic"
+        );
+        assert_eq!(
+            kind(&prune(&value, TAG_ENUM_CONSTANT, never, unknown)),
+            "generic"
+        );
     }
 
     #[test]
     fn tag_plans_route_each_type() {
         let value = leaf("value", PushOp::Contains, "abc");
         let never = &|_: &str| false;
+        let unknown = &|_: &StringPredicate| None;
         assert!(matches!(
-            tag_plan(&value, TAG_STRING_CONSTANT, never),
+            tag_plan(&value, TAG_STRING_CONSTANT, never, unknown),
             TagPlan::Column(_)
         ));
         assert!(matches!(
-            tag_plan(&value, TAG_CALL_SITE_NODE, never),
+            tag_plan(&value, TAG_CALL_SITE_NODE, never, unknown),
             TagPlan::Skip
         ));
         assert!(matches!(
-            tag_plan(&value, TAG_LONG_CONSTANT, never),
+            tag_plan(&value, TAG_LONG_CONSTANT, never, unknown),
             TagPlan::Skip
         ));
         assert!(matches!(
-            tag_plan(&value, TAG_ANNOTATION_NODE, never),
+            tag_plan(&value, TAG_ANNOTATION_NODE, never, unknown),
             TagPlan::Generic
         ));
         let callee = leaf("callee_class", PushOp::Contains, "abc");
         assert!(matches!(
-            tag_plan(&callee, TAG_CALL_SITE_NODE, never),
+            tag_plan(&callee, TAG_CALL_SITE_NODE, never, unknown),
             TagPlan::CallSite(_)
         ));
         assert!(matches!(
-            tag_plan(&callee, TAG_STRING_CONSTANT, never),
+            tag_plan(&callee, TAG_STRING_CONSTANT, never, unknown),
             TagPlan::Skip
         ));
     }
@@ -2684,6 +3111,203 @@ mod tests {
         let (p, w) = parse(r#"MATCH (n) WHERE n.callee_class =~ '[a-z]+' RETURN n"#);
         assert!(ScanPlan::build(&p, w.as_ref()).is_none());
         let (p, w) = parse(r#"MATCH (n) WHERE toLower(n.callee_class) =~ '.*foo.*' RETURN n"#);
+        assert!(ScanPlan::build(&p, w.as_ref()).is_none());
+    }
+
+    fn parse_where(q: &str) -> (Vec<crate::ast::Pattern>, Option<Expr>) {
+        let clauses = crate::parser::parse(q).unwrap();
+        let crate::ast::Clause::Match { patterns, .. } = &clauses[0] else {
+            panic!("expected MATCH")
+        };
+        let where_clause = match clauses.get(1) {
+            Some(crate::ast::Clause::Where(e)) => Some(e.clone()),
+            _ => None,
+        };
+        (patterns.clone(), where_clause)
+    }
+
+    fn synthetic_leaf(property: &'static str, op: PushOp, literal: &str) -> StringPredicate {
+        match leaf(property, op, literal) {
+            PredTree::Leaf(p) => p,
+            _ => unreachable!(),
+        }
+    }
+
+    /// `synthetic_truth` for a cross-graph executor over one source named `gid`.
+    fn fold(gid: &str, property: &'static str, op: PushOp, literal: &str) -> Option<bool> {
+        fold_synthetic(true, gid, &synthetic_leaf(property, op, literal))
+    }
+
+    #[test]
+    fn synthetic_keys_fold_per_graph() {
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::Contains, "app:"),
+            Some(true)
+        );
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::Contains, "pp"),
+            Some(true)
+        );
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::Contains, "acme"),
+            Some(false)
+        );
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::Contains, "acme:"),
+            Some(false)
+        );
+        // Digits could be in the node id: the id decides.
+        assert_eq!(fold("app", "qualifiedId", PushOp::Contains, "12"), None);
+        assert_eq!(fold("app", "qualifiedId", PushOp::Contains, "app:12"), None);
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::Contains, "a:b"),
+            Some(false)
+        );
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::Contains, "a:1:2"),
+            Some(false)
+        );
+        assert_eq!(
+            fold("app", "elementId", PushOp::StartsWith, "ap"),
+            Some(true)
+        );
+        assert_eq!(
+            fold("app", "elementId", PushOp::StartsWith, "app:"),
+            Some(true)
+        );
+        assert_eq!(fold("app", "elementId", PushOp::StartsWith, "app:7"), None);
+        assert_eq!(
+            fold("app", "elementId", PushOp::StartsWith, "pp:"),
+            Some(false)
+        );
+        assert_eq!(fold("app", "qualifiedId", PushOp::EndsWith, "7"), None);
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::EndsWith, "p"),
+            Some(false)
+        );
+        assert_eq!(fold("app", "qualifiedId", PushOp::EndsWith, "app:7"), None);
+        assert_eq!(fold("app", "qualifiedId", PushOp::Equals, "app:7"), None);
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::Equals, "app:x"),
+            Some(false)
+        );
+        assert_eq!(
+            fold("app", "qualifiedId", PushOp::Equals, "app"),
+            Some(false)
+        );
+        assert_eq!(fold("app", "graphId", PushOp::Equals, "app"), Some(true));
+        assert_eq!(fold("app", "graphId", PushOp::Contains, "x"), Some(false));
+    }
+
+    #[test]
+    fn synthetic_keys_plan_the_whole_type_or_none_of_it() {
+        let (p, w) = parse_where(r#"MATCH (n) WHERE n.qualifiedId CONTAINS "app:" RETURN n"#);
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(plan.has_synthetic);
+        let yes = &|_: &StringPredicate| Some(true);
+        let no = &|_: &StringPredicate| Some(false);
+        let never = &|_: &str| false;
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_CALL_SITE_NODE, never, yes),
+            TagPlan::All
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_CALL_SITE_NODE, never, no),
+            TagPlan::Skip
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_LOCAL_VARIABLE, never, yes),
+            TagPlan::All
+        ));
+        // Together with a CallSite leaf: the CallSite type keeps its indexed subtree
+        // when the synthetic leaf is false, and takes everything when it is true.
+        let (p, w) = parse_where(
+            r#"MATCH (n) WHERE n.qualifiedId CONTAINS "app:" OR n.callee_class CONTAINS "x" RETURN n"#,
+        );
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_CALL_SITE_NODE, never, no),
+            TagPlan::CallSite(_)
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_CALL_SITE_NODE, never, yes),
+            TagPlan::All
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_STRING_CONSTANT, never, no),
+            TagPlan::Skip
+        ));
+    }
+
+    #[test]
+    fn keys_search_expands_per_type() {
+        let (p, w) = parse_where(
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Ids") RETURN n"#,
+        );
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        let never = &|_: &str| false;
+        let no = &|_: &StringPredicate| Some(false);
+        // CallSites: the four indexed strings would answer, but the signatures need
+        // decoding, so the type is generic; a string constant is a column; an
+        // integer constant cannot print letters; annotations always decode.
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_CALL_SITE_NODE, never, no),
+            TagPlan::Generic
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_STRING_CONSTANT, never, no),
+            TagPlan::Column(_)
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_INT_CONSTANT, never, no),
+            TagPlan::Skip
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_BOOLEAN_CONSTANT, never, no),
+            TagPlan::Skip
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_ANNOTATION_NODE, never, no),
+            TagPlan::Generic
+        ));
+        // A digit literal can print from a number, so those types decode.
+        let (p, w) = parse_where(
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "10") RETURN n"#,
+        );
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_INT_CONSTANT, never, no),
+            TagPlan::Generic
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_NULL_CONSTANT, never, no),
+            TagPlan::Skip
+        ));
+        // "true" could print from a boolean.
+        let (p, w) = parse_where(
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "ru") RETURN n"#,
+        );
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_BOOLEAN_CONSTANT, never, no),
+            TagPlan::Generic
+        ));
+        // Without toString a number never satisfies a string predicate.
+        let (p, w) =
+            parse_where(r#"MATCH (n) WHERE any(k IN keys(n) WHERE n[k] CONTAINS "10") RETURN n"#);
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_INT_CONSTANT, never, no),
+            TagPlan::Skip
+        ));
+        // Other quantifiers and other list sources are left to the evaluator.
+        let (p, w) = parse_where(
+            r#"MATCH (n) WHERE all(k IN keys(n) WHERE toString(n[k]) CONTAINS "x") RETURN n"#,
+        );
+        assert!(ScanPlan::build(&p, w.as_ref()).is_none());
+        let (p, w) = parse_where(
+            r#"MATCH (n) WHERE any(k IN ["value"] WHERE toString(n[k]) CONTAINS "x") RETURN n"#,
+        );
         assert!(ScanPlan::build(&p, w.as_ref()).is_none());
     }
 }

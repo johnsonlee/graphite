@@ -170,6 +170,23 @@ QUERIES = [
     "MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS c LIMIT 5",
     "MATCH (n:CallSiteNode) WHERE n.callee_class CONTAINS \"java.util\" RETURN n.callee_class, count(*) AS c ORDER BY c DESC LIMIT 5",
     "MATCH (n:StringConstant) RETURN DISTINCT n.value AS v ORDER BY v LIMIT 12",
+    # Synthetic identifiers: folded per graph from the graph id, the node id deciding
+    # only when the literal has digits; null outside cross-graph mode.
+    'MATCH (n) WHERE n.qualifiedId CONTAINS "acme:" RETURN count(*)',
+    'MATCH (n) WHERE n.qualifiedId CONTAINS "acm" RETURN count(*)',
+    'MATCH (n) WHERE n.qualifiedId STARTS WITH "acm" RETURN n.qualifiedId ORDER BY n.qualifiedId LIMIT 5',
+    'MATCH (n) WHERE n.qualifiedId CONTAINS "app:" AND n.callee_class CONTAINS "java" RETURN count(*)',
+    'MATCH (n) WHERE n.qualifiedId CONTAINS "app:" OR n.value CONTAINS "order" RETURN count(*)',
+    'MATCH (n) WHERE n.qualifiedId CONTAINS "38" RETURN n.qualifiedId ORDER BY n.qualifiedId LIMIT 5',
+    'MATCH (n) WHERE n.qualifiedId ENDS WITH ":38" RETURN n.qualifiedId ORDER BY n.qualifiedId LIMIT 5',
+    'MATCH (n) WHERE n.qualifiedId = "acme:38" RETURN n',
+    'MATCH (n) WHERE n.elementId STARTS WITH "acme:" RETURN count(*)',
+    'MATCH (n) WHERE n.graphId = "acme" RETURN count(*)',
+    'MATCH (n) WHERE toLower(n.qualifiedId) STARTS WITH "acme" RETURN count(*)',
+    'MATCH (n:CallSite) WHERE n.qualifiedId CONTAINS "nosuchgraph:" RETURN count(*)',
+    # The all-properties search, `any(k IN keys(n) WHERE toString(n[k]) CONTAINS ..)`,
+    # is planned but not compared here: the baseline evaluates `n[k]` on a node to
+    # null, so it returns no rows for that shape, while the port evaluates it.
     'MATCH (n:CallSite) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class ORDER BY n.callee_class DESC LIMIT 5',
     'MATCH (n:CallSite) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class AS c ORDER BY c LIMIT 5',
     'MATCH (n:LocalVariable) RETURN n LIMIT 3',
