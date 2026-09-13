@@ -1441,3 +1441,34 @@ query allocation and broader lifecycle evidence will be collected separately.
 **Conclusion:** keep for final repeated paired comparisons and broad regression gates.
 The dynamic-query speedup now has substantially more margin than the prior 10.4x cold
 observation, while retained index policy and unrelated query paths remain unchanged.
+
+
+### 2026-09-13 - Attempt 033: Measure allocation around the query execution window
+
+**Hypothesis:** first-trial JMH GC profiling includes private fixture setup, priming,
+and cleanup. Add a separate oracle counter around execute so query-window allocation
+can be compared without mislabeling lifecycle allocation as query-only cost.
+
+**Base/candidate:** the same revised harness is installed in main `144d98ef`, the
+subscript-only semantic reference, and candidate. A fresh `git fetch origin main`
+confirms the latest remote baseline remains full SHA
+`144d98efa2bcb1f183d4f962b833c234d839d2a9`. Fixture isolation remains V2. This new
+instrumented series will not be pooled with earlier harness measurements.
+
+**Method:** Java 17's supported ThreadMXBean total-thread allocation counter is enabled
+outside timing. Its difference brackets execute, while the existing wall and process-CPU
+boundaries stay unchanged. The counter includes all Java/background threads active in
+the query window; it measures allocated bytes, not retained heap or peak memory.
+Unsupported, failed, or nonmonotonic counters emit -1 rather than fabricated zero.
+JMH's primary execute method and query text are unchanged.
+
+**Evidence:** local Java 17 API inspection confirms the counter interface. Identical
+harness SHA-256 is `39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a`;
+sequential build logs and final frozen identities are recorded under
+`/tmp/graphite-slow-shapes-evidence/final-build/`. This instrumentation change claims
+no speedup; final paired latency, correctness, CPU, and allocation evidence follows
+only after full checks.
+
+**Conclusion:** keep explicit resource scope and unavailable-counter handling. Final
+reports must continue distinguishing query-window allocated bytes, bounded cache payload,
+and lifecycle/peak-memory observations.

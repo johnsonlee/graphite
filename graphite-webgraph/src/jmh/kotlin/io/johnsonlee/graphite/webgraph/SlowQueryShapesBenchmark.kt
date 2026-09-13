@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import com.sun.management.OperatingSystemMXBean
+import com.sun.management.ThreadMXBean
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
 import io.johnsonlee.graphite.cypher.CypherExecutionBudget
@@ -96,7 +97,12 @@ open class SlowQueryShapesBenchmark {
     }
 }
 
-/** Untimed oracle parity plus process CPU observations, independent of JMH GC profiling. */
+/**
+ * Correctness oracle with query-window process CPU and all-Java-thread allocation observations.
+ * Allocation includes background Java threads active during the query, not only application
+ * query threads; it is neither retained heap nor peak memory. Unsupported counters emit -1.
+ * These observations are separate from lifecycle-inclusive first-trial JMH GC profiling.
+ */
 internal object SlowQueryShapesCorrectness {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -104,27 +110,45 @@ internal object SlowQueryShapesCorrectness {
         val cases = if (args.size == 2) slowQueryShapeCases.filter { it.name == args[1] } else slowQueryShapeCases
         require(cases.isNotEmpty()) { "Unknown query name: ${args.last()}" }
         val process = ManagementFactory.getOperatingSystemMXBean() as OperatingSystemMXBean
+        val allocations = queryAllocationCounter()
         cases.forEach { queryCase ->
             // A new mapping and executor per query isolates startup and index history.
             SlowQueryShapesWorkload(args[0]).use { workload ->
                 repeat(2) { iteration ->
+                    val allocatedBefore = allocatedBytes(allocations)
                     val cpuStart = process.processCpuTime
                     val wallStart = System.nanoTime()
                     val result = workload.execute(queryCase)
                     val wallNanos = System.nanoTime() - wallStart
                     val cpuNanos = process.processCpuTime - cpuStart
+                    val allocatedAfter = allocatedBytes(allocations)
+                    val allocatedDelta = if (allocatedBefore >= 0 && allocatedAfter >= allocatedBefore) {
+                        allocatedAfter - allocatedBefore
+                    } else {
+                        -1L
+                    }
                     queryCase.validate(result)
                     val state = if (iteration == 0) "COLD" else "WARM"
                     printSlowQueryShapeDigest(args[0], state, queryCase, result)
                     println(
                         "SLOW_QUERY_SHAPE_RESOURCES\t${args[0]}\t$state\t${queryCase.name}" +
-                            "\twallNanos=$wallNanos\tprocessCpuNanos=$cpuNanos"
+                            "\twallNanos=$wallNanos\tprocessCpuNanos=$cpuNanos\tallocatedBytes=$allocatedDelta"
                     )
                 }
             }
         }
     }
 }
+
+private fun queryAllocationCounter(): ThreadMXBean? = runCatching {
+    val counter = ManagementFactory.getThreadMXBean() as? ThreadMXBean ?: return@runCatching null
+    if (!counter.isThreadAllocatedMemorySupported) return@runCatching null
+    if (!counter.isThreadAllocatedMemoryEnabled) counter.isThreadAllocatedMemoryEnabled = true
+    counter.takeIf { it.isThreadAllocatedMemoryEnabled && it.totalThreadAllocatedBytes >= 0 }
+}.getOrNull()
+
+private fun allocatedBytes(counter: ThreadMXBean?): Long =
+    counter?.let { runCatching { it.totalThreadAllocatedBytes }.getOrDefault(-1L) } ?: -1L
 
 private class SlowQueryShapesWorkload(corpus: String) : Closeable {
     private val loaded = mutableListOf<Graph>()
