@@ -211,3 +211,54 @@ test('partial validation cannot hide incomplete pairs or malformed warmup', () =
     assert.ok(invalid.integrityErrors.length > 0);
     assert.equal(compareWideLatency(base.slice(0, 1), base.slice(0, 1), oracle, manifest).passed, false);
 });
+
+test('report separates same-revision instability from paired exceedance without changing evidence', () => {
+    const unstable = evidence((r, fork) => r.id === catalog[0].id && fork === 2
+        ? { ...r, latencyNanos: 1_050_000 } : r);
+    const result = compare(unstable, unstable);
+    const original = JSON.stringify(result);
+    const report = renderWideLatency(result);
+    assert.match(report, /Paired latency exceedance: 0/);
+    assert.match(report, /Base instability: 2/);
+    assert.match(report, /Candidate instability: 2/);
+    assert.match(report, /Integrity: 0/);
+    assert.match(report, /does not establish a runtime regression caused by the candidate/);
+    const queryLine = report.split('\n').find(line => line.startsWith(`| ${catalog[0].id} |`));
+    assert.ok(queryLine.includes('| 3/3 | FAIL |'));
+    assert.match(queryLine, /Base instability:.*Candidate instability:/);
+    assert.doesNotMatch(queryLine, /Paired latency exceedance|regression/);
+    assert.equal(JSON.stringify(result), original);
+    assert.equal(result.passed, false);
+});
+
+test('first-pair report records partial observations and unavailable controls without claiming causation', () => {
+    const slower = evidence(r => r.id === catalog[0].id ? { ...r, latencyNanos: 1_050_000 } : r);
+    const result = compareWideLatency(base.slice(0, 1), slower.slice(0, 1), oracle, manifest, catalog, { partial: true });
+    const original = JSON.stringify(result);
+    const report = renderWideLatency(result);
+    assert.match(report, /Partial checkpoint: 1\/3 paired forks completed/);
+    assert.match(report, /Reverse-order control has not completed/);
+    assert.match(report, /Three-fork stability diagnostics are incomplete/);
+    assert.match(report, /Paired latency exceedance: 2/);
+    assert.match(report, /Base instability: 0/);
+    assert.match(report, /CHECKPOINT FAIL/);
+    assert.match(report, /INCOMPLETE/);
+    assert.doesNotMatch(report, /\| PASS \||regression must be/);
+    assert.match(report, /observed increase must be <5%/);
+    assert.equal(JSON.stringify(result), original);
+    assert.equal(result.canContinue, false);
+    assert.equal(result.passed, false);
+});
+
+test('report displays integrity errors separately and never labels a clean partial checkpoint PASS', () => {
+    const invalid = compare(evidence(r => r.id === catalog[0].id && r.round === 1 ? { ...r, digest: 'wrong' } : r));
+    const report = renderWideLatency(invalid);
+    assert.match(report, /Integrity: 6/);
+    assert.match(report, /Integrity: candidate-1\/.*digest differs from correctness oracle/);
+    const partial = compareWideLatency(base.slice(0, 2), base.slice(0, 2), oracle, manifest, catalog, { partial: true });
+    const partialReport = renderWideLatency(partial);
+    assert.match(partialReport, /2\/3 paired forks completed/);
+    assert.match(partialReport, /Reverse-order control is included/);
+    assert.doesNotMatch(partialReport, /CHECKPOINT FAIL|\| PASS \|/);
+    assert.equal(partial.canContinue, true);
+});

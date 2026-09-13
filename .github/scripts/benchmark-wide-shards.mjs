@@ -104,6 +104,7 @@ export function checkProgress(directory, bundle, shard, completedPairs) {
         integrityErrors: comparison.integrityErrors, latencyErrors: comparison.latencyErrors,
         queries: comparison.queries };
     write(path.join(directory, `progress-${completedPairs}.json`), result);
+    fs.writeFileSync(path.join(directory, `progress-${completedPairs}.md`), renderWideLatency(comparison));
     return result;
 }
 export function sealShard(directory, bundle, shard) {

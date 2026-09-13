@@ -204,16 +204,50 @@ export function compareWideLatency(baseContents, candidateContents, oracleConten
 }
 
 export function renderWideLatency(comparison) {
+    // Classification is presentation only: retain the comparator's original errors and verdicts.
+    const integrity = new Set(comparison.integrityErrors);
+    const classify = error => {
+        if (integrity.has(error)) return { category: "Integrity", detail: error };
+        if (/\bbase P(?:50|95) cross-fork spread/.test(error)) return { category: "Base instability", detail: error };
+        if (/\bcandidate P(?:50|95) cross-fork spread/.test(error)) return { category: "Candidate instability", detail: error };
+        if (/P(?:50|95) regression must be <5%/.test(error)) return {
+            category: "Paired latency exceedance", detail: error.replace("regression must be", "observed increase must be")
+        };
+        return { category: "Other evidence failure", detail: error };
+    };
+    const observations = [...comparison.integrityErrors, ...comparison.latencyErrors].map(classify);
+    const categories = ["Paired latency exceedance", "Base instability", "Candidate instability", "Integrity"];
+    const checkpoint = comparison.partial ? [
+        `Partial checkpoint: ${comparison.completedForkCount}/3 paired forks completed; this is not final acceptance.`,
+        comparison.completedForkCount < 2 ? "Reverse-order control has not completed." : "Reverse-order control is included in the completed pairs.",
+        comparison.completedForkCount < 3 ? "Three-fork stability diagnostics are incomplete; any reported spread uses only completed pairs." :
+            "All three pairs are present, but a partial checkpoint does not issue final acceptance.",
+        comparison.canContinue === false ? "Observed failures already violate the acceptance contract; fail-fast stops remaining runs." :
+            "No observed checkpoint failure; final acceptance has not been issued."
+    ] : [];
     return ["### Per-query wide latency gates", "",
-        `${comparison.queryCount} queries; each query has contiguous warmup ≥10 seconds/5 calls and measurement ≥10 seconds/40 calls in three independent paired forks; maximum heap 8 GiB.`,
+        `${comparison.queryCount} queries; the protocol requires contiguous warmup ≥10 seconds/5 calls and measurement ≥10 seconds/40 calls in three independent paired forks; maximum heap 8 GiB.`,
+        ...checkpoint,
         "All measurement calls are retained for quantiles; each run records its actual phase counts and durations.",
-        "Each P50 and P95 must regress by less than 5% in every pair. Both base and candidate cross-fork spread",
+        "Each observed paired P50 and P95 increase must be less than 5%. Both base and candidate cross-fork spread",
         "is (max-min)/min and must be less than 5%. Exact result signatures and provenance must match in every sample.",
+        "An observed gate failure does not establish a runtime regression caused by the candidate: order, JIT and environment effects require separate diagnosis.",
         "CPU, peak heap and RSS are diagnostic. The legacy mixed-query percentile is not an acceptance criterion.", "",
-        "| Query | Result | Paired P50 base → candidate (ms) | Paired P95 base → candidate (ms) | Failures |",
-        "|---|---|---|---|---|",
-        ...comparison.queries.map(query => `| ${query.id} | ${query.passed ? "PASS" : "FAIL"} | ` +
-            ["P50", "P95"].map(q => query.runs.map(run =>
-                `${(run[`base${q}Nanos`] / 1e6).toFixed(3)} → ${(run[`candidate${q}Nanos`] / 1e6).toFixed(3)}`)
-                .join(" / ")).join(" | ") + ` | ${query.errors.join("; ")} |`), ""].join("\n");
+        "Failure observations by category (counts are observations, not queries):",
+        ...categories.map(category => `- ${category}: ${observations.filter(item => item.category === category).length}`),
+        ...(observations.some(item => item.category === "Other evidence failure") ?
+            [`- Other evidence failure: ${observations.filter(item => item.category === "Other evidence failure").length}`] : []),
+        ...(comparison.sharedIntegrityErrors.length ? ["", "Shared integrity failures:", ...comparison.sharedIntegrityErrors.map(error => `- ${error}`)] : []), "",
+        "| Query | Observed pairs | Result | Paired P50 base → candidate (ms) | Paired P95 base → candidate (ms) | Failures |",
+        "|---|---|---|---|---|---|",
+        ...comparison.queries.map(query => {
+            const result = comparison.partial ? (query.errors.length ? "CHECKPOINT FAIL" : "INCOMPLETE") : (query.passed ? "PASS" : "FAIL");
+            return `| ${query.id} | ${query.runs.length}/3 | ${result} | ` +
+                ["P50", "P95"].map(q => query.runs.map(run =>
+                    `${(run[`base${q}Nanos`] / 1e6).toFixed(3)} → ${(run[`candidate${q}Nanos`] / 1e6).toFixed(3)}`)
+                    .join(" / ")).join(" | ") + ` | ${query.errors.map(error => {
+                        const { category, detail } = classify(error);
+                        return `${category}: ${detail}`;
+                    }).join("; ")} |`;
+        }), ""].join("\n");
 }

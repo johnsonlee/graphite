@@ -150,6 +150,11 @@ test('failed first pair leaves explicit progress evidence without producing fina
     const result = checkProgress(directory, c.bundle, 'full-scan', 1);
     assert.equal(result.canContinue, false); assert.equal(result.passed, false);
     assert.ok(json(path.join(directory, 'progress-1.json')).latencyErrors.length > 0);
+    const report = fs.readFileSync(path.join(directory, 'progress-1.md'), 'utf8');
+    assert.match(report, /Partial checkpoint: 1\/3 paired forks completed/);
+    assert.match(report, /CHECKPOINT FAIL/);
+    assert.match(report, /Reverse-order control has not completed/);
+    assert.match(report, /Three-fork stability diagnostics are incomplete/);
     assert.equal(fs.existsSync(path.join(directory, 'receipt.json')), false);
 });
 test('shard shell actually stops after first irreversible pair failure and retains checkpoint', t => {
@@ -182,6 +187,19 @@ printf '{}' > "$PREFIX.json"
     assert.equal(run.status, 1, run.stderr);
     assert.equal(fs.readFileSync(callLog, 'utf8').trim().split('\n').length, 2);
     assert.equal(json(path.join(output, 'progress-1.json')).canContinue, false);
+    const report = fs.readFileSync(path.join(output, 'progress-1.md'), 'utf8');
+    assert.match(report, /Partial checkpoint: 1\/3 paired forks completed/);
+    assert.match(report, /CHECKPOINT FAIL/);
+    assert.match(report, /Reverse-order control has not completed/);
+    assert.match(report, /Three-fork stability diagnostics are incomplete/);
+    assert.doesNotMatch(report, /\| PASS \|/);
     assert.equal(fs.existsSync(path.join(output, 'base-2.tsv')), false);
     assert.equal(fs.existsSync(path.join(output, 'receipt.json')), false);
+});
+
+test('partial markdown is retained by the existing always-uploaded shard artifact directory', () => {
+    const workflow = fs.readFileSync(new URL('../workflows/benchmark.yml', import.meta.url), 'utf8');
+    const job = workflow.split('  wide-latency-measurements:')[1].split('  global-wide-pressure-evidence:')[0];
+    assert.match(job, /if: always\(\)/);
+    assert.match(job, /name: wide-latency-samples-.*\n        path: wide-latency-samples\//);
 });
