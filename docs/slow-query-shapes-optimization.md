@@ -1,12 +1,13 @@
 # 慢查询形状：原因、改动与验证
 
-本次以最新 `main` 的 `144d98ef` 为基线，针对无标签 `value` 搜索、动态属性搜索、`toString` 包装字段和 DATAFLOW 扩展四类形状优化。四类实测慢查询用例均超过 10 倍目标；常规及专项测试全部通过，既有查询的三轮中位数变化为 −5.8% 到 +5.2%。这些结论限定于下述真实数据、搜索文本和运行协议，不推广到所有同形状查询。
+本次以最新 `main` 的 `144d98ef` 为基线，针对无标签 `value`、`qualifiedId` 搜索、动态属性搜索、`toString` 包装字段和 DATAFLOW 扩展五类形状优化。五类实测慢查询用例均超过 10 倍目标；常规及专项测试全部通过，既有查询的三轮中位数变化为 −5.8% 到 +5.2%。这些结论限定于下述真实数据、搜索文本和运行协议，不推广到所有同形状查询。
 
 ## 为什么慢，改了什么
 
 | 查询形状 | 主要成本 | 已实现的处理 |
 |---|---|---|
 | `MATCH (n) WHERE n.value CONTAINS ...` | 无标签候选覆盖多种节点；逐节点解码后才能判断属性是否适用 | 按实际属性语义选择节点类型，复用存储查询能力；保留具体类型查询已有的索引准入和工作预算行为 |
+| `MATCH (n) WHERE n.qualifiedId CONTAINS ...` | 为生成的命名空间加节点 ID 字符串而解码每个节点 | 先按原顺序遍历 primitive ID，校验完整生成字符串，仅解码匹配候选；保留 WHERE、排序、聚合及普通图语义 |
 | `any(k IN keys(n) WHERE toString(n[k]) CONTAINS ...)` | 每个节点重复获取属性、解释表达式和转换值；节点与方法描述符解码本身也昂贵 | 修正节点动态下标，编译受支持的 ANY 形状；从搜索文本选择至多两个必要片段，在 mapped 记录中预筛选，只有候选才解码并执行完整原谓词 |
 | `toString(n.caller_class) CONTAINS ...` | 包装表达式原先无法进入直接字符串候选路径；部分路径会在返回第一行前构建索引 | 对可证明语义等价的字符串字段识别包装；使用有界状态的 raw 扫描，保留无法等价处理的类型和表达式回退 |
 | `MATCH (c)-[r:DATAFLOW]->(n) WHERE ...` | 从文本左端找起点，再扩展边、读取目标并过滤；稀有或无结果时遍历大量邻接 | 安全的起点条件在扩展前执行，并用保持顺序的候选查询；显式要求惰性 raw 起点扫描。只有目标条件时，先正常扩展首个起点，需要后续起点才预检目标是否存在 |
@@ -23,7 +24,7 @@
 
 - 基线完整提交：`144d98efa2bcb1f183d4f962b833c234d839d2a9`。
 - 语义参考补丁 SHA-256：`1ed0f211886dec1bfb2557983400afb34586405583acfbeef0f3f9c07136557a`。
-- 最终候选源码：`b8fc966ee6614806babc79f21fbef625b5f0b0f3`；后续报告提交不改变生产源码。候选 JAR SHA-256：`5cc950355a2a91024a3af468c3f57f54b362ff9b292ec1e0a6dc48ba4d89b940`。
+- 原四类测量的候选源码：`b8fc966ee6614806babc79f21fbef625b5f0b0f3`；新增 qualifiedId 实验的独立身份与结果见文末。候选 JAR SHA-256：`5cc950355a2a91024a3af468c3f57f54b362ff9b292ec1e0a6dc48ba4d89b940`。
 - 120 个 JMH 和 40 个独立资源观测的完整结果、顺序及来源摘要一致；140 个私有副本均已清理，输入文件保持不变。机器可读结果见 [slow-query-shapes-results.json](slow-query-shapes-results.json)。
 
 ## 正确性与资源边界
@@ -50,7 +51,7 @@
 `-Xmx8g -XX:ActiveProcessorCount=4`。目标数据是 Android 14 的真实持久化图，
 5,938,826 个节点；扩展回归使用 Tika 2.9.2、Hive 4.0.0、Kotlin compiler 2.0.21。
 完整输入文件 SHA-256 见 `/tmp/graphite-slow-shapes-evidence/fixture-protocol-v2/fixtures.json`。
-最终三份基准使用相同 harness SHA-256：
+原四类测量的三份基准使用相同 harness SHA-256：
 `39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a`。
 
 目标 JMH 命令如下，对每个固定 JAR 运行三个交替顺序的独立批次。
@@ -152,3 +153,36 @@ java -Xmx8g -XX:ActiveProcessorCount=4 -Dandroid.graph.path="$android_graph" \
 | kotlin-compiler | countStar | 0.000727 | 0.000730 | +0.5% |
 | kotlin-compiler | singleHopRelationship | 0.283487 | 0.281430 | -0.7% |
 | kotlin-compiler | returnDistinct | 0.045359 | 0.044677 | -1.5% |
+
+## qualifiedId 的追加验证与五类必需 gate
+
+追加实验的候选源码为 `64de47e74adca94a01f049a6792e98dde89a8a78`。沿用 main `144d98ef` 与同一真实 Android 图，独立保存，未混入原四类
+测量。候选 JAR SHA-256 为 `3f46433e7d4cd0279a39525001c4aa3dceb07aa4aff0da16ba6674b326e7b6f7`；
+十二用例 harness 为 `6b112a1bb6f12184fa27fa8b72f87f35a2071c2d354c8236f10e4e51662ca8fb`。
+完整源码及 JAR 身份、24 个原始 JMH 分数和八个独立资源观测见 JSON 的
+`qualifiedIdExtension`。命令与上文相同，queryName 设为
+`qualifiedIdHit,qualifiedIdMiss`，两版本交替运行三轮。
+
+| qualifiedId 用例 | main 冷态 → 候选 | 冷态加速 | main 暖态 → 候选 | 暖态加速 |
+|---|---:|---:|---:|---:|
+| 命中 `938826` | 3440.85 → 153.04 ms | 22.48× | 3340.30 → 77.25 ms | 43.24× |
+| 未命中 `93882699` | 3577.28 → 138.69 ms | 25.79× | 3347.21 → 78.41 ms | 42.69× |
+
+完整有序结果一致；28 个私有副本已清理，共享图文件摘要及修改时间不变。
+查询窗口 CPU 改善 14.88–35.60×；分配量从约 8.6 GB 降到冷态 8.1–8.9 MB、
+暖态 3–24 KB。该数字表示累计分配量，不表示存活堆或峰值。
+无 LIMIT、排序和初始聚合入口也使用剪枝，其验证是结果及源访问测试，未单独测延迟。
+普通图中的 Annotation 自定义属性不能替换成生成 ID；不受支持的表达式继续回退。
+追加验证后的测试总数为 2,513 个常规测试、七个内存契约及三个真实语料端到端测试；
+Cypher/WebGraph 覆盖率分别为 98.0033%/98.1051%。
+
+新增 `slow-query-shapes` 是 `benchmark-regression-gate` 的第十四个必需依赖，
+保留全部原有检查。十二个用例覆盖五类形状及 DATAFLOW 源端、目标端保护场景，
+每个用例均有 COLD/WARM 和三个独立 JVM fork，要求完整有序结果摘要一致。
+两版本使用经过摘要验证的相同 harness、真实 Android 私有副本，并校验共享输入未变。
+动态查询仅对已知旧实现应用固定的下标正确性补丁。
+
+持续 CI 的标准是相对当前 base 不出现超过 15% 的延迟退化；数字异常会反转版本
+运行顺序复核，正确性或证据缺失直接失败。它与本次固定 main 的历史 10× 目标
+分别报告，避免优化合入 main 后仍要求下一次 PR 再快十倍。CI 完成情况以
+[PR #128](https://github.com/johnsonlee/graphite/pull/128) 的最新提交检查为准。

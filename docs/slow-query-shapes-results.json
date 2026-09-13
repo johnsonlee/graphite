@@ -2580,7 +2580,8 @@
             "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "972f2815c935adf9b418c7becea8489dedb0aebcb5781ce8439c7d14bc767e3a",
             "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/MappedNodeIdCandidateLookupTest.kt": "dab45cb6e51058126146f59aee723a9745d2b8d6cd8914fbedb53dbbaf109da7",
             "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/MappedPropertyTextCandidatesTest.kt": "52c82830cc94a91091b268f0543b24c42ef37d4a4a5767f105a6f0d0eea00bb6"
-          }
+          },
+          "sourceRevision": "64de47e74adca94a01f049a6792e98dde89a8a78"
         }
       }
     },
