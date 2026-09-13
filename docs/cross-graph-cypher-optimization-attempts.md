@@ -1536,3 +1536,68 @@ Cypher line coverage is 98.004%. Full repository checks and final paired timings
 
 **Conclusion:** keep. The planner can push source predicates down while preserving
 lazy output-limit behavior and avoiding eager index construction for dense matches.
+
+### 2026-09-13 - Attempt 036: Final isolated acceptance against the updated main
+
+**Hypothesis:** the retained changes satisfy the 10x target for the measured slow
+cases without a material regression in existing mapped queries. Freeze the final
+candidate and repeat complete comparisons, including resource scope and result order.
+
+**Base/candidate:** main `144d98efa2bcb1f183d4f962b833c234d839d2a9`, candidate source
+`b8fc966ee6614806babc79f21fbef625b5f0b0f3`. Dynamic queries use main plus only the
+string-subscript correctness repair; incorrect empty main results are not a speedup
+baseline. Candidate JAR SHA-256:
+`5cc950355a2a91024a3af468c3f57f54b362ff9b292ec1e0a6dc48ba4d89b940`.
+All three revisions use identical harness
+`39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a`.
+
+**Fixture/method:** real persisted Android 14 graph, 5,938,826 nodes; independent
+private copies omit the writable CallSite index. Java 17.0.18, M3 Max, 8 GiB heap,
+four active processors. Three alternating pairs of fresh-JVM SingleShot measurements
+yield 120 observations; 40 separate oracle observations measure query-window process
+CPU and all-Java-thread allocation. Cold does not mean flushed OS pages. Exact commands,
+inputs, identities, every paired latency, ordered digest, and scope qualifications are in
+[the report](slow-query-shapes-optimization.md) and
+[machine-readable evidence](slow-query-shapes-results.json).
+
+| Slow cases | Cold wall speedup | Warm wall speedup |
+| --- | ---: | ---: |
+| value hit/miss | 25.08–27.53x | 61.07–81.00x |
+| dynamic hit/miss, repaired reference | 18.18–18.50x | 20.79–21.10x |
+| wrapped caller hit/miss | 23.28–25.17x | 26.93–67.19x |
+| DATAFLOW source hit/miss | 82.76–89.71x | 136.92–272.59x |
+| DATAFLOW target miss | 15.29x | 34.43x |
+
+The already-fast target-hit guard improves from 260.10 to 236.55 ms cold and 157.93
+to 127.92 ms warm; it is not a 10x claim. Exact full ordered results agree across all
+160 observations. Main/semantic-reference query allocation for the four primary slow
+cases is 7.1–41.8 GB versus candidate 2.1–43.6 MB, with CPU improvements 12.28–126.82x.
+The additional target-miss case has CPU improvement 7.51x/9.14x and allocation
+327.8/359.9 MB; fast target-hit CPU/allocation are effectively level. Allocation is
+allocated bytes during the query window, not live heap or peak memory.
+
+**Broader evidence:** existing AndroidQueryBenchmark and LargeCorpusQueryBenchmark
+mapped simpleNodeMatch, intConstantFilter, countStar, singleHopRelationship and
+returnDistinct on Android, Tika, Hive and Kotlin compiler: 20 cases, 120 scores,
+three alternating pairs with two 500 ms warmups and three 500 ms measurements.
+Median latency changes range from -5.8% to +5.2%; no case exceeds a 10% increase.
+First-pair Android simpleNodeMatch +16.85% and Tika intConstantFilter +13.12% were
+retained and examined; reversed pairs improve, and final medians are -1.0%/+5.2%.
+There are small allocation increases: countStar +80 B/op (~5.1%), and Tika/Kotlin
+simpleNodeMatch +3,280 B/op (~1.3–1.4%). These are reported, not called zero-cost.
+All 260 private copies across both series were removed and shared input verification
+passed. Existing broad methods do not assert result digests; correctness evidence is
+separate. Synthetic CypherBenchmark timings are excluded by the real-fixture rule.
+
+**Verification:** `./gradlew check koverLog --max-workers=2` passes: 2,498 regular
+tests, seven memory-contract tests, and three independent real-corpus 4 GiB end-to-end
+gates. Existing lint and coverage gates pass, including Cypher 98.004%. Frontend
+ui-state tests pass. End-to-end gates pass their existing ceilings; they are not a
+paired main/candidate end-to-end speedup claim. No PR or hosted benchmark-regression-gate
+has been run, and local evidence does not substitute for that required PR check.
+
+**Conclusion:** keep the frozen implementation. The measured slow cases exceed 10x,
+ordered results agree, and the existing-query series shows no >10% median regression.
+Unsupported/numeric search-text fallbacks and every possible query of the same shape
+are outside this empirical 10x claim. Complete evidence is preserved rather than
+pooling earlier prototypes or fixture protocols into the final result.

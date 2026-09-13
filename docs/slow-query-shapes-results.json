@@ -1,0 +1,2535 @@
+{
+  "artifacts": {
+    "candidate": {
+      "jar": "/tmp/graphite-slow-shapes-evidence/final-paired/candidate.jar",
+      "sha256": "5cc950355a2a91024a3af468c3f57f54b362ff9b292ec1e0a6dc48ba4d89b940",
+      "baseRevision": "144d98efa2bcb1f183d4f962b833c234d839d2a9",
+      "patchSHA256": "18e5e309748d8bb108041daf9cbfd54e16a79da466cd794c9364235b7e794d6a",
+      "sourceFiles": {
+        "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/PropertyTextCandidates.kt": "550408ac5c626f3a9319f8842dcc0e874157852a6ddbaedb3bd7d21fe0c54b6f",
+        "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/PropertyTextCandidatesTest.kt": "182c590d82f1653f514326c92d8333a3b4f03c82c1fbcd3a79e1d0dd7c2f1e2e",
+        "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherFunctions.kt": "593983531bb58b49099fa9cd0e769eaaa774c900fd752a2db12fbc84d7dd46fd",
+        "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/DynamicPropertyContains.kt": "4b8c3dc4ec72e22f1fec219db2be14c9ef1785a9c46156d424669c71f1c472d1",
+        "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt": "600b211e287a6e451cd24a9e9089b8bbf0133ebf1afccef6454a4c4ca7bffbc2",
+        "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/NodePropertyAccessor.kt": "ab59b8cd9b3afee36528a363259163293e46a94d1a4af20b2cdf3b0fc51048bd",
+        "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt": "dad47af745e7658e220cb7d342fe438758b9835a0f031fe70aa6d3d4a22787c5",
+        "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/SourcePredicatePushdown.kt": "c27f36cac67c1a7dfd0c9591ec5f62c303bdf6b004942d1dfb2e20ca4021594f",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/AnnotationStringLookupTest.kt": "cd2e0e1fe63184510c7b722f0f345fc01a69807e39b8060d6687eeebbc50a8ce",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/DynamicPropertyAccessTest.kt": "e0efe8a09939c149cea869724295826391d6d9acd2d44de589e56c5380f8b0ee",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/DynamicPropertyCandidatesTest.kt": "38fb741f53366d5c3fbfe0c9ca78bd06eb083c0e53cd772f31836e63d7b752e4",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/DynamicPropertyContainsTest.kt": "3d09674d82e899040684d9ca974aa777333830471e85a0c017b13b8fc77e1c5c",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/SlowQueryFallbackTest.kt": "4e91769f70fef1adcd1292075ccf1d13fa3b4aa8c0afb143276a77222b9ace98",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/SourcePredicatePushdownTest.kt": "b07545532d677ae3e999d5af47aac62b37e4c03543ce8019fe3f01b14baedf83",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/TargetPreflightTest.kt": "7b4c14f8c8dfd072d75d2b2f7d1c10d50aa0e79974c9c73fe803d0e16df80f70",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/ToStringLookupTest.kt": "6a3e7bed5981b87c18844d410ed862598114b860aa031a2f2d6b421a6607aa75",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/ToStringRawConsumerTest.kt": "fb27ad2e96fa062ba12f08c33947073da17ddfea5b4537c0a7fdbbec6d415caa",
+        "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/ValueStringLookupTest.kt": "13662e52d84a5ba07760f5b6e575f4292ef322e7f0ef82ed26919f43d1150082",
+        "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt": "39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a",
+        "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedPropertyTextCandidates.kt": "baa550bd2f91fb82ade09b5d4e5da65ae125fa380f5424ef7c945fa935a741a5",
+        "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "9ecf0c9e167b2df13651d2ff93ccf79fe03d54a3f0ed91d83f3737d5cd128892",
+        "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/MappedPropertyTextCandidatesTest.kt": "52c82830cc94a91091b268f0543b24c42ef37d4a4a5767f105a6f0d0eea00bb6"
+      },
+      "harnessSHA256": "39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a",
+      "sourceRevision": "b8fc966ee6614806babc79f21fbef625b5f0b0f3"
+    },
+    "dynamic-reference": {
+      "jar": "/tmp/graphite-slow-shapes-evidence/final-paired/dynamic-reference.jar",
+      "sha256": "eee96007b4ba7c4e39f838910ee6baafe82bbef513e13c67427cc4bade4166dc",
+      "harnessSHA256": "39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a",
+      "baseRevision": "144d98efa2bcb1f183d4f962b833c234d839d2a9",
+      "patchSHA256": "1ed0f211886dec1bfb2557983400afb34586405583acfbeef0f3f9c07136557a",
+      "sourceFiles": {
+        "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt": "be13e38c5a14d37e363f902571c169d7c0ad52f30a12b11227de57f2c9eef5fa",
+        "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt": "39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a"
+      }
+    },
+    "main": {
+      "jar": "/tmp/graphite-slow-shapes-evidence/final-paired/main.jar",
+      "sha256": "3723f40d2e81876fc9e4f0f11705ac0ef052c8b4371e718df0f61e54780b42db",
+      "harnessSHA256": "39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a",
+      "baseRevision": "144d98efa2bcb1f183d4f962b833c234d839d2a9",
+      "patchSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceFiles": {
+        "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt": "39008c47663e97278b8aafc21633acb576c504f265479d589e9b28ebc06bcd0a"
+      }
+    }
+  },
+  "fixtureManifest": {
+    "createdUTC": "2026-09-13T10:44:44.383738+00:00",
+    "protocol": "private-copy-no-callsite-index-v2",
+    "sourceRoot": "/tmp/graphite-cpu-vanished-diagnostic.5_7ygubx/fixtures-complete",
+    "excludedFilename": "graph.callsite-string-index",
+    "snapshotPolicy": "Each workload fully copies every regular source file except the excluded persisted query index into a new private temp directory; only the private mapping is opened and closed. COLD uses the initial private mapping; WARM primes that same mapping. No hardlinks. Full independent JMH forks.",
+    "comparability": "Do not pool third or later isolated-fixture observations with earlier shared-writable-fixture observations. Identical revised harness and immutable fixtures required for all revisions.",
+    "files": {
+      "android": {
+        "forward.graph": {
+          "bytes": 7472683,
+          "sha256": "869ec6a917a510673ffc37bfcec6b0f1aa7be98ecf846242d766a7da9433117a"
+        },
+        "forward.offsets": {
+          "bytes": 4417333,
+          "sha256": "55c2996fa82a10885c12867497afa58d4ea7370090b575529d3315a361c849be"
+        },
+        "forward.properties": {
+          "bytes": 1057,
+          "sha256": "4b84dfec52c7d7c3aa893aab77bceeda37fcbd9353c0f8fcae9ba188c712442e"
+        },
+        "graph.callsite-string-content.identity": {
+          "bytes": 32,
+          "sha256": "b3966dafd179a221ffb8138637bd4cfeaf06556c6da1189d3646ebf46e13d95c"
+        },
+        "graph.classoverview": {
+          "bytes": 251280,
+          "sha256": "b89668d328fa71342c4c4d434a0dce48d60ae0261ca14e1235a2bbf068549338"
+        },
+        "graph.comparisons": {
+          "bytes": 9454584,
+          "sha256": "18e186c874271fb2ddaa23b492e8c55cae2d60974e0b65c4d6801105e945a54e"
+        },
+        "graph.labelprefix": {
+          "bytes": 23755312,
+          "sha256": "6a68927884b57771770b7ab85bc07984d9ebf113763a2cccd29bb83244fd5fac"
+        },
+        "graph.labels": {
+          "bytes": 6675058,
+          "sha256": "43e828c60e1f18bf8cc477ababd277bccdd32aeb0bb8eedb1c4ce55533d04616"
+        },
+        "graph.metadata": {
+          "bytes": 46546172,
+          "sha256": "52906afdd4cb38e7f29128eaf6e13d3ccf0b53104d428b2271d1c15cf4dd7d1c"
+        },
+        "graph.nodedata": {
+          "bytes": 252654696,
+          "sha256": "a10b94c9ef0c99b20ec01db04526942419e12ca0bcccda061646f9c1fd19f330"
+        },
+        "graph.nodeindex": {
+          "bytes": 77204746,
+          "sha256": "9602deb3db17f4791c5c58b47c0308dbdf5cab6602dc651e3abf3a4a2c40f4ea"
+        },
+        "graph.nodeoffsets": {
+          "bytes": 47510624,
+          "sha256": "ad4bb3edd0ab54d5d567b7ac123ddcb0321cd66e7844db98b2d39b5635679c98"
+        },
+        "graph.resources": {
+          "bytes": 2377627,
+          "sha256": "374b35817146394152cd3a2e7d0dd3d4b82ba634eee088420b48038e5902d05a"
+        },
+        "graph.strings": {
+          "bytes": 15982317,
+          "sha256": "1f5496141863c68e08da9f3119d336856f6c940b9a51c67679c5f8d2831c921a"
+        },
+        "graph.strings.identity": {
+          "bytes": 32,
+          "sha256": "6770c927d48bb3306e440ba585c67177d0a9b8252f516b735f0eead038d6dad3"
+        },
+        "graph.typeindex": {
+          "bytes": 23755520,
+          "sha256": "9b6450dd9f89c362b2d9ed6a40a521ceabd53c758a3b8c5d23cabd07007e28a8"
+        }
+      },
+      "hive": {
+        "forward.graph": {
+          "bytes": 6974329,
+          "sha256": "35fb1080dc0e0443084443e98fd1013fb20312d0ba6e43b5213d79e9b4a53d56"
+        },
+        "forward.offsets": {
+          "bytes": 4366160,
+          "sha256": "65682ed83af33f3f46f66730aa8a63bb1ec8d327f39abdbd5cbfeab4707d7294"
+        },
+        "forward.properties": {
+          "bytes": 1040,
+          "sha256": "edcb41713021452fa2afa78dc05cd4efc1e97c0d1a254785dea1c5ea485a0bc9"
+        },
+        "graph.callsite-string-content.identity": {
+          "bytes": 32,
+          "sha256": "67bae21ffb9f54e523b7fc93687a38c43f2b805720532230db9525c4b36f44dd"
+        },
+        "graph.classoverview": {
+          "bytes": 208128,
+          "sha256": "8dc9ecd4faca3cda993cb8265b0fdae8511f9f8a4ec141c8d0e722a67b08bf2e"
+        },
+        "graph.comparisons": {
+          "bytes": 9188888,
+          "sha256": "028331aac67be85517c0e7d23b8d24c1e5091d4744dd7c72eac979c75eebac59"
+        },
+        "graph.labelprefix": {
+          "bytes": 23946700,
+          "sha256": "084824ae7ed5fdabf5bbc692bdbcbab4120137c07472951b1c5a4859d77bbf51"
+        },
+        "graph.labels": {
+          "bytes": 6161463,
+          "sha256": "bcfc887896386028de73ae8f02eff3b55e89c49888d2f98e6710e92077dc7c37"
+        },
+        "graph.metadata": {
+          "bytes": 46682408,
+          "sha256": "f70823a91212d3e84ef92e4869a2545ef359bdcde069c393aeb4c75a7a5e9851"
+        },
+        "graph.nodedata": {
+          "bytes": 250037877,
+          "sha256": "27084cf7bccad8e76bbedd66b3bdce22c82959519be6a783486bde4ebb4ea9a4"
+        },
+        "graph.nodeindex": {
+          "bytes": 77826757,
+          "sha256": "4882685727dfacd23f92b6b41fe3c260882dbb208f1fa115e0542df9df2ddc2e"
+        },
+        "graph.nodeoffsets": {
+          "bytes": 47893400,
+          "sha256": "cae2671369dbf00d2545421d8f1691e9f6010c01b21f98c555c4496ce16bf3cb"
+        },
+        "graph.resources": {
+          "bytes": 1254054,
+          "sha256": "53c2dc423442d3c974bf0a426e9056f4866cd20d8e8425f45ae6fc66060dfd94"
+        },
+        "graph.strings": {
+          "bytes": 7847367,
+          "sha256": "6b4fdd5c5e7df06bb6120810732b0caa4bc1464e1af06fae4e82b13a9ebdd92d"
+        },
+        "graph.strings.identity": {
+          "bytes": 32,
+          "sha256": "ad7d177be0dc4b42d080d073cc284ccf10f944856ac3f52e5b72b2b8ba976286"
+        },
+        "graph.typeindex": {
+          "bytes": 23946908,
+          "sha256": "01c686adcb79ecd75f40d3bab1d55f8f0097e613b5c629f9efdd1e8110b745ba"
+        }
+      },
+      "tika": {
+        "forward.graph": {
+          "bytes": 4808503,
+          "sha256": "697de8f469c51a9924135d9981ee4a123bf5a627c4749461022ebf3c56328fe7"
+        },
+        "forward.offsets": {
+          "bytes": 2923189,
+          "sha256": "34b860cff294d08088664453748750c965049d1ed187f04f942533de4979902d"
+        },
+        "forward.properties": {
+          "bytes": 1024,
+          "sha256": "3784c2c4fa3989f7d6fae2e596aba990b3cbb8c1a660565d2c2bcb491eb244d7"
+        },
+        "graph.callsite-string-content.identity": {
+          "bytes": 32,
+          "sha256": "187f0d36a5ce8edf7a5e479e710218d9d1569ea4b38f86fabaa1fa068f5c24d3"
+        },
+        "graph.classoverview": {
+          "bytes": 138120,
+          "sha256": "f12afa057e0588e9677dc6d27ead613a9fe5438ae873c71b14f783f4f4b10644"
+        },
+        "graph.comparisons": {
+          "bytes": 5623288,
+          "sha256": "c411ca7963be076ca1583e86195e6fd4441ba02bcb9d7257c84035ac837595bd"
+        },
+        "graph.labelprefix": {
+          "bytes": 15588056,
+          "sha256": "f2cbcbd134db0a5b567bf2bd89660779c07f62c1ca610bb419f168d38d0b6380"
+        },
+        "graph.labels": {
+          "bytes": 4342382,
+          "sha256": "4c60ed66161b6a030abf4af5b1ce10e1513f76c612416a6f61586afdadde692b"
+        },
+        "graph.metadata": {
+          "bytes": 29058212,
+          "sha256": "9ddd8536f2095c003ca21be12586fbb7093413b16f415f657cf44979fadd2e93"
+        },
+        "graph.nodedata": {
+          "bytes": 156118715,
+          "sha256": "d3dbe87af0e87e3cc5fe957abf422af35bb029f463b2d6e3cc63b0685eda850a"
+        },
+        "graph.nodeindex": {
+          "bytes": 50661164,
+          "sha256": "e8d7cfb185a3de63949bb5f432120b41de85b10bdc72e84ce143764c08a124cd"
+        },
+        "graph.nodeoffsets": {
+          "bytes": 31176112,
+          "sha256": "02968226d758a1e1dff5a0300a9838bc148c64a73f76c944184f2546896e167e"
+        },
+        "graph.resources": {
+          "bytes": 5673996,
+          "sha256": "7a5264f7e1271928558efc75755c5ee391132c2644d7534ff6b94da38118daa8"
+        },
+        "graph.strings": {
+          "bytes": 6740083,
+          "sha256": "c4d88b158678f3eed129d096f70fcf8195750a10676f1c08e2514e9421aa06a7"
+        },
+        "graph.strings.identity": {
+          "bytes": 32,
+          "sha256": "b9ce46fa8a569119a35931528e98db5a38b166551aa1098a3ce3e0d4fcb1dc5f"
+        },
+        "graph.typeindex": {
+          "bytes": 15588264,
+          "sha256": "274eb08ecccaac1c1fdcd7e5420045fa1a9b584168b5f4b967ce1c792996e9f2"
+        }
+      },
+      "kotlin-compiler": {
+        "forward.graph": {
+          "bytes": 4116733,
+          "sha256": "7055bd5b690d5ace3a6df9eead53c59887e25d2f96338ebb9650cb3d22b6600b"
+        },
+        "forward.offsets": {
+          "bytes": 2493915,
+          "sha256": "0d1e356371664376a27decedbc29d36b707b0821f8c20de17a2df68fc099c57a"
+        },
+        "forward.properties": {
+          "bytes": 1023,
+          "sha256": "a6ce36eb492a27ebfd64ebcc33e4d7dee4177566659e3fd05291353c0f6da4c1"
+        },
+        "graph.callsite-string-content.identity": {
+          "bytes": 32,
+          "sha256": "8d8edb02c6e9095416b8c23062528b5dfbc712f048441e1e8183f492072e5650"
+        },
+        "graph.classoverview": {
+          "bytes": 254088,
+          "sha256": "4743acd1473311cfa971acf3d4da1b98795d210b27462d7b094d6e6d95d2e421"
+        },
+        "graph.comparisons": {
+          "bytes": 5656664,
+          "sha256": "b1610b32ce2fb7c542aba7cca15a3af124253eb6288f839b28314d568d9cfd73"
+        },
+        "graph.labelprefix": {
+          "bytes": 13074156,
+          "sha256": "d6510f6ab882f36f2fdcc93c2ed6d53612bf5f911309a97133c1c52c5a4053dd"
+        },
+        "graph.labels": {
+          "bytes": 3559500,
+          "sha256": "cabd62d80c56e744fae4af7aa5ce8992add7405b76a62ea0e3b5ac885eee4c3b"
+        },
+        "graph.metadata": {
+          "bytes": 28422892,
+          "sha256": "2b346b409077b3fba440ce2b1ac233516c28ec99411ec45a43917730b6e6aa78"
+        },
+        "graph.nodedata": {
+          "bytes": 142208386,
+          "sha256": "a9cba1f06f0c1d5d39688859116690c0614c4b8eb212feed9a1ef4d398e6a10d"
+        },
+        "graph.nodeindex": {
+          "bytes": 42490989,
+          "sha256": "948bd3531872e07bba946821a626ec2ae427e5a40d70a2551d5d4c07abeeb4b4"
+        },
+        "graph.nodeoffsets": {
+          "bytes": 26148312,
+          "sha256": "e5691056a5d15d871dbe21ac55e8f686078f98f21912e66ea32bd2892b495b76"
+        },
+        "graph.resources": {
+          "bytes": 250850,
+          "sha256": "d2564fce7ef330f91e967bf922ecd006ca736e6c6336f8d45eaf76a51b133e7e"
+        },
+        "graph.strings": {
+          "bytes": 7361151,
+          "sha256": "f1acb60755c022448195bec8d9dbc3953670f68f92834dd193c40f21555591bb"
+        },
+        "graph.strings.identity": {
+          "bytes": 32,
+          "sha256": "a4f09a054ad0281617417d05754fae59e7a03621adfeb1bef036f89c2e8c3663"
+        },
+        "graph.typeindex": {
+          "bytes": 13074364,
+          "sha256": "6cd6c524bfa0a7d1ae1d0967f47094a2d0772228315aed36b0cb26ddb36b47a4"
+        }
+      }
+    },
+    "harnessSHA256": "7b0f0c92c30dccdca87f736b28a8c1d351ecd49376cee95b94c6ad8bb3b6ad54"
+  },
+  "checks": {
+    "revision": "b8fc966ee6614806babc79f21fbef625b5f0b0f3",
+    "command": "./gradlew check koverLog --max-workers=2",
+    "outcome": "BUILD SUCCESSFUL in 3m 17s",
+    "lineCoveragePercent": {
+      "core": 98.1149,
+      "cypher": 98.004,
+      "explore": 98.0353,
+      "query": 98.9011,
+      "sootup": 98.4449,
+      "webgraph": 96.892
+    },
+    "suites": [
+      {
+        "module": "core",
+        "task": "test",
+        "tests": 441,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "cypher",
+        "task": "test",
+        "tests": 1309,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "cypher",
+        "task": "filteredRelationshipMemoryTest",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "explore",
+        "task": "test",
+        "tests": 214,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "query",
+        "task": "test",
+        "tests": 23,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "sootup",
+        "task": "test",
+        "tests": 318,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "webgraph",
+        "task": "test",
+        "tests": 193,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "webgraph",
+        "task": "largeCorpusTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "targetQueries": {
+    "jmhObservations": 120,
+    "oracleObservations": 40,
+    "orderedResultParity": true,
+    "allSharedSourcesUntouched": true,
+    "privateSnapshotsRemoved": 140,
+    "statistics": "Primary latency median of3freshJVMs perrevision; CPU/allocation are separate singleoraclequery-window observations",
+    "referenceScope": "8cases use unmodified main144d98ef; dynamicHit/Miss use main144d98ef plus subscript correctness repair only",
+    "allocationScope": "Oracle allocatedBytes counts allJava-thread allocations duringquerywindow, includingbackground Java threads; notheapgrowth orpeak. JMH GC stats are wholefirsttrial includingfixturecopy/setup,WARMprimer,teardown. These scopes are not mixed.",
+    "rows": [
+      {
+        "cacheState": "COLD",
+        "queryName": "dataflowSourceHit",
+        "reference": "main",
+        "rows": 5,
+        "sha256": "19428c67ff3975c0f639d94e1be1d3db92fbca03eccd6d17ddfa5086365f968e",
+        "reference_ms": 10706.083708,
+        "reference_trialAllocatedBytes": 34130102696.0,
+        "reference_trialGcCount": 56.0,
+        "reference_trialGcMs": 19.0,
+        "reference_queryCpuMs": 12494.858,
+        "reference_queryAllocatedBytes": 34045408584,
+        "candidate_ms": 129.358458,
+        "candidate_trialAllocatedBytes": 116478824.0,
+        "candidate_trialGcCount": 1.0,
+        "candidate_trialGcMs": 1.0,
+        "candidate_queryCpuMs": 274.991,
+        "candidate_queryAllocatedBytes": 43031672,
+        "latencySpeedup": 82.76291997852974,
+        "pairedLatencySpeedups": [
+          82.84267639461193,
+          84.27509815559493,
+          80.45088106371016
+        ],
+        "queryCpuSpeedup": 45.43733431275933,
+        "queryAllocationReduction": 791.1709446009907
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "dataflowSourceMiss",
+        "reference": "main",
+        "rows": 0,
+        "sha256": "bdda200bb4a8a71297fd751453891a7cf4823457e1e54125d39f71faec2135e0",
+        "reference_ms": 10599.029084,
+        "reference_trialAllocatedBytes": 34128874112.0,
+        "reference_trialGcCount": 56.0,
+        "reference_trialGcMs": 19.0,
+        "reference_queryCpuMs": 11620.729,
+        "reference_queryAllocatedBytes": 33979446592,
+        "candidate_ms": 118.148708,
+        "candidate_trialAllocatedBytes": 116120408.0,
+        "candidate_trialGcCount": 1.0,
+        "candidate_trialGcMs": 1.0,
+        "candidate_queryCpuMs": 250.514,
+        "candidate_queryAllocatedBytes": 43582880,
+        "latencySpeedup": 89.70922546186455,
+        "pairedLatencySpeedups": [
+          93.69092392295235,
+          82.65720906571403,
+          86.87360826283694
+        ],
+        "queryCpuSpeedup": 46.387543211157855,
+        "queryAllocationReduction": 779.6512436075817
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "dataflowTargetHit",
+        "reference": "main",
+        "rows": 50,
+        "sha256": "f0a1b44b99cf92bc9d22f5be69ce0ab1c777f13223cb112b13301ce905777484",
+        "reference_ms": 260.09975,
+        "reference_trialAllocatedBytes": 311044432.0,
+        "reference_trialGcCount": 3.0,
+        "reference_trialGcMs": 2.0,
+        "reference_queryCpuMs": 673.798,
+        "reference_queryAllocatedBytes": 236442824,
+        "candidate_ms": 236.545583,
+        "candidate_trialAllocatedBytes": 309664416.0,
+        "candidate_trialGcCount": 3.0,
+        "candidate_trialGcMs": 3.0,
+        "candidate_queryCpuMs": 679.944,
+        "candidate_queryAllocatedBytes": 236389176,
+        "latencySpeedup": 1.0995755942735146,
+        "pairedLatencySpeedups": [
+          1.0048329381540377,
+          1.1115014140847432,
+          1.0320727351104566
+        ],
+        "queryCpuSpeedup": 0.9909610203193204,
+        "queryAllocationReduction": 1.0002269477854604
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "dataflowTargetMiss",
+        "reference": "main",
+        "rows": 0,
+        "sha256": "bdda200bb4a8a71297fd751453891a7cf4823457e1e54125d39f71faec2135e0",
+        "reference_ms": 10591.712916,
+        "reference_trialAllocatedBytes": 34024770024.0,
+        "reference_trialGcCount": 56.0,
+        "reference_trialGcMs": 18.0,
+        "reference_queryCpuMs": 12602.589,
+        "reference_queryAllocatedBytes": 34044827568,
+        "candidate_ms": 692.924708,
+        "candidate_trialAllocatedBytes": 406556000.0,
+        "candidate_trialGcCount": 3.0,
+        "candidate_trialGcMs": 3.0,
+        "candidate_queryCpuMs": 1678.032,
+        "candidate_queryAllocatedBytes": 327778424,
+        "latencySpeedup": 15.285517739107666,
+        "pairedLatencySpeedups": [
+          15.792261559372761,
+          11.031698160907759,
+          15.285517739107666
+        ],
+        "queryCpuSpeedup": 7.510338896993622,
+        "queryAllocationReduction": 103.86537085796715
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "dynamicHit",
+        "reference": "dynamic-reference",
+        "rows": 1,
+        "sha256": "a512d2dc073ceab3ea9ed1787ea46a650b95b6442c2ab0d436f19e5428307574",
+        "reference_ms": 11341.842083,
+        "reference_trialAllocatedBytes": 41247487064.0,
+        "reference_trialGcCount": 67.0,
+        "reference_trialGcMs": 23.0,
+        "reference_queryCpuMs": 12720.406,
+        "reference_queryAllocatedBytes": 41277521672,
+        "candidate_ms": 613.067333,
+        "candidate_trialAllocatedBytes": 89716240.0,
+        "candidate_trialGcCount": 0.0,
+        "candidate_trialGcMs": 0,
+        "candidate_queryCpuMs": 837.79,
+        "candidate_queryAllocatedBytes": 17028352,
+        "latencySpeedup": 18.50015727880905,
+        "pairedLatencySpeedups": [
+          19.16739616097922,
+          17.7152303456003,
+          18.50015727880905
+        ],
+        "queryCpuSpeedup": 15.183286981224413,
+        "queryAllocationReduction": 2424.0467704684515
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "dynamicMiss",
+        "reference": "dynamic-reference",
+        "rows": 0,
+        "sha256": "b208fdc156dc2fd202cf20a659bfa72b9c5f12bf683b62ea342bd7a43aed3a51",
+        "reference_ms": 11193.084042,
+        "reference_trialAllocatedBytes": 40180418632.0,
+        "reference_trialGcCount": 65.0,
+        "reference_trialGcMs": 22.0,
+        "reference_queryCpuMs": 12689.083,
+        "reference_queryAllocatedBytes": 41098865160,
+        "candidate_ms": 615.632792,
+        "candidate_trialAllocatedBytes": 85004560.0,
+        "candidate_trialGcCount": 0.0,
+        "candidate_trialGcMs": 0,
+        "candidate_queryCpuMs": 819.309,
+        "candidate_queryAllocatedBytes": 12523064,
+        "latencySpeedup": 18.18142923419843,
+        "pairedLatencySpeedups": [
+          17.979156124938843,
+          18.445456242915764,
+          19.503141278403923
+        ],
+        "queryCpuSpeedup": 15.48754255110099,
+        "queryAllocationReduction": 3281.853798718908
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "valueHit",
+        "reference": "main",
+        "rows": 1,
+        "sha256": "a512d2dc073ceab3ea9ed1787ea46a650b95b6442c2ab0d436f19e5428307574",
+        "reference_ms": 3128.518125,
+        "reference_trialAllocatedBytes": 7388686336.0,
+        "reference_trialGcCount": 14.0,
+        "reference_trialGcMs": 6.0,
+        "reference_queryCpuMs": 4182.358,
+        "reference_queryAllocatedBytes": 7151663688,
+        "candidate_ms": 124.729125,
+        "candidate_trialAllocatedBytes": 116809768.0,
+        "candidate_trialGcCount": 1.0,
+        "candidate_trialGcMs": 1.0,
+        "candidate_queryCpuMs": 256.96,
+        "candidate_queryAllocatedBytes": 42346560,
+        "latencySpeedup": 25.082498774845092,
+        "pairedLatencySpeedups": [
+          25.704705026900708,
+          23.964042229820866,
+          25.082498774845092
+        ],
+        "queryCpuSpeedup": 16.2762998132005,
+        "queryAllocationReduction": 168.8841711817914
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "valueMiss",
+        "reference": "main",
+        "rows": 0,
+        "sha256": "b208fdc156dc2fd202cf20a659bfa72b9c5f12bf683b62ea342bd7a43aed3a51",
+        "reference_ms": 3166.218042,
+        "reference_trialAllocatedBytes": 7228603120.0,
+        "reference_trialGcCount": 14.0,
+        "reference_trialGcMs": 7.0,
+        "reference_queryCpuMs": 4155.305,
+        "reference_queryAllocatedBytes": 7160201224,
+        "candidate_ms": 115.022917,
+        "candidate_trialAllocatedBytes": 115184808.0,
+        "candidate_trialGcCount": 1.0,
+        "candidate_trialGcMs": 1.0,
+        "candidate_queryCpuMs": 240.173,
+        "candidate_queryAllocatedBytes": 43474888,
+        "latencySpeedup": 27.526845298141758,
+        "pairedLatencySpeedups": [
+          27.924172276034348,
+          27.50782300409258,
+          27.21159885239733
+        ],
+        "queryCpuSpeedup": 17.3012994799582,
+        "queryAllocationReduction": 164.69740471786838
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "wrappedCallerHit",
+        "reference": "main",
+        "rows": 50,
+        "sha256": "8edb5b17eca5959e146d6532385de3a928b92ee4c9293e595b57a46fa37af8a9",
+        "reference_ms": 3815.487333,
+        "reference_trialAllocatedBytes": 8444524448.0,
+        "reference_trialGcCount": 15.0,
+        "reference_trialGcMs": 7.0,
+        "reference_queryCpuMs": 4566.631,
+        "reference_queryAllocatedBytes": 9163114168,
+        "candidate_ms": 163.888833,
+        "candidate_trialAllocatedBytes": 109671944.0,
+        "candidate_trialGcCount": 1.0,
+        "candidate_trialGcMs": 1.0,
+        "candidate_queryCpuMs": 371.952,
+        "candidate_queryAllocatedBytes": 36619512,
+        "latencySpeedup": 23.280947598180774,
+        "pairedLatencySpeedups": [
+          23.991205494704136,
+          22.563265601287956,
+          22.938008839198947
+        ],
+        "queryCpuSpeedup": 12.277473975136578,
+        "queryAllocationReduction": 250.22491200865812
+      },
+      {
+        "cacheState": "COLD",
+        "queryName": "wrappedCallerMiss",
+        "reference": "main",
+        "rows": 0,
+        "sha256": "b208fdc156dc2fd202cf20a659bfa72b9c5f12bf683b62ea342bd7a43aed3a51",
+        "reference_ms": 3858.467958,
+        "reference_trialAllocatedBytes": 8490918816.0,
+        "reference_trialGcCount": 16.0,
+        "reference_trialGcMs": 7.0,
+        "reference_queryCpuMs": 4686.503,
+        "reference_queryAllocatedBytes": 8261779824,
+        "candidate_ms": 153.2725,
+        "candidate_trialAllocatedBytes": 108922056.0,
+        "candidate_trialGcCount": 1.0,
+        "candidate_trialGcMs": 1.0,
+        "candidate_queryCpuMs": 371.696,
+        "candidate_queryAllocatedBytes": 36292808,
+        "latencySpeedup": 25.173908939959876,
+        "pairedLatencySpeedups": [
+          25.88691817514557,
+          24.335502550622774,
+          26.39055757052023
+        ],
+        "queryCpuSpeedup": 12.608430007317807,
+        "queryAllocationReduction": 227.64234236160507
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "dataflowSourceHit",
+        "reference": "main",
+        "rows": 5,
+        "sha256": "19428c67ff3975c0f639d94e1be1d3db92fbca03eccd6d17ddfa5086365f968e",
+        "reference_ms": 10196.0985,
+        "reference_trialAllocatedBytes": 67925913680.0,
+        "reference_trialGcCount": 109.0,
+        "reference_trialGcMs": 34.0,
+        "reference_queryCpuMs": 10153.474,
+        "reference_queryAllocatedBytes": 33999612504,
+        "candidate_ms": 74.468,
+        "candidate_trialAllocatedBytes": 149060552.0,
+        "candidate_trialGcCount": 2.0,
+        "candidate_trialGcMs": 2.0,
+        "candidate_queryCpuMs": 146.403,
+        "candidate_queryAllocatedBytes": 33488256,
+        "latencySpeedup": 136.91919347907825,
+        "pairedLatencySpeedups": [
+          204.45713655493256,
+          131.6529397610835,
+          138.9807825643229
+        ],
+        "queryCpuSpeedup": 69.35290943491596,
+        "queryAllocationReduction": 1015.2697263183845
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "dataflowSourceMiss",
+        "reference": "main",
+        "rows": 0,
+        "sha256": "bdda200bb4a8a71297fd751453891a7cf4823457e1e54125d39f71faec2135e0",
+        "reference_ms": 10027.2715,
+        "reference_trialAllocatedBytes": 68117022400.0,
+        "reference_trialGcCount": 109.0,
+        "reference_trialGcMs": 34.0,
+        "reference_queryCpuMs": 9427.99,
+        "reference_queryAllocatedBytes": 33999606072,
+        "candidate_ms": 36.785709,
+        "candidate_trialAllocatedBytes": 146928632.0,
+        "candidate_trialGcCount": 2.0,
+        "candidate_trialGcMs": 2.0,
+        "candidate_queryCpuMs": 74.341,
+        "candidate_queryAllocatedBytes": 31573136,
+        "latencySpeedup": 272.58606052692915,
+        "pairedLatencySpeedups": [
+          272.58606052692915,
+          336.38493701017785,
+          233.9742624860597
+        ],
+        "queryCpuSpeedup": 126.82086600933536,
+        "queryAllocationReduction": 1076.85236183064
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "dataflowTargetHit",
+        "reference": "main",
+        "rows": 50,
+        "sha256": "f0a1b44b99cf92bc9d22f5be69ce0ab1c777f13223cb112b13301ce905777484",
+        "reference_ms": 157.9265,
+        "reference_trialAllocatedBytes": 535455720.0,
+        "reference_trialGcCount": 3.0,
+        "reference_trialGcMs": 2.0,
+        "reference_queryCpuMs": 347.527,
+        "reference_queryAllocatedBytes": 221658888,
+        "candidate_ms": 127.922333,
+        "candidate_trialAllocatedBytes": 530282192.0,
+        "candidate_trialGcCount": 3.0,
+        "candidate_trialGcMs": 2.0,
+        "candidate_queryCpuMs": 326.948,
+        "candidate_queryAllocatedBytes": 221478800,
+        "latencySpeedup": 1.2345498733204,
+        "pairedLatencySpeedups": [
+          1.3405025083434825,
+          1.0897417032183059,
+          0.9302112399716789
+        ],
+        "queryCpuSpeedup": 1.062942730954158,
+        "queryAllocationReduction": 1.000813116198932
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "dataflowTargetMiss",
+        "reference": "main",
+        "rows": 0,
+        "sha256": "bdda200bb4a8a71297fd751453891a7cf4823457e1e54125d39f71faec2135e0",
+        "reference_ms": 10282.965542,
+        "reference_trialAllocatedBytes": 68393564648.0,
+        "reference_trialGcCount": 110.0,
+        "reference_trialGcMs": 34.0,
+        "reference_queryCpuMs": 10427.755,
+        "reference_queryAllocatedBytes": 33998478552,
+        "candidate_ms": 298.628042,
+        "candidate_trialAllocatedBytes": 792021424.0,
+        "candidate_trialGcCount": 3.0,
+        "candidate_trialGcMs": 2.0,
+        "candidate_queryCpuMs": 1141.217,
+        "candidate_queryAllocatedBytes": 359909496,
+        "latencySpeedup": 34.43402526143208,
+        "pairedLatencySpeedups": [
+          34.753021452687285,
+          34.412706597993804,
+          34.27533633679997
+        ],
+        "queryCpuSpeedup": 9.137398934646082,
+        "queryAllocationReduction": 94.46396644116331
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "dynamicHit",
+        "reference": "dynamic-reference",
+        "rows": 1,
+        "sha256": "a512d2dc073ceab3ea9ed1787ea46a650b95b6442c2ab0d436f19e5428307574",
+        "reference_ms": 10962.168958,
+        "reference_trialAllocatedBytes": 82420335904.0,
+        "reference_trialGcCount": 132.0,
+        "reference_trialGcMs": 42.0,
+        "reference_queryCpuMs": 11058.152,
+        "reference_queryAllocatedBytes": 41786406992,
+        "candidate_ms": 519.486708,
+        "candidate_trialAllocatedBytes": 91488680.0,
+        "candidate_trialGcCount": 0.0,
+        "candidate_trialGcMs": 0,
+        "candidate_queryCpuMs": 569.574,
+        "candidate_queryAllocatedBytes": 2784168,
+        "latencySpeedup": 21.10192385904126,
+        "pairedLatencySpeedups": [
+          21.796217916206235,
+          20.857268016951842,
+          21.04869007590564
+        ],
+        "queryCpuSpeedup": 19.41477665764238,
+        "queryAllocationReduction": 15008.579579967876
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "dynamicMiss",
+        "reference": "dynamic-reference",
+        "rows": 0,
+        "sha256": "b208fdc156dc2fd202cf20a659bfa72b9c5f12bf683b62ea342bd7a43aed3a51",
+        "reference_ms": 10854.241834,
+        "reference_trialAllocatedBytes": 82471209312.0,
+        "reference_trialGcCount": 132.0,
+        "reference_trialGcMs": 42.0,
+        "reference_queryCpuMs": 11269.483,
+        "reference_queryAllocatedBytes": 41691383816,
+        "candidate_ms": 522.065333,
+        "candidate_trialAllocatedBytes": 86505616.0,
+        "candidate_trialGcCount": 0.0,
+        "candidate_trialGcMs": 0,
+        "candidate_queryCpuMs": 594.325,
+        "candidate_queryAllocatedBytes": 2133040,
+        "latencySpeedup": 20.79096455538832,
+        "pairedLatencySpeedups": [
+          20.595481521097902,
+          21.605619262191702,
+          20.5307606892948
+        ],
+        "queryCpuSpeedup": 18.961818870146804,
+        "queryAllocationReduction": 19545.523673255073
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "valueHit",
+        "reference": "main",
+        "rows": 1,
+        "sha256": "a512d2dc073ceab3ea9ed1787ea46a650b95b6442c2ab0d436f19e5428307574",
+        "reference_ms": 2964.124375,
+        "reference_trialAllocatedBytes": 14371263568.0,
+        "reference_trialGcCount": 25.0,
+        "reference_trialGcMs": 10.0,
+        "reference_queryCpuMs": 2968.296,
+        "reference_queryAllocatedBytes": 7145467152,
+        "candidate_ms": 48.5395,
+        "candidate_trialAllocatedBytes": 146621096.0,
+        "candidate_trialGcCount": 2.0,
+        "candidate_trialGcMs": 2.0,
+        "candidate_queryCpuMs": 136.152,
+        "candidate_queryAllocatedBytes": 33298296,
+        "latencySpeedup": 61.066232140833755,
+        "pairedLatencySpeedups": [
+          43.88915044746956,
+          73.92287274477543,
+          61.066232140833755
+        ],
+        "queryCpuSpeedup": 21.801339679182092,
+        "queryAllocationReduction": 214.58957395297344
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "valueMiss",
+        "reference": "main",
+        "rows": 0,
+        "sha256": "b208fdc156dc2fd202cf20a659bfa72b9c5f12bf683b62ea342bd7a43aed3a51",
+        "reference_ms": 2918.943792,
+        "reference_trialAllocatedBytes": 14386162184.0,
+        "reference_trialGcCount": 25.0,
+        "reference_trialGcMs": 11.0,
+        "reference_queryCpuMs": 3017.759,
+        "reference_queryAllocatedBytes": 7104142856,
+        "candidate_ms": 36.036333,
+        "candidate_trialAllocatedBytes": 146545600.0,
+        "candidate_trialGcCount": 2.0,
+        "candidate_trialGcMs": 2.0,
+        "candidate_queryCpuMs": 70.398,
+        "candidate_queryAllocatedBytes": 31833616,
+        "latencySpeedup": 81.00002272706271,
+        "pairedLatencySpeedups": [
+          81.27894795449194,
+          72.86857799774086,
+          80.3588295734752
+        ],
+        "queryCpuSpeedup": 42.867112702065405,
+        "queryAllocationReduction": 223.16480967792035
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "wrappedCallerHit",
+        "reference": "main",
+        "rows": 50,
+        "sha256": "8edb5b17eca5959e146d6532385de3a928b92ee4c9293e595b57a46fa37af8a9",
+        "reference_ms": 3523.14075,
+        "reference_trialAllocatedBytes": 16780183432.0,
+        "reference_trialGcCount": 29.0,
+        "reference_trialGcMs": 12.0,
+        "reference_queryCpuMs": 3531.473,
+        "reference_queryAllocatedBytes": 9144555360,
+        "candidate_ms": 130.819625,
+        "candidate_trialAllocatedBytes": 114240752.0,
+        "candidate_trialGcCount": 1.0,
+        "candidate_trialGcMs": 1.0,
+        "candidate_queryCpuMs": 277.08,
+        "candidate_queryAllocatedBytes": 5234704,
+        "latencySpeedup": 26.9312861124621,
+        "pairedLatencySpeedups": [
+          50.58053452516201,
+          27.18124000890539,
+          23.854218637735737
+        ],
+        "queryCpuSpeedup": 12.745319041432078,
+        "queryAllocationReduction": 1746.9097316677314
+      },
+      {
+        "cacheState": "WARM",
+        "queryName": "wrappedCallerMiss",
+        "reference": "main",
+        "rows": 0,
+        "sha256": "b208fdc156dc2fd202cf20a659bfa72b9c5f12bf683b62ea342bd7a43aed3a51",
+        "reference_ms": 3471.596416,
+        "reference_trialAllocatedBytes": 18476420000.0,
+        "reference_trialGcCount": 31.0,
+        "reference_trialGcMs": 12.0,
+        "reference_queryCpuMs": 3609.81,
+        "reference_queryAllocatedBytes": 8249560008,
+        "candidate_ms": 51.669917,
+        "candidate_trialAllocatedBytes": 116783032.0,
+        "candidate_trialGcCount": 1.0,
+        "candidate_trialGcMs": 1.0,
+        "candidate_queryCpuMs": 164.629,
+        "candidate_queryAllocatedBytes": 27682488,
+        "latencySpeedup": 67.18796192376311,
+        "pairedLatencySpeedups": [
+          66.92836535812512,
+          74.32578634080497,
+          44.72739956195513
+        ],
+        "queryCpuSpeedup": 21.926938753196584,
+        "queryAllocationReduction": 298.00645115424595
+      }
+    ]
+  },
+  "broadRegression": {
+    "rows": [
+      {
+        "corpus": "android",
+        "method": "mapped_simpleNodeMatch",
+        "mainMs": 0.07241196380167665,
+        "mainAllocationBytesPerOp": 238321.08751554988,
+        "mainSamplesMs": [
+          0.060333257059270985,
+          0.07374807199891376,
+          0.07241196380167665
+        ],
+        "candidateMs": 0.07168037792944666,
+        "candidateAllocationBytesPerOp": 238401.07370169382,
+        "candidateSamplesMs": [
+          0.07049894438328731,
+          0.07176170435296636,
+          0.07168037792944666
+        ],
+        "speedup": 1.0102062223074504,
+        "candidateLatencyChangePercent": -1.0103107743820727,
+        "candidateAllocationChangeBytesPerOp": 79.98618614394218,
+        "candidateAllocationChangePercent": 0.03356236201244034,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "android",
+        "method": "mapped_intConstantFilter",
+        "mainMs": 0.1490471859461667,
+        "mainAllocationBytesPerOp": 256002.2504833627,
+        "mainSamplesMs": [
+          0.15122890092413532,
+          0.1490471859461667,
+          0.14730416106405309
+        ],
+        "candidateMs": 0.1477713918257159,
+        "candidateAllocationBytesPerOp": 256090.22257475439,
+        "candidateSamplesMs": [
+          0.1477713918257159,
+          0.1496593970411789,
+          0.14694964811599373
+        ],
+        "speedup": 1.0086335663803958,
+        "candidateLatencyChangePercent": -0.8559665936340499,
+        "candidateAllocationChangeBytesPerOp": 87.97209139168262,
+        "candidateAllocationChangePercent": 0.03436379610943785,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "android",
+        "method": "mapped_countStar",
+        "mainMs": 0.0007279556498804037,
+        "mainAllocationBytesPerOp": 1564.1878376917912,
+        "mainSamplesMs": [
+          0.0007623295996595923,
+          0.0007279556498804037,
+          0.0007262344596264498
+        ],
+        "candidateMs": 0.0007481537741589874,
+        "candidateAllocationBytesPerOp": 1644.2541875620982,
+        "candidateSamplesMs": [
+          0.0007481537741589874,
+          0.000727506082890721,
+          0.0007572873513196645
+        ],
+        "speedup": 0.9730027101697257,
+        "candidateLatencyChangePercent": 2.774636652920015,
+        "candidateAllocationChangeBytesPerOp": 80.06634987030702,
+        "candidateAllocationChangePercent": 5.118717070991785,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "android",
+        "method": "mapped_singleHopRelationship",
+        "mainMs": 0.5224908206982462,
+        "mainAllocationBytesPerOp": 430018.06551265734,
+        "mainSamplesMs": [
+          0.5224908206982462,
+          0.5130735944895343,
+          0.5261583521543315
+        ],
+        "candidateMs": 0.5175541239129057,
+        "candidateAllocationBytesPerOp": 430100.74600918713,
+        "candidateSamplesMs": [
+          0.5175541239129057,
+          0.5083709380493562,
+          0.521792280441366
+        ],
+        "speedup": 1.0095385130892538,
+        "candidateLatencyChangePercent": -0.9448389502313526,
+        "candidateAllocationChangeBytesPerOp": 82.68049652979244,
+        "candidateAllocationChangePercent": 0.01922721465927868,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "android",
+        "method": "mapped_returnDistinct",
+        "mainMs": 0.13619464750027313,
+        "mainAllocationBytesPerOp": 378162.03974349174,
+        "mainSamplesMs": [
+          0.13619464750027313,
+          0.13161585566146683,
+          0.13668238978506614
+        ],
+        "candidateMs": 0.12834832871203225,
+        "candidateAllocationBytesPerOp": 378273.9470962211,
+        "candidateSamplesMs": [
+          0.12975554343044166,
+          0.12834832871203225,
+          0.1117835664579777
+        ],
+        "speedup": 1.0611330031873278,
+        "candidateLatencyChangePercent": -5.761106572286656,
+        "candidateAllocationChangeBytesPerOp": 111.90735272935126,
+        "candidateAllocationChangePercent": 0.02959243418647617,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "tika",
+        "method": "mapped_simpleNodeMatch",
+        "mainMs": 0.07422272063890621,
+        "mainAllocationBytesPerOp": 249249.11135074229,
+        "mainSamplesMs": [
+          0.07328571635559704,
+          0.07422272063890621,
+          0.07470153979401396
+        ],
+        "candidateMs": 0.07676975566969124,
+        "candidateAllocationBytesPerOp": 252529.16009121356,
+        "candidateSamplesMs": [
+          0.06191543600785074,
+          0.07676975566969124,
+          0.07755551447570093
+        ],
+        "speedup": 0.9668224158255254,
+        "candidateLatencyChangePercent": 3.431610979576405,
+        "candidateAllocationChangeBytesPerOp": 3280.0487404712767,
+        "candidateAllocationChangePercent": 1.3159720902096161,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "tika",
+        "method": "mapped_intConstantFilter",
+        "mainMs": 0.0242764800288883,
+        "mainAllocationBytesPerOp": 88928.41465005517,
+        "mainSamplesMs": [
+          0.02385070820882231,
+          0.027423254931644814,
+          0.0242764800288883
+        ],
+        "candidateMs": 0.025545809352490206,
+        "candidateAllocationBytesPerOp": 88976.38341488002,
+        "candidateSamplesMs": [
+          0.026979276802982,
+          0.025545809352490206,
+          0.02417576616771468
+        ],
+        "speedup": 0.9503116418788207,
+        "candidateLatencyChangePercent": 5.228638262595897,
+        "candidateAllocationChangeBytesPerOp": 47.96876482485095,
+        "candidateAllocationChangePercent": 0.05394087481893628,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "tika",
+        "method": "mapped_countStar",
+        "mainMs": 0.000737958063412182,
+        "mainAllocationBytesPerOp": 1563.810825646552,
+        "mainSamplesMs": [
+          0.000744354113413597,
+          0.0006911673064807718,
+          0.000737958063412182
+        ],
+        "candidateMs": 0.0007497209994430045,
+        "candidateAllocationBytesPerOp": 1644.3215612959193,
+        "candidateSamplesMs": [
+          0.0007497209994430045,
+          0.0007568765740901397,
+          0.000718091799060192
+        ],
+        "speedup": 0.9843102486930984,
+        "candidateLatencyChangePercent": 1.5939843487084993,
+        "candidateAllocationChangeBytesPerOp": 80.51073564936723,
+        "candidateAllocationChangePercent": 5.148367969385315,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "tika",
+        "method": "mapped_singleHopRelationship",
+        "mainMs": 0.02593599229843128,
+        "mainAllocationBytesPerOp": 64968.38498245564,
+        "mainSamplesMs": [
+          0.026522393585059607,
+          0.02593599229843128,
+          0.025530963872772438
+        ],
+        "candidateMs": 0.026098118158909552,
+        "candidateAllocationBytesPerOp": 61320.41459292319,
+        "candidateSamplesMs": [
+          0.02520774177865019,
+          0.026098118158909552,
+          0.027747662845900276
+        ],
+        "speedup": 0.9937878333031103,
+        "candidateLatencyChangePercent": 0.6250998944354214,
+        "candidateAllocationChangeBytesPerOp": -3647.970389532449,
+        "candidateAllocationChangePercent": -5.6149931855587365,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "tika",
+        "method": "mapped_returnDistinct",
+        "mainMs": 0.12385253560382,
+        "mainAllocationBytesPerOp": 362385.8463159289,
+        "mainSamplesMs": [
+          0.12389365850560861,
+          0.12200933396431916,
+          0.12385253560382
+        ],
+        "candidateMs": 0.13006235128922525,
+        "candidateAllocationBytesPerOp": 362433.955217175,
+        "candidateSamplesMs": [
+          0.13040576946680849,
+          0.12965680663833087,
+          0.13006235128922525
+        ],
+        "speedup": 0.9522550867037901,
+        "candidateLatencyChangePercent": 5.013878525078597,
+        "candidateAllocationChangeBytesPerOp": 48.108901246101595,
+        "candidateAllocationChangePercent": 0.013275601609485932,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "hive",
+        "method": "mapped_simpleNodeMatch",
+        "mainMs": 0.0721585633581794,
+        "mainAllocationBytesPerOp": 253345.07463772435,
+        "mainSamplesMs": [
+          0.07827621990989918,
+          0.06656263166720898,
+          0.0721585633581794
+        ],
+        "candidateMs": 0.07387825940098638,
+        "candidateAllocationBytesPerOp": 253425.1105716715,
+        "candidateSamplesMs": [
+          0.07440112494532362,
+          0.07387825940098638,
+          0.07261607415304826
+        ],
+        "speedup": 0.9767225695793257,
+        "candidateLatencyChangePercent": 2.383218238798346,
+        "candidateAllocationChangeBytesPerOp": 80.03593394716154,
+        "candidateAllocationChangePercent": 0.03159166763420096,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "hive",
+        "method": "mapped_intConstantFilter",
+        "mainMs": 0.029103399098781988,
+        "mainAllocationBytesPerOp": 95200.43477916495,
+        "mainSamplesMs": [
+          0.03191536670314471,
+          0.02893523047617561,
+          0.029103399098781988
+        ],
+        "candidateMs": 0.02835203032305154,
+        "candidateAllocationBytesPerOp": 97680.41603236269,
+        "candidateSamplesMs": [
+          0.02835203032305154,
+          0.02840892151537028,
+          0.02777546733335998
+        ],
+        "speedup": 1.0265014098521033,
+        "candidateLatencyChangePercent": -2.5817217197900866,
+        "candidateAllocationChangeBytesPerOp": 2479.981253197737,
+        "candidateAllocationChangePercent": 2.6050104276839736,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "hive",
+        "method": "mapped_countStar",
+        "mainMs": 0.0007401857442997317,
+        "mainAllocationBytesPerOp": 1564.4232476836507,
+        "mainSamplesMs": [
+          0.0007401857442997317,
+          0.0007169842514076144,
+          0.000744118997921792
+        ],
+        "candidateMs": 0.0007602053059164582,
+        "candidateAllocationBytesPerOp": 1644.4938805400718,
+        "candidateSamplesMs": [
+          0.000770399283280304,
+          0.0007404298171627943,
+          0.0007602053059164582
+        ],
+        "speedup": 0.9736655855189118,
+        "candidateLatencyChangePercent": 2.704667277220585,
+        "candidateAllocationChangeBytesPerOp": 80.07063285642107,
+        "candidateAllocationChangePercent": 5.118220595032508,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "hive",
+        "method": "mapped_singleHopRelationship",
+        "mainMs": 0.5770138696457919,
+        "mainAllocationBytesPerOp": 466302.4044698319,
+        "mainSamplesMs": [
+          0.5759603132194124,
+          0.5770138696457919,
+          0.6051106406179761
+        ],
+        "candidateMs": 0.5723711052534856,
+        "candidateAllocationBytesPerOp": 466369.7578878314,
+        "candidateSamplesMs": [
+          0.5630506845795485,
+          0.5723711052534856,
+          0.5744595561449358
+        ],
+        "speedup": 1.0081114583697413,
+        "candidateLatencyChangePercent": -0.8046192018150933,
+        "candidateAllocationChangeBytesPerOp": 67.35341799951857,
+        "candidateAllocationChangePercent": 0.014444149837933296,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "hive",
+        "method": "mapped_returnDistinct",
+        "mainMs": 0.03978572623839057,
+        "mainAllocationBytesPerOp": 143896.59733669864,
+        "mainSamplesMs": [
+          0.043616367505806795,
+          0.03978572623839057,
+          0.03943343176867894
+        ],
+        "candidateMs": 0.03968600808633166,
+        "candidateAllocationBytesPerOp": 144008.5879613527,
+        "candidateSamplesMs": [
+          0.0444932982085543,
+          0.03922250215047922,
+          0.03968600808633166
+        ],
+        "speedup": 1.002512677814357,
+        "candidateLatencyChangePercent": -0.25063800887136223,
+        "candidateAllocationChangeBytesPerOp": 111.99062465404859,
+        "candidateAllocationChangePercent": 0.07782715277970809,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "kotlin-compiler",
+        "method": "mapped_simpleNodeMatch",
+        "mainMs": 0.053790056483216685,
+        "mainAllocationBytesPerOp": 231080.80392962383,
+        "mainSamplesMs": [
+          0.053139301605260224,
+          0.05407699480451015,
+          0.053790056483216685
+        ],
+        "candidateMs": 0.0543381952256995,
+        "candidateAllocationBytesPerOp": 234360.8193800559,
+        "candidateSamplesMs": [
+          0.056376209379248525,
+          0.05403131653803112,
+          0.0543381952256995
+        ],
+        "speedup": 0.9899124595469897,
+        "candidateLatencyChangePercent": 1.019033587841367,
+        "candidateAllocationChangeBytesPerOp": 3280.0154504320817,
+        "candidateAllocationChangePercent": 1.4194235932427413,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "kotlin-compiler",
+        "method": "mapped_intConstantFilter",
+        "mainMs": 0.03746019960695265,
+        "mainAllocationBytesPerOp": 103792.54787924634,
+        "mainSamplesMs": [
+          0.038084919172213884,
+          0.03746019960695265,
+          0.0363785259816363
+        ],
+        "candidateMs": 0.03755168516386929,
+        "candidateAllocationBytesPerOp": 103840.59000099229,
+        "candidateSamplesMs": [
+          0.03755168516386929,
+          0.03634316818164456,
+          0.039185260552711355
+        ],
+        "speedup": 0.9975637429713896,
+        "candidateLatencyChangePercent": 0.244220687226826,
+        "candidateAllocationChangeBytesPerOp": 48.04212174595159,
+        "candidateAllocationChangePercent": 0.046286677345896976,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "kotlin-compiler",
+        "method": "mapped_countStar",
+        "mainMs": 0.0007267308405639366,
+        "mainAllocationBytesPerOp": 1564.4385760797852,
+        "mainSamplesMs": [
+          0.0007267308405639366,
+          0.0007138473468162642,
+          0.000755758285125395
+        ],
+        "candidateMs": 0.000730139191663274,
+        "candidateAllocationBytesPerOp": 1644.2270396162014,
+        "candidateSamplesMs": [
+          0.0007636142295285054,
+          0.0007159027479977379,
+          0.000730139191663274
+        ],
+        "speedup": 0.9953319159712916,
+        "candidateLatencyChangePercent": 0.46899772365414094,
+        "candidateAllocationChangeBytesPerOp": 79.7884635364162,
+        "candidateAllocationChangePercent": 5.100133987769118,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "kotlin-compiler",
+        "method": "mapped_singleHopRelationship",
+        "mainMs": 0.2834874853753409,
+        "mainAllocationBytesPerOp": 353021.87351318746,
+        "mainSamplesMs": [
+          0.2834874853753409,
+          0.28823256198024777,
+          0.28104363619700584
+        ],
+        "candidateMs": 0.2814296915801962,
+        "candidateAllocationBytesPerOp": 353092.9455389856,
+        "candidateSamplesMs": [
+          0.28338023073115925,
+          0.28133144577634783,
+          0.2814296915801962
+        ],
+        "speedup": 1.0073119285445342,
+        "candidateLatencyChangePercent": -0.7258852334945831,
+        "candidateAllocationChangeBytesPerOp": 71.07202579814475,
+        "candidateAllocationChangePercent": 0.020132470855371842,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      },
+      {
+        "corpus": "kotlin-compiler",
+        "method": "mapped_returnDistinct",
+        "mainMs": 0.045359347037690435,
+        "mainAllocationBytesPerOp": 180408.67582403132,
+        "mainSamplesMs": [
+          0.045359347037690435,
+          0.04593671476997883,
+          0.04515575336542893
+        ],
+        "candidateMs": 0.044677020031640764,
+        "candidateAllocationBytesPerOp": 180488.67051681585,
+        "candidateSamplesMs": [
+          0.044677020031640764,
+          0.0438633596345682,
+          0.04513437432534184
+        ],
+        "speedup": 1.0152724377222662,
+        "candidateLatencyChangePercent": -1.5042699038033014,
+        "candidateAllocationChangeBytesPerOp": 79.99469278453034,
+        "candidateAllocationChangePercent": 0.0443408236433962,
+        "reviewLatencyIncrease": false,
+        "reviewAllocationIncrease": false
+      }
+    ],
+    "scoreRows": 120,
+    "reviewFlags": [],
+    "correctness": "No digest assertions in these existing benchmark methods; correctness evidence is separate."
+  },
+  "targetRawScores": [
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 3102.624292,
+      "trialAllocatedBytes": 7391029568.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 3211.91975,
+      "trialAllocatedBytes": 7228603120.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 3815.487333,
+      "trialAllocatedBytes": 8444524448.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 3967.752666,
+      "trialAllocatedBytes": 8490918816.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 10716.400875,
+      "trialAllocatedBytes": 34130510640.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 10671.587458,
+      "trialAllocatedBytes": 34128874112.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 260.09975,
+      "trialAllocatedBytes": 311122288.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 10917.07,
+      "trialAllocatedBytes": 34131853528.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 2976.205584,
+      "trialAllocatedBytes": 14371280336.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 2918.943792,
+      "trialAllocatedBytes": 14386162184.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 3523.14075,
+      "trialAllocatedBytes": 16779716736.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 3458.183083,
+      "trialAllocatedBytes": 16911389608.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 10196.0985,
+      "trialAllocatedBytes": 68052567832.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 10027.2715,
+      "trialAllocatedBytes": 68117022400.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 157.9265,
+      "trialAllocatedBytes": 535455720.0
+    },
+    {
+      "pair": 1,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 10378.22675,
+      "trialAllocatedBytes": 68659530824.0
+    },
+    {
+      "pair": 1,
+      "revision": "dynamic-reference",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 11567.528375,
+      "trialAllocatedBytes": 41247487064.0
+    },
+    {
+      "pair": 1,
+      "revision": "dynamic-reference",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 11068.558083,
+      "trialAllocatedBytes": 41178086016.0
+    },
+    {
+      "pair": 1,
+      "revision": "dynamic-reference",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 10962.168958,
+      "trialAllocatedBytes": 82420335904.0
+    },
+    {
+      "pair": 1,
+      "revision": "dynamic-reference",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 10854.241834,
+      "trialAllocatedBytes": 82469628040.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 120.702583,
+      "trialAllocatedBytes": 117280600.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 115.022917,
+      "trialAllocatedBytes": 115184808.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 159.036916,
+      "trialAllocatedBytes": 109671944.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 153.2725,
+      "trialAllocatedBytes": 108922056.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 129.358458,
+      "trialAllocatedBytes": 115817176.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 113.902041,
+      "trialAllocatedBytes": 116559512.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 258.84875,
+      "trialAllocatedBytes": 311598096.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 691.292375,
+      "trialAllocatedBytes": 406556000.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 603.50025,
+      "trialAllocatedBytes": 89716568.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 615.632792,
+      "trialAllocatedBytes": 85004560.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 67.811875,
+      "trialAllocatedBytes": 147742320.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 35.912667,
+      "trialAllocatedBytes": 146052592.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 69.654083,
+      "trialAllocatedBytes": 111234088.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 51.669917,
+      "trialAllocatedBytes": 116783032.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 49.869125,
+      "trialAllocatedBytes": 145465576.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 36.785709,
+      "trialAllocatedBytes": 147251880.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 117.811417,
+      "trialAllocatedBytes": 506105992.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 298.628042,
+      "trialAllocatedBytes": 792021424.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 502.939042,
+      "trialAllocatedBytes": 91489776.0
+    },
+    {
+      "pair": 1,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 527.020542,
+      "trialAllocatedBytes": 86371352.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 3188.605542,
+      "trialAllocatedBytes": 7232745176.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 3166.218042,
+      "trialAllocatedBytes": 7226979304.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 3847.098834,
+      "trialAllocatedBytes": 8442494528.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 3858.467958,
+      "trialAllocatedBytes": 8490870632.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 10706.083708,
+      "trialAllocatedBytes": 34130102696.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 9765.842458,
+      "trialAllocatedBytes": 34026698840.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 262.92075,
+      "trialAllocatedBytes": 311044432.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 9257.142416,
+      "trialAllocatedBytes": 33955986408.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 2937.260666,
+      "trialAllocatedBytes": 14371263568.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 2919.928958,
+      "trialAllocatedBytes": 14834906000.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 3555.839625,
+      "trialAllocatedBytes": 16780183432.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 3471.596416,
+      "trialAllocatedBytes": 18476420000.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 9992.600708,
+      "trialAllocatedBytes": 67864810192.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 10337.978333,
+      "trialAllocatedBytes": 68126929408.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 164.969458,
+      "trialAllocatedBytes": 537236320.0
+    },
+    {
+      "pair": 2,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 10282.965542,
+      "trialAllocatedBytes": 68393564648.0
+    },
+    {
+      "pair": 2,
+      "revision": "dynamic-reference",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 11218.337167,
+      "trialAllocatedBytes": 40731819000.0
+    },
+    {
+      "pair": 2,
+      "revision": "dynamic-reference",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 11193.084042,
+      "trialAllocatedBytes": 40052255632.0
+    },
+    {
+      "pair": 2,
+      "revision": "dynamic-reference",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 10835.0735,
+      "trialAllocatedBytes": 82056434488.0
+    },
+    {
+      "pair": 2,
+      "revision": "dynamic-reference",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 10995.739709,
+      "trialAllocatedBytes": 82488077744.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 133.057917,
+      "trialAllocatedBytes": 116809768.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 115.102458,
+      "trialAllocatedBytes": 114860496.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 170.50275,
+      "trialAllocatedBytes": 109671304.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 158.553042,
+      "trialAllocatedBytes": 108922856.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 127.037333,
+      "trialAllocatedBytes": 116478824.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 118.148708,
+      "trialAllocatedBytes": 115739544.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 236.545583,
+      "trialAllocatedBytes": 309664416.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 839.140292,
+      "trialAllocatedBytes": 417528808.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 633.259458,
+      "trialAllocatedBytes": 89583824.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 606.820666,
+      "trialAllocatedBytes": 85005024.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 39.734125,
+      "trialAllocatedBytes": 146621096.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 40.071167,
+      "trialAllocatedBytes": 146545600.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 130.819625,
+      "trialAllocatedBytes": 114240752.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 46.707833,
+      "trialAllocatedBytes": 115079576.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 75.901083,
+      "trialAllocatedBytes": 150037624.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 30.732584,
+      "trialAllocatedBytes": 142621072.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 151.384,
+      "trialAllocatedBytes": 533928328.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 298.813042,
+      "trialAllocatedBytes": 804878928.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 519.486708,
+      "trialAllocatedBytes": 91488680.0
+    },
+    {
+      "pair": 2,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 508.929625,
+      "trialAllocatedBytes": 86767048.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 3128.518125,
+      "trialAllocatedBytes": 7388686336.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 3127.571917,
+      "trialAllocatedBytes": 7231127888.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 3759.2835,
+      "trialAllocatedBytes": 9235381216.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 3783.098541,
+      "trialAllocatedBytes": 9285926224.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 10503.358583,
+      "trialAllocatedBytes": 34117579200.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 10599.029084,
+      "trialAllocatedBytes": 34131534776.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 234.840625,
+      "trialAllocatedBytes": 309608496.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 10591.712916,
+      "trialAllocatedBytes": 34024770024.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 2964.124375,
+      "trialAllocatedBytes": 14369773544.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 2895.837542,
+      "trialAllocatedBytes": 14372061928.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 3439.664042,
+      "trialAllocatedBytes": 18380412112.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 3499.632,
+      "trialAllocatedBytes": 18479579344.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 10349.620916,
+      "trialAllocatedBytes": 67925913680.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 9069.242042,
+      "trialAllocatedBytes": 67864422928.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 118.994792,
+      "trialAllocatedBytes": 531065304.0
+    },
+    {
+      "pair": 3,
+      "revision": "main",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 10129.034541,
+      "trialAllocatedBytes": 68114843080.0
+    },
+    {
+      "pair": 3,
+      "revision": "dynamic-reference",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 11341.842083,
+      "trialAllocatedBytes": 41262153576.0
+    },
+    {
+      "pair": 3,
+      "revision": "dynamic-reference",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 12197.435208,
+      "trialAllocatedBytes": 40180418632.0
+    },
+    {
+      "pair": 3,
+      "revision": "dynamic-reference",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 11014.391,
+      "trialAllocatedBytes": 82489901632.0
+    },
+    {
+      "pair": 3,
+      "revision": "dynamic-reference",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 10718.398416,
+      "trialAllocatedBytes": 82471209312.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 124.729125,
+      "trialAllocatedBytes": 115259024.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 114.93525,
+      "trialAllocatedBytes": 115220864.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 163.888833,
+      "trialAllocatedBytes": 109672304.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 143.350459,
+      "trialAllocatedBytes": 108921976.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 130.556166,
+      "trialAllocatedBytes": 116722176.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 122.005167,
+      "trialAllocatedBytes": 116120408.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 227.542708,
+      "trialAllocatedBytes": 299664960.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 692.924708,
+      "trialAllocatedBytes": 396443728.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 613.067333,
+      "trialAllocatedBytes": 89716240.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "COLD",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 625.40875,
+      "trialAllocatedBytes": 85003952.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueHit",
+      "ms": 48.5395,
+      "trialAllocatedBytes": 144256176.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "valueMiss",
+      "ms": 36.036333,
+      "trialAllocatedBytes": 146559184.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerHit",
+      "ms": 144.195209,
+      "trialAllocatedBytes": 136497352.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "wrappedCallerMiss",
+      "ms": 78.243583,
+      "trialAllocatedBytes": 135845472.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceHit",
+      "ms": 74.468,
+      "trialAllocatedBytes": 149060552.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowSourceMiss",
+      "ms": 38.761708,
+      "trialAllocatedBytes": 146928632.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetHit",
+      "ms": 127.922333,
+      "trialAllocatedBytes": 530282192.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dataflowTargetMiss",
+      "ms": 295.519625,
+      "trialAllocatedBytes": 788196552.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicHit",
+      "ms": 523.281542,
+      "trialAllocatedBytes": 91487712.0
+    },
+    {
+      "pair": 3,
+      "revision": "candidate",
+      "cacheState": "WARM",
+      "corpus": "android",
+      "queryName": "dynamicMiss",
+      "ms": 522.065333,
+      "trialAllocatedBytes": 86505616.0
+    }
+  ],
+  "fixtureManifestNote": "Input manifest was created before final allocation instrumentation; final harness identity is artifacts[*].harnessSHA256.",
+  "broadPrivateSnapshotsRemoved": 120,
+  "all260PrivateSnapshotsRemoved": true
+}
