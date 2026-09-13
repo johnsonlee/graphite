@@ -111,16 +111,29 @@ def hot_terms(client, wanted):
     return [w for w, _ in counts.most_common(wanted)], counts
 
 
-def main():
+def warm_up(client, queries):
+    """Run the warmup queries under the measured loop's success rule; returns the
+    failures by status, and the caller fails the run on any: a rejected warmup warmed
+    nothing, and the measurement behind it would carry the cold work."""
+    failures = collections.Counter()
+    for q in queries:
+        _, status, payload = client.post(q)
+        _, n = digest(payload)
+        if not (status == 200 and n is not None):
+            failures[str(status)] += 1
+    return failures
+
+
+def main(argv=None, client_factory=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True)
     ap.add_argument("--label", required=True)
     ap.add_argument("--terms", type=int, default=20)
     ap.add_argument("--timeout", type=float, default=60.0)
     ap.add_argument("--out")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
-    client = Client(args.base, args.timeout)
+    client = (client_factory or Client)(args.base, args.timeout)
     terms, counts = hot_terms(client, args.terms)
     if not terms:
         print("no terms sampled; is the server loaded?", file=sys.stderr)
@@ -128,10 +141,15 @@ def main():
     print(f"{args.label}: top {len(terms)} terms — "
           + ", ".join(f"{t}({counts[t]})" for t in terms[:8]) + " ...", flush=True)
 
-    # Warm page cache and JIT on terms that are not the ones measured.
-    for t in terms[-3:]:
-        for _, q in shapes(t):
-            client.post(q)
+    # Warm page cache and JIT on terms that are not the ones measured, and require
+    # every warmup to succeed, or the measurement would include the cold work.
+    warmup = [q for t in terms[-3:] for _, q in shapes(t)]
+    warmup_failures = warm_up(client, warmup)
+    if warmup_failures:
+        print(f"{args.label}: {sum(warmup_failures.values())} of {len(warmup)} warmup queries "
+              f"failed ({dict(warmup_failures)}); the server is not warm, nothing measured",
+              file=sys.stderr)
+        return 2
 
     rows = []
     for t in terms:
@@ -170,4 +188,5 @@ def main():
     return 0
 
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

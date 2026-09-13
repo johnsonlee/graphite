@@ -65,7 +65,7 @@ jobs:
       run: |
         ./gradlew :query:shadowJar :explore:shadowJar :core:jar --no-daemon -q
         CORE_JAR=$(ls graphite-core/build/libs/core-*.jar | grep -v -- '-slim' | head -1)
-        java -Xmx3g -jar graphite-query/build/libs/graphite.jar build "${CORE_JAR}" \
+        java -Xmx4g -jar graphite-query/build/libs/graphite.jar build "${CORE_JAR}" \
           -o "${RUNNER_TEMP}/fixture-graph" --include io.johnsonlee.graphite
         test -f "${RUNNER_TEMP}/fixture-graph/graph.callsite-string-index"
         ls -la "${RUNNER_TEMP}/fixture-graph"
@@ -75,7 +75,7 @@ jobs:
         mkdir -p "${RUNNER_TEMP}/acme-classes"
         javac -d "${RUNNER_TEMP}/acme-classes" $(find rust/bench/fixtures/acme/src -name '*.java')
         (cd "${RUNNER_TEMP}/acme-classes" && jar cfe "${RUNNER_TEMP}/acme.jar" com.acme.shop.api.Main com)
-        java -Xmx1g -jar graphite-query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
+        java -Xmx4g -jar graphite-query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-graph" --include com.acme
         test -f "${RUNNER_TEMP}/acme-graph/graph.metadata"
 
@@ -83,6 +83,10 @@ jobs:
       env:
         GRAPHITE_INDEX_FIXTURE: ${{ runner.temp }}/fixture-graph
       run: cargo test --release --locked -p graphite-storage in_memory_build_reproduces_a_real_persisted_index -- --nocapture
+
+    - name: Benchmark harness tests (fail-closed sampling and warmup)
+      working-directory: .
+      run: python3 -m unittest discover -s rust/bench -p 'test_*.py' -v
 
     # The same persisted graph served by both servers, every parity check compared.
     - name: Kotlin-vs-Rust differential over the fixture

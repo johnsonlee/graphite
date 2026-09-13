@@ -177,6 +177,21 @@ def engine_seconds(client):
     return total if seen else None
 
 
+def warm_up(client, queries):
+    """Run the warmup set, holding every response to the measured loop's rule.
+
+    A warmup that was rejected or failed did not warm anything, and a run measured
+    behind it would include the cold work the warmup was meant to absorb. Returns the
+    failures by status; the caller fails the run on any."""
+    failures = collections.Counter()
+    for _, q in queries:
+        _, status, payload = call(client, q)
+        _, n = digest(payload)
+        if not (status == 200 and n is not None):
+            failures[str(status)] += 1
+    return failures
+
+
 def digest(payload):
     try:
         d = json.loads(payload)
@@ -263,7 +278,7 @@ def build(classes, words, rng, mix="v2"):
     return queries
 
 
-def main():
+def main(argv=None, client_factory=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True)
     ap.add_argument("--label", required=True)
@@ -279,16 +294,21 @@ def main():
                     help="scrape /metrics around each query to split engine time from "
                          "the rest, and record the response body size")
     ap.add_argument("--out")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     rng = random.Random(args.seed)
-    client = Client(args.base, args.timeout)
+    client = (client_factory or Client)(args.base, args.timeout)
     classes, words = sample_terms(client, args.timeout)
     if len(words) < 20:
         print(f"only {len(words)} terms sampled; is the server up and loaded?", file=sys.stderr)
         return 2
-    for shape, q in build(classes, words, random.Random(args.warmup_seed), args.mix):
-        call(client, q)
+    warmup = build(classes, words, random.Random(args.warmup_seed), args.mix)
+    warmup_failures = warm_up(client, warmup)
+    if warmup_failures:
+        print(f"{args.label}: {sum(warmup_failures.values())} of {len(warmup)} warmup queries "
+              f"failed ({dict(warmup_failures)}); the server is not warm, nothing measured",
+              file=sys.stderr)
+        return 2
     queries = build(classes, words, rng, args.mix)
     print(f"{args.label}: {len(queries)} queries from {len(words)} sampled terms "
           f"(after a {len(queries)}-query warmup on a different seed)", flush=True)
@@ -351,4 +371,5 @@ def main():
     return 0
 
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())
