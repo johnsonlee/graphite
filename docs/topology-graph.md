@@ -183,14 +183,14 @@ documented row-limit error instead of exhausting the JVM heap.
 After preparing a persisted fixture, reproduce both fixed-revision checks with:
 
 ```bash
-java -jar graphite-explore/build/libs/*-jmh.jar \
+java -jar frontend/jvm/explore/build/libs/*-jmh.jar \
   'TopologyStartupBenchmark.android_loadAndBuildTopology' \
   -p graphCount=40 -p topologyShape=union-broad \
   -wi 0 -i 1 -f 1 \
   -jvmArgs '-Xmx3g -Dandroid.graph.path=/path/to/persisted-android-graph' \
   -prof gc -foe true
 
-java -jar graphite-explore/build/libs/*-jmh.jar \
+java -jar frontend/jvm/explore/build/libs/*-jmh.jar \
   'TopologyStartupBenchmark.android_rejectOversizedUnionTopology' \
   -p graphCount=40 -p topologyShape=bounded \
   -wi 0 -i 1 -f 1 \

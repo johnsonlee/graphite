@@ -9,8 +9,8 @@ text a script might match on.
 import subprocess, sys, os
 
 GRAPH = sys.argv[1] if len(sys.argv) > 1 else "/home/user/fixtures/explore-graph"
-JAR = sys.argv[2] if len(sys.argv) > 2 else "graphite-query/build/libs/graphite.jar"
-RUST = sys.argv[3] if len(sys.argv) > 3 else "backend/target/release/graphite"
+JAR = sys.argv[2] if len(sys.argv) > 2 else "frontend/jvm/query/build/libs/graphite.jar"
+RUST = sys.argv[3] if len(sys.argv) > 3 else "target/release/graphite"
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # The JVM prints this to stderr from the environment, not the program.

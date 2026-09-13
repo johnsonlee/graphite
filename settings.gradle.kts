@@ -1,14 +1,8 @@
 rootProject.name = "graphite"
 
-include(":graphite-core")
-include(":graphite-cypher")
-include(":graphite-sootup")
-include(":graphite-webgraph")
-include(":graphite-explore")
-include(":graphite-query")
-
-// Strip "graphite-" prefix from project names so Maven artifactIds are clean:
-// io.johnsonlee.graphite:core, io.johnsonlee.graphite:cypher, etc.
-rootProject.children.forEach { project ->
-    project.name = project.name.removePrefix("graphite-")
+// JVM frontend modules live under frontend/jvm/<name>. Project names stay
+// prefix-free so Maven artifactIds are clean: io.johnsonlee.graphite:core, etc.
+listOf("core", "cypher", "sootup", "webgraph", "explore", "query").forEach { name ->
+    include(":$name")
+    project(":$name").projectDir = file("frontend/jvm/$name")
 }

@@ -34,45 +34,50 @@ Graphite is a graph-based static analysis framework for JVM bytecode. It provide
 ./gradlew build
 
 # Build specific module
-./gradlew :graphite-core:build
+./gradlew :core:build
 
 # Run tests
 ./gradlew check
 
 # Run a specific test class
-./gradlew :graphite-sootup:test --tests "io.johnsonlee.graphite.sootup.UseCaseValidationTest"
+./gradlew :sootup:test --tests "io.johnsonlee.graphite.sootup.UseCaseValidationTest"
 ```
 
 ## Module Structure
 
 ```
 graphite/
-├── graphite-core/          # Core framework (zero external dependencies except fastutil)
-│   ├── core/               # Node, Edge, TypeDescriptor, MethodDescriptor
-│   ├── graph/              # Graph interface, DefaultGraph
-│   ├── analysis/           # DataFlowAnalysis
-│   ├── query/              # QueryDsl - declarative query API
-│   └── input/              # ProjectLoader interface, LoaderConfig
+├── frontend/
+│   └── jvm/                # JVM frontend: Kotlin Gradle projects (project names have no prefix)
+│       ├── core/           # Core framework (zero external dependencies except fastutil)
+│       │   ├── core/       # Node, Edge, TypeDescriptor, MethodDescriptor
+│       │   ├── graph/      # Graph interface, DefaultGraph
+│       │   ├── analysis/   # DataFlowAnalysis
+│       │   ├── query/      # QueryDsl - declarative query API
+│       │   └── input/      # ProjectLoader interface, LoaderConfig
+│       ├── sootup/         # SootUp backend + GraphiteExtension SPI
+│       ├── cypher/         # Kotlin Cypher engine (legacy server)
+│       ├── webgraph/       # Persisted graph writer/reader (WebGraph)
+│       ├── query/          # `graphite.jar`: build, query, serve
+│       └── explore/        # Legacy Kotlin Explorer server
 │
-├── graphite-sootup/        # SootUp backend + GraphiteExtension SPI
-│   └── sootup/             # JavaProjectLoader, SootUpAdapter
+├── backend/                # Rust backend: serves and queries persisted graphs
+│   ├── storage/            # mmap reader of the persisted graph, indexes, columns
+│   ├── cypher/             # Cypher parser, planner, executor
+│   ├── explore/            # HTTP server, UI, C4, topology
+│   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 │
-└── cli/
-    ├── find-args/          # Find argument constants CLI
-    ├── find-endpoints/     # Find HTTP endpoints CLI
-    └── find-dead-code/     # Find dead code CLI
-
-backend/                    # Rust backend (Cargo workspace): serves and queries persisted graphs
-├── graphite-storage/       # mmap reader of the persisted graph, indexes, columns
-├── graphite-cypher/        # Cypher parser, planner, executor
-├── graphite-explore/       # HTTP server, UI, C4, topology
-├── graphite-cli/           # `graphite` CLI
-└── bench/                  # Kotlin-vs-Rust differential harness and benchmarks
+├── cli/                    # `graphite` CLI (Rust); independent of any one frontend or backend crate
+├── Cargo.toml              # Cargo workspace root: backend/storage, backend/cypher, backend/explore, cli
+└── graphite-mcp/           # MCP server (npm)
 ```
 
-The Kotlin modules above are the JVM *frontend* (they build graphs) plus the legacy JVM server;
-`backend/` is the Rust backend. See `docs/architecture-frontend-backend.md` for the target
-layout (`frontend/<lang>/`, `backend/`) and the migration plan.
+Gradle project paths are `:core`, `:sootup`, `:cypher`, `:webgraph`, `:query`, `:explore`
+(mapped to `frontend/jvm/<name>` in `settings.gradle.kts`); Cargo package names keep the
+`graphite-` prefix (`graphite-storage`, ...) while their directories do not. Rust commands
+(`cargo build`, `cargo test`) run from the repository root. See
+`docs/architecture-frontend-backend.md` for the frontend/backend split, the Graph IR, and
+the migration plan.
 
 ## Key Abstractions
 

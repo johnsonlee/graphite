@@ -37,7 +37,7 @@ Graphite builds a **program graph** from compiled bytecode — nodes are program
 | Find dead code | Entire codebase, 5M tokens | `branchScopes` + `callSites` → dead paths | **99.99%** |
 | Resolve type hierarchy | ~100 files per type chain | `supertypes` / `subtypes` → direct answer | **99%** |
 
-Graphite uses **Cypher** (the industry-standard graph query language) for querying. The Cypher engine is in the `graphite-cypher` module, powered by an ANTLR-based openCypher parser.
+Graphite uses **Cypher** (the industry-standard graph query language) for querying. The Cypher engine is in the `cypher` module (`frontend/jvm/cypher`), powered by an ANTLR-based openCypher parser.
 
 ## Why Not Tree-sitter?
 
@@ -375,14 +375,30 @@ drills down to its class overview.
 
 ## Architecture
 
+Graphite is split into per-language *frontends*, which turn compiled artifacts into a
+graph, one Rust *backend*, which stores, serves, and queries those graphs, and one Rust
+*CLI* (`graphite`) that drives both. See
+[docs/architecture-frontend-backend.md](docs/architecture-frontend-backend.md).
+
 ```
 graphite/
-├── graphite-core/          # Graph interface, nodes, edges, analysis
-├── graphite-cypher/        # Cypher query engine (ANTLR parser + executor)
-├── graphite-sootup/        # SootUp bytecode → graph builder
-├── graphite-webgraph/      # WebGraph disk persistence (BVGraph + LAW tools)
-├── graphite-query/         # CLI: build, query, serve
-└── graphite-explore/       # Explore HTTP routes and legacy standalone launcher
+├── frontend/
+│   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
+│       ├── core/           # Graph interface, nodes, edges, analysis
+│       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
+│       ├── sootup/         # SootUp bytecode → graph builder
+│       ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
+│       ├── query/          # CLI: build, query, serve
+│       └── explore/        # Explore HTTP routes and legacy standalone launcher
+├── backend/                # Rust backend
+│   ├── storage/            # mmap reader of the persisted graph, indexes, columns
+│   ├── cypher/             # Cypher parser, planner, executor
+│   ├── explore/            # HTTP server, UI, C4, topology
+│   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
+├── cli/                    # `graphite` CLI (Rust): build, query, serve, explore
+├── Cargo.toml              # Cargo workspace: backend/* and cli
+├── graphite-mcp/           # MCP server (npm) in front of the Explorer API
+└── docs/
 ```
 
 ### Storage Format

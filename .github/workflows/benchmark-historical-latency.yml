@@ -55,15 +55,17 @@ jobs:
 
     - name: Install current historical harness
       run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
         for HARNESS in \
           BenchmarkCorpus.kt \
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
-          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
-          test ! -L "source/${SOURCE}"
-          rm -f -- "source/${SOURCE}"
-          install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
-          cmp "gate/${SOURCE}" "source/${SOURCE}"
+          SOURCE="src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          TARGET="$(jvm source webgraph)/${SOURCE}"
+          test ! -L "${TARGET}"
+          rm -f -- "${TARGET}"
+          install -m 0644 "$(jvm gate webgraph)/${SOURCE}" "${TARGET}"
+          cmp "$(jvm gate webgraph)/${SOURCE}" "${TARGET}"
         done
 
     - name: Build historical JMH JAR
@@ -71,11 +73,12 @@ jobs:
         source/gradlew -p source \
           -I "${PWD}/gate/.github/scripts/benchmark-jmh-isolation.init.gradle" \
           :webgraph:testClasses :webgraph:jmhJar --no-daemon
-        mapfile -t JARS < <(find source/graphite-webgraph/build/libs -name '*-jmh.jar' -type f)
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        mapfile -t JARS < <(find "$(jvm source webgraph)/build/libs" -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
         bash gate/.github/scripts/verify-jmh-jar-isolation.sh \
-          source/graphite-webgraph "${JARS[0]}"
+          "$(jvm source webgraph)" "${JARS[0]}"
         mkdir -p jmh-artifact
         install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-webgraph-jmh.jar"
         cd jmh-artifact
@@ -110,7 +113,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('current/gradle/libs.versions.toml', 'current/gradle/wrapper/gradle-wrapper.properties', 'current/settings.gradle.kts', 'current/**/build.gradle.kts', 'current/graphite-core/src/main/**', 'current/graphite-sootup/src/main/**', 'current/graphite-webgraph/src/main/**', 'current/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'current/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('current/gradle/libs.versions.toml', 'current/gradle/wrapper/gradle-wrapper.properties', 'current/settings.gradle.kts', 'current/**/build.gradle.kts', 'current/frontend/jvm/core/src/main/**', 'current/frontend/jvm/sootup/src/main/**', 'current/frontend/jvm/webgraph/src/main/**', 'current/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'current/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Detect complete persisted fixture cache
       id: fixture-cache-state
@@ -150,7 +153,7 @@ jobs:
       run: |
         (cd jmh-jars/current && sha256sum -c current-webgraph-jmh.jar.sha256)
         CURRENT_JAR=${PWD}/jmh-jars/current/current-webgraph-jmh.jar
-        FIXTURE_DIR="${PWD}/current/graphite-webgraph/build/benchmark-fixtures"
+        FIXTURE_DIR="${PWD}/current/frontend/jvm/webgraph/build/benchmark-fixtures"
         ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
         TIKA_JAR=$(find "${FIXTURE_DIR}" -name 'tika-app-*.jar' -print -quit)
         HIVE_JAR=$(find "${FIXTURE_DIR}" -name 'hive-exec-*.jar' -print -quit)
@@ -255,7 +258,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('current/gradle/libs.versions.toml', 'current/gradle/wrapper/gradle-wrapper.properties', 'current/settings.gradle.kts', 'current/**/build.gradle.kts', 'current/graphite-core/src/main/**', 'current/graphite-sootup/src/main/**', 'current/graphite-webgraph/src/main/**', 'current/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'current/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('current/gradle/libs.versions.toml', 'current/gradle/wrapper/gradle-wrapper.properties', 'current/settings.gradle.kts', 'current/**/build.gradle.kts', 'current/frontend/jvm/core/src/main/**', 'current/frontend/jvm/sootup/src/main/**', 'current/frontend/jvm/webgraph/src/main/**', 'current/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'current/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify persisted fixture graphs
       if: matrix.real

@@ -557,7 +557,7 @@ check_metrics()
 # whole of registry mutation went unchecked until someone thought to compare the two.
 def spec_coverage():
     import re
-    spec_path = os.path.join(ROOT, "backend/graphite-explore/src/openapi.json")
+    spec_path = os.path.join(ROOT, "backend/explore/src/openapi.json")
     spec = json.load(open(spec_path))
     declared = {
         (m.upper(), path)

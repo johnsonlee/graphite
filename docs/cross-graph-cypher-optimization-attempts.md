@@ -74,7 +74,7 @@ internal result metadata that is not visible to `WHERE` expressions.
   -Pjmh.filter='.*CrossGraphCypherBenchmark.*' \
   --no-daemon
 
-java -jar graphite-cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
+java -jar frontend/jvm/cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
   '.*CrossGraphCypherBenchmark.(keywordLateHitAcrossAllGraphs|keywordThenCallChain)' \
   -wi 2 -i 3 -w 1s -r 1s -f 1 -prof gc
 ```
@@ -256,7 +256,7 @@ It was rejected because reducing CPU time is the primary objective.
   -Pjmh.filter='CrossGraphMappedQueryBenchmark' \
   --no-daemon
 
-java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+java -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
   '.*CrossGraphMappedQueryBenchmark.(uncachedKeywordMissAcrossAllMappedGraphs|coldTwoKeywordSearchesAcrossAllMappedGraphs)' \
   -wi 2 -i 3 -w 1s -r 1s -f 1 -prof gc
 ```
@@ -348,7 +348,7 @@ The early-hit and cold-query controls use the same 16 persisted graphs and
 80,000 nodes on `main` and this branch:
 
 ```shell
-java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+java -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
   '.*CrossGraphMappedQueryBenchmark.(coldTwoEarlyHitKeywordSearchesAcrossAllMappedGraphs|coldKeywordLateHitAcrossAllMappedGraphs|coldTwoKeywordSearchesAcrossAllMappedGraphs)' \
   -wi 2 -i 5 -w 1s -r 1s -f 1 -prof gc
 ```
@@ -443,7 +443,7 @@ fixture in a separate clone at `e4d1c6a`.
   -Pjmh.filter='BroadDiscoveryMappedQueryBenchmark.*' \
   --no-daemon
 
-java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+java -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
   '.*BroadDiscoveryMappedQueryBenchmark.coldBroadDiscoveryAcrossAllMappedGraphs' \
   -wi 2 -i 3 -w 1s -r 1s -f 1 -prof gc
 ```
@@ -503,7 +503,7 @@ property keys against the four-entry LRU before a first-node `LIMIT 1` query.
 Setup time is excluded from the single-shot measurement.
 
 ```shell
-java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+java -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
   '.*MappedStringAdmissionBenchmark.*' -f 1
 ```
 
@@ -673,7 +673,7 @@ CLI, HTTP, and agent callers.
 
 ```shell
 ./gradlew :webgraph:jmhJar --no-daemon
-java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+java -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
   'AndroidSchemaDiscoveryBenchmark.*' \
   -wi 1 -i 3 -w 1s -r 1s -f 1 -prof gc -foe true
 ```
@@ -764,7 +764,7 @@ node-count and GC claims. An independent harness run measured `108.846 ms/op`,
 replaces these resource conclusions.
 
 ```shell
-java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+java -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
   'AndroidSchemaDiscoveryBenchmark.boundedPropertyKeyHistogram' \
   -i 3 -r 1s -f 1 -prof gc -foe true
 ```
@@ -879,7 +879,7 @@ library API.
 ```shell
 ./gradlew :cypher:jmhJar --no-daemon
 for pair in NodeScan Relationship VariableLengthPath; do
-  java -jar graphite-cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
+  java -jar frontend/jvm/cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
     "BudgetedCypherBenchmark.(budgeted${pair}|unbudgeted${pair})$" \
     -wi 3 -i 5 -w 1s -r 1s -f 5 -foe true
 done
@@ -1046,7 +1046,7 @@ method. COLD means query-index state, not cold OS pages.
 ./gradlew :webgraph:jmhJar :webgraph:detekt --max-workers=2
 java -Xmx8g -XX:ActiveProcessorCount=4 \
   -Dandroid.graph.path=/tmp/graphite-cpu-vanished-diagnostic.5_7ygubx/fixtures-complete/android \
-  -cp graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  -cp frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
   io.johnsonlee.graphite.webgraph.SlowQueryShapesCorrectness android valueHit
 ```
 

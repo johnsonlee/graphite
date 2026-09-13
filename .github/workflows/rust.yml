@@ -3,10 +3,10 @@ name: Rust
 on:
   push:
     branches: [ '*' ]
-    paths: [ 'backend/**', '.github/workflows/rust.yml' ]
+    paths: [ 'backend/**', 'cli/**', 'Cargo.toml', 'Cargo.lock', '.github/workflows/rust.yml' ]
   pull_request:
     branches: [ '**' ]
-    paths: [ 'backend/**', '.github/workflows/rust.yml' ]
+    paths: [ 'backend/**', 'cli/**', 'Cargo.toml', 'Cargo.lock', '.github/workflows/rust.yml' ]
 
 permissions:
   contents: read
@@ -16,9 +16,6 @@ jobs:
     name: rust-build-test
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    defaults:
-      run:
-        working-directory: backend
 
     steps:
     - name: Checkout
@@ -32,7 +29,7 @@ jobs:
     - name: Cache cargo
       uses: Swatinem/rust-cache@v2
       with:
-        workspaces: backend
+        workspaces: .
 
     - name: Format
       run: cargo fmt --all --check
@@ -61,11 +58,10 @@ jobs:
         cache-read-only: true
 
     - name: Build the graphite CLI, the Kotlin explorer and a persisted fixture graph
-      working-directory: .
       run: |
         ./gradlew :query:shadowJar :explore:shadowJar :core:jar --no-daemon -q
-        CORE_JAR=$(ls graphite-core/build/libs/core-*.jar | grep -v -- '-slim' | head -1)
-        java -Xmx4g -jar graphite-query/build/libs/graphite.jar build "${CORE_JAR}" \
+        CORE_JAR=$(ls frontend/jvm/core/build/libs/core-*.jar | grep -v -- '-slim' | head -1)
+        java -Xmx4g -jar frontend/jvm/query/build/libs/graphite.jar build "${CORE_JAR}" \
           -o "${RUNNER_TEMP}/fixture-graph" --include io.johnsonlee.graphite
         test -f "${RUNNER_TEMP}/fixture-graph/graph.callsite-string-index"
         ls -la "${RUNNER_TEMP}/fixture-graph"
@@ -75,7 +71,7 @@ jobs:
         mkdir -p "${RUNNER_TEMP}/acme-classes"
         javac -d "${RUNNER_TEMP}/acme-classes" $(find backend/bench/fixtures/acme/src -name '*.java')
         (cd "${RUNNER_TEMP}/acme-classes" && jar cfe "${RUNNER_TEMP}/acme.jar" com.acme.shop.api.Main com)
-        java -Xmx4g -jar graphite-query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
+        java -Xmx4g -jar frontend/jvm/query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-graph" --include com.acme
         test -f "${RUNNER_TEMP}/acme-graph/graph.metadata"
 
@@ -85,24 +81,22 @@ jobs:
       run: cargo test --release --locked -p graphite-storage in_memory_build_reproduces_a_real_persisted_index -- --nocapture
 
     - name: Benchmark harness tests (fail-closed sampling and warmup)
-      working-directory: .
       run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
 
     # The same persisted graph served by both servers, every parity check compared.
     - name: Kotlin-vs-Rust differential over the fixture
-      working-directory: .
       run: |
         FIXTURE="${RUNNER_TEMP}/fixture-graph"
         ACME="${RUNNER_TEMP}/acme-graph"
         # Two ids over the same graph, so the topology rule in backend/bench/topology can
         # relate them and the topology route is compared with a real relation; the
         # application fixture carries the component-level C4 checks.
-        java -Xmx3g -jar graphite-explore/build/libs/graphite-explore.jar \
+        java -Xmx3g -jar frontend/jvm/explore/build/libs/graphite-explore.jar \
           --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}" \
           --topology backend/bench/topology \
           --port 18081 --metrics > "${RUNNER_TEMP}/kotlin.log" 2>&1 &
         KOTLIN=$!
-        ./backend/target/release/graphite-explore \
+        ./target/release/graphite-explore \
           --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}" \
           --topology backend/bench/topology \
           --port 18080 --metrics > "${RUNNER_TEMP}/rust.log" 2>&1 &
@@ -121,9 +115,6 @@ jobs:
     name: rust-check-windows
     runs-on: windows-latest
     timeout-minutes: 30
-    defaults:
-      run:
-        working-directory: backend
     steps:
     - name: Checkout
       uses: actions/checkout@v7
@@ -132,7 +123,7 @@ jobs:
     - name: Cache cargo
       uses: Swatinem/rust-cache@v2
       with:
-        workspaces: backend
+        workspaces: .
     # MSVC has no jemalloc; the explorer must still build with the system allocator.
     - name: Check
       run: cargo check --workspace --all-targets --locked

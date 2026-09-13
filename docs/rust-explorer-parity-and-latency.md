@@ -225,8 +225,8 @@ Both servers were started on the same graph (built from the `graphite-explore` s
 jar with the current `graphite build`) and driven by `backend/bench/bench.py`. Each
 scenario is warmed up 5 times, then measured over 25 requests.
 
-The web UI is compiled into the binary with `include_str!` from `backend/graphite-explore/web/`,
-which holds byte-identical copies of `graphite-explore/src/main/resources/web/`. The
+The web UI is compiled into the binary with `include_str!` from `backend/explore/web/`,
+which holds byte-identical copies of `frontend/jvm/explore/src/main/resources/web/`. The
 served bytes, the `Content-Type`, and the `If-None-Match` → 304 revalidation are all
 compared. Three header deviations remain, all from Ktor's static-file serving and none
 affecting what the browser renders: Kotlin also sends `Accept-Ranges: bytes` and
@@ -352,7 +352,7 @@ ported. `/api/topology` is served from live registry state instead.
 ```bash
 cd rust && cargo build --release
 
-java -Xmx6g -jar ../graphite-explore/build/libs/graphite-explore.jar \
+java -Xmx6g -jar ../frontend/jvm/explore/build/libs/graphite-explore.jar \
     --id app /path/to/graph --port 18081
 ./target/release/graphite-explore --id app /path/to/graph --port 18080 --metrics
 

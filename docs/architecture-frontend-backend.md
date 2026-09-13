@@ -62,7 +62,7 @@ Non-goals
 
 | Layer | Component | Language | Owns |
 |---|---|---|---|
-| Frontend | `graphite-frontend-jvm` | Kotlin (existing `graphite-sootup`, `graphite-core`) | JAR/WAR/APK/AAR/class dirs → IR |
+| Frontend | `graphite-frontend-jvm` | Kotlin (existing `sootup`, `core` under `frontend/jvm/`) | JAR/WAR/APK/AAR/class dirs → IR |
 | Frontend | `graphite-frontend-web` | TypeScript (new) | TS/JS projects → IR |
 | Frontend | `graphite-frontend-apple` | Swift (new) | Swift/ObjC modules → IR |
 | Contract | Graph IR | spec + Rust reader/writer, thin writers per language | Section 4 |
@@ -71,37 +71,47 @@ Non-goals
 | Backend | `graphite-storage` | Rust (exists) | mmap reader of the persisted graph, indexes, columns |
 | Backend | `graphite-cypher` | Rust (exists) | Cypher parser, planner, executor, functions |
 | Backend | `graphite-explore` | Rust (exists) | HTTP API, registry, guard, metrics, UI, C4, topology |
-| Backend | `graphite` (CLI) | Rust (exists as `backend/graphite-cli`, grows) | `build`/`serve`/`query`/`explore`/`ir`/`frontend` |
+| CLI | `graphite` | Rust (exists as `cli/`, grows) | `build`/`serve`/`query`/`explore`/`ir`/`frontend`; the one entry point, independent of any single frontend or backend crate |
 
-The Kotlin modules `graphite-cypher`, `graphite-webgraph` (writer side excepted, see
-migration), `graphite-explore` and `graphite-query` are retired at the end of the migration;
-`graphite-core` and `graphite-sootup` become the JVM frontend.
+The Kotlin modules `cypher`, `webgraph` (writer side excepted, see migration), `explore`
+and `query` under `frontend/jvm/` are retired at the end of the migration;
+`core` and `sootup` (under `frontend/jvm/`) become the JVM frontend.
 
 ### 2.1 Repository layout
 
-The tree follows the split. The backend half is in place with PR #124; the frontend half
-moves as the Kotlin server retires (Section 7, phases 1 and 5), because until then the Kotlin
-modules still hold a server and the benchmark gate's paths.
+The tree follows the split from PR #124 on. Directory names carry no `graphite-` prefix;
+Gradle project paths (`:core`, `:sootup`, ...) and Cargo package names (`graphite-storage`,
+...) are unchanged, so Maven and crate coordinates are stable.
 
 ```
 graphite/
-├── backend/                       Rust workspace: the backend and the CLI
-│   ├── graphite-storage/          persisted-graph reader (mmap), indexes, columns
-│   ├── graphite-cypher/           Cypher parser, planner, executor
-│   ├── graphite-explore/          HTTP server, UI, C4, topology
-│   ├── graphite-cli/              `graphite` binary
-│   ├── graphite-ir/               (phase 2) IR schema, reader/writer, check/diff
-│   ├── graphite-build/            (phase 2) IR → persisted graph indexer
+├── Cargo.toml                     Cargo workspace root: backend/* and cli
+├── cli/                           `graphite` binary; depends on backend crates, owns no
+│                                  analysis and no storage of its own
+├── backend/                       Rust backend
+│   ├── storage/                   persisted-graph reader (mmap), indexes, columns
+│   ├── cypher/                    Cypher parser, planner, executor
+│   ├── explore/                   HTTP server, UI, C4, topology
+│   ├── ir/                        (phase 2) IR schema, reader/writer, check/diff
+│   ├── build/                     (phase 2) IR → persisted graph indexer
 │   └── bench/                     differential harness, backtests, fixtures
 ├── frontend/
-│   ├── jvm/                       (phase 1) `graphite-core`, `graphite-sootup`, IR writer;
-│   │                              builds `graphite-frontend-jvm.jar`
+│   ├── jvm/                       Kotlin: `core`, `sootup` (the frontend proper) plus, until
+│   │   │                          phase 5, `cypher`, `webgraph`, `query`, `explore` (the
+│   │   │                          legacy JVM server and `graphite.jar`)
+│   │   ├── core/ sootup/ cypher/ webgraph/ query/ explore/
+│   │   └── (phase 1) IR writer; builds `graphite-frontend-jvm.jar`
 │   ├── web/                       (phase 6) TypeScript frontend, npm package
 │   └── apple/                     (phase 7) Swift package
-├── docs/
-└── graphite-*/                    Kotlin modules until phase 5 (server, query CLI, webgraph
-                                   writer); the frontend parts move to frontend/jvm/
+├── graphite-mcp/                  MCP server (npm); a client of the backend, not a frontend
+└── docs/
 ```
+
+The benchmark gate compares a base revision with a candidate revision and installs
+harness files into both trees by path, so every workflow step and script that touches a
+base, gate, or tagged tree resolves a module directory through a small `jvm <tree> <module>`
+shell helper: `<tree>/frontend/jvm/<module>` when present, else the pre-move
+`<tree>/graphite-<module>`. Historical tags keep working without rewriting history.
 
 ## 3. The graph model
 
@@ -360,6 +370,37 @@ building). The Web frontend is an npm package with a `bin`; the Apple frontend i
 package binary. Each has its own release cadence and version; the CLI records the frontend
 name and version in the manifest.
 
+### 6.6 Frontend distribution
+
+The CLI is the only thing a user installs by hand. A frontend is a separately versioned
+artifact in its language's own ecosystem, and the CLI fetches, verifies and runs it.
+
+| Frontend | Artifact | Published to | Runtime it needs |
+|---|---|---|---|
+| jvm | `graphite-frontend-jvm-<ver>.jar` (fat jar) + `graphite-frontend-jvm` launcher | GitHub Release asset; Maven Central `io.johnsonlee.graphite:frontend-jvm` (for Gradle/Maven users who embed it); Homebrew `graphite-frontend-jvm` (depends on `openjdk@17`) | JDK 17+ |
+| web | npm package `@johnsonlee/graphite-frontend-web` with a `bin` | npm; GitHub Release tarball | Node 20+ |
+| apple | `graphite-frontend-apple` static binary (macOS x86_64/arm64) | GitHub Release asset; Homebrew | Xcode toolchain for index/SIL |
+
+How the CLI finds one, in order: `--frontend <exe>`, `GRAPHITE_FRONTEND_<LANG>`, an
+executable `graphite-frontend-<lang>` on `PATH`, then `~/.graphite/frontends/<lang>/<ver>/`.
+If none is present, `graphite build` prints the exact `graphite frontend install <lang>`
+command and exits 2; `graphite frontend install` downloads the newest release asset whose
+`describe` reports an IR schema this CLI reads, checks its sha256 against the release
+manifest, and records it. `graphite frontend list` shows what is installed and which IR
+schema each speaks; `graphite frontend update` upgrades within the compatible range.
+
+Compatibility is a single contract, the IR schema version (Section 4). The CLI declares
+the range it reads; each frontend declares the versions it writes; either side can move
+independently as long as the ranges overlap. A frontend release never requires a CLI
+release, and a CLI release only requires new frontends when the IR schema itself changes.
+
+Release mechanics: one tag on this repository builds and uploads the CLI binaries, the
+`graphite-explore` server image, the JVM frontend jar (from `frontend/jvm`, published to
+the Release and to Maven Central by the existing publish workflow) and the npm package;
+the Web and Apple frontends live in `frontend/web` and `frontend/apple` and ship from the
+same tag. For CI users a `graphite:jvm` container image bundles the CLI, a JRE and the JVM
+frontend so that `graphite build app.jar` works with no other install.
+
 ## 7. Migration strategy
 
 Every step keeps `main` releasable and is gated by the differential harness, so nothing
@@ -446,7 +487,8 @@ Each is a frontend with the same three commands; none needs a backend change.
   dependency once the JVM frontend is optional), and each frontend to its ecosystem (the
   jar to the Release and Maven Central, the Web frontend to npm, the Apple frontend to the
   Release).
-- `graphite frontend install jvm` fetches the matching frontend into `~/.graphite/frontends/`.
+- `graphite frontend install jvm` fetches the matching frontend into `~/.graphite/frontends/`
+  (Section 6.6 for the artifacts, resolution order and the compatibility contract).
 - Until phase 5, `graphite.jar` keeps its `serve`/`query` for users who have not moved.
 
 ## 10. Open questions

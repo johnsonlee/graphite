@@ -600,7 +600,7 @@ early. That is the expected shape, not a defect.
 
 ```bash
 .github/scripts/prepare-fixture64-graphs.sh \
-    graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+    frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
     /path/to/fixture-jars /path/to/fixture64
 
 # Start one server over all 64 graph directories listed in graphs.tsv, measure it,

@@ -1,0 +1,32 @@
+[package]
+name = "graphite-explore"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "graphite-explore"
+path = "src/main.rs"
+
+[dependencies]
+graphite-storage = { path = "../storage" }
+graphite-cypher = { path = "../cypher" }
+serde.workspace = true
+serde_json.workspace = true
+indexmap.workspace = true
+regex.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+axum.workspace = true
+clap.workspace = true
+parking_lot.workspace = true
+rayon.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid = { version = "1", features = ["v4"] }
+chrono = "0.4"
+
+# jemalloc has no MSVC build; those targets keep the system allocator.
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+tikv-jemallocator = "0.5"

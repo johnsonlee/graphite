@@ -1,0 +1,15 @@
+[package]
+name = "graphite-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "graphite"
+path = "src/main.rs"
+
+[dependencies]
+graphite-storage = { path = "../backend/storage" }
+graphite-cypher = { path = "../backend/cypher" }
+serde_json.workspace = true
+clap.workspace = true

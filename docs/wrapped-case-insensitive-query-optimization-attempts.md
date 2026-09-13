@@ -97,7 +97,7 @@ string tables keep the previous memory behavior.
 Exact single-shot protocol:
 
 ```shell
-java -jar graphite-webgraph/build/libs/*-jmh.jar \
+java -jar frontend/jvm/webgraph/build/libs/*-jmh.jar \
   'io.johnsonlee.graphite.webgraph.RealCompositeQueryBenchmark.compositeDistinct$' \
   -p graphCount=1,17 -f 1 -foe true -prof gc \
   -jvmArgsAppend '-Dandroid.graph.path=<persisted-android-graph>' \

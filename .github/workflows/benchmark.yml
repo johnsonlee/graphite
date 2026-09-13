@@ -29,7 +29,7 @@ env:
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
-  SLOW_QUERY_SHAPES_CONTROLS_SHA256: aed5523d4d84b92555b3a92da29b689bd2e30f7424084a3d3069c1f5ff854862
+  SLOW_QUERY_SHAPES_CONTROLS_SHA256: 7c292b9de388712ac492add4edc1c1a653ed0c99d37101ba8ffc818d3ca01be9
 
 jobs:
   candidate-gate-tests:
@@ -96,25 +96,26 @@ jobs:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         set -euo pipefail
-        EXPLORER='graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt'
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        EXPLORER='src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt'
         EXPLORER_OWNER=gate
         # Retire only the reviewed legacy harness's transient Javalin startup watcher.
         # The same pinned repair must measure both revisions; CPU accounting stays base-owned.
-        if [[ "$(sha256sum "gate/${EXPLORER}" | cut -d' ' -f1)" = "${EXPLORER_LEGACY_HARNESS_SHA256}" ]]; then
+        if [[ "$(sha256sum "$(jvm gate explore)/${EXPLORER}" | cut -d' ' -f1)" = "${EXPLORER_LEGACY_HARNESS_SHA256}" ]]; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test ! -L "controls/${EXPLORER}"
-          test "$(sha256sum "controls/${EXPLORER}" | cut -d' ' -f1)" = \
+          test ! -L "$(jvm controls explore)/${EXPLORER}"
+          test "$(sha256sum "$(jvm controls explore)/${EXPLORER}" | cut -d' ' -f1)" = \
             "${EXPLORER_TRANSITION_HARNESS_SHA256}"
           EXPLORER_OWNER=controls
         fi
         for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt RequestCpuAccounting.kt; do
-          SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
+          SOURCE="src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
           OWNER=gate
           if [[ "${HARNESS}" = ExplorerMemoryBenchmark.kt ]]; then OWNER="${EXPLORER_OWNER}"; fi
-          test ! -L "source/${SOURCE}"
-          rm -f -- "source/${SOURCE}"
-          install -m 0644 "${OWNER}/${SOURCE}" "source/${SOURCE}"
-          cmp "${OWNER}/${SOURCE}" "source/${SOURCE}"
+          test ! -L "$(jvm source explore)/${SOURCE}"
+          rm -f -- "$(jvm source explore)/${SOURCE}"
+          install -m 0644 "$(jvm "${OWNER}" explore)/${SOURCE}" "$(jvm source explore)/${SOURCE}"
+          cmp "$(jvm "${OWNER}" explore)/${SOURCE}" "$(jvm source explore)/${SOURCE}"
         done
 
     - name: Build comparable Explorer JMH JAR
@@ -131,10 +132,11 @@ jobs:
         fi
         source/gradlew -p source -I "${PWD}/${CONTROL_DIR}/${INIT}" \
           :explore:testClasses :explore:jmhJar --no-daemon
-        mapfile -t JARS < <(find source/graphite-explore/build/libs -name '*-jmh.jar' -type f)
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        mapfile -t JARS < <(find "$(jvm source explore)/build/libs" -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
-        bash "${CONTROL_DIR}/${VERIFIER}" source/graphite-explore "${JARS[0]}"
+        bash "${CONTROL_DIR}/${VERIFIER}" "$(jvm source explore)" "${JARS[0]}"
         mkdir -p jmh-artifact
         install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-explore-jmh.jar"
         cd jmh-artifact
@@ -195,25 +197,27 @@ jobs:
 
     - name: Install base-owned wrapped-query harnesses
       run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
         for HARNESS in \
           BenchmarkCorpus.kt \
           AllFixtureBenchmarkGraphPreparation.kt \
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
-          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
-          HARNESS_SOURCE="gate/${SOURCE}"
+          SOURCE="src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          HARNESS_SOURCE="$(jvm gate webgraph)/${SOURCE}"
           if [ "${HARNESS}" = WrappedDiscoveryResourceBenchmark.kt ] && \
             grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${HARNESS_SOURCE}"; then
             test "${{ needs.candidate-gate-tests.result }}" = success
-            HARNESS_SOURCE="controls/${SOURCE}"
+            HARNESS_SOURCE="$(jvm controls webgraph)/${SOURCE}"
             test "$(sha256sum "${HARNESS_SOURCE}" | cut -d ' ' -f 1)" = \
               "${REAL_ONLY_RESOURCE_HARNESS_SHA256}"
             if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${HARNESS_SOURCE}"; then exit 1; fi
           fi
-          test ! -L "source/${SOURCE}"
-          rm -f -- "source/${SOURCE}"
-          install -m 0644 "${HARNESS_SOURCE}" "source/${SOURCE}"
-          cmp "${HARNESS_SOURCE}" "source/${SOURCE}"
+          TARGET="$(jvm source webgraph)/${SOURCE}"
+          test ! -L "${TARGET}"
+          rm -f -- "${TARGET}"
+          install -m 0644 "${HARNESS_SOURCE}" "${TARGET}"
+          cmp "${HARNESS_SOURCE}" "${TARGET}"
         done
 
     - name: Select trusted JMH isolation controls
@@ -237,11 +241,12 @@ jobs:
         source/gradlew -p source \
           -I "${PWD}/${CONTROL_DIR}/.github/scripts/benchmark-jmh-isolation.init.gradle" \
           :webgraph:testClasses :webgraph:jmhJar --no-daemon
-        mapfile -t JARS < <(find source/graphite-webgraph/build/libs -name '*-jmh.jar' -type f)
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        mapfile -t JARS < <(find "$(jvm source webgraph)/build/libs" -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
         bash "${CONTROL_DIR}/.github/scripts/verify-jmh-jar-isolation.sh" \
-          source/graphite-webgraph "${JARS[0]}"
+          "$(jvm source webgraph)" "${JARS[0]}"
         mkdir -p jmh-artifact
         install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-webgraph-jmh.jar"
         cd jmh-artifact
@@ -293,12 +298,13 @@ jobs:
 
     - name: Build JMH jars
       run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
         for HARNESS in CypherBenchmark.kt BudgetedCypherBenchmark.kt; do
-          SOURCE="graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/${HARNESS}"
-          test ! -L "candidate/${SOURCE}"
-          rm -f -- "candidate/${SOURCE}"
-          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
-          cmp "base/${SOURCE}" "candidate/${SOURCE}"
+          SOURCE="src/jmh/kotlin/io/johnsonlee/graphite/cypher/${HARNESS}"
+          test ! -L "$(jvm candidate cypher)/${SOURCE}"
+          rm -f -- "$(jvm candidate cypher)/${SOURCE}"
+          install -m 0644 "$(jvm base cypher)/${SOURCE}" "$(jvm candidate cypher)/${SOURCE}"
+          cmp "$(jvm base cypher)/${SOURCE}" "$(jvm candidate cypher)/${SOURCE}"
         done
         CONTROL_DIR=base
         INIT='.github/scripts/benchmark-jmh-isolation.init.gradle'
@@ -313,15 +319,16 @@ jobs:
         for REVISION in base candidate; do
           "${REVISION}/gradlew" -p "${REVISION}" -I "${PWD}/${CONTROL_DIR}/${INIT}" \
             :cypher:testClasses :cypher:jmhJar --no-daemon
-          JAR=$(find "${REVISION}/graphite-cypher/build/libs" -name '*-jmh.jar' -print -quit)
+          JAR=$(find "$(jvm "${REVISION}" cypher)/build/libs" -name '*-jmh.jar' -print -quit)
           test -n "${JAR}"
-          bash "${CONTROL_DIR}/${VERIFIER}" "${REVISION}/graphite-cypher" "${JAR}"
+          bash "${CONTROL_DIR}/${VERIFIER}" "$(jvm "${REVISION}" cypher)" "${JAR}"
         done
 
     - name: Benchmark base
       run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
         mkdir -p benchmark-results
-        JMH_JAR=$(find base/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+        JMH_JAR=$(find "$(jvm base cypher)/build/libs" -name '*-jmh.jar' -print -quit)
         test -n "${JMH_JAR}"
         java -jar "${JMH_JAR}" \
           'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
@@ -329,7 +336,7 @@ jobs:
 
     - name: Benchmark PR
       run: |
-        JMH_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+        JMH_JAR=$(find candidate/frontend/jvm/cypher/build/libs -name '*-jmh.jar' -print -quit)
         test -n "${JMH_JAR}"
         java -jar "${JMH_JAR}" \
           'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
@@ -346,8 +353,9 @@ jobs:
           mv benchmark-results/initial-method-report.md benchmark-results/method-report.md
           mv benchmark-results/initial-method-status.json benchmark-results/method-status.json
         else
-          CANDIDATE_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
-          BASE_JAR=$(find base/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+          jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+          CANDIDATE_JAR=$(find candidate/frontend/jvm/cypher/build/libs -name '*-jmh.jar' -print -quit)
+          BASE_JAR=$(find "$(jvm base cypher)/build/libs" -name '*-jmh.jar' -print -quit)
           java -jar "${CANDIDATE_JAR}" \
             'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
             -foe true -rf json -rff "${PWD}/benchmark-results/candidate-jmh-confirmation.json"
@@ -424,7 +432,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify restored real graphs
       run: |
@@ -602,7 +610,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify restored real graphs
       run: |
@@ -809,7 +817,7 @@ jobs:
     - name: Build candidate-owned Explorer JMH JAR
       run: |
         candidate/gradlew -p candidate :explore:testClasses :explore:jmhJar --no-daemon
-        mapfile -t JARS < <(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -type f)
+        mapfile -t JARS < <(find candidate/frontend/jvm/explore/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
         mkdir -p jmh-candidate-native
@@ -819,7 +827,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify restored real graphs
       run: |
@@ -1061,7 +1069,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify restored real graphs
       run: |
@@ -1200,16 +1208,19 @@ jobs:
 
     - name: Install base-owned budgeted collection harness
       run: |
-        HARNESS='graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt'
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        HARNESS='src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt'
         for REVISION in baseline candidate; do
-          test ! -L "${REVISION}/${HARNESS}"
-          rm -f -- "${REVISION}/${HARNESS}"
-          install -m 0644 "gate/${HARNESS}" "${REVISION}/${HARNESS}"
-          cmp "gate/${HARNESS}" "${REVISION}/${HARNESS}"
+          TARGET="$(jvm "${REVISION}" cypher)/${HARNESS}"
+          test ! -L "${TARGET}"
+          rm -f -- "${TARGET}"
+          install -m 0644 "$(jvm gate cypher)/${HARNESS}" "${TARGET}"
+          cmp "$(jvm gate cypher)/${HARNESS}" "${TARGET}"
         done
 
     - name: Build budgeted collection JMH jars
       run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
         CONTROL_DIR=gate
         INIT='.github/scripts/benchmark-jmh-isolation.init.gradle'
         VERIFIER='.github/scripts/verify-jmh-jar-isolation.sh'
@@ -1223,16 +1234,17 @@ jobs:
         for REVISION in baseline candidate; do
           "${REVISION}/gradlew" -p "${REVISION}" -I "${PWD}/${CONTROL_DIR}/${INIT}" \
             :cypher:testClasses :cypher:jmhJar --no-daemon
-          JAR=$(find "${REVISION}/graphite-cypher/build/libs" -name '*-jmh.jar' -print -quit)
+          JAR=$(find "$(jvm "${REVISION}" cypher)/build/libs" -name '*-jmh.jar' -print -quit)
           test -n "${JAR}"
-          bash "${CONTROL_DIR}/${VERIFIER}" "${REVISION}/graphite-cypher" "${JAR}"
+          bash "${CONTROL_DIR}/${VERIFIER}" "$(jvm "${REVISION}" cypher)" "${JAR}"
         done
 
     - name: Benchmark baseline then PR
       run: |
         mkdir -p benchmark-results
-        BASELINE_JAR=$(find baseline/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        BASELINE_JAR=$(find "$(jvm baseline cypher)/build/libs" -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/frontend/jvm/cypher/build/libs -name '*-jmh.jar' -print -quit)
         test -n "${BASELINE_JAR}" && test -n "${CANDIDATE_JAR}"
         java -jar "${BASELINE_JAR}" \
           'io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgeted(ListConcatenation|ListMembership)' \
@@ -1255,8 +1267,9 @@ jobs:
           mv benchmark-results/initial-budgeted-collection-status.json \
             benchmark-results/budgeted-collection-status.json
         else
-          BASELINE_JAR=$(find baseline/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+          jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+          BASELINE_JAR=$(find "$(jvm baseline cypher)/build/libs" -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find candidate/frontend/jvm/cypher/build/libs -name '*-jmh.jar' -print -quit)
           java -jar "${CANDIDATE_JAR}" \
             'io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgeted(ListConcatenation|ListMembership)' \
             -foe true -rf json \
@@ -1324,16 +1337,19 @@ jobs:
 
     - name: Install base-owned budgeted lookup harness
       run: |
-        HARNESS='graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedStringAdmissionBenchmark.kt'
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        HARNESS='src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedStringAdmissionBenchmark.kt'
         for REVISION in baseline candidate; do
-          test ! -L "${REVISION}/${HARNESS}"
-          rm -f -- "${REVISION}/${HARNESS}"
-          install -m 0644 "gate/${HARNESS}" "${REVISION}/${HARNESS}"
-          cmp "gate/${HARNESS}" "${REVISION}/${HARNESS}"
+          TARGET="$(jvm "${REVISION}" webgraph)/${HARNESS}"
+          test ! -L "${TARGET}"
+          rm -f -- "${TARGET}"
+          install -m 0644 "$(jvm gate webgraph)/${HARNESS}" "${TARGET}"
+          cmp "$(jvm gate webgraph)/${HARNESS}" "${TARGET}"
         done
 
     - name: Build budgeted lookup JMH jars
       run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
         CONTROL_DIR=gate
         INIT='.github/scripts/benchmark-jmh-isolation.init.gradle'
         VERIFIER='.github/scripts/verify-jmh-jar-isolation.sh'
@@ -1348,16 +1364,17 @@ jobs:
           "${REVISION}/gradlew" -p "${REVISION}" \
             -I "${PWD}/${CONTROL_DIR}/${INIT}" \
             :webgraph:testClasses :webgraph:jmhJar --no-daemon
-          JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
+          JAR=$(find "$(jvm "${REVISION}" webgraph)/build/libs" -name '*-jmh.jar' -print -quit)
           test -n "${JAR}"
-          bash "${CONTROL_DIR}/${VERIFIER}" "${REVISION}/graphite-webgraph" "${JAR}"
+          bash "${CONTROL_DIR}/${VERIFIER}" "$(jvm "${REVISION}" webgraph)" "${JAR}"
         done
 
     - name: Benchmark baseline then PR
       run: |
         mkdir -p benchmark-results
-        BASELINE_JAR=$(find baseline/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        BASELINE_JAR=$(find "$(jvm baseline webgraph)/build/libs" -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/frontend/jvm/webgraph/build/libs -name '*-jmh.jar' -print -quit)
         test -n "${BASELINE_JAR}" && test -n "${CANDIDATE_JAR}"
         java -jar "${BASELINE_JAR}" \
           'io.johnsonlee.graphite.webgraph.MappedStringAdmissionBenchmark.budgetedTransformedZeroHit' \
@@ -1379,8 +1396,9 @@ jobs:
           mv benchmark-results/initial-budgeted-string-report.md benchmark-results/budgeted-string-report.md
           mv benchmark-results/initial-budgeted-string-status.json benchmark-results/budgeted-string-status.json
         else
-          BASELINE_JAR=$(find baseline/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+          jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+          BASELINE_JAR=$(find "$(jvm baseline webgraph)/build/libs" -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find candidate/frontend/jvm/webgraph/build/libs -name '*-jmh.jar' -print -quit)
           java -jar "${CANDIDATE_JAR}" \
             'io.johnsonlee.graphite.webgraph.MappedStringAdmissionBenchmark.budgetedTransformedZeroHit' \
             -foe true -rf json -rff "${PWD}/benchmark-results/candidate-budgeted-string-confirmation.json"
@@ -1445,32 +1463,35 @@ jobs:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         set -euo pipefail
-        HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        HARNESS='src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
+        BASE_HARNESS="$(jvm base webgraph)/${HARNESS}"
+        CANDIDATE_HARNESS="$(jvm candidate webgraph)/${HARNESS}"
         COMPARATOR='.github/scripts/benchmark-gate.mjs'
-        if grep -Fq 'mappedLoadSamples=' "base/${HARNESS}" && \
-          grep -Fq 'productionIndexPrepared=' "base/${HARNESS}" && \
+        if grep -Fq 'mappedLoadSamples=' "${BASE_HARNESS}" && \
+          grep -Fq 'productionIndexPrepared=' "${BASE_HARNESS}" && \
           grep -Fq 'LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5' "base/${COMPARATOR}"; then
-          test ! -L "candidate/${HARNESS}"
-          rm -f -- "candidate/${HARNESS}"
-          install -m 0644 "base/${HARNESS}" "candidate/${HARNESS}"
-          cmp "base/${HARNESS}" "candidate/${HARNESS}"
+          test ! -L "${CANDIDATE_HARNESS}"
+          rm -f -- "${CANDIDATE_HARNESS}"
+          install -m 0644 "${BASE_HARNESS}" "${CANDIDATE_HARNESS}"
+          cmp "${BASE_HARNESS}" "${CANDIDATE_HARNESS}"
           echo "comparator=base/${COMPARATOR}" >> "${GITHUB_OUTPUT}"
           echo "mode=base-owned" >> "${GITHUB_OUTPUT}"
         else
           test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum "base/${HARNESS}" | cut -d' ' -f1)" = \
+          test "$(sha256sum "${BASE_HARNESS}" | cut -d' ' -f1)" = \
             "${LARGE_CORPUS_LEGACY_HARNESS_SHA256}"
-          test "$(sha256sum "candidate/${HARNESS}" | cut -d' ' -f1)" = \
+          test "$(sha256sum "${CANDIDATE_HARNESS}" | cut -d' ' -f1)" = \
             "${LARGE_CORPUS_TRANSITION_HARNESS_SHA256}"
           test "$(sha256sum "candidate/${COMPARATOR}" | cut -d' ' -f1)" = \
             "${LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256}"
           mkdir -p trusted-large-corpus
-          install -m 0644 "candidate/${HARNESS}" trusted-large-corpus/harness.kt
-          for CHECKOUT in base candidate; do
-            test ! -L "${CHECKOUT}/${HARNESS}"
-            rm -f -- "${CHECKOUT}/${HARNESS}"
-            install -m 0644 trusted-large-corpus/harness.kt "${CHECKOUT}/${HARNESS}"
-            cmp trusted-large-corpus/harness.kt "${CHECKOUT}/${HARNESS}"
+          install -m 0644 "${CANDIDATE_HARNESS}" trusted-large-corpus/harness.kt
+          for CHECKOUT in "${BASE_HARNESS}" "${CANDIDATE_HARNESS}"; do
+            test ! -L "${CHECKOUT}"
+            rm -f -- "${CHECKOUT}"
+            install -m 0644 trusted-large-corpus/harness.kt "${CHECKOUT}"
+            cmp trusted-large-corpus/harness.kt "${CHECKOUT}"
           done
           echo "comparator=candidate/${COMPARATOR}" >> "${GITHUB_OUTPUT}"
           echo "mode=pinned-transition" >> "${GITHUB_OUTPUT}"
@@ -1544,7 +1565,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Detect complete persisted fixture cache
       id: fixture-cache-state
@@ -1583,7 +1604,7 @@ jobs:
     - name: Prepare all real fixture graphs
       if: steps.fixture-cache-state.outputs.ready != 'true'
       run: |
-        FIXTURE_DIR="${PWD}/candidate/graphite-webgraph/build/benchmark-fixtures"
+        FIXTURE_DIR="${PWD}/candidate/frontend/jvm/webgraph/build/benchmark-fixtures"
         ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
         TIKA_JAR=$(find "${FIXTURE_DIR}" -name 'tika-app-*.jar' -print -quit)
         HIVE_JAR=$(find "${FIXTURE_DIR}" -name 'hive-exec-*.jar' -print -quit)
@@ -1705,7 +1726,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify restored fixture graphs
       if: matrix.real
@@ -2011,7 +2032,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify restored fixture graphs
       run: |
@@ -2118,22 +2139,22 @@ jobs:
           fixture64-repeat-cache
         key: >-
           ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v1-temurin17-${{
-          hashFiles('candidate/graphite-webgraph/build/benchmark-fixtures/*.jar',
+          hashFiles('candidate/frontend/jvm/webgraph/build/benchmark-fixtures/*.jar',
           'candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties',
           'candidate/settings.gradle.kts', 'candidate/build.gradle.kts',
-          'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**',
-          'candidate/graphite-sootup/src/main/**',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/BinaryEncoding.kt',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/CallSiteIndexPersistenceInput.kt',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/ClassOverviewStore.kt',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/PersistedResourceAccessor.kt',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt',
-          'candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt',
-          'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt',
-          'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt',
+          'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**',
+          'candidate/frontend/jvm/sootup/src/main/**',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/BinaryEncoding.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/CallSiteIndexPersistenceInput.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/ClassOverviewStore.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/PersistedResourceAccessor.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt',
+          'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt',
+          'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt',
           'candidate/.github/scripts/prepare-fixture64-graphs.sh',
           'candidate/.github/scripts/test-fixture64-reproducibility.sh') }}
 
@@ -2142,9 +2163,9 @@ jobs:
         CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
         FIXTURE64_CACHE_HIT: ${{ steps.fixture64-cache.outputs.cache-hit }}
       run: |
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
+        CANDIDATE_JAR=$(find candidate/frontend/jvm/webgraph/build/libs \
           -maxdepth 1 -name '*-jmh.jar' -print -quit)
-        FIXTURE_DIR=candidate/graphite-webgraph/build/benchmark-fixtures
+        FIXTURE_DIR=candidate/frontend/jvm/webgraph/build/benchmark-fixtures
         test -f "${CANDIDATE_JAR}"
         mkdir -p shared-fixture64
         if [[ "${FIXTURE64_CACHE_HIT}" != true ]]; then
@@ -2229,12 +2250,12 @@ jobs:
 
     - name: Verify restored fixture64 corpus and provenance
       run: |
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
+        CANDIDATE_JAR=$(find candidate/frontend/jvm/webgraph/build/libs \
           -maxdepth 1 -name '*-jmh.jar' -print -quit)
         test -f "${CANDIDATE_JAR}"
         candidate/.github/scripts/verify-shared-fixture64.sh \
           "${CANDIDATE_JAR}" \
-          candidate/graphite-webgraph/build/benchmark-fixtures \
+          candidate/frontend/jvm/webgraph/build/benchmark-fixtures \
           shared-fixture64 \
           "${{ github.event.pull_request.head.sha }}"
 
@@ -2247,7 +2268,7 @@ jobs:
         cd candidate
         .github/scripts/run-real64-graph-routing.sh \
           ../shared-fixture64/graphs/graphs.tsv \
-          graphite-webgraph/build/benchmark-fixtures \
+          frontend/jvm/webgraph/build/benchmark-fixtures \
           "${{ github.event.pull_request.base.sha }}" \
           "${{ github.event.pull_request.head.sha }}" \
           "${{ github.repository }}" \
@@ -2501,11 +2522,11 @@ jobs:
           test "$(sha256_file "$2")" = "$(jq -r ".$1" "${PROVENANCE}")"
         }
         assert_provenance_hash harnessSha256 \
-          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+          evidence-candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
         assert_provenance_hash correctnessManifestSha256 \
-          evidence-candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
+          evidence-candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
         assert_provenance_hash fixtureVerifierSha256 \
-          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
+          evidence-candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
         assert_provenance_hash comparatorSha256 evidence-candidate/.github/scripts/benchmark-gate.mjs
         assert_provenance_hash scriptSha256 evidence-candidate/.github/scripts/run-real64-graph-routing.sh
         assert_provenance_hash reproducibilityScriptSha256 \
@@ -2527,35 +2548,37 @@ jobs:
         test "$(jq -r .repeatedProvenanceSha256 "${RECEIPT}")" = "${NORMALIZED_PROVENANCE_SHA}"
         test "$(jq -r .firstManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
         test "$(jq -r .repeatedManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        BASE_WEBGRAPH=$(jvm evidence-base webgraph)
         EXPECTED_BASE_INSTRUMENTATION=$(
           for INSTRUMENTATION_PATH in \
-            graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
-            graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt; do
+            src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
+            src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt; do
             if ! cmp -s \
-              "evidence-base/${INSTRUMENTATION_PATH}" \
-              "evidence-candidate/${INSTRUMENTATION_PATH}"; then
-              printf '%s\n' "${INSTRUMENTATION_PATH}"
+              "${BASE_WEBGRAPH}/${INSTRUMENTATION_PATH}" \
+              "evidence-candidate/frontend/jvm/webgraph/${INSTRUMENTATION_PATH}"; then
+              printf '%s\n' "${BASE_WEBGRAPH#evidence-base/}/${INSTRUMENTATION_PATH}"
             fi
           done | sort
         )
         cp \
-          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
-          evidence-base/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+          evidence-candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
+          "${BASE_WEBGRAPH}/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt"
         cp \
-          evidence-candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt \
-          evidence-base/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
+          evidence-candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt \
+          "${BASE_WEBGRAPH}/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt"
         test "$(git -C evidence-base diff --name-only | sort)" = "${EXPECTED_BASE_INSTRUMENTATION}"
         evidence-base/gradlew -p evidence-base :webgraph:jmhJar --no-daemon
         evidence-candidate/gradlew -p evidence-candidate \
           :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
-        BASE_JAR=$(find evidence-base/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find evidence-candidate/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        BASE_JAR=$(find "${BASE_WEBGRAPH}/build/libs" -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find evidence-candidate/frontend/jvm/webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
         python3 -c 'import sys; assert sys.version_info >= (3, 12), sys.version'
         test "$(python3 evidence-candidate/.github/scripts/canonical-zip-sha256.py "${BASE_JAR}")" = \
           "$(jq -r .baseJarContentSha256 "${PROVENANCE}")"
         test "$(python3 evidence-candidate/.github/scripts/canonical-zip-sha256.py "${CANDIDATE_JAR}")" = \
           "$(jq -r .candidateJarContentSha256 "${PROVENANCE}")"
-        FIXTURE_DIR=evidence-candidate/graphite-webgraph/build/benchmark-fixtures
+        FIXTURE_DIR=evidence-candidate/frontend/jvm/webgraph/build/benchmark-fixtures
         for FIXTURE_JAR in "${FIXTURE_DIR}"/*.jar; do
           FIXTURE_NAME=$(basename "${FIXTURE_JAR}")
           FIXTURE_SHA=$(sha256_file "${FIXTURE_JAR}")
@@ -2658,12 +2681,12 @@ jobs:
 
     - name: Verify restored fixture64 corpus and provenance
       run: |
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
+        CANDIDATE_JAR=$(find candidate/frontend/jvm/webgraph/build/libs \
           -maxdepth 1 -name '*-jmh.jar' -print -quit)
         test -f "${CANDIDATE_JAR}"
         candidate/.github/scripts/verify-shared-fixture64.sh \
           "${CANDIDATE_JAR}" \
-          candidate/graphite-webgraph/build/benchmark-fixtures \
+          candidate/frontend/jvm/webgraph/build/benchmark-fixtures \
           shared-fixture64 \
           "${{ github.event.pull_request.head.sha }}"
 
@@ -2677,7 +2700,7 @@ jobs:
         cd candidate
         .github/scripts/run-real64-global-wide.sh \
           ../shared-fixture64/graphs/graphs.tsv \
-          graphite-webgraph/build/benchmark-fixtures \
+          frontend/jvm/webgraph/build/benchmark-fixtures \
           "${{ github.event.pull_request.base.sha }}" \
           "${{ github.event.pull_request.head.sha }}" \
           "${{ github.repository }}" \
@@ -2809,9 +2832,9 @@ jobs:
               errors.push('Evidence provenance is incomplete or inconsistent');
             }
             for (const [field, relative] of [
-              ['harnessSha256', 'graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt'],
-              ['correctnessSha256', 'graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt'],
-              ['fixtureVerifierSha256', 'graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt'],
+              ['harnessSha256', 'frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt'],
+              ['correctnessSha256', 'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt'],
+              ['fixtureVerifierSha256', 'frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt'],
               ['comparatorSha256', '.github/scripts/benchmark-gate.mjs'],
               ['scriptSha256', '.github/scripts/run-real64-global-wide.sh']
             ]) {
@@ -2911,7 +2934,9 @@ jobs:
         set -euo pipefail
         OWNER=gate
         MANIFEST=.github/scripts/benchmark-slow-query-shapes-controls.sha256
-        if [[ ! -f "gate/${MANIFEST}" ]]; then
+        # A gate script that predates the frontend/jvm layout cannot drive the candidate tree.
+        if [[ ! -f "gate/${MANIFEST}" ]] || \
+          ! grep -q 'frontend/jvm' gate/.github/scripts/benchmark-slow-query-shapes.sh; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum gate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
@@ -2926,7 +2951,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
     - name: Compare all five real slow-query families
       run: |
         test -f fixture-graphs/.complete
@@ -2978,7 +3003,8 @@ jobs:
         set -euo pipefail
         OWNER=.
         MANIFEST=.github/scripts/benchmark-slow-query-shapes-controls.sha256
-        if [[ ! -f "${MANIFEST}" ]]; then
+        if [[ ! -f "${MANIFEST}" ]] || \
+          ! grep -q 'frontend/jvm' .github/scripts/benchmark-slow-query-shapes.sh; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum .github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268

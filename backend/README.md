@@ -26,15 +26,19 @@ for the separate single-graph comparison.
 
 ## Crates
 
-| Crate | Purpose |
-|-------|---------|
-| `graphite-storage` | Reader for the persisted format: BVGraph adjacency, front-coded string dictionary, node records, metadata, class overview, resources |
-| `graphite-cypher` | Cypher parser, evaluator, and query pipeline over that storage |
-| `graphite-explore` | HTTP server exposing the Explorer API |
+| Crate | Directory | Purpose |
+|-------|-----------|---------|
+| `graphite-storage` | `storage/` | Reader for the persisted format: BVGraph adjacency, front-coded string dictionary, node records, metadata, class overview, resources |
+| `graphite-cypher` | `cypher/` | Cypher parser, evaluator, and query pipeline over that storage |
+| `graphite-explore` | `explore/` | HTTP server exposing the Explorer API |
+
+The `graphite` CLI lives outside this directory, in `cli/` at the repository root; the Cargo
+workspace (`Cargo.toml` at the root) spans `backend/*` and `cli`.
 
 ## Build and run
 
 ```bash
+# from the repository root
 cargo build --release
 ./target/release/graphite-explore --id app /path/to/graph --port 8080
 ```

@@ -1777,7 +1777,7 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     );
     const harness = fs.readFileSync(
         new URL(
-            "../../graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
+            "../../frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
                 "LargeBroadQueryPressureBenchmark.kt",
             import.meta.url
         ),
@@ -1792,11 +1792,11 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     assert.match(driver, /cmp -s "\$0" "\$\{CANDIDATE_TREE\}\/\$\{SCRIPT_PATH\}"/);
     assert.match(
         driver,
-        /cp "\$\{CANDIDATE_TREE\}\/\$\{HARNESS_PATH\}" "\$\{BASE_TREE\}\/\$\{HARNESS_PATH\}"/
+        /cp "\$\{CANDIDATE_TREE\}\/\$\{HARNESS_PATH\}" "\$\{BASE_TREE\}\/\$\{BASE_HARNESS_PATH\}"/
     );
     assert.match(
         driver,
-        /cp "\$\{CANDIDATE_TREE\}\/\$\{CORRECTNESS_MANIFEST_PATH\}" "\$\{BASE_TREE\}\/\$\{CORRECTNESS_MANIFEST_PATH\}"/
+        /cp "\$\{CANDIDATE_TREE\}\/\$\{CORRECTNESS_MANIFEST_PATH\}" "\$\{BASE_TREE\}\/\$\{BASE_CORRECTNESS_MANIFEST_PATH\}"/
     );
     assert.match(driver, /if ! cmp -s[\s\S]*BASE_TREE[\s\S]*CANDIDATE_TREE/);
     assert.match(
@@ -1860,7 +1860,7 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     );
     const source = fs.readFileSync(
         new URL(
-            "../../graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
+            "../../frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
                 "Fixture64GraphPreparation.kt",
             import.meta.url
         ),
@@ -3006,15 +3006,15 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(fixture64Job, /actions\/cache\/restore@v5/);
     assert.match(fixture64Job, /actions\/cache\/save@v5/);
     assert.match(fixture64Job, /fixture64-real-v1-temurin17/);
-    assert.match(fixture64Job, /graphite-webgraph\/build\/benchmark-fixtures\/\*\.jar/);
-    assert.match(fixture64Job, /graphite-core\/src\/main\/\*\*/);
-    assert.match(fixture64Job, /graphite-sootup\/src\/main\/\*\*/);
-    assert.match(fixture64Job, /graphite-webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/GraphStore\.kt/);
+    assert.match(fixture64Job, /frontend\/jvm\/webgraph\/build\/benchmark-fixtures\/\*\.jar/);
+    assert.match(fixture64Job, /frontend\/jvm\/core\/src\/main\/\*\*/);
+    assert.match(fixture64Job, /frontend\/jvm\/sootup\/src\/main\/\*\*/);
+    assert.match(fixture64Job, /frontend\/jvm\/webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/GraphStore\.kt/);
     assert.match(
         fixture64Job,
-        /graphite-webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/CallSiteIndexPersistenceInput\.kt/
+        /frontend\/jvm\/webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/CallSiteIndexPersistenceInput\.kt/
     );
-    assert.doesNotMatch(fixture64Job, /graphite-webgraph\/src\/main\/\*\*/);
+    assert.doesNotMatch(fixture64Job, /frontend\/jvm\/webgraph\/src\/main\/\*\*/);
     assert.doesNotMatch(fixture64Job, /MappedCallSiteStringIndexView\.kt/);
     assert.match(fixture64Job, /FIXTURE64_CACHE_HIT/);
     assert.match(fixture64Job, /if: steps\.fixture64-cache\.outputs\.cache-hit != 'true'/);
@@ -3071,7 +3071,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(sharedFixtureVerifier, /--verify/);
     assert.match(workflow, /global-wide-pressure-evidence\.result/);
     const webgraphBuild = fs.readFileSync(
-        new URL("../../graphite-webgraph/build.gradle.kts", import.meta.url),
+        new URL("../../frontend/jvm/webgraph/build.gradle.kts", import.meta.url),
         "utf8"
     );
     assert.match(webgraphBuild, /includeTests\.set\(false\)/);
@@ -3079,14 +3079,14 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(webgraphBuild, /filter\(testEntries::contains\)/);
     for (const module of ["cypher", "explore", "sootup"]) {
         const build = fs.readFileSync(
-            new URL(`../../graphite-${module}/build.gradle.kts`, import.meta.url),
+            new URL(`../../frontend/jvm/${module}/build.gradle.kts`, import.meta.url),
             "utf8"
         );
         assert.match(build, /includeTests\.set\(false\)/, `${module} JMH must exclude tests`);
     }
     const transitionHarness = fs.readFileSync(
         new URL(
-            "../../graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
+            "../../frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
                 "LargeCorpusPerformanceGateTest.kt",
             import.meta.url
         ),
@@ -3095,7 +3095,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
     const realOnlyResourceHarness = fs.readFileSync(
         new URL(
-            "../../graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
+            "../../frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
                 "WrappedDiscoveryResourceBenchmark.kt",
             import.meta.url
         )
@@ -3116,7 +3116,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         new RegExp(`JMH_ISOLATION_VERIFIER_SHA256: ${sha256(isolationVerifier)}`)
     );
     assert.match(workflow, /Checkout candidate build controls/);
-    assert.match(workflow, /HARNESS_SOURCE="controls\/\$\{SOURCE\}"/);
+    assert.match(workflow, /HARNESS_SOURCE="\$\(jvm controls webgraph\)\/\$\{SOURCE\}"/);
     assert.match(
         workflow,
         /grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "\$\{HARNESS_SOURCE\}"/
@@ -3135,7 +3135,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(transitionHarness, /productionIndexPrepared=/);
     assert.match(transitionHarness, /callSiteIndexBytes=/);
     assert.match(transitionHarness, /CALL_SITE_INDEX_QUERY/);
-    assert.match(workflow, /grep -Fq 'productionIndexPrepared=' "base\/\$\{HARNESS\}"/);
+    assert.match(workflow, /grep -Fq 'productionIndexPrepared=' "\$\{BASE_HARNESS\}"/);
     assert.match(
         workflow,
         new RegExp(`LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ${sha256(comparator)}`)
@@ -3327,7 +3327,7 @@ test("Explorer overlay selects only the pinned repair and retains strict base CP
     const shell = overlay.slice(overlay.indexOf("      run: |\n") + "      run: |\n".length)
         .split("\n").map(line => line.replace(/^        /, "")).join("\n");
     const sha256 = contents => crypto.createHash("sha256").update(contents).digest("hex");
-    const relative = "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/";
+    const relative = "frontend/jvm/explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/";
     const explorer = "ExplorerMemoryBenchmark.kt";
     const helpers = ["CypherCapacityBenchmark.kt", "RequestCpuAccounting.kt"];
     const currentHarness = fs.readFileSync(new URL(`../../${relative}${explorer}`, import.meta.url));
@@ -3588,9 +3588,9 @@ test("zero-valid-run comparator failure still seals every evidence hash and exit
             encoding: "utf8", env: { ...process.env,
                 PATH: `${path.join(directory, "bin")}:${process.env.PATH}`, PUBLISH_MARKER: publishMarker,
                 OUTPUT_DIR: output, CANDIDATE_TREE: repository,
-                HARNESS_PATH: "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt",
-                CORRECTNESS_PATH: "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt",
-                FIXTURE_VERIFIER_PATH: "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt",
+                HARNESS_PATH: "frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt",
+                CORRECTNESS_PATH: "frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt",
+                FIXTURE_VERIFIER_PATH: "frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt",
                 COMPARATOR_PATH: ".github/scripts/benchmark-gate.mjs", SCRIPT_PATH: ".github/scripts/run-real64-global-wide.sh",
                 ZIP_HASHER_PATH: ".github/scripts/canonical-zip-sha256.py",
                 MANIFEST: originalManifest, FIXTURE_PROVENANCE: originalProvenance,

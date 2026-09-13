@@ -50,8 +50,8 @@ synthetic nodes:
 ```bash
 ./gradlew :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
 .github/scripts/prepare-fixture64-graphs.sh \
-  graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
-  graphite-webgraph/build/benchmark-fixtures \
+  frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  frontend/jvm/webgraph/build/benchmark-fixtures \
   /absolute/path/to/fixture64
 ```
 
@@ -303,7 +303,7 @@ derives the correctness oracle itself:
 ```bash
 .github/scripts/run-real64-graph-routing.sh \
   /absolute/path/to/fixture64/graphs.tsv \
-  graphite-webgraph/build/benchmark-fixtures \
+  frontend/jvm/webgraph/build/benchmark-fixtures \
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
 
@@ -312,7 +312,7 @@ Run the unscoped global-wide gate against the same verified manifest and fixture
 ```bash
 .github/scripts/run-real64-global-wide.sh \
   /absolute/path/to/fixture64/graphs.tsv \
-  graphite-webgraph/build/benchmark-fixtures \
+  frontend/jvm/webgraph/build/benchmark-fixtures \
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
 
