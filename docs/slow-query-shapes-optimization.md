@@ -42,7 +42,7 @@
 
 `COLD` 表示独立映射/进程及按基准协议清理查询索引；**不表示清空操作系统页缓存**。`WARM` 表示在同一映射中执行约定预热后的查询。具体设置应以归档命令和 harness 为准，两者不能混在同一加速比中。
 
-本仓库的 `CypherBenchmark` 在 setup 中生成合成图，按 `CONVENTIONS.md` 不作为延迟、吞吐、分配量或加速比证据。相关查询形状证据使用真实持久化 `SlowQueryShapesBenchmark`，并用 Android/LargeCorpus 查询基准覆盖已有行为。端到端检查使用 `LargeCorpusPerformanceGateTest`。本次尚未创建 PR，因此未运行托管 CI `benchmark-regression-gate`；本地检查不能替代 PR 的必需检查，也不冒充 `CypherBenchmark` 类的真实数据结果。
+本仓库的 `CypherBenchmark` 在 setup 中生成合成图，按 `CONVENTIONS.md` 不作为延迟、吞吐、分配量或加速比证据。相关查询形状证据使用真实持久化 `SlowQueryShapesBenchmark`，并用 Android/LargeCorpus 查询基准覆盖已有行为。端到端检查使用 `LargeCorpusPerformanceGateTest`。本地验收之后已创建 [PR #128](https://github.com/johnsonlee/graphite/pull/128)，托管 CI `benchmark-regression-gate` 的实时状态以 PR 页面为准。本地检查不能替代 PR 的必需检查，也不冒充 `CypherBenchmark` 类的真实数据结果。
 
 查询窗口分配量与 JMH 生命周期分配量分别报告。包括加载、预热、清理和验证的 profiler 汇总不能标成一次查询的分配量。命中与无结果分别测量，并同时检查性能改善和原有快速场景的回退。
 
@@ -123,7 +123,7 @@ java -Xmx8g -XX:ActiveProcessorCount=4 -Dandroid.graph.path="$android_graph" \
 - Android / LargeCorpus 既有查询回归：20 个用例、120 个分数验证完成，120 个私有副本全部清理，共同输入未改变。
 - 既有查询耗时中位数变化为 −5.8% 到 +5.2%，没有超过 10% 的增加。首轮 Android simpleNodeMatch +16.85%、Tika intConstantFilter +13.12% 的信号在反向轮次变为改善；三轮中位数分别为 −1.0%、+5.2%。保留全部原始分数，未删除较慢观测。
 - 真实大图端到端检查：Hive 30,642 ms、Kotlin compiler 20,726 ms、Tika 19,034 ms，均在现有时间上限内；每个测试独立使用 4 GiB 堆。该检查证明通过现有门槛，不等于同机 main/candidate 端到端加速比。
-- CI `benchmark-regression-gate`：未运行，尚未创建 PR。
+- CI `benchmark-regression-gate`：已在 PR #128 启动；是否通过以 PR 最新提交的检查记录为准。
 - 四类实测慢用例满足墙钟时间 10 倍目标；原本较快的 targetHit 保持性能，未达到也未声称达到 10 倍。数字型或不安全文本片段等回退形状没有 10 倍证据。
 
 逐次假设、测量及保留/撤销决定见 [实验记录](cross-graph-cypher-optimization-attempts.md)。
