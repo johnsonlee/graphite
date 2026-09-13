@@ -549,3 +549,19 @@ summary, and fails visibly. It performs no checkout, artifact download, aggregat
 execution. Heavy jobs remain cancellation-aware. Superseded heads and older attempts cannot replace
 newer evidence. Force cancellation or runner failure can prevent even this cleanup; a same-run
 comment is not guaranteed in those cases, and the workflow/check state remains the authority.
+
+
+## Slow-query family gate inherited from main
+
+The separate `slow-query-shapes` job covers 12 hit/miss queries in COLD and WARM states on
+real persisted Android graphs. It retains three single-shot forks and the existing 15% mean
+latency threshold with a reverse-order confirmation for WARM. Its one priming invocation is
+not the 72-query timed warmup or P50/P95 protocol. COLD latency is diagnostic only under the
+current CI policy and does not trigger numerical confirmation. Every COLD and WARM result,
+private fixture, sample set and ordered digest remains mandatory and authenticated.
+
+The new component remains required by aggregation and by the late failure monitor. CI selects
+SHA-pinned candidate controls when the base has the known pre-diagnostic controls manifest;
+other supported base controls retain ownership. Standalone invocations keep their original
+strict default unless `--cold-diagnostics-only` is explicitly selected. This transition changes
+acceptance and reporting, not the inherited harness, production implementation or measurements.

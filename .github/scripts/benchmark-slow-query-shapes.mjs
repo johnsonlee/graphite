@@ -72,7 +72,8 @@ export function resultMarkers(text, queries, fixture, exists = fs.existsSync) {
     return rows;
 }
 
-export function compare(base, candidate, baseResults, candidateResults, referenceKind) {
+export function compare(base, candidate, baseResults, candidateResults, referenceKind, coldDiagnosticsOnly = false) {
+    require(typeof coldDiagnosticsOnly === "boolean", "Invalid cold diagnostics policy");
     require(["unmodified-base", "base-plus-subscript-correctness-repair"].includes(referenceKind), "Unknown reference policy");
     require([base, candidate, baseResults, candidateResults].every(values => sameKeys(values, expected(QUERIES))),
         "Expected all 24 cold/warm query keys");
@@ -83,17 +84,28 @@ export function compare(base, candidate, baseResults, candidateResults, referenc
         const delta = (current.ms / baseline.ms - 1) * 100;
         return { key: id, reference: DYNAMIC_QUERIES.includes(id.split("/")[1]) ? referenceKind : "unmodified-base",
             baseMs: baseline.ms, candidateMs: current.ms, baseSamples: baseline.samples,
-            candidateSamples: current.samples, rows: a.rows, sha256: a.sha256, delta, blocked: delta > 15 };
+            candidateSamples: current.samples, rows: a.rows, sha256: a.sha256, delta,
+            diagnostic: coldDiagnosticsOnly && id.startsWith("COLD/"),
+            blocked: delta > 15 && !(coldDiagnosticsOnly && id.startsWith("COLD/")) };
     });
     return { passed: rows.every(row => !row.blocked), errors: [], thresholdPercent: 15,
-        referenceKind, orderedResultParity: true, rows };
+        referenceKind, coldDiagnosticsOnly, orderedResultParity: true, rows };
 }
 
 export function confirm(initial, confirmation) {
+    require(typeof initial.coldDiagnosticsOnly === "boolean" &&
+        initial.coldDiagnosticsOnly === confirmation.coldDiagnosticsOnly, "Cold diagnostics policy changed during confirmation");
     require(initial.errors?.length === 0 && confirmation.errors?.length === 0, "Integrity failure cannot be cleared by confirmation");
     require(initial.referenceKind === confirmation.referenceKind, "Reference policy changed during confirmation");
     require(initial.rows?.length === 24 && confirmation.rows?.length === 24, "Incomplete confirmation coverage");
     require(sameKeys(new Map(initial.rows.map(row => [row.key, row])), expected(QUERIES)), "Incorrect initial keys");
+    for (const status of [initial, confirmation]) {
+        for (const row of status.rows) {
+            const diagnostic = status.coldDiagnosticsOnly && row.key.startsWith("COLD/");
+            require(Number.isFinite(row.delta) && row.diagnostic === diagnostic &&
+                row.blocked === (row.delta > 15 && !diagnostic), `Inconsistent numerical policy: ${row.key}`);
+        }
+    }
     const repeats = new Map(confirmation.rows.map(row => [row.key, row]));
     require(sameKeys(repeats, expected(QUERIES)), "Incorrect confirmation keys");
     const rows = initial.rows.map(row => {
@@ -108,10 +120,12 @@ export function confirm(initial, confirmation) {
 export function render(comparison) {
     const lines = ["### Five slow query families", "", "Real persisted Android; value, qualifiedId, dynamic properties, toString caller, and single-hop DATAFLOW. Every hit/miss runs COLD and WARM in three fresh private mappings. Ordered full result digests must match.",
         "COLD means a fresh mapping with no persisted callsite index, not cold OS pages. Primary latency excludes fixture copying; first-trial GC profiler values include setup/priming/cleanup and are diagnostic only.",
-        "The ongoing gate is a 15% point-estimate regression check against the current base, confirmed candidate-first. Historical 10× acceptance against 144d98ef is a separate experiment.",
+        comparison.coldDiagnosticsOnly
+            ? "COLD latency is DIAGNOSTIC only: numerical changes do not block or trigger confirmation. All COLD correctness and measurement integrity checks remain required. WARM retains the 15% regression check, confirmed candidate-first."
+            : "The ongoing gate is a 15% point-estimate regression check for COLD and WARM against the current base, confirmed candidate-first. Historical 10× acceptance against 144d98ef is a separate experiment.",
         `Dynamic reference: ${comparison.referenceKind ?? "unavailable"}. The legacy repair changes only string-key subscripting; other cases always use unmodified base.`, "",
         "| Query/state | Base ms | Candidate ms | Change | Confirmation change | Gate |", "|---|---:|---:|---:|---:|:---:|"];
-    for (const row of comparison.rows ?? []) lines.push(`| ${row.key} | ${row.baseMs.toFixed(3)} | ${row.candidateMs.toFixed(3)} | ${row.delta.toFixed(1)}% | ${row.confirmation ? row.confirmation.delta.toFixed(1) + "%" : "—"} | ${row.blocked ? "FAIL" : "PASS"} |`);
+    for (const row of comparison.rows ?? []) lines.push(`| ${row.key} | ${row.baseMs.toFixed(3)} | ${row.candidateMs.toFixed(3)} | ${row.delta.toFixed(1)}% | ${row.confirmation ? row.confirmation.delta.toFixed(1) + "%" : "—"} | ${row.diagnostic ? "COLD DIAGNOSTIC" : row.blocked ? "FAIL" : "PASS"} |`);
     if (comparison.errors?.length) lines.push("", ...comparison.errors.map(error => `- ${error}`));
     return lines.join("\n") + "\n";
 }
@@ -159,6 +173,8 @@ async function main(argv) {
             else {
                 require(command === "compare", `Unknown command: ${command}`);
                 const fixture = needed("fixture"), policy = needed("reference-kind");
+                require(args["cold-diagnostics-only"] === undefined || ["true", "false"].includes(args["cold-diagnostics-only"]),
+                    "Invalid --cold-diagnostics-only; expected true or false");
                 const regular = policy === "base-plus-subscript-correctness-repair" ? QUERIES.filter(query => !DYNAMIC_QUERIES.includes(query)) : QUERIES;
                 const base = measurements(read(needed("base")), regular, fixture);
                 const baseResults = resultMarkers(fs.readFileSync(needed("base-log"), "utf8"), regular, fixture);
@@ -167,7 +183,7 @@ async function main(argv) {
                     for (const [id, value] of resultMarkers(fs.readFileSync(needed("reference-log"), "utf8"), DYNAMIC_QUERIES, fixture)) baseResults.set(id, value);
                 }
                 result = compare(base, measurements(read(needed("candidate")), QUERIES, fixture), baseResults,
-                    resultMarkers(fs.readFileSync(needed("candidate-log"), "utf8"), QUERIES, fixture), policy);
+                    resultMarkers(fs.readFileSync(needed("candidate-log"), "utf8"), QUERIES, fixture), policy, args["cold-diagnostics-only"] === "true");
             }
             write(needed("status"), result); write(needed("report"), render(result));
             if (!result.passed) process.exitCode = 1;

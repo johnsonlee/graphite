@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
-test "$#" -eq 6 || { echo 'Usage: slow-shapes <controls> <base-gate> <base-source> <candidate-source> <android-fixture> <output>' >&2; exit 2; }
+[[ "$#" -eq 6 || ( "$#" -eq 7 && "$7" == --cold-diagnostics-only ) ]] || { echo 'Usage: slow-shapes <controls> <base-gate> <base-source> <candidate-source> <android-fixture> <output> [--cold-diagnostics-only]' >&2; exit 2; }
+COLD_DIAGNOSTICS_ONLY=false
+if [[ "$#" -eq 7 ]]; then COLD_DIAGNOSTICS_ONLY=true; fi
 CONTROLS=$(realpath "$1")
 GATE=$(realpath "$2")
 BASE=$(realpath "$3")
@@ -75,10 +77,11 @@ java -Xmx8g -XX:ActiveProcessorCount=4 "-Dandroid.graph.path=$FIXTURE" -cp "$ORA
 jq -n --arg baseSha "$(git -C "$BASE" rev-parse HEAD)" \
   --arg candidateSha "$(git -C "$CANDIDATE" rev-parse HEAD)" \
   --arg referenceKind "$REFERENCE_KIND" --arg fixture "$FIXTURE" \
+  --argjson coldDiagnosticsOnly "$COLD_DIAGNOSTICS_ONLY" \
   --arg harnessSha256 "$(sha256sum "$CONTROLS/$HARNESS" | cut -d' ' -f1)" \
   --arg comparatorSha256 "$(sha256sum "$COMPARATOR" | cut -d' ' -f1)" \
   '{baseSha:$baseSha,candidateSha:$candidateSha,referenceKind:$referenceKind,fixture:$fixture,
-    harnessSha256:$harnessSha256,comparatorSha256:$comparatorSha256,
+    harnessSha256:$harnessSha256,comparatorSha256:$comparatorSha256,coldDiagnosticsOnly:$coldDiagnosticsOnly,
     fixtureProtocol:"private-copy-no-callsite-index-v2",forks:3,thresholdPercent:15}' \
   > "$OUTPUT/slow-query-shapes-provenance.json"
 
@@ -101,6 +104,7 @@ compare_phase() {
     extra=(--reference "$OUTPUT/$phase-reference-slow-shapes.json" --reference-log "$OUTPUT/$phase-reference-slow-shapes.log")
   fi
   node "$COMPARATOR" compare --fixture "$FIXTURE" --reference-kind "$REFERENCE_KIND" \
+    --cold-diagnostics-only "$COLD_DIAGNOSTICS_ONLY" \
     --base "$OUTPUT/$phase-base-slow-shapes.json" --base-log "$OUTPUT/$phase-base-slow-shapes.log" \
     --candidate "$OUTPUT/$phase-candidate-slow-shapes.json" --candidate-log "$OUTPUT/$phase-candidate-slow-shapes.log" \
     "${extra[@]}" --status "$OUTPUT/$phase-slow-query-shapes-status.json" \

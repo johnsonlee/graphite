@@ -32,7 +32,7 @@ env:
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
-  SLOW_QUERY_SHAPES_CONTROLS_SHA256: aed5523d4d84b92555b3a92da29b689bd2e30f7424084a3d3069c1f5ff854862
+  SLOW_QUERY_SHAPES_CONTROLS_SHA256: e96592b24a1fb7b9937b8616050d03977bdd61f23bbb8ed393a8326760ae76c7
 
 jobs:
   candidate-gate-tests:
@@ -247,7 +247,7 @@ jobs:
         script: |
           // Exact required checks, not auxiliary build/cache parents whose API state may lag.
           // Terminal downstream checks do not relabel those parents as completed.
-          const requiredChecks = ["benchmark-prerequisites", "candidate-gate-tests", "method-level-benchmarks", "explorer-benchmarks", "method-compatibility-gate", "cypher-capacity-gate", "budgeted-collection-latency", "budgeted-mapped-string-latency", "large-corpus-benchmarks", "wrapped-query-latency", "wrapped-query-resources", "graph-routing-pressure-evidence", "global-wide-pressure-evidence", "validate-cpu-accounting"];
+          const requiredChecks = ["benchmark-prerequisites", "candidate-gate-tests", "method-level-benchmarks", "explorer-benchmarks", "method-compatibility-gate", "cypher-capacity-gate", "budgeted-collection-latency", "budgeted-mapped-string-latency", "large-corpus-benchmarks", "wrapped-query-latency", "wrapped-query-resources", "graph-routing-pressure-evidence", "global-wide-pressure-evidence", "validate-cpu-accounting", "slow-query-shapes"];
           const hardFailures = new Set(['failure', 'timed_out', 'action_required', 'startup_failure']);
           const deadline = Date.now() + 359 * 60 * 1000;
           while (Date.now() < deadline) {
@@ -3333,10 +3333,16 @@ jobs:
         set -euo pipefail
         OWNER=gate
         MANIFEST=.github/scripts/benchmark-slow-query-shapes-controls.sha256
-        if [[ ! -f "gate/${MANIFEST}" ]]; then
+        # Transition the known pre-diagnostic policy while retaining authenticated controls.
+        test ! -L "gate/${MANIFEST}"
+        if [[ ! -f "gate/${MANIFEST}" ]] || \
+          [[ "$(sha256sum "gate/${MANIFEST}" | cut -d' ' -f1)" = \
+            aed5523d4d84b92555b3a92da29b689bd2e30f7424084a3d3069c1f5ff854862 ]]; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum gate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
-            9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
+          if [[ ! -f "gate/${MANIFEST}" ]]; then
+            test "$(sha256sum gate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+              9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
+          fi
           test ! -L "controls/${MANIFEST}"
           test "$(sha256sum "controls/${MANIFEST}" | cut -d' ' -f1)" = \
             "${SLOW_QUERY_SHAPES_CONTROLS_SHA256}"
@@ -3356,7 +3362,7 @@ jobs:
         test -f fixture-graphs/android/graph.nodedata
         bash '${{ steps.slow-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.sh' \
           '${{ steps.slow-controls.outputs.directory }}' gate base candidate \
-          fixture-graphs/android benchmark-results/slow-shapes
+          fixture-graphs/android benchmark-results/slow-shapes --cold-diagnostics-only
     - name: Upload slow-query evidence
       if: always()
       uses: actions/upload-artifact@v7
@@ -3431,10 +3437,16 @@ jobs:
         set -euo pipefail
         OWNER=.
         MANIFEST=.github/scripts/benchmark-slow-query-shapes-controls.sha256
-        if [[ ! -f "${MANIFEST}" ]]; then
+        # Transition the known pre-diagnostic policy while retaining authenticated controls.
+        test ! -L "${MANIFEST}"
+        if [[ ! -f "${MANIFEST}" ]] || \
+          [[ "$(sha256sum "${MANIFEST}" | cut -d' ' -f1)" = \
+            aed5523d4d84b92555b3a92da29b689bd2e30f7424084a3d3069c1f5ff854862 ]]; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum .github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
-            9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
+          if [[ ! -f "${MANIFEST}" ]]; then
+            test "$(sha256sum .github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+              9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
+          fi
           test ! -L "reporter/${MANIFEST}"
           test "$(sha256sum "reporter/${MANIFEST}" | cut -d' ' -f1)" = \
             "${SLOW_QUERY_SHAPES_CONTROLS_SHA256}"

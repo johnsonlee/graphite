@@ -1,0 +1,77 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+
+const repo = new URL('../../', import.meta.url);
+const workflow = fs.readFileSync(new URL('../workflows/benchmark.yml', import.meta.url), 'utf8');
+const manifestPath = '.github/scripts/benchmark-slow-query-shapes-controls.sha256';
+const manifest = fs.readFileSync(new URL(manifestPath, repo), 'utf8');
+const digest = text => crypto.createHash('sha256').update(text).digest('hex');
+const configured = workflow.match(/^  SLOW_QUERY_SHAPES_CONTROLS_SHA256: (\w+)$/m)[1];
+function copyControls(directory) {
+    for (const line of manifest.trim().split('\n')) {
+        const file = line.split(/\s+/)[1];
+        fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
+        fs.copyFileSync(new URL(file, repo), path.join(directory, file));
+    }
+    fs.writeFileSync(path.join(directory, manifestPath), manifest);
+}
+function selection(name) {
+    const start = workflow.indexOf(`    - name: ${name}\n`);
+    assert.ok(start >= 0);
+    const block = workflow.slice(start, workflow.indexOf('\n    - name:', start + 1));
+    return block.slice(block.indexOf('      run: |\n') + '      run: |\n'.length)
+        .split('\n').map(line => line.replace(/^        /, '')).join('\n');
+}
+const legacyManifest = manifest
+    .replace(/^\w+(  \.github\/scripts\/benchmark-slow-query-shapes\.mjs)$/m, '46d75a6b2fde66ad0a5273ccd1c640e35e90ef3fab11e3354a6fee87cffd70bb$1')
+    .replace(/^\w+(  \.github\/scripts\/benchmark-slow-query-shapes\.sh)$/m, '579283e58c373101465b256c622bd8d58d44a508de613a43af45ea5590d42f07$1');
+
+for (const [step, base, candidate] of [
+    ['Select trusted slow-shape controls', 'gate', 'controls'],
+    ['Select additive slow-shape report controls', '.', 'reporter'],
+]) test(`${step} authenticates the policy transition and rejects tampered controls`, t => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'slow-controls-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const original = path.join(root, base), proposed = path.join(root, candidate);
+    copyControls(original); copyControls(proposed);
+    const output = path.join(root, 'output');
+    const run = (tests = 'success') => {
+        fs.writeFileSync(output, '');
+        return spawnSync('bash', ['-euc', selection(step)], { cwd: root, encoding: 'utf8', env: {
+            ...process.env, GITHUB_OUTPUT: output, CANDIDATE_GATE_TEST_JOB: tests,
+            SLOW_QUERY_SHAPES_CONTROLS_SHA256: configured,
+        } });
+    };
+    assert.equal(digest(manifest), configured);
+    assert.equal(digest(legacyManifest), 'aed5523d4d84b92555b3a92da29b689bd2e30f7424084a3d3069c1f5ff854862');
+    let result = run();
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(fs.readFileSync(output, 'utf8').trim(), `directory=${base}`);
+    fs.writeFileSync(path.join(original, manifestPath), legacyManifest);
+    result = run();
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(fs.readFileSync(output, 'utf8').trim(), `directory=${candidate}`);
+    assert.notEqual(run('failure').status, 0);
+    const comparator = path.join(proposed, '.github/scripts/benchmark-slow-query-shapes.mjs');
+    fs.appendFileSync(comparator, '\n// corrupt authenticated bytes\n');
+    assert.notEqual(run().status, 0, 'manifest alone cannot authenticate altered control bytes');
+    copyControls(proposed);
+    fs.appendFileSync(path.join(proposed, manifestPath), '\n');
+    assert.notEqual(run().status, 0, 'altered manifest must fail the exact policy pin');
+});
+
+test('inherited slow-query component remains required and explicitly selects cold diagnostics', () => {
+    const aggregate = workflow.slice(workflow.indexOf('  benchmark-regression-gate:'), workflow.indexOf('  benchmark-comment:'));
+    assert.match(aggregate, /needs: \[[^\n]*slow-query-shapes/);
+    assert.match(aggregate, /SLOW_QUERY_SHAPES_JOB: \$\{\{ needs.slow-query-shapes.result \}\}/);
+    assert.match(aggregate, /\[ "\$\{SLOW_QUERY_SHAPES_JOB\}" != success \]/);
+    assert.match(aggregate, /benchmark-slow-query-shapes.mjs' aggregate/);
+    assert.match(aggregate, /--base-comparator/);
+    const driver = workflow.slice(workflow.indexOf('  slow-query-shapes:'), workflow.indexOf('  wide-query-latency-gate:'));
+    assert.match(driver, /fixture-graphs\/android benchmark-results\/slow-shapes --cold-diagnostics-only/);
+});

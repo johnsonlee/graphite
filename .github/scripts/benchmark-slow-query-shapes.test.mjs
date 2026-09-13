@@ -141,3 +141,93 @@ test("CLI fingerprints detect changed immutable fixture files", () => {
         assert.match(failure.stderr, /fixture changed/);
     } finally { fs.rmSync(directory, { recursive: true }); }
 });
+
+// Mock JMH numbers below test policy, not performance on synthetic data.
+function stateComparison(coldMs, warmMs, diagnostic = true) {
+    const current = entries().map(entry => {
+        const ms = entry.params.cacheState === "COLD" ? coldMs : warmMs;
+        return { ...entry, primaryMetric: { ...entry.primaryMetric, score: ms, rawData: [[ms], [ms], [ms]] } };
+    });
+    const results = resultMarkers(markers(), QUERIES, fixture, () => false);
+    return compare(measurements(entries(), QUERIES, fixture), measurements(current, QUERIES, fixture),
+        results, results, "unmodified-base", diagnostic);
+}
+
+test("cold-only numerical regression is advisory only when explicitly selected; retain every value", async () => {
+    const { render } = await import("./benchmark-slow-query-shapes.mjs");
+    const result = stateComparison(200, 100);
+    assert.equal(result.passed, true); // Driver's successful comparison skips reverse confirmation.
+    assert.equal(result.coldDiagnosticsOnly, true);
+    assert.equal(result.rows.length, 24);
+    assert.equal(result.rows.filter(row => row.diagnostic).length, 12);
+    for (const row of result.rows.filter(row => row.diagnostic)) {
+        assert.equal(row.delta, 100);
+        assert.deepEqual(row.candidateSamples, [200, 200, 200]);
+        assert.equal(row.blocked, false);
+    }
+    assert.equal((render(result).match(/\| COLD DIAGNOSTIC \|/g) ?? []).length, 12);
+    assert.equal(stateComparison(200, 100, false).passed, false);
+});
+
+test("cold diagnostic policy cannot clear wrong ordered results or missing cold measurements", () => {
+    const results = resultMarkers(markers(), QUERIES, fixture, () => false);
+    const wrong = new Map(results);
+    wrong.set("COLD/valueHit", { ...wrong.get("COLD/valueHit"), sha256: "b".repeat(64) });
+    assert.throws(() => compare(measurements(entries(), QUERIES, fixture), measurements(entries(), QUERIES, fixture),
+        results, wrong, "unmodified-base", true), /semantic mismatch/);
+    const missing = measurements(entries(), QUERIES, fixture); missing.delete("COLD/valueHit");
+    assert.throws(() => compare(missing, measurements(entries(), QUERIES, fixture), results, results,
+        "unmodified-base", true), /24 cold\/warm/);
+    const broken = entries(); broken[0].primaryMetric.rawData.pop();
+    assert.throws(() => measurements(broken, QUERIES, fixture), /fork samples/);
+});
+
+test("warm suspects still require reverse confirmation; cold policy must match and be authentic", () => {
+    const initial = stateComparison(200, 116);
+    assert.equal(initial.passed, false);
+    const repeated = confirm(initial, stateComparison(300, 117));
+    assert.equal(repeated.passed, false);
+    assert.equal(repeated.rows.filter(row => row.blocked).length, 12);
+    assert.equal(confirm(initial, stateComparison(300, 110)).passed, true);
+    assert.throws(() => confirm(initial, stateComparison(200, 116, false)), /Cold diagnostics policy/);
+    const missing = stateComparison(200, 116); delete missing.coldDiagnosticsOnly;
+    assert.throws(() => confirm(initial, missing), /Cold diagnostics policy/);
+    const forged = stateComparison(200, 116); forged.rows.find(row => row.key === "WARM/valueHit").blocked = false;
+    assert.throws(() => confirm(initial, forged), /numerical policy/);
+});
+
+test("CLI propagates explicit cold diagnostics and rejects invalid selection", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "slow-shape-cold-policy-"));
+    const script = fileURLToPath(new URL("./benchmark-slow-query-shapes.mjs", import.meta.url));
+    try {
+        const current = entries().map(entry => entry.params.cacheState === "COLD"
+            ? { ...entry, primaryMetric: { score: 200, scoreUnit: "ms/op", rawData: [[200], [200], [200]] } } : entry);
+        for (const [name, rows] of [["base", entries()], ["candidate", current]]) {
+            fs.writeFileSync(path.join(directory, `${name}.json`), JSON.stringify(rows));
+            fs.writeFileSync(path.join(directory, `${name}.log`), markers());
+        }
+        const args = [script, "compare", "--fixture", fixture, "--reference-kind", "unmodified-base",
+            "--base", path.join(directory, "base.json"), "--candidate", path.join(directory, "candidate.json"),
+            "--base-log", path.join(directory, "base.log"), "--candidate-log", path.join(directory, "candidate.log"),
+            "--status", path.join(directory, "status.json"), "--report", path.join(directory, "report.md")];
+        assert.equal(spawnSync(process.execPath, args).status, 1);
+        assert.equal(spawnSync(process.execPath, [...args, "--cold-diagnostics-only", "true"]).status, 0);
+        assert.equal(JSON.parse(fs.readFileSync(path.join(directory, "status.json"))).coldDiagnosticsOnly, true);
+        assert.equal(spawnSync(process.execPath, [...args, "--cold-diagnostics-only", "typo"]).status, 1);
+    } finally { fs.rmSync(directory, { recursive: true }); }
+});
+
+test("driver rejects unknown extra options and binds selected policy to comparison and provenance", () => {
+    const script = fileURLToPath(new URL("./benchmark-slow-query-shapes.sh", import.meta.url));
+    for (const args of [["a", "b", "c", "d", "e", "f", "--typo"],
+        ["a", "b", "c", "d", "e", "f", "--cold-diagnostics-only", "extra"]]) {
+        const result = spawnSync("bash", [script, ...args], { encoding: "utf8" });
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /Usage/);
+    }
+    const source = fs.readFileSync(script, "utf8");
+    assert.match(source, /--cold-diagnostics-only "\$COLD_DIAGNOSTICS_ONLY"/);
+    assert.match(source, /--argjson coldDiagnosticsOnly "\$COLD_DIAGNOSTICS_ONLY"/);
+    assert.match(source, /coldDiagnosticsOnly:\$coldDiagnosticsOnly/);
+    assert.match(source, /if compare_phase initial; then[\s\S]*?else[\s\S]*?measure candidate confirmation/);
+});

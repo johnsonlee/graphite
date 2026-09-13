@@ -238,3 +238,15 @@ test('missing or duplicate query verdicts and required checks cannot finish the 
         assert.equal(result.cancellations.length, 0);
     }
 });
+
+
+test('late monitor covers the newly inherited slow-query job until its terminal result', async () => {
+    const others = requiredChecks().filter(job => job.name !== 'slow-query-shapes');
+    const result = await monitor('benchmark-fail-fast-late', [
+        [...others, ...verdicts(), active('slow-query-shapes')],
+        [...others, ...verdicts(), completed('slow-query-shapes', 'failure')],
+    ]);
+    assert.equal(result.calls.length, 2);
+    assert.equal(result.cancellations.length, 1);
+    assert.match(result.messages[0], /slow-query-shapes: failure/);
+});
