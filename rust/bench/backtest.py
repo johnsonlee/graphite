@@ -32,6 +32,19 @@ def wide_or(t):
             f'RETURN n.graphId, {FOUR} LIMIT 200')
 
 
+def class_pair_node(t):
+    """The production log's commonest shape: one term against the two class
+    properties, the whole node returned, a small LIMIT."""
+    t = esc(t)
+    return (f'MATCH (n) WHERE n.caller_class CONTAINS "{t}" OR n.callee_class CONTAINS "{t}" '
+            f'RETURN n LIMIT 25')
+
+
+def value_contains(t):
+    """The production log's other common shape: a constant's value, whole node."""
+    return f'MATCH (n) WHERE n.value CONTAINS "{esc(t)}" RETURN n LIMIT 25'
+
+
 def two_term_or(a, b):
     a, b = esc(a), esc(b)
     return (f'MATCH (n) WHERE n.caller_class CONTAINS "{a}" OR n.callee_class CONTAINS "{a}" '
@@ -163,28 +176,38 @@ def sample_terms(client, timeout):
     return classes, sorted(words)
 
 
-def build(classes, words, rng):
-    """~170 queries, weighted the way the log is: mostly the broad single-term search."""
+# Shape weights per 170 queries. `v1` is the original mix, all CallSite properties;
+# `v2` follows the production log, where the commonest queries are one term against the
+# two class properties and a constant's value, each returning the whole node.
+MIXES = {
+    "v1": [("wide-or", 60), ("two-term-or", 25), ("and-of-or", 25), ("or-and-or", 20),
+           ("and-two", 15), ("equality-or", 10), ("distinct-or", 10), ("keys-or", 5)],
+    "v2": [("class-pair-node", 50), ("value-contains", 40), ("wide-or", 30),
+           ("two-term-or", 15), ("and-of-or", 10), ("or-and-or", 10), ("and-two", 5),
+           ("equality-or", 5), ("distinct-or", 3), ("keys-or", 2)],
+}
+
+
+def build(classes, words, rng, mix="v2"):
+    """170 queries, weighted by `mix`."""
     queries = []
     absent = ["__graphite_absent_a__", "__graphite_absent_b__"]
     pool = words + absent
-    for _ in range(60):
-        queries.append(("wide-or", wide_or(rng.choice(pool))))
-    for _ in range(25):
-        queries.append(("two-term-or", two_term_or(rng.choice(pool), rng.choice(pool))))
-    for _ in range(25):
-        queries.append(("and-of-or", and_of_or(rng.choice(pool),
-                                               [rng.choice(pool) for _ in range(5)])))
-    for _ in range(20):
-        queries.append(("or-and-or", or_and_or(rng.choice(pool), rng.choice(pool))))
-    for _ in range(15):
-        queries.append(("and-two", and_two(rng.choice(pool), rng.choice(pool))))
-    for _ in range(10):
-        queries.append(("equality-or", equality_or(rng.choice(classes) if classes else "x")))
-    for _ in range(10):
-        queries.append(("distinct-or", distinct_or(rng.choice(pool))))
-    for _ in range(5):
-        queries.append(("keys-or", keys_or(rng.choice(pool), rng.choice(pool))))
+    makers = {
+        "wide-or": lambda: wide_or(rng.choice(pool)),
+        "class-pair-node": lambda: class_pair_node(rng.choice(pool)),
+        "value-contains": lambda: value_contains(rng.choice(pool)),
+        "two-term-or": lambda: two_term_or(rng.choice(pool), rng.choice(pool)),
+        "and-of-or": lambda: and_of_or(rng.choice(pool), [rng.choice(pool) for _ in range(5)]),
+        "or-and-or": lambda: or_and_or(rng.choice(pool), rng.choice(pool)),
+        "and-two": lambda: and_two(rng.choice(pool), rng.choice(pool)),
+        "equality-or": lambda: equality_or(rng.choice(classes) if classes else "x"),
+        "distinct-or": lambda: distinct_or(rng.choice(pool)),
+        "keys-or": lambda: keys_or(rng.choice(pool), rng.choice(pool)),
+    }
+    for shape, weight in MIXES[mix]:
+        for _ in range(weight):
+            queries.append((shape, makers[shape]()))
     rng.shuffle(queries)
     return queries
 
@@ -200,6 +223,7 @@ def main():
     # what a backtest never does, and it hands a caching server a result it would not
     # otherwise have.
     ap.add_argument("--warmup-seed", type=int, default=777)
+    ap.add_argument("--mix", choices=sorted(MIXES), default="v2")
     ap.add_argument("--out")
     args = ap.parse_args()
 
@@ -209,9 +233,9 @@ def main():
     if len(words) < 20:
         print(f"only {len(words)} terms sampled; is the server up and loaded?", file=sys.stderr)
         return 2
-    for shape, q in build(classes, words, random.Random(args.warmup_seed)):
+    for shape, q in build(classes, words, random.Random(args.warmup_seed), args.mix):
         call(client, q)
-    queries = build(classes, words, rng)
+    queries = build(classes, words, rng, args.mix)
     print(f"{args.label}: {len(queries)} queries from {len(words)} sampled terms "
           f"(after a {len(queries)}-query warmup on a different seed)", flush=True)
 

@@ -675,6 +675,12 @@ fn key(trigram: i32, string_id: i32) -> i64 {
     ((trigram as i64) << 32) | (string_id as i64 & 0xFFFF_FFFF)
 }
 
+/// [`trigram_hash`] for callers outside this module.
+#[inline]
+pub fn trigram_hash_units(units: &[u16], position: usize) -> i32 {
+    trigram_hash(units, position)
+}
+
 /// Trigram hash at `position`, over UTF-16 code units, matching the writer exactly.
 #[inline]
 fn trigram_hash(units: &[u16], position: usize) -> i32 {

@@ -3,6 +3,7 @@
 pub mod bits;
 pub mod bvgraph;
 pub mod callsite_index;
+pub mod columns;
 pub mod graph;
 pub mod io;
 pub mod javaser;

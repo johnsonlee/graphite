@@ -45,6 +45,25 @@ use rayon::prelude::*;
 /// Properties readable straight out of a `CallSiteNode` record without decoding it.
 const CALL_SITE_PROPS: [&str; 4] = ["caller_class", "caller_name", "callee_class", "callee_name"];
 
+/// Every property name the scan can read raw off some record: CallSite's four through
+/// the CallSite index, the rest through a per-type string column.
+const PUSHABLE_PROPS: [&str; 14] = [
+    "caller_class",
+    "caller_name",
+    "callee_class",
+    "callee_name",
+    "value",
+    "name",
+    "type",
+    "class",
+    "enum_type",
+    "path",
+    "source",
+    "format",
+    "key",
+    "member",
+];
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Transform {
     None,
@@ -139,9 +158,6 @@ struct SourcePlan {
     /// every conjunct, some tested property carries a string in that conjunct's set. A
     /// flat disjunction is the one-conjunct case.
     call_site: Vec<[Option<StringBitset>; 4]>,
-    /// True when every predicate targets a CallSite property, so only CallSite nodes
-    /// (and Annotation nodes, which expose the same names) can match.
-    call_site_only: bool,
     /// CallSite candidates resolved through the persisted accelerator, ascending — the
     /// same order the sweep would have produced. `None` means sweep instead.
     ///
@@ -151,8 +167,6 @@ struct SourcePlan {
     /// The candidate list is not merely a superset: every node in it satisfies the
     /// clause, so the WHERE re-check over it is redundant.
     call_site_exact: bool,
-    /// No Annotation node can satisfy the clause, so that tag is skipped.
-    skip_annotations: bool,
     /// No pre-filter could be built, so every record must reach the WHERE re-check.
     ///
     /// This is distinct from an empty plan. A `SourcePlan` whose bitsets are all `None`
@@ -316,10 +330,13 @@ pub struct ScanPlan {
     /// Node tags to sweep when the pushdown does not apply to a source.
     tags: Vec<u8>,
     tree: PredTree,
-    /// Every leaf of `tree`, for the bitset fallback and for the CallSite-only test.
-    predicates: Vec<StringPredicate>,
     /// How many distinct dictionary tests the leaves perform.
     tests: usize,
+    /// What to do for each node type, indexed by tag. Types outside `tags` are skipped.
+    tag_plans: Vec<TagPlan>,
+    /// The clause restricted to CallSite's raw strings, with its leaves, when the
+    /// CallSite type takes the indexed path.
+    call_site: Option<(PredTree, Vec<StringPredicate>)>,
 }
 
 impl ScanPlan {
@@ -355,16 +372,31 @@ impl ScanPlan {
         if preds.is_empty() {
             return None;
         }
-        // Every predicate must target a CallSite string property for the fast sweep.
-        if !preds.iter().all(|p| CALL_SITE_PROPS.contains(&p.property)) {
-            return None;
-        }
+        // Per type: which leaves it can answer raw, and whether it needs decoding at all.
+        // Annotation keys are settled per graph, since any dictionary string can be one.
+        let tag_plans: Vec<TagPlan> = (0..graphite_storage::node::TAG_COUNT as u8)
+            .map(|tag| {
+                if !tags.contains(&tag) {
+                    return TagPlan::Skip;
+                }
+                tag_plan(&tree, tag, &|_| false)
+            })
+            .collect();
+        let call_site = match &tag_plans[TAG_CALL_SITE_NODE as usize] {
+            TagPlan::CallSite(t) => {
+                let mut leaves = Vec::new();
+                t.leaves(&mut leaves);
+                Some((t.clone(), leaves))
+            }
+            _ => None,
+        };
         Some(ScanPlan {
             variable,
             tags,
             tree,
-            predicates: preds,
             tests,
+            tag_plans,
+            call_site,
         })
     }
 
@@ -509,9 +541,39 @@ impl ScanPlan {
         // hand-off. Only the survivors are planned, and only they pay for the fan-out —
         // which for a term most graphs do not contain is nearly all of the saving, and
         // for a term they all contain costs sixty-four bitmap probes.
-        let sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx)
-            .filter(|s| may_match(ex.graph(*s), &self.tree))
-            .collect();
+        // Only the CallSite type is planned ahead in batches; every other type is
+        // decided when the sweep reaches its graph. A graph the CallSite prefilter
+        // rules out is still visited for the other types it holds.
+        let cs_tree: Option<&PredTree> = self.call_site.as_ref().map(|(t, _)| t);
+        let cs_preds: &[StringPredicate] = self
+            .call_site
+            .as_ref()
+            .map(|(_, p)| p.as_slice())
+            .unwrap_or(&[]);
+        let all_sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx).collect();
+        let sources: Vec<SourceIdx> = match cs_tree {
+            Some(t) => all_sources
+                .iter()
+                .copied()
+                .filter(|s| may_match(ex.graph(*s), t))
+                .collect(),
+            None => Vec::new(),
+        };
+        // The batched, parallel planning below is for the CallSite type. It also covers
+        // the Annotation type when the clause names CallSite properties, since an
+        // annotation's value pairs can carry any key: that type is settled per graph
+        // after the graph's CallSite records, as it always was.
+        let cs_only = cs_tree.is_some()
+            && self.tag_plans.iter().enumerate().all(|(tag, p)| {
+                tag == TAG_CALL_SITE_NODE as usize
+                    || matches!(p, TagPlan::Skip)
+                    || (tag == TAG_ANNOTATION_NODE as usize && matches!(p, TagPlan::Generic))
+            });
+        if !cs_only {
+            // Types other than CallSite are swept per graph, in source order, with the
+            // CallSite plan for that graph built on the spot when it has one.
+            return self.run_by_source(ex, ev, row, &all_sources, cs_tree, cs_preds, emit);
+        }
         // Batches start at one graph per thread and double from there. A satisfied
         // LIMIT usually lands in the first batch, and a dense term costs real planning
         // per graph, so a first batch of sixteen on four cores meant four graphs
@@ -550,8 +612,8 @@ impl ScanPlan {
                         build_source_plan(
                             *s,
                             ex.graph(*s),
-                            &self.tree,
-                            &self.predicates,
+                            cs_tree.expect("CallSite plan"),
+                            cs_preds,
                             self.tests,
                         )
                     })
@@ -563,123 +625,384 @@ impl ScanPlan {
                         build_source_plan(
                             *s,
                             ex.graph(*s),
-                            &self.tree,
-                            &self.predicates,
+                            cs_tree.expect("CallSite plan"),
+                            cs_preds,
                             self.tests,
                         )
                     })
                     .collect()
             };
             for sp in &plans {
-                let source = sp.source;
-                let graph = ex.graph(source);
-                // Every row from this source carries the same provenance, so it is
-                // built once here and cloned in -- an `Arc` bump per row -- rather than
-                // assembled per row from a fresh list, a sort and two allocations. Only
-                // when the base row has none of its own; a row that already names
-                // graphs is merged the general way.
-                let provenance: Option<Value> = (ex.cross
-                    && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
-                .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
-                // Which tags this source contributes, decided inline: collecting them
-                // meant a vector per graph, and there are sixty-four of them per query.
-                let wanted = |t: u8| {
-                    !sp.call_site_only
-                        || t == TAG_CALL_SITE_NODE
-                        || (t == TAG_ANNOTATION_NODE && !sp.skip_annotations)
-                };
-                for &tag in self.tags.iter().filter(|t| wanted(**t)) {
-                    // When the accelerator resolved the CallSite candidates, those *are* the
-                    // records to visit; nothing else needs looking at.
-                    let indexed = match (tag, &sp.call_site_candidates) {
-                        (TAG_CALL_SITE_NODE, Some(c)) => Some(c),
-                        _ => None,
-                    };
-                    // A materialised candidate list (or the whole tag) is walked in
-                    // place; a disjunction's union is merged a chunk at a time instead,
-                    // so a satisfied LIMIT never pays for the postings it does not read.
-                    let slice: Option<&[u32]> = match indexed {
-                        Some(Candidates::Nodes(nodes)) => Some(nodes.as_slice()),
-                        Some(Candidates::Union(_) | Candidates::Intersect(_)) => None,
-                        None => Some(graph.ids_by_tag(tag)),
-                    };
-                    if slice.is_some_and(<[u32]>::is_empty) {
-                        continue;
-                    }
-                    let mut merge = match (indexed, usable_index(graph)) {
-                        (Some(Candidates::Union(pairs)), Some(idx)) => {
-                            Some(Lazy::Union(PostingsMerge::new(idx, pairs)))
-                        }
-                        (Some(Candidates::Intersect(sides)), Some(idx)) => {
-                            Some(Lazy::Intersect(IntersectMerge::new(idx, sides)))
-                        }
-                        _ => None,
-                    };
-                    // When the accelerator answered exactly, the candidates are the
-                    // matches: re-checking WHERE would decode four strings per record to
-                    // re-derive what the dictionary already decided.
-                    // Only CallSite records reached through an exact plan -- indexed
-                    // candidates or the bitset sweep -- skip it. An unfiltered source
-                    // and the Annotation tag always go through WHERE.
-                    let verified =
-                        tag == TAG_CALL_SITE_NODE && sp.call_site_exact && !sp.no_prefilter;
-                    let mut hits: Vec<u32> = Vec::new();
-                    let mut merged: Vec<u32> = Vec::new();
-                    let mut offset = 0usize;
-                    // The merge is pulled a chunk at a time; the first chunk is small and
-                    // each one doubles. Pulling a full sweep chunk first meant merging
-                    // sixty-five thousand ids to satisfy a LIMIT of two hundred.
-                    let mut want = MERGE_FIRST_CHUNK;
-                    loop {
-                        let chunk: &[u32] = match slice {
-                            Some(ids) => {
-                                if offset >= ids.len() {
-                                    break;
-                                }
-                                let end = (offset + SWEEP_CHUNK).min(ids.len());
-                                let c = &ids[offset..end];
-                                offset = end;
-                                c
-                            }
-                            None => {
-                                match merge.as_mut() {
-                                    Some(m) => m.next_chunk(want, &mut merged),
-                                    None => break,
-                                }
-                                want = (want * 2).min(SWEEP_CHUNK);
-                                if merged.is_empty() {
-                                    break;
-                                }
-                                &merged[..]
-                            }
-                        };
-                        ex.cancel.check()?;
-                        hits.clear();
-                        if indexed.is_some() || sp.no_prefilter {
-                            // Already narrowed, or never narrowed: either way the WHERE
-                            // re-check below decides.
-                            hits.extend_from_slice(chunk);
-                        } else if tag == TAG_CALL_SITE_NODE {
-                            sweep_call_sites(graph, chunk, sp, &mut hits);
-                        } else {
-                            // No raw fast path for this tag: let WHERE decide.
-                            hits.extend_from_slice(chunk);
-                        }
-                        for &id in &hits {
-                            ex.tick()?;
-                            let value = Value::Node(NodeRef {
-                                source: sp.source,
-                                id,
-                            });
-                            if !emit(value, provenance.as_ref(), verified)? {
-                                return Ok(false);
-                            }
-                        }
-                    }
+                if !self.sweep_call_sites_of(ex, sp, row, emit)? {
+                    return Ok(false);
+                }
+                if matches!(
+                    self.tag_plans[TAG_ANNOTATION_NODE as usize],
+                    TagPlan::Generic
+                ) && !self.sweep_annotations(ex, sp.source, row, emit)?
+                {
+                    return Ok(false);
                 }
             }
         }
         Ok(true)
+    }
+
+    /// The Annotation records of one graph, by the plan the graph's dictionary allows:
+    /// a key no string in it spells reaches no annotation, so the type is often skipped
+    /// outright; otherwise its raw fields are swept or every record goes through WHERE.
+    fn sweep_annotations(
+        &self,
+        ex: &Executor,
+        source: SourceIdx,
+        row: &Row,
+        emit: &mut dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        let graph = ex.graph(source);
+        let tag = TAG_ANNOTATION_NODE;
+        if graph.ids_by_tag(tag).is_empty() {
+            return Ok(true);
+        }
+        let plan = tag_plan(&self.tree, tag, &|key| {
+            !matches!(key, "name" | "class" | "member" | "values")
+                && graph.strings.index_of(key).is_none()
+        });
+        let mut stream = match plan {
+            TagPlan::Skip | TagPlan::CallSite(_) => return Ok(true),
+            TagPlan::Generic => TypeStream::Generic {
+                ids: graph.ids_by_tag(tag),
+                pos: 0,
+            },
+            TagPlan::Column(t) => {
+                let Some(tree) = ColumnTree::resolve(graph, &t, tag) else {
+                    return Ok(true);
+                };
+                let ids = graph.string_column(tree.first_slot()).node_ids();
+                TypeStream::Column { tree, ids, pos: 0 }
+            }
+        };
+        let provenance: Option<Value> = (ex.cross
+            && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
+        .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
+        let verified = stream.verified();
+        while let Some(id) = stream.next(ex, graph)? {
+            ex.tick()?;
+            let value = Value::Node(NodeRef { source, id });
+            if !emit(value, provenance.as_ref(), verified)? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+
+    /// Every type of one graph, in tag order, each by its own plan.
+    #[allow(clippy::too_many_arguments)]
+    fn run_by_source(
+        &self,
+        ex: &Executor,
+        ev: &Evaluator,
+        row: &Row,
+        sources: &[SourceIdx],
+        cs_tree: Option<&PredTree>,
+        cs_preds: &[StringPredicate],
+        emit: &mut dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        let _ = ev;
+        for &source in sources {
+            ex.cancel.check()?;
+            let graph = ex.graph(source);
+            let provenance: Option<Value> = (ex.cross
+                && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
+            .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
+            // One candidate stream per type this graph contributes, merged by node id:
+            // the Kotlin server walks an unlabelled scan in id order across types, and
+            // a LIMIT must cut the same rows here.
+            // There is one CallSite type, so at most one CallSite plan per graph; it
+            // lives here so its stream can borrow it.
+            let cs_plan: Option<SourcePlan> = match self.tag_plans[TAG_CALL_SITE_NODE as usize] {
+                TagPlan::CallSite(_) => {
+                    let t = cs_tree.expect("CallSite plan");
+                    may_match(graph, t)
+                        .then(|| build_source_plan(source, graph, t, cs_preds, self.tests))
+                }
+                _ => None,
+            };
+            let mut streams: Vec<(Option<u32>, TypeStream)> = Vec::new();
+            for &tag in &self.tags {
+                let plan = &self.tag_plans[tag as usize];
+                // An annotation's keys are whatever strings its value pairs carry, so a
+                // key absent from this graph's dictionary reaches no annotation here.
+                let annotation_plan;
+                let plan = if tag == TAG_ANNOTATION_NODE && matches!(plan, TagPlan::Generic) {
+                    annotation_plan = tag_plan(&self.tree, tag, &|key| {
+                        !matches!(key, "name" | "class" | "member" | "values")
+                            && graph.strings.index_of(key).is_none()
+                    });
+                    &annotation_plan
+                } else {
+                    plan
+                };
+                let stream = match plan {
+                    TagPlan::Skip => continue,
+                    TagPlan::Generic => {
+                        let ids = graph.ids_by_tag(tag);
+                        if ids.is_empty() {
+                            continue;
+                        }
+                        TypeStream::Generic { ids, pos: 0 }
+                    }
+                    TagPlan::CallSite(_) => match cs_plan
+                        .as_ref()
+                        .and_then(|sp| CallSiteStream::new(graph, sp))
+                    {
+                        Some(cs) => TypeStream::CallSite(cs),
+                        None => continue,
+                    },
+                    TagPlan::Column(t) => {
+                        let Some(tree) = ColumnTree::resolve(graph, t, tag) else {
+                            continue;
+                        };
+                        let ids = graph.string_column(tree.first_slot()).node_ids();
+                        TypeStream::Column { tree, ids, pos: 0 }
+                    }
+                };
+                streams.push((None, stream));
+            }
+            for (head, stream) in streams.iter_mut() {
+                *head = stream.next(ex, graph)?;
+            }
+            streams.retain(|(head, _)| head.is_some());
+            loop {
+                // The smallest head across streams is the next node in id order.
+                let Some(best) = streams
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, (h, _))| h.map(|id| (id, i)))
+                    .min()
+                    .map(|(_, i)| i)
+                else {
+                    break;
+                };
+                let (head, stream) = &mut streams[best];
+                let id = head.take().expect("a head");
+                ex.tick()?;
+                let value = Value::Node(NodeRef { source, id });
+                if !emit(value, provenance.as_ref(), stream.verified())? {
+                    return Ok(false);
+                }
+                *head = stream.next(ex, graph)?;
+                if head.is_none() {
+                    streams.swap_remove(best);
+                }
+            }
+        }
+        Ok(true)
+    }
+
+    /// The CallSite records of one planned source, through its plan.
+    fn sweep_call_sites_of(
+        &self,
+        ex: &Executor,
+        sp: &SourcePlan,
+        row: &Row,
+        emit: &mut dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        let source = sp.source;
+        let graph = ex.graph(source);
+        // Every row from this source carries the same provenance, so it is built once
+        // here and cloned in -- an `Arc` bump per row -- rather than assembled per row
+        // from a fresh list, a sort and two allocations. Only when the base row has
+        // none of its own; a row that already names graphs is merged the general way.
+        let provenance: Option<Value> = (ex.cross
+            && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
+        .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
+        let Some(mut stream) = CallSiteStream::new(graph, sp) else {
+            return Ok(true);
+        };
+        while let Some(id) = stream.next(ex)? {
+            ex.tick()?;
+            let value = Value::Node(NodeRef { source, id });
+            if !emit(value, provenance.as_ref(), stream.verified)? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+}
+
+/// The CallSite candidates of one planned source, produced one at a time in ascending
+/// id order, so that they can be merged with other types' candidates by id.
+///
+/// A materialised candidate list (or the whole tag) is walked in place; a disjunction's
+/// union is merged a chunk at a time instead, so a satisfied LIMIT never pays for the
+/// postings it does not read. The first merge chunk is small and each one doubles:
+/// pulling a full sweep chunk first meant merging sixty-five thousand ids to satisfy a
+/// LIMIT of two hundred.
+struct CallSiteStream<'a> {
+    graph: &'a Graph,
+    sp: &'a SourcePlan,
+    slice: Option<&'a [u32]>,
+    merge: Option<Lazy<'a>>,
+    indexed: bool,
+    hits: Vec<u32>,
+    merged: Vec<u32>,
+    hit_pos: usize,
+    offset: usize,
+    want: usize,
+    done: bool,
+    /// When the accelerator answered exactly, the candidates are the matches:
+    /// re-checking WHERE would decode four strings per record to re-derive what the
+    /// dictionary already decided. Only an exact plan skips it.
+    verified: bool,
+}
+
+impl<'a> CallSiteStream<'a> {
+    fn new(graph: &'a Graph, sp: &'a SourcePlan) -> Option<CallSiteStream<'a>> {
+        let indexed = sp.call_site_candidates.as_ref();
+        let slice: Option<&'a [u32]> = match indexed {
+            Some(Candidates::Nodes(nodes)) => Some(nodes.as_slice()),
+            Some(Candidates::Union(_) | Candidates::Intersect(_)) => None,
+            None => Some(graph.ids_by_tag(TAG_CALL_SITE_NODE)),
+        };
+        if slice.is_some_and(<[u32]>::is_empty) {
+            return None;
+        }
+        let merge = match (indexed, usable_index(graph)) {
+            (Some(Candidates::Union(pairs)), Some(idx)) => {
+                Some(Lazy::Union(PostingsMerge::new(idx, pairs)))
+            }
+            (Some(Candidates::Intersect(sides)), Some(idx)) => {
+                Some(Lazy::Intersect(IntersectMerge::new(idx, sides)))
+            }
+            _ => None,
+        };
+        if slice.is_none() && merge.is_none() {
+            return None;
+        }
+        Some(CallSiteStream {
+            graph,
+            sp,
+            slice,
+            merge,
+            indexed: indexed.is_some(),
+            hits: Vec::new(),
+            merged: Vec::new(),
+            hit_pos: 0,
+            offset: 0,
+            want: MERGE_FIRST_CHUNK,
+            done: false,
+            verified: sp.call_site_exact && !sp.no_prefilter,
+        })
+    }
+
+    /// Fill `hits` with the next chunk's survivors; false when there is no next chunk.
+    fn refill(&mut self, ex: &Executor) -> CypherResult<bool> {
+        loop {
+            if self.done {
+                return Ok(false);
+            }
+            let chunk: &[u32] = match self.slice {
+                Some(ids) => {
+                    if self.offset >= ids.len() {
+                        self.done = true;
+                        return Ok(false);
+                    }
+                    let end = (self.offset + SWEEP_CHUNK).min(ids.len());
+                    let c = &ids[self.offset..end];
+                    self.offset = end;
+                    c
+                }
+                None => {
+                    match self.merge.as_mut() {
+                        Some(m) => m.next_chunk(self.want, &mut self.merged),
+                        None => {
+                            self.done = true;
+                            return Ok(false);
+                        }
+                    }
+                    self.want = (self.want * 2).min(SWEEP_CHUNK);
+                    if self.merged.is_empty() {
+                        self.done = true;
+                        return Ok(false);
+                    }
+                    &self.merged[..]
+                }
+            };
+            ex.cancel.check()?;
+            self.hits.clear();
+            self.hit_pos = 0;
+            if self.indexed || self.sp.no_prefilter {
+                // Already narrowed, or never narrowed: either way WHERE decides.
+                self.hits.extend_from_slice(chunk);
+            } else {
+                sweep_call_sites(self.graph, chunk, self.sp, &mut self.hits);
+            }
+            if !self.hits.is_empty() {
+                return Ok(true);
+            }
+        }
+    }
+
+    fn next(&mut self, ex: &Executor) -> CypherResult<Option<u32>> {
+        if self.hit_pos >= self.hits.len() && !self.refill(ex)? {
+            return Ok(None);
+        }
+        let id = self.hits[self.hit_pos];
+        self.hit_pos += 1;
+        Ok(Some(id))
+    }
+}
+
+/// One node type's candidates of one graph, in ascending id order.
+enum TypeStream<'a> {
+    /// Every record of the type; WHERE decides.
+    Generic {
+        ids: &'a [u32],
+        pos: usize,
+    },
+    /// The column rows that satisfy the resolved plan; exact.
+    Column {
+        tree: ColumnTree,
+        ids: &'a [u32],
+        pos: usize,
+    },
+    CallSite(CallSiteStream<'a>),
+}
+
+impl TypeStream<'_> {
+    fn verified(&self) -> bool {
+        match self {
+            TypeStream::Generic { .. } => false,
+            TypeStream::Column { .. } => true,
+            TypeStream::CallSite(s) => s.verified,
+        }
+    }
+
+    fn next(&mut self, ex: &Executor, graph: &Graph) -> CypherResult<Option<u32>> {
+        match self {
+            TypeStream::Generic { ids, pos } => {
+                if *pos >= ids.len() {
+                    return Ok(None);
+                }
+                let id = ids[*pos];
+                *pos += 1;
+                Ok(Some(id))
+            }
+            TypeStream::Column { tree, ids, pos } => {
+                while *pos < ids.len() {
+                    let i = *pos;
+                    *pos += 1;
+                    if i % SWEEP_CHUNK == 0 {
+                        ex.cancel.check()?;
+                    }
+                    if tree.matches(graph, i) {
+                        return Ok(Some(ids[i]));
+                    }
+                }
+                Ok(None)
+            }
+            TypeStream::CallSite(s) => s.next(ex),
+        }
     }
 }
 
@@ -767,28 +1090,12 @@ fn build_source_plan(
     preds: &[StringPredicate],
     tests: usize,
 ) -> SourcePlan {
-    let call_site_only = preds.iter().all(|p| CALL_SITE_PROPS.contains(&p.property));
-    // An Annotation node exposes `name`, `class`, `member` and `values`, and then any
-    // key its own value pairs carry. A CallSite property name therefore reaches one only
-    // if that exact name exists in the graph's dictionary as a value-pair key — which for
-    // names like `caller_class` it essentially never does. Four binary searches settle
-    // whether the whole tag can be skipped, instead of decoding every annotation record
-    // to find out that none of them match.
-    let skip_annotations = call_site_only
-        && !preds.iter().any(|p| {
-            CALL_SITE_PROPS
-                .iter()
-                .position(|c| *c == p.property)
-                .is_some_and(|i| graph.property_name_in_dictionary(i))
-        });
     let pruned = |candidates: Candidates, exact: bool| SourcePlan {
         source,
         call_site: Vec::new(),
-        call_site_only,
         call_site_candidates: Some(candidates),
         call_site_exact: exact,
         no_prefilter: false,
-        skip_annotations,
     };
     if let Some(idx) = usable_index(graph) {
         let mut memo = Memo::new(tests);
@@ -809,11 +1116,9 @@ fn build_source_plan(
                     return SourcePlan {
                         source,
                         call_site: conjuncts,
-                        call_site_only,
                         call_site_candidates: None,
                         call_site_exact: true,
                         no_prefilter: false,
-                        skip_annotations,
                     }
                 }
                 Conjunction::Probe => {}
@@ -838,11 +1143,9 @@ fn build_source_plan(
                     return SourcePlan {
                         source,
                         call_site: vec![sets.bitsets(graph.strings.len())],
-                        call_site_only,
                         call_site_candidates: None,
                         call_site_exact: true,
                         no_prefilter: false,
-                        skip_annotations,
                     };
                 }
                 if cost > MERGE_FLOOR {
@@ -864,14 +1167,12 @@ fn build_source_plan(
         return SourcePlan {
             source,
             call_site: Vec::new(),
-            call_site_only: false,
             call_site_candidates: None,
             call_site_exact: false,
             no_prefilter: true,
-            skip_annotations,
         };
     }
-    build_sweep_plan(source, graph, preds, call_site_only, skip_annotations)
+    build_sweep_plan(source, graph, preds)
 }
 
 /// Resolve CallSite candidates through `graph.callsite-string-index`.
@@ -1356,13 +1657,7 @@ fn predicate_matches(graph: &Graph, p: &StringPredicate, id: u32) -> bool {
 }
 
 /// The original plan: scan the dictionary into bitsets, then sweep records against them.
-fn build_sweep_plan(
-    source: SourceIdx,
-    graph: &Graph,
-    preds: &[StringPredicate],
-    call_site_only: bool,
-    skip_annotations: bool,
-) -> SourcePlan {
+fn build_sweep_plan(source: SourceIdx, graph: &Graph, preds: &[StringPredicate]) -> SourcePlan {
     let n = graph.strings.len();
     // Group predicates by property once, then make a single pass over the dictionary.
     // A separate pass per property would re-read (and re-lowercase) every string.
@@ -1467,11 +1762,9 @@ fn build_sweep_plan(
         return SourcePlan {
             source,
             call_site: vec![sets],
-            call_site_only,
             call_site_candidates: Some(Candidates::Nodes(Vec::new())),
             call_site_exact: true,
             no_prefilter: false,
-            skip_annotations,
         };
     }
     // The bitset sweep tests exactly the disjunction: a record hits when any tested
@@ -1480,11 +1773,9 @@ fn build_sweep_plan(
     SourcePlan {
         source,
         call_site: vec![sets],
-        call_site_only,
         call_site_candidates: None,
         call_site_exact: true,
         no_prefilter: false,
-        skip_annotations,
     }
 }
 
@@ -1495,6 +1786,7 @@ fn build_sweep_plan(
 /// searches narrowed against each other. Treating only `OR` meant every one of those
 /// declined the pushdown entirely and fell to the generic evaluator, which is orders of
 /// magnitude slower. Keeping the tree lets `AND` do what it is there for: intersect.
+#[derive(Clone)]
 enum PredTree {
     Leaf(StringPredicate),
     Or(Vec<PredTree>),
@@ -1628,11 +1920,284 @@ impl RawField {
     }
 }
 
+/// How one node type exposes one property to the scan.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Exposure {
+    /// A string id at a fixed offset in the record: `slot` into `RAW_STRING_FIELDS`.
+    Column(usize),
+    /// One of CallSite's four strings, answered by the CallSite index.
+    CallSite,
+    /// The type has no such property, or not a string one: a string predicate on it is
+    /// never true, and the type need not be looked at for that leaf.
+    Absent,
+    /// A value only decoding the record reveals: the type must go through WHERE.
+    Dynamic,
+}
+
+fn exposure(tag: u8, property: &str) -> Exposure {
+    use graphite_storage::node::*;
+    if tag == TAG_CALL_SITE_NODE {
+        return if CALL_SITE_PROPS.contains(&property) {
+            Exposure::CallSite
+        } else {
+            Exposure::Absent
+        };
+    }
+    if let Some(slot) = graphite_storage::columns::raw_string_field(tag, property) {
+        return Exposure::Column(slot);
+    }
+    let dynamic = match tag {
+        TAG_ENUM_CONSTANT => property == "value",
+        TAG_LOCAL_VARIABLE | TAG_PARAMETER_NODE => property == "method",
+        TAG_RETURN_NODE => property == "method" || property == "actual_type",
+        TAG_RESOURCE_VALUE_NODE => matches!(property, "value" | "format" | "profile"),
+        TAG_RESOURCE_FILE_NODE => property == "profile",
+        // An annotation exposes `values` and then any key its own value pairs carry.
+        TAG_ANNOTATION_NODE => true,
+        _ => false,
+    };
+    if dynamic {
+        Exposure::Dynamic
+    } else {
+        Exposure::Absent
+    }
+}
+
+/// What the scan does for one node type.
+enum TagPlan {
+    /// No record of this type can satisfy the clause.
+    Skip,
+    /// Every record goes through WHERE: some leaf needs the record decoded.
+    Generic,
+    /// The clause, restricted to the leaves this type answers raw, for the CallSite
+    /// index.
+    CallSite(PredTree),
+    /// The clause, restricted to the leaves this type answers raw, for the columns.
+    Column(PredTree),
+}
+
+enum Pruned {
+    False,
+    Generic,
+    Tree(PredTree),
+}
+
+/// Restrict the clause to what `tag`'s records expose. A leaf the type lacks is false;
+/// a disjunction of only such leaves is false; a conjunction with one is false. A leaf
+/// only decoding can answer makes the whole type generic.
+fn prune(tree: &PredTree, tag: u8, dynamic_is_absent: &dyn Fn(&str) -> bool) -> Pruned {
+    match tree {
+        PredTree::Leaf(p) => match exposure(tag, p.property) {
+            Exposure::Column(_) | Exposure::CallSite => Pruned::Tree(tree.clone()),
+            Exposure::Absent => Pruned::False,
+            Exposure::Dynamic if dynamic_is_absent(p.property) => Pruned::False,
+            Exposure::Dynamic => Pruned::Generic,
+        },
+        PredTree::Or(children) => {
+            let mut kept = Vec::new();
+            for c in children {
+                match prune(c, tag, dynamic_is_absent) {
+                    Pruned::False => {}
+                    Pruned::Generic => return Pruned::Generic,
+                    Pruned::Tree(t) => kept.push(t),
+                }
+            }
+            match kept.len() {
+                0 => Pruned::False,
+                1 => Pruned::Tree(kept.pop().unwrap()),
+                _ => Pruned::Tree(PredTree::Or(kept)),
+            }
+        }
+        PredTree::And(children) => {
+            let mut kept = Vec::new();
+            let mut generic = false;
+            for c in children {
+                match prune(c, tag, dynamic_is_absent) {
+                    Pruned::False => return Pruned::False,
+                    Pruned::Generic => generic = true,
+                    Pruned::Tree(t) => kept.push(t),
+                }
+            }
+            if generic {
+                return Pruned::Generic;
+            }
+            match kept.len() {
+                1 => Pruned::Tree(kept.pop().unwrap()),
+                _ => Pruned::Tree(PredTree::And(kept)),
+            }
+        }
+    }
+}
+
+fn tag_plan(tree: &PredTree, tag: u8, dynamic_is_absent: &dyn Fn(&str) -> bool) -> TagPlan {
+    match prune(tree, tag, dynamic_is_absent) {
+        Pruned::False => TagPlan::Skip,
+        Pruned::Generic => TagPlan::Generic,
+        Pruned::Tree(t) if tag == TAG_CALL_SITE_NODE => TagPlan::CallSite(t),
+        Pruned::Tree(t) => TagPlan::Column(t),
+    }
+}
+
+/// The sorted string ids of one column that satisfy one predicate, resolved once per
+/// column and remembered there, as the Kotlin column index remembers them.
+fn resolve_column_leaf(
+    graph: &Graph,
+    column: &graphite_storage::columns::StringColumn,
+    p: &StringPredicate,
+) -> std::sync::Arc<Vec<u32>> {
+    let key = (p.op as u8, p.transform as u8, p.literal.clone());
+    if let Some(hit) = column.cached(&key) {
+        return hit;
+    }
+    let unique = column.unique();
+    let ids: Vec<u32> = if p.is_seekable() {
+        // Contiguous in the dictionary: take the column's ids inside that range.
+        let range = seek_range(graph, p);
+        let lo = unique.partition_point(|&s| (s as usize) < range.start);
+        let hi = unique.partition_point(|&s| (s as usize) < range.end);
+        unique[lo..hi].to_vec()
+    } else {
+        let candidates: Option<Vec<u32>> = match (p.literal.is_ascii(), p.trigrams.as_ref()) {
+            (true, Some(trigrams)) if !trigrams.is_empty() => {
+                column.trigram_candidates(&graph.strings, trigrams)
+            }
+            _ => None,
+        };
+        match candidates {
+            Some(mut c) => {
+                c.retain(|&id| predicate_matches(graph, p, id));
+                c
+            }
+            None => {
+                // No trigram help: test the column's distinct strings, never the
+                // whole dictionary.
+                const CHUNK: usize = 4096;
+                if unique.len() >= CHUNK * 2 {
+                    unique
+                        .par_chunks(CHUNK)
+                        .map(|chunk| {
+                            chunk
+                                .iter()
+                                .copied()
+                                .filter(|&id| predicate_matches(graph, p, id))
+                                .collect::<Vec<u32>>()
+                        })
+                        .reduce(Vec::new, |mut a, b| {
+                            a.extend(b);
+                            a
+                        })
+                } else {
+                    unique
+                        .iter()
+                        .copied()
+                        .filter(|&id| predicate_matches(graph, p, id))
+                        .collect()
+                }
+            }
+        }
+    };
+    let ids = std::sync::Arc::new(ids);
+    column.remember(key, ids.clone());
+    ids
+}
+
+/// One leaf of a column plan, resolved for one graph: which column it reads and
+/// which string ids satisfy it.
+struct ColumnLeaf {
+    slot: usize,
+    matched: std::sync::Arc<Vec<u32>>,
+    /// The same ids as a bitset when there are enough of them to make the binary
+    /// search per record the slower test.
+    bits: Option<StringBitset>,
+}
+
+impl ColumnLeaf {
+    #[inline]
+    fn holds(&self, string_id: u32) -> bool {
+        match &self.bits {
+            Some(b) => b.get(string_id as usize),
+            None => self.matched.binary_search(&string_id).is_ok(),
+        }
+    }
+}
+
+/// A column plan resolved against one graph: the tree with each leaf's matching ids.
+enum ColumnTree {
+    Leaf(ColumnLeaf),
+    Or(Vec<ColumnTree>),
+    And(Vec<ColumnTree>),
+}
+
+impl ColumnTree {
+    /// `None` when no record can match: an `And` with an empty leaf, or an `Or` of
+    /// nothing but empty leaves.
+    fn resolve(graph: &Graph, tree: &PredTree, tag: u8) -> Option<ColumnTree> {
+        match tree {
+            PredTree::Leaf(p) => {
+                let Exposure::Column(slot) = exposure(tag, p.property) else {
+                    return None;
+                };
+                let column = graph.string_column(slot);
+                let matched = resolve_column_leaf(graph, column, p);
+                if matched.is_empty() {
+                    return None;
+                }
+                let bits = (matched.len() > 8).then(|| {
+                    let mut b = StringBitset::new(graph.strings.len());
+                    for &id in matched.iter() {
+                        b.set(id as usize);
+                    }
+                    b
+                });
+                Some(ColumnTree::Leaf(ColumnLeaf {
+                    slot,
+                    matched,
+                    bits,
+                }))
+            }
+            PredTree::Or(children) => {
+                let kept: Vec<ColumnTree> = children
+                    .iter()
+                    .filter_map(|c| ColumnTree::resolve(graph, c, tag))
+                    .collect();
+                if kept.is_empty() {
+                    None
+                } else {
+                    Some(ColumnTree::Or(kept))
+                }
+            }
+            PredTree::And(children) => {
+                let mut kept = Vec::with_capacity(children.len());
+                for c in children {
+                    kept.push(ColumnTree::resolve(graph, c, tag)?);
+                }
+                Some(ColumnTree::And(kept))
+            }
+        }
+    }
+
+    #[inline]
+    fn matches(&self, graph: &Graph, row: usize) -> bool {
+        match self {
+            ColumnTree::Leaf(l) => l.holds(graph.string_column(l.slot).string_ids()[row]),
+            ColumnTree::Or(cs) => cs.iter().any(|c| c.matches(graph, row)),
+            ColumnTree::And(cs) => cs.iter().all(|c| c.matches(graph, row)),
+        }
+    }
+
+    fn first_slot(&self) -> usize {
+        match self {
+            ColumnTree::Leaf(l) => l.slot,
+            ColumnTree::Or(cs) | ColumnTree::And(cs) => cs[0].first_slot(),
+        }
+    }
+}
+
 fn property_operand(e: &Expr, variable: &str) -> Option<(&'static str, Transform)> {
     match e {
         Expr::Property { expr, key } => match expr.as_ref() {
             Expr::Variable(v) if v == variable => {
-                let prop = CALL_SITE_PROPS.iter().find(|p| *p == key)?;
+                let prop = PUSHABLE_PROPS.iter().find(|p| *p == key)?;
                 Some((prop, Transform::None))
             }
             _ => None,
@@ -1817,5 +2382,122 @@ fn may_match(graph: &Graph, tree: &PredTree) -> bool {
         },
         PredTree::Or(children) => children.iter().any(|c| may_match(graph, c)),
         PredTree::And(children) => children.iter().all(|c| may_match(graph, c)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use graphite_storage::node::*;
+
+    fn leaf(property: &'static str, op: PushOp, literal: &str) -> PredTree {
+        PredTree::Leaf(StringPredicate {
+            property,
+            op,
+            literal: literal.to_string(),
+            transform: Transform::None,
+            trigrams: std::sync::Arc::new(graphite_storage::callsite_index::literal_trigrams(
+                literal,
+            )),
+            signature: graphite_storage::callsite_index::literal_signature(literal),
+            test: 0,
+        })
+    }
+
+    fn kind(p: &Pruned) -> &'static str {
+        match p {
+            Pruned::False => "false",
+            Pruned::Generic => "generic",
+            Pruned::Tree(_) => "tree",
+        }
+    }
+
+    #[test]
+    fn exposure_follows_the_record_layouts() {
+        assert_eq!(exposure(TAG_STRING_CONSTANT, "value"), Exposure::Column(0));
+        assert_eq!(exposure(TAG_INT_CONSTANT, "value"), Exposure::Absent);
+        assert_eq!(exposure(TAG_ENUM_CONSTANT, "value"), Exposure::Dynamic);
+        assert_eq!(
+            exposure(TAG_CALL_SITE_NODE, "callee_class"),
+            Exposure::CallSite
+        );
+        assert_eq!(exposure(TAG_CALL_SITE_NODE, "value"), Exposure::Absent);
+        assert_eq!(exposure(TAG_ANNOTATION_NODE, "value"), Exposure::Dynamic);
+        assert!(matches!(
+            exposure(TAG_ANNOTATION_NODE, "name"),
+            Exposure::Column(_)
+        ));
+        assert!(matches!(
+            exposure(TAG_FIELD_NODE, "type"),
+            Exposure::Column(_)
+        ));
+        assert_eq!(exposure(TAG_LOCAL_VARIABLE, "method"), Exposure::Dynamic);
+    }
+
+    #[test]
+    fn pruning_keeps_only_what_a_type_answers() {
+        let value = leaf("value", PushOp::Contains, "abc");
+        let callee = leaf("callee_class", PushOp::Contains, "abc");
+        let never = &|_: &str| false;
+        // A leaf the type lacks is false; a disjunction of one raw and one absent leaf
+        // keeps the raw one; a conjunction with an absent leaf is false.
+        assert_eq!(kind(&prune(&value, TAG_CALL_SITE_NODE, never)), "false");
+        assert_eq!(kind(&prune(&value, TAG_STRING_CONSTANT, never)), "tree");
+        let or = PredTree::Or(vec![value.clone(), callee.clone()]);
+        match prune(&or, TAG_CALL_SITE_NODE, never) {
+            Pruned::Tree(PredTree::Leaf(p)) => assert_eq!(p.property, "callee_class"),
+            other => panic!("expected the callee leaf, got {}", kind(&other)),
+        }
+        match prune(&or, TAG_STRING_CONSTANT, never) {
+            Pruned::Tree(PredTree::Leaf(p)) => assert_eq!(p.property, "value"),
+            other => panic!("expected the value leaf, got {}", kind(&other)),
+        }
+        assert_eq!(kind(&prune(&or, TAG_INT_CONSTANT, never)), "false");
+        let and = PredTree::And(vec![value.clone(), callee.clone()]);
+        assert_eq!(kind(&prune(&and, TAG_CALL_SITE_NODE, never)), "false");
+        assert_eq!(kind(&prune(&and, TAG_STRING_CONSTANT, never)), "false");
+        // A dynamic leaf sends the type through WHERE, unless the graph rules it out.
+        assert_eq!(kind(&prune(&value, TAG_ANNOTATION_NODE, never)), "generic");
+        assert_eq!(kind(&prune(&or, TAG_ANNOTATION_NODE, never)), "generic");
+        // A key no string in the graph's dictionary spells cannot be an annotation's.
+        let absent = &|key: &str| key == "value" || key == "callee_class";
+        assert_eq!(kind(&prune(&or, TAG_ANNOTATION_NODE, absent)), "false");
+        let only_value = &|key: &str| key == "value";
+        assert_eq!(
+            kind(&prune(&or, TAG_ANNOTATION_NODE, only_value)),
+            "generic"
+        );
+        assert_eq!(kind(&prune(&value, TAG_ENUM_CONSTANT, never)), "generic");
+    }
+
+    #[test]
+    fn tag_plans_route_each_type() {
+        let value = leaf("value", PushOp::Contains, "abc");
+        let never = &|_: &str| false;
+        assert!(matches!(
+            tag_plan(&value, TAG_STRING_CONSTANT, never),
+            TagPlan::Column(_)
+        ));
+        assert!(matches!(
+            tag_plan(&value, TAG_CALL_SITE_NODE, never),
+            TagPlan::Skip
+        ));
+        assert!(matches!(
+            tag_plan(&value, TAG_LONG_CONSTANT, never),
+            TagPlan::Skip
+        ));
+        assert!(matches!(
+            tag_plan(&value, TAG_ANNOTATION_NODE, never),
+            TagPlan::Generic
+        ));
+        let callee = leaf("callee_class", PushOp::Contains, "abc");
+        assert!(matches!(
+            tag_plan(&callee, TAG_CALL_SITE_NODE, never),
+            TagPlan::CallSite(_)
+        ));
+        assert!(matches!(
+            tag_plan(&callee, TAG_STRING_CONSTANT, never),
+            TagPlan::Skip
+        ));
     }
 }

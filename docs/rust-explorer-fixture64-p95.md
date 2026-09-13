@@ -166,6 +166,56 @@ keep from counting. Transparent huge pages for the mappings were tried and made 
 measurable difference, so the first-touch cost is not TLB misses. Neither a cache nor
 a smaller response body is taken here.
 
+## Properties that are not CallSite's
+
+The production log's commonest queries are `n.caller_class CONTAINS "x" OR
+n.callee_class CONTAINS "x" RETURN n LIMIT 25` and `n.value CONTAINS "x" RETURN n LIMIT 25`.
+The second names a `StringConstant` property, and until now only CallSite's four string
+properties had a raw path in the port: every other string predicate on an unlabelled
+scan decoded every node of every type in every graph and evaluated WHERE on it. On the
+64-graph corpus that was 14.4 s for `n.value CONTAINS "Spooler" RETURN n LIMIT 25`; the
+Kotlin server, which has no raw path for `value` either, takes 19.5 s. On a corpus of
+42 graphs ten times this size, a release build of `516451b` measured P50 3.5–4.2 s and
+P95 42–47 s on both servers — the shape decides, not the language.
+
+The port now reads such properties the way it reads CallSite's: a per-type string
+column (node ids and the string id each carries), built on first use from the type's
+records at a fixed offset, with a lowercase trigram index over the column's distinct
+strings and a bounded cache of resolved terms — the structure the Kotlin server keeps
+for the properties it does cover. Per type, the clause is pruned to the leaves the type
+answers raw: a type without the property is skipped outright, one whose property needs
+decoding (an annotation's value pairs, an enum's `value`) goes through WHERE, and the
+rest are swept by column. Candidates of the types a graph contributes are merged by
+node id, which is the order the Kotlin server produces where its own order is defined
+(it merges direct-property candidates by record position; for the types it reaches
+through a type-keyed hash map the order varies between JVM runs).
+
+| Query, 64 graphs | Rust before | Rust now | Kotlin main |
+|---|---:|---:|---:|
+| `n.value CONTAINS "Spooler" RETURN n LIMIT 25` | 14.4 s | 1.3 ms | 19.5 s |
+| `n.value CONTAINS "http" RETURN n LIMIT 25` | 0.8 s | 0.9 ms | 1.1 s |
+| `n.value CONTAINS "zzqqxxvv"` (absent) | 14.2 s | 0.5 ms | 19.2 s |
+| `n.name CONTAINS "size" AND n.type CONTAINS "int"`, 3 columns | | 1.4 ms | 33 ms |
+
+Twenty-four differential queries over `value`, `name`, `type`, `class`, `path` and mixed
+clauses, with `RETURN n`, `count(*)` and `DISTINCT`: sixteen byte-identical to Kotlin;
+six where Kotlin main fails (`Unsafe expression reached parallel string projection` on
+`RETURN n` with a rare term, `Java heap space` on `count(*)` over `value`) and the port
+answers; two where the row set is the same and only Kotlin's inter-type order differs,
+for the reason above. The v1 backtest is unchanged: 170/170 digests, and an interleaved
+A/B against the previous build is within noise.
+
+### The v2 backtest
+
+`rust/bench/backtest.py --mix v2` (now the default) weights the 170 queries the way the
+production log does: 50 class-pair `RETURN n`, 40 `value CONTAINS`, 30 wide-or, and the
+rest as before. `--mix v1` keeps the earlier all-CallSite mix.
+
+| v2 mix, 64 graphs | P50 | P95 | max |
+|---|---:|---:|---:|
+| Rust | 0.9 ms | 3.8 ms | 8.4 ms |
+| Kotlin main | measured separately below |  |  |
+
 ## Debug builds
 
 Every number in this document is from `cargo build --release`. The binary a plain

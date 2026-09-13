@@ -224,6 +224,8 @@ pub struct Graph {
     /// the planner asks it for every graph on every query, and the answer is a fact
     /// about the graph, not the query.
     property_names_in_dictionary: std::sync::OnceLock<[bool; 4]>,
+    /// One lazily built column per entry of [`crate::columns::RAW_STRING_FIELDS`].
+    string_columns: Vec<std::sync::OnceLock<crate::columns::StringColumn>>,
 }
 
 impl Graph {
@@ -305,6 +307,9 @@ impl Graph {
             resources,
             call_site_index,
             property_names_in_dictionary: std::sync::OnceLock::new(),
+            string_columns: (0..crate::columns::RAW_STRING_FIELDS.len())
+                .map(|_| std::sync::OnceLock::new())
+                .collect(),
         };
         if graph.call_site_index.is_none() && graph.count_by_tag(TAG_CALL_SITE_NODE) > 0 {
             // No persisted index: build the same structure in memory, as the Kotlin
@@ -416,6 +421,20 @@ impl Graph {
                     .is_some()
             })
         })[property]
+    }
+
+    /// The string column for slot `slot` of [`crate::columns::RAW_STRING_FIELDS`],
+    /// built on first use from the tag's records.
+    pub fn string_column(&self, slot: usize) -> &crate::columns::StringColumn {
+        self.string_columns[slot].get_or_init(|| {
+            let field = crate::columns::RAW_STRING_FIELDS[slot];
+            crate::columns::StringColumn::build(
+                &self.nodedata,
+                self.ids_by_tag(field.tag),
+                &|id| self.node_offset(id),
+                field.offset,
+            )
+        })
     }
 
     pub fn call_site_strings(&self, id: NodeId) -> Option<CallSiteStrings> {

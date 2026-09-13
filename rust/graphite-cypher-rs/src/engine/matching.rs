@@ -229,16 +229,37 @@ impl<'a> Matcher<'a> {
             }
             NodeClass::Tags(tags) => {
                 for (si, src) in self.ex.sources.iter().enumerate() {
-                    for &tag in &tags {
-                        for &id in src.graph.ids_by_tag(tag) {
-                            self.ex.tick()?;
-                            let v = Value::Node(NodeRef {
-                                source: si as SourceIdx,
-                                id,
-                            });
-                            if !on_candidate(v, self)? {
-                                return Ok(false);
-                            }
+                    // The types' id lists are each ascending; they are merged so the
+                    // graph is walked in id order across types, as the Kotlin server
+                    // walks it -- the order a LIMIT cuts.
+                    let mut lists: Vec<(&[u32], usize)> = tags
+                        .iter()
+                        .map(|&tag| (src.graph.ids_by_tag(tag), 0usize))
+                        .filter(|(ids, _)| !ids.is_empty())
+                        .collect();
+                    loop {
+                        let Some(best) = lists
+                            .iter()
+                            .enumerate()
+                            .map(|(i, (ids, pos))| (ids[*pos], i))
+                            .min()
+                            .map(|(_, i)| i)
+                        else {
+                            break;
+                        };
+                        let (ids, pos) = &mut lists[best];
+                        let id = ids[*pos];
+                        *pos += 1;
+                        if *pos >= ids.len() {
+                            lists.swap_remove(best);
+                        }
+                        self.ex.tick()?;
+                        let v = Value::Node(NodeRef {
+                            source: si as SourceIdx,
+                            id,
+                        });
+                        if !on_candidate(v, self)? {
+                            return Ok(false);
                         }
                     }
                 }
