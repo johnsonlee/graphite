@@ -33,7 +33,11 @@ calls** have completed. The JVM clears retained indexes once before warmup and p
 indexes and caches throughout the experiment. These are minimums: every measured call is
 retained, so fast queries can produce more than 40 samples. Warmup observations are retained
 for correctness and protocol validation but excluded from latency quantiles. Each raw TSV row
-records its phase, round, and cumulative phase elapsed nanoseconds.
+records its phase, round, and cumulative phase elapsed nanoseconds. Each completed invocation
+flushes its full row before result verification and the next call, so cancellation during a slow
+following call retains prior samples, including a mismatching result. Flush is outside the query
+latency timer, but contributes to subsequent phase wall time; it is not fsync and does not promise
+durability after host storage failure.
 
 There are three independent base/candidate JVM pairs in candidate/base, base/candidate,
 candidate/base order. All six JVMs for any one query run sequentially on the same host. The

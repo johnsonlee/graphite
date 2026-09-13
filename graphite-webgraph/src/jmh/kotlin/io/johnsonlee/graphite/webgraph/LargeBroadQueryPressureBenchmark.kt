@@ -260,6 +260,8 @@ open class LargeBroadQueryPressureBenchmark {
             round++
             // Record even a mismatching result before the hard correctness check aborts this run.
             writer.write("$phase\t$round\t$elapsedNanos\t${observationRow(sample)}\n")
+            // Preserve completed calls if cancellation interrupts this query or its next call.
+            writer.flush()
             QueryCorrectnessManifest.verify(expected, listOf(sample.correctnessRecord()))
             consumed += sample.responseBytes + sample.rowCount
         } while (round < minimumInvocations || elapsedNanos < DIVERSE_PHASE_MIN_NANOS)
