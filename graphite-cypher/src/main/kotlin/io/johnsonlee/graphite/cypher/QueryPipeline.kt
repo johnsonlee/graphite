@@ -27,6 +27,8 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
+import java.util.function.IntPredicate
 import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
 import io.johnsonlee.graphite.graph.propertyTextFragments
 import io.johnsonlee.graphite.graph.GraphScanParallelismPlan
@@ -581,7 +583,16 @@ class QueryPipeline private constructor(
                     val soughtRows = pushedWhere
                         ?.takeIf { it.condition is CypherExpr.Comparison }
                         ?.let { tryElementIdSeek(clause, it, rows) }
-                    rows = if (soughtRows != null) {
+                    val qualifiedRows = if (clauseIndex == 0 && !clause.optional && clause.where == null &&
+                        clause.patterns.size == 1 && rows.size == 1 && rows.single().isEmpty()
+                    ) {
+                        pushedWhere?.let { where ->
+                            qualifiedIdBindings(clause.patterns.single(), where.condition, sources)?.toList()
+                        }
+                    } else null
+                    rows = if (qualifiedRows != null) {
+                        qualifiedRows
+                    } else if (soughtRows != null) {
                         consumedWhereIndex = clauseIndex + 1
                         soughtRows
                     } else if (clause.optional) {
@@ -1516,7 +1527,8 @@ class QueryPipeline private constructor(
         }
         val predicateBindings = mutableMapOf<String, Any?>(variable to null)
         val propertyCandidates = if (nodePattern.properties.isEmpty()) {
-            dynamicPropertyCandidates(nodeClass, filterCondition, variable, candidateSources)
+            qualifiedIdCandidates(nodeClass, filterCondition, variable, candidateSources)
+                ?: dynamicPropertyCandidates(nodeClass, filterCondition, variable, candidateSources)
         } else null
         for (candidate in propertyCandidates ?: nodeCandidates(nodeClass, candidateSources)) {
             if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
@@ -3374,6 +3386,15 @@ class QueryPipeline private constructor(
             ?.let { graphId -> sources.filter { it.id == graphId } }
             ?: sources
 
+        qualifiedIdBindings(pattern, where.condition, candidateSources)?.let { matches ->
+            for (bindings in matches) {
+                if (evaluator.evaluate(where.condition, bindings) != true) continue
+                rows.add(projectRow(ret.items, columns, bindings))
+            }
+            checkCancelled()
+            return CypherResult(columns, rows)
+        }
+
         for (candidate in nodeElementCandidates(nodePattern, emptyMap(), candidateSources)) {
             if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
             predicateBindings[variable] = candidate
@@ -3425,7 +3446,9 @@ class QueryPipeline private constructor(
             ?.let { graphId -> sources.filter { it.id == graphId } }
             ?: sources
 
-        val directMatches = (pattern.elements.singleOrNull() as? PatternElement.NodePattern)?.let { node ->
+        val directMatches = (if (match.where == null) {
+            qualifiedIdBindings(pattern, where.condition, candidateSources)
+        } else null) ?: (pattern.elements.singleOrNull() as? PatternElement.NodePattern)?.let { node ->
             directStringBindings(node, where.condition, candidateSources)
         }
         if (orderBy == null && ret.distinct) {
@@ -4748,6 +4771,58 @@ class QueryPipeline private constructor(
 
     private fun findLastBoundNode(bindings: Map<String, Any?>): NodeCursor? =
         nodeCursor(bindings[INTERNAL_CURRENT_NODE_KEY])
+
+    /** Bind selected IDs through the ordinary single-node matcher; callers retain the full WHERE. */
+    private fun qualifiedIdBindings(
+        pattern: CypherPattern,
+        condition: CypherExpr,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Map<String, Any?>>? {
+        if (!qualified || pattern.pathVariable != null) return null
+        val node = pattern.elements.singleOrNull() as? PatternElement.NodePattern ?: return null
+        if (node.properties.isNotEmpty()) return null
+        val variable = node.variable ?: return null
+        val nodeClass = resolveNodeClass(node.labels) ?: return null
+        val candidates = qualifiedIdCandidates(nodeClass, condition, variable, candidateSources) ?: return null
+        return candidates.mapNotNull { candidate ->
+            bindNodeCandidate(candidate, node, emptyMap(), navigate = false, trackSegments = false)
+        }
+    }
+
+    /** Generated qualified identities can be checked using only namespace and graph-local ID. */
+    private fun qualifiedIdCandidates(
+        nodeClass: Class<out Node>,
+        condition: CypherExpr,
+        variable: String,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Any>? {
+        if (!qualified) return null
+        val predicate = condition as? CypherExpr.StringOp ?: return null
+        if (predicate.op != "CONTAINS") return null
+        val property = predicate.left as? CypherExpr.Property ?: return null
+        if (property.expression != CypherExpr.Variable(variable) ||
+            property.propertyName !in setOf(QUALIFIED_ID_PROPERTY, ELEMENT_ID_PROPERTY)
+        ) return null
+        val needle = when (val term = predicate.right) {
+            is CypherExpr.Literal -> term.value
+            is CypherExpr.Parameter -> activeParameters.get()?.get(term.name)
+            else -> null
+        } as? String ?: return null
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        return candidateSources.asSequence().flatMap { source ->
+            val prefix = source.id + ":"
+            val lookup = (source.graph as? NodeIdCandidateLookup)?.takeUnless { prefix.contains(needle) }
+            val candidates = if (lookup == null) null else {
+                val text = StringBuilder(prefix)
+                lookup.nodesMatchingId(nodeClass, IntPredicate { id ->
+                    text.setLength(prefix.length)
+                    text.append(id)
+                    text.indexOf(needle) >= 0
+                }, tracker)
+            }
+            (candidates ?: trackWork(source.graph.nodes(nodeClass), tracker)).map { node -> nodeValue(source, node) }
+        }
+    }
 
     /** A storage candidate is never an answer: the complete ANY predicate still runs on every survivor. */
     private fun dynamicPropertyCandidates(

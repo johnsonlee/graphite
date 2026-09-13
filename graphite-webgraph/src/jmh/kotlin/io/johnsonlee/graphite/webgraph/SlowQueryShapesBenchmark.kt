@@ -51,7 +51,7 @@ open class SlowQueryShapesBenchmark {
     var corpus: String = "android"
 
     @Param(
-        "valueHit", "valueMiss", "dynamicHit", "dynamicMiss",
+        "valueHit", "valueMiss", "qualifiedIdHit", "qualifiedIdMiss", "dynamicHit", "dynamicMiss",
         "wrappedCallerHit", "wrappedCallerMiss", "dataflowSourceHit", "dataflowSourceMiss",
         "dataflowTargetHit", "dataflowTargetMiss"
     )
@@ -232,11 +232,22 @@ private val slowQueryShapeCases: List<SlowQueryShapeCase> = buildList {
         val suffix = if (hit) "Hit" else "Miss"
         val value = if (hit) "android.permission.INTERNET" else "GraphiteSlowShapeAbsent293746X"
         val caller = if (hit) "android.app.Activity" else "GraphiteSlowShapeAbsent293746X"
+        // Real fixture IDs include sparse substring hits up to Android's final node, 5,938,826.
+        val qualifiedId = if (hit) "938826" else "93882699"
         val nodeReturn = " RETURN id(n) AS id, labels(n) AS labels, n.value AS value, " +
             "n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
         val edgeReturn = " RETURN id(c) AS source, id(n) AS target, type(r) AS relationship, " +
             "c.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
         add(SlowQueryShapeCase("value$suffix", "MATCH (n) WHERE n.value CONTAINS '$value'$nodeReturn", hit))
+        add(
+            SlowQueryShapeCase(
+                "qualifiedId$suffix",
+                "MATCH (n) WHERE n.qualifiedId CONTAINS '$qualifiedId' " +
+                    "RETURN id(n) AS id, labels(n) AS labels, n.qualifiedId AS qualifiedId, " +
+                    "n.graphId AS graphId LIMIT 50",
+                hit
+            )
+        )
         add(
             SlowQueryShapeCase(
                 "dynamic$suffix",

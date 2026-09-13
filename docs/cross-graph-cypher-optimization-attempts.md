@@ -1601,3 +1601,54 @@ ordered results agree, and the existing-query series shows no >10% median regres
 Unsupported/numeric search-text fallbacks and every possible query of the same shape
 are outside this empirical 10x claim. Complete evidence is preserved rather than
 pooling earlier prototypes or fixture protocols into the final result.
+
+### 2026-09-13 - Attempt 037: Prune qualified identity candidates before node decoding
+
+**Hypothesis:** qualifiedId is generated from the external graph namespace and local
+node ID. Testing that exact string while iterating primitive IDs can reject nodes
+without decoding their payload, preserving full residual predicates and encounter order.
+Use the same candidate binding for LIMIT, no-LIMIT, ordering and initial aggregate paths.
+
+**Base/candidate:** unmodified main `144d98efa2bcb1f183d4f962b833c234d839d2a9`,
+re-fetched after implementation. Candidate is parent `7351f9696558e2341c90c246a2c1450a636ef105`
+plus the source files frozen in `qualifiedIdExtension.artifacts` of
+[the machine-readable evidence](slow-query-shapes-results.json). Candidate JAR SHA-256
+`3f46433e7d4cd0279a39525001c4aa3dceb07aa4aff0da16ba6674b326e7b6f7`;
+main JAR `59094b5cf634ca2f5dcbc1f1c0fae6794e6494ba7f0d77ee4f6162596846d5ce`.
+Both use the twelve-case harness
+`6b112a1bb6f12184fa27fa8b72f87f35a2071c2d354c8236f10e4e51662ca8fb`.
+Previous four-family measurements retain their original source/harness identities.
+
+**Fixture/method:** the same real persisted Android 14 graph (5,938,826 nodes), private
+copies without a CallSite index, Java 17.0.18, M3 Max, 8 GiB heap and four active CPUs.
+`SlowQueryShapesBenchmark.execute`, queryName `qualifiedIdHit,qualifiedIdMiss`,
+`-f 1 -wi 0 -i 1 -prof gc`, COLD/WARM, three alternating revision pairs. Search
+texts are `938826` (six hits, including the last persisted node) and `93882699`
+(no hits). Cold does not flush OS pages. Separate correctness-oracle processes
+measure query-window CPU and all-Java-thread allocated bytes; allocation is not peak heap.
+
+| Case/state | Main wall | Candidate wall | Speedup | CPU speedup | Main/candidate query allocation |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Hit cold | 3,440.852 ms | 153.040 ms | 22.48x | 14.88x | 8,582.790 / 8.871 MB |
+| Miss cold | 3,577.282 ms | 138.692 ms | 25.79x | 19.27x | 8,581.685 / 8.119 MB |
+| Hit warm | 3,340.300 ms | 77.246 ms | 43.24x | 35.60x | 8,563.272 / 0.024 MB |
+| Miss warm | 3,347.210 ms | 78.405 ms | 42.69x | 33.49x | 8,563.260 / 0.003 MB |
+
+**Verification:** all 24 JMH and eight resource-oracle observations preserve exact
+full ordered result digests; all 28 private copies were removed and shared input
+hashes/mtimes remain unchanged. Ten Cypher tests verify namespaces, colon boundaries,
+Unicode, sparse/negative IDs, plain Annotation metadata, parameters, errors, budgets,
+order/provenance, no-LIMIT/order/count/group paths, and safe fallback. Five mapped tests
+verify ordered primitive traversal, one work charge per tested ID, lazy consumption,
+interrupts, and zero rejected-node decoding using poisoned payloads with a decode control.
+Full repository checks passed with the initial extension; complete Cypher tests,
+lint, coverage and JMH compilation passed again after adding the general paths.
+Combined current suite: 2,513 regular, seven memory-contract and three real-corpus tests.
+Cypher coverage is 98.0033%, WebGraph 98.1051%. Independent code review found no blocker.
+
+**Conclusion:** keep. The measured qualifiedId cases exceed 10x without loading
+rejected nodes. Generated identity semantics apply only to qualified bindings;
+plain graph properties and unsupported expressions retain normal evaluation.
+Namespace-only matches retain the ordinary lazy scan. No-LIMIT/order/aggregate
+paths have source-access correctness evidence, not separate latency claims.
+The subsequent required-gate integration is recorded separately from this experiment.

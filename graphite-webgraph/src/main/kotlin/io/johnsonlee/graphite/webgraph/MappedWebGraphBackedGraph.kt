@@ -17,6 +17,8 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
+import java.util.function.IntPredicate
 import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
 import io.johnsonlee.graphite.graph.propertyTextFragment
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
@@ -160,6 +162,7 @@ internal class MappedWebGraphBackedGraph(
     private val resourceAccessor: Lazy<ResourceAccessor>
 ) : Graph,
     NodePropertyTextCandidates,
+    NodeIdCandidateLookup,
     StreamingMethodLookup,
     WorkAwareStringPropertyLookup,
     WorkAwareTransformedStringPropertyLookup,
@@ -270,6 +273,25 @@ internal class MappedWebGraphBackedGraph(
         nodeTypeIndex.count(type)
 
     override fun stringPropertyNodeOrder(node: Node): Long = nodeOffsets.offset(node.id.value)
+
+    override fun <T : Node> nodesMatchingId(
+        type: Class<T>,
+        predicate: IntPredicate,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T> = sequence {
+        val ids = nodeTypeIndex.idIterator(type)
+        var inspected = 0
+        while (ids.hasNext()) {
+            if ((inspected++ and NODE_ID_SCAN_CANCELLATION_MASK) == 0 && Thread.currentThread().isInterrupted) {
+                throw CancellationException("Node ID candidate scan interrupted")
+            }
+            val id = ids.nextInt()
+            workConsumer?.consume()
+            if (predicate.test(id)) {
+                node(NodeId(id))?.takeIf(type::isInstance)?.let { yield(type.cast(it)) }
+            }
+        }
+    }
 
     override fun <T : Node> propertyTextCandidates(
         type: Class<T>,
@@ -2565,6 +2587,7 @@ internal class MappedWebGraphBackedGraph(
     }
 }
 
+private const val NODE_ID_SCAN_CANCELLATION_MASK = 255
 private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
 private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
 private const val GRAPH_ID_PROJECTION_PROPERTY = "graphId"
