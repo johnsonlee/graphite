@@ -16,6 +16,27 @@ import kotlin.test.assertNull
 class DynamicPropertyAccessTest {
 
     @Test
+    fun `projected any exposes true false and unknown rather than hiding them in WHERE`() {
+        val executor = CypherExecutor(fixture())
+        val query = "MATCH (n) RETURN n.id AS id, " +
+            "any(k IN keys(n) WHERE toString(n[k]) CONTAINS \$term) AS matched ORDER BY id"
+
+        assertEquals(
+            listOf(
+                mapOf("id" to 1, "matched" to true),
+                mapOf("id" to 2, "matched" to false),
+                mapOf("id" to 3, "matched" to null),
+                mapOf("id" to 4, "matched" to true)
+            ),
+            executor.execute(query, mapOf("term" to "Voucher")).rows
+        )
+        assertEquals(
+            (1..4).map { id -> mapOf("id" to id, "matched" to null) },
+            executor.execute(query, mapOf("term" to null)).rows
+        )
+    }
+
+    @Test
     fun `any keys reads node properties and converts numeric values`() {
         val executor = CypherExecutor(fixture())
         val query = "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS \$term) " +

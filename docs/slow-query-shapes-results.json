@@ -6231,5 +6231,43 @@
       "webgraphCoveragePercent": 98.1051,
       "scope": "Full check with initial qualified-ID paths; complete Cypher tests, lint, coverage and JMH build repeated after no-LIMIT/order/aggregate extension."
     }
+  },
+  "dynamicAnyProjectionVerification": {
+    "baseRevision": "144d98efa2bcb1f183d4f962b833c234d839d2a9",
+    "candidateProductionRevision": "64de47e74adca94a01f049a6792e98dde89a8a78",
+    "testSource": "graphite-cypher/src/test/kotlin/io/johnsonlee/graphite/cypher/DynamicPropertyAccessTest.kt",
+    "testSourceSHA256": "d6ca135d59798ae9cc8ebbccc3593e69e7b0bbc71308d560a3d178d4bd5a229a",
+    "testName": "projected any exposes true false and unknown rather than hiding them in WHERE",
+    "purpose": "Correctness only; synthetic four-node fixture is not performance evidence",
+    "term": "Voucher",
+    "mainActual": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "candidateActual": [
+      true,
+      false,
+      null,
+      true
+    ],
+    "nullTermExpected": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "mainFailsExpectedAssertion": true,
+    "candidateFullCypherTestsAndLintPass": true,
+    "latestRegularTests": 2514,
+    "memoryContractTests": 7,
+    "realCorpusTests": 3,
+    "cypherCoveragePercent": 98.0033,
+    "logs": [
+      "/tmp/graphite-dynamic-any-main-projection.log",
+      "/tmp/graphite-dynamic-any-candidate-projection.log",
+      "/tmp/graphite-five-shapes-final-check.log"
+    ]
   }
 }

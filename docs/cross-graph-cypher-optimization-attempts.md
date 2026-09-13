@@ -1637,7 +1637,7 @@ measure query-window CPU and all-Java-thread allocated bytes; allocation is not 
 **Verification:** all 24 JMH and eight resource-oracle observations preserve exact
 full ordered result digests; all 28 private copies were removed and shared input
 hashes/mtimes remain unchanged. Ten Cypher tests verify namespaces, colon boundaries,
-Unicode, sparse/negative IDs, plain Annotation metadata, parameters, errors, budgets,
+sparse/negative IDs, plain Annotation metadata, parameters, errors, budgets,
 order/provenance, no-LIMIT/order/count/group paths, and safe fallback. Five mapped tests
 verify ordered primitive traversal, one work charge per tested ID, lazy consumption,
 interrupts, and zero rejected-node decoding using poisoned payloads with a decode control.
