@@ -1069,3 +1069,31 @@ checks remain pending. No speedup, memory reduction, or non-regression is claime
 
 **Conclusion:** keep the real-data harness and strict result checks. All four requested
 shapes, including both DATAFLOW endpoints, remain in scope for the 10x objective.
+
+### 2026-09-13 - Attempt 020: Repair the dynamic-property correctness baseline
+
+**Hypothesis:** the dynamic search's empty result is caused by treating every
+subscript as a numeric list/string index. A string subscript must resolve the same
+property as a static property expression before an optimized search can be evaluated.
+
+**Base/candidate:** main `144d98efa2bcb1f183d4f962b833c234d839d2a9`; candidate is this
+correctness-fix commit. `ExpressionEvaluator` evaluates both operands once, dispatches
+string keys through existing property resolution, and retains numeric indexing,
+negative indices, out-of-range nulls, and null/invalid-key behavior.
+
+**Correctness:** the focused Cypher run passed all 28 tests, including six new dynamic
+property tests for node fields, numeric values converted to strings, qualified graph
+identity, Method metadata, maps, and unchanged list/string indexing. Cypher detekt
+passed. Command: `./gradlew :cypher:test --tests '*ToStringLookupTest' --tests
+'*ValueStringLookupTest' --tests '*SourcePredicatePushdownTest' --tests
+'*DynamicPropertyAccessTest' :cypher:detekt :webgraph:jmhJar --max-workers=2`.
+The broader focused run contains separately uncommitted optimization experiments;
+this commit includes only the subscript fix and its own tests.
+
+**Performance/resources:** no optimization claim. Real Android fixture and environment
+are unchanged from Attempt 019. A separate main-plus-this-fix reference build will
+measure correct dynamic searches; unmodified main still supplies the baseline for
+all other shapes. Latency, CPU, allocation, and full regression evidence remain pending.
+
+**Conclusion:** keep the functional repair. It is a prerequisite for valid dynamic
+search comparison, not evidence of progress toward a 10x speedup by itself.
