@@ -109,8 +109,27 @@ bound to the exact generator, verifier and pinned input JAR cache key. On an exa
 the workflow checks that binding, relocates only path columns, and verifies the actual graph
 contents against the original JARs. It does not repeat the independent second build and tamper
 self-tests. On a miss, both independent builds and the full self-tests must pass before a new
-receipt can be cached. This reduces repeat preparation work; the first uncached preparation
-still pays the full validation cost.
+receipt can be cached. On a miss, `prepare-fixture64-inputs` uploads one generator JAR and
+four pinned fixture JARs. Two independent `generate-fixture64` jobs (`primary` and `repeat`)
+build one 64-graph corpus each, with at most two jobs running concurrently. Both consume the
+same SHA-verified inputs and exact resolved Temurin version; actual `java.runtime.version`
+is also checked before generation and verification. The resolved JDK version and sealing
+helper are included in the existing v2 cache key alongside every original dependency.
+
+The final `prepare-fixture64` job downloads both corpora and performs the unchanged content,
+reproducibility and tamper checks before writing the shared receipt and cache. Missing or
+failed producers cannot trigger a replacement build in the aggregate job. On a cache hit,
+the inputs job verifies and publishes the existing corpus; both generators are skipped and
+the final job confirms that successful publication without downloading/uploading it again.
+Intermediate artifact names bind the workflow run and attempt. Downstream artifact names and
+measurement scheduling are unchanged: base/candidate queries still run serially in all three
+pairs on the same machine, under the existing 8GiB measurement cap. Fixture generation retains
+its separate 4GiB cap.
+
+This removes the second graph generation from the serial preparation path; it does not remove
+validation or reduce total graph generation work. Uploading common inputs, transferring both
+corpora, and scheduling additional runners add overhead. Net wall-clock savings require CI
+measurement and are not assumed from the previous roughly six-minute repeat-build duration.
 
 ## Report coverage taxonomy
 

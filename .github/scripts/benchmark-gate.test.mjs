@@ -3204,7 +3204,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         /^  graph-routing-pressure-evidence:\n[\s\S]*?(?=^  graph-routing-pressure-external-evidence-disabled:)/m
     )?.[0] ?? "";
     const fixture64Job = workflow.match(
-        /^  prepare-fixture64:\n[\s\S]*?(?=^  graph-routing-pressure-evidence:)/m
+        /^  prepare-fixture64-inputs:\n[\s\S]*?(?=^  graph-routing-pressure-evidence:)/m
     )?.[0] ?? "";
     assert.match(fixture64Job, /prepare-fixture64-graphs\.sh/);
     assert.match(fixture64Job, /test-fixture64-reproducibility\.sh/);
@@ -3224,25 +3224,23 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     }
     assert.doesNotMatch(fixture64Job, /graphite-webgraph\/src\/main\/\*\*/);
     assert.doesNotMatch(fixture64Job, /MappedCallSiteStringIndexView\.kt/);
-    assert.match(fixture64Job, /FIXTURE64_CACHE_HIT/);
+    assert.match(fixture64Job, /seal-fixture64\.sh/);
     assert.match(fixture64Job, /if: steps\.fixture64-cache\.outputs\.cache-hit != 'true'/);
     assert.match(
         fixture64Job,
         /path: \|\n\s+shared-fixture64\/graphs\n\s+shared-fixture64\/fixture-reproducibility\.json/
     );
-    const cachedBranch = fixture64Job.slice(fixture64Job.indexOf('if [[ "${FIXTURE64_CACHE_HIT}" == true ]]'),
-        fixture64Job.indexOf('        else', fixture64Job.indexOf('if [[ "${FIXTURE64_CACHE_HIT}" == true ]]')));
+    const seal = fs.readFileSync(new URL("./seal-fixture64.sh", import.meta.url), "utf8");
+    const cachedBranch = seal.slice(seal.indexOf('if [[ "$MODE" == hit ]]'), seal.indexOf('\nelse'));
     assert.match(cachedBranch, /reuse-fixture64-receipt\.sh/);
-    assert.match(cachedBranch, /"\$\{FIXTURE64_INPUT_KEY\}"/);
+    assert.match(cachedBranch, /FIXTURE64_INPUT_KEY/);
     assert.doesNotMatch(cachedBranch, /test-fixture64-reproducibility|prepare-fixture64-graphs|jq --arg inputKey/);
-    const newProofBranch = fixture64Job.slice(fixture64Job.indexOf('        else',
-        fixture64Job.indexOf('if [[ "${FIXTURE64_CACHE_HIT}" == true ]]')),
-        fixture64Job.indexOf('        mapfile -t FIXTURE_JARS'));
+    const newProofBranch = seal.slice(seal.indexOf('\nelse'), seal.indexOf('\nfi', seal.indexOf('\nelse')));
     assert.match(newProofBranch, /test-fixture64-reproducibility\.sh/);
-    assert.match(newProofBranch, /jq --arg inputKey "\$\{FIXTURE64_INPUT_KEY\}"/);
+    assert.match(newProofBranch, /jq --arg inputKey "\$FIXTURE64_INPUT_KEY"/);
     assert.ok(newProofBranch.indexOf('test-fixture64-reproducibility.sh') < newProofBranch.indexOf('jq --arg inputKey'));
     assert.doesNotMatch(fixture64Job, /restore-keys:/);
-    assert.match(fixture64Job, /fixture64\.complete\.json/);
+    assert.match(seal, /fixture64\.complete\.json/);
     assert.match(fixture64Job, /Upload shared fixture64 corpus/);
     assert.match(fixture64Job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
     assert.match(fixture64Job, /overwrite: true/);

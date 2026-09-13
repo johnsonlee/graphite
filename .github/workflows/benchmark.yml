@@ -2226,13 +2226,19 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
-  prepare-fixture64:
-    name: prepare-fixture64
+  prepare-fixture64-inputs:
+    name: prepare-fixture64-inputs
     needs: [benchmark-prerequisites, validate-cpu-accounting]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
       contents: read
+
+    outputs:
+      cache-hit: ${{ steps.fixture64-cache.outputs.cache-hit }}
+      cache-key: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
+      inputs-sha: ${{ steps.inputs.outputs.sha }}
+      java-version: ${{ steps.fixture-java.outputs.version }}
 
     steps:
     - name: Checkout exact candidate fixture builder
@@ -2243,6 +2249,7 @@ jobs:
         persist-credentials: false
 
     - name: Set up Java
+      id: fixture-java
       uses: actions/setup-java@v5
       with:
         distribution: temurin
@@ -2261,7 +2268,7 @@ jobs:
           shared-fixture64/graphs
           shared-fixture64/fixture-reproducibility.json
         key: >-
-          ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v2-temurin17-${{
+          ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v2-temurin17-${{ steps.fixture-java.outputs.version }}-${{
           hashFiles('candidate/graphite-webgraph/build/benchmark-fixtures/*.jar',
           'candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties',
           'candidate/settings.gradle.kts', 'candidate/build.gradle.kts',
@@ -2284,65 +2291,174 @@ jobs:
           'candidate/.github/scripts/prepare-fixture64-graphs.sh',
           'candidate/.github/scripts/test-fixture64-reproducibility.sh',
           'candidate/.github/scripts/reuse-fixture64-receipt.sh',
-          'candidate/.github/scripts/verify-shared-fixture64.sh') }}
+          'candidate/.github/scripts/verify-shared-fixture64.sh',
+          'candidate/.github/scripts/seal-fixture64.sh') }}
 
-    - name: Generate and authenticate one shared fixture64 artifact
+    - name: Authenticate cached fixture64 corpus
+      if: steps.fixture64-cache.outputs.cache-hit == 'true'
       env:
-        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
-        FIXTURE64_CACHE_HIT: ${{ steps.fixture64-cache.outputs.cache-hit }}
-        FIXTURE64_INPUT_KEY: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
+        INPUT_KEY: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
-          -maxdepth 1 -name '*-jmh.jar' -print -quit)
-        FIXTURE_DIR=candidate/graphite-webgraph/build/benchmark-fixtures
-        test -f "${CANDIDATE_JAR}"
-        mkdir -p shared-fixture64
-        if [[ "${FIXTURE64_CACHE_HIT}" == true ]]; then
-          candidate/.github/scripts/reuse-fixture64-receipt.sh \
-            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
-            shared-fixture64/fixture-reproducibility.json "${FIXTURE64_INPUT_KEY}"
-        else
-          candidate/.github/scripts/prepare-fixture64-graphs.sh \
-            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs
-          candidate/.github/scripts/test-fixture64-reproducibility.sh \
-            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
-            fixture64-repeat-cache shared-fixture64/fixture-reproducibility.json
-          jq --arg inputKey "${FIXTURE64_INPUT_KEY}" '. + {inputKey: $inputKey}' \
-            shared-fixture64/fixture-reproducibility.json > shared-fixture64/receipt.tmp
-          mv shared-fixture64/receipt.tmp shared-fixture64/fixture-reproducibility.json
-        fi
-        mapfile -t FIXTURE_JARS < <(find "${FIXTURE_DIR}" -maxdepth 1 -type f -name '*.jar' -print | sort)
-        test "${#FIXTURE_JARS[@]}" -eq 4
-        FIXTURE_JAR_SET_SHA=$(
-          for FIXTURE_JAR in "${FIXTURE_JARS[@]}"; do
-            printf '%s\t%s\n' "$(basename "${FIXTURE_JAR}")" \
-              "$(sha256sum "${FIXTURE_JAR}" | awk '{print $1}')"
-          done | sha256sum | awk '{print $1}'
-        )
-        jq -n \
-          --arg schema graphite-shared-fixture64-v1 \
-          --arg candidateSha "${CANDIDATE_SHA}" \
-          --arg fixtureJarSetSha256 "${FIXTURE_JAR_SET_SHA}" \
-          --arg manifestSha256 "$(sha256sum shared-fixture64/graphs/graphs.tsv | awk '{print $1}')" \
-          --arg provenanceSha256 \
-            "$(sha256sum shared-fixture64/graphs/fixture-provenance.tsv | awk '{print $1}')" \
-          --arg receiptSha256 \
-            "$(sha256sum shared-fixture64/fixture-reproducibility.json | awk '{print $1}')" \
-          '{schema: $schema, complete: true, candidateSha: $candidateSha,
-            fixtureJarSetSha256: $fixtureJarSetSha256, manifestSha256: $manifestSha256,
-            provenanceSha256: $provenanceSha256, receiptSha256: $receiptSha256}' \
-          > shared-fixture64/fixture64.complete.json
+        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        candidate/.github/scripts/seal-fixture64.sh hit "$CANDIDATE_JAR" \
+          candidate/graphite-webgraph/build/benchmark-fixtures shared-fixture64 unused "$INPUT_KEY" "$HEAD_SHA"
+
+    - name: Upload authenticated cache hit
+      if: steps.fixture64-cache.outputs.cache-hit == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: shared-fixture64-${{ github.event.pull_request.head.sha }}
+        path: shared-fixture64/
+        if-no-files-found: error
+        overwrite: true
+        retention-days: 1
+
+    - name: Seal common generator and fixture inputs
+      if: steps.fixture64-cache.outputs.cache-hit != 'true'
+      id: inputs
+      run: |
+        set -euo pipefail
+        mkdir -p fixture64-inputs/fixtures
+        mapfile -t JARS < <(find candidate/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print)
+        test "${#JARS[@]}" -eq 1
+        cp "${JARS[0]}" fixture64-inputs/generator.jar
+        cp candidate/graphite-webgraph/build/benchmark-fixtures/*.jar fixture64-inputs/fixtures/
+        cd fixture64-inputs
+        test "$(find fixtures -maxdepth 1 -type f -name '*.jar' | wc -l)" -eq 4
+        java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p' > java-runtime.txt
+        test -s java-runtime.txt
+        sha256sum generator.jar fixtures/*.jar java-runtime.txt > SHA256SUMS
+        echo "sha=$(sha256sum SHA256SUMS | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+    - name: Upload common fixture64 inputs
+      if: steps.fixture64-cache.outputs.cache-hit != 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: fixture64-inputs-${{ github.run_id }}-${{ github.run_attempt }}
+        path: fixture64-inputs/
+        if-no-files-found: error
+        retention-days: 1
+
+  generate-fixture64:
+    name: generate-fixture64-${{ matrix.copy }}
+    needs: [prepare-fixture64-inputs]
+    if: ${{ !cancelled() && needs.prepare-fixture64-inputs.result == 'success' && needs.prepare-fixture64-inputs.outputs.cache-hit != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: true
+      max-parallel: 2
+      matrix:
+        copy: [primary, repeat]
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: ${{ needs.prepare-fixture64-inputs.outputs.java-version }}
+    - uses: actions/download-artifact@v8
+      with:
+        name: fixture64-inputs-${{ github.run_id }}-${{ github.run_attempt }}
+        path: fixture64-inputs
+    - name: Verify identical generator and fixture inputs
+      env:
+        EXPECTED_SHA: ${{ needs.prepare-fixture64-inputs.outputs.inputs-sha }}
+      run: |
+        set -euo pipefail
+        cd fixture64-inputs
+        test -n "$EXPECTED_SHA"
+        test "$(sha256sum SHA256SUMS | cut -d' ' -f1)" = "$EXPECTED_SHA"
+        sha256sum --strict -c SHA256SUMS
+        ACTUAL_RUNTIME=$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p')
+        test -n "$ACTUAL_RUNTIME"
+        test "$ACTUAL_RUNTIME" = "$(cat java-runtime.txt)"
+    - name: Generate exactly one independent fixture64 corpus
+      run: candidate/.github/scripts/prepare-fixture64-graphs.sh fixture64-inputs/generator.jar fixture64-inputs/fixtures graphs
+    - uses: actions/upload-artifact@v7
+      with:
+        name: fixture64-generated-${{ matrix.copy }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: graphs/
+        if-no-files-found: error
+        retention-days: 1
+
+  prepare-fixture64:
+    name: prepare-fixture64
+    needs: [prepare-fixture64-inputs, generate-fixture64]
+    if: ${{ !cancelled() && needs.prepare-fixture64-inputs.result == 'success' && ((needs.prepare-fixture64-inputs.outputs.cache-hit == 'true' && needs.generate-fixture64.result == 'skipped') || (needs.prepare-fixture64-inputs.outputs.cache-hit != 'true' && needs.generate-fixture64.result == 'success')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+    - name: Confirm authenticated cache publication
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit == 'true'
+      run: echo 'Inputs job successfully verified and uploaded the shared cache hit.'
+    - uses: actions/checkout@v7
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+    - uses: actions/setup-java@v5
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
+      with:
+        distribution: temurin
+        java-version: ${{ needs.prepare-fixture64-inputs.outputs.java-version }}
+    - uses: actions/download-artifact@v8
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
+      with:
+        name: fixture64-inputs-${{ github.run_id }}-${{ github.run_attempt }}
+        path: fixture64-inputs
+    - name: Verify identical generator and fixture inputs
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
+      env:
+        EXPECTED_SHA: ${{ needs.prepare-fixture64-inputs.outputs.inputs-sha }}
+      run: |
+        set -euo pipefail
+        cd fixture64-inputs
+        test -n "$EXPECTED_SHA"
+        test "$(sha256sum SHA256SUMS | cut -d' ' -f1)" = "$EXPECTED_SHA"
+        sha256sum --strict -c SHA256SUMS
+        ACTUAL_RUNTIME=$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p')
+        test -n "$ACTUAL_RUNTIME"
+        test "$ACTUAL_RUNTIME" = "$(cat java-runtime.txt)"
+    - uses: actions/download-artifact@v8
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
+      with:
+        name: fixture64-generated-primary-${{ github.run_id }}-${{ github.run_attempt }}
+        path: shared-fixture64/graphs
+    - uses: actions/download-artifact@v8
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
+      with:
+        name: fixture64-generated-repeat-${{ github.run_id }}-${{ github.run_attempt }}
+        path: fixture64-repeat-cache
+    - name: Compare independent corpora and authenticate shared artifact
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
+      env:
+        INPUT_KEY: ${{ needs.prepare-fixture64-inputs.outputs.cache-key }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        candidate/.github/scripts/seal-fixture64.sh miss fixture64-inputs/generator.jar \
+          fixture64-inputs/fixtures shared-fixture64 fixture64-repeat-cache "$INPUT_KEY" "$HEAD_SHA"
 
     - name: Save fixture64 graph cache
-      if: steps.fixture64-cache.outputs.cache-hit != 'true'
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
       uses: actions/cache/save@v5
       with:
         path: |
           shared-fixture64/graphs
           shared-fixture64/fixture-reproducibility.json
-        key: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
+        key: ${{ needs.prepare-fixture64-inputs.outputs.cache-key }}
 
     - name: Upload shared fixture64 corpus
+      if: needs.prepare-fixture64-inputs.outputs.cache-hit != 'true'
       uses: actions/upload-artifact@v7
       with:
         name: shared-fixture64-${{ github.event.pull_request.head.sha }}

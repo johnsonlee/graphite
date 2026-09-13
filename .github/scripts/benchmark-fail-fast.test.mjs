@@ -52,7 +52,9 @@ test('cheap contracts gate expensive entry jobs and real CPU accounting gates fi
     }
     for (const name of jobs.keys()) visit(name);
     assert.deepEqual(needs('benchmark-prerequisites'), ['candidate-gate-tests', 'build-explore-jmh']);
-    assert.deepEqual(needs('prepare-fixture64'), ['benchmark-prerequisites', 'validate-cpu-accounting']);
+    assert.deepEqual(needs('prepare-fixture64-inputs'), ['benchmark-prerequisites', 'validate-cpu-accounting']);
+    assert.deepEqual(needs('generate-fixture64'), ['prepare-fixture64-inputs']);
+    assert.deepEqual(needs('prepare-fixture64'), ['prepare-fixture64-inputs', 'generate-fixture64']);
     for (const name of ['build-wrapped-query-jmh', 'method-level', 'budgeted-collection', 'budgeted-mapped-string', 'large-corpus']) {
         assert.ok(needs(name).includes('benchmark-prerequisites'), `${name} starts only after cheap contracts`);
     }
