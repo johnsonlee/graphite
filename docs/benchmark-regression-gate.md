@@ -99,10 +99,13 @@ limit; the late monitor fails visibly at 359 minutes if work has not finished, r
 leaving the remaining run unmonitored.
 
 Each timed measurement shard validates the completed base/candidate pair before starting the
-next pair. A paired P50/P95 regression of at least 5%, or an already observed cross-fork spread
-of at least 5%, cannot be repaired by later forks and stops the shard immediately. Partial raw
-samples and checkpoint failure reasons remain available, but partial evidence can never pass
-the final gate. Successful acceptance still requires all three pairs for all 72 queries.
+next pair. Runtime errors stop the current invocation immediately; checkpoint integrity errors
+stop before the next pair. First-pair numerical exceedances are retained, but the reverse-order
+second pair must complete before a terminal latency decision. After that pair, any cumulative
+paired P50/P95 increase or cross-fork spread of at least 5% stops the shard. A passing second
+pair cannot erase a first-pair failure. All partial raw samples and checkpoint reasons remain
+available; partial evidence can never pass the final gate. Successful acceptance still requires
+all three pairs for all 72 queries.
 
 The fixture cache stores one prepared 64-graph corpus and its completed reproducibility receipt,
 bound to the exact generator, verifier and pinned input JAR cache key. On an exact cache hit,

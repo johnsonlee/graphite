@@ -192,10 +192,10 @@ test('partial checkpoints never pass final acceptance, even with all three compl
         assert.ok(checkpoint.queries.every(query => query.passed === false));
     }
 });
-test('first-pair regression and second-pair spread stop partial validation irreversibly', () => {
+test('first-pair exceedance waits for reverse pair while second-pair spread remains terminal', () => {
     const slower = evidence(r => ({ ...r, latencyNanos: 1_050_000 }));
     const first = compareWideLatency(base.slice(0, 1), slower.slice(0, 1), oracle, manifest, catalog, { partial: true });
-    assert.equal(first.canContinue, false);
+    assert.equal(first.canContinue, true);
     assert.match(first.latencyErrors.join('\n'), /P50 regression/);
     const unstable = evidence((r, fork) => ({ ...r, latencyNanos: fork === 1 ? 1_050_000 : 1_000_000 }));
     const second = compareWideLatency(unstable.slice(0, 2), unstable.slice(0, 2), oracle, manifest, catalog, { partial: true });
@@ -241,12 +241,13 @@ test('first-pair report records partial observations and unavailable controls wi
     assert.match(report, /Three-fork stability diagnostics are incomplete/);
     assert.match(report, /Paired latency exceedance: 2/);
     assert.match(report, /Base instability: 0/);
-    assert.match(report, /CHECKPOINT FAIL/);
+    assert.match(report, /AWAITING REVERSE PAIR/);
+    assert.doesNotMatch(report, /CHECKPOINT FAIL|fail-fast stops|No observed checkpoint failure/);
     assert.match(report, /INCOMPLETE/);
     assert.doesNotMatch(report, /\| PASS \||regression must be/);
     assert.match(report, /observed increase must be <5%/);
     assert.equal(JSON.stringify(result), original);
-    assert.equal(result.canContinue, false);
+    assert.equal(result.canContinue, true);
     assert.equal(result.passed, false);
 });
 
@@ -261,4 +262,18 @@ test('report displays integrity errors separately and never labels a clean parti
     assert.match(partialReport, /Reverse-order control is included/);
     assert.doesNotMatch(partialReport, /CHECKPOINT FAIL|\| PASS \|/);
     assert.equal(partial.canContinue, true);
+});
+
+
+test('reverse pair passing cannot erase the original paired exceedance or allow final acceptance', () => {
+    const slowerFirst = evidence((r, fork) => ({ ...r, latencyNanos: fork === 0 ? 1_050_000 : 1_000_000 }));
+    const second = compareWideLatency(base.slice(0, 2), slowerFirst.slice(0, 2), oracle, manifest, catalog, { partial: true });
+    assert.equal(second.canContinue, false);
+    assert.ok(second.latencyErrors.some(error => error.includes('P50 regression')));
+    assert.ok(second.queries.every(query => query.runs[1].candidateP50Nanos === query.runs[1].baseP50Nanos));
+    const report = renderWideLatency(second);
+    assert.match(report, /Reverse-order control is included/);
+    assert.match(report, /CHECKPOINT FAIL/);
+    assert.doesNotMatch(report, /AWAITING REVERSE PAIR/);
+    assert.equal(compareWideLatency(base, slowerFirst, oracle, manifest, catalog).passed, false);
 });

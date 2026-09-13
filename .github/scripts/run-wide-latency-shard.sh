@@ -48,8 +48,8 @@ for FORK in 1 2 3; do
         -Dgraphite.broad.pressure.latency.oracle=$BUNDLE/oracle.correctness \
         -Dgraphite.broad.pressure.latency.output=$OUTPUT/$REVISION-$FORK.tsv"
   done
-  # A completed pair's regression, or an observed cross-pair spread, cannot be repaired
-  # by later forks. Preserve raw evidence and an explicit failed checkpoint before stopping.
+  # Integrity failures stop immediately. Numeric failures retain the first pair and run
+  # the reverse-order second pair before stopping on cumulative failures; no pair is discarded.
   node "$SCRIPT_DIR/benchmark-wide-shards.mjs" check-progress \
     --directory "$OUTPUT" --bundle "$BUNDLE" --shard "$SHARD" --pairs "$FORK"
 done

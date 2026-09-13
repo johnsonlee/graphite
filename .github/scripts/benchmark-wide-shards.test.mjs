@@ -144,22 +144,24 @@ test('streamed lines preserve multibyte boundaries, CRLF and final non-newline d
     assert.deepEqual([...readLines(file)], [long, 'second', 'final']);
 });
 
-test('failed first pair leaves explicit progress evidence without producing final receipt', t => {
+test('first numeric exceedance retains evidence while waiting for reverse pair', t => {
     const c = setup(t), directory = makeShard(c, 'full-scan', (r, revision) => ({ ...r,
         latencyNanos: revision === 'candidate' ? 1_050_000 : 1_000_000 }));
     const result = checkProgress(directory, c.bundle, 'full-scan', 1);
-    assert.equal(result.canContinue, false); assert.equal(result.passed, false);
+    assert.equal(result.canContinue, true); assert.equal(result.passed, false);
     assert.ok(json(path.join(directory, 'progress-1.json')).latencyErrors.length > 0);
     const report = fs.readFileSync(path.join(directory, 'progress-1.md'), 'utf8');
     assert.match(report, /Partial checkpoint: 1\/3 paired forks completed/);
-    assert.match(report, /CHECKPOINT FAIL/);
+    assert.match(report, /AWAITING REVERSE PAIR/);
     assert.match(report, /Reverse-order control has not completed/);
     assert.match(report, /Three-fork stability diagnostics are incomplete/);
     assert.equal(fs.existsSync(path.join(directory, 'receipt.json')), false);
 });
-test('shard shell actually stops after first irreversible pair failure and retains checkpoint', t => {
-    const c = setup(t), data = makeShard(c, 'full-scan', (r, revision) => ({ ...r,
-        latencyNanos: revision === 'candidate' ? 1_050_000 : 1_000_000 }));
+for (const failure of ['numeric', 'integrity', 'runtime']) test(`shard shell stops after ${failure === 'runtime' ? 'first invocation runtime failure' : failure === 'integrity' ? 'completed-pair integrity failure' : 'reverse pair despite its passing latency'}`, t => {
+    const integrity = failure === 'integrity', runtime = failure === 'runtime';
+    const c = setup(t), data = makeShard(c, 'full-scan', (r, revision, fork) => ({ ...r,
+        ...(integrity && revision === 'candidate' && fork === 1 ? { digest: 'c'.repeat(64) } : {}),
+        latencyNanos: !integrity && revision === 'candidate' && fork === 1 ? 1_050_000 : 1_000_000 }));
     const scripts = path.join(c.root, 'scripts'); fs.mkdirSync(scripts);
     for (const name of ['run-wide-latency-shard.sh', 'benchmark-wide-shards.mjs', 'benchmark-wide-latency.mjs', 'wide-query-catalog.json']) {
         fs.copyFileSync(new URL(`./${name}`, import.meta.url), path.join(scripts, name));
@@ -173,6 +175,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 printf '%s\\n' "$PREFIX" >> "$CALL_LOG"
+if [[ "\${RUNTIME_FAILURE:-false}" == true ]]; then exit 7; fi
 cp "$SAMPLE_DATA/$(basename "$PREFIX").tsv" "$PREFIX.tsv"
 printf '{}' > "$PREFIX.json"
 `, { mode: 0o755 });
@@ -181,19 +184,33 @@ printf '{}' > "$PREFIX.json"
     for (const file of ['fixture64.complete.json', 'fixture-reproducibility.json']) fs.copyFileSync(path.join(c.bundle, file), path.join(shared, file));
     const output = path.join(c.root, 'execution'), callLog = path.join(c.root, 'calls');
     const run = spawnSync('bash', [path.join(scripts, 'run-wide-latency-shard.sh'), c.bundle, shared, 'full-scan', base, candidate, output], {
-        encoding: 'utf8', env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, SAMPLE_DATA: data, CALL_LOG: callLog,
+        encoding: 'utf8', env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, SAMPLE_DATA: data, CALL_LOG: callLog, RUNTIME_FAILURE: String(runtime),
             GITHUB_RUN_ID: '123', GITHUB_RUN_ATTEMPT: '1', GITHUB_JOB: 'full-scan', RUNNER_NAME: 'test' }
     });
-    assert.equal(run.status, 1, run.stderr);
-    assert.equal(fs.readFileSync(callLog, 'utf8').trim().split('\n').length, 2);
-    assert.equal(json(path.join(output, 'progress-1.json')).canContinue, false);
-    const report = fs.readFileSync(path.join(output, 'progress-1.md'), 'utf8');
-    assert.match(report, /Partial checkpoint: 1\/3 paired forks completed/);
+    assert.equal(run.status, runtime ? 7 : 1, run.stderr);
+    assert.deepEqual(fs.readFileSync(callLog, 'utf8').trim().split('\n').map(x => path.basename(x)),
+        runtime ? ['candidate-1'] : integrity ? ['candidate-1', 'base-1'] : ['candidate-1', 'base-1', 'base-2', 'candidate-2']);
+    if (runtime) {
+        assert.equal(fs.existsSync(path.join(output, 'progress-1.json')), false);
+        assert.equal(fs.existsSync(path.join(output, 'base-1.tsv')), false);
+        assert.equal(fs.existsSync(path.join(output, 'receipt.json')), false);
+        return;
+    }
+    const first = json(path.join(output, 'progress-1.json'));
+    assert.equal(first.canContinue, !integrity);
+    const report = fs.readFileSync(path.join(output, `progress-${integrity ? 1 : 2}.md`), 'utf8');
     assert.match(report, /CHECKPOINT FAIL/);
-    assert.match(report, /Reverse-order control has not completed/);
     assert.match(report, /Three-fork stability diagnostics are incomplete/);
     assert.doesNotMatch(report, /\| PASS \|/);
-    assert.equal(fs.existsSync(path.join(output, 'base-2.tsv')), false);
+    if (!integrity) {
+        const second = json(path.join(output, 'progress-2.json'));
+        assert.equal(second.canContinue, false);
+        assert.ok(first.latencyErrors.every(error => second.latencyErrors.includes(error)));
+        assert.equal(first.integrityErrors.length, 0);
+        assert.equal(second.integrityErrors.length, 0);
+        assert.match(fs.readFileSync(path.join(output, 'progress-1.md'), 'utf8'), /AWAITING REVERSE PAIR/);
+    } else assert.ok(first.integrityErrors.length > 0);
+    assert.equal(fs.existsSync(path.join(output, 'base-3.tsv')), false);
     assert.equal(fs.existsSync(path.join(output, 'receipt.json')), false);
 });
 
@@ -202,4 +219,20 @@ test('partial markdown is retained by the existing always-uploaded shard artifac
     const job = workflow.split('  wide-latency-measurements:')[1].split('  global-wide-pressure-evidence:')[0];
     assert.match(job, /if: always\(\)/);
     assert.match(job, /name: wide-latency-samples-.*\n        path: wide-latency-samples\//);
+});
+
+
+test('real checkpoint CLI preserves first-pair numeric failure through a passing reverse pair', t => {
+    const c = setup(t), directory = makeShard(c, 'full-scan', (r, revision, fork) => ({ ...r,
+        latencyNanos: revision === 'candidate' && fork === 1 ? 1_050_000 : 1_000_000 }));
+    const invoke = pairs => spawnSync(process.execPath, [new URL('./benchmark-wide-shards.mjs', import.meta.url).pathname,
+        'check-progress', '--directory', directory, '--bundle', c.bundle, '--shard', 'full-scan', '--pairs', String(pairs)], { encoding: 'utf8' });
+    const first = invoke(1); assert.equal(first.status, 0, first.stderr);
+    const firstResult = json(path.join(directory, 'progress-1.json'));
+    assert.equal(firstResult.passed, false); assert.ok(firstResult.latencyErrors.length > 0);
+    const second = invoke(2); assert.equal(second.status, 1, second.stderr);
+    const secondResult = json(path.join(directory, 'progress-2.json'));
+    assert.equal(secondResult.passed, false); assert.equal(secondResult.canContinue, false);
+    assert.ok(firstResult.latencyErrors.every(error => secondResult.latencyErrors.includes(error)));
+    assert.equal(secondResult.integrityErrors.length, 0);
 });

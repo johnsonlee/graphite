@@ -299,6 +299,12 @@ must be less than 5%. Exactly 5% fails, as does an unstable baseline; there is n
 exception. Missing, duplicate, incorrect, failed, or timed-out results cannot pass. The 72 CI
 checks consume the shared measurements without rerunning the workload for each check.
 
+A first-pair numerical exceedance is retained while the reverse-order second pair runs.
+After pair two, any cumulative numerical failure stops further pairs; a passing reverse pair
+cannot erase the original failure. Runtime errors stop the invocation immediately, and
+checkpoint integrity errors stop before the next pair. Partial evidence never passes final
+acceptance, which still requires all three pairs.
+
 Process CPU, peak heap, and peak RSS increases are advisory. The maximum-heap ceiling and
 measurement-integrity checks remain mandatory. Cold-start latency, historical mixed-query
 percentiles, the frozen-main 10x target, and strict improvement over the last accepted iteration

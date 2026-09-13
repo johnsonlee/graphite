@@ -196,7 +196,7 @@ export function compareWideLatency(baseContents, candidateContents, oracleConten
     const sharedIntegrityErrors = integrityErrors.filter(error => !catalog.some(query =>
         error.includes(`/${query.id}:`) || error.includes(`/${query.id}/`)));
     return { passed: !partial && integrityErrors.length === 0 && latencyErrors.length === 0,
-        ...(partial ? { partial: true, completedForkCount: expectedForks, canContinue: integrityErrors.length === 0 && latencyErrors.length === 0 } : {}),
+        ...(partial ? { partial: true, completedForkCount: expectedForks, canContinue: integrityErrors.length === 0 && (expectedForks === 1 || latencyErrors.length === 0) } : {}),
         sharedIntegrityErrors,
         schema: WIDE_SCHEMA, protocol: { ...WIDE_PROTOCOL }, shard: options.shard ?? null,
         queryCount: catalog.length, forkCount: WIDE_FORK_COUNT,
@@ -217,13 +217,16 @@ export function renderWideLatency(comparison) {
     };
     const observations = [...comparison.integrityErrors, ...comparison.latencyErrors].map(classify);
     const categories = ["Paired latency exceedance", "Base instability", "Candidate instability", "Integrity"];
+    const awaitingReversePair = comparison.partial && comparison.completedForkCount === 1 &&
+        comparison.canContinue && comparison.latencyErrors.length > 0;
     const checkpoint = comparison.partial ? [
         `Partial checkpoint: ${comparison.completedForkCount}/3 paired forks completed; this is not final acceptance.`,
         comparison.completedForkCount < 2 ? "Reverse-order control has not completed." : "Reverse-order control is included in the completed pairs.",
         comparison.completedForkCount < 3 ? "Three-fork stability diagnostics are incomplete; any reported spread uses only completed pairs." :
             "All three pairs are present, but a partial checkpoint does not issue final acceptance.",
         comparison.canContinue === false ? "Observed failures already violate the acceptance contract; fail-fast stops remaining runs." :
-            "No observed checkpoint failure; final acceptance has not been issued."
+            awaitingReversePair ? "Numerical exceedances are retained; the required reverse-order pair runs before a terminal latency decision." :
+                "No observed checkpoint failure; final acceptance has not been issued."
     ] : [];
     return ["### Per-query wide latency gates", "",
         `${comparison.queryCount} queries; the protocol requires contiguous warmup ≥10 seconds/5 calls and measurement ≥10 seconds/40 calls in three independent paired forks; maximum heap 8 GiB.`,
@@ -241,7 +244,7 @@ export function renderWideLatency(comparison) {
         "| Query | Observed pairs | Result | Paired P50 base → candidate (ms) | Paired P95 base → candidate (ms) | Failures |",
         "|---|---|---|---|---|---|",
         ...comparison.queries.map(query => {
-            const result = comparison.partial ? (query.errors.length ? "CHECKPOINT FAIL" : "INCOMPLETE") : (query.passed ? "PASS" : "FAIL");
+            const result = comparison.partial ? (query.errors.length ? (awaitingReversePair ? "AWAITING REVERSE PAIR" : "CHECKPOINT FAIL") : "INCOMPLETE") : (query.passed ? "PASS" : "FAIL");
             return `| ${query.id} | ${query.runs.length}/3 | ${result} | ` +
                 ["P50", "P95"].map(q => query.runs.map(run =>
                     `${(run[`base${q}Nanos`] / 1e6).toFixed(3)} → ${(run[`candidate${q}Nanos`] / 1e6).toFixed(3)}`)
