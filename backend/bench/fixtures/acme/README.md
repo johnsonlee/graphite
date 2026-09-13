@@ -9,9 +9,9 @@ which a library graph (such as the one built from graphite-core) never produces.
 Build it the way CI does:
 
 ```bash
-javac -d /tmp/acme-classes $(find rust/bench/fixtures/acme/src -name '*.java')
+javac -d /tmp/acme-classes $(find backend/bench/fixtures/acme/src -name '*.java')
 (cd /tmp/acme-classes && jar cfe /tmp/acme.jar com.acme.shop.api.Main com)
 java -jar graphite-query/build/libs/graphite.jar build /tmp/acme.jar -o /tmp/acme-graph --include com.acme
 ```
 
-`rust/bench/parity.py` compares every C4 level and format on it as graph id `acme`.
+`backend/bench/parity.py` compares every C4 level and format on it as graph id `acme`.

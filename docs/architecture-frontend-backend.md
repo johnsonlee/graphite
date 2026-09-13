@@ -71,11 +71,37 @@ Non-goals
 | Backend | `graphite-storage` | Rust (exists) | mmap reader of the persisted graph, indexes, columns |
 | Backend | `graphite-cypher` | Rust (exists) | Cypher parser, planner, executor, functions |
 | Backend | `graphite-explore` | Rust (exists) | HTTP API, registry, guard, metrics, UI, C4, topology |
-| Backend | `graphite` (CLI) | Rust (exists as `graphite-cli-rs`, grows) | `build`/`serve`/`query`/`explore`/`ir`/`frontend` |
+| Backend | `graphite` (CLI) | Rust (exists as `backend/graphite-cli`, grows) | `build`/`serve`/`query`/`explore`/`ir`/`frontend` |
 
 The Kotlin modules `graphite-cypher`, `graphite-webgraph` (writer side excepted, see
 migration), `graphite-explore` and `graphite-query` are retired at the end of the migration;
 `graphite-core` and `graphite-sootup` become the JVM frontend.
+
+### 2.1 Repository layout
+
+The tree follows the split. The backend half is in place with PR #124; the frontend half
+moves as the Kotlin server retires (Section 7, phases 1 and 5), because until then the Kotlin
+modules still hold a server and the benchmark gate's paths.
+
+```
+graphite/
+├── backend/                       Rust workspace: the backend and the CLI
+│   ├── graphite-storage/          persisted-graph reader (mmap), indexes, columns
+│   ├── graphite-cypher/           Cypher parser, planner, executor
+│   ├── graphite-explore/          HTTP server, UI, C4, topology
+│   ├── graphite-cli/              `graphite` binary
+│   ├── graphite-ir/               (phase 2) IR schema, reader/writer, check/diff
+│   ├── graphite-build/            (phase 2) IR → persisted graph indexer
+│   └── bench/                     differential harness, backtests, fixtures
+├── frontend/
+│   ├── jvm/                       (phase 1) `graphite-core`, `graphite-sootup`, IR writer;
+│   │                              builds `graphite-frontend-jvm.jar`
+│   ├── web/                       (phase 6) TypeScript frontend, npm package
+│   └── apple/                     (phase 7) Swift package
+├── docs/
+└── graphite-*/                    Kotlin modules until phase 5 (server, query CLI, webgraph
+                                   writer); the frontend parts move to frontend/jvm/
+```
 
 ## 3. The graph model
 

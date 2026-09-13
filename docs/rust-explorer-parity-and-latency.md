@@ -30,7 +30,7 @@ so the count is never load-bearing for something it never touched.
 
 ### Covered
 
-`rust/bench/parity.py` issues each request to both servers and compares **HTTP status and
+`backend/bench/parity.py` issues each request to both servers and compares **HTTP status and
 response body**. JSON bodies are parsed and compared structurally after normalising
 `loadedAt`, `builtAt` and `version`; everything else is compared as text.
 
@@ -162,7 +162,7 @@ ported but unverified — the table says which. Neither is evidence of equivalen
 
 ### `graphite query` has its own byte-level suite
 
-`rust/bench/parity-cli.py` runs both CLIs and compares **raw stdout, raw stderr and the
+`backend/bench/parity-cli.py` runs both CLIs and compares **raw stdout, raw stderr and the
 exit code**, byte for byte — not parsed output. That is the only way to check what a
 command-line tool actually promises: column widths and padding, Gson's escaping, and the
 exact error text a script might match on. 148 checks: 28 queries across all five format
@@ -222,10 +222,10 @@ These are differences that exist and are not treated as failures:
 ## Method
 
 Both servers were started on the same graph (built from the `graphite-explore` shadow
-jar with the current `graphite build`) and driven by `rust/bench/bench.py`. Each
+jar with the current `graphite build`) and driven by `backend/bench/bench.py`. Each
 scenario is warmed up 5 times, then measured over 25 requests.
 
-The web UI is compiled into the binary with `include_str!` from `rust/graphite-explore-rs/web/`,
+The web UI is compiled into the binary with `include_str!` from `backend/graphite-explore/web/`,
 which holds byte-identical copies of `graphite-explore/src/main/resources/web/`. The
 served bytes, the `Content-Type`, and the `If-None-Match` → 304 revalidation are all
 compared. Three header deviations remain, all from Ktor's static-file serving and none

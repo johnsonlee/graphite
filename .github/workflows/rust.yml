@@ -3,10 +3,10 @@ name: Rust
 on:
   push:
     branches: [ '*' ]
-    paths: [ 'rust/**', '.github/workflows/rust.yml' ]
+    paths: [ 'backend/**', '.github/workflows/rust.yml' ]
   pull_request:
     branches: [ '**' ]
-    paths: [ 'rust/**', '.github/workflows/rust.yml' ]
+    paths: [ 'backend/**', '.github/workflows/rust.yml' ]
 
 permissions:
   contents: read
@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 30
     defaults:
       run:
-        working-directory: rust
+        working-directory: backend
 
     steps:
     - name: Checkout
@@ -32,7 +32,7 @@ jobs:
     - name: Cache cargo
       uses: Swatinem/rust-cache@v2
       with:
-        workspaces: rust
+        workspaces: backend
 
     - name: Format
       run: cargo fmt --all --check
@@ -73,7 +73,7 @@ jobs:
         # component level has relationships to compare (the core jar is a library
         # and infers no components at all).
         mkdir -p "${RUNNER_TEMP}/acme-classes"
-        javac -d "${RUNNER_TEMP}/acme-classes" $(find rust/bench/fixtures/acme/src -name '*.java')
+        javac -d "${RUNNER_TEMP}/acme-classes" $(find backend/bench/fixtures/acme/src -name '*.java')
         (cd "${RUNNER_TEMP}/acme-classes" && jar cfe "${RUNNER_TEMP}/acme.jar" com.acme.shop.api.Main com)
         java -Xmx4g -jar graphite-query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-graph" --include com.acme
@@ -86,7 +86,7 @@ jobs:
 
     - name: Benchmark harness tests (fail-closed sampling and warmup)
       working-directory: .
-      run: python3 -m unittest discover -s rust/bench -p 'test_*.py' -v
+      run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
 
     # The same persisted graph served by both servers, every parity check compared.
     - name: Kotlin-vs-Rust differential over the fixture
@@ -94,17 +94,17 @@ jobs:
       run: |
         FIXTURE="${RUNNER_TEMP}/fixture-graph"
         ACME="${RUNNER_TEMP}/acme-graph"
-        # Two ids over the same graph, so the topology rule in rust/bench/topology can
+        # Two ids over the same graph, so the topology rule in backend/bench/topology can
         # relate them and the topology route is compared with a real relation; the
         # application fixture carries the component-level C4 checks.
         java -Xmx3g -jar graphite-explore/build/libs/graphite-explore.jar \
           --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}" \
-          --topology rust/bench/topology \
+          --topology backend/bench/topology \
           --port 18081 --metrics > "${RUNNER_TEMP}/kotlin.log" 2>&1 &
         KOTLIN=$!
-        ./rust/target/release/graphite-explore \
+        ./backend/target/release/graphite-explore \
           --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}" \
-          --topology rust/bench/topology \
+          --topology backend/bench/topology \
           --port 18080 --metrics > "${RUNNER_TEMP}/rust.log" 2>&1 &
         RUST=$!
         for _ in $(seq 1 120); do
@@ -112,7 +112,7 @@ jobs:
             curl -sf http://localhost:18081/api/graphs >/dev/null && break
           sleep 1
         done
-        cd rust/bench && python3 parity.py http://localhost:18081 http://localhost:18080
+        cd backend/bench && python3 parity.py http://localhost:18081 http://localhost:18080
         STATUS=$?
         kill ${KOTLIN} ${RUST} || true
         exit ${STATUS}
@@ -123,7 +123,7 @@ jobs:
     timeout-minutes: 30
     defaults:
       run:
-        working-directory: rust
+        working-directory: backend
     steps:
     - name: Checkout
       uses: actions/checkout@v7
@@ -132,7 +132,7 @@ jobs:
     - name: Cache cargo
       uses: Swatinem/rust-cache@v2
       with:
-        workspaces: rust
+        workspaces: backend
     # MSVC has no jemalloc; the explorer must still build with the system allocator.
     - name: Check
       run: cargo check --workspace --all-targets --locked

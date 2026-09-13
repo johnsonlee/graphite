@@ -10,6 +10,6 @@ path = "src/main.rs"
 
 [dependencies]
 graphite-storage = { path = "../graphite-storage" }
-graphite-cypher = { path = "../graphite-cypher-rs" }
+graphite-cypher = { path = "../graphite-cypher" }
 serde_json.workspace = true
 clap.workspace = true

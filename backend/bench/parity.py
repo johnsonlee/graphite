@@ -87,7 +87,7 @@ CASES = [
     ("GET", "/api/graphs/app/annotations?class=java.lang.Object&member=toString", None),
     ("GET", "/api/graphs/app/annotations?class=java.lang.Object", None),
     # C4: every level in every format, byte for byte. `app` is a library graph, whose
-    # component level is empty; `acme` (rust/bench/fixtures/acme) is an application
+    # component level is empty; `acme` (backend/bench/fixtures/acme) is an application
     # with several capabilities calling each other, so its component and `all` levels
     # carry component relationships.
     *[
@@ -557,7 +557,7 @@ check_metrics()
 # whole of registry mutation went unchecked until someone thought to compare the two.
 def spec_coverage():
     import re
-    spec_path = os.path.join(ROOT, "rust/graphite-explore-rs/src/openapi.json")
+    spec_path = os.path.join(ROOT, "backend/graphite-explore/src/openapi.json")
     spec = json.load(open(spec_path))
     declared = {
         (m.upper(), path)

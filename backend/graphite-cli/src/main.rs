@@ -5,7 +5,7 @@
 //! Explorer, which ships here as its own `graphite-explore` binary. Only `query` is
 //! reproduced, and it is reproduced byte for byte: output of all three formats, the
 //! verbose lines, the error text and the exit codes are compared against the Kotlin
-//! binary by `rust/bench/parity-cli.py`.
+//! binary by `backend/bench/parity-cli.py`.
 
 use clap::{Parser, Subcommand};
 use graphite_cypher::context::GraphContext;

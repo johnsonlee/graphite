@@ -85,7 +85,7 @@ The `/metrics` histogram times only the engine — the `spawn_blocking` body —
 can be split into engine and everything-else by bracketing it with two scrapes.
 `backtest.py --split` does exactly that for every measured query and records the
 response size alongside; the raw output of the run below is committed as
-`rust/bench/results/backtest-v2-split.json` (every query, its status, timings and
+`backend/bench/results/backtest-v2-split.json` (every query, its status, timings and
 bytes; 170 of 170 succeeded). Over the v2 population, paired per request:
 
 | | P50 | P95 |
@@ -214,7 +214,7 @@ A/B against the previous build is within noise.
 
 ### The v2 backtest
 
-`rust/bench/backtest.py --mix v2` (now the default) weights the 170 queries the way the
+`backend/bench/backtest.py --mix v2` (now the default) weights the 170 queries the way the
 production log does: 50 class-pair `RETURN n`, 40 `value CONTAINS`, 30 wide-or, and the
 rest as before. `--mix v1` keeps the earlier all-CallSite mix.
 
@@ -297,7 +297,7 @@ Per-shape medians, 64 graphs, two rounds each:
 
 The C4 component level used to hard-code an empty relationship list, and the parity
 corpus could not tell: a library graph infers no runtime container and therefore no
-components. `rust/bench/fixtures/acme` is a six-class application with a `main` and
+components. `backend/bench/fixtures/acme` is a six-class application with a `main` and
 five packages calling each other; built as a graph it yields three components and
 eight cross-capability call edges. The selector now accumulates call weights per
 canonical component pair, ranks and reads them the way the baseline's
@@ -319,7 +319,7 @@ dropped a later graph from a value's provenance. Both are fixed and covered.
 Graphs are planned and swept in id order, in batches: the first alone, then the next
 `threads` graphs, then doubling up to `4 × threads` per batch, so a LIMIT satisfied
 by an early graph pays for one plan and a late hit does not wait for every remaining
-graph to be planned at once. `rust/bench/hit-position.py` measures that directly with
+graph to be planned at once. `backend/bench/hit-position.py` measures that directly with
 the production's commonest shape (`caller_class CONTAINS t OR callee_class CONTAINS t
 RETURN n LIMIT 25`), choosing for each position a `callee_class` whose cross-graph
 provenance is exactly that graph, plus a term present nowhere; every request must
@@ -605,7 +605,7 @@ early. That is the expected shape, not a defect.
 
 # Start one server over all 64 graph directories listed in graphs.tsv, measure it,
 # stop it, then do the same for the other.
-cd rust/bench
+cd backend/bench
 python3 fixture64.py --manifest /path/to/fixture64/graphs.tsv --only kotlin --out kotlin.json
 python3 fixture64.py --manifest /path/to/fixture64/graphs.tsv --only rust   --out rust.json
 ```

@@ -61,7 +61,18 @@ graphite/
     ├── find-args/          # Find argument constants CLI
     ├── find-endpoints/     # Find HTTP endpoints CLI
     └── find-dead-code/     # Find dead code CLI
+
+backend/                    # Rust backend (Cargo workspace): serves and queries persisted graphs
+├── graphite-storage/       # mmap reader of the persisted graph, indexes, columns
+├── graphite-cypher/        # Cypher parser, planner, executor
+├── graphite-explore/       # HTTP server, UI, C4, topology
+├── graphite-cli/           # `graphite` CLI
+└── bench/                  # Kotlin-vs-Rust differential harness and benchmarks
 ```
+
+The Kotlin modules above are the JVM *frontend* (they build graphs) plus the legacy JVM server;
+`backend/` is the Rust backend. See `docs/architecture-frontend-backend.md` for the target
+layout (`frontend/<lang>/`, `backend/`) and the migration plan.
 
 ## Key Abstractions
 

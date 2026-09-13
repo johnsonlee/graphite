@@ -1,6 +1,6 @@
 """The benchmark scripts fail closed on the warmup too, not only on the measured loop.
 
-Run with `python3 -m unittest discover -s rust/bench -p 'test_*.py'`; no server is
+Run with `python3 -m unittest discover -s backend/bench -p 'test_*.py'`; no server is
 needed. A fake client answers the term sampling with a plausible corpus, then
 rejects one warmup request, and each script must report that and return 2 before
 measuring anything.
