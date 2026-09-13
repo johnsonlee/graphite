@@ -390,26 +390,33 @@ The planner now settles all of them per node type before any graph is touched:
 
 Before and after, 64 graphs, 19.4M nodes of which 10.1M are locals and 5.0M call
 sites; medians of three, except the previous build's single run where a query took
-longer than ten seconds:
+longer than ten seconds. The last column is Kotlin main with #128 merged (which
+optimises these same families), one run each, 8 GiB heap:
 
-| Query | Rust before | Rust now |
-|---|---:|---:|
-| `n.fullName CONTAINS "Spooler" OR n.class CONTAINS "Ids" RETURN n LIMIT 25` | 1.6 s | 1.4 ms |
-| `n.name CONTAINS "a" AND n.code CONTAINS "b" RETURN n LIMIT 25` | 17.6 s | 0.8 ms |
-| `n.name CONTAINS "Spooler" OR n.code CONTAINS "b" OR n.graph_id = "x" RETURN n LIMIT 25` | 20.4 s | 3.0 ms |
-| `n.value = 105873 RETURN n LIMIT 25` | 14.2 s | 38 ms |
-| `n.value = 105873 RETURN count(*)` | 14.0 s | 36 ms |
-| `"x" IN n.graphIds RETURN n LIMIT 25` | 14.3 s | 0.8 ms |
-| `n.qualifiedId CONTAINS "1234" RETURN n LIMIT 25` | 53 ms | 8.8 ms |
-| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Spooler") RETURN n LIMIT 25` | 209 ms | 35 ms |
-| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Spooler") RETURN count(*)` | timeout (60 s) | 1.30 s |
-| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "105873") RETURN n LIMIT 25` | 37.6 s | 0.87 s |
-| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "zzqqxxvv") RETURN n LIMIT 25` | timeout (60 s) | 1.10 s |
-| `n.value CONTAINS "Spooler" OR n.value CONTAINS "Tokenizer" OR n.value CONTAINS "zzqq" RETURN n LIMIT 25` | 396 ms | 3.3 ms |
+| Query | Rust before | Rust now | Kotlin main (#128) |
+|---|---:|---:|---:|
+| `n.fullName CONTAINS "Spooler" OR n.class CONTAINS "Ids" RETURN n LIMIT 25` | 1.6 s | 1.4 ms | 3.1 s |
+| `n.name CONTAINS "a" AND n.code CONTAINS "b" RETURN n LIMIT 25` | 17.6 s | 0.8 ms | 11.2 s |
+| `n.name CONTAINS "Spooler" OR n.code CONTAINS "b" OR n.graph_id = "x" RETURN n LIMIT 25` | 20.4 s | 3.0 ms | 25.3 s |
+| `n.value = 105873 RETURN n LIMIT 25` | 14.2 s | 38 ms | 21.9 s |
+| `n.value = 105873 RETURN count(*)` | 14.0 s | 36 ms | `Java heap space` |
+| `"x" IN n.graphIds RETURN n LIMIT 25` | 14.3 s | 0.8 ms | 22.1 s |
+| `n.qualifiedId CONTAINS "1234" RETURN n LIMIT 25` | 53 ms | 8.8 ms | 13 ms |
+| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Spooler") RETURN n LIMIT 25` | 209 ms | 35 ms | 144 ms |
+| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Spooler") RETURN count(*)` | timeout (60 s) | 1.30 s | `Java heap space` |
+| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "105873") RETURN n LIMIT 25` | 37.6 s | 0.87 s | 12.9 s |
+| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "zzqqxxvv") RETURN n LIMIT 25` | timeout (60 s) | 1.10 s | 3.0 s |
+| `n.value CONTAINS "Spooler" OR n.value CONTAINS "Tokenizer" OR n.value CONTAINS "zzqq" RETURN n LIMIT 25` | 396 ms | 3.3 ms | HTTP 400 (`Unsafe expression reached parallel string projection`) |
 
 The numeric equality still reads every integer constant's record, and the
 all-properties search still composes every distinct method of every graph, which is
 what the remaining second is: the sweep is bounded by the record reads, on four cores.
+Kotlin main's `n.qualifiedId CONTAINS "1234"` and `n.value = 0` are faster than the
+port's because #128 walks node ids for the first and the port still tests every row
+of every type for it, and because a `LIMIT 25` met in the first graph costs the port
+one prepared batch; on the shapes that have to look at most of the corpus the port is
+between one and four orders of magnitude ahead, and it answers the three that exhaust
+an 8 GiB heap on main.
 One shape got slower and is correct now: `n.type = "CallSiteNode" RETURN count(*)`
 took 0.46 s before because `type` was answered from the three columns that store it
 and every other type was skipped, so it counted zero; it now counts the five million
