@@ -3393,7 +3393,7 @@ jobs:
       with:
         name: benchmark-global-wide-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results
-    - name: Enforce this query's P50, P95, and fluctuation
+    - name: Enforce this query's paired P50 and P95 regression limit
       env:
         QUERY_ID: ${{ matrix.query.id }}
         BASE_SHA: ${{ github.event.pull_request.base.sha }}

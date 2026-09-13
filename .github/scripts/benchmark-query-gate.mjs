@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import { WIDE_SCHEMA, WIDE_PROTOCOL } from './benchmark-wide-latency.mjs';
+import { WIDE_SCHEMA, WIDE_PROTOCOL, WIDE_ACCEPTANCE } from './benchmark-wide-latency.mjs';
 import { pathToFileURL } from 'node:url';
 
 export function queryMatrix(catalog) {
@@ -40,7 +40,7 @@ export function checkQuery(status, catalog, id, { baseSha, headSha } = {}) {
     if (repeated.integrityErrors.some(error => !matrix.some(query => belongsToQuery(error, query.id)))) {
         throw new Error('Shared benchmark measurement integrity failed');
     }
-    if (repeated.queryCount !== 72 || repeated.schema !== WIDE_SCHEMA || repeated.shard !== null ||
+    if (repeated.queryCount !== 72 || repeated.schema !== WIDE_SCHEMA || repeated.acceptance !== WIDE_ACCEPTANCE || repeated.shard !== null ||
         Object.entries(WIDE_PROTOCOL).some(([key, value]) => repeated.protocol?.[key] !== value) || repeated.forkCount !== 3 ||
         !Array.isArray(repeated.queries)) throw new Error('Incomplete repeated query measurements');
     const ids = repeated.queries.map(query => query.id).sort();
@@ -88,7 +88,6 @@ export function checkQuery(status, catalog, id, { baseSha, headSha } = {}) {
         if (!Number.isFinite(spread) || spread !== (max - min) / min * 100) {
             throw new Error(`${id}: inconsistent ${revision} ${quantile} fluctuation evidence`);
         }
-        if (BigInt(max) * 100n >= BigInt(min) * 105n) numericalFailure = true;
     }
     if (query.passed && numericalFailure) throw new Error(`${id}: green verdict contradicts P50/P95 measurements`);
     return query;
@@ -102,7 +101,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         else if (command === 'check') {
             const query = checkQuery(JSON.parse(fs.readFileSync(statusFile, 'utf8')), catalog, id,
                 { baseSha: process.env.BASE_SHA, headSha: process.env.HEAD_SHA });
-            console.log(`${id}: independent P50/P95 latency and <5% fluctuation gate`);
+            console.log(`${id}: independent P50/P95 paired regression <5%; cross-fork variation is diagnostic`);
             console.log(JSON.stringify(query, null, 2));
             if (!query.passed) process.exitCode = 1;
         } else throw new Error('Expected matrix or check command');

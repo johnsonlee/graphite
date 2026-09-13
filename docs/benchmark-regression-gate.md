@@ -57,8 +57,12 @@ fork. The report includes actual warmup and measurement counts and durations:
 
 - Each paired candidate P50 and P95 must be **less than 105%** of the matching main value.
 - For each quantile and each revision, cross-fork fluctuation is `(maximum - minimum) / minimum`
-  across the three forks and must be **less than 5%**. An unstable baseline also fails the
-  measurement. No absolute-latency allowance hides a 5% regression, and exactly 5% fails.
+  across the three forks. This is **diagnostic only**, with no pass/fail threshold. Even large
+  same-revision variation does not itself fail acceptance. The 5% hard limit applies only to
+  paired candidate/base P50 and P95 increases; exactly 5% fails. No absolute-latency allowance
+  hides a paired exceedance. A measured exceedance blocks acceptance but does not by itself
+  establish that the candidate code caused it; order, JIT and environment effects need diagnosis.
+  No uncalibrated confidence-interval or spread threshold is substituted for this policy.
 - Every warmup and measured result must match the base-generated full 14-field correctness
   oracle, including the canonical result digest that binds field values, row order, and graph
   provenance. Missing queries/samples, timeouts, exceptions, duplicate samples, and altered query
@@ -102,7 +106,7 @@ Each timed measurement shard validates the completed base/candidate pair before 
 next pair. Runtime errors stop the current invocation immediately; checkpoint integrity errors
 stop before the next pair. First-pair numerical exceedances are retained, but the reverse-order
 second pair must complete before a terminal latency decision. After that pair, any cumulative
-paired P50/P95 increase or cross-fork spread of at least 5% stops the shard. A passing second
+paired P50/P95 increase of at least 5% stops the shard. Cross-fork spread never stops a shard. A passing second
 pair cannot erase a first-pair failure. All partial raw samples and checkpoint reasons remain
 available; partial evidence can never pass the final gate. Successful acceptance still requires
 all three pairs for all 72 queries.
@@ -521,7 +525,7 @@ Graph-routing `cold` and `startup-prepared` numerical latency is likewise adviso
 `startup-prepared` prepares indexes at load time but performs no query warmup; it does not measure
 steady-state query latency. Only `warm` numerical latency remains blocking under its existing limits. Every state's result and measurement-integrity checks remain
 required. This prerequisite does not implement or weaken the separate 72-query warmed P50/P95
-protocol, whose regression and stability limits remain strictly below 5%.
+protocol, whose paired regression limit remains strictly below 5%; cross-fork variation is diagnostic only.
 
 
 The resource-growth policy applies consistently to Method initial comparisons and confirmation

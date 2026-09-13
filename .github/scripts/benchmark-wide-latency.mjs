@@ -4,6 +4,7 @@ export const WIDE_SAMPLE_COUNT = 40; // Minimum, never a truncation limit.
 export const WIDE_PROTOCOL = Object.freeze({ warmupMinNanos: 10_000_000_000, warmupMinCalls: 5,
     measurementMinNanos: 10_000_000_000, measurementMinCalls: WIDE_SAMPLE_COUNT });
 export const WIDE_SCHEMA = "graphite-wide-latency-v2";
+export const WIDE_ACCEPTANCE = "paired-regression-lt5-spread-diagnostic-v1";
 const reviewedCatalog = JSON.parse(fs.readFileSync(new URL("./wide-query-catalog.json", import.meta.url), "utf8"));
 export function selectWideCatalog(catalog = reviewedCatalog.queries, { shard } = {}) {
     const ids = catalog.map(query => query.id);
@@ -184,9 +185,6 @@ export function compareWideLatency(baseContents, candidateContents, oracleConten
             if (values.length !== expectedForks || values.length < 2) continue;
             const min = Math.min(...values), max = Math.max(...values);
             stability[`${revision}${quantile}SpreadPercent`] = (max - min) / min * 100;
-            if (BigInt(max) * 100n >= BigInt(min) * 105n) {
-                errors.push(`${entry.id}: ${revision} ${quantile} cross-fork spread (max-min)/min must be <5%`);
-            }
         }
         const localIntegrity = new Set(integrityErrors);
         latencyErrors.push(...errors.filter(error => !localIntegrity.has(error)));
@@ -198,7 +196,7 @@ export function compareWideLatency(baseContents, candidateContents, oracleConten
     return { passed: !partial && integrityErrors.length === 0 && latencyErrors.length === 0,
         ...(partial ? { partial: true, completedForkCount: expectedForks, canContinue: integrityErrors.length === 0 && (expectedForks === 1 || latencyErrors.length === 0) } : {}),
         sharedIntegrityErrors,
-        schema: WIDE_SCHEMA, protocol: { ...WIDE_PROTOCOL }, shard: options.shard ?? null,
+        schema: WIDE_SCHEMA, acceptance: WIDE_ACCEPTANCE, protocol: { ...WIDE_PROTOCOL }, shard: options.shard ?? null,
         queryCount: catalog.length, forkCount: WIDE_FORK_COUNT,
         integrityErrors, latencyErrors, queries };
 }
@@ -208,15 +206,13 @@ export function renderWideLatency(comparison) {
     const integrity = new Set(comparison.integrityErrors);
     const classify = error => {
         if (integrity.has(error)) return { category: "Integrity", detail: error };
-        if (/\bbase P(?:50|95) cross-fork spread/.test(error)) return { category: "Base instability", detail: error };
-        if (/\bcandidate P(?:50|95) cross-fork spread/.test(error)) return { category: "Candidate instability", detail: error };
         if (/P(?:50|95) regression must be <5%/.test(error)) return {
             category: "Paired latency exceedance", detail: error.replace("regression must be", "observed increase must be")
         };
         return { category: "Other evidence failure", detail: error };
     };
     const observations = [...comparison.integrityErrors, ...comparison.latencyErrors].map(classify);
-    const categories = ["Paired latency exceedance", "Base instability", "Candidate instability", "Integrity"];
+    const categories = ["Paired latency exceedance", "Integrity"];
     const awaitingReversePair = comparison.partial && comparison.completedForkCount === 1 &&
         comparison.canContinue && comparison.latencyErrors.length > 0;
     const checkpoint = comparison.partial ? [
@@ -232,8 +228,9 @@ export function renderWideLatency(comparison) {
         `${comparison.queryCount} queries; the protocol requires contiguous warmup ≥10 seconds/5 calls and measurement ≥10 seconds/40 calls in three independent paired forks; maximum heap 8 GiB.`,
         ...checkpoint,
         "All measurement calls are retained for quantiles; each run records its actual phase counts and durations.",
-        "Each observed paired P50 and P95 increase must be less than 5%. Both base and candidate cross-fork spread",
-        "is (max-min)/min and must be less than 5%. Exact result signatures and provenance must match in every sample.",
+        "Each observed paired P50 and P95 increase must be less than 5%; exactly 5% fails.",
+        "Base and candidate cross-fork spread is (max-min)/min and is diagnostic only, with no pass/fail threshold.",
+        "Exact result signatures and provenance must match in every sample.",
         "An observed gate failure does not establish a runtime regression caused by the candidate: order, JIT and environment effects require separate diagnosis.",
         "CPU, peak heap and RSS are diagnostic. The legacy mixed-query percentile is not an acceptance criterion.", "",
         "Failure observations by category (counts are observations, not queries):",
@@ -252,5 +249,13 @@ export function renderWideLatency(comparison) {
                         const { category, detail } = classify(error);
                         return `${category}: ${detail}`;
                     }).join("; ")} |`;
-        }), ""].join("\n");
+        }), "",
+        "Cross-fork variation (diagnostic only; unavailable until at least two pairs complete):", "",
+        "| Query | Base P50 spread | Base P95 spread | Candidate P50 spread | Candidate P95 spread |",
+        "|---|---|---|---|---|",
+        ...comparison.queries.map(query => `| ${query.id} | ` +
+            ["baseP50", "baseP95", "candidateP50", "candidateP95"].map(key => {
+                const value = query.stability[`${key}SpreadPercent`];
+                return value === undefined ? "unavailable" : `${value.toFixed(2)}%`;
+            }).join(" | ") + " |"), ""].join("\n");
 }

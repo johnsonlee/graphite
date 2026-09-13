@@ -58,14 +58,14 @@ test("a tail-only slowdown blocks P95 even when P50 is unchanged", () => {
     assert.doesNotMatch(result.latencyErrors.join("\n"), /P50 regression/);
 });
 
-test("cross-fork spread is independently enforced for both baseline and candidate", () => {
+test("cross-fork spread is diagnostic for both baseline and candidate", () => {
     const unstable = evidence((r, fork) => r.id === catalog[0].id && fork === 2
         ? { ...r, latencyNanos: 1_050_000 } : r);
     const sameUnstable = compare(unstable, unstable);
-    assert.equal(sameUnstable.passed, false);
-    assert.doesNotMatch(sameUnstable.latencyErrors.join("\n"), /regression/);
-    assert.match(sameUnstable.latencyErrors.join("\n"), /base P50 cross-fork spread/);
-    assert.match(sameUnstable.latencyErrors.join("\n"), /candidate P95 cross-fork spread/);
+    assert.equal(sameUnstable.passed, true);
+    assert.deepEqual(sameUnstable.latencyErrors, []);
+    assert.equal(sameUnstable.queries[0].stability.baseP50SpreadPercent, 5);
+    assert.equal(sameUnstable.queries[0].stability.candidateP95SpreadPercent, 5);
 });
 
 test("one wrong result signature in one sample blocks despite faster latency", () => {
@@ -192,15 +192,16 @@ test('partial checkpoints never pass final acceptance, even with all three compl
         assert.ok(checkpoint.queries.every(query => query.passed === false));
     }
 });
-test('first-pair exceedance waits for reverse pair while second-pair spread remains terminal', () => {
+test('first-pair exceedance waits for reverse pair while second-pair spread is nonblocking', () => {
     const slower = evidence(r => ({ ...r, latencyNanos: 1_050_000 }));
     const first = compareWideLatency(base.slice(0, 1), slower.slice(0, 1), oracle, manifest, catalog, { partial: true });
     assert.equal(first.canContinue, true);
     assert.match(first.latencyErrors.join('\n'), /P50 regression/);
     const unstable = evidence((r, fork) => ({ ...r, latencyNanos: fork === 1 ? 1_050_000 : 1_000_000 }));
     const second = compareWideLatency(unstable.slice(0, 2), unstable.slice(0, 2), oracle, manifest, catalog, { partial: true });
-    assert.equal(second.canContinue, false);
-    assert.match(second.latencyErrors.join('\n'), /cross-fork spread/);
+    assert.equal(second.canContinue, true);
+    assert.deepEqual(second.latencyErrors, []);
+    assert.equal(second.queries[0].stability.baseP50SpreadPercent, 5);
 });
 test('partial validation cannot hide incomplete pairs or malformed warmup', () => {
     const unmatched = compareWideLatency(base.slice(0, 1), [], oracle, manifest, catalog, { partial: true });
@@ -212,23 +213,23 @@ test('partial validation cannot hide incomplete pairs or malformed warmup', () =
     assert.equal(compareWideLatency(base.slice(0, 1), base.slice(0, 1), oracle, manifest).passed, false);
 });
 
-test('report separates same-revision instability from paired exceedance without changing evidence', () => {
+test('report displays same-revision variation separately from failures without changing evidence', () => {
     const unstable = evidence((r, fork) => r.id === catalog[0].id && fork === 2
         ? { ...r, latencyNanos: 1_050_000 } : r);
     const result = compare(unstable, unstable);
     const original = JSON.stringify(result);
     const report = renderWideLatency(result);
     assert.match(report, /Paired latency exceedance: 0/);
-    assert.match(report, /Base instability: 2/);
-    assert.match(report, /Candidate instability: 2/);
+    assert.match(report, /Cross-fork variation \(diagnostic only/);
+    assert.doesNotMatch(report, /Base instability:|Candidate instability:/);
     assert.match(report, /Integrity: 0/);
     assert.match(report, /does not establish a runtime regression caused by the candidate/);
     const queryLine = report.split('\n').find(line => line.startsWith(`| ${catalog[0].id} |`));
-    assert.ok(queryLine.includes('| 3/3 | FAIL |'));
-    assert.match(queryLine, /Base instability:.*Candidate instability:/);
+    assert.ok(queryLine.includes('| 3/3 | PASS |'));
+    assert.ok(report.includes(`| ${catalog[0].id} | 5.00% | 5.00% | 5.00% | 5.00% |`));
     assert.doesNotMatch(queryLine, /Paired latency exceedance|regression/);
     assert.equal(JSON.stringify(result), original);
-    assert.equal(result.passed, false);
+    assert.equal(result.passed, true);
 });
 
 test('first-pair report records partial observations and unavailable controls without claiming causation', () => {
@@ -240,7 +241,7 @@ test('first-pair report records partial observations and unavailable controls wi
     assert.match(report, /Reverse-order control has not completed/);
     assert.match(report, /Three-fork stability diagnostics are incomplete/);
     assert.match(report, /Paired latency exceedance: 2/);
-    assert.match(report, /Base instability: 0/);
+    assert.ok(report.includes(`| ${catalog[0].id} | unavailable | unavailable | unavailable | unavailable |`));
     assert.match(report, /AWAITING REVERSE PAIR/);
     assert.doesNotMatch(report, /CHECKPOINT FAIL|fail-fast stops|No observed checkpoint failure/);
     assert.match(report, /INCOMPLETE/);

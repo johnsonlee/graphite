@@ -48,8 +48,9 @@ for FORK in 1 2 3; do
         -Dgraphite.broad.pressure.latency.oracle=$BUNDLE/oracle.correctness \
         -Dgraphite.broad.pressure.latency.output=$OUTPUT/$REVISION-$FORK.tsv"
   done
-  # Integrity failures stop immediately. Numeric failures retain the first pair and run
-  # the reverse-order second pair before stopping on cumulative failures; no pair is discarded.
+  # Integrity failures stop immediately. Paired latency exceedances retain the first pair and run
+  # the reverse-order second pair before stopping on cumulative exceedances; no pair is discarded.
+  # Same-revision cross-fork variation is diagnostic and never stops the next pair.
   node "$SCRIPT_DIR/benchmark-wide-shards.mjs" check-progress \
     --directory "$OUTPUT" --bundle "$BUNDLE" --shard "$SHARD" --pairs "$FORK"
 done

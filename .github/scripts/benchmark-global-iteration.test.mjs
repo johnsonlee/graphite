@@ -1,4 +1,4 @@
-import { WIDE_SCHEMA, WIDE_PROTOCOL } from "./benchmark-wide-latency.mjs";
+import { WIDE_SCHEMA, WIDE_PROTOCOL, WIDE_ACCEPTANCE } from "./benchmark-wide-latency.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -60,7 +60,7 @@ function status({ regressionPassed = true, targetAchieved = false, progressAchie
         regressionOnly: true,
         minimumSpeedup: 10,
         repeatedLatency: { passed: true, integrityErrors: [], latencyErrors: [],
-            schema: WIDE_SCHEMA, protocol: { ...WIDE_PROTOCOL }, shard: null, forkCount: 3, queryCount: 72, queries: [] },
+            schema: WIDE_SCHEMA, acceptance: WIDE_ACCEPTANCE, protocol: { ...WIDE_PROTOCOL }, shard: null, forkCount: 3, queryCount: 72, queries: [] },
         errors: regressionPassed ? [] : ["paired P95 exceeds the regression limit"],
         integrityErrors: [],
         latencyErrors: regressionPassed ? [] : ["paired P95 exceeds the regression limit"],
@@ -393,7 +393,7 @@ test("each aggregate and wrapped fork independently binds the target flags and e
 test("current-main acceptance requires repeated latency evidence with the full sampling protocol", () => {
     const refs = references();
     const valid = status().repeatedLatency;
-    for (const repeatedLatency of [null, undefined, { ...valid, protocol: { ...WIDE_PROTOCOL, measurementMinCalls: 39 } },
+    for (const repeatedLatency of [null, undefined, { ...valid, acceptance: undefined }, { ...valid, acceptance: "old-policy" }, { ...valid, protocol: { ...WIDE_PROTOCOL, measurementMinCalls: 39 } },
         { ...valid, forkCount: 2 }, { ...valid, queryCount: 34 }, { ...valid, passed: false },
         { ...valid, latencyErrors: ["unbound instability"] }]) {
         const result = aggregateIteration(refs, executions(refs, {

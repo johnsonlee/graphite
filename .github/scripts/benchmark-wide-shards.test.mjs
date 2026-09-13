@@ -6,6 +6,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { sealBuild, verifyBuild, sealShard, verifyShard, aggregateShards, readLines, checkProgress } from './benchmark-wide-shards.mjs';
+import { checkQuery } from './benchmark-query-gate.mjs';
 import { selectWideCatalog } from './benchmark-wide-latency.mjs';
 
 const catalogFile = new URL('./wide-query-catalog.json', import.meta.url);
@@ -235,4 +236,29 @@ test('real checkpoint CLI preserves first-pair numeric failure through a passing
     assert.equal(secondResult.passed, false); assert.equal(secondResult.canContinue, false);
     assert.ok(firstResult.latencyErrors.every(error => secondResult.latencyErrors.includes(error)));
     assert.equal(secondResult.integrityErrors.length, 0);
+});
+
+
+test('large common variation passes checkpoints, shard aggregation and every per-query gate', t => {
+    const c = setup(t);
+    for (const [key, shard] of [['standard', 'standard'], ['fullScan', 'full-scan']]) {
+        c[key] = makeShard(c, shard, (r, revision, fork) => ({ ...r, latencyNanos: fork * 1_000_000 }));
+        for (const pairs of [1, 2, 3]) assert.equal(checkProgress(c[key], c.bundle, shard, pairs).canContinue, true);
+        assert.equal(sealShard(c[key], c.bundle, shard).passed, true);
+    }
+    const result = aggregateShards(c);
+    assert.equal(result.passed, true, result.errors.join('\n'));
+    assert.deepEqual(result.repeatedLatency.latencyErrors, []);
+    result.comparisons[base] = { exitCode: 0, error: null, status: { integrityErrors: [] } };
+    for (const { id } of catalog) {
+        const query = checkQuery(result, { queries: catalog }, id);
+        assert.equal(query.passed, true);
+        assert.equal(query.stability.baseP50SpreadPercent, 200);
+        assert.equal(query.stability.candidateP95SpreadPercent, 200);
+    }
+});
+test('shard receipts from a different acceptance policy require re-evaluation', t => {
+    const c = complete(t), file = path.join(c.standard, 'receipt.json');
+    const receipt = json(file); delete receipt.acceptance; write(file, receipt);
+    assert.throws(() => aggregateShards(c), /acceptance policy mismatch/);
 });

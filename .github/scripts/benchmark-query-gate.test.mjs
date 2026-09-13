@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
-import { WIDE_SCHEMA, WIDE_PROTOCOL } from './benchmark-wide-latency.mjs';
+import { WIDE_SCHEMA, WIDE_PROTOCOL, WIDE_ACCEPTANCE } from './benchmark-wide-latency.mjs';
 import { checkQuery, queryMatrix } from './benchmark-query-gate.mjs';
 
 const catalog = JSON.parse(fs.readFileSync(new URL('./wide-query-catalog.json', import.meta.url)));
@@ -11,7 +11,7 @@ function statusFixture() {
         passed: true, currentPrBase: 'main-sha', currentHead: 'head-sha',
         comparisons: { 'main-sha': { exitCode: 0, error: null, status: {
             integrityErrors: [], repeatedLatency: {
-                queryCount: 72, schema: WIDE_SCHEMA, protocol: { ...WIDE_PROTOCOL }, shard: null, forkCount: 3, integrityErrors: [], sharedIntegrityErrors: [],
+                queryCount: 72, schema: WIDE_SCHEMA, acceptance: WIDE_ACCEPTANCE, protocol: { ...WIDE_PROTOCOL }, shard: null, forkCount: 3, integrityErrors: [], sharedIntegrityErrors: [],
                 queries: catalog.queries.map(({ id }) => ({ id, passed: true, errors: [],
                     runs: [1, 2, 3].map(fork => ({ fork, baseP50Nanos: 100, baseP95Nanos: 200,
                         candidateP50Nanos: 100, candidateP95Nanos: 200,
@@ -89,8 +89,7 @@ test('query check rejects missing measurements and a fabricated green numerical 
         query => { query.runs.pop(); },
         query => { query.runs[0].candidateP95Nanos = 0; },
         query => { query.runs.forEach(run => { run.candidateP95Nanos = 210; }); },
-        query => { query.stability.candidateP50SpreadPercent = 4; },
-        query => { query.runs[0].candidateP50Nanos = 95; query.stability.candidateP50SpreadPercent = 5 / 95 * 100; }
+        query => { query.stability.candidateP50SpreadPercent = 4; }
     ]) {
         const status = statusFixture();
         change(queries(status)[0]);
@@ -158,4 +157,19 @@ test('separate-query-latency envelope reads the full root comparison and retains
     status.comparisons['main-sha'].status.integrityErrors = [];
     status.evidenceMode = 'legacy-diagnostics-only';
     assert.throws(() => checkQuery(status, catalog, selectedId), /Unsupported/);
+});
+
+
+test('diagnostic variation does not block per-query checks but its evidence must be accurate', () => {
+    const status = statusFixture(), query = queries(status)[0];
+    query.runs[0].candidateP50Nanos = 95;
+    query.stability.candidateP50SpreadPercent = 5 / 95 * 100;
+    assert.equal(checkQuery(status, catalog, selectedId).passed, true);
+    query.stability.candidateP50SpreadPercent = 0;
+    assert.throws(() => checkQuery(status, catalog, selectedId), /inconsistent/);
+});
+test('a verdict from an old acceptance policy cannot silently satisfy the new query gate', () => {
+    const status = statusFixture();
+    delete status.comparisons['main-sha'].status.repeatedLatency.acceptance;
+    assert.throws(() => checkQuery(status, catalog, selectedId), /Incomplete/);
 });

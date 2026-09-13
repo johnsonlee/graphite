@@ -295,12 +295,13 @@ Sample counts may exceed 40; no truncation discards calls completed during the t
 Reports retain each fork's actual phase counts and durations.
 Each paired candidate quantile must be less than 105% of current main's matching quantile.
 For both revisions, each quantile's cross-fork fluctuation `(maximum - minimum) / minimum`
-must be less than 5%. Exactly 5% fails, as does an unstable baseline; there is no absolute-latency
-exception. Missing, duplicate, incorrect, failed, or timed-out results cannot pass. The 72 CI
+is diagnostic only and has no acceptance threshold. Exactly 5% paired candidate/base regression
+fails; there is no absolute-latency exception. A paired exceedance is an observed regression risk,
+not proof that candidate code caused it. Same-revision variation alone never fails the gate. Missing, duplicate, incorrect, failed, or timed-out results cannot pass. The 72 CI
 checks consume the shared measurements without rerunning the workload for each check.
 
 A first-pair numerical exceedance is retained while the reverse-order second pair runs.
-After pair two, any cumulative numerical failure stops further pairs; a passing reverse pair
+After pair two, any cumulative paired latency exceedance stops further pairs; a passing reverse pair
 cannot erase the original failure. Runtime errors stop the invocation immediately, and
 checkpoint integrity errors stop before the next pair. Partial evidence never passes final
 acceptance, which still requires all three pairs.

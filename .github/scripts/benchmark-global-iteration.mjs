@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
-import { WIDE_SCHEMA, WIDE_PROTOCOL } from "./benchmark-wide-latency.mjs";
+import { WIDE_SCHEMA, WIDE_PROTOCOL, WIDE_ACCEPTANCE } from "./benchmark-wide-latency.mjs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -75,11 +75,11 @@ function validateComparison(status, requireRepeatedLatency = false) {
             repeated.passed !== (repeated.integrityErrors.length === 0 && repeated.latencyErrors.length === 0) ||
             repeated.integrityErrors.some(error => !status.integrityErrors.includes(error)) ||
             repeated.latencyErrors.some(error => !status.latencyErrors.includes(error)) ||
-            repeated.schema !== WIDE_SCHEMA || repeated.shard !== null ||
+            repeated.schema !== WIDE_SCHEMA || repeated.acceptance !== WIDE_ACCEPTANCE || repeated.shard !== null ||
             Object.entries(WIDE_PROTOCOL).some(([key, value]) => repeated.protocol?.[key] !== value) ||
             repeated.forkCount !== 3 || repeated.queryCount !== 72 ||
             !Array.isArray(repeated.queries)
-        ) return "Current-main repeated latency evidence requires 72 queries, timed protocol v2, three forks, and consistent error partitions";
+        ) return "Current-main repeated latency evidence requires 72 queries, timed protocol v2, current acceptance policy, three forks, and consistent error partitions";
     }
     if (status.passed !== status.regressionPassed ||
         status.regressionPassed !== (status.errors.length === 0) ||

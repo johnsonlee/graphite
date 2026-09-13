@@ -4,7 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { StringDecoder } from 'node:string_decoder';
 import { pathToFileURL } from 'node:url';
-import { WIDE_PROTOCOL, compareWideLatency, renderWideLatency, selectWideCatalog } from './benchmark-wide-latency.mjs';
+import { WIDE_ACCEPTANCE, WIDE_PROTOCOL, compareWideLatency, renderWideLatency, selectWideCatalog } from './benchmark-wide-latency.mjs';
 
 const BUILD_FILES = ['base.jar', 'candidate.jar', 'oracle.correctness', 'catalog.json', 'harness.kt',
     'correctness.kt', 'graphs.tsv', 'fixture-provenance.tsv', 'fixture-reproducibility.json', 'fixture64.complete.json'];
@@ -99,7 +99,7 @@ export function checkProgress(directory, bundle, shard, completedPairs) {
     const runner = json(path.join(directory, 'runner.json'));
     verifyRunner(runner, shard, build);
     const comparison = compareDirectory(directory, bundle, shard, completedPairs);
-    const result = { schema: 'graphite-wide-progress-v1', partial: true, passed: false,
+    const result = { schema: 'graphite-wide-progress-v1', acceptance: WIDE_ACCEPTANCE, partial: true, passed: false,
         shard, completedPairs, runner, canContinue: comparison.canContinue,
         integrityErrors: comparison.integrityErrors, latencyErrors: comparison.latencyErrors,
         queries: comparison.queries };
@@ -115,7 +115,7 @@ export function sealShard(directory, bundle, shard) {
     const runner = json(path.join(directory, 'runner.json'));
     verifyRunner(runner, shard, build);
     const comparison = compareDirectory(directory, bundle, shard);
-    const receipt = { schema: 'graphite-wide-shard-v1', shard, runner,
+    const receipt = { schema: 'graphite-wide-shard-v1', acceptance: WIDE_ACCEPTANCE, shard, runner,
         queryIds: selectWideCatalog(json(path.join(bundle, 'catalog.json')).queries, { shard }).map(q => q.id),
         integrityPassed: comparison.integrityErrors.length === 0, passed: comparison.passed,
         integrityErrors: comparison.integrityErrors, latencyErrors: comparison.latencyErrors,
@@ -126,6 +126,7 @@ export function sealShard(directory, bundle, shard) {
 export function verifyShard(directory, bundle, shard, build) {
     const receipt = json(path.join(directory, 'receipt.json'));
     requireValue(receipt.schema === 'graphite-wide-shard-v1' && receipt.shard === shard, 'Shard receipt identity mismatch');
+    requireValue(receipt.acceptance === WIDE_ACCEPTANCE, 'Shard acceptance policy mismatch');
     verifyHashes(directory, [...SAMPLE_FILES, 'build.json', 'runner.json'], receipt.files);
     requireValue(sha(path.join(directory, 'build.json')) === sha(path.join(bundle, 'build.json')), 'Shard build mismatch');
     const runner = json(path.join(directory, 'runner.json'));
