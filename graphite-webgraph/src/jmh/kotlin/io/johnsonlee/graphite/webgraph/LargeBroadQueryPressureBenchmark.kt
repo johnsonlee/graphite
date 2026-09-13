@@ -87,9 +87,11 @@ open class LargeBroadQueryPressureBenchmark {
     private var originalPrepareIndexOnLoad: String? = null
     private var prepareIndexOnLoadConfigured = false
     private val graphs = mutableListOf<MappedWebGraphBackedGraph>()
+    private val internalMetricMethods = mutableMapOf<Pair<Class<*>, String>, java.lang.reflect.Method?>()
 
     @Setup(Level.Trial)
     fun setupTrial() {
+        internalMetricMethods.clear()
         check(Runtime.getRuntime().maxMemory() in MIN_EIGHT_GIB_HEAP_BYTES..MAX_EIGHT_GIB_HEAP_BYTES) {
             "Large broad-query pressure benchmark must run with -Xmx8g; " +
                 "max heap was ${Runtime.getRuntime().maxMemory()} bytes"
@@ -171,6 +173,7 @@ open class LargeBroadQueryPressureBenchmark {
 
     @TearDown(Level.Trial)
     fun tearDownTrial() {
+        internalMetricMethods.clear()
         runCatching { queryExecutor.shutdownNow() }
         runCatching { sampler.close() }
         graphs.asReversed().forEach { graph -> runCatching { graph.close() } }
@@ -691,13 +694,18 @@ open class LargeBroadQueryPressureBenchmark {
     }.getOrDefault(0L)
 
     private fun invokeInternalMetric(graph: MappedWebGraphBackedGraph, prefix: String): Any? = runCatching {
-        graph.javaClass.declaredMethods.firstOrNull { method ->
-            method.parameterCount == 0 && method.name.startsWith(prefix)
-        }?.let { method ->
-            method.isAccessible = true
-            method.invoke(graph)
-        }
+        internalMetricMethod(graph.javaClass, prefix)?.invoke(graph)
     }.getOrNull()
+
+    private fun internalMetricMethod(owner: Class<*>, prefix: String): java.lang.reflect.Method? {
+        val key = owner to prefix
+        if (internalMetricMethods.containsKey(key)) return internalMetricMethods[key]
+        val method = owner.declaredMethods.firstOrNull { candidate ->
+            candidate.parameterCount == 0 && candidate.name.startsWith(prefix)
+        }?.also { it.isAccessible = true }
+        internalMetricMethods[key] = method
+        return method
+    }
 
     private fun writeCorrectnessManifest(samples: List<BroadQuerySample>) {
         val configured = System.getProperty(OUTPUT_PROPERTY) ?: return

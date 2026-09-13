@@ -3630,3 +3630,147 @@ loader tests passed.
 field lookup, the top-level cached-field path made the Android build-only score
 worse. Since build-only regressed, no end-to-end benchmark was run. The
 candidate was reverted and no product code from this attempt is retained.
+
+### 2026-09-13 — Attempt 093: Cache benchmark metric reflection metadata
+
+**Question:** does caching per-trial reflective method metadata reduce the
+measurement harness's allocation/CPU overhead and improve independent-JVM
+latency stability without changing metric values or result verification?
+
+Linux JFR evidence from runs `34741006640` and `34742169873` places
+85.32–86.86% of measurement-window allocation sample weight under
+`invokeInternalMetric`; main-thread execution samples predominantly identify
+method lookup/copy and reflective metric collection. These are sampling
+estimates, not exact allocated bytes or proof of latency causality. The prior
+`-Xbatch` experiment failed the strict 5% stability criterion and is not used.
+
+**Control and candidate:** both overlay the sealed main-revision
+`96522d969ab708698d334be37a289aca67e91400` production JAR from run
+`34734536122`, artifact `10310982799` (base JAR SHA256
+`9e84c6416d7f2b55dbccce1a628a30bb0645c05f4d4ee4df8e6c133f9c3807a5`).
+Both harnesses are recompiled with the same hash-pinned Kotlin 2.0.21 compiler
+classpath and flags; using the original sealed binary as control would also
+vary compilation. The candidate changes only per-trial method metadata lookup,
+and executes each getter/reset every call. Production ZIP entries remain
+byte-identical. Source, compiled JAR hashes and byte audits accompany results.
+
+**Real fixture:** the same 64 persisted fixture-derived graphs from source run
+`34734536122`, artifact `10311186757`, verified against source JARs, provenance,
+resource and index hashes. All 20 preregistered diagnostic queries use the sealed
+72-query correctness oracle. This subset cannot establish full gate acceptance.
+
+**Validation commands:**
+
+```sh
+env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s .github/diagnostics/linux-aa -p 'test_*.py'
+bash -n .github/diagnostics/linux-aa/run.sh
+shellcheck .github/diagnostics/linux-aa/run.sh
+actionlint .github/workflows/benchmark-pages.yml
+gh workflow run benchmark-pages.yml --repo johnsonlee/graphite --ref codex/pr125-metric-cache-probe
+```
+
+The local matched build passed real-graph counter/reset/error/recovery checks;
+all 72 queries previously passed the full oracle using byte-identical candidate
+classes. Nine execution-wiring tests pass, including early execution failure,
+compiler dependency tampering, and preservation of partial build evidence.
+The Linux workflow rebuilds and verifies its own matched JARs before measuring.
+
+| Evidence | Result before Linux execution |
+|----------|-------------------------------|
+| Correctness | Local real-graph metrics and full 72-query oracle passed |
+| Query P50/P95 | Pending; all three pairs and per-variant spreads required |
+| CPU | Pending; identical main-thread phase CPU and worker CPU probes |
+| Allocation / GC | Pending; JFR sampling and complete GC logs retained |
+| Heap | Each measurement JVM requires `-Xmx8g` |
+
+**Protocol:** six serial fresh JVMs on one Linux runner with four allowed CPUs,
+Temurin `17.0.20.1+1`, default background compilation, in fixed order
+`cached1, control1, control2, cached2, cached3, control3`. Each query has contiguous
+warmup of at least 10 seconds and five calls, then measurement of at least
+10 seconds and 40 calls. Every raw sample and correctness check is retained.
+Every paired P50/P95 increase and each variant's across-three-fork
+`(max-min)/min` must be strictly below 5%; no filtering or threshold relaxation.
+This diagnostic finishes numeric failures to explain all pairs; execution or
+correctness failure terminates and reports incomplete evidence without retry.
+Full gate fail-fast policy remains unchanged. A shared 3,120-second measurement
+budget bounds the six JVMs, excluding compilation and fixture verification.
+
+**Decision before Linux execution:** pending. Retained only on the isolated diagnostic branch; no
+formal PR #125 gate or production change is justified by this record yet.
+
+**Preparation failure, run `34744690818` (`becd0bb`):** no measurement JVM
+started. Python 3.12 rejected the sealed JAR while creating the matched
+overlay: central-directory entries 2550 and 16521 both reference the same
+`META-INF/LICENSE.txt` local header at offset 4877012, with identical CRC and
+sizes. Local validation used Python 3.14, which accepts this alias. Partial
+build logs and JAR bytes are preserved in artifact `10313519674`. This is a
+diagnostic preparation failure, not latency or correctness evidence against
+the metric cache. Re-execution requires a Python 3.12 reproduction and a
+reader fix that continues to reject actual overlapping members.
+
+**Preparation repair:** isolated upstream CPython `v3.12.3` `zipfile` reproduced
+the actual exception at entry 16521 (the locally installed 3.12 build only
+warns, so its version alone did not reproduce the failure). The reader now
+checks that aliases have identical metadata and their compressed payload ends
+before the next distinct local header, then reads through the existing alias
+whose boundary covers that payload. It preserves both indexed directory
+entries and does not modify ZIP boundaries or disable CRC/name checks.
+Six tests passed with that strict standard library, including full 30,488-entry
+roundtrip and rejection of conflicting aliases, genuine overlap and corruption.
+The complete matched build and real metric correctness check also passed;
+both output JAR SHA256 values exactly match the prior validated local outputs.
+Nine workflow-wiring tests passed again. Re-execution retains the original
+six-JVM protocol and thresholds; the failed run is not a performance sample.
+
+
+**Completed diagnostic, run `34745157551` (`211757d`):** the matched control
+and cached harnesses completed all six JVMs and 1,424,721 raw warmup/measurement
+samples for the 20 preregistered queries. Every sample passed the full-result
+oracle comparison. The independent source/build audit verified all 10 compiler
+classpath dependencies, the 29-class overlay allowlist, actual execution JAR
+hashes against the matched local builds, fixture identity, runtime and CPU
+affinity. This is evidence for the benchmark harness change, not a comparison
+of different production revisions or acceptance of all 72 formal queries.
+
+| Completed evidence | Control | Cached |
+|--------------------|---------|--------|
+| Paired P50/P95 increases, strictly below 5% | Reference | All 120 comparisons pass |
+| Across-three-fork P50/P95 stability failures | 7 metrics | 1 metric |
+| Main-thread measurement CPU per call | Reference | Median change −94.20% across 60 query/pair comparisons |
+| Full-result verification of raw samples | Pass | Pass |
+| Measurement heap cap | 8GiB | 8GiB |
+
+The remaining cached failure is `global-wide-callee-class-dense` P50:
+115,488 / 121,019 / 113,354 ns across the three JVMs, a 6.762% spread.
+The strict combined diagnostic latency verdict therefore remains **FAIL**.
+Reduced main-thread CPU does not mean a 94.20% reduction in query latency or
+whole-process CPU. Allocation/GC logs remain diagnostic evidence; the earlier
+JFR allocation estimate is not a measured allocation reduction from this run.
+
+The raw-sample audit is retained as
+`/private/tmp/pr125-ci/metric-cache-analysis-34745157551/six-jvm-audit.json`;
+the independent provenance audit is
+`/private/tmp/pr125-linux-metric-cache-run34745157551/source-build-validation.json`.
+The complete Linux run is [34745157551](https://github.com/johnsonlee/graphite/actions/runs/34745157551).
+
+**Integration validation:** the minimal candidate starts at formal PR #125
+revision `e9d4ebe2bfa0657d30ff99d7471838063c278f7e`. Its harness source SHA256
+`014ec99be9c44a815a3c72a987574978f16e458afa6b0b95d0573d89401c9f2c`
+is identical to the measured cached source. All 278 Node tests passed;
+`./gradlew :webgraph:compileJmhKotlin :webgraph:detekt --no-daemon` passed in
+an independent clone. The real-graph metric correctness executable also passed
+against these Gradle-compiled classes, covering changing counts, reset,
+required/optional missing metrics, class isolation, invocation recovery and
+trial cleanup. The initial linked-worktree build failed in the existing
+publishing plugin before compilation; the independent clone resolved that
+repository-layout problem. The prior 72-query correctness replay is not a new
+72-query latency result.
+
+**Decision after diagnostic:** keep the cache as a benchmark harness improvement;
+formal acceptance remains incomplete. Only method metadata (including missing
+methods) is cached per trial/class/prefix; values are read/reset every call.
+No production code, diagnostic workflow, query catalog, sample minimum, 8GiB
+constraint, three-pair requirement, strict 5% threshold or formal fail-fast
+policy is changed. The remaining spread failure is retained and must not be
+relabeled as a pass. The unpushed integration candidate still requires the
+complete formal 72-query gate before claiming acceptance.
