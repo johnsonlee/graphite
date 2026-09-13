@@ -25,10 +25,16 @@ REPRODUCIBILITY_SCRIPT_PATH=.github/scripts/test-fixture64-reproducibility.sh
 ZIP_HASHER_PATH=.github/scripts/canonical-zip-sha256.py
 GIST_EVIDENCE_PATH=.github/scripts/gist-evidence.mjs
 STATUS_CONTEXT=graphite/fixture64-global-wide
-REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
-REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 PUBLISH_EVIDENCE=${GRAPHITE_PRESSURE_PUBLISH_EVIDENCE:-true}
+COLD_DIAGNOSTICS_ONLY=${GRAPHITE_PRESSURE_COLD_DIAGNOSTICS_ONLY:-false}
+[[ "$COLD_DIAGNOSTICS_ONLY" == true || "$COLD_DIAGNOSTICS_ONLY" == false ]]
+if [[ "$COLD_DIAGNOSTICS_ONLY" == true && "$PUBLISH_EVIDENCE" != false ]]; then
+  echo 'Cold diagnostic evaluation cannot publish a strict-target success context' >&2
+  exit 1
+fi
+REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
+REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 SHARED_REPRODUCIBILITY_RECEIPT=${GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:-}
 
 test -f "${MANIFEST}"
@@ -196,6 +202,7 @@ IFS=, BASE_JSON_LIST="${BASE_JSON_FILES[*]}"
 IFS=, BASE_OBSERVATION_LIST="${BASE_OBSERVATION_FILES[*]}"
 IFS=, CANDIDATE_JSON_LIST="${CANDIDATE_JSON_FILES[*]}"
 IFS=, CANDIDATE_OBSERVATION_LIST="${CANDIDATE_OBSERVATION_FILES[*]}"
+COMPARISON_EXIT=0
 node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-global-wide-pressure \
   --bases "${BASE_JSON_LIST}" \
   --candidates "${CANDIDATE_JSON_LIST}" \
@@ -204,10 +211,10 @@ node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-global-wide-pressure \
   --run-orders candidate-base,base-candidate,candidate-base \
   --graph-manifest "${MANIFEST}" \
   --correctness-oracle "${ORACLE}" \
-  --minimum-speedup 5 \
+  --minimum-speedup 5 --cold-diagnostics-only "$COLD_DIAGNOSTICS_ONLY" \
   --report "${OUTPUT_DIR}/global-wide-report.md" \
-  --status "${OUTPUT_DIR}/global-wide-status.json"
-jq -e '.passed == true' "${OUTPUT_DIR}/global-wide-status.json" >/dev/null
+  --status "${OUTPUT_DIR}/global-wide-status.json" || COMPARISON_EXIT=$?
+test -f "${OUTPUT_DIR}/global-wide-status.json"
 
 cp "${MANIFEST}" "${OUTPUT_DIR}/graphs.tsv"
 cp "${FIXTURE_PROVENANCE}" "${OUTPUT_DIR}/fixture-provenance.tsv"
@@ -237,10 +244,18 @@ jq -n \
     fixtureSource:"four-pinned-fixture-jars",runOrder:"candidate-base,base-candidate,candidate-base"}' \
   > "${OUTPUT_DIR}/provenance.json"
 
-WORST_P50=$(jq '[.runs[].p50Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
-WORST_P95=$(jq '[.runs[].p95Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
-DESCRIPTION=$(printf 'fixture64-wide base=%.12s p50=%.2fx p95=%.2fx pairs=3 correct=pass' \
-  "${BASE_SHA}" "${WORST_P50}" "${WORST_P95}")
+INTEGRITY_STATUS=$(jq -r 'if (.integrityErrors | length) == 0 then "pass" else "fail" end' "${OUTPUT_DIR}/global-wide-status.json")
+if (( COMPARISON_EXIT != 0 )); then
+  # Failed comparisons may have no valid runs. Preserve evidence without formatting null speedups.
+  VALID_PAIRS=$(jq '.runs | length' "${OUTPUT_DIR}/global-wide-status.json")
+  DESCRIPTION=$(printf 'fixture64-wide base=%.12s comparison-exit=%s valid-pairs=%s integrity=%s' \
+    "${BASE_SHA}" "${COMPARISON_EXIT}" "${VALID_PAIRS}" "${INTEGRITY_STATUS}")
+else
+  WORST_P50=$(jq '[.runs[].p50Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
+  WORST_P95=$(jq '[.runs[].p95Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
+  DESCRIPTION=$(printf 'fixture64-wide base=%.12s p50=%.2fx p95=%.2fx pairs=3 integrity=%s' \
+    "${BASE_SHA}" "${WORST_P50}" "${WORST_P95}" "${INTEGRITY_STATUS}")
+fi
 test "${#DESCRIPTION}" -le 140
 EVIDENCE_FILES=(
   "${OUTPUT_DIR}/provenance.json" "${OUTPUT_DIR}/graphs.tsv"
@@ -261,6 +276,8 @@ jq -n --arg schema graphite-fixture64-global-wide-evidence-v2 --arg repository "
     statusContext:$statusContext,description:$description,files:$files}' \
   > "${OUTPUT_DIR}/evidence-manifest.json"
 EVIDENCE_FILES+=("${OUTPUT_DIR}/evidence-manifest.json")
+if (( COMPARISON_EXIT != 0 )); then exit "$COMPARISON_EXIT"; fi
+jq -e '.passed == true' "${OUTPUT_DIR}/global-wide-status.json" >/dev/null
 if [[ "${PUBLISH_EVIDENCE}" == false ]]; then
   echo "Produced trusted local global-wide evidence in ${OUTPUT_DIR}: ${DESCRIPTION}"
   exit 0
