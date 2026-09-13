@@ -1702,6 +1702,7 @@ export function compareGlobalWidePressure(
     const latencyErrors = [];
     const resourceErrors = [];
     if (typeof coldDiagnosticsOnly !== "boolean") errors.push("coldDiagnosticsOnly must be boolean");
+    if (coldDiagnosticsOnly && latencyEvidence !== null) errors.push("Cold diagnostic mode cannot evaluate required repeated latency evidence");
     if (typeof regressionOnly !== "boolean") errors.push("regressionOnly must be a boolean");
     if (!Number.isFinite(minimumSpeedup) || minimumSpeedup <= 0) {
         errors.push("minimumSpeedup must be a positive finite number");
@@ -2146,7 +2147,7 @@ export function renderGlobalWidePressureReport(comparison) {
         "### 64 fixture-derived global wide-query pressure gate",
         "",
         ...(comparison.coldDiagnosticsOnly ? ["Cold query latency, historical speedup targets, and CPU/heap/RSS growth are diagnostic; correctness and measurement integrity remain required."] : []),
-        `Evaluation: **${comparison.regressionOnly ? "non-regression" : "strict target"}**`,
+        `Evaluation: **${comparison.coldDiagnosticsOnly ? "diagnostics only" : comparison.regressionOnly ? "non-regression" : "strict target"}**`,
         `P95 target in every independent paired fork: **${comparison.minimumSpeedup.toFixed(1)}x**`,
         `Regression checks: **${comparison.regressionPassed ? "PASS" : "FAIL"}**; ` +
             `target achieved: **${comparison.targetAchieved ? "YES" : "NO"}**`,
@@ -2179,7 +2180,7 @@ export function renderGlobalWidePressureReport(comparison) {
         ),
         "",
         ...(comparison.advisoryErrors?.length ? ["Advisory numerical observations:", ...comparison.advisoryErrors, ""] : []),
-        comparison.passed ? "**Result: PASS**" : `**Result: FAIL**\n\n${comparison.errors.join("\n")}`,
+        comparison.passed ? (comparison.coldDiagnosticsOnly ? "**Diagnostic integrity: PASS; not gate acceptance**" : "**Result: PASS**") : `**Result: FAIL**\n\n${comparison.errors.join("\n")}`,
         ""
     ].join("\n");
     return comparison.repeatedLatency ? `${renderWideLatency(comparison.repeatedLatency)}\n${legacy}` : legacy;
@@ -3106,7 +3107,8 @@ function compareGlobalWidePressureCommand(args) {
         Number(args["minimum-speedup"] ?? 10),
         requireArg(args, "run-orders").split(",").map((order) => order.trim()).filter(Boolean),
         fs.readFileSync(requireArg(args, "graph-manifest"), "utf8"),
-        { regressionOnly: args["regression-only"] === true,
+        { coldDiagnosticsOnly: args["cold-diagnostics-only"] === "true",
+            regressionOnly: args["regression-only"] === true,
             latencyEvidence: ["base-latency-samples", "candidate-latency-samples", "latency-oracle"].some(key => args[key])
                 ? {
                     bases: commaSeparatedFiles(args, "base-latency-samples").map(file => fs.readFileSync(file, "utf8")),

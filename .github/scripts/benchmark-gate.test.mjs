@@ -1105,7 +1105,7 @@ test("fixture64 cold graphId pressure keeps all cold latency diagnostic without 
     );
     assert.equal(hiddenFirstRequestRegression.passed, true);
     assert.match(hiddenFirstRequestRegression.advisoryErrors.join("\n"), /first K64 request latency regressed/);
-    assert.match(renderGraphIdPressureReport(hiddenFirstRequestRegression), /Cold-state latency.*advisory/);
+    assert.match(renderGraphIdPressureReport(hiddenFirstRequestRegression), /Unwarmed query latency \(cold or startup-prepared\) is advisory/);
     for (const [field, value] of [["latencyNanos", "NaN"], ["outcome", "failed"], ["digest", "wrong"]]) {
         const broken = candidateRows.map(row => row.split("\t"));
         broken[1][header.indexOf(field)] = value;
@@ -1341,8 +1341,8 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 2_000_000_000)
     );
-    assert.equal(regressed.passed, true);
-    assert.match(regressed.advisoryErrors.join("\n"), /request-selected P50/);
+    assert.equal(regressed.passed, false);
+    assert.match(regressed.errors.join("\n"), /request-selected P50/);
     assert.equal(regressed.graphParameterP50Regression, 1);
     assert.equal(regressed.graphParameterP95Regression, 1);
     assert.equal(regressed.graphParameterP50Speedup, 0.5);

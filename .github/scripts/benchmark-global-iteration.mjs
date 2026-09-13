@@ -50,6 +50,9 @@ export function validateReferences(references, actualHead = references?.currentH
 }
 
 function validateComparison(status, requireRepeatedLatency = false) {
+    if (status?.coldDiagnosticsOnly === true || status?.evidenceMode === "cold-diagnostics-only") {
+        return "Cold diagnostic reports cannot satisfy iteration or required query acceptance";
+    }
     if (status === null || typeof status !== "object" || Array.isArray(status)) {
         return "Missing or invalid comparison status";
     }

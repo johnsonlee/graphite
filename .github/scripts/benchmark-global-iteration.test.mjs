@@ -459,3 +459,15 @@ test("CLI requires an explicit diagnostics flag and rejects target enforcement i
     assert.throws(() => aggregateIteration(references(), executions(references()),
         { legacyDiagnosticsOnly: true, requireTarget: true }), /cannot enforce/);
 });
+
+
+test("legacy cold diagnostic compatibility cannot satisfy the full query gate", () => {
+    const refs = references();
+    for (const legacyDiagnosticsOnly of [false, true]) {
+        const result = aggregateIteration(refs, executions(refs, {
+            [BASE]: { status: { ...status(), coldDiagnosticsOnly: true, evidenceMode: "cold-diagnostics-only" } }
+        }), { legacyDiagnosticsOnly });
+        assert.equal(result.passed, false);
+        assert.match(result.comparisons[BASE].error, /Cold diagnostic reports cannot satisfy/);
+    }
+});
