@@ -30,7 +30,6 @@ const REPRESENTATIVE_ENDPOINT_WEIGHT: i64 = 100;
 const LOW_SIGNAL_HELPER_PENALTY: i64 = 4;
 
 const MAX_CLASSES_PER_COMPONENT: usize = 5;
-pub const MIN_CAPABILITY_LAYOUT_CANDIDATES: usize = 8;
 
 const UTILITY_PACKAGE_SIGNALS: [&str; 5] = ["common", "shared", "support", "util", "utils"];
 const HELPER_CLASS_SIGNALS: [&str; 4] = ["Helper", "Support", "Util", "Utils"];
