@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn declines_what_it_cannot_anchor() {
-        assert!(plan(r#"MATCH (c)-[r:DATAFLOW]->(n) WHERE n.line = 5 RETURN c"#).is_none());
+        assert!(plan(r#"MATCH (c)-[r:DATAFLOW]->(n) WHERE n.line > 5 RETURN c"#).is_none());
         assert!(plan(r#"MATCH (c)-[r:DATAFLOW]->(n) RETURN c"#).is_none());
         assert!(plan(
             r#"MATCH (c)-[r:DATAFLOW*1..2]->(n) WHERE n.callee_class CONTAINS "x" RETURN c"#

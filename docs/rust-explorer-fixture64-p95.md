@@ -336,6 +336,94 @@ The late hit costs less than the middle one because the term's rarest trigram is
 absent from most graphs' bitmaps, which settles them before any planning; the absent
 term is the cheapest of all for the same reason.
 
+## Every property, and the ones no type has
+
+The production log has a second family of wide queries besides the class-pair and
+`value` searches: `n.qualifiedId CONTAINS "..."`, the all-properties search
+`any(k IN keys(n) WHERE toString(n[k]) CONTAINS "...")`, numeric equality
+(`n.value = 105873`), membership in a property (`"a" IN n.graphIds`), and predicates on
+names no node type stores (`n.fullName`, `n.code`, `n.graph_id`). Each of them used to
+send the whole clause to the generic evaluator, which decodes every node of every type
+in every graph: 14–20 s on this corpus, a timeout on the production one.
+
+The planner now settles all of them per node type before any graph is touched:
+
+* **A property name no type stores** is null on every node but an annotation's, whose
+  value pairs can spell any key. Every other type is skipped for that leaf, so
+  `n.name CONTAINS "a" AND n.code CONTAINS "b"` skips every type outright and
+  `n.fullName CONTAINS "x" OR n.class CONTAINS "Ids"` sweeps the `class` column of
+  fields and annotations and nothing else. Per graph, an annotation key that no string
+  in the dictionary spells reaches no annotation either.
+* **`<property> = <number>`** is true only where the property holds a number: the
+  numeric constants, a parameter's `index`, a call site's `line`, and the open-ended
+  values (annotations, enum arguments, resource values). A string and a number are
+  unequal, so every string-typed property skips its type. An ordering comparison is
+  not planned -- Cypher compares a string and a number by their text, which the
+  evaluator still does.
+* **`<anything> IN <property>`** is null, hence no row, wherever the property is not a
+  list: only annotations, enum arguments and resource values can be.
+* **`n.type`** falls back to the node's type name where nothing is stored under that
+  key, in both servers; the leaf now folds per type, so `n.type = "CallSiteNode"`
+  plans every CallSite and no other type, and `toLower(n.type) CONTAINS "constant"`
+  plans the eight constant types. Where a type stores `type` (locals, fields,
+  parameters) the column answers, as before.
+* **`keys(n)`** lists `id` and the type's properties, so the all-properties search
+  expands to one leaf per key, `id` included, and `properties(n)[k]` is read the same
+  as `n[k]`. `id` is tested off the type's id list without a record read.
+* **Signatures and methods are composed from the record**, not decoded: a call site's
+  `caller_signature` and `callee_signature`, and the `method` of a local variable, a
+  parameter or a return node, are `class.name(p1,p2)` over the record's string ids.
+  Each distinct method is composed and tested once per sweep chunk and remembered, so
+  the ten million locals of this corpus cost a hash lookup each. A return node's
+  `actual_type`, the integers and booleans at a fixed offset (`value`, `index`,
+  `static`, `line`), and the node id are read the same way; only floating point stays
+  dynamic, since the port does not reproduce Kotlin's `Float.toString`.
+* **Synthetic keys** (`qualifiedId`, `elementId`, `graphId`) fold per graph as before,
+  and a literal that only the node id can decide (`CONTAINS "1234"`) is now tested per
+  node from the id, not by decoding the type.
+* **Graphs are prepared in parallel**, in the same one-then-`threads`-then-doubling
+  batches the CallSite path uses: each graph's column resolutions, record sweeps and
+  CallSite plan are built across threads, and then swept in source order so the rows
+  come out in the sequential order. Rows that need a record read are tested a chunk
+  at a time across threads too, so a `count(*)` over ten million locals uses every
+  core while a `LIMIT` met early still reads one chunk.
+
+Before and after, 64 graphs, 19.4M nodes of which 10.1M are locals and 5.0M call
+sites; medians of three, except the previous build's single run where a query took
+longer than ten seconds:
+
+| Query | Rust before | Rust now |
+|---|---:|---:|
+| `n.fullName CONTAINS "Spooler" OR n.class CONTAINS "Ids" RETURN n LIMIT 25` | 1.6 s | 1.4 ms |
+| `n.name CONTAINS "a" AND n.code CONTAINS "b" RETURN n LIMIT 25` | 17.6 s | 0.8 ms |
+| `n.name CONTAINS "Spooler" OR n.code CONTAINS "b" OR n.graph_id = "x" RETURN n LIMIT 25` | 20.4 s | 3.0 ms |
+| `n.value = 105873 RETURN n LIMIT 25` | 14.2 s | 38 ms |
+| `n.value = 105873 RETURN count(*)` | 14.0 s | 36 ms |
+| `"x" IN n.graphIds RETURN n LIMIT 25` | 14.3 s | 0.8 ms |
+| `n.qualifiedId CONTAINS "1234" RETURN n LIMIT 25` | 53 ms | 8.8 ms |
+| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Spooler") RETURN n LIMIT 25` | 209 ms | 35 ms |
+| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Spooler") RETURN count(*)` | timeout (60 s) | 1.30 s |
+| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "105873") RETURN n LIMIT 25` | 37.6 s | 0.87 s |
+| `any(k IN keys(n) WHERE toString(n[k]) CONTAINS "zzqqxxvv") RETURN n LIMIT 25` | timeout (60 s) | 1.10 s |
+| `n.value CONTAINS "Spooler" OR n.value CONTAINS "Tokenizer" OR n.value CONTAINS "zzqq" RETURN n LIMIT 25` | 396 ms | 3.3 ms |
+
+The numeric equality still reads every integer constant's record, and the
+all-properties search still composes every distinct method of every graph, which is
+what the remaining second is: the sweep is bounded by the record reads, on four cores.
+One shape got slower and is correct now: `n.type = "CallSiteNode" RETURN count(*)`
+took 0.46 s before because `type` was answered from the three columns that store it
+and every other type was skipped, so it counted zero; it now counts the five million
+call sites and takes about 5 s, because every one of them is handed to the aggregate
+as a row. A count over a type the plan admits whole could be taken from the type's
+size instead; it is not a production shape and is left as it is.
+
+Kotlin main answers the all-properties search with no rows at all: it evaluates
+`n[k]` on a node to null, so `toString(n[k])` is `"null"` and never contains the
+term. The port evaluates `n[k]` as the property, as openCypher does, so the
+differential harness plans that shape but does not compare its rows; the other shapes
+above are compared and byte-identical on the fixture graphs, `n.type`'s fallback
+included.
+
 ## Debug builds
 
 Every number in this document is from `cargo build --release`. The binary a plain

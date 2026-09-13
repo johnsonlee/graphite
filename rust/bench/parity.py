@@ -219,6 +219,62 @@ QUERIES = [
     "MATCH (n) WHERE n.callee_class =~ '.*Nosuchclass.*' RETURN count(*)",
     "MATCH (n) WHERE toLower(n.callee_class) =~ '.*java.*' RETURN count(*)",
     "MATCH (c)-[r:DATAFLOW]->(n) WHERE n.callee_class =~ '.*java.*' RETURN count(*)",
+    # A property no type stores is null everywhere but on an annotation, whose value
+    # pairs can spell any key: the scan skips every other type outright.
+    'MATCH (n) WHERE n.fullName CONTAINS "x" OR n.class CONTAINS "Ids" RETURN count(*)',
+    'MATCH (n) WHERE n.name CONTAINS "a" AND n.code CONTAINS "b" RETURN count(*)',
+    'MATCH (n) WHERE n.name CONTAINS "a" OR n.code CONTAINS "b" OR n.graph_id = "app" RETURN count(*)',
+    # Numeric equality: true only where the property holds a number.
+    'MATCH (n) WHERE n.value = 105873 RETURN count(*)',
+    'MATCH (n) WHERE n.value = 0 RETURN n.value, labels(n) ORDER BY id(n) LIMIT 10',
+    'MATCH (n) WHERE n.value = 1 OR n.value CONTAINS "java" RETURN count(*)',
+    'MATCH (n) WHERE 1 = n.value RETURN count(*)',
+    'MATCH (n) WHERE n.value = 1.5 RETURN count(*)',
+    'MATCH (n) WHERE n.line = 10 RETURN count(*)',
+    'MATCH (n) WHERE n.id = 5 RETURN n',
+    'MATCH (n) WHERE n.value = 105873 AND n.callee_class CONTAINS "java" RETURN count(*)',
+    # Membership in a property: null, hence no row, unless the property is a list.
+    'MATCH (n) WHERE "app" IN n.graphIds RETURN count(*)',
+    'MATCH (n) WHERE "x" IN n.value RETURN count(*)',
+    'MATCH (n) WHERE "app" IN n.graphIds OR n.value CONTAINS "java" RETURN count(*)',
+    # `type` falls back to the node's type name where nothing is stored under it.
+    'MATCH (n) WHERE n.type = "CallSiteNode" RETURN count(*)',
+    'MATCH (n) WHERE toLower(n.type) CONTAINS "constant" RETURN count(*)',
+    'MATCH (n) WHERE n.type CONTAINS "int" RETURN count(*)',
+    'MATCH (n) WHERE n.type CONTAINS "Node" AND n.callee_class CONTAINS "java" RETURN count(*)',
+    'MATCH (n:Annotation) WHERE n.type = "AnnotationNode" RETURN count(*)',
+    'MATCH (n:Annotation) WHERE n.type CONTAINS "Annotation" RETURN count(*)',
+    'MATCH (n:LocalVariable) WHERE n.type = "LocalVariable" RETURN count(*)',
+    # A CallSite's signatures, line and id are read off the record without decoding it.
+    'MATCH (n) WHERE n.callee_signature CONTAINS "java.lang.String)" RETURN count(*)',
+    'MATCH (n) WHERE n.callee_signature CONTAINS "(java.lang.String" RETURN n.callee_signature ORDER BY n.callee_signature LIMIT 10',
+    'MATCH (n) WHERE toLower(n.caller_signature) CONTAINS "main(" RETURN count(*)',
+    'MATCH (n) WHERE n.caller_signature CONTAINS "x" OR n.callee_name = "toString" RETURN count(*)',
+    'MATCH (n) WHERE n.callee_signature CONTAINS "String" AND n.callee_class CONTAINS "java" RETURN count(*)',
+    'MATCH (n) WHERE n.callee_signature STARTS WITH "java.lang.String." RETURN count(*)',
+    'MATCH (n) WHERE n.callee_signature = "java.lang.String.length()" RETURN count(*)',
+    'MATCH (n:CallSite) WHERE n.callee_signature =~ ".*String.*" RETURN count(*)',
+    'MATCH (n) WHERE toString(n.line) STARTS WITH "1" RETURN count(*)',
+    'MATCH (n) WHERE n.line = 10 OR n.callee_class CONTAINS "java" RETURN count(*)',
+    'MATCH (n) WHERE toString(n.id) CONTAINS "12" RETURN count(*)',
+    'MATCH (n:CallSite) WHERE n.id = 5 RETURN n',
+    # The method of a local, a parameter or a return node, a return node's actual
+    # type, and the integers and booleans at a fixed place in a record.
+    'MATCH (n) WHERE n.method CONTAINS "main(" RETURN count(*)',
+    'MATCH (n:LocalVariable) WHERE n.method CONTAINS "java.lang.String)" RETURN n.name, n.method ORDER BY id(n) LIMIT 10',
+    'MATCH (n:Parameter) WHERE toLower(n.method) STARTS WITH "java." RETURN count(*)',
+    'MATCH (n:Return) WHERE n.method CONTAINS "toString()" RETURN count(*)',
+    'MATCH (n:Return) WHERE n.actual_type CONTAINS "String" RETURN count(*)',
+    'MATCH (n) WHERE n.actual_type CONTAINS "String" OR n.method CONTAINS "nosuchmethod(" RETURN count(*)',
+    'MATCH (n) WHERE n.method CONTAINS "toString()" AND n.name CONTAINS "a" RETURN count(*)',
+    'MATCH (n) WHERE toString(n.index) = "0" RETURN count(*)',
+    'MATCH (n) WHERE toString(n.static) = "true" RETURN count(*)',
+    'MATCH (n) WHERE toString(n.value) STARTS WITH "-" RETURN count(*)',
+    'MATCH (n) WHERE toString(n.value) = "0" RETURN count(*)',
+    'MATCH (n) WHERE n.index = 1 RETURN count(*)',
+    'MATCH (n) WHERE n.value = -1 RETURN count(*)',
+    'MATCH (n:LongConstant) WHERE n.value = 0 RETURN count(*)',
+    'MATCH (n) WHERE toString(n.id) = "5" RETURN n',
 ]
 for q in QUERIES:
     CASES.append(("POST", "/api/graphs/app/cypher", json.dumps({"query": q})))

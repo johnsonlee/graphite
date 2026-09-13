@@ -84,9 +84,18 @@ const PUSHABLE_PROPS: [&str; 25] = [
 ];
 
 /// Every property key a node map can carry, in cross-graph mode: what
-/// `any(k IN keys(n) WHERE ...)` ranges over. An annotation's value pairs add keys of
-/// their own, which is why the Annotation type is always decoded for that shape.
-const ALL_KEYS: [&str; 25] = PUSHABLE_PROPS;
+/// `any(k IN keys(n) WHERE ...)` ranges over. `id` is on every node; an annotation's
+/// value pairs add keys of their own, which is why the Annotation type is always
+/// decoded for that shape.
+const ALL_KEYS: [&str; 26] = {
+    let mut keys = ["id"; 26];
+    let mut i = 0;
+    while i < PUSHABLE_PROPS.len() {
+        keys[i + 1] = PUSHABLE_PROPS[i];
+        i += 1;
+    }
+    keys
+};
 
 fn is_synthetic_key(property: &str) -> bool {
     matches!(property, "graphId" | "elementId" | "qualifiedId")
@@ -111,9 +120,24 @@ enum PushOp {
     Regex,
 }
 
+/// What a leaf compares. Every leaf is planned per node type by what the type exposes
+/// for its property; only a `Text` leaf is ever answered from a dictionary.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum LeafShape {
+    /// `<property> <string op> "literal"`.
+    Text,
+    /// `<property> = <number>`: true only where the property holds a number.
+    Numeric,
+    /// `<anything> IN <property>`: true only where the property holds a list.
+    Member,
+}
+
 #[derive(Clone)]
 struct StringPredicate {
-    property: &'static str,
+    /// The property name. Borrowed for the names the scan reads raw; owned for any
+    /// other name, which no type but Annotation can carry, so the leaf skips the rest.
+    property: std::borrow::Cow<'static, str>,
+    shape: LeafShape,
     op: PushOp,
     /// The text every match must contain. For `Regex` it is the pattern's longest
     /// literal run, a superset filter; the pattern itself is what is checked.
@@ -140,6 +164,10 @@ struct StringPredicate {
 }
 
 impl StringPredicate {
+    fn prop(&self) -> &str {
+        &self.property
+    }
+
     /// Test against a string the caller has already transformed.
     fn matches_raw(&self, candidate: &str) -> bool {
         match self.op {
@@ -168,7 +196,8 @@ impl StringPredicate {
     /// deliberately not part of this: it decides which records to look in, not which
     /// strings match.
     fn same_test(&self, other: &StringPredicate) -> bool {
-        self.op == other.op
+        self.shape == other.shape
+            && self.op == other.op
             && self.transform == other.transform
             && self.test_text() == other.test_text()
     }
@@ -434,7 +463,7 @@ impl ScanPlan {
         }
         // Per type: which leaves it can answer raw, and whether it needs decoding at all.
         // Annotation keys are settled per graph, since any dictionary string can be one.
-        let has_synthetic = preds.iter().any(|p| is_synthetic_key(p.property));
+        let has_synthetic = preds.iter().any(|p| is_synthetic_key(p.prop()));
         // A synthetic leaf is unknown here: it makes its type generic until a source
         // folds it, and every source re-plans when any leaf is synthetic.
         let tag_plans: Vec<TagPlan> = (0..graphite_storage::node::TAG_COUNT as u8)
@@ -442,7 +471,7 @@ impl ScanPlan {
                 if !tags.contains(&tag) {
                     return TagPlan::Skip;
                 }
-                tag_plan(&tree, tag, &|_| false, &|_| None)
+                tag_plan(&tree, tag, &|_| false, &|_| Fold::Unknown)
             })
             .collect();
         let call_site = match &tag_plans[TAG_CALL_SITE_NODE as usize] {
@@ -666,40 +695,8 @@ impl ScanPlan {
             // CallSite plan for that graph built on the spot when it has one.
             return self.run_by_source(ex, ev, row, &all_sources, cs_tree, cs_preds, emit);
         }
-        // Batches start at one graph per thread and double from there. A satisfied
-        // LIMIT usually lands in the first batch, and a dense term costs real planning
-        // per graph, so a first batch of sixteen on four cores meant four graphs
-        // planned serially per core before a single row could be produced -- half a
-        // millisecond on a query that then took one graph's rows and stopped.
-        // Three batches at most: one graph, then one per thread, then everything left.
-        //
-        // The first is a single graph planned on this thread: a term dense enough to
-        // fill its LIMIT from one graph gets its rows without a thread fan-out. The
-        // second is a parallel batch for a term that needed a few more. Past that the
-        // term is rare, and a rare term is missing from most graphs -- so what remains
-        // is mostly establishing emptiness, at a few microseconds per graph, and the
-        // cost of doing that is dominated by how many times the work is fanned out and
-        // joined, not by the work. Doubling from four to sixteen meant seven batches
-        // for sixty-four graphs, and seven joins to learn that none of them matched.
-        // Bounded, not unbounded: one graph, one per thread, then doubling up to four
-        // per thread. Planning everything left in one batch meant a LIMIT satisfied by
-        // the sixth graph waited for the other fifty-nine to be planned; capping the
-        // batch keeps a late first hit's wait proportional to where it lands.
-        let threads = rayon::current_num_threads().max(1);
-        let mut batches: Vec<&[SourceIdx]> = Vec::new();
-        let mut rest = sources.as_slice();
-        let mut size = 1usize;
-        while !rest.is_empty() {
-            let (head, tail) = rest.split_at(size.min(rest.len()));
-            batches.push(head);
-            rest = tail;
-            size = if size == 1 {
-                threads
-            } else {
-                (size * 2).min(threads * 4)
-            };
-        }
-        for batch in batches {
+        // Planned in batches, in parallel within each: see `batch_schedule`.
+        for batch in batch_schedule(&sources) {
             ex.cancel.check()?;
             let plans: Vec<SourcePlan> = if batch.len() > 1 {
                 batch
@@ -708,6 +705,7 @@ impl ScanPlan {
                         build_source_plan(
                             *s,
                             ex.graph(*s),
+                            &ex.sources[*s as usize].id,
                             cs_tree.expect("CallSite plan"),
                             cs_preds,
                             self.tests,
@@ -721,6 +719,7 @@ impl ScanPlan {
                         build_source_plan(
                             *s,
                             ex.graph(*s),
+                            &ex.sources[*s as usize].id,
                             cs_tree.expect("CallSite plan"),
                             cs_preds,
                             self.tests,
@@ -779,11 +778,13 @@ impl ScanPlan {
                 pos: 0,
             },
             TagPlan::Column(t) => {
-                let Some(tree) = ColumnTree::resolve(graph, &t, tag) else {
+                let graph_id = &ex.sources[source as usize].id;
+                let mut memos = 0usize;
+                let Some(tree) = ColumnTree::resolve(graph, graph_id, &t, tag, &mut memos) else {
                     return Ok(true);
                 };
-                let ids = graph.string_column(tree.first_slot()).node_ids();
-                TypeStream::Column { tree, ids, pos: 0 }
+                let ids = tree.row_ids(graph, tag);
+                TypeStream::column(tree, ids, memos)
             }
         };
         let provenance: Option<Value> = (ex.cross
@@ -801,6 +802,13 @@ impl ScanPlan {
     }
 
     /// Every type of one graph, in tag order, each by its own plan.
+    ///
+    /// Graphs are prepared in batches ahead of the sweep -- each graph's column
+    /// resolutions and CallSite plan, in parallel across the batch -- and then swept
+    /// in source order, so the row order is the sequential one while the planning,
+    /// which is most of the cost of a broad term over many graphs, uses every core.
+    /// The batches follow the CallSite schedule: one graph, one per thread, then
+    /// doubling, so a LIMIT met early never pays for preparing what it will not read.
     #[allow(clippy::too_many_arguments)]
     fn run_by_source(
         &self,
@@ -813,124 +821,190 @@ impl ScanPlan {
         emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
         let _ = ev;
-        for &source in sources {
+        for batch in batch_schedule(sources) {
             ex.cancel.check()?;
-            let graph = ex.graph(source);
-            let provenance: Option<Value> = (ex.cross
-                && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
-            .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
-            // One candidate stream per type this graph contributes, merged by node id:
-            // the Kotlin server walks an unlabelled scan in id order across types, and
-            // a LIMIT must cut the same rows here.
-            // There is one CallSite type, so at most one CallSite plan per graph; it
-            // lives here so its stream can borrow it.
-            // With a synthetic key in the clause the per-type plans depend on this
-            // graph's id: fold the leaves for it and plan again.
-            let synthetic = |p: &StringPredicate| synthetic_truth(ex, source, p);
-            let source_plans: Option<Vec<TagPlan>> = self.has_synthetic.then(|| {
-                (0..graphite_storage::node::TAG_COUNT as u8)
-                    .map(|tag| {
-                        if !self.tags.contains(&tag) {
-                            TagPlan::Skip
-                        } else {
-                            tag_plan(&self.tree, tag, &|_| false, &synthetic)
-                        }
-                    })
+            let prepared: Vec<Prepared> = if batch.len() > 1 {
+                batch
+                    .par_iter()
+                    .map(|s| self.prepare_source(ex, *s, cs_tree, cs_preds))
                     .collect()
-            });
-            let plans: &[TagPlan] = source_plans.as_deref().unwrap_or(&self.tag_plans);
-            let source_cs_leaves: Vec<StringPredicate>;
-            let cs_plan: Option<SourcePlan> = match &plans[TAG_CALL_SITE_NODE as usize] {
-                TagPlan::CallSite(t) => {
-                    let (t, preds): (&PredTree, &[StringPredicate]) = if source_plans.is_some() {
-                        let mut leaves = Vec::new();
-                        t.leaves(&mut leaves);
-                        source_cs_leaves = leaves;
-                        (t, &source_cs_leaves)
-                    } else {
-                        (cs_tree.expect("CallSite plan"), cs_preds)
-                    };
-                    may_match(graph, t)
-                        .then(|| build_source_plan(source, graph, t, preds, self.tests))
-                }
-                _ => None,
+            } else {
+                batch
+                    .iter()
+                    .map(|s| self.prepare_source(ex, *s, cs_tree, cs_preds))
+                    .collect()
             };
-            let mut streams: Vec<(Option<u32>, TypeStream)> = Vec::new();
-            for &tag in &self.tags {
-                let plan = &plans[tag as usize];
-                // An annotation's keys are whatever strings its value pairs carry, so a
-                // key absent from this graph's dictionary reaches no annotation here.
-                let annotation_plan;
-                let plan = if tag == TAG_ANNOTATION_NODE && matches!(plan, TagPlan::Generic) {
-                    annotation_plan = tag_plan(
-                        &self.tree,
-                        tag,
-                        &|key| {
-                            !matches!(key, "name" | "class" | "member" | "values")
-                                && graph.strings.index_of(key).is_none()
-                        },
-                        &synthetic,
-                    );
-                    &annotation_plan
-                } else {
-                    plan
-                };
-                let stream = match plan {
-                    TagPlan::Skip => continue,
-                    TagPlan::All => {
-                        let ids = graph.ids_by_tag(tag);
-                        if ids.is_empty() {
-                            continue;
-                        }
-                        TypeStream::All { ids, pos: 0 }
-                    }
-                    TagPlan::Generic => {
-                        let ids = graph.ids_by_tag(tag);
-                        if ids.is_empty() {
-                            continue;
-                        }
-                        TypeStream::Generic { ids, pos: 0 }
-                    }
-                    TagPlan::CallSite(_) => match cs_plan
-                        .as_ref()
-                        .and_then(|sp| CallSiteStream::new(graph, sp))
-                    {
-                        Some(cs) => TypeStream::CallSite(cs),
-                        None => continue,
-                    },
-                    TagPlan::Column(t) => {
-                        let Some(tree) = ColumnTree::resolve(graph, t, tag) else {
-                            continue;
-                        };
-                        let ids = graph.string_column(tree.first_slot()).node_ids();
-                        TypeStream::Column { tree, ids, pos: 0 }
-                    }
-                };
-                streams.push((None, stream));
-            }
-            for (head, stream) in streams.iter_mut() {
-                *head = stream.next(ex, graph)?;
-            }
-            streams.retain(|(head, _)| head.is_some());
-            // The smallest head across streams is the next node in id order.
-            while let Some(best) = streams
-                .iter()
-                .enumerate()
-                .filter_map(|(i, (h, _))| h.map(|id| (id, i)))
-                .min()
-                .map(|(_, i)| i)
-            {
-                let (head, stream) = &mut streams[best];
-                let id = head.take().expect("a head");
-                ex.tick()?;
-                let value = Value::Node(NodeRef { source, id });
-                if !emit(value, provenance.as_ref(), stream.verified())? {
+            for p in prepared {
+                if !self.sweep_prepared(ex, row, p, emit)? {
                     return Ok(false);
                 }
-                *head = stream.next(ex, graph)?;
-                if head.is_none() {
-                    streams.swap_remove(best);
+            }
+        }
+        Ok(true)
+    }
+
+    /// Plan one graph: settle the per-type plans it needs settled per graph, resolve
+    /// its column trees and build its CallSite plan.
+    fn prepare_source(
+        &self,
+        ex: &Executor,
+        source: SourceIdx,
+        cs_tree: Option<&PredTree>,
+        cs_preds: &[StringPredicate],
+    ) -> Prepared {
+        let graph = ex.graph(source);
+        let graph_id: &str = &ex.sources[source as usize].id;
+        // With a synthetic key in the clause the per-type plans depend on this
+        // graph's id: fold the leaves for it and plan again.
+        let synthetic = |p: &StringPredicate| synthetic_truth(ex, source, p);
+        let source_plans: Option<Vec<TagPlan>> = self.has_synthetic.then(|| {
+            (0..graphite_storage::node::TAG_COUNT as u8)
+                .map(|tag| {
+                    if !self.tags.contains(&tag) {
+                        TagPlan::Skip
+                    } else {
+                        tag_plan(&self.tree, tag, &|_| false, &synthetic)
+                    }
+                })
+                .collect()
+        });
+        let plans: &[TagPlan] = source_plans.as_deref().unwrap_or(&self.tag_plans);
+        let cs_plan: Option<SourcePlan> = match &plans[TAG_CALL_SITE_NODE as usize] {
+            TagPlan::CallSite(t) => {
+                let leaves: Vec<StringPredicate>;
+                let (t, preds): (&PredTree, &[StringPredicate]) = if source_plans.is_some() {
+                    let mut out = Vec::new();
+                    t.leaves(&mut out);
+                    leaves = out;
+                    (t, &leaves)
+                } else {
+                    (cs_tree.expect("CallSite plan"), cs_preds)
+                };
+                may_match(graph, t)
+                    .then(|| build_source_plan(source, graph, graph_id, t, preds, self.tests))
+            }
+            _ => None,
+        };
+        let mut streams: Vec<PreparedStream> = Vec::new();
+        for &tag in &self.tags {
+            let plan = &plans[tag as usize];
+            // An annotation's keys are whatever strings its value pairs carry, so a
+            // key absent from this graph's dictionary reaches no annotation here.
+            let annotation_plan;
+            let plan = if tag == TAG_ANNOTATION_NODE && matches!(plan, TagPlan::Generic) {
+                annotation_plan = tag_plan(
+                    &self.tree,
+                    tag,
+                    &|key| {
+                        !matches!(key, "name" | "class" | "member" | "values")
+                            && graph.strings.index_of(key).is_none()
+                    },
+                    &synthetic,
+                );
+                &annotation_plan
+            } else {
+                plan
+            };
+            let stream = match plan {
+                TagPlan::Skip => continue,
+                TagPlan::All | TagPlan::Generic => {
+                    if graph.ids_by_tag(tag).is_empty() {
+                        continue;
+                    }
+                    PreparedStream::Whole {
+                        tag,
+                        verified: matches!(plan, TagPlan::All),
+                    }
                 }
+                TagPlan::CallSite(_) => {
+                    if cs_plan.is_none() {
+                        continue;
+                    }
+                    PreparedStream::CallSite
+                }
+                TagPlan::Column(t) => {
+                    let mut memos = 0usize;
+                    match ColumnTree::resolve(graph, graph_id, t, tag, &mut memos) {
+                        Some(tree) => PreparedStream::Column {
+                            tag,
+                            tree: Box::new(tree),
+                            memos,
+                        },
+                        None => continue,
+                    }
+                }
+            };
+            streams.push(stream);
+        }
+        Prepared {
+            source,
+            cs_plan,
+            streams,
+        }
+    }
+
+    /// Sweep one prepared graph's types, merged by node id: the Kotlin server walks an
+    /// unlabelled scan in id order across types, and a LIMIT must cut the same rows.
+    fn sweep_prepared(
+        &self,
+        ex: &Executor,
+        row: &Row,
+        prepared: Prepared,
+        emit: &mut Emit<'_>,
+    ) -> CypherResult<bool> {
+        let source = prepared.source;
+        let graph = ex.graph(source);
+        let provenance: Option<Value> = (ex.cross
+            && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
+        .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
+        let cs_plan = prepared.cs_plan;
+        let mut streams: Vec<(Option<u32>, TypeStream)> = Vec::new();
+        for stream in prepared.streams {
+            let stream = match stream {
+                PreparedStream::Whole { tag, verified } => {
+                    let ids = graph.ids_by_tag(tag);
+                    if verified {
+                        TypeStream::All { ids, pos: 0 }
+                    } else {
+                        TypeStream::Generic { ids, pos: 0 }
+                    }
+                }
+                PreparedStream::CallSite => match cs_plan
+                    .as_ref()
+                    .and_then(|sp| CallSiteStream::new(graph, sp))
+                {
+                    Some(cs) => TypeStream::CallSite(cs),
+                    None => continue,
+                },
+                PreparedStream::Column { tag, tree, memos } => {
+                    let ids = tree.row_ids(graph, tag);
+                    TypeStream::column(*tree, ids, memos)
+                }
+            };
+            streams.push((None, stream));
+        }
+        for (head, stream) in streams.iter_mut() {
+            *head = stream.next(ex, graph)?;
+        }
+        streams.retain(|(head, _)| head.is_some());
+        // The smallest head across streams is the next node in id order.
+        while let Some(best) = streams
+            .iter()
+            .enumerate()
+            .filter_map(|(i, (h, _))| h.map(|id| (id, i)))
+            .min()
+            .map(|(_, i)| i)
+        {
+            let (head, stream) = &mut streams[best];
+            let id = head.take().expect("a head");
+            ex.tick()?;
+            let value = Value::Node(NodeRef { source, id });
+            if !emit(value, provenance.as_ref(), stream.verified())? {
+                return Ok(false);
+            }
+            *head = stream.next(ex, graph)?;
+            if head.is_none() {
+                streams.swap_remove(best);
             }
         }
         Ok(true)
@@ -1091,6 +1165,61 @@ impl<'a> CallSiteStream<'a> {
 }
 
 /// One node type's candidates of one graph, in ascending id order.
+/// One graph, planned and ready to sweep.
+struct Prepared {
+    source: SourceIdx,
+    cs_plan: Option<SourcePlan>,
+    streams: Vec<PreparedStream>,
+}
+
+/// One type of a prepared graph.
+enum PreparedStream {
+    /// Every record of the type: already verified, or left to WHERE.
+    Whole { tag: u8, verified: bool },
+    /// The graph's CallSite plan.
+    CallSite,
+    /// The type's column tree, resolved, and how many record leaves it has.
+    Column {
+        tag: u8,
+        tree: Box<ColumnTree>,
+        memos: usize,
+    },
+}
+
+/// Batches start at one graph and double from there. A satisfied LIMIT usually lands
+/// in the first batch, and a dense term costs real planning per graph, so a first
+/// batch of sixteen on four cores meant four graphs planned serially per core before
+/// a single row could be produced -- half a millisecond on a query that then took one
+/// graph's rows and stopped.
+///
+/// The first is a single graph planned on the calling thread: a term dense enough to
+/// fill its LIMIT from one graph gets its rows without a thread fan-out. The second is
+/// a parallel batch, one graph per thread, for a term that needed a few more. Past
+/// that the term is rare, and a rare term is missing from most graphs -- so what
+/// remains is mostly establishing emptiness, at a few microseconds per graph, and the
+/// cost of doing that is dominated by how many times the work is fanned out and
+/// joined, not by the work. Bounded, not unbounded: doubling up to four per thread.
+/// Planning everything left in one batch meant a LIMIT satisfied by the sixth graph
+/// waited for the other fifty-nine to be planned; capping the batch keeps a late
+/// first hit's wait proportional to where it lands.
+fn batch_schedule(sources: &[SourceIdx]) -> Vec<&[SourceIdx]> {
+    let threads = rayon::current_num_threads().max(1);
+    let mut batches: Vec<&[SourceIdx]> = Vec::new();
+    let mut rest = sources;
+    let mut size = 1usize;
+    while !rest.is_empty() {
+        let (head, tail) = rest.split_at(size.min(rest.len()));
+        batches.push(head);
+        rest = tail;
+        size = if size == 1 {
+            threads
+        } else {
+            (size * 2).min(threads * 4)
+        };
+    }
+    batches
+}
+
 enum TypeStream<'a> {
     /// Every record of the type; WHERE decides.
     Generic {
@@ -1107,8 +1236,29 @@ enum TypeStream<'a> {
         tree: ColumnTree,
         ids: &'a [u32],
         pos: usize,
+        /// Per-thread state for the row tests; `memos` sizes it.
+        memos: usize,
+        state: RowState,
+        /// Hits of the last chunk tested across threads, when the tree reads records.
+        hits: Vec<u32>,
+        hit_pos: usize,
     },
     CallSite(CallSiteStream<'a>),
+}
+
+impl<'a> TypeStream<'a> {
+    fn column(tree: ColumnTree, ids: &'a [u32], memos: usize) -> TypeStream<'a> {
+        let state = tree.state(memos);
+        TypeStream::Column {
+            tree,
+            ids,
+            pos: 0,
+            memos,
+            state,
+            hits: Vec::new(),
+            hit_pos: 0,
+        }
+    }
 }
 
 impl TypeStream<'_> {
@@ -1131,18 +1281,61 @@ impl TypeStream<'_> {
                 *pos += 1;
                 Ok(Some(id))
             }
-            TypeStream::Column { tree, ids, pos } => {
-                while *pos < ids.len() {
-                    let i = *pos;
-                    *pos += 1;
-                    if i % SWEEP_CHUNK == 0 {
-                        ex.cancel.check()?;
+            TypeStream::Column {
+                tree,
+                ids,
+                pos,
+                memos,
+                state,
+                hits,
+                hit_pos,
+            } => {
+                if !tree.reads_records() {
+                    while *pos < ids.len() {
+                        let i = *pos;
+                        *pos += 1;
+                        if i % SWEEP_CHUNK == 0 {
+                            ex.cancel.check()?;
+                        }
+                        if tree.matches(graph, i, ids[i], state) {
+                            return Ok(Some(ids[i]));
+                        }
                     }
-                    if tree.matches(graph, i) {
-                        return Ok(Some(ids[i]));
-                    }
+                    return Ok(None);
                 }
-                Ok(None)
+                // Reading records is the costly test: a chunk of rows at a time,
+                // across threads, and the chunk's hits handed out one by one, so a
+                // LIMIT met early still reads one chunk.
+                loop {
+                    if *hit_pos < hits.len() {
+                        let id = hits[*hit_pos];
+                        *hit_pos += 1;
+                        return Ok(Some(id));
+                    }
+                    if *pos >= ids.len() {
+                        return Ok(None);
+                    }
+                    ex.cancel.check()?;
+                    let start = *pos;
+                    let end = (start + SWEEP_CHUNK).min(ids.len());
+                    *pos = end;
+                    const ROW_SUBCHUNK: usize = 4096;
+                    let found: Vec<Vec<u32>> = ids[start..end]
+                        .par_chunks(ROW_SUBCHUNK)
+                        .enumerate()
+                        .map(|(k, sub)| {
+                            let mut st = tree.state(*memos);
+                            let base = start + k * ROW_SUBCHUNK;
+                            sub.iter()
+                                .enumerate()
+                                .filter(|(j, &id)| tree.matches(graph, base + j, id, &mut st))
+                                .map(|(_, &id)| id)
+                                .collect()
+                        })
+                        .collect();
+                    *hits = found.concat();
+                    *hit_pos = 0;
+                }
             }
             TypeStream::CallSite(s) => s.next(ex),
         }
@@ -1226,9 +1419,267 @@ fn is_lowercase_ascii(s: &str) -> bool {
     s.bytes().all(|b| !b.is_ascii_uppercase() && b.is_ascii())
 }
 
+/// True when some leaf reads a CallSite property the index does not cover.
+fn needs_raw_sweep(tree: &PredTree) -> bool {
+    match tree {
+        PredTree::Leaf(p) => is_raw_call_site_prop(p.prop()) || is_synthetic_key(p.prop()),
+        PredTree::Or(cs) | PredTree::And(cs) => cs.iter().any(needs_raw_sweep),
+    }
+}
+
+/// A CallSite leaf as the record sweep tests it.
+enum RawLeaf {
+    /// One of the four indexed strings: the record's string id is in the set.
+    Field(usize, StringBitset),
+    /// The caller's or callee's signature, composed from the record's string ids and
+    /// remembered per distinct method, in the memo at this index.
+    Signature { callee: bool, memo: usize },
+    /// The line number as text, or against a number.
+    Line(Option<f64>),
+    /// The node id as text, or against a number.
+    NodeId(Option<f64>),
+    /// A synthetic key tested per node: the graph's prefix, then the id.
+    Synthetic { prefix: String, with_id: bool },
+}
+
+/// The CallSite tree with each leaf ready to test one record.
+enum RawTree {
+    Leaf(RawLeaf, StringPredicate),
+    Or(Vec<RawTree>),
+    And(Vec<RawTree>),
+}
+
+/// A signature leaf's memo, keyed by the method's string ids -- class, name,
+/// parameters, return type -- so a method with a thousand call sites or locals
+/// composes its signature once.
+#[derive(Default)]
+struct SignatureMemo {
+    memo: std::collections::HashMap<Box<[u32]>, bool>,
+    key: Vec<u32>,
+    text: String,
+}
+
+impl SignatureMemo {
+    /// Test the method descriptor starting at `start` in `data` against `p`.
+    fn matches(&mut self, graph: &Graph, data: &[u8], start: usize, p: &StringPredicate) -> bool {
+        use graphite_storage::io::read_i32_at;
+        let params = read_i32_at(data, start + 8).max(0) as usize;
+        let end = start + 16 + params * 4;
+        // class, name, parameters, return type; the count is implied.
+        self.key.clear();
+        self.key.push(read_i32_at(data, start) as u32);
+        self.key.push(read_i32_at(data, start + 4) as u32);
+        let mut at = start + 12;
+        while at < end {
+            self.key.push(read_i32_at(data, at) as u32);
+            at += 4;
+        }
+        if let Some(&hit) = self.memo.get(self.key.as_slice()) {
+            return hit;
+        }
+        let key = &self.key;
+        let text = &mut self.text;
+        text.clear();
+        text.push_str(graph.str(key[0]));
+        text.push('.');
+        text.push_str(graph.str(key[1]));
+        text.push('(');
+        for (i, param) in key[2..key.len() - 1].iter().enumerate() {
+            if i > 0 {
+                text.push(',');
+            }
+            text.push_str(graph.str(*param));
+        }
+        text.push(')');
+        let hit = match p.transform {
+            Transform::None => p.matches_raw(text),
+            Transform::Lowercase => {
+                let lowered: String = text.chars().flat_map(|c| c.to_lowercase()).collect();
+                p.matches_raw(&lowered)
+            }
+        };
+        self.memo.insert(key.clone().into_boxed_slice(), hit);
+        hit
+    }
+}
+
+/// Per-thread state of the raw sweep: one signature memo per signature leaf.
+struct RawSweepState {
+    memos: Vec<SignatureMemo>,
+    text: String,
+}
+
+/// One CallSite record's raw fields, located without decoding it.
+struct RawRecord {
+    /// `[caller_class, caller_name, callee_class, callee_name]`, as `CALL_SITE_PROPS`.
+    fields: [u32; 4],
+    /// Byte offsets of the caller's and callee's descriptors.
+    caller: usize,
+    callee: usize,
+    line: i32,
+    id: u32,
+}
+
+impl RawRecord {
+    fn read(data: &[u8], offset: usize, id: u32) -> RawRecord {
+        use graphite_storage::io::read_i32_at;
+        let p = offset + graphite_storage::node::NODE_HEADER_BYTES;
+        let caller_params = read_i32_at(data, p + 8).max(0) as usize;
+        let callee_at = p + 16 + caller_params * 4;
+        let callee_params = read_i32_at(data, callee_at + 8).max(0) as usize;
+        let callee_end = callee_at + 16 + callee_params * 4;
+        RawRecord {
+            fields: [
+                read_i32_at(data, p) as u32,
+                read_i32_at(data, p + 4) as u32,
+                read_i32_at(data, callee_at) as u32,
+                read_i32_at(data, callee_at + 4) as u32,
+            ],
+            caller: p,
+            callee: callee_at,
+            line: read_i32_at(data, callee_end),
+            id,
+        }
+    }
+}
+
+impl RawTree {
+    fn build(
+        graph: &Graph,
+        graph_id: &str,
+        idx: Option<&graphite_storage::callsite_index::CallSiteStringIndex>,
+        tree: &PredTree,
+        memo: &mut Memo,
+        memos: &mut usize,
+    ) -> RawTree {
+        match tree {
+            PredTree::Leaf(p) => {
+                let number = || leaf_number(p);
+                let leaf = match p.prop() {
+                    key if is_synthetic_key(key) => RawLeaf::Synthetic {
+                        prefix: synthetic_prefix(graph_id, p),
+                        with_id: key != "graphId",
+                    },
+                    "callee_signature" | "caller_signature" => {
+                        let index = *memos;
+                        *memos += 1;
+                        RawLeaf::Signature {
+                            callee: p.prop() == "callee_signature",
+                            memo: index,
+                        }
+                    }
+                    "line" => RawLeaf::Line(number()),
+                    "id" => RawLeaf::NodeId(number()),
+                    prop => {
+                        let field = CALL_SITE_PROPS
+                            .iter()
+                            .position(|c| *c == prop)
+                            .expect("a CallSite leaf");
+                        let n = graph.strings.len();
+                        let mut set = StringBitset::new(n);
+                        let resolved = idx.and_then(|idx| resolve_strings(graph, idx, p, memo));
+                        match resolved {
+                            Some(ids) => ids.iter().for_each(|&s| set.set(s as usize)),
+                            // The index declined the term: the dictionary decides.
+                            None => (0..n as u32)
+                                .filter(|&s| predicate_matches(graph, p, s))
+                                .for_each(|s| set.set(s as usize)),
+                        }
+                        RawLeaf::Field(field, set)
+                    }
+                };
+                RawTree::Leaf(leaf, p.clone())
+            }
+            PredTree::Or(cs) => RawTree::Or(
+                cs.iter()
+                    .map(|c| RawTree::build(graph, graph_id, idx, c, memo, memos))
+                    .collect(),
+            ),
+            PredTree::And(cs) => RawTree::And(
+                cs.iter()
+                    .map(|c| RawTree::build(graph, graph_id, idx, c, memo, memos))
+                    .collect(),
+            ),
+        }
+    }
+
+    fn eval(&self, graph: &Graph, data: &[u8], r: &RawRecord, st: &mut RawSweepState) -> bool {
+        match self {
+            RawTree::Or(cs) => cs.iter().any(|c| c.eval(graph, data, r, st)),
+            RawTree::And(cs) => cs.iter().all(|c| c.eval(graph, data, r, st)),
+            RawTree::Leaf(RawLeaf::Field(i, set), _) => set.get(r.fields[*i] as usize),
+            RawTree::Leaf(RawLeaf::Line(number), p) => {
+                // `-1` is stored for an unknown line, which reads as null.
+                if r.line < 0 {
+                    return false;
+                }
+                number_or_text(*number, r.line as u32, p)
+            }
+            RawTree::Leaf(RawLeaf::NodeId(number), p) => number_or_text(*number, r.id, p),
+            RawTree::Leaf(RawLeaf::Synthetic { prefix, with_id }, p) => {
+                st.text.clear();
+                st.text.push_str(prefix);
+                if *with_id {
+                    let mut buf = [0u8; 10];
+                    st.text.push_str(u32_text(r.id, &mut buf));
+                }
+                p.matches_raw(&st.text)
+            }
+            RawTree::Leaf(RawLeaf::Signature { callee, memo }, p) => {
+                let start = if *callee { r.callee } else { r.caller };
+                st.memos[*memo].matches(graph, data, start, p)
+            }
+        }
+    }
+}
+
+/// A number read off the record against the leaf: equal to the literal number, or as
+/// text through the string predicate.
+fn number_or_text(number: Option<f64>, value: u32, p: &StringPredicate) -> bool {
+    match number {
+        Some(n) => n == value as f64,
+        None => {
+            let mut buf = [0u8; 10];
+            p.matches_raw(u32_text(value, &mut buf))
+        }
+    }
+}
+
+/// Every CallSite record of the graph that satisfies the tree, in id order, each
+/// tested from its raw fields.
+fn raw_sweep(graph: &Graph, graph_id: &str, tree: &PredTree, tests: usize) -> Vec<u32> {
+    let idx = usable_index(graph);
+    let mut memo = Memo::new(tests);
+    let mut memos = 0usize;
+    let raw = RawTree::build(graph, graph_id, idx, tree, &mut memo, &mut memos);
+    let ids = graph.ids_by_tag(TAG_CALL_SITE_NODE);
+    let data = graph.nodedata();
+    let chunks: Vec<Vec<u32>> = ids
+        .par_chunks(SWEEP_CHUNK)
+        .map(|chunk| {
+            let mut st = RawSweepState {
+                memos: (0..memos).map(|_| SignatureMemo::default()).collect(),
+                text: String::new(),
+            };
+            chunk
+                .iter()
+                .copied()
+                .filter(|&id| {
+                    graph.node_offset(id).is_some_and(|offset| {
+                        let record = RawRecord::read(data, offset, id);
+                        raw.eval(graph, data, &record, &mut st)
+                    })
+                })
+                .collect()
+        })
+        .collect();
+    chunks.concat()
+}
+
 fn build_source_plan(
     source: SourceIdx,
     graph: &Graph,
+    graph_id: &str,
     tree: &PredTree,
     preds: &[StringPredicate],
     tests: usize,
@@ -1240,6 +1691,12 @@ fn build_source_plan(
         call_site_exact: exact,
         no_prefilter: false,
     };
+    if needs_raw_sweep(tree) {
+        return pruned(
+            Candidates::Nodes(raw_sweep(graph, graph_id, tree, tests)),
+            true,
+        );
+    }
     if let Some(idx) = usable_index(graph) {
         let mut memo = Memo::new(tests);
         // Pruning first, and separately from enumeration. Whether a graph can match at
@@ -1519,7 +1976,7 @@ fn leaf_candidates(
     p: &StringPredicate,
     memo: &mut Memo,
 ) -> Option<Vec<u32>> {
-    let property = CALL_SITE_PROPS.iter().position(|c| *c == p.property)?;
+    let property = CALL_SITE_PROPS.iter().position(|c| *c == p.prop())?;
     let strings = resolve_strings(graph, idx, p, memo)?;
     let mut postings_total = 0usize;
     for &s in strings {
@@ -1610,7 +2067,7 @@ fn tree_matches_record(
 ) -> bool {
     match tree {
         PredTree::Leaf(p) => {
-            let Some(property) = CALL_SITE_PROPS.iter().position(|c| *c == p.property) else {
+            let Some(property) = CALL_SITE_PROPS.iter().position(|c| *c == p.prop()) else {
                 return false;
             };
             let sid = fields[property];
@@ -1806,7 +2263,7 @@ fn build_sweep_plan(source: SourceIdx, graph: &Graph, preds: &[StringPredicate])
     // A separate pass per property would re-read (and re-lowercase) every string.
     let mut by_property: [Vec<&StringPredicate>; 4] = [vec![], vec![], vec![], vec![]];
     for p in preds {
-        if let Some(i) = CALL_SITE_PROPS.iter().position(|c| *c == p.property) {
+        if let Some(i) = CALL_SITE_PROPS.iter().position(|c| *c == p.prop()) {
             by_property[i].push(p);
         }
     }
@@ -1997,9 +2454,68 @@ fn collect_leaf(e: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> boo
             op: crate::ast::CmpOp::Eq,
             left,
             right,
-        } => push_predicate(PushOp::Equals, left, right, variable, out),
+        } => {
+            push_predicate(PushOp::Equals, left, right, variable, out)
+                || push_numeric(left, right, variable, out)
+                || push_numeric(right, left, variable, out)
+        }
+        Expr::In { right, .. } => push_member(right, variable, out),
         _ => false,
     }
+}
+
+/// A leaf that no dictionary answers: planned per type by its shape alone.
+fn shaped_leaf(property: Prop, shape: LeafShape, literal: String) -> StringPredicate {
+    StringPredicate {
+        property,
+        shape,
+        op: PushOp::Equals,
+        literal,
+        transform: Transform::None,
+        regex: None,
+        via_to_string: false,
+        from_keys: false,
+        trigrams: std::sync::Arc::new(None),
+        signature: 0,
+        test: 0,
+    }
+}
+
+/// Record one `<property> = <number>` predicate. Only equality: a number and a string
+/// are unequal, so the leaf is false wherever the property holds a string, while an
+/// ordering comparison falls back to comparing their text and is left to WHERE.
+fn push_numeric(left: &Expr, right: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> bool {
+    let text = match right {
+        Expr::Literal(crate::ast::Literal::Int(i)) => i.to_string(),
+        Expr::Literal(crate::ast::Literal::Float(f)) => f.to_string(),
+        _ => return false,
+    };
+    // Bare `<variable>.<property>` only: a transformed operand is a string.
+    let Expr::Property { expr, key } = left else {
+        return false;
+    };
+    if !matches!(expr.as_ref(), Expr::Variable(v) if v == variable) {
+        return false;
+    }
+    out.push(shaped_leaf(prop_name(key), LeafShape::Numeric, text));
+    true
+}
+
+/// Record one `<anything> IN <variable>.<property>` predicate: null, hence false in
+/// WHERE, wherever the property is not a list.
+fn push_member(right: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> bool {
+    let Expr::Property { expr, key } = right else {
+        return false;
+    };
+    if !matches!(expr.as_ref(), Expr::Variable(v) if v == variable) {
+        return false;
+    }
+    out.push(shaped_leaf(
+        prop_name(key),
+        LeafShape::Member,
+        String::new(),
+    ));
+    true
 }
 
 /// The longest run of literal text a `=~` pattern requires, when the pattern is
@@ -2068,6 +2584,7 @@ fn push_regex(left: &Expr, right: &Expr, variable: &str, out: &mut Vec<StringPre
     let signature = graphite_storage::callsite_index::literal_signature(&literal);
     out.push(StringPredicate {
         property,
+        shape: LeafShape::Text,
         op: PushOp::Regex,
         literal,
         transform: Transform::None,
@@ -2108,6 +2625,7 @@ fn push_predicate(
             let signature = graphite_storage::callsite_index::literal_signature(&literal);
             out.push(StringPredicate {
                 property,
+                shape: LeafShape::Text,
                 op,
                 literal,
                 transform,
@@ -2170,8 +2688,60 @@ enum Exposure {
     Synthetic,
     /// A value only decoding the record reveals: the type must go through WHERE.
     Dynamic,
+    /// `id`, tested as text: read off the column rows, never from a dictionary.
+    NodeId,
+    /// `type` on a type that stores no such property: the node's type name, one
+    /// answer for the whole type.
+    TypeName,
+    /// A CallSite record answers it without being decoded, though not through the
+    /// string index: a signature composed from its string ids, its line, its id.
+    Raw,
+    /// A field at a fixed place in the record, read without decoding the rest.
+    Record(RecordField),
 }
 
+/// A raw field of a non-CallSite record, by its byte offset after the header.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RecordField {
+    /// A method descriptor: its signature.
+    Method(usize),
+    /// A Return node's actual type: a flag byte, then a string id when set. At the
+    /// end of the method descriptor, which is found from its parameter count.
+    ActualTypeAfterMethod,
+    /// A 32-bit integer, as text or as a number.
+    I32(usize),
+    /// A 64-bit integer, as text or as a number.
+    I64(usize),
+    /// A boolean, as text.
+    Bool(usize),
+}
+
+/// The non-CallSite fields read raw, by type and property, for a leaf of `shape`.
+fn record_field(tag: u8, property: &str, shape: LeafShape) -> Option<RecordField> {
+    use graphite_storage::node::*;
+    Some(match (tag, property, shape) {
+        (TAG_LOCAL_VARIABLE | TAG_PARAMETER_NODE, "method", LeafShape::Text) => {
+            RecordField::Method(8)
+        }
+        (TAG_RETURN_NODE, "method", LeafShape::Text) => RecordField::Method(0),
+        (TAG_RETURN_NODE, "actual_type", LeafShape::Text) => RecordField::ActualTypeAfterMethod,
+        (TAG_INT_CONSTANT, "value", _) | (TAG_PARAMETER_NODE, "index", _) => RecordField::I32(0),
+        (TAG_LONG_CONSTANT, "value", _) => RecordField::I64(0),
+        (TAG_BOOLEAN_CONSTANT, "value", LeafShape::Text) => RecordField::Bool(0),
+        (TAG_FIELD_NODE, "static", LeafShape::Text) => RecordField::Bool(12),
+        _ => return None,
+    })
+}
+
+/// The CallSite properties answered raw off the record, beyond the four indexed ones.
+fn is_raw_call_site_prop(property: &str) -> bool {
+    matches!(
+        property,
+        "callee_signature" | "caller_signature" | "line" | "id"
+    )
+}
+
+#[cfg(test)]
 fn exposure(tag: u8, property: &str) -> Exposure {
     exposure_of(tag, property, false, None)
 }
@@ -2179,6 +2749,88 @@ fn exposure(tag: u8, property: &str) -> Exposure {
 /// What `tag` exposes for a leaf: the property, whether the operand was `toString()`,
 /// and the leaf itself when its literal decides whether a number or boolean could ever
 /// satisfy it.
+/// What `tag` exposes for a leaf of any shape.
+fn leaf_exposure(tag: u8, p: &StringPredicate) -> Exposure {
+    use graphite_storage::node::*;
+    let property = p.prop();
+    let numeric_typed = matches!(
+        (tag, property),
+        (
+            TAG_INT_CONSTANT | TAG_LONG_CONSTANT | TAG_FLOAT_CONSTANT | TAG_DOUBLE_CONSTANT,
+            "value"
+        ) | (TAG_PARAMETER_NODE, "index")
+            | (TAG_CALL_SITE_NODE, "line")
+    );
+    // An enum's value is its first constructor argument and a resource value is
+    // whatever the file held: either can be a number or a list.
+    let any_typed = matches!(
+        (tag, property),
+        (TAG_ENUM_CONSTANT | TAG_RESOURCE_VALUE_NODE, "value")
+    ) || tag == TAG_ANNOTATION_NODE;
+    let exposure = match p.shape {
+        LeafShape::Numeric => {
+            if is_synthetic_key(property) {
+                Exposure::Absent
+            } else if property == "id" {
+                Exposure::NodeId
+            } else if numeric_typed || any_typed {
+                Exposure::Dynamic
+            } else {
+                Exposure::Absent
+            }
+        }
+        LeafShape::Member => {
+            if any_typed {
+                Exposure::Dynamic
+            } else {
+                Exposure::Absent
+            }
+        }
+        LeafShape::Text if property == "id" => {
+            if p.via_to_string && number_text_can_satisfy(p) {
+                Exposure::NodeId
+            } else {
+                Exposure::Absent
+            }
+        }
+        LeafShape::Text => match exposure_of(tag, property, p.via_to_string, Some(p)) {
+            // `n.type` falls back to the node's type name where nothing else is
+            // stored under that key; `keys(n)` does not list it, so a leaf from
+            // there does not see it.
+            Exposure::Absent if property == "type" && !p.from_keys => Exposure::TypeName,
+            other => other,
+        },
+    };
+    // A CallSite record's signatures, line and id are read raw by the record sweep
+    // instead of decoding the record: what a search over every property, which names
+    // all of them, would otherwise cost on the most numerous type. Likewise the
+    // method of a local, a parameter or a return node, and the numbers a record
+    // holds at a fixed offset: what remains dynamic is the open-ended (annotations,
+    // enum arguments, resource values) and floating point, whose Kotlin text is not
+    // reproduced here.
+    match exposure {
+        Exposure::Dynamic | Exposure::NodeId
+            if tag == TAG_CALL_SITE_NODE && is_raw_call_site_prop(property) =>
+        {
+            Exposure::Raw
+        }
+        Exposure::Dynamic => match record_field(tag, property, p.shape) {
+            Some(field) => Exposure::Record(field),
+            None => Exposure::Dynamic,
+        },
+        other => other,
+    }
+}
+
+/// Fold a `type` leaf against the type name of `tag`.
+fn type_name_truth(tag: u8, p: &StringPredicate) -> bool {
+    let name = graphite_storage::node::tag_type_name(tag);
+    match p.transform {
+        Transform::None => p.matches_raw(name),
+        Transform::Lowercase => p.matches_raw(&name.to_ascii_lowercase()),
+    }
+}
+
 fn exposure_of(
     tag: u8,
     property: &str,
@@ -2252,8 +2904,36 @@ fn exposure_of(
 /// none exist outside cross-graph mode. A graph id never contains a colon and a node
 /// id is a run of digits, so a literal splits at its colon into a graph-id part and
 /// a node-id part, and each side is settled on its own.
-fn synthetic_truth(ex: &Executor, source: SourceIdx, p: &StringPredicate) -> Option<bool> {
-    fold_synthetic(ex.cross, &ex.sources[source as usize].id, p)
+fn synthetic_truth(ex: &Executor, source: SourceIdx, p: &StringPredicate) -> Fold {
+    match fold_synthetic(ex.cross, &ex.sources[source as usize].id, p) {
+        Some(b) => Fold::Known(b),
+        None => Fold::PerNode,
+    }
+}
+
+/// What a synthetic-key leaf folds to for a graph.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Fold {
+    /// The same answer for every node of the graph.
+    Known(bool),
+    /// The node id decides: the leaf is tested per node, from the id alone.
+    PerNode,
+    /// No graph in hand yet: the type is generic until a source folds the leaf.
+    Unknown,
+}
+
+/// The text a synthetic key reads before the node id, for a leaf tested per node:
+/// `<graph id>:` for `qualifiedId` and `elementId`, lowercased when the leaf is.
+fn synthetic_prefix(graph_id: &str, p: &StringPredicate) -> String {
+    let gid: String = match p.transform {
+        Transform::None => graph_id.to_string(),
+        Transform::Lowercase => graph_id.chars().flat_map(|c| c.to_lowercase()).collect(),
+    };
+    if p.prop() == "graphId" {
+        gid
+    } else {
+        format!("{gid}:")
+    }
 }
 
 fn fold_synthetic(cross: bool, graph_id: &str, p: &StringPredicate) -> Option<bool> {
@@ -2268,7 +2948,7 @@ fn fold_synthetic(cross: bool, graph_id: &str, p: &StringPredicate) -> Option<bo
         Transform::Lowercase => graph_id.chars().flat_map(|c| c.to_lowercase()).collect(),
     };
     let lit = p.literal.as_str();
-    if p.property == "graphId" {
+    if p.prop() == "graphId" {
         return Some(match p.op {
             PushOp::Equals => gid == lit,
             PushOp::Contains => gid.contains(lit),
@@ -2377,7 +3057,7 @@ fn prune(
     tree: &PredTree,
     tag: u8,
     dynamic_is_absent: &dyn Fn(&str) -> bool,
-    synthetic: &dyn Fn(&StringPredicate) -> Option<bool>,
+    synthetic: &dyn Fn(&StringPredicate) -> Fold,
 ) -> Pruned {
     match tree {
         PredTree::Leaf(p) => {
@@ -2385,15 +3065,31 @@ fn prune(
             if p.from_keys && tag == TAG_ANNOTATION_NODE {
                 return Pruned::Generic;
             }
-            match exposure_of(tag, p.property, p.via_to_string, Some(p)) {
-                Exposure::Column(_) | Exposure::CallSite => Pruned::Tree(tree.clone()),
+            let truth = |b: bool| if b { Pruned::True } else { Pruned::False };
+            match leaf_exposure(tag, p) {
+                Exposure::Column(_) | Exposure::CallSite | Exposure::Raw => {
+                    Pruned::Tree(tree.clone())
+                }
+                Exposure::Record(_) => Pruned::Tree(tree.clone()),
                 Exposure::Absent => Pruned::False,
                 Exposure::Synthetic => match synthetic(p) {
-                    Some(true) => Pruned::True,
-                    Some(false) => Pruned::False,
-                    None => Pruned::Generic,
+                    Fold::Known(true) => Pruned::True,
+                    Fold::Known(false) => Pruned::False,
+                    Fold::PerNode => Pruned::Tree(tree.clone()),
+                    Fold::Unknown => Pruned::Generic,
                 },
-                Exposure::Dynamic if dynamic_is_absent(p.property) => Pruned::False,
+                Exposure::TypeName => truth(type_name_truth(tag, p)),
+                // The node id is read off the type's id list.
+                Exposure::NodeId => Pruned::Tree(tree.clone()),
+                // An annotation's `type` is its type name when no value pair spells
+                // the key; the other keys are simply missing then.
+                Exposure::Dynamic if dynamic_is_absent(p.prop()) => {
+                    if p.prop() == "type" && p.shape == LeafShape::Text && !p.from_keys {
+                        truth(type_name_truth(tag, p))
+                    } else {
+                        Pruned::False
+                    }
+                }
                 Exposure::Dynamic => Pruned::Generic,
             }
         }
@@ -2444,7 +3140,7 @@ fn tag_plan(
     tree: &PredTree,
     tag: u8,
     dynamic_is_absent: &dyn Fn(&str) -> bool,
-    synthetic: &dyn Fn(&StringPredicate) -> Option<bool>,
+    synthetic: &dyn Fn(&StringPredicate) -> Fold,
 ) -> TagPlan {
     match prune(tree, tag, dynamic_is_absent, synthetic) {
         Pruned::False => TagPlan::Skip,
@@ -2541,18 +3237,101 @@ impl ColumnLeaf {
 /// A column plan resolved against one graph: the tree with each leaf's matching ids.
 enum ColumnTree {
     Leaf(ColumnLeaf),
+    /// The node id, as text or as a number, against the predicate.
+    NodeId {
+        number: Option<f64>,
+        pred: StringPredicate,
+    },
+    /// A synthetic key, tested per node: the graph's prefix and the node id.
+    Synthetic {
+        prefix: String,
+        with_id: bool,
+        pred: StringPredicate,
+    },
+    /// A raw field of the record, found from the node id; `memo` indexes the
+    /// per-thread state.
+    Record {
+        field: RecordField,
+        number: Option<f64>,
+        pred: StringPredicate,
+        memo: usize,
+    },
     Or(Vec<ColumnTree>),
     And(Vec<ColumnTree>),
+}
+
+/// Per-thread state of a column tree's row tests: one memo per record leaf and a
+/// text buffer. Separate from the tree so that one tree can test rows on every
+/// thread at once.
+#[derive(Default)]
+struct RowState {
+    signatures: Vec<SignatureMemo>,
+    /// `actual_type` outcomes per string id, per leaf.
+    strings: Vec<std::collections::HashMap<u32, bool>>,
+    text: String,
+}
+
+/// The literal as a number, for a numeric leaf.
+fn leaf_number(p: &StringPredicate) -> Option<f64> {
+    match p.shape {
+        LeafShape::Numeric => p.literal.parse::<f64>().ok(),
+        _ => None,
+    }
+}
+
+/// Decimal text of `n` in a stack buffer.
+fn u32_text(n: u32, buf: &mut [u8; 10]) -> &str {
+    let mut i = buf.len();
+    let mut n = n;
+    loop {
+        i -= 1;
+        buf[i] = b'0' + (n % 10) as u8;
+        n /= 10;
+        if n == 0 {
+            break;
+        }
+    }
+    std::str::from_utf8(&buf[i..]).expect("ascii digits")
 }
 
 impl ColumnTree {
     /// `None` when no record can match: an `And` with an empty leaf, or an `Or` of
     /// nothing but empty leaves.
-    fn resolve(graph: &Graph, tree: &PredTree, tag: u8) -> Option<ColumnTree> {
+    fn resolve(
+        graph: &Graph,
+        graph_id: &str,
+        tree: &PredTree,
+        tag: u8,
+        memos: &mut usize,
+    ) -> Option<ColumnTree> {
         match tree {
             PredTree::Leaf(p) => {
-                let Exposure::Column(slot) = exposure(tag, p.property) else {
-                    return None;
+                let slot = match leaf_exposure(tag, p) {
+                    Exposure::Column(slot) => slot,
+                    Exposure::Synthetic => {
+                        return Some(ColumnTree::Synthetic {
+                            prefix: synthetic_prefix(graph_id, p),
+                            with_id: p.prop() != "graphId",
+                            pred: p.clone(),
+                        })
+                    }
+                    Exposure::NodeId => {
+                        return Some(ColumnTree::NodeId {
+                            number: leaf_number(p),
+                            pred: p.clone(),
+                        })
+                    }
+                    Exposure::Record(field) => {
+                        let memo = *memos;
+                        *memos += 1;
+                        return Some(ColumnTree::Record {
+                            field,
+                            number: leaf_number(p),
+                            pred: p.clone(),
+                            memo,
+                        });
+                    }
+                    _ => return None,
                 };
                 let column = graph.string_column(slot);
                 let matched = resolve_column_leaf(graph, column, p);
@@ -2575,7 +3354,7 @@ impl ColumnTree {
             PredTree::Or(children) => {
                 let kept: Vec<ColumnTree> = children
                     .iter()
-                    .filter_map(|c| ColumnTree::resolve(graph, c, tag))
+                    .filter_map(|c| ColumnTree::resolve(graph, graph_id, c, tag, memos))
                     .collect();
                 if kept.is_empty() {
                     None
@@ -2586,37 +3365,149 @@ impl ColumnTree {
             PredTree::And(children) => {
                 let mut kept = Vec::with_capacity(children.len());
                 for c in children {
-                    kept.push(ColumnTree::resolve(graph, c, tag)?);
+                    kept.push(ColumnTree::resolve(graph, graph_id, c, tag, memos)?);
                 }
                 Some(ColumnTree::And(kept))
             }
         }
     }
 
-    #[inline]
-    fn matches(&self, graph: &Graph, row: usize) -> bool {
-        match self {
-            ColumnTree::Leaf(l) => l.holds(graph.string_column(l.slot).string_ids()[row]),
-            ColumnTree::Or(cs) => cs.iter().any(|c| c.matches(graph, row)),
-            ColumnTree::And(cs) => cs.iter().all(|c| c.matches(graph, row)),
+    /// Fresh per-thread state for this tree's row tests.
+    fn state(&self, memos: usize) -> RowState {
+        RowState {
+            signatures: (0..memos).map(|_| SignatureMemo::default()).collect(),
+            strings: (0..memos).map(|_| Default::default()).collect(),
+            text: String::new(),
         }
     }
 
-    fn first_slot(&self) -> usize {
+    /// True when some leaf reads the record or the node id, row by row: the rows are
+    /// then tested a chunk at a time across threads.
+    fn reads_records(&self) -> bool {
         match self {
-            ColumnTree::Leaf(l) => l.slot,
-            ColumnTree::Or(cs) | ColumnTree::And(cs) => cs[0].first_slot(),
+            ColumnTree::Leaf(_) => false,
+            ColumnTree::NodeId { .. }
+            | ColumnTree::Synthetic { .. }
+            | ColumnTree::Record { .. } => true,
+            ColumnTree::Or(cs) | ColumnTree::And(cs) => cs.iter().any(|c| c.reads_records()),
+        }
+    }
+
+    /// Test row `row` of the type's id list, whose node id is `id`.
+    #[inline]
+    fn matches(&self, graph: &Graph, row: usize, id: u32, st: &mut RowState) -> bool {
+        match self {
+            ColumnTree::Leaf(l) => l.holds(graph.string_column(l.slot).string_ids()[row]),
+            ColumnTree::NodeId { number, pred } => number_or_text(*number, id, pred),
+            ColumnTree::Synthetic {
+                prefix,
+                with_id,
+                pred,
+            } => {
+                st.text.clear();
+                st.text.push_str(prefix);
+                if *with_id {
+                    let mut buf = [0u8; 10];
+                    st.text.push_str(u32_text(id, &mut buf));
+                }
+                pred.matches_raw(&st.text)
+            }
+            ColumnTree::Record {
+                field,
+                number,
+                pred,
+                memo,
+            } => {
+                use graphite_storage::io::read_i32_at;
+                let Some(offset) = graph.node_offset(id) else {
+                    return false;
+                };
+                let data = graph.nodedata();
+                let at = offset + graphite_storage::node::NODE_HEADER_BYTES;
+                match *field {
+                    RecordField::Method(o) => {
+                        st.signatures[*memo].matches(graph, data, at + o, pred)
+                    }
+                    RecordField::ActualTypeAfterMethod => {
+                        let params = read_i32_at(data, at + 8).max(0) as usize;
+                        let flag = at + 16 + params * 4;
+                        if data.get(flag).copied().unwrap_or(0) == 0 {
+                            return false;
+                        }
+                        let string = read_i32_at(data, flag + 1) as u32;
+                        *st.strings[*memo]
+                            .entry(string)
+                            .or_insert_with(|| predicate_matches(graph, pred, string))
+                    }
+                    RecordField::I32(o) => {
+                        let v = read_i32_at(data, at + o) as i64;
+                        number_or_text_i64(*number, v, pred)
+                    }
+                    RecordField::I64(o) => {
+                        let hi = read_i32_at(data, at + o) as u32 as u64;
+                        let lo = read_i32_at(data, at + o + 4) as u32 as u64;
+                        number_or_text_i64(*number, ((hi << 32) | lo) as i64, pred)
+                    }
+                    RecordField::Bool(o) => {
+                        let text = if data.get(at + o).copied().unwrap_or(0) != 0 {
+                            "true"
+                        } else {
+                            "false"
+                        };
+                        pred.matches_raw(text)
+                    }
+                }
+            }
+            ColumnTree::Or(cs) => cs.iter().any(|c| c.matches(graph, row, id, st)),
+            ColumnTree::And(cs) => cs.iter().all(|c| c.matches(graph, row, id, st)),
+        }
+    }
+
+    /// A column the tree reads, if any: its rows are then the type's id list.
+    fn first_slot(&self) -> Option<usize> {
+        match self {
+            ColumnTree::Leaf(l) => Some(l.slot),
+            ColumnTree::NodeId { .. }
+            | ColumnTree::Synthetic { .. }
+            | ColumnTree::Record { .. } => None,
+            ColumnTree::Or(cs) | ColumnTree::And(cs) => cs.iter().find_map(|c| c.first_slot()),
+        }
+    }
+
+    /// The node ids the tree's rows stand for, ascending: a column's when it reads
+    /// one, else every node of the type.
+    fn row_ids<'g>(&self, graph: &'g Graph, tag: u8) -> &'g [u32] {
+        match self.first_slot() {
+            Some(slot) => graph.string_column(slot).node_ids(),
+            None => graph.ids_by_tag(tag),
         }
     }
 }
 
-fn property_operand(e: &Expr, variable: &str) -> Option<(&'static str, Transform, bool)> {
+/// `number_or_text` for a signed 64-bit value.
+fn number_or_text_i64(number: Option<f64>, value: i64, p: &StringPredicate) -> bool {
+    match number {
+        Some(n) => n == value as f64,
+        None => p.matches_raw(&value.to_string()),
+    }
+}
+
+type Prop = std::borrow::Cow<'static, str>;
+
+/// `<variable>.<key>` as a leaf property: a name the scan reads raw keeps its static
+/// spelling; any other name is carried as is, and the per-type exposure decides that
+/// only an annotation could hold it.
+fn prop_name(key: &str) -> Prop {
+    match PUSHABLE_PROPS.iter().find(|p| **p == key) {
+        Some(p) => std::borrow::Cow::Borrowed(p),
+        None => std::borrow::Cow::Owned(key.to_string()),
+    }
+}
+
+fn property_operand(e: &Expr, variable: &str) -> Option<(Prop, Transform, bool)> {
     match e {
         Expr::Property { expr, key } => match expr.as_ref() {
-            Expr::Variable(v) if v == variable => {
-                let prop = PUSHABLE_PROPS.iter().find(|p| *p == key)?;
-                Some((prop, Transform::None, false))
-            }
+            Expr::Variable(v) if v == variable => Some((prop_name(key), Transform::None, false)),
             _ => None,
         },
         Expr::FunctionCall { name, args, .. } => {
@@ -2670,7 +3561,18 @@ fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate
                 && matches!(args.as_slice(), [Expr::Variable(v)] if v == variable) => {}
         _ => return false,
     }
-    // The operand must read `<variable>[k]`, possibly under toString().
+    // The operand must read `<variable>[k]` or `properties(<variable>)[k]`, possibly
+    // under toString().
+    let is_node_map = |e: &Expr| -> bool {
+        match e {
+            Expr::Variable(v) => v == variable,
+            Expr::FunctionCall { name, args, .. } => {
+                name.eq_ignore_ascii_case("properties")
+                    && matches!(args.as_slice(), [Expr::Variable(v)] if v == variable)
+            }
+            _ => false,
+        }
+    };
     let subscripted = |operand: &Expr| -> Option<bool> {
         let (inner, via) = match operand {
             Expr::FunctionCall { name, args, .. } if name.eq_ignore_ascii_case("tostring") => {
@@ -2679,10 +3581,8 @@ fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate
             other => (other, false),
         };
         match inner {
-            Expr::Subscript { expr, index } => match (expr.as_ref(), index.as_ref()) {
-                (Expr::Variable(v), Expr::Variable(k)) if v == variable && k == key_var => {
-                    Some(via)
-                }
+            Expr::Subscript { expr, index } => match index.as_ref() {
+                Expr::Variable(k) if k == key_var && is_node_map(expr) => Some(via),
                 _ => None,
             },
             _ => None,
@@ -2720,7 +3620,8 @@ fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate
             None
         });
         out.push(StringPredicate {
-            property,
+            property: std::borrow::Cow::Borrowed(property),
+            shape: LeafShape::Text,
             op,
             literal: literal.clone(),
             transform: Transform::None,
@@ -2884,7 +3785,7 @@ fn collect_property_sets(
 ) -> bool {
     match tree {
         PredTree::Leaf(p) => {
-            let Some(property) = CALL_SITE_PROPS.iter().position(|c| *c == p.property) else {
+            let Some(property) = CALL_SITE_PROPS.iter().position(|c| *c == p.prop()) else {
                 return false;
             };
             let Some(strings) = resolve_strings(graph, idx, p, memo) else {
@@ -2913,7 +3814,16 @@ fn may_match(graph: &Graph, tree: &PredTree) -> bool {
     match tree {
         // A synthetic key is not in any dictionary, and a number's text is not either:
         // their trigrams say nothing about whether the graph can match.
-        PredTree::Leaf(p) if is_synthetic_key(p.property) || p.via_to_string => true,
+        // Nor does a number, a list test, a node id, or a type name.
+        PredTree::Leaf(p)
+            if p.shape != LeafShape::Text
+                || is_synthetic_key(p.prop())
+                || p.via_to_string
+                || matches!(p.prop(), "id" | "type" | "method")
+                || is_raw_call_site_prop(p.prop()) =>
+        {
+            true
+        }
         PredTree::Leaf(p) => match p.trigrams.as_ref() {
             Some(trigrams) if !trigrams.is_empty() => idx.may_contain_all(trigrams),
             _ => true,
@@ -2930,7 +3840,8 @@ mod tests {
 
     fn leaf(property: &'static str, op: PushOp, literal: &str) -> PredTree {
         PredTree::Leaf(StringPredicate {
-            property,
+            property: std::borrow::Cow::Borrowed(property),
+            shape: LeafShape::Text,
             op,
             literal: literal.to_string(),
             transform: Transform::None,
@@ -2981,7 +3892,7 @@ mod tests {
         let value = leaf("value", PushOp::Contains, "abc");
         let callee = leaf("callee_class", PushOp::Contains, "abc");
         let never = &|_: &str| false;
-        let unknown = &|_: &StringPredicate| None;
+        let unknown = &|_: &StringPredicate| Fold::Unknown;
         // A leaf the type lacks is false; a disjunction of one raw and one absent leaf
         // keeps the raw one; a conjunction with an absent leaf is false.
         assert_eq!(
@@ -2994,11 +3905,11 @@ mod tests {
         );
         let or = PredTree::Or(vec![value.clone(), callee.clone()]);
         match prune(&or, TAG_CALL_SITE_NODE, never, unknown) {
-            Pruned::Tree(PredTree::Leaf(p)) => assert_eq!(p.property, "callee_class"),
+            Pruned::Tree(PredTree::Leaf(p)) => assert_eq!(p.prop(), "callee_class"),
             other => panic!("expected the callee leaf, got {}", kind(&other)),
         }
         match prune(&or, TAG_STRING_CONSTANT, never, unknown) {
-            Pruned::Tree(PredTree::Leaf(p)) => assert_eq!(p.property, "value"),
+            Pruned::Tree(PredTree::Leaf(p)) => assert_eq!(p.prop(), "value"),
             other => panic!("expected the value leaf, got {}", kind(&other)),
         }
         assert_eq!(kind(&prune(&or, TAG_INT_CONSTANT, never, unknown)), "false");
@@ -3041,7 +3952,7 @@ mod tests {
     fn tag_plans_route_each_type() {
         let value = leaf("value", PushOp::Contains, "abc");
         let never = &|_: &str| false;
-        let unknown = &|_: &StringPredicate| None;
+        let unknown = &|_: &StringPredicate| Fold::Unknown;
         assert!(matches!(
             tag_plan(&value, TAG_STRING_CONSTANT, never, unknown),
             TagPlan::Column(_)
@@ -3204,8 +4115,8 @@ mod tests {
         let (p, w) = parse_where(r#"MATCH (n) WHERE n.qualifiedId CONTAINS "app:" RETURN n"#);
         let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
         assert!(plan.has_synthetic);
-        let yes = &|_: &StringPredicate| Some(true);
-        let no = &|_: &StringPredicate| Some(false);
+        let yes = &|_: &StringPredicate| Fold::Known(true);
+        let no = &|_: &StringPredicate| Fold::Known(false);
         let never = &|_: &str| false;
         assert!(matches!(
             tag_plan(&plan.tree, TAG_CALL_SITE_NODE, never, yes),
@@ -3246,13 +4157,13 @@ mod tests {
         );
         let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
         let never = &|_: &str| false;
-        let no = &|_: &StringPredicate| Some(false);
-        // CallSites: the four indexed strings would answer, but the signatures need
-        // decoding, so the type is generic; a string constant is a column; an
-        // integer constant cannot print letters; annotations always decode.
+        let no = &|_: &StringPredicate| Fold::Known(false);
+        // CallSites: the four indexed strings and the two signatures are read raw
+        // off the record; a string constant is a column; an integer constant cannot
+        // print letters; annotations always decode.
         assert!(matches!(
             tag_plan(&plan.tree, TAG_CALL_SITE_NODE, never, no),
-            TagPlan::Generic
+            TagPlan::CallSite(_)
         ));
         assert!(matches!(
             tag_plan(&plan.tree, TAG_STRING_CONSTANT, never, no),
@@ -3267,30 +4178,54 @@ mod tests {
             TagPlan::Skip
         ));
         assert!(matches!(
+            tag_plan(&plan.tree, TAG_NULL_CONSTANT, never, no),
+            TagPlan::Skip
+        ));
+        assert!(matches!(
             tag_plan(&plan.tree, TAG_ANNOTATION_NODE, never, no),
             TagPlan::Generic
         ));
-        // A digit literal can print from a number, so those types decode.
+        // `properties(n)[k]` is the same map.
+        let (p, w) = parse_where(
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE properties(n)[k] = "Ids") RETURN n"#,
+        );
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_STRING_CONSTANT, never, no),
+            TagPlan::Column(_)
+        ));
+        // A digit literal can print from a number: an integer is read off its
+        // record, a double decodes.
         let (p, w) = parse_where(
             r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "10") RETURN n"#,
         );
         let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
         assert!(matches!(
             tag_plan(&plan.tree, TAG_INT_CONSTANT, never, no),
-            TagPlan::Generic
+            TagPlan::Column(_)
         ));
         assert!(matches!(
-            tag_plan(&plan.tree, TAG_NULL_CONSTANT, never, no),
-            TagPlan::Skip
+            tag_plan(&plan.tree, TAG_DOUBLE_CONSTANT, never, no),
+            TagPlan::Generic
         ));
-        // "true" could print from a boolean.
+        // Every node's `id` prints digits too: tested off the type's id list, even
+        // for a type with no columns.
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_NULL_CONSTANT, never, no),
+            TagPlan::Column(_)
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_STRING_CONSTANT, never, no),
+            TagPlan::Column(_)
+        ));
+        // "true" could print from a boolean, read off its record.
         let (p, w) = parse_where(
             r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "ru") RETURN n"#,
         );
         let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
         assert!(matches!(
             tag_plan(&plan.tree, TAG_BOOLEAN_CONSTANT, never, no),
-            TagPlan::Generic
+            TagPlan::Column(_)
         ));
         // Without toString a number never satisfies a string predicate.
         let (p, w) =
@@ -3309,5 +4244,207 @@ mod tests {
             r#"MATCH (n) WHERE any(k IN ["value"] WHERE toString(n[k]) CONTAINS "x") RETURN n"#,
         );
         assert!(ScanPlan::build(&p, w.as_ref()).is_none());
+    }
+
+    fn kind_of(plan: &TagPlan) -> &'static str {
+        match plan {
+            TagPlan::Skip => "skip",
+            TagPlan::All => "all",
+            TagPlan::Generic => "generic",
+            TagPlan::CallSite(_) => "callsite",
+            TagPlan::Column(_) => "column",
+        }
+    }
+
+    fn plans(query: &str) -> Vec<&'static str> {
+        let (p, w) = parse_where(query);
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        plan.tag_plans.iter().map(kind_of).collect()
+    }
+
+    #[test]
+    fn unknown_properties_reach_only_annotations() {
+        // No type stores `fullName`; `class` is a Field and an Annotation column. An
+        // annotation's value pairs can spell any key, so that type decodes.
+        let p =
+            plans(r#"MATCH (n) WHERE n.fullName CONTAINS "x" OR n.class CONTAINS "Ids" RETURN n"#);
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "skip");
+        assert_eq!(p[TAG_FIELD_NODE as usize], "column");
+        assert_eq!(p[TAG_ANNOTATION_NODE as usize], "generic");
+        // Per graph, a key no string spells reaches no annotation either; `class`
+        // is a raw field and still does.
+        let (pt, w) = parse_where(r#"MATCH (n) WHERE n.fullName CONTAINS "x" RETURN n"#);
+        let plan = ScanPlan::build(&pt, w.as_ref()).expect("planned");
+        let unknown = &|_: &StringPredicate| Fold::Unknown;
+        assert!(matches!(
+            tag_plan(
+                &plan.tree,
+                TAG_ANNOTATION_NODE,
+                &|k| k == "fullName",
+                unknown
+            ),
+            TagPlan::Skip
+        ));
+        let p = plans(r#"MATCH (n) WHERE n.name CONTAINS "a" AND n.code CONTAINS "b" RETURN n"#);
+        assert!(p.iter().enumerate().all(|(tag, k)| {
+            *k == if tag == TAG_ANNOTATION_NODE as usize {
+                "generic"
+            } else {
+                "skip"
+            }
+        }));
+    }
+
+    #[test]
+    fn numeric_equality_plans_only_numeric_types() {
+        let p = plans(r#"MATCH (n) WHERE n.value = 105873 RETURN n"#);
+        assert_eq!(p[TAG_INT_CONSTANT as usize], "column");
+        assert_eq!(p[TAG_LONG_CONSTANT as usize], "column");
+        assert_eq!(p[TAG_DOUBLE_CONSTANT as usize], "generic");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        assert_eq!(p[TAG_BOOLEAN_CONSTANT as usize], "skip");
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "skip");
+        assert_eq!(p[TAG_ENUM_CONSTANT as usize], "generic");
+        assert_eq!(p[TAG_RESOURCE_VALUE_NODE as usize], "generic");
+        assert_eq!(p[TAG_ANNOTATION_NODE as usize], "generic");
+        // Either operand order; a float literal too.
+        let p = plans(r#"MATCH (n) WHERE 1.5 = n.value RETURN n"#);
+        assert_eq!(p[TAG_FLOAT_CONSTANT as usize], "generic");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        let p = plans(r#"MATCH (n) WHERE n.line = 5 AND n.value CONTAINS "x" RETURN n"#);
+        assert!(p.iter().enumerate().all(|(tag, k)| {
+            *k == if tag == TAG_ANNOTATION_NODE as usize {
+                "generic"
+            } else {
+                "skip"
+            }
+        }));
+        let p = plans(r#"MATCH (n) WHERE n.line = 5 OR n.value CONTAINS "x" RETURN n"#);
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "callsite");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "column");
+        // `id` is a number on every node, read off the id list; a synthetic key
+        // never is. A CallSite reads its id in the record sweep.
+        let p = plans(r#"MATCH (n) WHERE n.id = 5 RETURN n"#);
+        assert!(p.iter().enumerate().all(|(tag, k)| {
+            *k == if tag == TAG_CALL_SITE_NODE as usize {
+                "callsite"
+            } else {
+                "column"
+            }
+        }));
+        let p = plans(r#"MATCH (n) WHERE n.graphId = 5 RETURN n"#);
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        // An ordering comparison compares text where the value is not a number: not
+        // planned.
+        let (pt, w) = parse_where(r#"MATCH (n) WHERE n.value > 5 RETURN n"#);
+        assert!(ScanPlan::build(&pt, w.as_ref()).is_none());
+    }
+
+    #[test]
+    fn membership_plans_only_list_types() {
+        let p = plans(r#"MATCH (n) WHERE "app" IN n.graphIds RETURN n"#);
+        assert!(p.iter().enumerate().all(|(tag, k)| {
+            *k == if tag == TAG_ANNOTATION_NODE as usize {
+                "generic"
+            } else {
+                "skip"
+            }
+        }));
+        let p = plans(r#"MATCH (n) WHERE "x" IN n.value RETURN n"#);
+        assert_eq!(p[TAG_ENUM_CONSTANT as usize], "generic");
+        assert_eq!(p[TAG_RESOURCE_VALUE_NODE as usize], "generic");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+    }
+
+    #[test]
+    fn type_name_folds_per_type() {
+        let p = plans(r#"MATCH (n) WHERE n.type = "CallSiteNode" RETURN n"#);
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "all");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        // A type that stores `type` answers from its column instead.
+        assert_eq!(p[TAG_FIELD_NODE as usize], "column");
+        let p = plans(r#"MATCH (n) WHERE toLower(n.type) CONTAINS "constant" RETURN n"#);
+        assert_eq!(p[TAG_INT_CONSTANT as usize], "all");
+        assert_eq!(p[TAG_RETURN_NODE as usize], "skip");
+        // An annotation whose value pairs spell no `type` key falls back the same way.
+        let (pt, w) = parse_where(r#"MATCH (n) WHERE n.type = "AnnotationNode" RETURN n"#);
+        let plan = ScanPlan::build(&pt, w.as_ref()).expect("planned");
+        let unknown = &|_: &StringPredicate| Fold::Unknown;
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_ANNOTATION_NODE, &|k| k == "type", unknown),
+            TagPlan::All
+        ));
+        assert!(matches!(
+            tag_plan(&plan.tree, TAG_ANNOTATION_NODE, &|_| false, unknown),
+            TagPlan::Generic
+        ));
+    }
+
+    #[test]
+    fn call_site_signatures_and_lines_are_swept_raw() {
+        let p =
+            plans(r#"MATCH (n) WHERE n.callee_signature CONTAINS "java.lang.String)" RETURN n"#);
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "callsite");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        let (pt, w) = parse_where(
+            r#"MATCH (n) WHERE toLower(n.caller_signature) CONTAINS "x" OR n.callee_name = "y" RETURN n"#,
+        );
+        let plan = ScanPlan::build(&pt, w.as_ref()).expect("planned");
+        let (tree, leaves) = plan.call_site.as_ref().expect("a CallSite tree");
+        assert!(needs_raw_sweep(tree));
+        assert_eq!(leaves.len(), 2);
+        // A line prints digits; a letter literal cannot come from it.
+        let p = plans(r#"MATCH (n) WHERE toString(n.line) STARTS WITH "12" RETURN n"#);
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "callsite");
+        let p = plans(r#"MATCH (n) WHERE toString(n.line) STARTS WITH "ab" RETURN n"#);
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "skip");
+        // The digit search over every key, once the synthetic keys are folded for a
+        // graph: CallSites raw, columns test the id, the numeric constants decode.
+        let (pt, w) = parse_where(
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "105873") RETURN n"#,
+        );
+        let plan = ScanPlan::build(&pt, w.as_ref()).expect("planned");
+        let never = &|_: &str| false;
+        let no = &|_: &StringPredicate| Fold::Known(false);
+        let at = |tag: u8| kind_of(&tag_plan(&plan.tree, tag, never, no));
+        assert_eq!(at(TAG_CALL_SITE_NODE), "callsite");
+        assert_eq!(at(TAG_STRING_CONSTANT), "column");
+        assert_eq!(at(TAG_INT_CONSTANT), "column");
+        assert_eq!(at(TAG_NULL_CONSTANT), "column");
+        assert_eq!(at(TAG_DOUBLE_CONSTANT), "generic");
+        // The method of a local, a parameter or a return node is composed from the
+        // record, as a CallSite's signatures are; a return node has no columns.
+        let p = plans(r#"MATCH (n) WHERE n.method CONTAINS "main(" RETURN n"#);
+        assert_eq!(p[TAG_LOCAL_VARIABLE as usize], "column");
+        assert_eq!(p[TAG_PARAMETER_NODE as usize], "column");
+        assert_eq!(p[TAG_RETURN_NODE as usize], "column");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        let p = plans(r#"MATCH (n) WHERE n.actual_type CONTAINS "String" RETURN n"#);
+        assert_eq!(p[TAG_RETURN_NODE as usize], "column");
+        let p = plans(
+            r#"MATCH (n) WHERE toString(n.index) = "0" OR toString(n.static) = "true" RETURN n"#,
+        );
+        assert_eq!(p[TAG_PARAMETER_NODE as usize], "column");
+        assert_eq!(p[TAG_FIELD_NODE as usize], "column");
+        assert_eq!(p[TAG_LOCAL_VARIABLE as usize], "skip");
+    }
+
+    #[test]
+    fn node_ids_print_as_decimal() {
+        let mut buf = [0u8; 10];
+        assert_eq!(u32_text(0, &mut buf), "0");
+        assert_eq!(u32_text(105873, &mut buf), "105873");
+        assert_eq!(u32_text(u32::MAX, &mut buf), "4294967295");
+    }
+
+    #[test]
+    fn batches_start_small_and_stay_bounded() {
+        let sources: Vec<SourceIdx> = (0..64).collect();
+        let batches = batch_schedule(&sources);
+        assert_eq!(batches[0].len(), 1);
+        let threads = rayon::current_num_threads().max(1);
+        assert!(batches.iter().all(|b| b.len() <= threads * 4));
+        assert_eq!(batches.iter().map(|b| b.len()).sum::<usize>(), 64);
     }
 }
