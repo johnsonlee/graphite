@@ -121,6 +121,11 @@ reproducibility and tamper checks before writing the shared receipt and cache. M
 failed producers cannot trigger a replacement build in the aggregate job. On a cache hit,
 the inputs job verifies and publishes the existing corpus; both generators are skipped and
 the final job confirms that successful publication without downloading/uploading it again.
+Downstream builders, measurements and the late watchdog use explicit `!cancelled()` conditions
+and require their direct prerequisites to succeed. GitHub's default success condition would
+otherwise propagate the intentionally skipped generator through the dependency chain, even
+after `prepare-fixture64` succeeds. Failed prerequisites and workflow cancellation still prevent
+those jobs from starting; only the expected cache-hit generator skip is bypassed.
 Intermediate artifact names bind the workflow run and attempt. Downstream artifact names and
 measurement scheduling are unchanged: base/candidate queries still run serially in all three
 pairs on the same machine, under the existing 8GiB measurement cap. Fixture generation retains

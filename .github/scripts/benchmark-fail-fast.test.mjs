@@ -138,8 +138,16 @@ test('API and observation failures are visible rather than silently disabling ca
 
 
 test('fork policy skips write-token monitors explicitly without accepting failed or cancelled monitors', () => {
-    const policy = /if: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name == github\.repository \}\}/;
-    for (const name of ['benchmark-fail-fast', 'benchmark-fail-fast-late']) assert.match(jobs.get(name), policy);
+    for (const name of ['benchmark-fail-fast', 'benchmark-fail-fast-late']) {
+        const condition = jobs.get(name).match(/^    if: \$\{\{ (.*) \}\}$/m)?.[1];
+        assert.ok(condition, `${name} has an explicit repository policy`);
+        const evaluate = new Function('headRepository', 'repository', 'cancelled', `return (${condition
+            .replaceAll('github.event.pull_request.head.repo.full_name', 'headRepository')
+            .replaceAll('github.repository', 'repository')
+            .replace(/needs\.[a-z0-9-]+\.result/g, "'success'")});`);
+        assert.equal(evaluate('owner/repo', 'owner/repo', () => false), true, name);
+        assert.equal(evaluate('fork/repo', 'owner/repo', () => false), false, name);
+    }
     const aggregate = jobs.get('benchmark-regression-gate');
     assert.match(aggregate, /MONITORS_REQUIRED: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name == github\.repository \}\}/);
     const start = aggregate.indexOf('        case "${MONITORS_REQUIRED}" in');

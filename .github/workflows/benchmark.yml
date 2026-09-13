@@ -233,7 +233,7 @@ jobs:
 
   benchmark-fail-fast-late:
     name: benchmark-fail-fast-late
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ !cancelled() && needs.build-wide-latency-bundle.result == 'success' && github.event.pull_request.head.repo.full_name == github.repository }}
     needs: [build-wide-latency-bundle]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -2470,6 +2470,7 @@ jobs:
   graph-routing-pressure-evidence:
     name: graph-routing-pressure-evidence
     needs: [prepare-fixture64]
+    if: ${{ !cancelled() && needs.prepare-fixture64.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -2899,6 +2900,7 @@ jobs:
   global-wide-historical-evidence:
     name: global-wide-historical-evidence
     needs: [prepare-fixture64]
+    if: ${{ !cancelled() && needs.prepare-fixture64.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 360
     permissions:
@@ -2985,6 +2987,7 @@ jobs:
   build-wide-latency-bundle:
     name: build-wide-latency-bundle
     needs: [candidate-gate-tests, prepare-fixture64]
+    if: ${{ !cancelled() && needs.candidate-gate-tests.result == 'success' && needs.prepare-fixture64.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -3025,6 +3028,7 @@ jobs:
   wide-latency-measurements:
     name: wide-latency-measurements-${{ matrix.shard }}
     needs: [build-wide-latency-bundle]
+    if: ${{ !cancelled() && needs.build-wide-latency-bundle.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 360
     permissions:
