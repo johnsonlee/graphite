@@ -46,6 +46,8 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
+import io.johnsonlee.graphite.graph.StringPropertyLookup
+import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -3485,7 +3487,7 @@ class QueryPipeline private constructor(
             seedMatches = if (seedCondition != null) {
                 firstNode?.let { node -> orderedSourceMatches(node, seedCondition, candidateSources) }
             } else {
-                null
+                targetPreflightSourceMatches(pattern, where.condition, candidateSources)
             }
         )
         if (orderBy != null) {
@@ -3512,6 +3514,47 @@ class QueryPipeline private constructor(
             if (rows.size >= limitCount) break
         }
         return CypherResult(columns, rows)
+    }
+
+    /** Defer target absence detection until the first source fails to satisfy the caller. */
+    private fun targetPreflightSourceMatches(
+        pattern: CypherPattern,
+        condition: CypherExpr,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Map<String, Any?>>? {
+        if (pattern.elements.size != 3 || pattern.pathVariable != null) return null
+        val sourceNode = pattern.elements[0] as? PatternElement.NodePattern ?: return null
+        val relationship = pattern.elements[1] as? PatternElement.RelationshipPattern ?: return null
+        val targetNode = pattern.elements[2] as? PatternElement.NodePattern ?: return null
+        val sourceVariable = sourceNode.variable ?: return null
+        val targetVariable = targetNode.variable ?: return null
+        if (relationship.variableLength || sourceNode.properties.isNotEmpty() ||
+            relationship.properties.isNotEmpty() || targetNode.properties.isNotEmpty() ||
+            sourceVariable == targetVariable || relationship.variable in setOf(sourceVariable, targetVariable)
+        ) return null
+        val targetCondition = SourcePredicatePushdown.compile(condition, targetVariable) ?: return null
+        val plan = DirectStringCandidatePlan.compile(
+            targetCondition, targetVariable, activeParameters.get().orEmpty()
+        ) ?: return null
+        val targetClass = resolveNodeClass(targetNode.labels) ?: return null
+        return candidateSources.asSequence().flatMap { source ->
+            val canLookup = source.graph is StringPropertyLookup && source.graph is StringPropertyLookupOrder &&
+                (plan.candidates.filters.none { it.transform != null } || source.graph is TransformedStringPropertyLookup)
+            val matches = matchNodeElementLazily(
+                sourceNode, emptyMap(), listOf(source), navigate = true, trackSegments = false
+            )
+            if (!canLookup) matches else sequence {
+                val iterator = matches.iterator()
+                // Let a high-degree first source satisfy LIMIT before paying for any target lookup.
+                // Probe only when another source is needed; a completed short scan needs no lookup.
+                if (!iterator.hasNext()) return@sequence
+                yield(iterator.next())
+                if (!iterator.hasNext()) return@sequence
+                if (directStringCandidates(source.graph, targetClass, plan.candidates, limit = 1).iterator().hasNext()) {
+                    yieldAll(iterator)
+                }
+            }
+        }
     }
 
     @Suppress("ReturnCount")

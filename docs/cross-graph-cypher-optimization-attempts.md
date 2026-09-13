@@ -1318,3 +1318,34 @@ of wall latency or precise candidate counts.
 **Conclusion:** keep as an intermediate optimization. Dynamic hits remain below 10x;
 further work should reduce repeated string decoding and false-positive materialization.
 Final repeated paired measurements and broad regression gates remain outstanding.
+
+
+### 2026-09-13 - Attempt 029: Defer target absence detection until a second source is needed
+
+**Hypothesis:** the eager target probe rejected in Attempt 024 delays a high-degree
+first source that can satisfy LIMIT immediately. Stream that source normally and only
+probe target existence when another source is requested. A provably absent necessary
+string target permits skipping the remaining relationship expansion. Retain full WHERE,
+source order, lazy later graphs, and fallback for unsafe expressions/patterns/capabilities.
+
+**Base/candidate:** main `144d98ef` versus the frozen isolated V2 snapshot documented
+in Attempt 028. Real Android fixture and commands are in
+`/tmp/graphite-slow-shapes-evidence/third-isolated/`.
+
+**Evidence:** target miss improves 9,585 to 713 ms COLD (13.44x) and 9,242 to 292 ms
+WARM (31.60x), with exact ordered results and CPU speedups of 6.85x/8.08x. Dense
+target hit is 227.68 to 228.58 ms COLD and 118.03 to 125.16 ms WARM: the previous
+27–41% regression is removed, but a single pair's 6% warm difference needs repeated
+validation. No allocation conclusion is available. Full Cypher tests and lint pass,
+including first-source LIMIT, graph laziness, complete positive continuation, unsupported
+and unsafe fallbacks, and work-budget/cancellation tests.
+
+The extra probe is real charged work. On a tiny graph with two unconnected nodes it
+can consume four units where ordinary traversal consumes two; an exactly two-unit
+budget therefore fails with the probe. Tests explicitly preserve this accounting and
+propagate the original budget/cancellation exceptions. This optimization does not claim
+identical work counts or identical success boundaries at every artificial budget limit.
+
+**Conclusion:** retain provisionally for repeated broad real-data regression validation.
+Dense-hit latency and extra preflight work remain explicit checks; no timing or budget
+exception is hidden or reclassified as a successful query.
