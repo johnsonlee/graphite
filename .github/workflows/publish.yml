@@ -82,15 +82,23 @@ jobs:
           echo "GPG secrets are not available to this run: publishing unsigned to the local repository"
         fi
         ./gradlew clean publishToMavenLocal -S --no-daemon -Pversion=${RELEASE_VERSION} "${SIGNING[@]}"
+        # The published coordinates are io.johnsonlee.graphite:<module> (settings.gradle.kts
+        # keeps the project names prefix-free), so the local repository holds
+        # io/johnsonlee/graphite/<module>/<version>/<module>-<version>.*, as on Maven Central.
         for MODULE in core cypher sootup webgraph; do
-          DIR="${HOME}/.m2/repository/io/johnsonlee/graphite/graphite-${MODULE}/${RELEASE_VERSION}"
+          DIR="${HOME}/.m2/repository/io/johnsonlee/graphite/${MODULE}/${RELEASE_VERSION}"
           ls -la "${DIR}"
-          test -f "${DIR}/graphite-${MODULE}-${RELEASE_VERSION}.pom"
-          test -f "${DIR}/graphite-${MODULE}-${RELEASE_VERSION}.jar"
-          grep -q "<version>${RELEASE_VERSION}</version>" "${DIR}/graphite-${MODULE}-${RELEASE_VERSION}.pom"
+          POM="${DIR}/${MODULE}-${RELEASE_VERSION}.pom"
+          test -f "${POM}"
+          test -f "${DIR}/${MODULE}-${RELEASE_VERSION}.jar"
+          test -f "${DIR}/${MODULE}-${RELEASE_VERSION}-sources.jar"
+          test -f "${DIR}/${MODULE}-${RELEASE_VERSION}-javadoc.jar"
+          grep -q "<groupId>io.johnsonlee.graphite</groupId>" "${POM}"
+          grep -q "<artifactId>${MODULE}</artifactId>" "${POM}"
+          grep -q "<version>${RELEASE_VERSION}</version>" "${POM}"
           if [ -n "${GPG_KEY_ARMOR:-}" ]; then
-            test -f "${DIR}/graphite-${MODULE}-${RELEASE_VERSION}.pom.asc"
-            test -f "${DIR}/graphite-${MODULE}-${RELEASE_VERSION}.jar.asc"
+            test -f "${POM}.asc"
+            test -f "${DIR}/${MODULE}-${RELEASE_VERSION}.jar.asc"
           fi
         done
       env:
