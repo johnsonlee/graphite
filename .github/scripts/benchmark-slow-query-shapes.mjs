@@ -16,7 +16,12 @@ export const COMPONENT = {
 };
 const BENCHMARK = "io.johnsonlee.graphite.webgraph.SlowQueryShapesBenchmark.execute";
 const STATES = ["COLD", "WARM"];
-const FORKS = 3;
+// Five independent single-shot JVMs per row. Three gave a point estimate with no usable
+// spread: on the hosted runner the same jar measured 214 ms and 396 ms in consecutive forks,
+// and three consecutive pull requests with identical JVM sources failed the 15% check on
+// one row each. Five forks make JMH's 99.9% confidence interval narrow enough to tell a
+// regression from that noise, and the verdict below requires the intervals to separate.
+const FORKS = 5;
 const require = (condition, message) => { if (!condition) throw new Error(message); };
 const finitePositive = value => typeof value === "number" && Number.isFinite(value) && value > 0;
 const key = (state, query) => `${state}/${query}`;
@@ -28,7 +33,7 @@ export function measurements(entries, queries, fixture) {
     for (const entry of entries) {
         require(entry.benchmark === BENCHMARK && entry.mode === "ss", "Unexpected benchmark or mode");
         require(entry.threads === 1 && entry.forks === FORKS && entry.warmupIterations === 0 &&
-            entry.measurementIterations === 1, "Expected three independent single-shot forks");
+            entry.measurementIterations === 1, `Expected ${FORKS} independent single-shot forks`);
         require(entry.params?.corpus === "android" && Object.keys(entry.params).sort().join() ===
             "cacheState,corpus,queryName", "Unexpected parameters");
         const id = key(entry.params.cacheState, entry.params.queryName);
@@ -41,7 +46,12 @@ export function measurements(entries, queries, fixture) {
             samples.length === 1 && samples.every(finitePositive)), `Missing fork samples: ${id}`);
         const mean = metric.rawData.reduce((sum, samples) => sum + samples[0], 0) / FORKS;
         require(Math.abs(mean - metric.score) <= Math.max(1e-9, mean * 1e-9), `Inconsistent JMH score: ${id}`);
-        result.set(id, { ms: metric.score, samples: metric.rawData.map(samples => samples[0]) });
+        // JMH's 99.9% confidence interval over the fork samples; the verdict needs it, so a
+        // result without a finite one is refused rather than judged on the point estimate.
+        const confidence = metric.scoreConfidence;
+        require(Array.isArray(confidence) && confidence.length === 2 && confidence.every(Number.isFinite) &&
+            confidence[0] <= metric.score && metric.score <= confidence[1], `Missing confidence interval: ${id}`);
+        result.set(id, { ms: metric.score, samples: metric.rawData.map(samples => samples[0]), confidence: [...confidence] });
     }
     require(sameKeys(result, expected(queries)), "Missing or unexpected query/state measurements");
     return result;
@@ -81,11 +91,17 @@ export function compare(base, candidate, baseResults, candidateResults, referenc
         require(a.rows === b.rows && a.sha256 === b.sha256, `Ordered semantic mismatch: ${id}`);
         const baseline = base.get(id), current = candidate.get(id);
         const delta = (current.ms / baseline.ms - 1) * 100;
+        // Blocked only when the candidate is more than 15% slower and its whole 99.9%
+        // confidence interval lies above the base's: the rule the method-level gate applies.
+        // A point estimate over the threshold with overlapping intervals is noise until a
+        // run says otherwise, and is reported as such rather than confirmed.
+        const confidenceSeparated = current.confidence[0] > baseline.confidence[1];
         return { key: id, reference: DYNAMIC_QUERIES.includes(id.split("/")[1]) ? referenceKind : "unmodified-base",
             baseMs: baseline.ms, candidateMs: current.ms, baseSamples: baseline.samples,
-            candidateSamples: current.samples, rows: a.rows, sha256: a.sha256, delta, blocked: delta > 15 };
+            candidateSamples: current.samples, baseConfidence: baseline.confidence, candidateConfidence: current.confidence,
+            rows: a.rows, sha256: a.sha256, delta, confidenceSeparated, blocked: delta > 15 && confidenceSeparated };
     });
-    return { passed: rows.every(row => !row.blocked), errors: [], thresholdPercent: 15,
+    return { passed: rows.every(row => !row.blocked), errors: [], thresholdPercent: 15, confidencePercent: 99.9,
         referenceKind, orderedResultParity: true, rows };
 }
 
@@ -106,12 +122,13 @@ export function confirm(initial, confirmation) {
 }
 
 export function render(comparison) {
-    const lines = ["### Five slow query families", "", "Real persisted Android; value, qualifiedId, dynamic properties, toString caller, and single-hop DATAFLOW. Every hit/miss runs COLD and WARM in three fresh private mappings. Ordered full result digests must match.",
+    const lines = ["### Five slow query families", "", "Real persisted Android; value, qualifiedId, dynamic properties, toString caller, and single-hop DATAFLOW. Every hit/miss runs COLD and WARM in five fresh private mappings. Ordered full result digests must match.",
         "COLD means a fresh mapping with no persisted callsite index, not cold OS pages. Primary latency excludes fixture copying; first-trial GC profiler values include setup/priming/cleanup and are diagnostic only.",
-        "The ongoing gate is a 15% point-estimate regression check against the current base, confirmed candidate-first. Historical 10× acceptance against 144d98ef is a separate experiment.",
+        "The ongoing gate blocks a row only when the candidate is more than 15% slower than the current base and the two 99.9% confidence intervals over the five forks do not overlap, confirmed candidate-first; a point estimate over 15% with overlapping intervals is reported and passes. Historical 10× acceptance against 144d98ef is a separate experiment.",
         `Dynamic reference: ${comparison.referenceKind ?? "unavailable"}. The legacy repair changes only string-key subscripting; other cases always use unmodified base.`, "",
-        "| Query/state | Base ms | Candidate ms | Change | Confirmation change | Gate |", "|---|---:|---:|---:|---:|:---:|"];
-    for (const row of comparison.rows ?? []) lines.push(`| ${row.key} | ${row.baseMs.toFixed(3)} | ${row.candidateMs.toFixed(3)} | ${row.delta.toFixed(1)}% | ${row.confirmation ? row.confirmation.delta.toFixed(1) + "%" : "—"} | ${row.blocked ? "FAIL" : "PASS"} |`);
+        "| Query/state | Base ms (99.9% CI) | Candidate ms (99.9% CI) | Change | Separated | Confirmation change | Gate |", "|---|---:|---:|---:|:---:|---:|:---:|"];
+    const ci = (ms, bounds) => `${ms.toFixed(3)} (${bounds[0].toFixed(1)}–${bounds[1].toFixed(1)})`;
+    for (const row of comparison.rows ?? []) lines.push(`| ${row.key} | ${ci(row.baseMs, row.baseConfidence)} | ${ci(row.candidateMs, row.candidateConfidence)} | ${row.delta.toFixed(1)}% | ${row.confidenceSeparated ? "yes" : "no"} | ${row.confirmation ? row.confirmation.delta.toFixed(1) + "%" : "—"} | ${row.blocked ? "FAIL" : "PASS"} |`);
     if (comparison.errors?.length) lines.push("", ...comparison.errors.map(error => `- ${error}`));
     return lines.join("\n") + "\n";
 }

@@ -9,24 +9,25 @@ import { QUERIES, measurements, resultMarkers, compare, confirm, addComponent, C
 
 const fixture = "/real/android";
 const hash = "a".repeat(64);
-function entries(ms = 100) {
+// `spread` is the half-width of JMH's 99.9% confidence interval around the score.
+function entries(ms = 100, spread = 0) {
     return ["COLD", "WARM"].flatMap(cacheState => QUERIES.map(queryName => ({
         benchmark: "io.johnsonlee.graphite.webgraph.SlowQueryShapesBenchmark.execute", mode: "ss",
-        threads: 1, forks: 3, warmupIterations: 0, measurementIterations: 1,
+        threads: 1, forks: 5, warmupIterations: 0, measurementIterations: 1,
         params: { cacheState, queryName, corpus: "android" },
         jvmArgs: ["-Xmx8g", "-XX:ActiveProcessorCount=4", `-Dandroid.graph.path=${fixture}`],
-        primaryMetric: { score: ms, scoreUnit: "ms/op", rawData: [[ms], [ms], [ms]] }
+        primaryMetric: { score: ms, scoreUnit: "ms/op", rawData: [[ms], [ms], [ms], [ms], [ms]], scoreConfidence: [ms - spread, ms + spread] }
     })));
 }
 function markers() {
-    return entries().flatMap((entry, index) => Array.from({ length: 3 }, (_, fork) =>
+    return entries().flatMap((entry, index) => Array.from({ length: 5 }, (_, fork) =>
         `SLOW_QUERY_SHAPE_FIXTURE\tprotocol=private-copy-no-callsite-index-v2\tcorpus=android\tsource=${fixture}\tsnapshot=/tmp/graphite-slow-query-shapes-${index}-${fork}/android\tindexAbsent=true\n` +
         `SLOW_QUERY_SHAPE_RESULT\tandroid\t${entry.params.cacheState}\t${entry.params.queryName}\trows=${entry.params.queryName.endsWith("Hit") ? 1 : 0}\tsha256=${hash}\n`
     )).join("");
 }
-function comparison(ms = 100, policy = "unmodified-base") {
+function comparison(ms = 100, policy = "unmodified-base", spread = 0) {
     const results = resultMarkers(markers(), QUERIES, fixture, () => false);
-    return compare(measurements(entries(), QUERIES, fixture), measurements(entries(ms), QUERIES, fixture), results, results, policy);
+    return compare(measurements(entries(100, spread), QUERIES, fixture), measurements(entries(ms, spread), QUERIES, fixture), results, results, policy);
 }
 
 test("all five families require 24 cold/warm keys, with nonempty hit oracles", () => {
@@ -42,6 +43,8 @@ test("JMH mode, scope, effective heap, raw samples and exact keys fail closed", 
         rows => { rows[0].mode = "avgt"; }, rows => { rows[0].forks = 1; },
         rows => { rows[0].primaryMetric.score = NaN; }, rows => { rows[0].primaryMetric.scoreUnit = "us/op"; },
         rows => { rows[0].primaryMetric.rawData.pop(); }, rows => { rows[0].primaryMetric.rawData[0][0] = 200; },
+        rows => { delete rows[0].primaryMetric.scoreConfidence; }, rows => { rows[0].primaryMetric.scoreConfidence = [NaN, NaN]; },
+        rows => { rows[0].primaryMetric.scoreConfidence = [101, 102]; }, rows => { rows[0].primaryMetric.scoreConfidence = [90]; },
         rows => { rows[0].jvmArgs[0] = "-Xmx16g"; }, rows => { rows[0].params.corpus = "synthetic"; },
         rows => { rows[0].params.queryName = "unexpectedHit"; }, rows => { rows.push(rows[0]); }
     ]) {
@@ -66,6 +69,23 @@ test("only dynamic rows may use the explicitly named semantic reference", () => 
     assert.equal(result.rows.filter(row => row.reference === "base-plus-subscript-correctness-repair").length, 4);
     assert.equal(result.rows.find(row => row.key === "COLD/qualifiedIdHit").reference, "unmodified-base");
     assert.throws(() => comparison(100, "silently-patched-base"), /reference policy/);
+});
+
+test("a row blocks only when 15 percent slower with separated confidence intervals", () => {
+    // Zero spread: any 16% point delta is also a separated interval.
+    assert.equal(comparison(116).passed, false);
+    assert.equal(comparison(116).rows.every(row => row.confidenceSeparated && row.blocked), true);
+    // The same 16% with intervals of ±10 ms around 100 and 116 overlap: reported, not blocked.
+    const noisy = comparison(116, "unmodified-base", 10);
+    assert.equal(noisy.passed, true);
+    assert.equal(noisy.rows.every(row => row.delta > 15 && !row.confidenceSeparated && !row.blocked), true);
+    assert.deepEqual(noisy.rows[0].baseConfidence, [90, 110]);
+    assert.deepEqual(noisy.rows[0].candidateConfidence, [106, 126]);
+    // Separated intervals under the threshold do not block either.
+    assert.equal(comparison(110, "unmodified-base", 1).rows.every(row => row.confidenceSeparated && !row.blocked), true);
+    // A large regression separates even through the noise that hides a small one.
+    assert.equal(comparison(200, "unmodified-base", 10).passed, false);
+    assert.equal(comparison().confidencePercent, 99.9);
 });
 
 test("15 percent suspect must repeat in reverse order; integrity cannot be cleared", () => {
