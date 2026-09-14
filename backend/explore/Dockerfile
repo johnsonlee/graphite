@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.7
 #
-# Runtime-only image for `graphite serve`: the graphite binary from the GitHub Release,
-# one per architecture, on a distroless base. No JVM: this image serves and queries
-# graphs; building them is the JVM frontend's job (`graphite build` on a host with a JDK,
-# or the graphite.jar release asset).
+# Runtime-only image for `graphite serve`: the static musl graphite binary from the
+# GitHub Release, one per architecture, on the libc-less distroless base. No JVM: this
+# image serves and queries graphs; building them is the JVM frontend's job
+# (`graphite build` on a host with a JDK, or the graphite.jar release asset).
 #
 # Usage:
 #   # release-assets/linux/<amd64|arm64>/graphite are the extracted release binaries
@@ -13,7 +13,7 @@
 # The entrypoint is `graphite serve`, so every `graphite-explore` / `graphite.jar serve`
 # argument works unchanged: `docker run ... graphite-explore --graph a:/data/a --port 8080`.
 
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM gcr.io/distroless/static-debian12:nonroot
 
 ARG VERSION=0.0.0-dev
 ARG TARGETARCH

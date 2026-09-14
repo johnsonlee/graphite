@@ -65,7 +65,10 @@ pub fn install_jvm(env: &Env, version: &str, skip_checksum: bool) -> Result<Path
     let part = dir.join(format!("{}.part", frontend::JVM_FRONTEND_JAR));
     let url = frontend::release_asset_url(version, frontend::JVM_RELEASE_ASSET);
     eprintln!("Downloading {url}");
-    download(&url, &part)?;
+    if let Err(e) = download(&url, &part) {
+        discard_partial_install(dir);
+        return Err(e);
+    }
 
     let sum_url = format!("{url}.sha256");
     let sum_file = dir.join("graphite.jar.sha256");
@@ -76,7 +79,7 @@ pub fn install_jvm(env: &Env, version: &str, skip_checksum: bool) -> Result<Path
                 .ok_or_else(|| format!("{sum_url} does not contain a sha256 digest"))?;
             let actual = sha256_of(&part)?;
             if actual != expected {
-                let _ = std::fs::remove_file(&part);
+                discard_partial_install(dir);
                 return Err(format!(
                     "checksum mismatch for {url}: expected {expected}, got {actual}"
                 ));
@@ -86,7 +89,7 @@ pub fn install_jvm(env: &Env, version: &str, skip_checksum: bool) -> Result<Path
             eprintln!("WARNING: no checksum published for {version}; installing unverified");
         }
         Err(e) => {
-            let _ = std::fs::remove_file(&part);
+            discard_partial_install(dir);
             return Err(format!(
                 "{e}. Releases before checksums were published can be installed with \
                  --skip-checksum."
@@ -96,6 +99,16 @@ pub fn install_jvm(env: &Env, version: &str, skip_checksum: bool) -> Result<Path
     std::fs::rename(&part, &jar).map_err(|e| format!("{}: {e}", jar.display()))?;
     eprintln!("Installed JVM frontend {version} at {}", jar.display());
     Ok(jar)
+}
+
+/// Remove what a failed install left in its version directory (the `.part` download,
+/// a checksum file) and the directory itself, so the directory never counts as an
+/// install and never hides an older, complete one from the frontend lookup.
+fn discard_partial_install(dir: &Path) {
+    if dir.join(frontend::JVM_FRONTEND_JAR).is_file() {
+        return;
+    }
+    let _ = std::fs::remove_dir_all(dir);
 }
 
 #[cfg(test)]
@@ -140,6 +153,23 @@ mod tests {
         );
         std::fs::remove_file(&path).unwrap();
         assert!(sha256_of(Path::new("/nonexistent/file")).is_err());
+    }
+
+    #[test]
+    fn a_failed_install_leaves_no_version_directory_behind() {
+        let root = std::env::temp_dir().join(format!("graphite-partial-{}", std::process::id()));
+        let dir = root.join("jvm").join("9.9.9");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("graphite-frontend-jvm.jar.part"), b"half").unwrap();
+        std::fs::write(dir.join("graphite.jar.sha256"), b"x").unwrap();
+        discard_partial_install(&dir);
+        assert!(!dir.exists());
+        // A complete install is never discarded.
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join(frontend::JVM_FRONTEND_JAR), b"jar").unwrap();
+        discard_partial_install(&dir);
+        assert!(dir.join(frontend::JVM_FRONTEND_JAR).is_file());
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

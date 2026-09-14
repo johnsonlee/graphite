@@ -14,9 +14,7 @@ permissions:
 jobs:
   rust:
     name: rust-build-test
-    # ubuntu-22.04 (glibc 2.35), as the release builds: the binary must run on the
-    # distroless cc-debian12 image (glibc 2.36), which the Docker step below checks.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
@@ -27,6 +25,7 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         components: rustfmt
+        targets: x86_64-unknown-linux-musl
 
     - name: Cache cargo
       uses: Swatinem/rust-cache@v2
@@ -45,14 +44,19 @@ jobs:
     - name: Unit tests
       run: cargo test --release --locked
 
-    # The release image is the Linux binary copied from release-assets/ on distroless;
-    # build it here from the binary just built so the Dockerfile, the build context and
-    # the entrypoint are exercised on every change, not only when a tag is published.
-    - name: Build and run the graphite-explore image
+    # The Linux release binary is a static musl build (it must run on any distribution
+    # and on the libc-less distroless image); build it as the publish workflow does,
+    # check it is static, then build the image from it and run it so the Dockerfile,
+    # the build context and the entrypoint are exercised on every change.
+    - name: Build the static Linux binary and run the graphite-explore image
+      env:
+        CC_x86_64_unknown_linux_musl: musl-gcc
       run: |
-        bash .github/scripts/max-glibc.sh target/release/graphite 2.36
+        sudo apt-get install -y -q musl-tools
+        cargo build --release --locked --target x86_64-unknown-linux-musl -p graphite-cli
+        bash .github/scripts/require-static.sh target/x86_64-unknown-linux-musl/release/graphite
         mkdir -p release-assets/linux/amd64
-        cp target/release/graphite release-assets/linux/amd64/graphite
+        cp target/x86_64-unknown-linux-musl/release/graphite release-assets/linux/amd64/graphite
         docker build -f backend/explore/Dockerfile --build-arg VERSION=ci -t graphite-explore:ci .
         docker run --rm --entrypoint /app/graphite graphite-explore:ci --version
         docker run --rm graphite-explore:ci --help | grep -F -- '--graph'

@@ -150,30 +150,35 @@ pub fn locate_jvm(env: &Env) -> Option<Frontend> {
         });
     }
     let installed = env.frontends_dir()?.join("jvm");
-    let jar = newest_version_dir(&installed)?.join(JVM_FRONTEND_JAR);
-    jar.is_file().then_some(Frontend {
+    let jar = newest_installed_jar(&installed)?;
+    Some(Frontend {
         lang: "jvm",
         launch: Launch::Jar(jar),
         found_via: "~/.graphite/frontends",
     })
 }
 
-/// The subdirectory of `dir` with the highest version name, comparing dotted numeric
-/// components first and pre-release suffixes after (`2.5.0` > `2.5.0-rc.1` > `2.4.9`).
-fn newest_version_dir(dir: &Path) -> Option<PathBuf> {
+/// The jar of the highest-versioned *complete* install under `dir`, comparing dotted
+/// numeric components first and pre-release suffixes after (`2.5.0` > `2.5.0-rc.1` >
+/// `2.4.9`). A version directory without the jar (an install that failed or is still
+/// downloading) is not a candidate, so it never hides an older install that works.
+fn newest_installed_jar(dir: &Path) -> Option<PathBuf> {
     let mut versions: Vec<(VersionKey, PathBuf)> = std::fs::read_dir(dir)
         .ok()?
         .filter_map(|e| e.ok())
-        .filter(|e| e.path().is_dir())
-        .map(|e| {
-            (
-                VersionKey::parse(&e.file_name().to_string_lossy()),
-                e.path(),
-            )
+        .map(|e| e.path().join(JVM_FRONTEND_JAR))
+        .filter(|jar| jar.is_file())
+        .map(|jar| {
+            let version = jar
+                .parent()
+                .and_then(Path::file_name)
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            (VersionKey::parse(&version), jar)
         })
         .collect();
     versions.sort();
-    versions.pop().map(|(_, p)| p)
+    versions.pop().map(|(_, jar)| jar)
 }
 
 /// Sort key for a version string: numeric components, then a flag for "is a release"
@@ -368,14 +373,20 @@ mod tests {
                     .join(JVM_FRONTEND_JAR),
             );
         }
-        // A directory without the jar is skipped only if it is not the newest; the newest
-        // is chosen by version, then checked for the jar.
         let mut env = Env {
             home: Some(home.clone()),
             ..Default::default()
         };
         let found = locate_jvm(&env).unwrap();
         assert_eq!(found.found_via, "~/.graphite/frontends");
+        assert!(found
+            .path()
+            .ends_with(Path::new("2.10.0-beta.2").join(JVM_FRONTEND_JAR)));
+        // A newer version directory without the jar (a failed or unfinished install) is
+        // not a candidate: the newest complete install is still found.
+        std::fs::create_dir_all(home.join(".graphite/frontends/jvm/3.0.0")).unwrap();
+        touch(&home.join(".graphite/frontends/jvm/3.1.0/graphite-frontend-jvm.jar.part"));
+        let found = locate_jvm(&env).unwrap();
         assert!(found
             .path()
             .ends_with(Path::new("2.10.0-beta.2").join(JVM_FRONTEND_JAR)));

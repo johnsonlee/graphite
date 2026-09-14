@@ -729,6 +729,16 @@ impl McpServer {
         // and is answered (with "Method not found" in that case).
         let id = object.get("id").cloned().unwrap_or(Value::Null);
         let is_notification = !object.contains_key("id");
+        // A request id is a string or a number (the MCP RequestId type); `null`, a
+        // boolean or a structured value is not an id, and such a message is neither a
+        // request nor a notification, so it is refused with a null response id.
+        if !is_notification && !(id.is_string() || id.is_number()) {
+            return Some(error_response(
+                Value::Null,
+                INVALID_REQUEST,
+                "Invalid Request: id must be a string or a number",
+            ));
+        }
         if object.get("jsonrpc").and_then(Value::as_str) != Some("2.0") {
             return Some(error_response(
                 id,
@@ -991,6 +1001,9 @@ async fn mcp_get(Extension(policy): Extension<Arc<OriginPolicy>>, headers: Heade
     if let Some(forbidden) = forbidden_origin(&policy, &headers) {
         return forbidden;
     }
+    if let Some(unsupported) = unsupported_protocol_version(&headers) {
+        return unsupported;
+    }
     (
         StatusCode::METHOD_NOT_ALLOWED,
         [(header::ALLOW, "POST, DELETE")],
@@ -1006,6 +1019,9 @@ async fn mcp_delete(
 ) -> Response {
     if let Some(forbidden) = forbidden_origin(&policy, &headers) {
         return forbidden;
+    }
+    if let Some(unsupported) = unsupported_protocol_version(&headers) {
+        return unsupported;
     }
     StatusCode::OK.into_response()
 }
@@ -1378,14 +1394,15 @@ mod tests {
         assert!(err(&[]).contains("query is required"));
     }
 
+    /// A directory of its own per call: the process id separates test processes and a
+    /// counter separates the tests one process runs in parallel (a timestamp did not,
+    /// two tests could draw the same nanosecond and one would remove the other's root).
     fn empty_server() -> (McpServer, std::path::PathBuf) {
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let root = std::env::temp_dir().join(format!(
             "graphite-mcp-test-{}-{}",
             std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
+            NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
         ));
         std::fs::create_dir_all(&root).unwrap();
         let registry = Arc::new(GraphRegistry::new(
@@ -1537,12 +1554,28 @@ mod tests {
             wrong.contains("-32600") && wrong.contains(r#""id":null"#),
             "{wrong}"
         );
-        // `id: null` is present, so it is a request and gets an answer.
-        let null_id = server
-            .handle(&json!({"jsonrpc": "2.0", "id": null, "method": "ping"}))
-            .await
-            .unwrap();
-        assert_eq!(null_id["result"], json!({}));
+        // An id must be a string or a number: `null`, a boolean or a structured value
+        // is refused as an Invalid Request whose response id is null.
+        for bad_id in [json!(null), json!(true), json!([1]), json!({"n": 1})] {
+            let refused = server
+                .handle(&json!({"jsonrpc": "2.0", "id": bad_id, "method": "ping"}))
+                .await
+                .unwrap();
+            assert_eq!(refused["id"], Value::Null, "{bad_id}");
+            assert_eq!(refused["error"]["code"], INVALID_REQUEST, "{bad_id}");
+            assert!(refused["error"]["message"]
+                .as_str()
+                .unwrap()
+                .contains("id must be a string or a number"));
+        }
+        for good_id in [json!("abc"), json!(7), json!(2.5)] {
+            let answered = server
+                .handle(&json!({"jsonrpc": "2.0", "id": good_id, "method": "ping"}))
+                .await
+                .unwrap();
+            assert_eq!(answered["id"], good_id);
+            assert_eq!(answered["result"], json!({}));
+        }
         std::fs::remove_dir_all(root).unwrap();
     }
 
@@ -1833,6 +1866,39 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(garbage.status(), StatusCode::BAD_REQUEST);
+        // The header is validated on every method of the transport, not only POST.
+        let with_method_and_version = |method: Method, version: &str| {
+            Request::builder()
+                .method(method)
+                .uri("/mcp")
+                .header(PROTOCOL_VERSION_HEADER, version)
+                .body(Body::empty())
+                .unwrap()
+        };
+        for method in [Method::GET, Method::DELETE] {
+            let refused = app
+                .clone()
+                .oneshot(with_method_and_version(method.clone(), "1999-01-01"))
+                .await
+                .unwrap();
+            assert_eq!(refused.status(), StatusCode::BAD_REQUEST, "{method}");
+            let body: Value =
+                serde_json::from_slice(&to_bytes(refused.into_body(), usize::MAX).await.unwrap())
+                    .unwrap();
+            assert_eq!(body["error"]["code"], INVALID_REQUEST, "{method}");
+        }
+        let get_ok = app
+            .clone()
+            .oneshot(with_method_and_version(Method::GET, "2025-11-25"))
+            .await
+            .unwrap();
+        assert_eq!(get_ok.status(), StatusCode::METHOD_NOT_ALLOWED);
+        let delete_ok = app
+            .clone()
+            .oneshot(with_method_and_version(Method::DELETE, "2025-06-18"))
+            .await
+            .unwrap();
+        assert_eq!(delete_ok.status(), StatusCode::OK);
 
         let get = app
             .clone()
