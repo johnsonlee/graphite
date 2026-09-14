@@ -44,7 +44,7 @@ const MIN_COLUMN_WIDTH: usize = 4;
 )]
 struct Cli {
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -111,7 +111,13 @@ struct QueryArgs {
 
 fn main() -> std::process::ExitCode {
     let env = frontend::Env::from_process();
-    let outcome = match Cli::parse().command {
+    // As the Kotlin CLI: no subcommand prints the usage and exits 0.
+    let Some(command) = Cli::parse().command else {
+        use clap::CommandFactory;
+        let _ = Cli::command().print_help();
+        return std::process::ExitCode::SUCCESS;
+    };
+    let outcome = match command {
         Command::Build(args) => return exit_code(build::run(&env, &args.args)),
         Command::Query(args) => query(args),
         Command::Serve(args) => serve(args),
