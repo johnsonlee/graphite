@@ -10,7 +10,7 @@ on:
   # the workflow is started on, and publishes nothing to any remote: Maven artifacts go
   # to the runner's local repository (signed when the GPG secrets are available), the
   # binaries, graphite.jar and the rendered formula are checked and kept as the
-  # `release-dry-run-<tag>` artifact, the formula is installed from those assets on a
+  # `release-<tag>` artifact, the formula is installed from those assets on a
   # macOS runner, and both image architectures are built but not pushed. Not covered:
   # the Sonatype upload itself, the GitHub Release, the tap push and the registry
   # push; those run for real on a pre-release tag (v3.0.0-rc.1), which leaves the
@@ -199,7 +199,18 @@ jobs:
         path: release-assets/*
         if-no-files-found: error
 
-  # ---- GitHub Release + Homebrew tap ----
+  # ---- GitHub Release ----
+  # Everything this job does before the last step is preparation that can be repeated:
+  # build the jar, collect the binaries, verify the checksums, render the formula, keep
+  # them all as the `release-<tag>` artifact. The last step is the only one that changes
+  # remote state, and it is re-runnable too: this repository has immutable releases, so
+  # `.github/scripts/publish-release.sh` builds the release as a draft, makes the draft's
+  # assets equal to `release-assets/` by name and sha256, publishes it, and reads the
+  # state back rather than trusting the publish response. A re-run after that finds the
+  # published release, verifies its assets against the local ones and uploads nothing,
+  # so the downstream jobs (tap, docker) can be re-run from a failure without this job
+  # ever being asked to modify an immutable release. (v3.0.0-alpha2 was left without
+  # assets by creating the release published first and uploading afterwards.)
   release:
     needs: [validate, binaries]
     permissions:
@@ -240,42 +251,8 @@ jobs:
           sha256sum -c "graphite-${RELEASE_VERSION}-${TARGET}.tar.gz.sha256"
         done
         sha256sum -c graphite.jar.sha256
-    # A tag whose SemVer has a pre-release part (v3.0.0-alpha.1, -beta.2, -rc.1)
-    # rehearses this workflow end to end without touching what users install by
-    # default: the GitHub Release is marked pre-release (so it is not "latest"), the
-    # Homebrew formula is left alone, and the image is not tagged `latest` (see the
-    # docker job). The flag comes from the validate job's parse, so build metadata
-    # such as v3.0.0+linux-1 stays a stable release.
-    #
-    # This repository has immutable releases: once a release is published, no asset
-    # can be added to it, so the release is created as a draft, the assets are
-    # uploaded to the draft, and only then is it published (v3.0.0-alpha2 was left
-    # without assets by creating the release published first).
-    - name: Create the GitHub Release as a draft with its assets
-      if: env.DRY_RUN != 'true'
-      uses: softprops/action-gh-release@v2
-      with:
-        name: Release ${{ env.RELEASE_TAG }}
-        tag_name: ${{ env.RELEASE_TAG }}
-        draft: true
-        prerelease: ${{ needs.validate.outputs.prerelease == 'true' }}
-        generate_release_notes: true
-        files: release-assets/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Publish the GitHub Release
-      if: env.DRY_RUN != 'true'
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        EXPECTED=$(ls release-assets | wc -l)
-        UPLOADED=$(gh release view "$RELEASE_TAG" --json assets --jq '.assets | length')
-        test "$UPLOADED" -eq "$EXPECTED"
-        gh release edit "$RELEASE_TAG" --draft=false
-        gh release view "$RELEASE_TAG" --json isDraft,isPrerelease,assets \
-          --jq '"draft=\(.isDraft) prerelease=\(.isPrerelease) assets=\(.assets | length)"'
-    # The formula is rendered on every run (a dry run checks it too); only a real
-    # release of a non-pre-release tag pushes it to the tap.
+    # The formula is rendered and syntax-checked before anything is published, on every
+    # run; the tap job pushes it after the release exists, and only for a stable tag.
     - name: Render the Homebrew formula
       run: |
         QUERY_SHA=$(sha256sum release-assets/graphite.jar | awk '{print $1}')
@@ -345,17 +322,51 @@ jobs:
         RUBY
         ruby -c Formula/graphite.rb
         cat Formula/graphite.rb
-    - name: Keep what a dry run would have published
-      if: env.DRY_RUN == 'true'
+    # Kept on every run: a dry run's only output, and what the tap and formula jobs
+    # take their input from, so each of them can be re-run on its own.
+    - name: Keep the assets and the rendered formula
       uses: actions/upload-artifact@v4
       with:
-        name: release-dry-run-${{ env.RELEASE_TAG }}
+        name: release-${{ env.RELEASE_TAG }}
         path: |
           release-assets/*
           formula/Formula/graphite.rb
         if-no-files-found: error
-    - name: Update Homebrew tap
+    # A tag whose SemVer has a pre-release part (v3.0.0-alpha.1, -beta.2, -rc.1)
+    # rehearses this workflow end to end without touching what users install by
+    # default: the GitHub Release is marked pre-release (so it is not "latest"), the
+    # Homebrew formula is left alone, and the image is not tagged `latest` (see the
+    # docker job). The flag comes from the validate job's parse, so build metadata
+    # such as v3.0.0+linux-1 stays a stable release.
+    - name: Self-test the publish script against a stub gh
+      run: bash .github/scripts/publish-release.sh --self-test
+    - name: Publish the GitHub Release
       if: env.DRY_RUN != 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_REPO: ${{ github.repository }}
+      run: bash .github/scripts/publish-release.sh release-assets
+
+  # ---- Homebrew tap ----
+  # Runs after the release is published and can be re-run on its own: the formula was
+  # rendered before publication and comes from the `release-<tag>` artifact. Only a
+  # stable tag moves the unversioned formula; version-pinned formulae are maintained
+  # directly in the tap.
+  tap:
+    name: update-the-homebrew-tap
+    needs: [validate, release]
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' && github.repository_owner == 'johnsonlee' && needs.validate.outputs.prerelease == 'false'
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: release-${{ env.RELEASE_TAG }}
+        path: release
+    - name: Update Homebrew tap
       env:
         HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
       run: |
@@ -363,19 +374,13 @@ jobs:
           echo "HOMEBREW_TAP_TOKEN not set — skipping tap update"
           exit 0
         fi
-        if [ "${PRERELEASE}" = true ]; then
-          echo "${RELEASE_TAG} is a pre-release — leaving Formula/graphite.rb at the current release"
-          exit 0
-        fi
+        ruby -c release/formula/Formula/graphite.rb
         git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
         mkdir -p tap/Formula
-        cp formula/Formula/graphite.rb tap/Formula/graphite.rb
+        cp release/formula/Formula/graphite.rb tap/Formula/graphite.rb
         cd tap
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        # The unversioned formulae track the current release. Version-pinned
-        # formulae are maintained directly in the tap without cutting duplicate
-        # Graphite releases.
         git add Formula/graphite.rb
         if ! git diff --cached --quiet; then
           git commit -m "graphite ${RELEASE_VERSION}"
@@ -395,7 +400,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@v4
       with:
-        name: release-dry-run-${{ env.RELEASE_TAG }}
+        name: release-${{ env.RELEASE_TAG }}
         path: dry-run
     - name: Install the formula from the dry-run assets and run its test
       run: |
@@ -409,7 +414,10 @@ jobs:
         graphite frontend describe jvm
         brew test graphite
 
-  # ---- Docker image (depends on release for the pre-built jar) ----
+  # ---- Docker image ----
+  # Takes the Linux binaries from the published GitHub Release, so it can be re-run
+  # on its own once the release job has published (a re-run of the release job on a
+  # published release verifies and changes nothing).
   docker:
     needs: [validate, release]
     permissions:
