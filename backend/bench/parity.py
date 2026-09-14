@@ -137,6 +137,19 @@ QUERIES = [
     "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NULL RETURN count(*)",
     "MATCH (n) WHERE (n.callee_class CONTAINS 'java' AND n.line > 20) OR n.callee_name = 'toString' RETURN count(*)",
     "MATCH (n) WHERE n.line > 20 OR n.callee_class CONTAINS 'java' RETURN count(*)",
+    # IN over a literal list: one equality leaf per element, on strings, numbers, the
+    # node id, a wrapped operand, and through a hop; NULL and empty lists keep their
+    # three-valued meaning.
+    "MATCH (n) WHERE n.callee_name IN ['toString', 'equals', 'hashCode'] RETURN count(*)",
+    "MATCH (n) WHERE n.callee_name IN ['toString', 'equals'] RETURN n.callee_class, n.callee_name ORDER BY n.callee_class, n.callee_name LIMIT 20",
+    "MATCH (n) WHERE toLower(n.callee_class) IN ['java.lang.string', 'java.lang.object'] RETURN count(*)",
+    "MATCH (n) WHERE n.value IN ['a', 0, 1, 'get'] RETURN count(*)",
+    "MATCH (n) WHERE n.id IN [1, 2, 3, 4, 5] RETURN n.id ORDER BY n.id",
+    "MATCH (n) WHERE n.type IN ['CallSiteNode', 'IntConstant'] AND n.callee_class CONTAINS 'java' RETURN count(*)",
+    "MATCH (n) WHERE n.callee_name IN ['toString', null] RETURN count(*)",
+    "MATCH (n) WHERE n.callee_name IN [] RETURN count(*)",
+    "MATCH (n) WHERE n.callee_name IN ['toString'] AND n.callee_class IN ['java.lang.Object', 'java.lang.String'] RETURN count(*)",
+    "MATCH (c)-[r]->(n) WHERE n.callee_name IN ['toString', 'equals'] RETURN count(*)",
     "MATCH (n:CallSiteNode) WHERE n.callee_name = 'toString' RETURN n.caller_class LIMIT 10",
     "MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH 'java.util' RETURN n.callee_class LIMIT 10",
     "MATCH (n:CallSiteNode) WHERE n.callee_class ENDS WITH 'Objects' RETURN n.callee_class LIMIT 10",
