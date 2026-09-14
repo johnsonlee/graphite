@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 #
-# Runtime-only image for `graphite serve`: the Rust binary from the GitHub Release,
+# Runtime-only image for `graphite serve`: the graphite binary from the GitHub Release,
 # one per architecture, on a distroless base. No JVM: this image serves and queries
 # graphs; building them is the JVM frontend's job (`graphite build` on a host with a JDK,
 # or the graphite.jar release asset).

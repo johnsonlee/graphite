@@ -436,7 +436,6 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
- "tikv-jemallocator",
  "tokio",
  "tracing",
  "tracing-subscriber",

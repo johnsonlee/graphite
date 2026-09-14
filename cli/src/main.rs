@@ -9,7 +9,7 @@
 //! - `query` is reproduced byte for byte: output of all three formats, the verbose lines,
 //!   the error text and the exit codes are compared against the Kotlin binary by
 //!   `backend/bench/parity-cli.py`.
-//! - `serve` is the Explorer, the same code as the `graphite-explore` binary.
+//! - `serve` is the Explorer (`graphite_explore::serve`).
 //! - `frontend list|describe|install` manages frontends.
 
 mod build;
@@ -27,8 +27,11 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-/// See `backend/explore/src/main.rs`: jemalloc is what keeps `serve` at the measured
-/// latency; the CLI serves with the same allocator.
+/// Row production is thousands of small, short-lived allocations per request -- a row
+/// map, a key per column, a string per value -- and the system allocator's per-call
+/// cost shows up directly in P50. jemalloc's thread-local caches make those close to
+/// free, and it also returns memory to the OS on a schedule rather than on a whim,
+/// which matters for a process holding sixty-four memory-mapped graphs.
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;

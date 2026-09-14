@@ -153,7 +153,7 @@ ported but unverified — the table says which. Neither is evidence of equivalen
 
 | | |
 |---|---|
-| **`graphite build`** | The `build` subcommand is **not ported at all** — it runs the SootUp bytecode analysis, which this port does not implement. `graphite serve` is not ported either; the Explorer ships as its own `graphite-explore` binary. |
+| **`graphite build`** | The SootUp bytecode analysis is **not ported**: `graphite build` is a shell that runs the JVM frontend (`graphite.jar build`) with every argument passed through, so the graph is the jar's. `graphite serve` is the Explorer in the same binary. |
 | **The Explorer's own CLI** | Flags are one-for-one with the Kotlin binary and were exercised by hand, but no automated check compares them. `--help`, `--version` and error text are known to differ: picocli and clap format differently. |
 | **API response headers beyond `Content-Type`** | `Content-Type` is now compared on every route (see below). `Date`, `Content-Length`, `Server` and the connection headers are not — they are volatile or the web framework's business. |
 | **`TopologyStore`'s binary snapshot** | The persisted format is not read by the Rust server. |
@@ -350,13 +350,13 @@ ported. `/api/topology` is served from live registry state instead.
 ## Reproducing
 
 ```bash
-cd rust && cargo build --release
+cargo build --release
 
-java -Xmx6g -jar ../frontend/jvm/explore/build/libs/graphite-explore.jar \
+java -Xmx6g -jar frontend/jvm/explore/build/libs/graphite-explore.jar \
     --id app /path/to/graph --port 18081
-./target/release/graphite-explore --id app /path/to/graph --port 18080 --metrics
+./target/release/graphite serve --id app /path/to/graph --port 18080 --metrics
 
-cd bench
+cd backend/bench
 python3 parity.py                       # 150 differential checks
 python3 bench.py --warmup 5 --iters 25  # single-graph latency comparison
 ```

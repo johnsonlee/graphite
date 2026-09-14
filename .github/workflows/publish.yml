@@ -55,7 +55,7 @@ jobs:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PACKAGE_GROUP: ${{ secrets.OSSRH_PACKAGE_GROUP }}
 
-  # ---- Rust binaries: the graphite CLI and graphite-explore, one tarball per platform ----
+  # ---- The graphite CLI: one tarball per platform ----
   binaries:
     permissions:
       contents: read
@@ -91,14 +91,14 @@ jobs:
     - name: Build release binaries
       env:
         GRAPHITE_VERSION: ${{ env.RELEASE_VERSION }}
-      run: cargo build --release --locked --target ${{ matrix.target }} -p graphite-cli -p graphite-explore
+      run: cargo build --release --locked --target ${{ matrix.target }} -p graphite-cli
     - name: Package
       shell: bash
       run: |
         ASSET="graphite-${RELEASE_VERSION}-${{ matrix.target }}.tar.gz"
         mkdir -p release-assets
         "target/${{ matrix.target }}/release/graphite" --version | grep -F "${RELEASE_VERSION}"
-        tar -czf "release-assets/${ASSET}" -C "target/${{ matrix.target }}/release" graphite graphite-explore
+        tar -czf "release-assets/${ASSET}" -C "target/${{ matrix.target }}/release" graphite
         (cd release-assets && shasum -a 256 "${ASSET}" > "${ASSET}.sha256")
         cat "release-assets/${ASSET}.sha256"
     - uses: actions/upload-artifact@v4
@@ -223,12 +223,11 @@ jobs:
           depends_on "openjdk@17"
 
           def install
-            libexec.install "graphite", "graphite-explore"
+            libexec.install "graphite"
             resource("frontend-jvm").stage { libexec.install "graphite.jar" }
             (bin/"graphite").write_env_script libexec/"graphite",
               GRAPHITE_JAVA:         "#{Formula["openjdk@17"].opt_bin}/java",
               GRAPHITE_FRONTEND_JVM: "#{libexec}/graphite.jar"
-            bin.install_symlink libexec/"graphite-explore"
           end
 
           test do

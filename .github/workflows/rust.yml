@@ -116,9 +116,6 @@ jobs:
           --topology backend/bench/topology \
           --port 18081 --metrics > "${RUNNER_TEMP}/kotlin.log" 2>&1 &
         KOTLIN=$!
-        # `graphite serve` and the `graphite-explore` binary are the same code; the
-        # differential runs against the CLI, the binary is checked to start.
-        ./target/release/graphite-explore --help >/dev/null
         ./target/release/graphite serve \
           --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}" \
           --topology backend/bench/topology \

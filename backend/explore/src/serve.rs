@@ -7,17 +7,16 @@ use clap::Args;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-/// The version every binary reports and the server puts in `/api/version`: the release
-/// tag when the build sets `GRAPHITE_VERSION`, else the crate version.
+/// The version the CLI reports and the server puts in `/api/version`: the release tag
+/// when the build sets `GRAPHITE_VERSION`, else the crate version.
 pub const VERSION: &str = match option_env!("GRAPHITE_VERSION") {
     Some(v) => v,
     None => env!("CARGO_PKG_VERSION"),
 };
 pub const DEFAULT_PORT: u16 = 8080;
 
-/// The `serve` command line, shared by `graphite serve` and the `graphite-explore`
-/// binary. Names, defaults and help text match the Kotlin `graphite.jar serve` so that
-/// an existing command line keeps working unchanged.
+/// The `graphite serve` command line. Names, defaults and help text match the Kotlin
+/// `graphite.jar serve` so that an existing command line keeps working unchanged.
 #[derive(Args, Debug, Clone)]
 pub struct ServeArgs {
     /// Optional saved graph directory for single-graph startup

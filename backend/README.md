@@ -33,16 +33,16 @@ for the separate single-graph comparison.
 | `graphite-explore` | `explore/` | HTTP server exposing the Explorer API |
 
 The `graphite` CLI lives outside this directory, in `cli/` at the repository root; the Cargo
-workspace (`Cargo.toml` at the root) spans `backend/*` and `cli`. `graphite serve` and the
-`graphite-explore` binary run the same `serve` module of this crate; `explore/Dockerfile`
-packages the binary for the `graphite-explore` container image.
+workspace (`Cargo.toml` at the root) spans `backend/*` and `cli`. `graphite serve` runs the
+`serve` module of this crate; `explore/Dockerfile` packages the `graphite` binary as the
+`graphite-explore` container image.
 
 ## Build and run
 
 ```bash
 # from the repository root
 cargo build --release
-./target/release/graphite-explore --id app /path/to/graph --port 8080
+./target/release/graphite serve --id app /path/to/graph --port 8080
 ```
 
 `--release` is not optional for any measurement. A plain `cargo build` produces an
