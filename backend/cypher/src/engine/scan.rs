@@ -4235,6 +4235,62 @@ mod tests {
     /// decide the rows. Runs when `GRAPHITE_INDEX_FIXTURE` names a persisted graph (CI
     /// sets it to the graph built from the core jar); otherwise it is a no-op, like the
     /// storage crate's fixture test.
+    /// A local variable's `keys(n)` carries its enclosing method, as the baseline's
+    /// does, so the keys search plans the `method` leaf for local variables and the
+    /// decoded path (forced here by an unpushable conjunct, which relaxes the plan and
+    /// re-applies the WHERE clause) agrees with the streamed one. Fixture-gated.
+    #[test]
+    fn a_local_variable_exposes_its_method_to_the_keys_search() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            return;
+        };
+        let graph = std::sync::Arc::new(
+            graphite_storage::graph::Graph::load(std::path::Path::new(&dir)).unwrap(),
+        );
+        let sources = vec![super::super::Source {
+            id: std::sync::Arc::from("g"),
+            graph,
+        }];
+        let ex = super::super::Executor::new(sources, true);
+        let rows = |q: &str| {
+            ex.execute(q, None)
+                .unwrap_or_else(|e| panic!("{q}: {e}"))
+                .rows
+        };
+        let keys = rows("MATCH (n:LocalVariable) RETURN keys(n) AS keys LIMIT 1");
+        assert_eq!(keys.len(), 1);
+        let Some(Value::List(keys)) = keys[0].get("keys") else {
+            panic!("keys(n) of a local variable");
+        };
+        let keys: Vec<&str> = keys.iter().filter_map(|v| v.as_str()).collect();
+        assert!(
+            keys.contains(&"method") && keys.contains(&"name"),
+            "{keys:?}"
+        );
+        let count = |q: &str| -> i64 {
+            let r = rows(q);
+            match r.first().and_then(|row| row.get("count(*)")) {
+                Some(Value::Int(n)) => *n,
+                other => panic!("{q}: {other:?}"),
+            }
+        };
+        let streamed = count(
+            "MATCH (n:LocalVariable) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'java') RETURN count(*)",
+        );
+        let decoded = count(
+            "MATCH (n:LocalVariable) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'java') AND n.id > 0 RETURN count(*)",
+        );
+        let by_property = count(
+            "MATCH (n:LocalVariable) WHERE n.method CONTAINS 'java' OR n.name CONTAINS 'java' OR n.type CONTAINS 'java' RETURN count(*)",
+        );
+        assert!(
+            streamed > 0,
+            "the fixture has local variables in java.* methods"
+        );
+        assert_eq!(streamed, decoded);
+        assert_eq!(streamed, by_property);
+    }
+
     #[test]
     fn a_relaxed_plan_still_applies_the_dropped_conjunct() {
         let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {

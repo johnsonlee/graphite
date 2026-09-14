@@ -230,6 +230,10 @@ QUERIES = [
     'MATCH (n:CallSite) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class AS c ORDER BY c LIMIT 5',
     'MATCH (n:LocalVariable) RETURN n LIMIT 3',
     'MATCH (n:LocalVariable) RETURN n.method LIMIT 3',
+    # keys()/properties() of a local variable carry its enclosing method; RETURN n does not.
+    'MATCH (n:LocalVariable) RETURN keys(n) AS keys ORDER BY id(n) LIMIT 3',
+    'MATCH (n:LocalVariable) RETURN properties(n) AS props ORDER BY id(n) LIMIT 3',
+    'MATCH (n:LocalVariable) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "java.util") RETURN count(*)',
     'MATCH (n:Parameter) RETURN n LIMIT 3',
     # Non-CallSite string properties take the column path.
     # Unlabelled scans over several node types are ordered here, since the Kotlin

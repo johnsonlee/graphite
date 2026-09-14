@@ -274,11 +274,12 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
             var_type,
             method,
         } => {
-            // The baseline's node map carries a local variable's name and type only;
-            // `n.method` still reads the signature.
-            let _ = method;
+            // The baseline's `keys(n)` and `properties(n)` carry the enclosing method
+            // (NodePropertyAccessor.getAllProperties); only its `RETURN n` map leaves
+            // it out, which `node_display_properties` mirrors.
             put("name", s(g, *name));
             put("type", s(g, *var_type));
+            put("method", sig(g, method));
         }
         NodeKind::Field {
             declaring_class,
@@ -368,6 +369,10 @@ pub fn node_display_properties(g: &Graph, node: &Node) -> IndexMap<String, Value
     let mut m = node_properties(g, node);
     m.shift_remove("caller_signature");
     m.shift_remove("callee_signature");
+    if matches!(node.kind, NodeKind::LocalVariable { .. }) {
+        // The baseline's `RETURN n` map for a local variable is its name and type.
+        m.shift_remove("method");
+    }
     m
 }
 
