@@ -348,14 +348,19 @@ still-connected client returns HTTP 503 with `code` set to `cypher_query_cancell
 never reported as an empty HTTP 200 response.
 
 Start the server with `--metrics` to expose Prometheus output at `/metrics`.
-Metrics are opt-in, so the default request path has no Micrometer instrumentation cost.
-Runtime and HTTP performance metrics are the primary surface: JVM heap, GC and
-threads; process CPU, uptime and file descriptors; and Jetty connections,
-thread-pool load and route-template HTTP latency. Graphite-specific metrics are
-secondary and currently cover Cypher active queries, concurrency limit,
-rejections and duration by fixed outcome. Graph ids, query text, keywords,
-classes and methods are never used as metric labels. HTTP URI labels are route
-templates and are capped at 64 distinct values.
+Metrics are opt-in, so the default request path carries no instrumentation cost.
+The `graphite` binary exports what a native process knows about itself: `process_*`
+(CPU seconds, resident and virtual memory, threads, open and maximum file
+descriptors, start time, uptime), `system_load_average_1m` and `system_cpu_count`;
+`http_server_requests_seconds`, a latency histogram by HTTP method, route template,
+status and outcome, plus `http_server_requests_active`; and the graphs it serves,
+`graphite_graphs_loaded`, `graphite_graph_nodes`, `graphite_graph_edges` and
+`graphite_graph_mapped_bytes`. Cypher metrics cover active queries, concurrency
+limit, rejections and duration by fixed outcome. (The legacy `graphite.jar serve`
+exports JVM heap, GC and thread metrics and Jetty's request timer instead.)
+Graph ids, query text, keywords, classes and methods are never used as metric
+labels. HTTP URI labels are route templates and are capped at 64 distinct values;
+a request that would create a 65th template is not recorded.
 
 For label discovery, use the metadata-backed histogram shape below. Graphite
 answers it from node type counts without visiting graph nodes:

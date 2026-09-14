@@ -5,6 +5,7 @@ pub mod endpoints;
 pub mod guard;
 pub mod helpers;
 pub mod mcp;
+pub mod metrics;
 pub mod openapi;
 pub mod registry;
 pub mod routes;

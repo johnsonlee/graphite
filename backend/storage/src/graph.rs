@@ -354,6 +354,18 @@ impl Graph {
         self.node_count
     }
 
+    /// Bytes this graph keeps memory-mapped rather than owned: the node records, the
+    /// node offsets and the persisted CallSite string index when it was mapped. The
+    /// adjacency and the string table are decoded into owned memory at load and are
+    /// not counted here.
+    pub fn mapped_bytes(&self) -> u64 {
+        let index = self
+            .call_site_index
+            .as_ref()
+            .map_or(0, |i| i.mapped_bytes());
+        self.nodedata.len() as u64 + self.node_offsets.len() as u64 + index
+    }
+
     /// maxNodeId + 1
     #[inline]
     pub fn node_capacity(&self) -> usize {
