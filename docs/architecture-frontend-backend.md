@@ -103,7 +103,7 @@ graphite/
 │   │   └── (phase 2) IR writer; builds `graphite-frontend-jvm.jar`
 │   ├── web/                       (phase 6) TypeScript frontend, npm package
 │   └── apple/                     (phase 7) Swift package
-├── graphite-mcp/                  MCP server (npm); a client of the backend, not a frontend
+├── mcp/                           MCP server (npm package `graphite-mcp`); a client of the backend, not a frontend
 └── docs/
 ```
 

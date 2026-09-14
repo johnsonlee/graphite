@@ -69,7 +69,7 @@ graphite/
 │
 ├── cli/                    # `graphite` CLI (Rust): build (runs the JVM frontend), query, serve, frontend
 ├── Cargo.toml              # Cargo workspace root: backend/storage, backend/cypher, backend/explore, cli
-└── graphite-mcp/           # MCP server (npm)
+└── mcp/                    # MCP server (npm package `graphite-mcp`)
 ```
 
 Gradle project paths are `:core`, `:sootup`, `:cypher`, `:webgraph`, `:query`, `:explore`

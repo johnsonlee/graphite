@@ -345,7 +345,7 @@ jobs:
         fi
         echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - name: Publish graphite-mcp to npm
-      working-directory: graphite-mcp
+      working-directory: mcp
       run: |
         npm version "$RELEASE_VERSION" --no-git-tag-version
         npm install

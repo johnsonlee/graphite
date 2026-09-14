@@ -416,7 +416,7 @@ graphite/
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 ├── cli/                    # `graphite` CLI (Rust): build, query, serve, explore
 ├── Cargo.toml              # Cargo workspace: backend/* and cli
-├── graphite-mcp/           # MCP server (npm) in front of the Explorer API
+├── mcp/                    # MCP server (npm package `graphite-mcp`) in front of the Explorer API
 └── docs/
 ```
 
