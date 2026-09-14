@@ -172,10 +172,14 @@ test("paired evidence is unavailable for a behind-base squash or mismatched arti
 
 test("benchmark page is self-contained, classified, interactive, and injection-safe", () => {
     const malicious = result({ benchmark: "</script><script>alert(1)</script>" });
+    const parameterized = result({
+        benchmark: "rust.fixture64.global-wide-four-properties",
+        params: { selectivity: "dense" }
+    });
     const fixture = pairedEvidence();
     const html = buildBenchmarkPage({
         ...fixture,
-        snapshot: [malicious],
+        snapshot: [malicious, parameterized],
         commitSha: INTEGRATION_SHA,
         branch: "main",
         repository: "johnsonlee/graphite",
@@ -184,6 +188,9 @@ test("benchmark page is self-contained, classified, interactive, and injection-s
     });
 
     assert.match(html, /Benchmark Observatory/);
+    assert.match(html, /Fresh Rust engine snapshot/);
+    assert.match(html, /rust\.fixture64\.global-wide-four-properties \[selectivity=dense\]/);
+    assert.match(html, /JVM engine gate/);
     assert.match(html, /pill good">PASS/);
     assert.match(html, /Semantic correctness/);
     assert.match(html, /Build and persistence lifecycle/);
@@ -308,9 +315,22 @@ test("Pages workflow is main-only and uses least-privilege official deployment a
     assert.match(workflow, /environment:\n      name: github-pages/);
     assert.match(workflow, /benchmark-pages-snapshot-\$\{\{ github\.sha \}\}-\$\{\{ github\.run_id \}\}/);
     assert.match(workflow, /retention-days: 90/);
-    assert.match(workflow, /benchmark-jmh-isolation\.init\.gradle/);
-    assert.match(workflow, /verify-jmh-jar-isolation\.sh/);
-    assert.match(workflow, /:cypher:testClasses :cypher:jmhJar/);
+    // The snapshot measures the shipped Rust binary over the shared fixture64 corpus.
+    assert.doesNotMatch(workflow, /:cypher:jmhJar|CypherBenchmark|main-method-jmh/);
+    assert.match(workflow, /cargo build --release --locked -p graphite-cli --manifest-path candidate\/Cargo\.toml/);
+    assert.match(workflow, /:webgraph:jmhJar :webgraph:prepareBenchmarkFixtures/);
+    assert.match(workflow, /verify-fixture64-corpus\.sh/);
+    assert.match(workflow, /prepare-fixture64-graphs\.sh/);
+    assert.match(workflow, /test-fixture64-reproducibility\.sh/);
+    assert.match(workflow, /backend\/bench\/snapshot\.py/);
+    assert.match(workflow, /--binary candidate\/target\/release\/graphite/);
+    assert.match(workflow, /--snapshot benchmark-source\/main-rust-snapshot\.json/);
+    assert.match(workflow, /startswith\("rust\.fixture64\."\)/);
+    // The fixture64 cache key is the one prepare-fixture64 and warm-fixture64 compute.
+    const gate = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const keyOf = (text) => text.match(/        key: >-\n[\s\S]*?\) \}\}\n/)?.[0];
+    assert.ok(keyOf(workflow));
+    assert.equal(keyOf(workflow), keyOf(gate));
     assert.match(workflow, /item\.merge_commit_sha === context\.sha/);
     assert.match(workflow, /baseSha !== integrationParentSha/);
     assert.match(workflow, /candidateTreeSha !== integrationTreeSha/);

@@ -18,15 +18,18 @@ jobs:
     name: benchmark-main-snapshot
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     permissions:
       contents: read
 
     steps:
+    # Checked out under `candidate/` so the fixture64 cache key below hashes the same
+    # paths as prepare-fixture64 in benchmark.yml and warm-fixture64 in fixture64-cache.yml.
     - name: Checkout exact main commit
       uses: actions/checkout@v7
       with:
         ref: ${{ github.sha }}
+        path: candidate
         persist-credentials: false
 
     - name: Setup Java
@@ -37,38 +40,109 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
 
-    - name: Build method-level JMH JAR
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache cargo
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: candidate
+
+    # The engine the snapshot measures: the same `graphite` binary a release ships.
+    - name: Build the Rust CLI
+      run: cargo build --release --locked -p graphite-cli --manifest-path candidate/Cargo.toml
+
+    - name: Build fixture generator and pinned fixture JARs
       run: |
-        ./gradlew -I "${PWD}/.github/scripts/benchmark-jmh-isolation.init.gradle" \
-          :cypher:testClasses :cypher:jmhJar --no-daemon
-        JMH_JAR=$(find frontend/jvm/cypher/build/libs -name '*-jmh.jar' -type f -print -quit)
-        test -n "${JMH_JAR}"
-        bash .github/scripts/verify-jmh-jar-isolation.sh frontend/jvm/cypher "${JMH_JAR}"
+        candidate/gradlew -p candidate \
+          :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
 
-    - name: Capture fresh main benchmark snapshot
+    - name: Restore fixture64 graph cache
+      id: fixture64-cache
+      uses: actions/cache/restore@v5
+      with:
+        path: |
+          shared-fixture64/graphs
+          shared-fixture64/fixture-reproducibility.json
+        key: >-
+          ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v2-temurin17-${{
+          hashFiles('candidate/frontend/jvm/webgraph/build/benchmark-fixtures/*.jar',
+          'candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties',
+          'candidate/settings.gradle.kts', 'candidate/build.gradle.kts',
+          'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**',
+          'candidate/frontend/jvm/sootup/src/main/**',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/BinaryEncoding.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/CallSiteIndexPersistenceInput.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/ClassOverviewStore.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/PersistedResourceAccessor.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt',
+          'candidate/frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt',
+          'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt',
+          'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt',
+          'candidate/.github/scripts/prepare-fixture64-graphs.sh',
+          'candidate/.github/scripts/test-fixture64-reproducibility.sh',
+          'candidate/.github/scripts/verify-fixture64-corpus.sh') }}
+
+    - name: Verify or generate the fixture64 corpus
+      env:
+        FIXTURE64_CACHE_HIT: ${{ steps.fixture64-cache.outputs.cache-hit }}
+      run: |
+        CANDIDATE_JAR=$(find candidate/frontend/jvm/webgraph/build/libs \
+          -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        FIXTURE_DIR=candidate/frontend/jvm/webgraph/build/benchmark-fixtures
+        test -f "${CANDIDATE_JAR}"
+        mkdir -p shared-fixture64
+        if [[ "${FIXTURE64_CACHE_HIT}" == true ]]; then
+          test -f shared-fixture64/fixture-reproducibility.json
+          candidate/.github/scripts/verify-fixture64-corpus.sh \
+            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
+            shared-fixture64/fixture-reproducibility.json
+        else
+          candidate/.github/scripts/prepare-fixture64-graphs.sh \
+            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs
+          candidate/.github/scripts/test-fixture64-reproducibility.sh \
+            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
+            "${RUNNER_TEMP}/fixture64-repeat" shared-fixture64/fixture-reproducibility.json
+        fi
+
+    - name: Save fixture64 graph cache
+      if: steps.fixture64-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: |
+          shared-fixture64/graphs
+          shared-fixture64/fixture-reproducibility.json
+        key: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
+
+    - name: Capture fresh main Rust engine snapshot
       run: |
         mkdir -p benchmark-source
-        mapfile -t JARS < <(find frontend/jvm/cypher/build/libs -name '*-jmh.jar' -type f)
-        test "${#JARS[@]}" -eq 1
-        jar tf "${JARS[0]}" >/dev/null
-        java -jar "${JARS[0]}" \
-          'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
-          -foe true -rf json -rff "${PWD}/benchmark-source/main-method-jmh.json"
+        python3 candidate/backend/bench/snapshot.py \
+          --manifest shared-fixture64/graphs/graphs.tsv \
+          --binary candidate/target/release/graphite \
+          --repetitions 3 \
+          --server-log benchmark-source/graphite-serve.log \
+          --out benchmark-source/main-rust-snapshot.json
         jq -e '
           length > 0 and
-          all(.[].benchmark;
-            startswith("io.johnsonlee.graphite.cypher.CypherBenchmark.") or
-            . == "io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgetedGeneralRegex") and
+          all(.[].benchmark; startswith("rust.fixture64.")) and
           all(.[].primaryMetric.score; type == "number" and isfinite and . >= 0) and
           ([.[] | "\(.benchmark)|\(.params // {})"] | unique | length) == length
-        ' benchmark-source/main-method-jmh.json >/dev/null
+        ' benchmark-source/main-rust-snapshot.json >/dev/null
 
     - name: Upload forensic snapshot artifact
       uses: actions/upload-artifact@v7
       with:
         name: benchmark-pages-snapshot-${{ github.sha }}-${{ github.run_id }}
-        path: benchmark-source/main-method-jmh.json
+        path: |
+          benchmark-source/main-rust-snapshot.json
+          benchmark-source/graphite-serve.log
         if-no-files-found: error
         retention-days: 90
 
@@ -248,7 +322,7 @@ jobs:
       run: |
         node --test .github/scripts/benchmark-pages.test.mjs
         node .github/scripts/benchmark-pages.mjs build \
-          --snapshot benchmark-source/main-method-jmh.json \
+          --snapshot benchmark-source/main-rust-snapshot.json \
           --report benchmark-source/paired/benchmark-report.md \
           --status benchmark-source/paired/benchmark-status.json \
           --provenance benchmark-source/paired-provenance.json \
