@@ -113,6 +113,7 @@ jobs:
         test -f "${RUNNER_TEMP}/acme.graphite"
         test ! -e "${RUNNER_TEMP}"/acme.graphite.build-*
         ./target/release/graphite graph verify --verbose "${RUNNER_TEMP}/acme.graphite"
+        (cd "${RUNNER_TEMP}" && sha256sum -c acme.graphite.sha256)
         unzip -t "${RUNNER_TEMP}/acme.graphite"
         python3 -m zipfile -l "${RUNNER_TEMP}/acme.graphite" | grep -F META-INF/graphite.manifest
         ./target/release/graphite graph unpack "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/acme-unpacked"

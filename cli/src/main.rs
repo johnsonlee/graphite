@@ -15,7 +15,7 @@
 
 mod build;
 mod frontend;
-mod graph_cmd;
+mod graph;
 mod install;
 
 use clap::{Parser, Subcommand};
@@ -71,7 +71,7 @@ enum Command {
     /// Pack, unpack, verify or describe a saved graph as one .graphite file
     Graph {
         #[command(subcommand)]
-        command: graph_cmd::GraphCommand,
+        command: graph::GraphCommand,
     },
 }
 
@@ -142,7 +142,7 @@ fn main() -> std::process::ExitCode {
         Command::Serve(args) => serve(args),
         Command::Mcp(args) => graphite_explore::mcp::run_stdio(args.graphs),
         Command::Frontend { command } => frontend_command(&env, command),
-        Command::Graph { command } => graph_cmd::run(command),
+        Command::Graph { command } => graph::run(command),
     };
     match outcome {
         Ok(()) => std::process::ExitCode::SUCCESS,

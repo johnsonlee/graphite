@@ -1,4 +1,4 @@
-//! `graphite graph`: the persisted graph as one file.
+//! `graphite graph`: the persisted graph as one packed file.
 //!
 //! `pack` turns the directory a frontend writes into a `.graphite` container, `unpack`
 //! turns it back, `verify` checks a container against its central directory and
@@ -40,11 +40,13 @@ pub fn run(command: GraphCommand) -> Result<(), String> {
         GraphCommand::Pack { dir, file } => {
             let report = container::pack(&dir, &file).map_err(|e| e.to_string())?;
             println!(
-                "Packed {} entries ({} bytes) into {}\nfingerprint: {}",
+                "Packed {} entries ({} bytes) into {}\nfingerprint: {}\nsha256: {} (written to {})",
                 report.entries,
                 report.bytes,
                 file.display(),
-                report.fingerprint
+                report.fingerprint,
+                report.file_sha256,
+                report.digest_file.display()
             );
             Ok(())
         }
@@ -65,6 +67,8 @@ pub fn run(command: GraphCommand) -> Result<(), String> {
                 "file": file.display().to_string(),
                 "format": container::ARCHIVE_COMMENT,
                 "fingerprint": c.fingerprint(),
+                "fileSha256": c.file_sha256(),
+                "digestFile": container::digest_path(&file).display().to_string(),
                 "entries": entries,
             }))
             .map_err(|e| e.to_string())?;
@@ -99,6 +103,15 @@ fn verify(file: &Path, verbose: bool) -> Result<(), String> {
             "warning: {} carries no manifest; only CRC-32 was checked",
             file.display()
         );
+    }
+    match v.digest_file {
+        Some(true) => println!("file sha256 ok ({})", v.file_sha256),
+        Some(false) => println!("file sha256 MISMATCH ({})", v.file_sha256),
+        None => println!(
+            "file sha256 {} (no .{} file beside it)",
+            v.file_sha256,
+            container::DIGEST_EXTENSION
+        ),
     }
     if v.ok() {
         println!(
@@ -155,6 +168,8 @@ mod tests {
         })
         .unwrap();
         assert_eq!(std::fs::read(back.join("graph.metadata")).unwrap(), b"meta");
+        let digest = std::fs::read_to_string(root.join("g.graphite.sha256")).unwrap();
+        assert!(digest.ends_with("  g.graphite\n"), "{digest}");
         assert_eq!(
             std::fs::read(back.join("graph.nodedata")).unwrap().len(),
             5000

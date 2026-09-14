@@ -179,11 +179,13 @@ fn finish_pack(pack: Pack, code: i32) -> i32 {
         match graphite_storage::container::pack(&pack.stage, &pack.output) {
             Ok(report) => {
                 println!(
-                    "Packed {} entries ({} bytes) into {}\nfingerprint: {}",
+                    "Packed {} entries ({} bytes) into {}\nfingerprint: {}\nsha256: {} (written to {})",
                     report.entries,
                     report.bytes,
                     pack.output.display(),
-                    report.fingerprint
+                    report.fingerprint,
+                    report.file_sha256,
+                    report.digest_file.display()
                 );
                 0
             }
@@ -342,11 +344,13 @@ mod tests {
             0
         );
         assert!(!stage.exists());
-        assert!(graphite_storage::Container::open(&output)
+        let v = graphite_storage::Container::open(&output)
             .unwrap()
             .verify()
-            .unwrap()
-            .ok());
+            .unwrap();
+        assert!(v.ok());
+        assert_eq!(v.digest_file, Some(true));
+        assert!(root.join("app.graphite.sha256").exists());
 
         // An empty staging directory cannot be packed: the error is reported, nothing is left.
         std::fs::create_dir_all(&stage).unwrap();

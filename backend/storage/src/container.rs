@@ -16,7 +16,10 @@
 //!   by a crash or a copy in progress does not open at all: completeness is not a
 //!   separate check;
 //! - entries are sorted by name and timestamps are fixed, so packing the same
-//!   directory twice gives the same bytes, and the fingerprint identifies content.
+//!   directory twice gives the same bytes, and the fingerprint identifies content;
+//! - `pack` also writes `<file>.sha256` next to the file, in `sha256sum -c` format,
+//!   so a copy or download is checked with standard tools; the fingerprint says what
+//!   the graph is, the file digest says whether these are the bytes that were built.
 //!
 //! Only the subset this module writes is read: one disk, no encryption, no
 //! compression. Zip64 sizes and offsets are supported, since a node data entry of a
@@ -31,6 +34,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 pub const EXTENSION: &str = "graphite";
+/// Extension of the whole-file digest written next to a packed container.
+pub const DIGEST_EXTENSION: &str = "sha256";
 pub const MANIFEST_NAME: &str = "META-INF/graphite.manifest";
 pub const MANIFEST_HEADER: &str = "graphite-graph 1";
 pub const ARCHIVE_COMMENT: &str = "graphite-graph/1";
@@ -396,12 +401,33 @@ impl Container {
                 }
             }
         }
+        let file_sha256 = self.file_sha256();
+        let digest_file = match read_digest_file(&digest_path(&self.path))? {
+            None => None,
+            Some(expected) => {
+                let ok = expected == file_sha256;
+                if !ok {
+                    failures.push(format!(
+                        "{}: digest file does not match the file",
+                        digest_path(&self.path).display()
+                    ));
+                }
+                Some(ok)
+            }
+        };
         Ok(Verification {
             entries: checks,
             has_manifest: manifest.is_some(),
             fingerprint: self.fingerprint(),
+            file_sha256,
+            digest_file,
             failures,
         })
+    }
+
+    /// SHA-256 of every byte of the file: what `<file>.sha256` records.
+    pub fn file_sha256(&self) -> String {
+        hex(&Sha256::digest(&self.map[..]))
     }
 
     /// Write every entry back out as files under `dir` (created if needed).
@@ -499,6 +525,10 @@ pub struct Verification {
     pub entries: Vec<EntryCheck>,
     pub has_manifest: bool,
     pub fingerprint: Option<String>,
+    /// SHA-256 of the whole file.
+    pub file_sha256: String,
+    /// Whether `<file>.sha256` agrees; `None` when there is no such file.
+    pub digest_file: Option<bool>,
     pub failures: Vec<String>,
 }
 
@@ -513,6 +543,37 @@ pub struct PackReport {
     pub entries: usize,
     pub bytes: u64,
     pub fingerprint: String,
+    /// SHA-256 of the written file, also recorded in `digest_file`.
+    pub file_sha256: String,
+    pub digest_file: PathBuf,
+}
+
+/// `<file>.sha256`, next to the container.
+pub fn digest_path(file: &Path) -> PathBuf {
+    let name = file.file_name().unwrap_or_default().to_string_lossy();
+    file.with_file_name(format!("{name}.{DIGEST_EXTENSION}"))
+}
+
+/// The digest a `sha256sum -c` style file records for its first entry, or `None`
+/// when there is no such file.
+fn read_digest_file(path: &Path) -> Result<Option<String>, ContainerError> {
+    let text = match std::fs::read_to_string(path) {
+        Ok(t) => t,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(e) => return Err(ContainerError::Io(path.display().to_string(), e)),
+    };
+    let digest = text
+        .lines()
+        .find(|l| !l.trim().is_empty())
+        .and_then(|l| l.split_whitespace().next())
+        .filter(|d| d.len() == 64 && d.bytes().all(|c| c.is_ascii_hexdigit()))
+        .ok_or_else(|| {
+            ContainerError::Format(
+                path.display().to_string(),
+                "not a sha256sum digest file".into(),
+            )
+        })?;
+    Ok(Some(digest.to_ascii_lowercase()))
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -613,11 +674,14 @@ struct Written {
 struct Writer<W: Write> {
     out: W,
     pos: u64,
+    /// Digest of every byte written, for the `.sha256` file.
+    sha: Sha256,
 }
 
 impl<W: Write> Writer<W> {
     fn put(&mut self, bytes: &[u8]) -> std::io::Result<()> {
         self.out.write_all(bytes)?;
+        self.sha.update(bytes);
         self.pos += bytes.len() as u64;
         Ok(())
     }
@@ -818,13 +882,14 @@ pub fn pack(dir: &Path, out: &Path) -> Result<PackReport, ContainerError> {
         out.file_name().unwrap_or_default().to_string_lossy(),
         std::process::id()
     ));
-    let result = (|| -> Result<u64, ContainerError> {
+    let result = (|| -> Result<(u64, String), ContainerError> {
         let file =
             File::create(&tmp).map_err(|e| ContainerError::Io(tmp.display().to_string(), e))?;
         let io = |e| ContainerError::Io(tmp.display().to_string(), e);
         let mut w = Writer {
             out: BufWriter::with_capacity(1 << 20, file),
             pos: 0,
+            sha: Sha256::new(),
         };
         let mut written = Vec::with_capacity(planned.len());
         let mut buf = vec![0u8; 1 << 20];
@@ -865,10 +930,10 @@ pub fn pack(dir: &Path, out: &Path) -> Result<PackReport, ContainerError> {
             .map_err(io)?;
         w.out.flush().map_err(io)?;
         w.out.get_ref().sync_all().map_err(io)?;
-        Ok(w.pos)
+        Ok((w.pos, hex(&w.sha.finalize())))
     })();
-    let bytes = match result {
-        Ok(bytes) => bytes,
+    let (bytes, file_sha256) = match result {
+        Ok(done) => done,
         Err(e) => {
             let _ = std::fs::remove_file(&tmp);
             return Err(e);
@@ -878,10 +943,26 @@ pub fn pack(dir: &Path, out: &Path) -> Result<PackReport, ContainerError> {
         let _ = std::fs::remove_file(&tmp);
         return Err(ContainerError::Io(shown, e));
     }
+    // The digest file names the container without a directory, as `sha256sum` does
+    // when run beside it, and lands atomically like the container itself.
+    let digest_file = digest_path(out);
+    let digest_tmp = digest_path(&tmp);
+    let line = format!(
+        "{file_sha256}  {}\n",
+        out.file_name().unwrap_or_default().to_string_lossy()
+    );
+    std::fs::write(&digest_tmp, line)
+        .and_then(|()| std::fs::rename(&digest_tmp, &digest_file))
+        .map_err(|e| {
+            let _ = std::fs::remove_file(&digest_tmp);
+            ContainerError::Io(digest_file.display().to_string(), e)
+        })?;
     Ok(PackReport {
         entries: planned.len(),
         bytes,
         fingerprint,
+        file_sha256,
+        digest_file,
     })
 }
 
@@ -948,6 +1029,16 @@ mod tests {
         let v = c.verify().unwrap();
         assert!(v.ok(), "{:?}", v.failures);
         assert!(v.has_manifest);
+        // The digest file beside the container is what `sha256sum -c` reads.
+        assert_eq!(report.digest_file, root.join("g.graphite.sha256"));
+        let digest = std::fs::read_to_string(&report.digest_file).unwrap();
+        assert_eq!(digest, format!("{}  g.graphite\n", report.file_sha256));
+        assert_eq!(v.file_sha256, report.file_sha256);
+        assert_eq!(
+            v.file_sha256,
+            hex(&Sha256::digest(std::fs::read(&out).unwrap()))
+        );
+        assert_eq!(v.digest_file, Some(true));
         assert!(v.entries.iter().all(|e| e.crc_ok));
         assert!(v
             .entries
@@ -996,6 +1087,32 @@ mod tests {
                 "graph.nodedata: differs from the manifest"
             ]
         );
+        assert_eq!(
+            v.digest_file, None,
+            "no digest file was written for the copy"
+        );
+        // A digest file that disagrees with the file fails verification on its own.
+        let moved = root.join("moved.graphite");
+        std::fs::copy(&out, &moved).unwrap();
+        std::fs::write(
+            digest_path(&moved),
+            format!("{}  moved.graphite\n", "0".repeat(64)),
+        )
+        .unwrap();
+        let v = Container::open(&moved).unwrap().verify().unwrap();
+        assert_eq!(v.digest_file, Some(false));
+        assert!(
+            v.failures
+                .iter()
+                .any(|f| f.ends_with("digest file does not match the file")),
+            "{:?}",
+            v.failures
+        );
+        std::fs::write(digest_path(&moved), "garbage\n").unwrap();
+        assert!(matches!(
+            Container::open(&moved).unwrap().verify(),
+            Err(ContainerError::Format(..))
+        ));
         assert!(matches!(
             Container::open(&bad).unwrap().unpack(&root.join("x")),
             Err(ContainerError::Entry(..))
