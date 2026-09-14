@@ -82,7 +82,7 @@ jq -n --arg baseSha "$(git -C "$BASE" rev-parse HEAD)" \
   --arg comparatorSha256 "$(sha256sum "$COMPARATOR" | cut -d' ' -f1)" \
   '{baseSha:$baseSha,candidateSha:$candidateSha,referenceKind:$referenceKind,fixture:$fixture,
     harnessSha256:$harnessSha256,comparatorSha256:$comparatorSha256,
-    fixtureProtocol:"private-copy-no-callsite-index-v2",forks:3,thresholdPercent:15}' \
+    fixtureProtocol:"private-copy-no-callsite-index-v2",forks:5,thresholdPercent:15,verdict:"delta-over-threshold-with-separated-99.9-percent-confidence"}' \
   > "$OUTPUT/slow-query-shapes-provenance.json"
 
 measure() {
@@ -92,7 +92,7 @@ measure() {
   java -jar "$OUTPUT/$revision-slow-shapes.jar" \
     'io.johnsonlee.graphite.webgraph.SlowQueryShapesBenchmark.execute' \
     -p corpus=android -p "queryName=$queries" -p cacheState=COLD,WARM \
-    -f 3 -t 1 -wi 0 -i 1 -foe true -prof gc -rf json \
+    -f 5 -t 1 -wi 0 -i 1 -foe true -prof gc -rf json \
     -jvmArgsAppend "-Dandroid.graph.path=$FIXTURE" \
     -rff "$OUTPUT/$phase-$revision-slow-shapes.json" \
     > "$OUTPUT/$phase-$revision-slow-shapes.log" 2>&1
