@@ -65,9 +65,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          # Linux binaries are built on ubuntu-22.04 (glibc 2.35): the tarball must run
+          # on current distributions and the image is distroless cc-debian12 (glibc
+          # 2.36). A newer runner links symbols those cannot provide; Package checks.
+          - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-22.04-arm
             target: aarch64-unknown-linux-gnu
           - os: macos-15-intel
             target: x86_64-apple-darwin
@@ -98,6 +101,9 @@ jobs:
         ASSET="graphite-${RELEASE_VERSION}-${{ matrix.target }}.tar.gz"
         mkdir -p release-assets
         "target/${{ matrix.target }}/release/graphite" --version | grep -F "${RELEASE_VERSION}"
+        case "${{ matrix.target }}" in
+          *-linux-gnu) bash .github/scripts/max-glibc.sh "target/${{ matrix.target }}/release/graphite" 2.36 ;;
+        esac
         tar -czf "release-assets/${ASSET}" -C "target/${{ matrix.target }}/release" graphite
         (cd release-assets && shasum -a 256 "${ASSET}" > "${ASSET}.sha256")
         cat "release-assets/${ASSET}.sha256"
