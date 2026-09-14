@@ -220,11 +220,20 @@ QUERIES = [
     'MATCH (n) WHERE any(k IN keys(n) WHERE toString(properties(n)[k]) CONTAINS "Ids") RETURN count(*)',
     'MATCH (n:CallSite) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "String)") RETURN count(*)',
     'MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "zzqqxxvv") RETURN count(*)',
+    # A disjunction inside the quantifier plans as one disjunction of per-key leaves.
+    'MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Ids" OR toString(n[k]) CONTAINS "java.util" OR toString(n[k]) CONTAINS "zzqqxxvv") RETURN count(*)',
+    'MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Ids" OR toString(n[k]) CONTAINS "10") RETURN n ORDER BY id(n) LIMIT 10',
+    'MATCH (n) WHERE any(k IN keys(n) WHERE n[k] = "toString" OR toString(n[k]) STARTS WITH "acme") RETURN count(*)',
+    'MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Ids" AND toString(n[k]) CONTAINS "10") RETURN count(*)',
     'MATCH (n) RETURN n.id AS id, any(k IN keys(n) WHERE toString(n[k]) CONTAINS "Ids") AS matched ORDER BY id LIMIT 10',
     'MATCH (n:CallSite) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class ORDER BY n.callee_class DESC LIMIT 5',
     'MATCH (n:CallSite) WHERE n.callee_class CONTAINS "a" RETURN DISTINCT n.callee_class AS c ORDER BY c LIMIT 5',
     'MATCH (n:LocalVariable) RETURN n LIMIT 3',
     'MATCH (n:LocalVariable) RETURN n.method LIMIT 3',
+    # keys()/properties() of a local variable carry its enclosing method; RETURN n does not.
+    'MATCH (n:LocalVariable) RETURN keys(n) AS keys ORDER BY id(n) LIMIT 3',
+    'MATCH (n:LocalVariable) RETURN properties(n) AS props ORDER BY id(n) LIMIT 3',
+    'MATCH (n:LocalVariable) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "java.util") RETURN count(*)',
     'MATCH (n:Parameter) RETURN n LIMIT 3',
     # Non-CallSite string properties take the column path.
     # Unlabelled scans over several node types are ordered here, since the Kotlin

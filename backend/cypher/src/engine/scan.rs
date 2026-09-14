@@ -3651,6 +3651,11 @@ fn property_operand(e: &Expr, variable: &str) -> Option<(Prop, Transform, bool)>
 /// as a disjunction, which the per-type pruning then narrows to the keys each type has;
 /// a type with open-ended keys decodes instead. Only the leaf structure is used for
 /// planning -- rows of a decoded type are still judged by the original clause.
+///
+/// The test may be a disjunction of such tests: `any(k IN keys(n) WHERE A OR B)` is
+/// `any(k IN keys(n) WHERE A) OR any(k IN keys(n) WHERE B)`, so the leaves of every
+/// disjunct join the same disjunction. A conjunction is not pushed: `any(A AND B)`
+/// needs one key satisfying both, which the union of per-key leaves does not express.
 fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate>) -> bool {
     let Expr::PredicateFunction {
         name,
@@ -3697,7 +3702,25 @@ fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate
             _ => None,
         }
     };
-    let (op, left, right): (PushOp, &Expr, &Expr) = match predicate.as_ref() {
+    let mut leaves = Vec::new();
+    if !keys_test_leaves(predicate, &subscripted, &mut leaves) {
+        return false;
+    }
+    out.extend(leaves);
+    true
+}
+
+/// The leaves of one quantifier test, or of a disjunction of them. Every disjunct must
+/// be a pushable test; otherwise nothing is pushed and the caller decodes.
+fn keys_test_leaves(
+    test: &Expr,
+    subscripted: &dyn Fn(&Expr) -> Option<bool>,
+    out: &mut Vec<StringPredicate>,
+) -> bool {
+    let (op, left, right): (PushOp, &Expr, &Expr) = match test {
+        Expr::Or(a, b) => {
+            return keys_test_leaves(a, subscripted, out) && keys_test_leaves(b, subscripted, out);
+        }
         Expr::StringOp { op, left, right } => (
             match op {
                 StrOp::Contains => PushOp::Contains,
@@ -4212,6 +4235,62 @@ mod tests {
     /// decide the rows. Runs when `GRAPHITE_INDEX_FIXTURE` names a persisted graph (CI
     /// sets it to the graph built from the core jar); otherwise it is a no-op, like the
     /// storage crate's fixture test.
+    /// A local variable's `keys(n)` carries its enclosing method, as the baseline's
+    /// does, so the keys search plans the `method` leaf for local variables and the
+    /// decoded path (forced here by an unpushable conjunct, which relaxes the plan and
+    /// re-applies the WHERE clause) agrees with the streamed one. Fixture-gated.
+    #[test]
+    fn a_local_variable_exposes_its_method_to_the_keys_search() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            return;
+        };
+        let graph = std::sync::Arc::new(
+            graphite_storage::graph::Graph::load(std::path::Path::new(&dir)).unwrap(),
+        );
+        let sources = vec![super::super::Source {
+            id: std::sync::Arc::from("g"),
+            graph,
+        }];
+        let ex = super::super::Executor::new(sources, true);
+        let rows = |q: &str| {
+            ex.execute(q, None)
+                .unwrap_or_else(|e| panic!("{q}: {e}"))
+                .rows
+        };
+        let keys = rows("MATCH (n:LocalVariable) RETURN keys(n) AS keys LIMIT 1");
+        assert_eq!(keys.len(), 1);
+        let Some(Value::List(keys)) = keys[0].get("keys") else {
+            panic!("keys(n) of a local variable");
+        };
+        let keys: Vec<&str> = keys.iter().filter_map(|v| v.as_str()).collect();
+        assert!(
+            keys.contains(&"method") && keys.contains(&"name"),
+            "{keys:?}"
+        );
+        let count = |q: &str| -> i64 {
+            let r = rows(q);
+            match r.first().and_then(|row| row.get("count(*)")) {
+                Some(Value::Int(n)) => *n,
+                other => panic!("{q}: {other:?}"),
+            }
+        };
+        let streamed = count(
+            "MATCH (n:LocalVariable) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'java') RETURN count(*)",
+        );
+        let decoded = count(
+            "MATCH (n:LocalVariable) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'java') AND n.id > 0 RETURN count(*)",
+        );
+        let by_property = count(
+            "MATCH (n:LocalVariable) WHERE n.method CONTAINS 'java' OR n.name CONTAINS 'java' OR n.type CONTAINS 'java' RETURN count(*)",
+        );
+        assert!(
+            streamed > 0,
+            "the fixture has local variables in java.* methods"
+        );
+        assert_eq!(streamed, decoded);
+        assert_eq!(streamed, by_property);
+    }
+
     #[test]
     fn a_relaxed_plan_still_applies_the_dropped_conjunct() {
         let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
@@ -4598,6 +4677,58 @@ mod tests {
             r#"MATCH (n) WHERE any(k IN ["value"] WHERE toString(n[k]) CONTAINS "x") RETURN n"#,
         );
         assert!(ScanPlan::build(&p, w.as_ref()).is_none());
+    }
+
+    #[test]
+    fn a_disjunction_inside_the_keys_quantifier_plans_as_one_disjunction() {
+        // any(k IN keys(n) WHERE A OR B OR C) is any(A) OR any(B) OR any(C): every
+        // disjunct contributes its per-key leaves to the same OR.
+        let single = r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "xxx") RETURN n LIMIT 80"#;
+        let triple = r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "xxx" OR toString(n[k]) CONTAINS "yyy" OR toString(n[k]) CONTAINS "xxyy") RETURN n LIMIT 80"#;
+        let leaves_of = |q: &str| {
+            let (p, w) = parse_where(q);
+            let mut leaves = Vec::new();
+            ScanPlan::build(&p, w.as_ref())
+                .expect("planned")
+                .tree
+                .leaves(&mut leaves);
+            leaves
+                .iter()
+                .map(|l| (l.prop().to_string(), l.op, l.literal.clone(), l.from_keys))
+                .collect::<Vec<_>>()
+        };
+        let one = leaves_of(single);
+        let three = leaves_of(triple);
+        assert_eq!(three.len(), 3 * one.len());
+        assert!(three
+            .iter()
+            .all(|(_, op, _, from_keys)| *op == PushOp::Contains && *from_keys));
+        for literal in ["xxx", "yyy", "xxyy"] {
+            assert_eq!(
+                three.iter().filter(|(_, _, l, _)| l == literal).count(),
+                one.len(),
+                "{literal}"
+            );
+        }
+        // Mixed operators and operands are fine; so is a disjunction under AND with a
+        // pushable or an unpushable conjunct (the latter relaxes the plan).
+        for q in [
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE n[k] = "xxx" OR toString(properties(n)[k]) STARTS WITH "yy") RETURN n"#,
+            r#"MATCH (n) WHERE n.graphId = 'g' AND any(k IN keys(n) WHERE toString(n[k]) CONTAINS "xxx" OR toString(n[k]) CONTAINS "yyy") RETURN n"#,
+            r#"MATCH (n) WHERE n.graphId IS NOT NULL AND any(k IN keys(n) WHERE toString(n[k]) CONTAINS "xxx" OR toString(n[k]) CONTAINS "yyy") RETURN n"#,
+        ] {
+            let (p, w) = parse_where(q);
+            assert!(ScanPlan::build(&p, w.as_ref()).is_some(), "{q}");
+        }
+        // One unpushable disjunct spoils the whole test; a conjunction is never pushed.
+        for q in [
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "xxx" OR toString(n[k]) =~ "y.*") RETURN n"#,
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "xxx" OR k = "value") RETURN n"#,
+            r#"MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS "xxx" AND toString(n[k]) CONTAINS "yyy") RETURN n"#,
+        ] {
+            let (p, w) = parse_where(q);
+            assert!(ScanPlan::build(&p, w.as_ref()).is_none(), "{q}");
+        }
     }
 
     fn kind_of(plan: &TagPlan) -> &'static str {
