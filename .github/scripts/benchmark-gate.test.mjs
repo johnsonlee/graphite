@@ -3006,6 +3006,13 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(fixture64Job, /actions\/cache\/restore@v5/);
     assert.match(fixture64Job, /actions\/cache\/save@v5/);
     assert.match(fixture64Job, /fixture64-real-v2-temurin17/);
+    // The warm-up workflow on main must compute the same key, or pull requests never hit.
+    const warmWorkflow = fs.readFileSync(new URL("../workflows/fixture64-cache.yml", import.meta.url), "utf8");
+    const keyOf = text => text.match(/        key: >-\n[\s\S]*?\) \}\}\n/)?.[0];
+    assert.ok(keyOf(fixture64Job));
+    assert.equal(keyOf(warmWorkflow), keyOf(fixture64Job));
+    assert.match(warmWorkflow, /branches: \[main\]/);
+    assert.match(warmWorkflow, /actions\/cache\/save@v5/);
     assert.match(fixture64Job, /verify-fixture64-corpus\.sh/);
     assert.match(fixture64Job, /gradle\/actions\/setup-gradle@v6/);
     assert.match(fixture64Job, /frontend\/jvm\/webgraph\/build\/benchmark-fixtures\/\*\.jar/);
