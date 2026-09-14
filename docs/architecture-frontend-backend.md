@@ -336,7 +336,7 @@ The server also speaks the Model Context Protocol: the thirteen tools of the for
 `annotations`, `endpoints`, `resources`, `resource`, `subgraph`, `overview`, `c4`) are
 built in, each dispatched in-process to the same route handler the REST API runs. Two
 transports: `graphite mcp` over stdio for local clients, and `POST /mcp` on `graphite
-serve` (Streamable HTTP) for remote ones. The npm package is retired with v3.0.0.
+serve` (Streamable HTTP) for remote ones. The npm package is retired with v2.5.0.
 
 ### 6.4 CLI (`graphite`)
 
@@ -496,9 +496,10 @@ Each is a frontend with the same three commands; none needs a backend change.
 
 ## 9. Delivery and packaging
 
-- The first tag of this layout is `v3.0.0`: a major version, because the installed
-  `graphite` becomes a native binary with the jar as its frontend and the MCP server
-  moves from npm into it.
+- The first tag of this layout is `v2.5.0` (rehearsed as `v3.0.0-alpha1` to `-alpha6`).
+  It stays in the 2.x line: the REST routes, the MCP tools and the Maven coordinates
+  are those of 2.4.8; what changes is packaging, the installed `graphite` becomes a
+  native binary with the jar as its frontend and the MCP server moves from npm into it.
 - One release tag drives everything: the Rust CLI/server binaries (linux x86_64/aarch64
   musl, macOS x86_64/aarch64) as GitHub Release assets, the `graphite-explore` container
   image (a static binary on `distroless`), the Homebrew formula (`graphite`, no JDK

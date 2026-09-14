@@ -299,8 +299,8 @@ one graph. Every root non-Cypher result is grouped by `graphId`, while every
 cross-graph Cypher row includes `$metadata.graphIds` and returned graph elements include
 qualified identities such as `elementId = "orders:42"`.
 
-Graphite 3.0 removes the legacy `/api/nodes`, `/api/call-sites`, and
-`/api/methods` search routes and the MCP `methods` tool. Use Cypher for
+The legacy `/api/nodes`, `/api/call-sites`, and `/api/methods` search routes and
+the MCP `methods` tool are gone (removed during 2.x). Use Cypher for
 agent-driven node, call-site, and method discovery. `/openapi.json` describes
 the complete supported surface.
 
@@ -486,8 +486,11 @@ Register in `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension`.
 
 ## Kotlin Dependencies
 
-The JVM modules are published to Maven Central. From 3.0.0 the artifact ids carry no
-`graphite-` prefix (2.x published `graphite-core`, `graphite-sootup`, ...).
+The JVM modules are published to Maven Central under `io.johnsonlee.graphite` with
+prefix-free artifact ids (`core`, `sootup`, `cypher`, `webgraph`), unchanged since 2.x.
+Pin an explicit version: the `3.0.0-alpha*` pre-releases of this layout are still on
+Maven Central and sort above `2.5.0`, so a dynamic version such as `+` resolves to one
+of them instead of the current release.
 
 ```kotlin
 repositories {
@@ -495,12 +498,12 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:core:3.0.0-alpha5")
-    implementation("io.johnsonlee.graphite:sootup:3.0.0-alpha5")
+    implementation("io.johnsonlee.graphite:core:2.5.0")
+    implementation("io.johnsonlee.graphite:sootup:2.5.0")
     // Optional: Cypher query support (graph.query("MATCH ..."))
-    implementation("io.johnsonlee.graphite:cypher:3.0.0-alpha5")
+    implementation("io.johnsonlee.graphite:cypher:2.5.0")
     // Optional: disk persistence (WebGraph format)
-    implementation("io.johnsonlee.graphite:webgraph:3.0.0-alpha5")
+    implementation("io.johnsonlee.graphite:webgraph:2.5.0")
 }
 ```
 
@@ -541,7 +544,9 @@ unchanged, and every protocol revision the npm package negotiated (`2024-11-05` 
 `2025-11-25`) is still accepted; replace the `command`/`args` with `graphite mcp` and the
 graphs it should open, and drop `GRAPHITE_URL`. The one argument change is that `node`,
 `outgoing` and `incoming` require `graph_id` (the package advertised it as optional and
-answered a 404 without it). The npm package is not published from v3.0.0 on.
+answered a 404 without it). The npm package is not published from v2.5.0 on; its last
+version, 2.4.8, keeps working against a 2.5.0 server because it only calls the REST
+routes above.
 
 Start the Explorer first, then LLMs can query the graph:
 

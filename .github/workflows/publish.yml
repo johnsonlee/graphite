@@ -13,14 +13,14 @@ on:
   # `release-<tag>` artifact, the formula is installed from those assets on a
   # macOS runner, and both image architectures are built but not pushed. Not covered:
   # the Sonatype upload itself, the GitHub Release, the tap push and the registry
-  # push; those run for real on a pre-release tag (v3.0.0-rc.1), which leaves the
+  # push; those run for real on a pre-release tag (v2.5.0-rc.1), which leaves the
   # default channels alone. `workflow_dispatch` is available once this file is on the
   # default branch. The tag named here need not exist; it only stamps the version.
-  #   gh workflow run publish.yml --ref <branch> -f tag=v3.0.0
+  #   gh workflow run publish.yml --ref <branch> -f tag=v2.5.0
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to rehearse (v-prefixed, e.g. v3.0.0-rc.1)'
+        description: 'Release tag to rehearse (v-prefixed, e.g. v2.5.0-rc.1)'
         required: true
         type: string
 
@@ -340,12 +340,12 @@ jobs:
           release-assets/*
           formula/Formula/graphite.rb
         if-no-files-found: error
-    # A tag whose SemVer has a pre-release part (v3.0.0-alpha.1, -beta.2, -rc.1)
+    # A tag whose SemVer has a pre-release part (v2.5.0-alpha.1, -beta.2, -rc.1)
     # rehearses this workflow end to end without touching what users install by
     # default: the GitHub Release is marked pre-release (so it is not "latest"), the
     # Homebrew formula is left alone, and the image is not tagged `latest` (see the
     # docker job). The flag comes from the validate job's parse, so build metadata
-    # such as v3.0.0+linux-1 stays a stable release.
+    # such as v2.5.0+linux-1 stays a stable release.
     - name: Self-test the publish script against a stub gh
       run: bash .github/scripts/publish-release.sh --self-test
     - name: Publish the GitHub Release

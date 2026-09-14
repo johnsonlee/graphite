@@ -3,7 +3,7 @@ resolver = "2"
 members = ["backend/storage", "backend/cypher", "backend/explore", "cli"]
 
 [workspace.package]
-version = "3.0.0"
+version = "2.5.0"
 edition = "2021"
 license = "Apache-2.0"
 

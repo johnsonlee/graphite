@@ -395,7 +395,7 @@ dependencies = [
 
 [[package]]
 name = "graphite-cli"
-version = "3.0.0"
+version = "2.5.0"
 dependencies = [
  "clap",
  "graphite-cypher",
@@ -408,7 +408,7 @@ dependencies = [
 
 [[package]]
 name = "graphite-cypher"
-version = "3.0.0"
+version = "2.5.0"
 dependencies = [
  "graphite-storage",
  "indexmap",
@@ -421,7 +421,7 @@ dependencies = [
 
 [[package]]
 name = "graphite-explore"
-version = "3.0.0"
+version = "2.5.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -445,7 +445,7 @@ dependencies = [
 
 [[package]]
 name = "graphite-storage"
-version = "3.0.0"
+version = "2.5.0"
 dependencies = [
  "memmap2",
  "parking_lot",
