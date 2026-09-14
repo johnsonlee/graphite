@@ -1,12 +1,12 @@
 name: Rust
 
+# No path filter: the differential below serves graphs built by the JVM frontend with the
+# Kotlin explorer as the baseline, so a frontend, Gradle or fixture change must run it too.
 on:
   push:
     branches: [ '*' ]
-    paths: [ 'backend/**', 'cli/**', 'Cargo.toml', 'Cargo.lock', '.github/workflows/rust.yml' ]
   pull_request:
     branches: [ '**' ]
-    paths: [ 'backend/**', 'cli/**', 'Cargo.toml', 'Cargo.lock', '.github/workflows/rust.yml' ]
 
 permissions:
   contents: read
@@ -42,6 +42,18 @@ jobs:
 
     - name: Unit tests
       run: cargo test --release --locked
+
+    # The release image is the Linux binary copied from release-assets/ on distroless;
+    # build it here from the binary just built so the Dockerfile, the build context and
+    # the entrypoint are exercised on every change, not only when a tag is published.
+    - name: Build and run the graphite-explore image
+      run: |
+        mkdir -p release-assets/linux/amd64
+        cp target/release/graphite release-assets/linux/amd64/graphite
+        docker build -f backend/explore/Dockerfile --build-arg VERSION=ci -t graphite-explore:ci .
+        docker run --rm --entrypoint /app/graphite graphite-explore:ci --version
+        docker run --rm graphite-explore:ci --help | grep -F -- '--graph'
+        rm -rf release-assets
 
     # The in-memory CallSite index must reproduce the persisted one byte for byte.
     # That test needs a real graph directory written by the Kotlin builder, so one is

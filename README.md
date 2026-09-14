@@ -511,8 +511,11 @@ with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable
 all). The REST API is unaffected.
 
 Migrating from `npx graphite-mcp`: the tools, their arguments and their outputs are
-unchanged; replace the `command`/`args` with `graphite mcp` and the graphs it should
-open, and drop `GRAPHITE_URL`. The npm package is not published from v3.0.0 on.
+unchanged, and every protocol revision the npm package negotiated (`2024-11-05` through
+`2025-11-25`) is still accepted; replace the `command`/`args` with `graphite mcp` and the
+graphs it should open, and drop `GRAPHITE_URL`. The one argument change is that `node`,
+`outgoing` and `incoming` require `graph_id` (the package advertised it as optional and
+answered a 404 without it). The npm package is not published from v3.0.0 on.
 
 Start the Explorer first, then LLMs can query the graph:
 
@@ -553,7 +556,9 @@ send `"mode":"fanout"`; only this mode accepts `perGraphLimit` and
 `includeGraphRows`. In both modes, `limit` caps the total response row count.
 
 The MCP tools follow the same rule: omitting `graph_id` queries all graphs;
-providing `graph_id` selects exactly one graph. The `cypher` tool can also use
+providing `graph_id` selects exactly one graph. The exceptions are `node`,
+`outgoing` and `incoming`, whose node IDs are local to a graph: they require
+`graph_id`. The `cypher` tool can also use
 `graphs: ["orders", "billing"]` for an explicit subset or `all_graphs: true`
 with `mode: "cross-graph"` or `mode: "fanout"`.
 

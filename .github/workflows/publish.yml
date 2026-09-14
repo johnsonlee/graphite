@@ -309,6 +309,22 @@ jobs:
           org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
           org.opencontainers.image.source=https://github.com/johnsonlee/graphite
           org.opencontainers.image.licenses=Apache-2.0
+    # The pushed image is never run by this workflow otherwise: build the runner's
+    # architecture alone first and start the binary from it.
+    - name: Build and run the image for the runner's architecture
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: backend/explore/Dockerfile
+        platforms: linux/amd64
+        load: true
+        tags: graphite-explore:smoke
+        build-args: |
+          VERSION=${{ env.RELEASE_TAG }}
+    - name: Check the image starts and reports the release version
+      run: |
+        docker run --rm --entrypoint /app/graphite graphite-explore:smoke --version | grep -F "${RELEASE_VERSION}"
+        docker run --rm graphite-explore:smoke --help | grep -F -- '--graph'
     - name: Build and push graphite-explore image
       uses: docker/build-push-action@v6
       with:

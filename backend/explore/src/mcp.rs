@@ -8,11 +8,14 @@
 //!
 //! - stdio (`graphite mcp`): one JSON-RPC message per line on stdin, one per line on
 //!   stdout, logs on stderr. This is what Claude Desktop, Cursor and the other local
-//!   clients speak.
+//!   clients speak. Requests are handled concurrently: stdin keeps being read while a
+//!   long Cypher call runs, so a `ping` or a cancellation sent meanwhile is answered at
+//!   once; only stdout writes are serialized, one message per line.
 //! - Streamable HTTP (`POST /mcp` on `graphite serve`): one JSON-RPC message per
 //!   request, the response as JSON. The server never opens a stream of its own, so
 //!   `GET /mcp` answers 405 as the protocol allows for that case. Every `/mcp` request
-//!   passes the [`OriginPolicy`] first (DNS-rebinding protection).
+//!   passes the [`OriginPolicy`] first (DNS-rebinding protection), and a request that
+//!   names an unsupported revision in `MCP-Protocol-Version` is refused with 400.
 //!
 //! The tools, their names, descriptions, argument schemas and defaults are those of
 //! the former `graphite-mcp` npm package, so an existing client configuration only
@@ -31,9 +34,15 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 use tower::ServiceExt;
 
 /// The protocol revision answered when the client asks for one this server does not
-/// know. Every revision listed in [`SUPPORTED_PROTOCOLS`] is echoed back as requested.
-pub const PROTOCOL_VERSION: &str = "2025-03-26";
-const SUPPORTED_PROTOCOLS: &[&str] = &["2024-11-05", "2025-03-26", "2025-06-18"];
+/// know: the latest one supported, as the specification asks. Every revision listed in
+/// [`SUPPORTED_PROTOCOLS`] is echoed back as requested; the list carries every revision
+/// the retired npm package's SDK negotiated, so no existing client is turned away.
+pub const PROTOCOL_VERSION: &str = "2025-11-25";
+pub const SUPPORTED_PROTOCOLS: &[&str] = &["2024-11-05", "2025-03-26", "2025-06-18", "2025-11-25"];
+/// The header a Streamable HTTP client sends after initialization to say which revision
+/// it negotiated. Absent, the request is treated as `2025-03-26` per the specification;
+/// present and unsupported, it is refused with 400.
+pub const PROTOCOL_VERSION_HEADER: &str = "mcp-protocol-version";
 pub const SERVER_NAME: &str = "graphite";
 
 // JSON-RPC 2.0 error codes.
@@ -104,35 +113,35 @@ pub fn tools() -> Vec<ToolDef> {
         },
         ToolDef {
             name: "node",
-            description: "Get every node with a local ID across all graphs, grouped by graph, or the node in one explicit graph",
+            description: "Get a node by its graph-local ID in one graph",
             input_schema: schema(
                 json!({
                     "id": {"type": "number", "description": "Graph-local node ID"},
-                    "graph_id": graph_id_property("Explicit graph id; omit to query every graph")
+                    "graph_id": graph_id_property("The graph the node ID belongs to (node IDs are local to a graph)")
                 }),
-                &["id"],
+                &["id", "graph_id"],
             ),
         },
         ToolDef {
             name: "outgoing",
-            description: "Get outgoing edges for a graph-local node ID across all graphs, or in one explicit graph",
+            description: "Get outgoing edges for a graph-local node ID in one graph",
             input_schema: schema(
                 json!({
                     "id": {"type": "number", "description": "Graph-local node ID"},
-                    "graph_id": graph_id_property("Explicit graph id; omit to query every graph")
+                    "graph_id": graph_id_property("The graph the node ID belongs to (node IDs are local to a graph)")
                 }),
-                &["id"],
+                &["id", "graph_id"],
             ),
         },
         ToolDef {
             name: "incoming",
-            description: "Get incoming edges for a graph-local node ID across all graphs, or in one explicit graph",
+            description: "Get incoming edges for a graph-local node ID in one graph",
             input_schema: schema(
                 json!({
                     "id": {"type": "number", "description": "Graph-local node ID"},
-                    "graph_id": graph_id_property("Explicit graph id; omit to query every graph")
+                    "graph_id": graph_id_property("The graph the node ID belongs to (node IDs are local to a graph)")
                 }),
-                &["id"],
+                &["id", "graph_id"],
             ),
         },
         ToolDef {
@@ -460,13 +469,16 @@ pub fn plan(tool: &str, args: &Map<String, Value>) -> Result<ApiCall, String> {
         "cypher" => plan_cypher(&a),
         "node" | "outgoing" | "incoming" => {
             let id = number_text(&a.required_number("id")?);
-            let graph_id = a.string("graph_id")?;
+            // Node IDs are local to a graph and the API has no all-graph node route (the
+            // Kotlin server has none either), so the graph is required here rather than
+            // advertised as optional and answered with a 404.
+            let graph_id = a.required_string("graph_id")?;
             let suffix = match tool {
                 "node" => format!("/node/{id}"),
                 "outgoing" => format!("/node/{id}/outgoing"),
                 _ => format!("/node/{id}/incoming"),
             };
-            Ok(ApiCall::get(graph_api_path(graph_id.as_deref(), &suffix)))
+            Ok(ApiCall::get(graph_api_path(Some(&graph_id), &suffix)))
         }
         "annotations" => {
             let graph_id = a.string("graph_id")?;
@@ -711,7 +723,19 @@ impl McpServer {
                 "Invalid Request: expected an object",
             ));
         };
+        // The envelope decides what a message is, not the method's spelling: a message
+        // with no `id` is a notification and gets no response whatever its method; a
+        // message with an `id` is a request even if its method says "notifications/",
+        // and is answered (with "Method not found" in that case).
         let id = object.get("id").cloned().unwrap_or(Value::Null);
+        let is_notification = !object.contains_key("id");
+        if object.get("jsonrpc").and_then(Value::as_str) != Some("2.0") {
+            return Some(error_response(
+                id,
+                INVALID_REQUEST,
+                "Invalid Request: jsonrpc must be \"2.0\"",
+            ));
+        }
         let Some(method) = object.get("method").and_then(Value::as_str) else {
             return Some(error_response(
                 id,
@@ -720,7 +744,7 @@ impl McpServer {
             ));
         };
         let params = object.get("params").cloned().unwrap_or(Value::Null);
-        if method.starts_with("notifications/") {
+        if is_notification {
             return None;
         }
         let result = match method {
@@ -912,6 +936,9 @@ async fn mcp_post(
     if let Some(forbidden) = forbidden_origin(&policy, &headers) {
         return forbidden;
     }
+    if let Some(unsupported) = unsupported_protocol_version(&headers) {
+        return unsupported;
+    }
     let message = match serde_json::from_slice::<Value>(&body) {
         Ok(v) => v,
         Err(e) => {
@@ -931,6 +958,32 @@ async fn mcp_post(
         // A notification (or a batch of them) is accepted and answered with nothing.
         None => StatusCode::ACCEPTED.into_response(),
     }
+}
+
+/// A 400 when the request names a protocol revision this server does not speak in
+/// `MCP-Protocol-Version`. A request without the header is fine: the specification
+/// treats it as `2025-03-26`, which is supported, and the `initialize` request
+/// legitimately carries none.
+fn unsupported_protocol_version(headers: &HeaderMap) -> Option<Response> {
+    let value = headers.get(PROTOCOL_VERSION_HEADER)?;
+    let named = value.to_str().unwrap_or("").trim();
+    if SUPPORTED_PROTOCOLS.contains(&named) {
+        return None;
+    }
+    Some(
+        (
+            StatusCode::BAD_REQUEST,
+            axum::Json(error_response(
+                Value::Null,
+                INVALID_REQUEST,
+                &format!(
+                    "Unsupported MCP-Protocol-Version '{named}'; supported: {}",
+                    SUPPORTED_PROTOCOLS.join(", ")
+                ),
+            )),
+        )
+            .into_response(),
+    )
 }
 
 /// The server opens no stream of its own; the protocol lets it answer 405 here.
@@ -965,31 +1018,68 @@ pub fn run_stdio(cli: GraphArgs) -> Result<(), String> {
     eprintln!("MCP server ready on stdio ({} tools)", tools().len());
     let runtime = runtime(cli.max_concurrent_cypher)?;
     runtime.block_on(async move {
-        let server = McpServer::new(crate::routes::router(opened.state.clone()));
-        let mut lines = tokio::io::BufReader::new(tokio::io::stdin()).lines();
-        let mut stdout = tokio::io::stdout();
-        loop {
-            let line = match lines.next_line().await {
-                Ok(Some(line)) => line,
-                Ok(None) => break,
-                Err(e) => return Err(format!("stdin: {e}")),
-            };
-            if line.trim().is_empty() {
-                continue;
-            }
-            if let Some(response) = server.handle_text(&line).await {
-                // One message per line, flushed at once so the client sees it now.
-                let written = async {
-                    stdout.write_all(response.as_bytes()).await?;
-                    stdout.write_all(b"\n").await?;
-                    stdout.flush().await
-                }
-                .await;
-                written.map_err(|e| format!("stdout: {e}"))?;
-            }
-        }
-        Ok(())
+        let server = Arc::new(McpServer::new(crate::routes::router(opened.state.clone())));
+        serve_lines(server, tokio::io::stdin(), tokio::io::stdout()).await
     })
+}
+
+/// The stdio transport over any line reader and writer: every non-empty line is a
+/// message handled on its own task, so reading never waits for a request to finish (a
+/// Cypher call may take a minute; a `ping` sent behind it must not). Responses are
+/// written as they complete, one per line, through one lock so lines never interleave.
+/// Returns once the reader is exhausted and every in-flight request has been answered.
+pub async fn serve_lines<R, W>(server: Arc<McpServer>, reader: R, writer: W) -> Result<(), String>
+where
+    R: tokio::io::AsyncRead + Unpin,
+    W: tokio::io::AsyncWrite + Unpin + Send + 'static,
+{
+    let writer = Arc::new(tokio::sync::Mutex::new(writer));
+    let mut in_flight = tokio::task::JoinSet::new();
+    let mut lines = tokio::io::BufReader::new(reader).lines();
+    let read_error = loop {
+        let line = match lines.next_line().await {
+            Ok(Some(line)) => line,
+            Ok(None) => break None,
+            Err(e) => break Some(format!("stdin: {e}")),
+        };
+        if line.trim().is_empty() {
+            continue;
+        }
+        let (server, writer) = (server.clone(), writer.clone());
+        in_flight.spawn(async move {
+            match server.handle_text(&line).await {
+                Some(response) => write_line(&writer, &response).await,
+                None => Ok(()),
+            }
+        });
+        // Reap finished requests so a write failure surfaces without waiting for EOF.
+        while let Some(done) = in_flight.try_join_next() {
+            finished(done)?;
+        }
+    };
+    while let Some(done) = in_flight.join_next().await {
+        finished(done)?;
+    }
+    read_error.map_or(Ok(()), Err)
+}
+
+async fn write_line<W: tokio::io::AsyncWrite + Unpin>(
+    writer: &tokio::sync::Mutex<W>,
+    response: &str,
+) -> Result<(), String> {
+    let mut out = writer.lock().await;
+    // One message per line, flushed at once so the client sees it now.
+    let written = async {
+        out.write_all(response.as_bytes()).await?;
+        out.write_all(b"\n").await?;
+        out.flush().await
+    }
+    .await;
+    written.map_err(|e| format!("stdout: {e}"))
+}
+
+fn finished(done: Result<Result<(), String>, tokio::task::JoinError>) -> Result<(), String> {
+    done.map_err(|e| format!("request task failed: {e}"))?
 }
 
 #[cfg(test)]
@@ -1068,9 +1158,22 @@ mod tests {
         );
         assert_eq!(plan("openapi", &args(&[])).unwrap().uri(), "/openapi.json");
         assert_eq!(
-            plan("node", &args(&[("id", json!(42))])).unwrap().uri(),
-            "/api/node/42"
+            plan(
+                "node",
+                &args(&[("id", json!(42)), ("graph_id", json!("g"))])
+            )
+            .unwrap()
+            .uri(),
+            "/api/graphs/g/node/42"
         );
+        // Node IDs are graph-local and the API has no all-graph node route, so the
+        // graph is required instead of being answered with a 404.
+        for tool in ["node", "outgoing", "incoming"] {
+            assert_eq!(
+                plan(tool, &args(&[("id", json!(42))])).unwrap_err(),
+                "graph_id is required"
+            );
+        }
         assert_eq!(
             plan(
                 "outgoing",
@@ -1081,10 +1184,13 @@ mod tests {
             "/api/graphs/g/node/42/outgoing"
         );
         assert_eq!(
-            plan("incoming", &args(&[("id", json!(7.5))]))
-                .unwrap()
-                .uri(),
-            "/api/node/7.5/incoming"
+            plan(
+                "incoming",
+                &args(&[("id", json!(7.5)), ("graph_id", json!("g"))])
+            )
+            .unwrap()
+            .uri(),
+            "/api/graphs/g/node/7.5/incoming"
         );
         assert!(plan("node", &args(&[]))
             .unwrap_err()
@@ -1307,6 +1413,16 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(init["result"]["protocolVersion"], PROTOCOL_VERSION);
+        // The revision the retired npm SDK negotiated is still spoken.
+        for supported in SUPPORTED_PROTOCOLS {
+            let init = server
+                .handle(&json!({"jsonrpc": "2.0", "id": 2, "method": "initialize", "params": {"protocolVersion": supported}}))
+                .await
+                .unwrap();
+            assert_eq!(init["result"]["protocolVersion"], *supported);
+        }
+        assert!(SUPPORTED_PROTOCOLS.contains(&"2025-11-25"));
+        assert_eq!(PROTOCOL_VERSION, *SUPPORTED_PROTOCOLS.last().unwrap());
 
         assert!(server
             .handle(&json!({"jsonrpc": "2.0", "method": "notifications/initialized"}))
@@ -1385,6 +1501,92 @@ mod tests {
             .unwrap();
         assert_eq!(batch.as_array().unwrap().len(), 1);
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn the_envelope_decides_what_a_message_is() {
+        let (server, root) = empty_server();
+        // No `id`: a notification, whatever the method; nothing goes back.
+        assert!(server
+            .handle(&json!({"jsonrpc": "2.0", "method": "tools/list"}))
+            .await
+            .is_none());
+        assert!(server
+            .handle_text(r#"{"jsonrpc":"2.0","method":"tools/call","params":{"name":"graphs"}}"#)
+            .await
+            .is_none());
+        // An `id` makes a request, even under a "notifications/" method.
+        let bogus = server
+            .handle(&json!({"jsonrpc": "2.0", "id": 11, "method": "notifications/bogus"}))
+            .await
+            .unwrap();
+        assert_eq!(bogus["id"], 11);
+        assert_eq!(bogus["error"]["code"], METHOD_NOT_FOUND);
+        // The version field is checked; the error carries the request's id when it has one.
+        let missing = server
+            .handle(&json!({"id": 12, "method": "ping"}))
+            .await
+            .unwrap();
+        assert_eq!(missing["id"], 12);
+        assert_eq!(missing["error"]["code"], INVALID_REQUEST);
+        let wrong = server
+            .handle_text(r#"{"jsonrpc":"1.0","method":"ping"}"#)
+            .await
+            .unwrap();
+        assert!(
+            wrong.contains("-32600") && wrong.contains(r#""id":null"#),
+            "{wrong}"
+        );
+        // `id: null` is present, so it is a request and gets an answer.
+        let null_id = server
+            .handle(&json!({"jsonrpc": "2.0", "id": null, "method": "ping"}))
+            .await
+            .unwrap();
+        assert_eq!(null_id["result"], json!({}));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn stdio_keeps_reading_while_a_request_runs() {
+        use axum::routing::get;
+        // A router whose `graphs` route takes a while: the call issued first must not
+        // hold up the `ping` sent behind it.
+        let slow = Router::new().route(
+            "/api/graphs",
+            get(|| async {
+                tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+                axum::Json(json!([]))
+            }),
+        );
+        let server = Arc::new(McpServer::new(slow));
+        let input = concat!(
+            r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"graphs"}}"#,
+            "\n",
+            "\n",
+            r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#,
+            "\n",
+            r#"{"jsonrpc":"2.0","id":2,"method":"ping"}"#,
+            "\n",
+        );
+        let (mut client, server_side) = tokio::io::duplex(64 * 1024);
+        let started = std::time::Instant::now();
+        serve_lines(server, input.as_bytes(), server_side)
+            .await
+            .unwrap();
+        assert!(started.elapsed() >= std::time::Duration::from_millis(400));
+        let mut out = String::new();
+        tokio::io::AsyncReadExt::read_to_string(&mut client, &mut out)
+            .await
+            .unwrap();
+        let lines: Vec<Value> = out
+            .lines()
+            .map(|l| serde_json::from_str(l).unwrap())
+            .collect();
+        assert_eq!(lines.len(), 2, "{out}");
+        assert_eq!(lines[0]["id"], 2, "the ping is answered first: {out}");
+        assert_eq!(lines[0]["result"], json!({}));
+        assert_eq!(lines[1]["id"], 1);
+        assert_eq!(lines[1]["result"]["content"][0]["text"], "[]");
     }
 
     #[test]
@@ -1562,9 +1764,75 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(accepted.status(), StatusCode::ACCEPTED);
+        // The envelope rules hold over HTTP too: no id means no response body.
+        let silent = app
+            .clone()
+            .oneshot(post(r#"{"jsonrpc":"2.0","method":"tools/list"}"#))
+            .await
+            .unwrap();
+        assert_eq!(silent.status(), StatusCode::ACCEPTED);
+        let invalid = app
+            .clone()
+            .oneshot(post(r#"{"id":5,"method":"ping"}"#))
+            .await
+            .unwrap();
+        assert_eq!(invalid.status(), StatusCode::OK);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(invalid.into_body(), usize::MAX).await.unwrap())
+                .unwrap();
+        assert_eq!(body["error"]["code"], INVALID_REQUEST);
 
         let bad = app.clone().oneshot(post("nope")).await.unwrap();
         assert_eq!(bad.status(), StatusCode::BAD_REQUEST);
+
+        // Initialization over HTTP negotiates the latest revision the npm SDK spoke.
+        let init = app
+            .clone()
+            .oneshot(post(
+                r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}"#,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(init.status(), StatusCode::OK);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(init.into_body(), usize::MAX).await.unwrap()).unwrap();
+        assert_eq!(body["result"]["protocolVersion"], "2025-11-25");
+        // Subsequent requests name their revision; an unsupported one is refused.
+        let with_version = |version: &str| {
+            Request::builder()
+                .method(Method::POST)
+                .uri("/mcp")
+                .header(header::CONTENT_TYPE, "application/json")
+                .header(PROTOCOL_VERSION_HEADER, version)
+                .body(Body::from(
+                    r#"{"jsonrpc":"2.0","id":3,"method":"ping"}"#.to_string(),
+                ))
+                .unwrap()
+        };
+        for version in SUPPORTED_PROTOCOLS {
+            let ok = app.clone().oneshot(with_version(version)).await.unwrap();
+            assert_eq!(ok.status(), StatusCode::OK, "{version}");
+        }
+        let unsupported = app
+            .clone()
+            .oneshot(with_version("1999-01-01"))
+            .await
+            .unwrap();
+        assert_eq!(unsupported.status(), StatusCode::BAD_REQUEST);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(unsupported.into_body(), usize::MAX).await.unwrap())
+                .unwrap();
+        assert_eq!(body["error"]["code"], INVALID_REQUEST);
+        assert!(body["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("1999-01-01"));
+        let garbage = app
+            .clone()
+            .oneshot(with_version("not a version"))
+            .await
+            .unwrap();
+        assert_eq!(garbage.status(), StatusCode::BAD_REQUEST);
 
         let get = app
             .clone()

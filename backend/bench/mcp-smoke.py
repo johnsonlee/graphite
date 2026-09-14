@@ -156,12 +156,13 @@ def main():
           "GET", f"/api/graphs/{first}/architecture/c4?level=container&format=mermaid&limit=200",
           text=True)
 
-    # Node routes exist per graph only, on the Kotlin server too; without graph_id the
-    # npm package sent `/api/node/<id>` and got the same 404, which is kept as is.
-    res = tool_text(stdio.request("tools/call", {"name": "outgoing", "arguments": {"id": 1}}))
-    if not res.get("isError") or not res["content"][0]["text"].startswith("404 "):
-        fail(f"all-graph node route should be a 404 tool error: {res}")
-    checks += 1
+    # Node IDs are graph-local and the API has no all-graph node route (the Kotlin server
+    # has none either), so these three tools require graph_id instead of answering 404.
+    for tool in ("node", "outgoing", "incoming"):
+        res = tool_text(stdio.request("tools/call", {"name": tool, "arguments": {"id": 1}}))
+        if not res.get("isError") or res["content"][0]["text"] != "graph_id is required":
+            fail(f"{tool} without graph_id should be a validation error: {res}")
+    checks += 3
 
     # An API error becomes a tool error, with the status line the npm package produced.
     res = tool_text(stdio.request("tools/call", {"name": "graphs", "arguments": {"graph_id": "no-such-graph"}}))
@@ -185,6 +186,36 @@ def main():
     status, _ = http(base, "POST", "/mcp", {"jsonrpc": "2.0", "method": "notifications/initialized"})
     if status != 202:
         fail(f"notification over HTTP -> {status}, expected 202")
+    # The envelope decides: no id is a notification whatever the method; a missing or
+    # wrong jsonrpc field is an Invalid Request that keeps the caller's id.
+    status, _ = http(base, "POST", "/mcp", {"jsonrpc": "2.0", "method": "tools/list"})
+    if status != 202:
+        fail(f"id-less tools/list over HTTP -> {status}, expected 202")
+    status, body = http(base, "POST", "/mcp", {"id": 9, "method": "ping"})
+    if status != 200 or json.loads(body).get("error", {}).get("code") != -32600 or json.loads(body).get("id") != 9:
+        fail(f"missing jsonrpc field -> {status}: {body[:200]}")
+    res = tool_text(stdio.request("tools/call", {"name": "graphs", "arguments": {}}))  # stdio still alive
+    stdio.proc.stdin.write(json.dumps({"jsonrpc": "2.0", "method": "tools/list"}) + "\n")
+    stdio.proc.stdin.flush()
+    pong = stdio.request("ping")  # the id-less tools/list produced no line before this answer
+    if pong.get("result") != {}:
+        fail(f"an id-less request must produce no stdio response: {pong}")
+    # Initialization negotiates the newest revision the npm SDK spoke; a later request
+    # naming an unsupported one in MCP-Protocol-Version is refused with 400.
+    status, body = http(base, "POST", "/mcp", {"jsonrpc": "2.0", "id": 5, "method": "initialize",
+                                              "params": {"protocolVersion": "2025-11-25", "capabilities": {},
+                                                         "clientInfo": {"name": "mcp-smoke", "version": "0"}}})
+    if status != 200 or json.loads(body)["result"]["protocolVersion"] != "2025-11-25":
+        fail(f"initialize with 2025-11-25 over HTTP -> {status}: {body[:200]}")
+    status, _ = http(base, "POST", "/mcp", {"jsonrpc": "2.0", "id": 6, "method": "ping"},
+                     headers={"MCP-Protocol-Version": "2025-11-25"})
+    if status != 200:
+        fail(f"ping with a supported MCP-Protocol-Version -> {status}, expected 200")
+    status, body = http(base, "POST", "/mcp", {"jsonrpc": "2.0", "id": 7, "method": "ping"},
+                        headers={"MCP-Protocol-Version": "1999-01-01"})
+    if status != 400 or json.loads(body).get("error", {}).get("code") != -32600:
+        fail(f"ping with an unsupported MCP-Protocol-Version -> {status}: {body[:200]}")
+    checks += 7
     status, _ = http(base, "GET", "/mcp")
     if status != 405:
         fail(f"GET /mcp -> {status}, expected 405")
