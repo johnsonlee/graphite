@@ -42,7 +42,7 @@ jobs:
       version: ${{ steps.semver.outputs.version }}
       prerelease: ${{ steps.semver.outputs.prerelease }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
     - name: Parse the release tag as SemVer
@@ -61,10 +61,10 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '17'
@@ -164,7 +164,7 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
     - uses: dtolnay/rust-toolchain@stable
@@ -201,7 +201,7 @@ jobs:
         tar -czf "release-assets/${ASSET}" -C "target/${{ matrix.target }}/release" graphite
         (cd release-assets && shasum -a 256 "${ASSET}" > "${ASSET}.sha256")
         cat "release-assets/${ASSET}.sha256"
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: binaries-${{ matrix.target }}
         path: release-assets/*
@@ -229,10 +229,10 @@ jobs:
       RELEASE_VERSION: ${{ needs.validate.outputs.version }}
       PRERELEASE: ${{ needs.validate.outputs.prerelease }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '17'
@@ -245,7 +245,7 @@ jobs:
         cp frontend/jvm/query/build/libs/graphite.jar release-assets/graphite.jar
         (cd release-assets && sha256sum graphite.jar > graphite.jar.sha256)
     - name: Collect the Rust binaries
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         pattern: binaries-*
         path: release-assets
@@ -333,7 +333,7 @@ jobs:
     # Kept on every run: a dry run's only output, and what the tap and formula jobs
     # take their input from, so each of them can be re-run on its own.
     - name: Keep the assets and the rendered formula
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: release-${{ env.RELEASE_TAG }}
         path: |
@@ -370,7 +370,7 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: release-${{ env.RELEASE_TAG }}
         path: release
@@ -406,7 +406,7 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: release-${{ env.RELEASE_TAG }}
         path: dry-run
@@ -436,14 +436,14 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
     # A real release takes the binaries from the GitHub Release it just published; a
     # dry run takes the same tarballs from this run's `binaries` artifacts.
     - name: Take the Linux binaries from this run (dry run)
       if: env.DRY_RUN == 'true'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         pattern: binaries-*-linux-musl
         merge-multiple: true
@@ -462,24 +462,24 @@ jobs:
         done
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - uses: docker/setup-qemu-action@v3
-    - uses: docker/setup-buildx-action@v3
+    - uses: docker/setup-qemu-action@v4
+    - uses: docker/setup-buildx-action@v4
     - name: Login to GitHub Container Registry
       if: env.DRY_RUN != 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to Docker Hub
       if: env.DRY_RUN != 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         username: johnsonlee
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Extract Docker metadata
       id: docker_meta
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@v6
       with:
         images: |
           ghcr.io/johnsonlee/graphite-explore
@@ -497,7 +497,7 @@ jobs:
     # The pushed image is never run by this workflow otherwise: build the runner's
     # architecture alone first and start the binary from it.
     - name: Build and run the image for the runner's architecture
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: .
         file: backend/explore/Dockerfile
@@ -512,7 +512,7 @@ jobs:
         docker run --rm graphite-explore:smoke --help | grep -F -- '--graph'
     # In a dry run both architectures are still built (arm64 under QEMU), nothing is pushed.
     - name: Build and push graphite-explore image
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: .
         file: backend/explore/Dockerfile
