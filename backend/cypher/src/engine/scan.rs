@@ -430,6 +430,11 @@ pub struct ScanPlan {
     /// map: the map's equalities conjoined with the WHERE clause, if any. `None` when
     /// the WHERE clause alone is the whole test.
     clause: Option<Expr>,
+    /// A conjunct of the WHERE clause was left out of the tree because no leaf could
+    /// be made of it (`n.graphId IS NOT NULL`, `n.line > 10`, `NOT ...`). The
+    /// candidates are then a superset of the answer, so no survivor is ever taken as
+    /// verified: every one goes through the full WHERE clause.
+    relaxed: bool,
 }
 
 impl ScanPlan {
@@ -483,7 +488,8 @@ impl ScanPlan {
             });
         }
         let combined = clause.as_ref()?;
-        let mut tree = collect_tree(combined, &variable)?;
+        let mut relaxed = false;
+        let mut tree = collect_tree(combined, &variable, &mut relaxed)?;
         let tests = assign_test_ids(&mut tree);
         let mut preds = Vec::new();
         tree.leaves(&mut preds);
@@ -524,7 +530,14 @@ impl ScanPlan {
             } else {
                 clause
             },
+            relaxed,
         })
+    }
+
+    /// Whether a survivor a stream reports as verified may skip the WHERE clause: never
+    /// when a conjunct was dropped from the plan.
+    fn verified(&self, stream_verified: bool) -> bool {
+        stream_verified && !self.relaxed
     }
 
     /// Sweep candidates and hand survivors to `consume` after the full WHERE re-check.
@@ -831,7 +844,7 @@ impl ScanPlan {
         while let Some(id) = stream.next(ex, graph)? {
             ex.tick()?;
             let value = Value::Node(NodeRef { source, id });
-            if !emit(value, provenance.as_ref(), verified)? {
+            if !emit(value, provenance.as_ref(), self.verified(verified))? {
                 return Ok(false);
             }
         }
@@ -1036,7 +1049,7 @@ impl ScanPlan {
             let id = head.take().expect("a head");
             ex.tick()?;
             let value = Value::Node(NodeRef { source, id });
-            if !emit(value, provenance.as_ref(), stream.verified())? {
+            if !emit(value, provenance.as_ref(), self.verified(stream.verified()))? {
                 return Ok(false);
             }
             *head = stream.next(ex, graph)?;
@@ -1070,7 +1083,7 @@ impl ScanPlan {
         while let Some(id) = stream.next(ex)? {
             ex.tick()?;
             let value = Value::Node(NodeRef { source, id });
-            if !emit(value, provenance.as_ref(), stream.verified)? {
+            if !emit(value, provenance.as_ref(), self.verified(stream.verified))? {
                 return Ok(false);
             }
         }
@@ -2451,16 +2464,35 @@ impl PredTree {
 /// Parse a WHERE clause into the tree. `None` when any leaf is unsupported — the whole
 /// clause is then left to the generic evaluator, since a partial reading of it could
 /// exclude rows that match.
-fn collect_tree(e: &Expr, variable: &str) -> Option<PredTree> {
+/// The pushable tree of `e`, or `None` when nothing in it can be pushed.
+///
+/// A disjunction is pushable only when every side is: candidates for `a OR b` are the
+/// union of both sides' candidates, and a side without a plan has no candidates to
+/// contribute. A conjunction is pushable when either side is: the candidates of one
+/// side alone are a superset of `a AND b`, and the WHERE clause, re-evaluated on every
+/// survivor, removes the rest. Dropping a side is recorded in `relaxed`, which keeps the
+/// plan from taking any survivor as already verified. This is what lets
+/// `n.graphId IS NOT NULL AND (coalesce(toString(n.value), '') CONTAINS 'x' OR ...)`
+/// use the string indexes instead of decoding every node of every graph.
+fn collect_tree(e: &Expr, variable: &str, relaxed: &mut bool) -> Option<PredTree> {
     match e {
         Expr::Or(a, b) => Some(PredTree::Or(vec![
-            collect_tree(a, variable)?,
-            collect_tree(b, variable)?,
+            collect_tree(a, variable, relaxed)?,
+            collect_tree(b, variable, relaxed)?,
         ])),
-        Expr::And(a, b) => Some(PredTree::And(vec![
-            collect_tree(a, variable)?,
-            collect_tree(b, variable)?,
-        ])),
+        Expr::And(a, b) => {
+            match (
+                collect_tree(a, variable, relaxed),
+                collect_tree(b, variable, relaxed),
+            ) {
+                (Some(a), Some(b)) => Some(PredTree::And(vec![a, b])),
+                (Some(one), None) | (None, Some(one)) => {
+                    *relaxed = true;
+                    Some(one)
+                }
+                (None, None) => None,
+            }
+        }
         _ => {
             let mut out = Vec::new();
             if expand_keys_predicate(e, variable, &mut out) {
@@ -4072,6 +4104,68 @@ mod tests {
             _ => None,
         };
         (patterns.clone(), where_clause)
+    }
+
+    /// `MATCH (n) WHERE n.graphId IS NOT NULL AND (<string search>)`: the shape that
+    /// used to decode every node of every graph because one conjunct had no leaf.
+    #[test]
+    fn an_unpushable_conjunct_relaxes_the_plan_instead_of_dropping_it() {
+        let (p, w) = parse_where(
+            "MATCH (n) WHERE n.graphId IS NOT NULL AND (coalesce(toString(n.value), '') \
+             CONTAINS 'Expected' OR coalesce(toString(n.name), '') CONTAINS 'Expected' \
+             OR coalesce(toString(n.id), '') CONTAINS 'Expected') RETURN n",
+        );
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("the string side plans the scan");
+        assert!(plan.relaxed);
+        let mut leaves = Vec::new();
+        plan.tree.leaves(&mut leaves);
+        assert_eq!(
+            leaves
+                .iter()
+                .map(|l| l.prop().to_string())
+                .collect::<Vec<_>>(),
+            ["value", "name", "id"]
+        );
+        // A relaxed plan never lets a survivor skip the WHERE clause, whatever the
+        // stream says about it.
+        assert!(!plan.verified(true));
+        assert!(!plan.verified(false));
+
+        // The conjunct may sit on either side, and under other conjunctions.
+        for q in [
+            "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.line > 20 RETURN n",
+            "MATCH (n) WHERE NOT n.callee_name = 'x' AND n.callee_class CONTAINS 'java' RETURN n",
+            "MATCH (n) WHERE n.callee_name IS NULL AND n.callee_class CONTAINS 'java' AND n.line > 1 RETURN n",
+            "MATCH (n) WHERE (n.callee_class CONTAINS 'java' AND n.line > 20) OR n.callee_name = 'x' RETURN n",
+        ] {
+            let (p, w) = parse_where(q);
+            let plan = ScanPlan::build(&p, w.as_ref()).unwrap_or_else(|| panic!("{q}"));
+            assert!(plan.relaxed, "{q}");
+        }
+    }
+
+    #[test]
+    fn a_plan_without_a_dropped_conjunct_still_trusts_its_streams() {
+        let (p, w) = parse_where(
+            "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name = 'toString' RETURN n",
+        );
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(!plan.relaxed);
+        assert!(plan.verified(true));
+        assert!(!plan.verified(false));
+    }
+
+    #[test]
+    fn nothing_pushable_or_an_unpushable_disjunct_means_no_plan() {
+        for q in [
+            "MATCH (n) WHERE n.graphId IS NOT NULL RETURN n",
+            "MATCH (n) WHERE n.graphId IS NOT NULL AND n.line > 20 RETURN n",
+            "MATCH (n) WHERE n.line > 20 OR n.callee_class CONTAINS 'java' RETURN n",
+            "MATCH (n) WHERE n.callee_class CONTAINS 'java' OR (n.line > 20 AND n.id IS NOT NULL) RETURN n",
+        ] {
+            let (p, w) = parse_where(q);
+            assert!(ScanPlan::build(&p, w.as_ref()).is_none(), "{q}");
+        }
     }
 
     fn synthetic_leaf(property: &'static str, op: PushOp, literal: &str) -> StringPredicate {
