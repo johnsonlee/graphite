@@ -24,12 +24,37 @@ env:
   DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
 
 jobs:
+  # ---- The one place the tag is parsed ----
+  # Every publishing job depends on this one and takes the version and the pre-release
+  # flag from its outputs, so a tag that is not `v` + strict SemVer stops here, before any
+  # artifact is uploaded or any channel moved. The publishers are not atomic with each
+  # other; a malformed tag must not get as far as one of them.
+  validate:
+    name: validate-release-tag
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'johnsonlee'
+    outputs:
+      version: ${{ steps.semver.outputs.version }}
+      prerelease: ${{ steps.semver.outputs.prerelease }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
+    - name: Parse the release tag as SemVer
+      id: semver
+      run: |
+        python3 .github/scripts/release-version.py --self-test
+        python3 .github/scripts/release-version.py "${RELEASE_TAG}" | tee -a "${GITHUB_OUTPUT}"
+
   # ---- Maven Central (Sonatype) ----
   maven:
+    needs: validate
     permissions:
       contents: read
     runs-on: ubuntu-latest
     if: github.repository_owner == 'johnsonlee'
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -38,13 +63,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-    - name: Resolve release version
-      run: |
-        if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
-          echo "RELEASE_TAG must be a v-prefixed tag, got '${RELEASE_TAG:-<empty>}'" >&2
-          exit 1
-        fi
-        echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - name: Build the Maven artifacts (dry run)
       if: env.DRY_RUN == 'true'
       run: ./gradlew clean assemble -S --no-daemon -Pversion=${RELEASE_VERSION}
@@ -77,10 +95,13 @@ jobs:
 
   # ---- The graphite CLI: one tarball per platform ----
   binaries:
+    needs: validate
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
     if: github.repository_owner == 'johnsonlee'
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
@@ -100,14 +121,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
-    - name: Resolve release version
-      shell: bash
-      run: |
-        if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
-          echo "RELEASE_TAG must be a v-prefixed tag, got '${RELEASE_TAG:-<empty>}'" >&2
-          exit 1
-        fi
-        echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - uses: dtolnay/rust-toolchain@stable
       with:
         targets: ${{ matrix.target }}
@@ -135,11 +148,14 @@ jobs:
 
   # ---- GitHub Release + Homebrew tap ----
   release:
-    needs: binaries
+    needs: [validate, binaries]
     permissions:
       contents: write
     runs-on: ubuntu-latest
     if: github.repository_owner == 'johnsonlee'
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+      PRERELEASE: ${{ needs.validate.outputs.prerelease }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -148,13 +164,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-    - name: Resolve release version
-      run: |
-        if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
-          echo "RELEASE_TAG must be a v-prefixed tag, got '${RELEASE_TAG:-<empty>}'" >&2
-          exit 1
-        fi
-        echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     # graphite.jar is the JVM frontend: `graphite build` runs it. It stays a complete
     # CLI of its own (build/query/serve) for anyone not yet on the binary.
     - name: Build the JVM frontend jar
@@ -178,17 +187,19 @@ jobs:
           sha256sum -c "graphite-${RELEASE_VERSION}-${TARGET}.tar.gz.sha256"
         done
         sha256sum -c graphite.jar.sha256
-    # A tag with a pre-release suffix (v3.0.0-alpha.1, -beta.2, -rc.1) rehearses this
-    # workflow end to end without touching what users install by default: the GitHub
-    # Release is marked pre-release (so it is not "latest"), the Homebrew formula is
-    # left alone, and the image is not tagged `latest` (see the docker job).
+    # A tag whose SemVer has a pre-release part (v3.0.0-alpha.1, -beta.2, -rc.1)
+    # rehearses this workflow end to end without touching what users install by
+    # default: the GitHub Release is marked pre-release (so it is not "latest"), the
+    # Homebrew formula is left alone, and the image is not tagged `latest` (see the
+    # docker job). The flag comes from the validate job's parse, so build metadata
+    # such as v3.0.0+linux-1 stays a stable release.
     - name: Create GitHub Release
       if: env.DRY_RUN != 'true'
       uses: softprops/action-gh-release@v2
       with:
         name: Release ${{ env.RELEASE_TAG }}
         tag_name: ${{ env.RELEASE_TAG }}
-        prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
+        prerelease: ${{ needs.validate.outputs.prerelease == 'true' }}
         generate_release_notes: true
         files: release-assets/*
       env:
@@ -282,12 +293,10 @@ jobs:
           echo "HOMEBREW_TAP_TOKEN not set — skipping tap update"
           exit 0
         fi
-        case "${RELEASE_TAG}" in
-          *-*)
-            echo "${RELEASE_TAG} is a pre-release — leaving Formula/graphite.rb at the current release"
-            exit 0
-            ;;
-        esac
+        if [ "${PRERELEASE}" = true ]; then
+          echo "${RELEASE_TAG} is a pre-release — leaving Formula/graphite.rb at the current release"
+          exit 0
+        fi
         git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
         mkdir -p tap/Formula
         cp formula/Formula/graphite.rb tap/Formula/graphite.rb
@@ -305,23 +314,18 @@ jobs:
 
   # ---- Docker image (depends on release for the pre-built jar) ----
   docker:
-    needs: release
+    needs: [validate, release]
     permissions:
       contents: read
       packages: write
     runs-on: ubuntu-latest
     if: github.repository_owner == 'johnsonlee'
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
-    - name: Resolve release version
-      run: |
-        if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
-          echo "RELEASE_TAG must be a v-prefixed tag, got '${RELEASE_TAG:-<empty>}'" >&2
-          exit 1
-        fi
-        echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     # A real release takes the binaries from the GitHub Release it just published; a
     # dry run takes the same tarballs from this run's `binaries` artifacts.
     - name: Take the Linux binaries from this run (dry run)
@@ -371,7 +375,7 @@ jobs:
           type=semver,pattern={{version}},value=${{ env.RELEASE_TAG }}
           type=semver,pattern={{major}}.{{minor}},value=${{ env.RELEASE_TAG }}
           type=semver,pattern={{major}},value=${{ env.RELEASE_TAG }}
-          type=raw,value=latest,enable=${{ !contains(env.RELEASE_TAG, '-') }}
+          type=raw,value=latest,enable=${{ needs.validate.outputs.prerelease == 'false' }}
         labels: |
           org.opencontainers.image.title=graphite-explore
           org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
