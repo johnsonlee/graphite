@@ -117,10 +117,11 @@ jobs:
         python3 -m zipfile -l "${RUNNER_TEMP}/acme.graphite" | grep -F META-INF/graphite.manifest
         ./target/release/graphite graph unpack "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/acme-unpacked"
         diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-unpacked" --exclude=META-INF
-        for GRAPH in "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme.graphite"; do
-          ./target/release/graphite query "${GRAPH}" 'MATCH (n) RETURN count(n) AS n' -f json
-        done | sort -u | tee "${RUNNER_TEMP}/counts.json"
-        test "$(wc -l < "${RUNNER_TEMP}/counts.json")" -eq 1
+        QUERY='MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS c ORDER BY c DESC, n.callee_class LIMIT 20'
+        ./target/release/graphite query "${RUNNER_TEMP}/acme-graph" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-dir.csv"
+        ./target/release/graphite query "${RUNNER_TEMP}/acme.graphite" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-file.csv"
+        test "$(wc -l < "${RUNNER_TEMP}/from-dir.csv")" -gt 1
+        cmp "${RUNNER_TEMP}/from-dir.csv" "${RUNNER_TEMP}/from-file.csv"
         # Without a frontend the shell says how to get one and exits 2.
         set +e
         env -u GRAPHITE_FRONTEND_JVM HOME="${RUNNER_TEMP}/nohome" PATH=/usr/bin:/bin \
