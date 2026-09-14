@@ -37,7 +37,7 @@ Graphite builds a **program graph** from compiled bytecode — nodes are program
 | Find dead code | Entire codebase, 5M tokens | `branchScopes` + `callSites` → dead paths | **99.99%** |
 | Resolve type hierarchy | ~100 files per type chain | `supertypes` / `subtypes` → direct answer | **99%** |
 
-Graphite uses **Cypher** (the industry-standard graph query language) for querying. The Cypher engine is in the `cypher` module (`frontend/jvm/cypher`), powered by an ANTLR-based openCypher parser.
+Graphite uses **Cypher** (the industry-standard graph query language) for querying. The `graphite` binary runs the Rust engine in `backend/cypher` for `query`, `serve` and `mcp`; the Kotlin API's `graph.query(...)` runs the ANTLR-based engine in `frontend/jvm/cypher`. Both speak the same read-oriented dialect and are checked against each other by a differential harness (`backend/bench`).
 
 ## Why Not Tree-sitter?
 
@@ -277,7 +277,7 @@ Generic JDK resource linking currently covers:
 | `/api/graphs` | List loaded webgraphs with cached per-graph statistics and aggregate totals |
 | `/api/graphs/{graphId}` | Get, load, replace, or unload a webgraph by id |
 | `/api/graphs/{graphId}/...` | Query one explicit webgraph with the direct single-graph response shape |
-| `/api/topology` | Get the graph-to-graph call topology built at startup and mapped from temporary storage |
+| `/api/topology` | Get the graph-to-graph call topology derived at startup from the `--topology` rules |
 | `/api/cypher` | Run one Cypher query over the union of every loaded graph |
 | `/api/cypher/graphs` | Run one query over an explicit graph set, or explicitly fan out per graph |
 | `/api/resources` | List indexed resources in every graph, grouped by `graphId` |
@@ -334,18 +334,16 @@ HTTP 429 with `code` set to `cypher_concurrency_limit`.
 `--cypher-work-budget` is deprecated and ignored. It remains accepted for
 command-line compatibility but no longer constrains server requests. Core
 library callers may still use `CypherExecutionBudget` directly.
-The `=~` operator preserves Java `Pattern` syntax, including backreferences,
-look-around, possessive quantifiers, character-class intersections, and Java's
-default line-terminator behavior. Server execution polls cancellation through
-the matcher's input without changing the accepted pattern language.
-An executing query is also cancelled when the server observes an actual connection close,
-TCP reset, or socket error. Jetty's connection idle clock is suspended while Cypher is
-executing, because a query can legitimately perform no socket I/O for longer than the
-connector's default 30-second idle timeout. A clean input FIN is not treated as cancellation:
-TCP exposes both a full client `close()` and a valid request-side `SHUT_WR` as the same input
-half-close until the server attempts to write the response. A server-side cancellation on a
-still-connected client returns HTTP 503 with `code` set to `cypher_query_cancelled`; it is
-never reported as an empty HTTP 200 response.
+The `=~` operator in the `graphite` binary accepts the syntax of Rust's `regex` crate:
+linear-time matching, no backreferences, look-around or possessive quantifiers. A pattern
+that uses such a construct fails the query with `Unsupported regex construct in pattern`
+rather than matching nothing. The Kotlin engine (`graph.query(...)` and the legacy
+`graphite.jar serve`) keeps Java `Pattern` syntax in full.
+A query that stops for any reason other than its timeout returns HTTP 503 with `code`
+set to `cypher_query_cancelled`; it is never reported as an empty HTTP 200 response. The
+legacy `graphite.jar serve` additionally cancels a query when it observes a connection
+close, TCP reset or socket error, and suspends Jetty's idle clock while Cypher executes;
+see [docs/cypher-client-cancellation-attempts.md](docs/cypher-client-cancellation-attempts.md).
 
 Start the server with `--metrics` to expose Prometheus output at `/metrics`.
 Metrics are opt-in, so the default request path carries no instrumentation cost.
@@ -376,10 +374,9 @@ LIMIT 50
 For multi-graph startup, `--topology` accepts one Cypher file (or a directory
 of `.cypher` files). The configured `--graph` entries are the catalog: Graphite
 loads them once, runs the topology query over those loaded graph instances,
-and aggregates the returned rows into an internal topology graph stored under
-`${java.io.tmpdir}/graphite/<UUID>/` and mapped read-only. This internal format
-is independent of the public WebGraph/`GraphStore` format. The query
-must return `source` and `target`; it may also return `protocol`,
+and aggregates the returned rows into an in-process topology graph that is
+rebuilt whenever a graph is loaded, replaced or unloaded. Nothing is written
+beside the service graphs. The query must return `source` and `target`; it may also return `protocol`,
 `operation`, `weight`, and `evidence`. For example, a generated RPC adapter can
 encode its provider in a package segment:
 
@@ -412,14 +409,14 @@ graphite/
 │       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
 │       ├── sootup/         # SootUp bytecode → graph builder
 │       ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
-│       ├── query/          # CLI: build, query, serve
-│       └── explore/        # Explore HTTP routes and legacy standalone launcher
+│       ├── query/          # `graphite.jar`: the build frontend, plus legacy query/serve
+│       └── explore/        # Legacy Kotlin Explorer server
 ├── backend/                # Rust backend
 │   ├── storage/            # mmap reader of the persisted graph, indexes, columns
 │   ├── cypher/             # Cypher parser, planner, executor
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
-├── cli/                    # `graphite` CLI (Rust): build, query, serve, explore
+├── cli/                    # `graphite` CLI (Rust): build, query, serve, mcp, frontend
 ├── Cargo.toml              # Cargo workspace: backend/* and cli
 └── docs/
 ```
@@ -466,7 +463,10 @@ class MyExtension : GraphiteExtension {
 
 Register in `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension`.
 
-## Installation
+## Kotlin Dependencies
+
+The JVM modules are published to Maven Central. From 3.0.0 the artifact ids carry no
+`graphite-` prefix (2.x published `graphite-core`, `graphite-sootup`, ...).
 
 ```kotlin
 repositories {
@@ -474,12 +474,12 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:core:2.1.0")
-    implementation("io.johnsonlee.graphite:sootup:2.1.0")
+    implementation("io.johnsonlee.graphite:core:3.0.0-alpha5")
+    implementation("io.johnsonlee.graphite:sootup:3.0.0-alpha5")
     // Optional: Cypher query support (graph.query("MATCH ..."))
-    implementation("io.johnsonlee.graphite:cypher:2.1.0")
+    implementation("io.johnsonlee.graphite:cypher:3.0.0-alpha5")
     // Optional: disk persistence (WebGraph format)
-    implementation("io.johnsonlee.graphite:webgraph:2.1.0")
+    implementation("io.johnsonlee.graphite:webgraph:3.0.0-alpha5")
 }
 ```
 
