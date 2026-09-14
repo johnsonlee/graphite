@@ -1,0 +1,3912 @@
+package io.johnsonlee.graphite.cli
+
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
+import io.johnsonlee.graphite.cli.c4.C4ArchitectureService
+import io.johnsonlee.graphite.cli.c4.C4RelationshipKind
+import io.johnsonlee.graphite.cli.c4.C4RelationshipType
+import io.johnsonlee.graphite.cli.c4.C4Relationship
+import io.johnsonlee.graphite.cli.c4.C4ModelInferer
+import io.johnsonlee.graphite.cli.c4.C4StructurizrMapper
+import io.johnsonlee.graphite.cli.c4.C4ViewLimits
+import io.johnsonlee.graphite.cli.c4.ExternalDependency
+import io.johnsonlee.graphite.cli.c4.ExternalDependencyKind
+import io.johnsonlee.graphite.cli.c4.ExternalSystemClassifier
+import io.johnsonlee.graphite.cli.c4.diagramRelationshipLabel
+import io.johnsonlee.graphite.cli.c4.externalArchitectureType
+import io.johnsonlee.graphite.cli.c4.reduceDiagramTransitiveEdges
+import io.johnsonlee.graphite.cli.c4.reduceSharedInternalFanIn
+import io.johnsonlee.graphite.cli.c4.reduceSharedLibraryFanIn
+import io.johnsonlee.graphite.cli.c4.reduceTransitiveContainerEdges
+import io.javalin.Javalin
+import io.javalin.json.JavalinGson
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceRelation
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeRelation
+import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.input.JavaArchiveLayout
+import io.johnsonlee.graphite.input.ResourceAccessor
+import io.johnsonlee.graphite.input.ResourceEntry
+import io.johnsonlee.graphite.webgraph.GraphStore
+import org.junit.AfterClass
+import org.junit.BeforeClass
+import picocli.CommandLine
+import java.io.ByteArrayInputStream
+import java.io.Closeable
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
+import javax.tools.ToolProvider
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+@Suppress("DEPRECATION")
+class ExploreCommandTest {
+
+    companion object {
+        private lateinit var graphDir: Path
+        private lateinit var app: Javalin
+        private var port: Int = 0
+        private val gson = Gson()
+
+        private val fooType = TypeDescriptor("com.example.Foo")
+        private val bazType = TypeDescriptor("com.example.Baz")
+        private val parentType = TypeDescriptor("com.example.Parent")
+        private val childType = TypeDescriptor("com.example.Child")
+        private val barMethod = MethodDescriptor(fooType, "bar", listOf(TypeDescriptor("int")), TypeDescriptor("void"))
+        private val bazMethod = MethodDescriptor(bazType, "baz", emptyList(), TypeDescriptor("void"))
+        private val quxMethod = MethodDescriptor(childType, "qux", listOf(TypeDescriptor("java.lang.String")), TypeDescriptor("int"))
+
+        private lateinit var paramNode: ParameterNode
+        private lateinit var localNode: LocalVariable
+        private lateinit var intConstNode: IntConstant
+        private lateinit var strConstNode: StringConstant
+        private lateinit var returnNode: ReturnNode
+        private lateinit var callSiteNode: CallSiteNode
+        private lateinit var enumConstNode: EnumConstant
+        private lateinit var fieldNode: FieldNode
+        private lateinit var resourceFileNode: ResourceFileNode
+        private lateinit var propertyFileNode: ResourceFileNode
+        private val resources = mapOf(
+            "application.yml" to "server:\n  port: 8080\nfeature:\n  enabled: true\n",
+            "config/application.properties" to "feature.mode=shadow\n"
+        )
+
+        private class TestResourceAccessor(
+            private val resources: Map<String, String>
+        ) : ResourceAccessor {
+            override fun list(pattern: String): Sequence<ResourceEntry> {
+                val matcher = java.nio.file.FileSystems.getDefault().getPathMatcher("glob:$pattern")
+                return resources.keys.asSequence()
+                    .filter { matcher.matches(Path.of(it)) }
+                    .map { ResourceEntry(it, "test-fixture") }
+            }
+
+            override fun open(path: String) =
+                resources[path]?.let { ByteArrayInputStream(it.toByteArray()) }
+                    ?: throw java.io.IOException("Resource not found: $path")
+        }
+
+        @BeforeClass
+        @JvmStatic
+        fun setUp() {
+            val builder = DefaultGraph.Builder()
+                .setResources(TestResourceAccessor(resources))
+
+            paramNode = ParameterNode(NodeId.next(), 0, TypeDescriptor("int"), barMethod)
+            localNode = LocalVariable(NodeId.next(), "x", TypeDescriptor("int"), barMethod)
+            intConstNode = IntConstant(NodeId.next(), 42)
+            strConstNode = StringConstant(NodeId.next(), "hello")
+            returnNode = ReturnNode(NodeId.next(), barMethod)
+            callSiteNode = CallSiteNode(NodeId.next(), barMethod, bazMethod, 10, null, listOf(paramNode.id))
+            enumConstNode = EnumConstant(NodeId.next(), TypeDescriptor("com.example.Status"), "ACTIVE", listOf(1, "active"))
+            fieldNode = FieldNode(NodeId.next(), FieldDescriptor(fooType, "name", TypeDescriptor("java.lang.String")), false)
+            resourceFileNode = ResourceFileNode(
+                NodeId.next(),
+                "application.yml",
+                "test-fixture",
+                "yaml"
+            )
+            propertyFileNode = ResourceFileNode(
+                NodeId.next(),
+                "config/application.properties",
+                "test-fixture",
+                "properties"
+            )
+
+            builder.addNode(paramNode)
+            builder.addNode(localNode)
+            builder.addNode(intConstNode)
+            builder.addNode(strConstNode)
+            builder.addNode(returnNode)
+            builder.addNode(callSiteNode)
+            builder.addNode(enumConstNode)
+            builder.addNode(fieldNode)
+            builder.addNode(resourceFileNode)
+            builder.addNode(propertyFileNode)
+
+            builder.addEdge(DataFlowEdge(paramNode.id, localNode.id, DataFlowKind.ASSIGN))
+            builder.addEdge(DataFlowEdge(intConstNode.id, localNode.id, DataFlowKind.ASSIGN))
+            builder.addEdge(DataFlowEdge(localNode.id, returnNode.id, DataFlowKind.RETURN_VALUE))
+            builder.addEdge(ResourceEdge(propertyFileNode.id, callSiteNode.id, ResourceRelation.LOOKUP))
+            builder.addEdge(CallEdge(callSiteNode.id, callSiteNode.id, isVirtual = false))
+
+            builder.addMethod(barMethod)
+            builder.addMethod(bazMethod)
+            builder.addMethod(quxMethod)
+
+            builder.addTypeRelation(childType, parentType, TypeRelation.EXTENDS)
+
+            builder.addEnumValues("com.example.Status", "ACTIVE", listOf(1, "active"))
+
+            builder.addMemberAnnotation("com.example.Foo", "bar", "javax.annotation.Nullable", emptyMap())
+            builder.addMemberAnnotation(
+                "com.example.Foo", "<class>", "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("value" to "/v1")
+            )
+            builder.addMemberAnnotation(
+                "com.example.Foo", "bar", "org.springframework.web.bind.annotation.GetMapping",
+                mapOf("value" to "/api/bar")
+            )
+
+            val graph = builder.build()
+            graphDir = Files.createTempDirectory("explore-test")
+            GraphStore.save(graph, graphDir)
+            val loadedGraph = GraphStore.load(graphDir)
+            app = Javalin.create { config ->
+                config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
+            }.start(0)
+            port = app.port()
+
+            val explore = ExploreCommand()
+            explore.registerApiRoutes(app, loadedGraph)
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun tearDown() {
+            app.stop()
+            graphDir.toFile().deleteRecursively()
+        }
+    }
+
+    private fun get(path: String, headers: Map<String, String> = emptyMap()): Pair<Int, String> =
+        get(port, path, headers)
+
+    private fun get(targetPort: Int, path: String, headers: Map<String, String> = emptyMap()): Pair<Int, String> {
+        val url = URI("http://localhost:$targetPort$path").toURL()
+        val conn = url.openConnection() as HttpURLConnection
+        conn.requestMethod = "GET"
+        conn.connectTimeout = 5000
+        conn.readTimeout = 5000
+        headers.forEach { (name, value) -> conn.setRequestProperty(name, value) }
+        val code = conn.responseCode
+        val body = if (code in 200..299) {
+            InputStreamReader(conn.inputStream).use { it.readText() }
+        } else {
+            conn.errorStream?.let { InputStreamReader(it).use { r -> r.readText() } } ?: ""
+        }
+        conn.disconnect()
+        return code to body
+    }
+
+    private fun withExploreApp(
+        graph: Graph,
+        routes: ExploreRoutes = ExploreRoutes(),
+        block: (Int) -> Unit
+    ) {
+        val localApp = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
+        }.start(0)
+        try {
+            routes.register(localApp, graph)
+            block(localApp.port())
+        } finally {
+            localApp.stop()
+        }
+    }
+
+    private fun withRegistryApp(
+        registry: GraphRegistry,
+        routes: ExploreRoutes = ExploreRoutes(),
+        block: (Int) -> Unit
+    ) {
+        val topology = TopologyService(registry, emptyList()).also { it.rebuild() }
+        withRegistryApp(registry, topology, routes, block)
+    }
+
+    private fun withRegistryApp(
+        registry: GraphRegistry,
+        topology: TopologyService,
+        routes: ExploreRoutes = ExploreRoutes(),
+        block: (Int) -> Unit
+    ) {
+        val localApp = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
+        }.start(0)
+        try {
+            routes.register(localApp, registry, topology)
+            block(localApp.port())
+        } finally {
+            localApp.stop()
+            topology.close()
+            registry.close()
+        }
+    }
+
+    @Test
+    fun `registry topology endpoint returns the materialized cross graph calls`() {
+        val registry = GraphRegistry(graphDir.parent, GraphStore.LoadMode.MAPPED)
+        registry.load("consumer", graphDir)
+        registry.load("provider", graphDir)
+        val topology = TopologyService(
+            registry,
+            listOf(
+                TopologyQuery(
+                    "test.cypher",
+                    """
+                    UNWIND [1, 2] AS match
+                    RETURN 'consumer' AS source, 'provider' AS target,
+                           'rpc' AS protocol, 2 AS weight
+                    """.trimIndent()
+                )
+            )
+        ).also { it.rebuild() }
+
+        withRegistryApp(registry, topology) { targetPort ->
+            val (code, body) = get(targetPort, "/api/topology")
+            assertEquals(200, code, body)
+            val result: Map<String, Any?> = parseJson(body)
+            assertEquals(2.0, result["graphCount"])
+            assertEquals(1.0, result["relationCount"])
+            @Suppress("UNCHECKED_CAST")
+            val edges = result[API_FIELD_EDGES] as List<Map<String, Any?>>
+            assertEquals("consumer", edges.single()[API_FIELD_FROM])
+            assertEquals("provider", edges.single()[API_FIELD_TO])
+            assertEquals(4.0, edges.single()[TOPOLOGY_WEIGHT])
+        }
+    }
+
+    @Test
+    fun `registry load rolls back when topology rebuild fails`() {
+        val root = Files.createTempDirectory("explore-registry-load-rollback")
+        try {
+            saveConstantGraph(root, "anchor", 1)
+            saveConstantGraph(root, "candidate", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            registry.load("anchor", Path.of("anchor"))
+            val topology = TopologyService(
+                registry,
+                listOf(
+                    TopologyQuery(
+                        "load-rollback.cypher",
+                        """
+                        MATCH (n:IntConstant)
+                        WHERE graphId(n) = 'candidate'
+                        RETURN graphId(n) AS source, 'missing' AS target
+                        """.trimIndent()
+                    )
+                ),
+                root
+            ).also { it.rebuild() }
+
+            withRegistryApp(registry, topology) { targetPort ->
+                val (loadCode, loadBody) = put(
+                    targetPort,
+                    "/api/graphs/candidate",
+                    """{"path":"candidate"}"""
+                )
+                assertEquals(400, loadCode, loadBody)
+                assertTrue(loadBody.contains("unknown graph") && loadBody.contains("missing"), loadBody)
+                assertEquals(listOf("anchor"), registry.ids())
+                assertEquals(404, get(targetPort, "/api/graphs/candidate").first)
+                assertEquals(200, get(targetPort, "/api/topology").first)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry replacement rolls back when topology rebuild fails`() {
+        val root = Files.createTempDirectory("explore-registry-replace-rollback")
+        try {
+            saveConstantGraph(root, "service-v1", 1)
+            saveConstantGraph(root, "service-v2", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            registry.load("service", Path.of("service-v1"))
+            registry.load("1", Path.of("service-v1"))
+            val topology = TopologyService(
+                registry,
+                listOf(
+                    TopologyQuery(
+                        "replace-rollback.cypher",
+                        """
+                        MATCH (n:IntConstant)
+                        WHERE graphId(n) = 'service'
+                        RETURN graphId(n) AS source, n.value AS target
+                        """.trimIndent()
+                    )
+                ),
+                root
+            ).also { it.rebuild() }
+
+            withRegistryApp(registry, topology) { targetPort ->
+                val (replaceCode, replaceBody) = put(
+                    targetPort,
+                    "/api/graphs/service",
+                    """{"path":"service-v2"}"""
+                )
+                assertEquals(400, replaceCode, replaceBody)
+                assertTrue(replaceBody.contains("unknown graph") && replaceBody.contains("2"), replaceBody)
+
+                val (queryCode, queryBody) = post(
+                    targetPort,
+                    "/api/graphs/service/cypher",
+                    """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                )
+                assertEquals(200, queryCode, queryBody)
+                assertEquals(1.0, singleCypherValue(queryBody), queryBody)
+                assertEquals(200, get(targetPort, "/api/topology").first)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry unload rolls back when topology rebuild fails`() {
+        val root = Files.createTempDirectory("explore-registry-unload-rollback")
+        try {
+            saveConstantGraph(root, "consumer", 1)
+            saveConstantGraph(root, "provider", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            registry.load("consumer", Path.of("consumer"))
+            registry.load("provider", Path.of("provider"))
+            val topology = TopologyService(
+                registry,
+                listOf(
+                    TopologyQuery(
+                        "unload-rollback.cypher",
+                        "RETURN 'consumer' AS source, 'provider' AS target"
+                    )
+                ),
+                root
+            ).also { it.rebuild() }
+
+            withRegistryApp(registry, topology) { targetPort ->
+                val (deleteCode, deleteBody) = delete(targetPort, "/api/graphs/provider")
+                assertEquals(400, deleteCode, deleteBody)
+                assertTrue(deleteBody.contains("unknown graph") && deleteBody.contains("provider"), deleteBody)
+                assertEquals(listOf("consumer", "provider"), registry.ids())
+                assertEquals(200, get(targetPort, "/api/graphs/provider").first)
+                assertEquals(200, get(targetPort, "/api/topology").first)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    private fun post(path: String, jsonBody: String): Pair<Int, String> =
+        request(port, "POST", path, jsonBody)
+
+    private fun post(targetPort: Int, path: String, jsonBody: String): Pair<Int, String> =
+        request(targetPort, "POST", path, jsonBody)
+
+    private fun put(targetPort: Int, path: String, jsonBody: String): Pair<Int, String> =
+        request(targetPort, "PUT", path, jsonBody)
+
+    private fun delete(targetPort: Int, path: String): Pair<Int, String> =
+        request(targetPort, "DELETE", path, null)
+
+    private fun request(targetPort: Int, method: String, path: String, jsonBody: String?): Pair<Int, String> {
+        val url = URI("http://localhost:$targetPort$path").toURL()
+        val conn = url.openConnection() as HttpURLConnection
+        conn.requestMethod = method
+        conn.connectTimeout = 5000
+        conn.readTimeout = 5000
+        if (jsonBody != null) {
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/json")
+            conn.outputStream.use { it.write(jsonBody.toByteArray()) }
+        }
+        val code = conn.responseCode
+        val body = if (code in 200..299) {
+            conn.inputStream?.let { InputStreamReader(it).use { r -> r.readText() } } ?: ""
+        } else {
+            conn.errorStream?.let { InputStreamReader(it).use { r -> r.readText() } } ?: ""
+        }
+        conn.disconnect()
+        return code to body
+    }
+
+    private fun saveConstantGraph(root: Path, directory: String, vararg values: Int): Path {
+        val output = root.resolve(directory)
+        val builder = DefaultGraph.Builder()
+        values.forEach { value -> builder.addNode(IntConstant(NodeId.next(), value)) }
+        GraphStore.save(builder.build(), output)
+        return output
+    }
+
+    private fun saveCollidingGraph(root: Path, directory: String, value: Int, resource: String): Path {
+        val output = root.resolve(directory)
+        val constant = IntConstant(NodeId(7), value)
+        val local = LocalVariable(NodeId(8), "value", TypeDescriptor("int"), barMethod)
+        val graph = DefaultGraph.Builder()
+            .setResources(TestResourceAccessor(mapOf("shared/config.txt" to resource)))
+            .addNode(constant)
+            .addNode(local)
+            .addEdge(DataFlowEdge(constant.id, local.id, DataFlowKind.ASSIGN))
+            .build()
+        GraphStore.save(graph, output)
+        return output
+    }
+
+    private inline fun <reified T> parseJson(json: String): T {
+        return gson.fromJson(json, object : TypeToken<T>() {}.type)
+    }
+
+    private fun captureOutput(block: () -> Int): Triple<String, String, Int> {
+        val outBaos = java.io.ByteArrayOutputStream()
+        val errBaos = java.io.ByteArrayOutputStream()
+        val oldOut = System.out
+        val oldErr = System.err
+        System.setOut(java.io.PrintStream(outBaos))
+        System.setErr(java.io.PrintStream(errBaos))
+        val code = try {
+            block()
+        } finally {
+            System.setOut(oldOut)
+            System.setErr(oldErr)
+        }
+        return Triple(outBaos.toString(), errBaos.toString(), code)
+    }
+
+    private fun singleCypherValue(json: String): Any? {
+        val result: Map<String, Any?> = parseJson(json)
+        @Suppress("UNCHECKED_CAST")
+        val rows = result["rows"] as List<Map<String, Any?>>
+        return rows.single().values.single()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> invokeExplorePrivate(
+        target: Any,
+        name: String,
+        parameterTypes: Array<Class<*>>,
+        vararg args: Any?
+    ): T {
+        val method = runCatching { target::class.java.getDeclaredMethod(name, *parameterTypes) }
+            .getOrElse {
+                listOf(
+                    "io.johnsonlee.graphite.cli.c4.SystemBoundaryDetectorKt",
+                    "io.johnsonlee.graphite.cli.c4.ExternalSystemClassifierKt",
+                    "io.johnsonlee.graphite.cli.c4.SubjectDetectorKt",
+                    "io.johnsonlee.graphite.cli.c4.ContainerClustererKt",
+                    "io.johnsonlee.graphite.cli.c4.ComponentSelectorKt"
+                ).firstNotNullOfOrNull { className ->
+                    runCatching {
+                        Class.forName(className).getDeclaredMethod(name, *parameterTypes)
+                    }.getOrNull()
+                } ?: throw it
+            }
+        method.isAccessible = true
+        val receiver = if (method.declaringClass == target::class.java) target else null
+        return method.invoke(receiver, *args) as T
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> invokeDiagramPrivate(
+        name: String,
+        parameterTypes: Array<Class<*>>,
+        vararg args: Any?
+    ): T {
+        val method = Class.forName("io.johnsonlee.graphite.cli.c4.C4RenderingPlanKt")
+            .getDeclaredMethod(name, *parameterTypes)
+        method.isAccessible = true
+        return method.invoke(null, *args) as T
+    }
+
+    // ========================================================================
+    // /api/graphs statistics
+    // ========================================================================
+
+    @Test
+    fun `GET api graphs returns cached stats and totals`() {
+        val (code, body) = get("/api/graphs")
+        assertEquals(200, code, "Expected 200 but got $code, body: $body")
+        val response: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val totals = response["totals"] as Map<String, Any?>
+        assertEquals(10.0, totals["nodes"])
+        assertEquals(5.0, totals["edges"])
+        assertEquals(3.0, totals["methods"])
+        assertEquals(1.0, totals["callSites"])
+        @Suppress("UNCHECKED_CAST")
+        val graphs = response[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+        assertEquals(STANDALONE_GRAPH_ID, graphs.single()[API_FIELD_ID])
+        assertEquals(10.0, graphs.single()[API_FIELD_NODES])
+
+        val (detailCode, detailBody) = get("/api/graphs/$STANDALONE_GRAPH_ID")
+        assertEquals(200, detailCode, detailBody)
+        val detail: Map<String, Any?> = parseJson(detailBody)
+        @Suppress("UNCHECKED_CAST")
+        val graph = detail["graph"] as Map<String, Any?>
+        assertEquals(5.0, graph[API_FIELD_EDGES])
+        assertEquals(404, get("/api/graphs/missing").first)
+        assertEquals(400, get("/api/graphs/bad%20id").first)
+        assertEquals(404, get("/api/info").first)
+    }
+
+    @Test
+    fun `registry routes support empty startup and loading graph by id`() {
+        val root = Files.createTempDirectory("explore-registry-empty")
+        try {
+            saveConstantGraph(root, "service-a", 101)
+            saveConstantGraph(root, "service-b", 202)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                val (emptyCode, emptyBody) = get(targetPort, "/api/graphs")
+                assertEquals(200, emptyCode, "Expected 200, body: $emptyBody")
+                val emptyResult: Map<String, Any?> = parseJson(emptyBody)
+                assertEquals(0.0, emptyResult["count"])
+                assertEquals(root.toString(), emptyResult["data"])
+                @Suppress("UNCHECKED_CAST")
+                val emptyTotals = emptyResult["totals"] as Map<String, Any?>
+                assertEquals(0.0, emptyTotals[API_FIELD_NODES])
+
+                val (loadCode, loadBody) = put(targetPort, "/api/graphs/service-a", """{"path":"service-a"}""")
+                assertEquals(200, loadCode, "Expected 200, body: $loadBody")
+
+                val (detailCode, detailBody) = get(targetPort, "/api/graphs/service-a")
+                assertEquals(200, detailCode, "Expected 200, body: $detailBody")
+                val detail: Map<String, Any?> = parseJson(detailBody)
+                @Suppress("UNCHECKED_CAST")
+                val graph = detail["graph"] as Map<String, Any?>
+                assertEquals("service-a", graph[API_FIELD_ID])
+                assertEquals(1.0, graph[API_FIELD_NODES])
+                assertEquals(0.0, graph[API_FIELD_METHODS])
+
+                val (cypherCode, cypherBody) = post(
+                    targetPort,
+                    "/api/graphs/service-a/cypher",
+                    """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                )
+                assertEquals(200, cypherCode, "Expected 200, body: $cypherBody")
+                assertTrue(cypherBody.contains("101"), "Expected scoped query to hit service-a graph, body: $cypherBody")
+
+                val (queryLoadCode, queryLoadBody) = put(
+                    targetPort,
+                    "/api/graphs/service-b?path=service-b&loadMode=eager",
+                    ""
+                )
+                assertEquals(200, queryLoadCode, "Expected 200, body: $queryLoadBody")
+                assertTrue(queryLoadBody.contains("EAGER"), "Expected query load mode to be honored, body: $queryLoadBody")
+
+                val (invalidScopedCode, invalidScopedBody) = get(targetPort, "/api/graphs/bad%20id")
+                assertEquals(400, invalidScopedCode, "Expected 400, body: $invalidScopedBody")
+                assertTrue(invalidScopedBody.contains("Invalid graph id"), "Expected invalid id error, body: $invalidScopedBody")
+
+                val (deleteCode, deleteBody) = delete(targetPort, "/api/graphs/service-a")
+                assertEquals(204, deleteCode, "Expected 204, body: $deleteBody")
+                val (missingAfterDeleteCode, _) = get(targetPort, "/api/graphs/service-a")
+                assertEquals(404, missingAfterDeleteCode)
+
+                val (missingDeleteCode, missingDeleteBody) = delete(targetPort, "/api/graphs/service-a")
+                assertEquals(404, missingDeleteCode, "Expected 404, body: $missingDeleteBody")
+
+                val (invalidDeleteCode, invalidDeleteBody) = delete(targetPort, "/api/graphs/bad%20id")
+                assertEquals(400, invalidDeleteCode, "Expected 400, body: $invalidDeleteBody")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `root graph APIs query all graphs without collisions and preserve graph identity`() {
+        val root = Files.createTempDirectory("explore-registry-root-all")
+        try {
+            saveCollidingGraph(root, "service-a", 101, "from-a")
+            saveCollidingGraph(root, "service-b", 202, "from-b")
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
+
+                val (graphsCode, graphsBody) = get(targetPort, "/api/graphs")
+                assertEquals(200, graphsCode, graphsBody)
+                val graphRegistry: Map<String, Any?> = parseJson(graphsBody)
+                assertEquals(2.0, graphRegistry[API_FIELD_COUNT])
+                @Suppress("UNCHECKED_CAST")
+                val totals = graphRegistry["totals"] as Map<String, Any?>
+                assertEquals(4.0, totals[API_FIELD_NODES])
+
+                val (resourceCode, resourceBody) = get(targetPort, "/api/resources/shared/config.txt")
+                assertEquals(200, resourceCode, resourceBody)
+                val resourceEnvelope: Map<String, Any?> = parseJson(resourceBody)
+                @Suppress("UNCHECKED_CAST")
+                val resourceGroups = resourceEnvelope[API_FIELD_RESULTS] as List<Map<String, Any?>>
+                val resourcesByGraph = resourceGroups.associate { group ->
+                    @Suppress("UNCHECKED_CAST")
+                    val data = group[API_FIELD_DATA] as Map<String, Any?>
+                    group[API_FIELD_GRAPH_ID] as String to data[API_FIELD_CONTENT]
+                }
+                assertEquals(mapOf("service-a" to "from-a", "service-b" to "from-b"), resourcesByGraph)
+
+                val query = "MATCH (a:IntConstant), (b:IntConstant) " +
+                    "WHERE graphId(a) <> graphId(b) " +
+                    "RETURN a.value, b.value, elementId(a), elementId(b)"
+                val (cypherCode, cypherBody) = post(targetPort, "/api/cypher", """{"query":"$query"}""")
+                assertEquals(200, cypherCode, cypherBody)
+                val cypherResult: Map<String, Any?> = parseJson(cypherBody)
+                @Suppress("UNCHECKED_CAST")
+                val rows = cypherResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(2, rows.size)
+                assertTrue(
+                    rows.all {
+                        @Suppress("UNCHECKED_CAST")
+                        val metadata = it["\$metadata"] as Map<String, Any?>
+                        metadata["graphIds"] == listOf("service-a", "service-b")
+                    }
+                )
+                assertEquals(
+                    setOf("service-a:7" to "service-b:7", "service-b:7" to "service-a:7"),
+                    rows.map { it["elementId(a)"] as String to it["elementId(b)"] as String }.toSet()
+                )
+
+                val (selectedCode, selectedBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graphs":["service-a","service-b"]}"""
+                )
+                assertEquals(200, selectedCode, selectedBody)
+                val selectedResult: Map<String, Any?> = parseJson(selectedBody)
+                assertEquals("cross-graph", selectedResult[API_PARAM_MODE])
+                assertEquals(2.0, selectedResult[API_FIELD_ROW_COUNT])
+
+                val (unscopedCode, unscopedBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"MATCH (n) RETURN n"}"""
+                )
+                assertEquals(400, unscopedCode, unscopedBody)
+                assertTrue(unscopedBody.contains("Specify exactly one"), unscopedBody)
+
+                val (crossFanoutOptionCode, crossFanoutOptionBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"MATCH (n) RETURN n","allGraphs":true,"includeGraphRows":true}"""
+                )
+                assertEquals(400, crossFanoutOptionCode, crossFanoutOptionBody)
+                assertTrue(crossFanoutOptionBody.contains("fanout mode"), crossFanoutOptionBody)
+
+                val (scopedCode, scopedBody) = get(targetPort, "/api/graphs/service-a/node/7")
+                assertEquals(200, scopedCode, scopedBody)
+                val scopedNode: Map<String, Any?> = parseJson(scopedBody)
+                assertEquals(101.0, scopedNode[API_FIELD_VALUE])
+                assertFalse(API_FIELD_GRAPH_ID in scopedNode, "Scoped response remains the direct single-graph shape")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `root all-graph surface returns grouped results for every graph-bound API`() {
+        val registry = GraphRegistry(graphDir.parent, GraphStore.LoadMode.MAPPED)
+
+        withRegistryApp(registry) { targetPort ->
+            registry.load("service-a", graphDir)
+            registry.load("service-b", graphDir)
+
+            val groupedPaths = listOf(
+                "/api/annotations?class=com.example.Foo&member=bar",
+                "/api/resources?pattern=**&limit=10",
+                "/api/endpoints?class=com.example.Foo&limit=10",
+                "/api/overview?limit=10"
+            )
+            groupedPaths.forEach { path ->
+                val (code, body) = get(targetPort, path)
+                assertEquals(200, code, "$path failed: $body")
+                val envelope: Map<String, Any?> = parseJson(body)
+                assertEquals(2.0, envelope["graphCount"], "$path was not grouped: $body")
+                @Suppress("UNCHECKED_CAST")
+                val groups = envelope[API_FIELD_RESULTS] as List<Map<String, Any?>>
+                assertEquals(listOf("service-a", "service-b"), groups.map { it[API_FIELD_GRAPH_ID] })
+            }
+
+            listOf("nodes", "call-sites", "methods").forEach { route ->
+                assertEquals(404, get(targetPort, "/api/$route").first)
+                assertEquals(404, get(targetPort, "/api/graphs/service-a/$route").first)
+            }
+
+            val (scopedEndpointsCode, scopedEndpointsBody) = get(
+                targetPort,
+                "/api/graphs/service-a/endpoints?class=com.example.Foo"
+            )
+            assertEquals(200, scopedEndpointsCode, scopedEndpointsBody)
+            val scopedEndpoints: Map<String, Any?> = parseJson(scopedEndpointsBody)
+            assertEquals("spring-web", scopedEndpoints["framework"])
+            assertFalse("graphCount" in scopedEndpoints)
+
+            listOf("json", "mermaid", "plantuml", "dsl").forEach { format ->
+                val (code, body) = get(targetPort, "/api/architecture/c4?level=all&format=$format")
+                assertEquals(200, code, "C4 $format failed: $body")
+                assertTrue(body.contains("service-a"), "C4 $format must identify service-a")
+                assertTrue(body.contains("service-b"), "C4 $format must identify service-b")
+            }
+
+            val encodedQuery = java.net.URLEncoder.encode(
+                "MATCH (n:IntConstant) RETURN elementId(n)",
+                Charsets.UTF_8
+            )
+            val (cypherCode, cypherBody) = get(targetPort, "/api/cypher?query=$encodedQuery&limit=2")
+            assertEquals(200, cypherCode, cypherBody)
+            val cypher: Map<String, Any?> = parseJson(cypherBody)
+            assertEquals(2.0, cypher[API_FIELD_ROW_COUNT])
+
+            assertEquals(404, get(targetPort, "/api/node/1").first)
+            assertEquals(404, get(targetPort, "/api/node/1/outgoing").first)
+            assertEquals(404, get(targetPort, "/api/node/1/incoming").first)
+            assertEquals(404, get(targetPort, "/api/subgraph?center=1").first)
+            assertEquals(400, get(targetPort, "/api/annotations?class=com.example.Foo").first)
+            assertEquals(404, get(targetPort, "/api/resources/missing.txt").first)
+            assertEquals(400, get(targetPort, "/api/architecture/c4?level=invalid").first)
+            assertEquals(400, get(targetPort, "/api/architecture/c4?format=invalid").first)
+            assertEquals(400, get(targetPort, "/api/cypher").first)
+
+            val (postLoadCode, postLoadBody) = post(
+                targetPort,
+                "/api/graphs/service-c",
+                """{"path":"$graphDir"}"""
+            )
+            assertEquals(200, postLoadCode, postLoadBody)
+        }
+    }
+
+    @Test
+    fun `registry cypher endpoint fans out across loaded graphs`() {
+        val root = Files.createTempDirectory("explore-registry-fanout")
+        try {
+            saveConstantGraph(root, "service-a", 101)
+            saveConstantGraph(root, "service-b", 202)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
+
+                val query = "MATCH (n:IntConstant) RETURN n.value"
+                val (allCode, allBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout"}"""
+                )
+                assertEquals(200, allCode, "Expected 200, body: $allBody")
+                val allResult: Map<String, Any?> = parseJson(allBody)
+                assertEquals(2.0, allResult["graphCount"])
+                assertEquals(2.0, allResult[API_FIELD_QUERIED_GRAPH_COUNT])
+                assertEquals(false, allResult[API_FIELD_TRUNCATED])
+                assertEquals(2.0, allResult[API_FIELD_ROW_COUNT])
+
+                @Suppress("UNCHECKED_CAST")
+                val rows = allResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                val valuesByGraph = rows.associate { it[API_FIELD_GRAPH_ID] as String to it["n.value"] }
+                assertEquals(101.0, valuesByGraph["service-a"])
+                assertEquals(202.0, valuesByGraph["service-b"])
+
+                @Suppress("UNCHECKED_CAST")
+                val columns = allResult[API_FIELD_COLUMNS] as List<String>
+                assertEquals(API_FIELD_GRAPH_ID, columns.first())
+                assertTrue(columns.contains("n.value"))
+                @Suppress("UNCHECKED_CAST")
+                val graphSummaries = allResult[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+                assertTrue(graphSummaries.none { API_FIELD_ROWS in it }, "Grouped rows should be opt-in")
+
+                val (subsetCode, subsetBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graphs":["service-b"],"mode":"fanout"}"""
+                )
+                assertEquals(200, subsetCode, "Expected 200, body: $subsetBody")
+                val subsetResult: Map<String, Any?> = parseJson(subsetBody)
+                @Suppress("UNCHECKED_CAST")
+                val subsetRows = subsetResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(1, subsetRows.size)
+                assertEquals("service-b", subsetRows.single()[API_FIELD_GRAPH_ID])
+                assertEquals(202.0, subsetRows.single()["n.value"])
+
+                val (scopedCrossGraphCode, scopedCrossGraphBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graph":"service-b"}"""
+                )
+                assertEquals(200, scopedCrossGraphCode, "Expected 200, body: $scopedCrossGraphBody")
+                val scopedCrossGraph: Map<String, Any?> = parseJson(scopedCrossGraphBody)
+                assertEquals("cross-graph", scopedCrossGraph[API_PARAM_MODE])
+                assertEquals(listOf("service-b"), scopedCrossGraph[API_FIELD_GRAPHS])
+                assertEquals(1.0, scopedCrossGraph["graphCount"])
+                @Suppress("UNCHECKED_CAST")
+                val scopedCrossGraphRows = scopedCrossGraph[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(listOf(202.0), scopedCrossGraphRows.map { it["n.value"] })
+
+                val encodedQuery = java.net.URLEncoder.encode(query, Charsets.UTF_8)
+                val (getSubsetCode, getSubsetBody) = get(
+                    targetPort,
+                    "/api/cypher/graphs?query=$encodedQuery&graph=service-a&mode=fanout"
+                )
+                assertEquals(200, getSubsetCode, "Expected 200, body: $getSubsetBody")
+                val getSubsetResult: Map<String, Any?> = parseJson(getSubsetBody)
+                @Suppress("UNCHECKED_CAST")
+                val getSubsetRows = getSubsetResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(1, getSubsetRows.size)
+                assertEquals("service-a", getSubsetRows.single()[API_FIELD_GRAPH_ID])
+                assertEquals(101.0, getSubsetRows.single()["n.value"])
+
+                val (missingCode, missingBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graphs":["missing"]}"""
+                )
+                assertEquals(404, missingCode, "Expected 404, body: $missingBody")
+                assertEquals(
+                    mapOf(API_FIELD_ERROR to "Graph not loaded: missing"),
+                    parseJson<Map<String, Any?>>(missingBody)
+                )
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `scoped cypher preserves missing graph response contract`() {
+        withExploreApp(DefaultGraph.Builder().build()) { targetPort ->
+            val (code, body) = get(targetPort, "/api/graphs/missing/cypher?query=RETURN%201")
+
+            assertEquals(404, code)
+            assertEquals(mapOf(API_FIELD_ERROR to "Graph not loaded"), parseJson<Map<String, Any?>>(body))
+        }
+    }
+
+    @Test
+    fun `registry cypher endpoint caps total rows and can opt into grouped rows`() {
+        val root = Files.createTempDirectory("explore-registry-capped-fanout")
+        try {
+            saveConstantGraph(root, "service-a", 101, 102, 103)
+            saveConstantGraph(root, "service-b", 201, 202, 203)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
+
+                val query = "MATCH (n:IntConstant) RETURN n.value"
+                val (cappedCode, cappedBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graphs":["service-a","service-b"],"mode":"fanout","limit":4,"perGraphLimit":3}"""
+                )
+                assertEquals(200, cappedCode, "Expected 200, body: $cappedBody")
+                val cappedResult: Map<String, Any?> = parseJson(cappedBody)
+                assertEquals(2.0, cappedResult["graphCount"])
+                assertEquals(2.0, cappedResult[API_FIELD_QUERIED_GRAPH_COUNT])
+                assertEquals(3.0, cappedResult[API_FIELD_PER_GRAPH_LIMIT])
+                assertEquals(4.0, cappedResult[API_PARAM_LIMIT])
+                assertEquals(true, cappedResult[API_FIELD_TRUNCATED])
+                @Suppress("UNCHECKED_CAST")
+                val cappedRows = cappedResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(4, cappedRows.size)
+                @Suppress("UNCHECKED_CAST")
+                val cappedGraphs = cappedResult[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+                assertTrue(cappedGraphs.none { API_FIELD_ROWS in it }, "Grouped rows should be omitted by default")
+
+                val (groupedCode, groupedBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs?includeGraphRows=true",
+                    """{"query":"$query","graphs":["service-a","service-b"],"mode":"fanout","limit":2,"perGraphLimit":1}"""
+                )
+                assertEquals(200, groupedCode, "Expected 200, body: $groupedBody")
+                val groupedResult: Map<String, Any?> = parseJson(groupedBody)
+                @Suppress("UNCHECKED_CAST")
+                val groupedGraphs = groupedResult[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+                assertTrue(groupedGraphs.all { API_FIELD_ROWS in it }, "Grouped rows should be included on request")
+                assertEquals(2.0, groupedResult[API_FIELD_ROW_COUNT])
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `fanout shares one request work budget without fixed graph shares`() {
+        val root = Files.createTempDirectory("explore-registry-shared-fanout-budget")
+        try {
+            saveConstantGraph(root, "service-a", 101)
+            saveConstantGraph(root, "service-b", 202)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1))
+
+            withRegistryApp(registry, routes) { targetPort ->
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
+                val query = "MATCH (n:IntConstant) RETURN n.value"
+
+                val (withinCode, withinBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout","limit":1,"perGraphLimit":1}"""
+                )
+                assertEquals(200, withinCode, withinBody)
+                val within: Map<String, Any?> = parseJson(withinBody)
+                assertEquals(1.0, within[API_FIELD_ROW_COUNT])
+
+                val (exceededCode, exceededBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout","limit":2,"perGraphLimit":1}"""
+                )
+                assertEquals(429, exceededCode, exceededBody)
+                assertTrue(exceededBody.contains("cypher_work_budget_exceeded"), exceededBody)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `fanout lets the first graph use the remaining request budget`() {
+        val root = Files.createTempDirectory("explore-registry-fanout-budget-remainder")
+        try {
+            saveConstantGraph(root, "service-a", 101, 102, 103, 104, 105, 106)
+            saveConstantGraph(root, "service-b", 202)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10))
+
+            withRegistryApp(registry, routes) { targetPort ->
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
+                val query = "MATCH (n:IntConstant) WHERE n.value = 106 RETURN n.value"
+                val (code, body) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout","limit":1,"perGraphLimit":1}"""
+                )
+
+                assertEquals(200, code, body)
+                val result: Map<String, Any?> = parseJson(body)
+                assertEquals(1.0, result[API_FIELD_ROW_COUNT])
+                @Suppress("UNCHECKED_CAST")
+                val rows = result[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(106.0, rows.single()["n.value"])
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry cypher endpoint keeps default limit global across twenty one graphs`() {
+        val root = Files.createTempDirectory("explore-registry-21-fanout")
+        val graphCount = 21
+        try {
+            repeat(graphCount) { graphIndex ->
+                val values = IntArray(60) { valueIndex -> graphIndex * 1_000 + valueIndex }
+                saveConstantGraph(root, "service-$graphIndex", *values)
+            }
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                repeat(graphCount) { graphIndex ->
+                    registry.load("service-$graphIndex", Path.of("service-$graphIndex"))
+                }
+
+                val query = "MATCH (n:IntConstant) RETURN n.value"
+                val (code, body) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout"}"""
+                )
+                assertEquals(200, code, "Expected 200, body: $body")
+                val result: Map<String, Any?> = parseJson(body)
+                assertEquals(graphCount.toDouble(), result["graphCount"])
+                assertEquals(graphCount.toDouble(), result[API_FIELD_QUERIED_GRAPH_COUNT])
+                assertEquals(48.0, result[API_FIELD_PER_GRAPH_LIMIT])
+                assertEquals(1_000.0, result[API_PARAM_LIMIT])
+                assertEquals(1_000.0, result[API_FIELD_ROW_COUNT])
+                assertEquals(true, result[API_FIELD_TRUNCATED])
+                @Suppress("UNCHECKED_CAST")
+                val graphSummaries = result[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+                assertTrue(graphSummaries.none { API_FIELD_ROWS in it }, "Grouped rows should stay opt-in")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry hot update swaps graph path for same id`() {
+        val root = Files.createTempDirectory("explore-registry-update")
+        try {
+            saveConstantGraph(root, "service-v1", 1)
+            saveConstantGraph(root, "service-v2", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                val (firstLoadCode, firstLoadBody) = put(targetPort, "/api/graphs/service", """{"path":"service-v1"}""")
+                assertEquals(200, firstLoadCode, "Expected 200, body: $firstLoadBody")
+                val (firstQueryCode, firstQueryBody) = post(
+                    targetPort,
+                    "/api/graphs/service/cypher",
+                    """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                )
+                assertEquals(200, firstQueryCode, "Expected 200, body: $firstQueryBody")
+                assertEquals(1.0, singleCypherValue(firstQueryBody), "Expected v1 value, body: $firstQueryBody")
+
+                registry.acquire("service")!!.use { oldLease ->
+                    val (secondLoadCode, secondLoadBody) = put(
+                        targetPort,
+                        "/api/graphs/service",
+                        """{"path":"service-v2"}"""
+                    )
+                    assertEquals(200, secondLoadCode, "Expected 200, body: $secondLoadBody")
+
+                    val oldValues = oldLease.graph.nodes(IntConstant::class.java).map { it.value }.toList()
+                    assertEquals(listOf(1), oldValues, "In-flight lease must retain the old graph snapshot")
+
+                    val (secondQueryCode, secondQueryBody) = post(
+                        targetPort,
+                        "/api/graphs/service/cypher",
+                        """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                    )
+                    assertEquals(200, secondQueryCode, "Expected 200, body: $secondQueryBody")
+                    assertEquals(2.0, singleCypherValue(secondQueryBody), "Expected v2 value, body: $secondQueryBody")
+                }
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry refresh never exposes an acquire gap`() {
+        val root = Files.createTempDirectory("explore-registry-refresh-race")
+        try {
+            saveConstantGraph(root, "service-v1", 1)
+            saveConstantGraph(root, "service-v2", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            val executor = Executors.newFixedThreadPool(5)
+            val start = CountDownLatch(1)
+            val refreshComplete = AtomicBoolean()
+            val failures = ConcurrentLinkedQueue<String>()
+            try {
+                registry.load("service", Path.of("service-v1"))
+                val refresher = executor.submit {
+                    start.await()
+                    try {
+                        repeat(1_000) { index ->
+                            registry.load("service", Path.of("service-v${index % 2 + 1}"))
+                        }
+                    } finally {
+                        refreshComplete.set(true)
+                    }
+                }
+                val readers = List(4) { readerIndex ->
+                    executor.submit {
+                        start.await()
+                        var reads = 0
+                        while (!refreshComplete.get() || reads < 2_000) {
+                            if (readerIndex % 2 == 0) {
+                                val lease = registry.acquire("service")
+                                if (lease == null) {
+                                    failures += "scoped acquire returned null"
+                                } else {
+                                    lease.use { assertRefreshValue(it.graph, failures) }
+                                }
+                            } else {
+                                val leases = registry.acquireAll()
+                                if (leases.size != 1) {
+                                    failures += "all-graph acquire returned ${leases.size} graphs"
+                                }
+                                leases.forEach { lease -> lease.use { assertRefreshValue(it.graph, failures) } }
+                            }
+                            reads++
+                        }
+                    }
+                }
+
+                start.countDown()
+                refresher.get(30, TimeUnit.SECONDS)
+                readers.forEach { it.get(30, TimeUnit.SECONDS) }
+
+                assertTrue(failures.isEmpty(), failures.firstOrNull() ?: "Unexpected refresh failure")
+            } finally {
+                executor.shutdownNow()
+                registry.close()
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    private fun assertRefreshValue(graph: Graph, failures: ConcurrentLinkedQueue<String>) {
+        val values = graph.nodes(IntConstant::class.java).map { it.value }.toList()
+        if (values != listOf(1) && values != listOf(2)) {
+            failures += "acquired partial graph values: $values"
+        }
+    }
+
+    @Test
+    fun `registry keeps retired graph alive until checked out lease closes`() {
+        val root = Files.createTempDirectory("explore-registry-lease")
+        try {
+            saveConstantGraph(root, "service-a", 1)
+            saveConstantGraph(root, "service-b", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            try {
+                val first = registry.load(" service-a ", Path.of("service-a"))
+                val second = registry.load("service-b", Path.of("service-b"))
+                assertEquals("service-a", first.id)
+                assertEquals("service-b", second.id)
+
+                val heldLease = registry.acquire("service-a")
+                assertEquals("service-a", heldLease?.id)
+
+                assertTrue(registry.unload("service-a"))
+                assertNull(registry.acquire("service-a"))
+                registry.acquire("service-b")?.use { lease ->
+                    assertEquals("service-b", lease.id)
+                }
+                assertFalse(registry.unload("missing"))
+
+                val invalid = runCatching { registry.acquire("bad id") }.exceptionOrNull()
+                assertTrue(invalid is IllegalArgumentException, "Expected invalid graph id error, got: $invalid")
+
+                heldLease?.close()
+                heldLease?.close()
+            } finally {
+                registry.close()
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry serves concurrent scoped cypher queries across many graphs`() {
+        val root = Files.createTempDirectory("explore-registry-concurrent")
+        val graphCount = 24
+        try {
+            repeat(graphCount) { index ->
+                saveConstantGraph(root, "service-$index", 1_000 + index)
+            }
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 128, maxWorkUnits = 250_000))
+            withRegistryApp(registry, routes) { targetPort ->
+                repeat(graphCount) { index ->
+                    val (loadCode, loadBody) = put(
+                        targetPort,
+                        "/api/graphs/service-$index",
+                        """{"path":"service-$index"}"""
+                    )
+                    assertEquals(200, loadCode, "Expected 200 for service-$index, body: $loadBody")
+                }
+
+                val executor = java.util.concurrent.Executors.newFixedThreadPool(8)
+                try {
+                    val tasks = (0 until graphCount).flatMap { index ->
+                        List(4) {
+                            java.util.concurrent.Callable {
+                                val (code, body) = post(
+                                    targetPort,
+                                    "/api/graphs/service-$index/cypher",
+                                    """{"query":"MATCH (n:IntConstant) RETURN n.value LIMIT 1"}"""
+                                )
+                                code to singleCypherValue(body)
+                            }
+                        }
+                    }
+                    val results = executor.invokeAll(tasks).map { it.get() }
+                    results.forEachIndexed { taskIndex, (code, value) ->
+                        val graphIndex = taskIndex / 4
+                        assertEquals(200, code)
+                        assertEquals((1_000 + graphIndex).toDouble(), value)
+                    }
+                } finally {
+                    executor.shutdownNow()
+                }
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `legacy discovery APIs are unavailable while Cypher discovers methods`() {
+        listOf("nodes", "call-sites", "methods").forEach { route ->
+            assertEquals(404, get("/api/$route").first, "Root search route /api/$route must be unavailable")
+            assertEquals(
+                404,
+                get("/api/graphs/standalone/$route").first,
+                "Scoped search route /api/graphs/standalone/$route must be unavailable"
+            )
+        }
+
+        val (rootCode, rootBody) = post("/api/cypher", """{"query":"MATCH (n) RETURN n.id LIMIT 1"}""")
+        assertEquals(200, rootCode, rootBody)
+        val methodQuery = "MATCH (m:Method) WHERE m.signature = '${quxMethod.signature}' " +
+            "RETURN m.signature, m.class, m.name, m.parameter_types, m.return_type"
+        val (methodCode, methodBody) = post("/api/cypher", """{"query":"$methodQuery"}""")
+        assertEquals(200, methodCode, methodBody)
+        val methodResult: Map<String, Any?> = parseJson(methodBody)
+        @Suppress("UNCHECKED_CAST")
+        val methodRows = methodResult["rows"] as List<Map<String, Any?>>
+        val methodRow = methodRows.single()
+        assertEquals(quxMethod.signature, methodRow["m.signature"])
+        assertEquals("com.example.Child", methodRow["m.class"])
+        assertEquals("qux", methodRow["m.name"])
+        assertEquals(listOf("java.lang.String"), methodRow["m.parameter_types"])
+        assertEquals("int", methodRow["m.return_type"])
+        val (scopedCode, scopedBody) = post(
+            "/api/graphs/standalone/cypher",
+            """{"query":"MATCH (n) RETURN n.id LIMIT 1"}"""
+        )
+        assertEquals(200, scopedCode, scopedBody)
+    }
+
+    // ========================================================================
+    // /api/node/{id}
+    // ========================================================================
+
+    @Test
+    fun `graph-local id routes require an explicit graph id`() {
+        listOf(
+            "/api/node/${paramNode.id.value}",
+            "/api/node/${paramNode.id.value}/outgoing",
+            "/api/node/${localNode.id.value}/incoming",
+            "/api/subgraph?center=${localNode.id.value}"
+        ).forEach { path ->
+            assertEquals(404, get(path).first, "$path must not be available without graphId")
+        }
+    }
+
+    @Test
+    fun `GET api node by id returns node`() {
+        val (code, body) = get("/api/graphs/standalone/node/${paramNode.id.value}")
+        assertEquals(200, code)
+        val node: Map<String, Any?> = parseJson(body)
+        assertEquals("ParameterNode", node["type"])
+        assertEquals(paramNode.id.value.toDouble(), node["id"])
+    }
+
+    @Test
+    fun `GET api node by id returns 404 for missing`() {
+        val (code, _) = get("/api/graphs/standalone/node/999999")
+        assertEquals(404, code)
+    }
+
+    @Test
+    fun `GET api node by id returns 400 for invalid id`() {
+        val (code, _) = get("/api/graphs/standalone/node/notanumber")
+        assertEquals(400, code)
+    }
+
+    // ========================================================================
+    // /api/node/{id}/outgoing
+    // ========================================================================
+
+    @Test
+    fun `GET api node outgoing returns edges`() {
+        val (code, body) = get("/api/graphs/standalone/node/${paramNode.id.value}/outgoing")
+        assertEquals(200, code)
+        val edges: List<Map<String, Any?>> = parseJson(body)
+        assertTrue(edges.isNotEmpty(), "paramNode should have outgoing edges")
+        assertEquals("DataFlow", edges[0]["type"])
+    }
+
+    @Test
+    fun `GET api node outgoing returns empty for isolated node`() {
+        val (code, body) = get("/api/graphs/standalone/node/${strConstNode.id.value}/outgoing")
+        assertEquals(200, code)
+        val edges: List<Map<String, Any?>> = parseJson(body)
+        assertTrue(edges.isEmpty(), "strConstNode should have no outgoing edges")
+    }
+
+    @Test
+    fun `GET api node outgoing respects limit`() {
+        val (code, body) = get("/api/graphs/standalone/node/${paramNode.id.value}/outgoing?limit=0")
+        assertEquals(200, code)
+        val edges: List<Map<String, Any?>> = parseJson(body)
+        assertTrue(edges.isEmpty(), "limit=0 should return no outgoing edges")
+    }
+
+    @Test
+    fun `GET api node outgoing returns 400 for invalid id`() {
+        val (code, _) = get("/api/graphs/standalone/node/abc/outgoing")
+        assertEquals(400, code)
+    }
+
+    // ========================================================================
+    // /api/node/{id}/incoming
+    // ========================================================================
+
+    @Test
+    fun `GET api node incoming returns edges`() {
+        val (code, body) = get("/api/graphs/standalone/node/${localNode.id.value}/incoming")
+        assertEquals(200, code)
+        val edges: List<Map<String, Any?>> = parseJson(body)
+        assertTrue(edges.size >= 2, "localNode should have at least 2 incoming edges (param + intConst)")
+    }
+
+    @Test
+    fun `GET api node incoming respects limit`() {
+        val (code, body) = get("/api/graphs/standalone/node/${localNode.id.value}/incoming?limit=1")
+        assertEquals(200, code)
+        val edges: List<Map<String, Any?>> = parseJson(body)
+        assertEquals(1, edges.size)
+    }
+
+    @Test
+    fun `GET api node incoming returns 400 for invalid id`() {
+        val (code, _) = get("/api/graphs/standalone/node/xyz/incoming")
+        assertEquals(400, code)
+    }
+
+    // ========================================================================
+    // /api/annotations
+    // ========================================================================
+
+    @Test
+    fun `GET api annotations returns annotation data`() {
+        val (code, body) = get("/api/annotations?class=com.example.Foo&member=bar")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val annotations: Map<String, Map<String, Any?>> = parseJson(body)
+        assertTrue(annotations.size >= 2, "Should have at least 2 annotations, got: $annotations")
+        assertTrue(annotations.containsKey("javax.annotation.Nullable"), "Should contain Nullable, got keys: ${annotations.keys}")
+        assertTrue(annotations.containsKey("org.springframework.web.bind.annotation.GetMapping"), "Should contain GetMapping, got keys: ${annotations.keys}")
+    }
+
+    @Test
+    fun `GET api annotations missing class returns 400`() {
+        val (code, _) = get("/api/annotations?member=bar")
+        assertEquals(400, code)
+    }
+
+    @Test
+    fun `GET api annotations missing member returns 400`() {
+        val (code, _) = get("/api/annotations?class=com.example.Foo")
+        assertEquals(400, code)
+    }
+
+    @Test
+    fun `GET api annotations missing both params returns 400`() {
+        val (code, _) = get("/api/annotations")
+        assertEquals(400, code)
+    }
+
+    @Test
+    fun `GET api annotations for unknown member returns empty`() {
+        val (code, body) = get("/api/annotations?class=com.example.Unknown&member=none")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val annotations: Map<String, Map<String, Any?>> = parseJson(body)
+        assertEquals(0, annotations.size)
+    }
+
+    // ========================================================================
+    // /api/resources
+    // ========================================================================
+
+    @Test
+    fun `real jar build persists and serves resource content`() {
+        val root = Files.createTempDirectory("explore-jar-resource-test")
+        val classesDir = Files.createDirectories(root.resolve("classes"))
+        val graphOutput = root.resolve("graph")
+        val fixtureJar = root.resolve("resource-fixture.jar")
+        val resourcePath = "config/application.properties"
+        val resourceContent = "feature.mode=jar-e2e\n"
+        try {
+            val javaSource = root.resolve("ResourceSample.java")
+            Files.writeString(
+                javaSource,
+                """
+                package sample;
+                public class ResourceSample {
+                    public String mode() { return "jar-e2e"; }
+                }
+                """.trimIndent()
+            )
+            val compiler = requireNotNull(ToolProvider.getSystemJavaCompiler())
+            assertEquals(
+                0,
+                compiler.run(null, null, null, "-d", classesDir.toString(), javaSource.toString()),
+                "Java fixture compilation should succeed"
+            )
+
+            JarOutputStream(Files.newOutputStream(fixtureJar)).use { jar ->
+                jar.putNextEntry(JarEntry("sample/ResourceSample.class"))
+                Files.copy(classesDir.resolve("sample/ResourceSample.class"), jar)
+                jar.closeEntry()
+                jar.putNextEntry(JarEntry(resourcePath))
+                jar.write(resourceContent.toByteArray())
+                jar.closeEntry()
+            }
+
+            val build = BuildCommand().apply {
+                input = fixtureJar
+                output = graphOutput
+                includePackages = listOf("sample")
+            }
+            val (_, error, code) = captureOutput { build.call() }
+            assertEquals(0, code, "JAR graph build should succeed, stderr: $error")
+            assertTrue(Files.isRegularFile(graphOutput.resolve("graph.resources")))
+
+            val loaded = GraphStore.loadMapped(graphOutput)
+            try {
+                withExploreApp(loaded) { targetPort ->
+                    val (status, body) = get(targetPort, "/api/resources/$resourcePath")
+                    assertEquals(200, status, "Expected persisted JAR resource, body: $body")
+                    val result: Map<String, Any?> = parseJson(body)
+                    assertEquals(resourcePath, result["path"])
+                    assertEquals(fixtureJar.fileName.toString(), result["source"])
+                    assertEquals(false, result["derived"])
+                    assertEquals(resourceContent, result["content"])
+                }
+            } finally {
+                (loaded as? Closeable)?.close()
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `resources API distinguishes an empty store from a missing legacy store`() {
+        val root = Files.createTempDirectory("explore-resource-store-state-test")
+        val currentDir = root.resolve("current")
+        val legacyDir = root.resolve("legacy")
+        try {
+            val emptyGraph = DefaultGraph.Builder().build()
+            GraphStore.save(emptyGraph, currentDir)
+            GraphStore.save(emptyGraph, legacyDir)
+            Files.delete(legacyDir.resolve("graph.resources"))
+
+            val current = GraphStore.loadMapped(currentDir)
+            try {
+                withExploreApp(current) { targetPort ->
+                    val (status, body) = get(targetPort, "/api/resources")
+                    assertEquals(200, status, "Current empty resource store should remain queryable: $body")
+                    val result: Map<String, Any?> = parseJson(body)
+                    assertEquals(0.0, result["count"])
+                }
+            } finally {
+                (current as Closeable).close()
+            }
+
+            val legacy = GraphStore.loadMapped(legacyDir)
+            try {
+                withExploreApp(legacy) { targetPort ->
+                    val (listStatus, listBody) = get(targetPort, "/api/resources")
+                    assertEquals(409, listStatus, "Missing resource store must not appear empty: $listBody")
+                    assertTrue(listBody.contains("graph.resources is missing"))
+                    assertTrue(listBody.contains("rebuild this graph"))
+
+                    val (readStatus, readBody) = get(targetPort, "/api/resources/application.properties")
+                    assertEquals(409, readStatus, "Missing resource store must explain failed reads: $readBody")
+                    assertTrue(readBody.contains("rebuild this graph"))
+                }
+            } finally {
+                (legacy as Closeable).close()
+            }
+
+            val registry = GraphRegistry(Files.createDirectories(root.resolve("registry")), GraphStore.LoadMode.MAPPED)
+            registry.load("current", currentDir)
+            registry.load("legacy", legacyDir)
+            withRegistryApp(registry) { targetPort ->
+                val (rootStatus, rootBody) = get(targetPort, "/api/resources")
+                assertEquals(409, rootStatus, "All-graph resources must identify unavailable stores: $rootBody")
+                assertTrue(rootBody.contains("legacy"))
+                assertTrue(rootBody.contains("rebuild this graph"))
+
+                val (currentStatus, currentBody) = get(targetPort, "/api/graphs/current/resources")
+                assertEquals(200, currentStatus, "A current graph must remain independently queryable: $currentBody")
+
+                val (legacyStatus, legacyBody) = get(targetPort, "/api/graphs/legacy/resources")
+                assertEquals(409, legacyStatus, "A legacy graph must expose the rebuild instruction: $legacyBody")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `GET api resources returns matching resources`() {
+        val (code, body) = get("/api/resources?pattern=**&limit=10")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals(2.0, result["count"])
+        @Suppress("UNCHECKED_CAST")
+        val resourceEntries = result["resources"] as List<Map<String, Any?>>
+        assertEquals(2, resourceEntries.size)
+        assertTrue(resourceEntries.any { it["path"] == "application.yml" })
+        assertTrue(resourceEntries.all { it["source"] == "test-fixture" })
+        assertTrue(resourceEntries.all { it["derived"] == false })
+    }
+
+    @Test
+    fun `GET api resources respects glob pattern`() {
+        val (code, body) = get("/api/resources?pattern=**/*.properties")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val resourceEntries = result["resources"] as List<Map<String, Any?>>
+        assertEquals(1, resourceEntries.size)
+        assertEquals("config/application.properties", resourceEntries.single()["path"])
+    }
+
+    @Test
+    fun `GET api resource content returns text payload`() {
+        val (code, body) = get("/api/resources/application.yml")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("application.yml", result["path"])
+        assertEquals("test-fixture", result["source"])
+        assertEquals(false, result["derived"])
+        assertTrue((result["content"] as String).contains("server:"))
+    }
+
+    @Test
+    fun `GET api resource content supports nested paths`() {
+        val (code, body) = get("/api/resources/config/application.properties")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("config/application.properties", result["path"])
+        assertEquals("test-fixture", result["source"])
+        assertTrue((result["content"] as String).contains("feature.mode=shadow"))
+    }
+
+    @Test
+    fun `GET api resource content returns 404 for missing path`() {
+        val (code, body) = get("/api/resources/missing.yml")
+        assertEquals(404, code, "Expected 404, body: $body")
+    }
+
+    @Test
+    fun `GET api resource content rejects oversized payloads`() {
+        val largeGraph = DefaultGraph.Builder()
+            .setResources(TestResourceAccessor(mapOf("large.txt" to "x".repeat(1_048_577))))
+            .build()
+
+        withExploreApp(largeGraph) { targetPort ->
+            val (code, body) = get(targetPort, "/api/resources/large.txt")
+            assertEquals(413, code, "Expected 413, body: $body")
+            assertTrue(body.contains("Resource exceeds maximum response size"))
+        }
+    }
+
+    @Test
+    fun `GET openapi json exposes discoverable explore API`() {
+        val (code, body) = get("/openapi.json")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("3.0.3", result["openapi"])
+        @Suppress("UNCHECKED_CAST")
+        val paths = result["paths"] as Map<String, Map<String, Any?>>
+        assertTrue(paths.containsKey("/api/cypher"))
+        assertTrue(paths.containsKey("/api/graphs"))
+        assertTrue(paths.containsKey("/api/topology"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/cypher"))
+        assertFalse(paths.containsKey("/api/info"))
+        assertFalse(paths.containsKey("/api/graphs/{graphId}/info"))
+        assertTrue(paths.containsKey("/api/endpoints"))
+        assertFalse(paths.containsKey("/api/api-spec"))
+        assertTrue(paths.containsKey("/api/resources/{path}"))
+        listOf("nodes", "call-sites", "methods").forEach { route ->
+            assertFalse(paths.containsKey("/api/$route"))
+            assertFalse(paths.containsKey("/api/graphs/{graphId}/$route"))
+        }
+        @Suppress("UNCHECKED_CAST")
+        val cypher = paths["/api/cypher"] as Map<String, Map<String, Any?>>
+        assertTrue(cypher.containsKey("get"))
+        assertTrue(cypher.containsKey("post"))
+        @Suppress("UNCHECKED_CAST")
+        val post = cypher["post"] as Map<String, Any?>
+        assertTrue(post.containsKey("requestBody"))
+        assertTrue(post["requestBody"].toString().contains(API_PARAM_TIMEOUT_MILLIS))
+        listOf("/api/cypher", "/api/cypher/graphs", "/api/graphs/{graphId}/cypher").forEach { path ->
+            @Suppress("UNCHECKED_CAST")
+            val operations = paths.getValue(path) as Map<String, Map<String, Any?>>
+            operations.forEach { (method, operation) ->
+                @Suppress("UNCHECKED_CAST")
+                val parameters = operation.getValue("parameters") as List<Map<String, Any?>>
+                val timeout = parameters.single { it[API_FIELD_NAME] == API_PARAM_TIMEOUT_MILLIS }
+                @Suppress("UNCHECKED_CAST")
+                val schema = timeout.getValue("schema") as Map<String, Any?>
+                assertEquals("integer", schema[API_FIELD_TYPE], "$method $path timeout schema type")
+                assertEquals(1.0, schema["minimum"], "$method $path timeout schema minimum")
+            }
+        }
+        @Suppress("UNCHECKED_CAST")
+        val responses = post["responses"] as Map<String, Any?>
+        assertTrue(responses.containsKey("429"))
+        assertTrue(responses.containsKey("504"))
+        assertTrue(responses.containsKey("503"))
+        assertFalse(responses.getValue("429").toString().contains("work budget"))
+    }
+
+    @Test
+    fun `GET api topology exposes the standalone graph`() {
+        val (code, body) = get("/api/topology")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals(1.0, result["graphCount"])
+        assertEquals(0.0, result["relationCount"])
+        @Suppress("UNCHECKED_CAST")
+        val nodes = result[API_FIELD_NODES] as List<Map<String, Any?>>
+        assertEquals(STANDALONE_GRAPH_ID, nodes.single()[API_FIELD_ID])
+        assertEquals("Graph", nodes.single()[API_FIELD_TYPE])
+    }
+
+    @Test
+    fun `GET swagger json aliases the OpenAPI document`() {
+        val (openapiCode, openapiBody) = get("/openapi.json")
+        val (swaggerCode, swaggerBody) = get("/swagger.json")
+        assertEquals(200, openapiCode)
+        assertEquals(200, swaggerCode)
+        assertEquals(parseJson<Map<String, Any?>>(openapiBody), parseJson<Map<String, Any?>>(swaggerBody))
+    }
+
+    // ========================================================================
+    // /api/endpoints
+    // ========================================================================
+
+    @Test
+    fun `GET api endpoints returns Spring endpoints`() {
+        val (code, body) = get("/api/endpoints")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("spring-web", result["framework"])
+        @Suppress("UNCHECKED_CAST")
+        val endpoints = result["endpoints"] as List<Map<String, Any?>>
+        assertEquals(1, endpoints.size)
+        val endpoint = endpoints.single()
+        assertEquals("com.example.Foo", endpoint["class"])
+        assertEquals("bar", endpoint["member"])
+        assertEquals("GET", endpoint["httpMethod"])
+        assertEquals("/v1/api/bar", endpoint["path"])
+        assertEquals(barMethod.signature, endpoint["signature"])
+        assertEquals(404, get("/api/api-spec").first)
+    }
+
+    @Test
+    fun `GET api endpoints supports class filter`() {
+        val (code, body) = get("/api/endpoints?class=com.example.Foo")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val endpoints = result["endpoints"] as List<Map<String, Any?>>
+        assertEquals(1, endpoints.size)
+
+        val (missingCode, missingBody) = get("/api/endpoints?class=com.example.Baz")
+        assertEquals(200, missingCode, "Expected 200, body: $missingBody")
+        val missingResult: Map<String, Any?> = parseJson(missingBody)
+        @Suppress("UNCHECKED_CAST")
+        val missingEndpoints = missingResult["endpoints"] as List<Map<String, Any?>>
+        assertTrue(missingEndpoints.isEmpty())
+    }
+
+    @Test
+    fun `extractEndpoints handles RequestMapping arrays iterables and default request method`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.RequestController"),
+            "handle",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val fallbackMethod = MethodDescriptor(
+            TypeDescriptor("com.example.RequestController"),
+            "fallback",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val graph = DefaultGraph.Builder()
+            .addMethod(method)
+            .addMethod(fallbackMethod)
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "<class>",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("value" to arrayOf("/v2", "/v1"))
+            )
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "handle",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf(
+                    "path" to listOf("/beta", "/alpha"),
+                    "method" to arrayOf("POST", "PATCH")
+                )
+            )
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "fallback",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                emptyMap()
+            )
+            .build()
+
+        val endpoints = ExploreCommand().extractEndpoints(graph)
+
+        assertEquals(10, endpoints.size)
+        val fallbackEndpoints = endpoints.filter { it["member"] == "fallback" }
+        assertEquals(2, fallbackEndpoints.size)
+        assertTrue(fallbackEndpoints.all { it["httpMethod"] == "REQUEST" })
+        assertEquals(setOf("/v1", "/v2"), fallbackEndpoints.map { it["path"] }.toSet())
+
+        val handlePaths = endpoints.filter { it["member"] == "handle" }.map { it["path"] as String }
+        assertEquals(
+            listOf("/v1/alpha", "/v1/alpha", "/v1/beta", "/v1/beta", "/v2/alpha", "/v2/alpha", "/v2/beta", "/v2/beta"),
+            handlePaths
+        )
+        val handleMethods = endpoints.filter { it["member"] == "handle" }.map { it["httpMethod"] as String }.toSet()
+        assertEquals(setOf("PATCH", "POST"), handleMethods)
+        assertEquals("/v1", endpoints.first()["path"])
+    }
+
+    @Test
+    fun `private endpoint helpers cover all HTTP mapping branches`() {
+        val extractor = EndpointExtractor()
+        val extractHttpMethods = EndpointExtractor::class.java.getDeclaredMethod(
+            "extractHttpMethods",
+            String::class.java,
+            Map::class.java
+        ).apply { isAccessible = true }
+        val extractStringValues = EndpointExtractor::class.java.getDeclaredMethod(
+            "extractStringValues",
+            Any::class.java
+        ).apply { isAccessible = true }
+        val combinePaths = EndpointExtractor::class.java.getDeclaredMethod(
+            "combinePaths",
+            List::class.java,
+            List::class.java
+        ).apply { isAccessible = true }
+
+        assertEquals(listOf("GET"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.GetMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("POST"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.PostMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("PUT"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.PutMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("DELETE"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.DeleteMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("PATCH"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.PatchMapping", emptyMap<String, Any?>()))
+        assertEquals(
+            listOf("HEAD"),
+            extractHttpMethods.invoke(
+                extractor,
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("method" to "HEAD")
+            )
+        )
+        assertEquals(
+            listOf("REQUEST"),
+            extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.RequestMapping", mapOf("method" to 123))
+        )
+
+        assertEquals(emptyList<String>(), extractStringValues.invoke(extractor, null))
+        assertEquals(listOf("one"), extractStringValues.invoke(extractor, "one"))
+        assertEquals(listOf("two"), extractStringValues.invoke(extractor, listOf("two", 2)))
+        assertEquals(listOf("three"), extractStringValues.invoke(extractor, arrayOf("three", 3)))
+        assertEquals(emptyList<String>(), extractStringValues.invoke(extractor, 42))
+
+        assertEquals(listOf("/"), combinePaths.invoke(extractor, emptyList<String>(), emptyList<String>()))
+        assertEquals(listOf("/users"), combinePaths.invoke(extractor, listOf("/"), listOf("/users")))
+        assertEquals(listOf("/api"), combinePaths.invoke(extractor, listOf("/api"), emptyList<String>()))
+    }
+
+    @Test
+    fun `buildOpenApiSpec describes cypher and resource endpoints`() {
+        val spec = ExploreCommand().buildOpenApiSpec()
+        assertEquals("3.0.3", spec["openapi"])
+        @Suppress("UNCHECKED_CAST")
+        val info = spec["info"] as Map<String, Any?>
+        val buildVersion = requireNotNull(System.getProperty("graphite.version"))
+        assertEquals(buildVersion, info["version"])
+        assertTrue(GraphiteVersionProvider().getVersion().contentEquals(arrayOf("graphite $buildVersion")))
+        @Suppress("UNCHECKED_CAST")
+        val paths = spec["paths"] as Map<String, Map<String, Any?>>
+        assertTrue(paths.containsKey("/openapi.json"))
+        assertTrue(paths.containsKey("/swagger.json"))
+        assertTrue(paths.containsKey("/api/architecture/c4"))
+        assertTrue(paths.containsKey("/api/cypher/graphs"))
+        assertTrue(paths.containsKey("/api/topology"))
+        @Suppress("UNCHECKED_CAST")
+        val graphDetail = paths["/api/graphs/{graphId}"] as Map<String, Map<String, Any?>>
+        assertTrue(graphDetail.containsKey("get"))
+        assertFalse(paths.containsKey("/api/node/{id}"))
+        assertFalse(paths.containsKey("/api/node/{id}/outgoing"))
+        assertFalse(paths.containsKey("/api/node/{id}/incoming"))
+        assertFalse(paths.containsKey("/api/subgraph"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/node/{id}"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/subgraph"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/resources/{path}"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/endpoints"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/architecture/c4"))
+        listOf("nodes", "call-sites", "methods").forEach { route ->
+            assertFalse(paths.containsKey("/api/$route"))
+            assertFalse(paths.containsKey("/api/graphs/{graphId}/$route"))
+        }
+        @Suppress("UNCHECKED_CAST")
+        val resources = paths["/api/resources/{path}"] as Map<String, Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val get = resources["get"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val parameters = get["parameters"] as List<Map<String, Any?>>
+        assertEquals("path", parameters.single()["name"])
+        @Suppress("UNCHECKED_CAST")
+        val responses = get["responses"] as Map<String, Any?>
+        assertTrue(responses.containsKey("409"))
+        @Suppress("UNCHECKED_CAST")
+        val c4 = paths["/api/architecture/c4"] as Map<String, Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val c4Get = c4["get"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val c4Parameters = c4Get["parameters"] as List<Map<String, Any?>>
+        assertTrue(c4Parameters.any { it["name"] == "format" })
+        assertTrue(c4Parameters.any { it["description"]?.toString()?.contains("dsl") == true })
+        assertFalse(c4Parameters.any { it["name"] == "limit" })
+    }
+
+    // ========================================================================
+    // /api/architecture/c4
+    // ========================================================================
+
+    @Test
+    fun `GET api architecture c4 returns all views by default`() {
+        val (code, body) = get("/api/architecture/c4")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("Graphite C4 Workspace", result["name"])
+        @Suppress("UNCHECKED_CAST")
+        val properties = result["properties"] as Map<String, String>
+        assertEquals("all", properties["graphite.level"])
+        @Suppress("UNCHECKED_CAST")
+        val views = result["views"] as Map<String, Any?>
+        assertTrue((views["systemContextViews"] as List<*>).isNotEmpty())
+        assertTrue((views["containerViews"] as List<*>).isNotEmpty())
+        assertTrue((views["componentViews"] as List<*>).isEmpty())
+    }
+
+    @Test
+    fun `GET api architecture c4 returns context view`() {
+        val (code, body) = get("/api/architecture/c4?level=context")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val properties = result["properties"] as Map<String, String>
+        assertEquals("context", properties["graphite.level"])
+        @Suppress("UNCHECKED_CAST")
+        val views = result["views"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val contextViews = views["systemContextViews"] as List<Map<String, Any?>>
+        assertEquals(1, contextViews.size)
+        @Suppress("UNCHECKED_CAST")
+        val model = result["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val people = model["people"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        val subject = softwareSystems.first { (it["id"] as? String)?.startsWith("system:") == true }
+        val subjectId = subject["id"] as String
+        assertTrue(subjectId == "system:application" || subjectId == "system:library")
+        assertTrue(people.any { (it["id"] as? String)?.startsWith("person:") == true })
+        assertTrue((((subject["properties"] as Map<*, *>)["graphite.responsibility"] as? String).isNullOrBlank()).not())
+    }
+
+    @Test
+    fun `GET api architecture c4 returns container view`() {
+        val (code, body) = get("/api/architecture/c4?level=container")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val views = result["views"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val containerViews = views["containerViews"] as List<Map<String, Any?>>
+        assertEquals(1, containerViews.size)
+        @Suppress("UNCHECKED_CAST")
+        val model = result["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val application = softwareSystems.first { (it["id"] as? String)?.startsWith("system:") == true }
+        @Suppress("UNCHECKED_CAST")
+        val containers = application["containers"] as List<Map<String, Any?>>
+        assertEquals(
+            0,
+            containers.size,
+            "C4 container level must not synthesize a runtime boundary for a library/package-only graph"
+        )
+    }
+
+    @Test
+    fun `GET api architecture c4 returns component view`() {
+        val (code, body) = get("/api/architecture/c4?level=component")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val views = result["views"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val componentViews = views["componentViews"] as List<Map<String, Any?>>
+        assertTrue(componentViews.isEmpty())
+        @Suppress("UNCHECKED_CAST")
+        val model = result["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val application = softwareSystems.first { (it["id"] as? String)?.startsWith("system:") == true }
+        @Suppress("UNCHECKED_CAST")
+        val containers = application["containers"] as List<Map<String, Any?>>
+        val allComponents = containers.flatMap { (it["components"] as? List<Map<String, Any?>>).orEmpty() }
+        assertTrue(allComponents.isEmpty())
+    }
+
+    @Test
+    fun `GET api architecture c4 rejects invalid level`() {
+        val (code, body) = get("/api/architecture/c4?level=invalid")
+        assertEquals(400, code)
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("Invalid 'level' parameter", result["error"])
+        @Suppress("UNCHECKED_CAST")
+        val allowed = result["allowed"] as List<String>
+        assertTrue(allowed.contains("all"))
+    }
+
+    @Test
+    fun `GET api architecture c4 returns mermaid text`() {
+        val (code, body) = get("/api/architecture/c4?level=context&format=mermaid")
+        assertEquals(200, code, "Expected 200, body: $body")
+        assertTrue(body.startsWith("graph TD"), "Expected Mermaid graph, body: $body")
+        assertTrue(body.contains("system_"))
+    }
+
+    @Test
+    fun `GET api architecture c4 returns plantuml text`() {
+        val (code, body) = get("/api/architecture/c4?level=context&format=plantuml")
+        assertEquals(200, code, "Expected 200, body: $body")
+        assertTrue(body.startsWith("@startuml"), "Expected PlantUML document, body: $body")
+        assertTrue(body.contains("system_") || body.contains("system:"))
+        assertTrue(body.trimEnd().endsWith("@enduml"))
+    }
+
+    @Test
+    fun `GET api architecture c4 returns structurizr dsl text`() {
+        val (code, body) = get("/api/architecture/c4?level=context&format=dsl")
+        assertEquals(200, code, "Expected 200, body: $body")
+        assertTrue(body.startsWith("workspace \"Graphite C4 Workspace\""), "Expected Structurizr DSL workspace, body: $body")
+        assertTrue(body.contains("model {"), "Expected Structurizr DSL model block, body: $body")
+        assertTrue(body.contains("views {"), "Expected Structurizr DSL views block, body: $body")
+        assertTrue(body.contains("systemContext"), "Expected Structurizr DSL system context view, body: $body")
+    }
+
+    @Test
+    fun `GET api architecture c4 structured formats ignore diagram limits`() {
+        val (jsonCode, jsonBody) = get("/api/architecture/c4?level=context&format=json&limit=0")
+        assertEquals(200, jsonCode, "Expected 200, body: $jsonBody")
+        val result: Map<String, Any?> = parseJson(jsonBody)
+        @Suppress("UNCHECKED_CAST")
+        val model = result["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        assertTrue(softwareSystems.isNotEmpty(), "Structured JSON must not be cropped by diagram limits")
+
+        val (dslCode, dslBody) = get("/api/architecture/c4?level=context&format=dsl&limit=0")
+        assertEquals(200, dslCode, "Expected 200, body: $dslBody")
+        assertTrue(dslBody.contains("softwareSystem"), "Structured DSL must not be cropped by diagram limits")
+    }
+
+    @Test
+    fun `GET api architecture c4 uses accept header before query format`() {
+        val (plantCode, plantBody) = get(
+            "/api/architecture/c4?level=context&format=json",
+            mapOf("Accept" to "text/vnd.plantuml")
+        )
+        assertEquals(200, plantCode, "Expected 200, body: $plantBody")
+        assertTrue(plantBody.startsWith("@startuml"), "Expected PlantUML document, body: $plantBody")
+
+        val (jsonCode, jsonBody) = get(
+            "/api/architecture/c4?level=context&format=plantuml",
+            mapOf("Accept" to "application/vnd.structurizr+json")
+        )
+        assertEquals(200, jsonCode, "Expected 200, body: $jsonBody")
+        assertTrue(jsonBody.trimStart().startsWith("{"), "Expected Structurizr JSON document, body: $jsonBody")
+
+        val (dslCode, dslBody) = get(
+            "/api/architecture/c4?level=context&format=json",
+            mapOf("Accept" to "text/vnd.structurizr.dsl")
+        )
+        assertEquals(200, dslCode, "Expected 200, body: $dslBody")
+        assertTrue(dslBody.startsWith("workspace \"Graphite C4 Workspace\""), "Expected Structurizr DSL document, body: $dslBody")
+    }
+
+    @Test
+    fun `GET api architecture c4 container plantuml does not synthesize library runtime boundary`() {
+        val (code, body) = get("/api/architecture/c4?level=container&format=plantuml")
+        assertEquals(200, code, "Expected 200, body: $body")
+        assertTrue(body.startsWith("@startuml"), "Expected PlantUML document, body: $body")
+        assertFalse(body.contains("package \"Runtime Boundary\""), "Library-only graph must not synthesize runtime boundary, body: $body")
+    }
+
+    @Test
+    fun `GET api architecture c4 renders every text format and level`() {
+        val formats = listOf("mermaid", "plantuml")
+        val levels = listOf("all", "context", "container", "component")
+
+        formats.forEach { format ->
+            levels.forEach { level ->
+                val (code, body) = get("/api/architecture/c4?level=$level&format=$format")
+                assertEquals(200, code, "Expected 200 for $level/$format, body: $body")
+                when (format) {
+                    "mermaid" -> assertTrue(body.contains("graph TD"), "Expected Mermaid graph for $level")
+                    "plantuml" -> assertTrue(body.contains("@startuml") && body.contains("@enduml"), "Expected PlantUML document for $level")
+                }
+                if (level == "all") {
+                    assertTrue(body.contains("Context"), "Expected context section in all/$format")
+                    assertTrue(body.contains("Container"), "Expected container section in all/$format")
+                    assertTrue(body.contains("Component"), "Expected component section in all/$format")
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `GET api architecture c4 mermaid output stays under github edge limit`() {
+        val edges = Regex("-->").findAll(get("/api/architecture/c4?level=context&format=mermaid").second).count()
+        assertTrue(edges <= C4ViewLimits.MAX_TEXT_DIAGRAM_EDGES, "Expected Mermaid edges to be capped, got $edges")
+    }
+
+    @Test
+    fun `GET api architecture c4 rejects invalid format`() {
+        val (code, body) = get("/api/architecture/c4?format=invalid")
+        assertEquals(400, code)
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("Invalid 'format' parameter", result["error"])
+        @Suppress("UNCHECKED_CAST")
+        val allowed = result["allowed"] as List<String>
+        assertTrue(allowed.contains("json"))
+        assertTrue(allowed.contains("dsl"))
+        assertTrue(allowed.contains("mermaid"))
+        assertTrue(allowed.contains("plantuml"))
+    }
+
+    // ========================================================================
+    // /api/overview
+    // ========================================================================
+
+    @Test
+    fun `GET api overview returns all nodes and edges`() {
+        val (code, body) = get("/api/overview")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, List<Any>> = parseJson(body)
+        assertTrue(result["nodes"]!!.isNotEmpty(), "Should have nodes")
+        assertTrue(result["edges"]!!.isNotEmpty(), "Should have edges")
+    }
+
+    @Test
+    fun `GET api overview respects limit`() {
+        val (code, body) = get("/api/overview?limit=3")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, List<Any>> = parseJson(body)
+        assertTrue(result["nodes"]!!.size <= 3, "Should respect limit")
+    }
+
+    @Test
+    fun `GET api overview uses stable class names as node ids`() {
+        val (code, body) = get("/api/overview")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, List<Map<String, Any?>>> = parseJson(body)
+        val nodes = result["nodes"].orEmpty()
+        val edges = result["edges"].orEmpty()
+        assertTrue(nodes.any { it["id"] == "com.example.Foo" && it["fullName"] == "com.example.Foo" })
+        assertTrue(nodes.any { it["id"] == "com.example.Baz" && it["fullName"] == "com.example.Baz" })
+        assertTrue(edges.any { it["from"] == "com.example.Foo" && it["to"] == "com.example.Baz" })
+    }
+
+    // ========================================================================
+    // /api/subgraph
+    // ========================================================================
+
+    @Test
+    fun `GET api subgraph returns nodes and edges`() {
+        val (code, body) = get("/api/graphs/standalone/subgraph?center=${localNode.id.value}&depth=1")
+        assertEquals(200, code)
+        val subgraph: Map<String, Any?> = parseJson(body)
+        assertTrue(subgraph.containsKey("nodes"), "Should contain 'nodes' key")
+        assertTrue(subgraph.containsKey("edges"), "Should contain 'edges' key")
+        @Suppress("UNCHECKED_CAST")
+        val nodes = subgraph["nodes"] as List<Map<String, Any?>>
+        assertTrue(nodes.isNotEmpty(), "Subgraph should contain nodes")
+    }
+
+    @Test
+    fun `GET api subgraph with depth 0 returns only center node`() {
+        val (code, body) = get("/api/graphs/standalone/subgraph?center=${fieldNode.id.value}&depth=0")
+        assertEquals(200, code)
+        val subgraph: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = subgraph["nodes"] as List<Map<String, Any?>>
+        assertEquals(1, nodes.size, "Depth 0 should return only the center node")
+        @Suppress("UNCHECKED_CAST")
+        val edges = subgraph["edges"] as List<Map<String, Any?>>
+        assertEquals(0, edges.size, "Depth 0 should return no edges")
+    }
+
+    @Test
+    fun `GET api subgraph missing center returns 400`() {
+        val (code, _) = get("/api/graphs/standalone/subgraph?depth=2")
+        assertEquals(400, code)
+    }
+
+    @Test
+    fun `GET api subgraph with invalid center returns 400`() {
+        val (code, _) = get("/api/graphs/standalone/subgraph?center=notanumber")
+        assertEquals(400, code)
+    }
+
+    @Test
+    fun `GET api subgraph defaults to depth 2`() {
+        val (code, body) = get("/api/graphs/standalone/subgraph?center=${localNode.id.value}")
+        assertEquals(200, code)
+        val subgraph: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = subgraph["nodes"] as List<Map<String, Any?>>
+        // With depth 2, should traverse further than depth 1
+        assertTrue(nodes.size > 1, "Default depth 2 should return multiple nodes")
+    }
+
+    @Test
+    fun `GET api subgraph supports outgoing-only traversal`() {
+        val (code, body) = get(
+            "/api/graphs/standalone/subgraph?center=${localNode.id.value}&depth=1&direction=outgoing"
+        )
+        assertEquals(200, code)
+        val subgraph: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val edges = subgraph["edges"] as List<Map<String, Any?>>
+        assertTrue(edges.isNotEmpty(), "Outgoing traversal should include localNode outgoing edges")
+        assertTrue(
+            edges.all { it["from"] == localNode.id.value.toDouble() },
+            "Outgoing-only traversal should not include incoming edges"
+        )
+    }
+
+    @Test
+    fun `GET api subgraph rejects invalid direction`() {
+        val (code, _) = get(
+            "/api/graphs/standalone/subgraph?center=${localNode.id.value}&direction=sideways"
+        )
+        assertEquals(400, code)
+    }
+
+    @Test
+    fun `GET api subgraph for nonexistent center returns empty`() {
+        val (code, body) = get("/api/graphs/standalone/subgraph?center=999999")
+        assertEquals(200, code)
+        val subgraph: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = subgraph["nodes"] as List<Map<String, Any?>>
+        assertEquals(0, nodes.size, "Nonexistent center should return empty subgraph")
+    }
+
+    // ========================================================================
+    // ExploreCommand.call() integration test
+    // ========================================================================
+
+    @Test
+    fun `explorer defaults to mapped load mode`() {
+        val explore = ExploreCommand()
+
+        CommandLine(explore).parseArgs()
+
+        assertEquals(8080, explore.port)
+        assertEquals(GraphStore.LoadMode.MAPPED, explore.loadMode)
+        assertNull(explore.data)
+        assertNull(explore.graphId)
+        assertNull(explore.topology)
+        assertTrue(explore.graphSpecs.isEmpty())
+        assertEquals(4, DEFAULT_MAX_CONCURRENT_CYPHER)
+        assertEquals(1_000_000L, DEFAULT_CYPHER_WORK_BUDGET)
+        assertEquals(4, explore.maxConcurrentCypher)
+        assertEquals(1_000_000L, explore.cypherWorkBudget)
+        assertEquals(60_000L, explore.cypherMaxTimeoutMillis)
+        assertFalse(explore.metricsEnabled)
+    }
+
+    @Test
+    fun `server metrics require explicit opt in`() {
+        val serve = ServeCommand()
+
+        CommandLine(serve).parseArgs("--metrics")
+
+        assertTrue(serve.metricsEnabled)
+    }
+
+    @Test
+    fun `serve help marks cypher work budget deprecated and documents timeout replacement`() {
+        val usage = CommandLine(ServeCommand()).usageMessage
+
+        assertTrue(usage.contains("--cypher-work-budget"), usage)
+        assertTrue(usage.contains("Deprecated and ignored"), usage)
+        assertTrue(usage.contains("--cypher-max-timeout-ms"), usage)
+    }
+
+    @Test
+    fun `serve rejects non-positive active cypher limits and ignores deprecated work budget`() {
+        val concurrency = ServeCommand().apply { maxConcurrentCypher = 0 }
+        val timeout = ServeCommand().apply { cypherMaxTimeoutMillis = 0 }
+        val work = ServeCommand().apply { cypherWorkBudget = 0 }
+
+        val (_, concurrencyError, concurrencyCode) = captureOutput { concurrency.call() }
+        val (_, timeoutError, timeoutCode) = captureOutput { timeout.call() }
+        val (_, workError, workCode) = captureOutput { work.call() }
+
+        assertEquals(1, concurrencyCode)
+        assertEquals(1, timeoutCode)
+        assertEquals(1, workCode)
+        assertTrue(concurrencyError.contains("must be positive"), concurrencyError)
+        assertTrue(timeoutError.contains("must be positive"), timeoutError)
+        assertTrue(workError.contains("--data"), workError)
+    }
+
+    @Test
+    fun `serve without initial graph requires data directory`() {
+        val serve = ServeCommand()
+
+        val (_, err, code) = captureOutput { serve.call() }
+
+        assertEquals(1, code)
+        assertTrue(err.contains("--data"), "Expected data directory error, got: $err")
+    }
+
+    @Test
+    fun `serve positional graph requires an explicit graph id`() {
+        val serve = ServeCommand()
+        serve.graphDir = graphDir
+
+        val (_, err, code) = captureOutput { serve.call() }
+
+        assertEquals(1, code)
+        assertTrue(err.contains("--id is required"), "Expected explicit graph id error, got: $err")
+    }
+
+    @Test
+    fun `serve with invalid graph spec returns error before blocking`() {
+        val root = Files.createTempDirectory("explore-invalid-graph-spec")
+        try {
+            val serve = ServeCommand()
+            serve.data = root
+            serve.graphSpecs = listOf("missing-separator")
+
+            val (_, err, code) = captureOutput { serve.call() }
+
+            assertEquals(1, code)
+            assertTrue(err.contains("Invalid --graph 'missing-separator'"), "Expected invalid graph error, got: $err")
+            assertTrue(err.contains("Expected id:path"), "Expected id:path hint, got: $err")
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `serve validates the topology query after loading the configured graph catalog`() {
+        val root = Files.createTempDirectory("explore-invalid-topology")
+        try {
+            saveConstantGraph(root, "service-a", 11)
+            saveConstantGraph(root, "service-b", 22)
+            val query = root.resolve("topology.cypher")
+            Files.writeString(query, "RETURN 'service-a' AS source")
+            val serve = ServeCommand().apply {
+                data = root
+                graphSpecs = listOf("service-a:service-a", "service-b:service-b")
+                topology = query
+                port = 0
+            }
+
+            val (_, err, code) = captureOutput { serve.call() }
+
+            assertEquals(1, code)
+            assertTrue(err.contains("must return 'source' and 'target'"), err)
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `serve loads positional and graph specs into registry`() {
+        val root = Files.createTempDirectory("explore-initial-graphs")
+        try {
+            val positional = saveConstantGraph(root, "service-a", 11)
+            saveConstantGraph(root, "service-b", 22)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            try {
+                val serve = ServeCommand()
+                serve.graphDir = positional
+                serve.graphId = "service-a"
+                serve.graphSpecs = listOf("service-b:service-b")
+
+                val loadInitialGraphs = ServeCommand::class.java.getDeclaredMethod(
+                    "loadInitialGraphs",
+                    GraphRegistry::class.java
+                )
+                loadInitialGraphs.isAccessible = true
+                loadInitialGraphs.invoke(serve, registry)
+
+                assertEquals(listOf("service-a", "service-b"), registry.list().map { it.id })
+                registry.acquire("service-a")?.use { lease ->
+                    assertEquals("service-a", lease.id)
+                }
+                registry.acquire("service-b")?.use { lease ->
+                    assertEquals(1L, lease.graph.nodeCount(Node::class.java))
+                }
+            } finally {
+                registry.close()
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `call starts server and blocks until interrupted`() {
+        // Test that call() actually starts a server and blocks
+        val explore = ExploreCommand()
+        explore.graphDir = graphDir
+        explore.graphId = "test"
+        explore.port = 0 // random port
+
+        var result: Int? = null
+        var exception: Throwable? = null
+        val thread = Thread {
+            try {
+                result = explore.call()
+            } catch (e: Throwable) {
+                exception = e
+            }
+        }
+        thread.start()
+        // Give it time to start
+        Thread.sleep(2000)
+        // Interrupt to unblock Thread.join()
+        thread.interrupt()
+        thread.join(5000)
+        // The method should have thrown InterruptedException or returned
+        // Either is acceptable - the key is exercising the code path
+        assertTrue(!thread.isAlive, "Thread should have terminated after interrupt")
+    }
+
+    // ========================================================================
+    // buildSubgraph unit tests
+    // ========================================================================
+
+    @Test
+    fun `buildSubgraph traverses outgoing and incoming edges`() {
+        val graph = GraphStore.load(graphDir)
+        val explore = ExploreCommand()
+        val result = explore.buildSubgraph(graph, localNode.id, 1)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = result["nodes"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val edges = result["edges"] as List<Map<String, Any?>>
+        // localNode has 2 incoming (param, intConst) and 1 outgoing (returnNode)
+        assertTrue(nodes.size >= 4, "Should include center + neighbors, got ${nodes.size}")
+        assertTrue(edges.isNotEmpty(), "Should include edges")
+    }
+
+    @Test
+    fun `buildSubgraph with negative depth returns only center`() {
+        val graph = GraphStore.load(graphDir)
+        val explore = ExploreCommand()
+        // depth -1: visit returns immediately due to remaining < 0
+        val result = explore.buildSubgraph(graph, localNode.id, -1)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = result["nodes"] as List<Map<String, Any?>>
+        assertEquals(0, nodes.size, "Negative depth should return nothing (remaining < 0 check)")
+    }
+
+    @Test
+    fun `buildSubgraph caps excessive traversals`() {
+        val builder = DefaultGraph.Builder()
+        val nodeCount = 2_100
+        repeat(nodeCount) { index ->
+            builder.addNode(IntConstant(NodeId(index), index))
+            if (index > 0) {
+                builder.addEdge(DataFlowEdge(NodeId(index - 1), NodeId(index), DataFlowKind.ASSIGN))
+            }
+        }
+
+        val result = ExploreCommand().buildSubgraph(builder.build(), NodeId(0), nodeCount)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = result["nodes"] as List<Map<String, Any?>>
+        assertEquals(2_000, nodes.size, "Subgraph traversal should stop at the node cap")
+    }
+
+    @Test
+    fun `buildSubgraph caps edges independently of nodes`() {
+        val builder = DefaultGraph.Builder()
+        val fanOut = 5_100
+        builder.addNode(IntConstant(NodeId(0), 0))
+        repeat(fanOut) { index ->
+            val leaf = index + 1
+            builder.addNode(IntConstant(NodeId(leaf), leaf))
+            builder.addEdge(DataFlowEdge(NodeId(0), NodeId(leaf), DataFlowKind.ASSIGN))
+        }
+
+        val result = ExploreCommand().buildSubgraph(builder.build(), NodeId(0), 1)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = result["nodes"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val edges = result["edges"] as List<Map<String, Any?>>
+        assertEquals(2_000, nodes.size, "Node cap applies before the edge cap on a wide fan-out")
+        assertEquals(5_000, edges.size, "Edges keep accumulating up to their own cap after the node cap")
+    }
+
+    @Test
+    fun `buildC4Model does not invent containers or components for library-only graphs`() {
+        val graph = GraphStore.load(graphDir)
+        val explore = ExploreCommand()
+        val result = explore.buildC4Model(graph, "all", 50)
+        assertEquals("Graphite C4 Workspace", result["name"])
+        @Suppress("UNCHECKED_CAST")
+        val views = result["views"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val systemContextViews = views["systemContextViews"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val containerViews = views["containerViews"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val componentViews = views["componentViews"] as List<Map<String, Any?>>
+        assertTrue(systemContextViews.isNotEmpty())
+        assertTrue(containerViews.isNotEmpty())
+        assertTrue(componentViews.isEmpty())
+        @Suppress("UNCHECKED_CAST")
+        val model = result["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val application = softwareSystems.first { (it["id"] as? String)?.startsWith("system:") == true }
+        @Suppress("UNCHECKED_CAST")
+        val containers = application["containers"] as List<Map<String, Any?>>
+        assertTrue(containers.isEmpty())
+    }
+
+    @Test
+    fun `buildC4Model groups external systems by artifact provenance when available`() {
+        val internalType = TypeDescriptor("com.example.AppService")
+        val internalMethod = MethodDescriptor(internalType, "run", emptyList(), TypeDescriptor("void"))
+        val luceneWriterType = TypeDescriptor("org.apache.lucene.index.IndexWriter")
+        val luceneReaderType = TypeDescriptor("org.apache.lucene.index.DirectoryReader")
+        val logType = TypeDescriptor("org.apache.logging.log4j.Logger")
+        val runtimeType = TypeDescriptor("java.util.List")
+        val builder = DefaultGraph.Builder()
+
+        builder.addMethod(internalMethod)
+        builder.addNode(CallSiteNode(NodeId.next(), internalMethod, MethodDescriptor(luceneWriterType, "commit", emptyList(), TypeDescriptor("void")), 10, null, emptyList()))
+        builder.addNode(CallSiteNode(NodeId.next(), internalMethod, MethodDescriptor(luceneReaderType, "open", emptyList(), luceneReaderType), 11, null, emptyList()))
+        builder.addNode(CallSiteNode(NodeId.next(), internalMethod, MethodDescriptor(logType, "info", listOf(TypeDescriptor("java.lang.String")), TypeDescriptor("void")), 12, null, emptyList()))
+        builder.addNode(CallSiteNode(NodeId.next(), internalMethod, MethodDescriptor(runtimeType, "size", emptyList(), TypeDescriptor("int")), 13, null, emptyList()))
+        builder.addClassOrigin(luceneWriterType.className, JavaArchiveLayout.bootInfLibEntry("lucene-core-9.11.1.jar"))
+        builder.addClassOrigin(luceneReaderType.className, JavaArchiveLayout.bootInfLibEntry("lucene-core-9.11.1.jar"))
+        builder.addClassOrigin(logType.className, JavaArchiveLayout.bootInfLibEntry("log4j-api-2.23.1.jar"))
+        builder.addArtifactDependency("lucene-core-9.11.1", "log4j-api-2.23.1", 7)
+
+        val explore = ExploreCommand()
+        val result = explore.buildC4Model(builder.build(), "context", 50)
+        @Suppress("UNCHECKED_CAST")
+        val model = result["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        val names = softwareSystems.mapNotNull { it["name"] as? String }
+
+        assertTrue(names.contains("lucene-core-9.11.1"))
+        assertTrue(names.contains("log4j-api-2.23.1"))
+        assertTrue(names.contains("Java Runtime"))
+        assertFalse(names.contains("org.apache"))
+        @Suppress("UNCHECKED_CAST")
+        val luceneSystem = softwareSystems.first { it["name"] == "lucene-core-9.11.1" }
+        @Suppress("UNCHECKED_CAST")
+        val relationships = luceneSystem["relationships"] as List<Map<String, Any?>>
+        assertTrue(
+            relationships.any {
+                    it["destinationId"] == "dependency:artifact:log4j-api-2.23.1"
+            }
+        )
+    }
+
+    @Test
+    fun `buildC4Model infers external software systems from referenced absent classes`() {
+        val appType = TypeDescriptor("com.acme.checkout.CheckoutService")
+        val appMethod = MethodDescriptor(appType, "pay", emptyList(), TypeDescriptor("void"))
+        val paymentType = TypeDescriptor("com.partner.payment.PaymentGateway")
+        val paymentMethod = MethodDescriptor(paymentType, "charge", emptyList(), TypeDescriptor("void"))
+        val graph = DefaultGraph.Builder()
+            .addMethod(appMethod)
+            .addNode(CallSiteNode(NodeId.next(), appMethod, paymentMethod, 20, null, emptyList()))
+            .build()
+
+        val workspace = ExploreCommand().buildC4Model(graph, "context", 50)
+        @Suppress("UNCHECKED_CAST")
+        val model = workspace["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val systems = model["softwareSystems"] as List<Map<String, Any?>>
+        val external = systems.first { it["id"] == "dependency:namespace:com.partner.payment" }
+        val properties = external["properties"] as Map<*, *>
+
+        assertEquals("com.partner.payment", external["name"])
+        assertEquals("external-system", properties["graphite.kind"])
+        assertEquals("external-system", properties["graphite.architectureType"])
+        assertTrue((properties["graphite.responsibility"] as? String).orEmpty().contains("external software system"))
+
+        val service = C4ArchitectureService()
+        assertTrue(service.renderMermaid(workspace).contains("External Systems"))
+        assertTrue(service.renderPlantUml(workspace).contains("package \"External Systems\""))
+    }
+
+    @Test
+    fun `C4 inferer derives artifact dependencies from graph evidence`() {
+        val appType = TypeDescriptor("com.acme.App")
+        val appMethod = MethodDescriptor(appType, "run", emptyList(), TypeDescriptor("void"))
+        val guavaType = TypeDescriptor("com.google.common.collect.ImmutableList")
+        val gsonType = TypeDescriptor("com.google.gson.Gson")
+        val builder = DefaultGraph.Builder()
+            .addMethod(appMethod)
+            .addNode(CallSiteNode(NodeId.next(), appMethod, MethodDescriptor(guavaType, "of", emptyList(), TypeDescriptor("java.util.List")), 1, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), appMethod, MethodDescriptor(gsonType, "toJson", listOf(TypeDescriptor("java.lang.Object")), TypeDescriptor("java.lang.String")), 2, null, emptyList()))
+        builder.addClassOrigin(guavaType.className, "lib/guava-32.1.3-jre.jar")
+        builder.addClassOrigin(gsonType.className, "lib/gson-2.10.1.jar")
+        builder.addArtifactDependency("guava-32.1.3-jre", "gson-2.10.1", 4)
+
+        val inferred = C4ModelInferer().buildViewModel(builder.build(), "context", 50)
+        @Suppress("UNCHECKED_CAST")
+        val view = inferred["view"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val elements = view["elements"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val relationships = view["relationships"] as List<Map<String, Any?>>
+
+        assertTrue(elements.any { it["id"] == "dependency:artifact:guava-32.1.3-jre" && it["source"] == "artifact" })
+        assertTrue(elements.any { it["id"] == "dependency:artifact:gson-2.10.1" && it["source"] == "artifact" })
+        assertTrue(
+            relationships.any {
+                it["from"] == "dependency:artifact:guava-32.1.3-jre" &&
+                    it["to"] == "dependency:artifact:gson-2.10.1" &&
+                    it["kind"] == "builds-on"
+            }
+        )
+    }
+
+    @Test
+    fun `buildC4Model detects Spring Boot app subject from Start-Class artifact`() {
+        val startType = TypeDescriptor("com.example.boot.StartApplication")
+        val serviceType = TypeDescriptor("com.example.boot.Service")
+        val mainMethod = MethodDescriptor(startType, "main", listOf(TypeDescriptor("java.lang.String[]")), TypeDescriptor("void"))
+        val serviceMethod = MethodDescriptor(serviceType, "run", emptyList(), TypeDescriptor("void"))
+        val graph = DefaultGraph.Builder()
+            .setResources(
+                TestResourceAccessor(
+                    mapOf(
+                        JavaArchiveLayout.META_INF_MANIFEST to """
+                            Manifest-Version: 1.0
+                            ${JavaArchiveLayout.MAIN_CLASS_ATTRIBUTE}: ${JavaArchiveLayout.SPRING_BOOT_LAUNCH_JAR_LAUNCHER}
+                            ${JavaArchiveLayout.START_CLASS_ATTRIBUTE}: com.example.boot.StartApplication
+                            
+                        """.trimIndent()
+                    )
+                )
+            )
+            .addMethod(mainMethod)
+            .addMethod(serviceMethod)
+            .addNode(CallSiteNode(NodeId.next(), mainMethod, serviceMethod, 1, null, emptyList()))
+            .apply {
+                addClassOrigin(startType.className, JavaArchiveLayout.bootInfLibEntry("my-app.jar"))
+                addClassOrigin(serviceType.className, JavaArchiveLayout.bootInfLibEntry("my-app.jar"))
+            }
+            .build()
+
+        val explore = ExploreCommand()
+        val result = explore.buildC4Model(graph, "context", 50)
+        @Suppress("UNCHECKED_CAST")
+        val model = result["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        val subject = softwareSystems.first { it["id"] == "system:application" }
+
+        assertEquals("My App", subject["name"])
+    }
+
+    @Test
+    fun `buildC4Model ignores runtime calls when inferring container integration kind`() {
+        val mainType = TypeDescriptor("com.example.runtime.Main")
+        val mainMethod = MethodDescriptor(mainType, "main", listOf(TypeDescriptor("java.lang.String[]")), TypeDescriptor("void"))
+        val internalType = TypeDescriptor("com.example.runtime.Api")
+        val internalMethod = MethodDescriptor(internalType, "run", emptyList(), TypeDescriptor("void"))
+        val runtimeType = TypeDescriptor("java.util.List")
+        val runtimeMethod = MethodDescriptor(runtimeType, "size", emptyList(), TypeDescriptor("int"))
+        val graph = DefaultGraph.Builder()
+            .addMethod(mainMethod)
+            .addMethod(internalMethod)
+            .addNode(CallSiteNode(NodeId.next(), mainMethod, internalMethod, 1, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), internalMethod, runtimeMethod, 1, null, emptyList()))
+            .build()
+
+        val result = ExploreCommand().buildC4Model(graph, "container", 50)
+        @Suppress("UNCHECKED_CAST")
+        val model = result["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val subject = softwareSystems.first { (it["id"] as? String)?.startsWith("system:") == true }
+        @Suppress("UNCHECKED_CAST")
+        val containers = subject["containers"] as List<Map<String, Any?>>
+        val kinds = containers.mapNotNull { (it["properties"] as? Map<*, *>)?.get("graphite.kind") as? String }
+
+        assertTrue(kinds.isNotEmpty())
+        assertFalse(kinds.contains("integration"), "Runtime-only calls must not imply integration kind: $kinds")
+    }
+
+    @Test
+    fun `C4 edge reducers keep strong direct evidence and trim shared fan-in`() {
+        fun edge(from: String, to: String, weight: Int, kind: String = "uses") = mapOf(
+            "from" to from,
+            "to" to to,
+            "weight" to weight,
+            "kind" to kind,
+            "description" to kind
+        )
+
+        val transitive = listOf(
+            edge("container:a", "container:b", 10),
+            edge("container:b", "container:c", 10),
+            edge("container:a", "container:c", 5),
+            edge("container:a", "container:d", 10),
+            edge("container:b", "container:d", 1)
+        )
+        val reducedTransitive = reduceTransitiveContainerEdges(transitive)
+        assertFalse(reducedTransitive.any { it["from"] == "container:a" && it["to"] == "container:c" })
+        assertTrue(reducedTransitive.any { it["from"] == "container:a" && it["to"] == "container:d" })
+
+        val diagramTransitive = reduceDiagramTransitiveEdges(transitive)
+        assertTrue(diagramTransitive.any { it["from"] == "container:a" && it["to"] == "container:d" })
+        val runtimeTransitive = listOf(
+            edge("dependency:library:lucene", "dependency:artifact:log4j-api", 3, "builds-on"),
+            edge("dependency:artifact:log4j-api", "dependency:runtime:java", 1, "runs-on"),
+            edge("dependency:library:lucene", "dependency:runtime:java", 1, "runs-on")
+        )
+        val reducedRuntime = reduceDiagramTransitiveEdges(runtimeTransitive)
+        assertFalse(reducedRuntime.any { it["from"] == "dependency:library:lucene" && it["to"] == "dependency:runtime:java" })
+
+        val libraryFanIn = listOf(
+            edge("container:a", "dependency:artifact:shared", 5, "depends-on"),
+            edge("container:b", "dependency:artifact:shared", 10, "depends-on"),
+            edge("container:c", "dependency:artifact:shared", 1, "depends-on"),
+            edge("dependency:artifact:shared", "dependency:runtime:java", 1, "runs-on")
+        )
+        val reducedLibrary = reduceSharedLibraryFanIn(libraryFanIn)
+        assertEquals(3, reducedLibrary.size)
+        assertFalse(reducedLibrary.any { it["from"] == "container:c" })
+        assertTrue(reducedLibrary.any { it["kind"] == "runs-on" })
+
+        val internalFanIn = listOf(
+            edge("container:a", "container:shared", 1),
+            edge("container:b", "container:shared", 5),
+            edge("container:c", "container:shared", 2),
+            edge("container:d", "container:shared", 4)
+        )
+        val reducedInternal = reduceSharedInternalFanIn(internalFanIn)
+        assertEquals(3, reducedInternal.size)
+        assertFalse(reducedInternal.any { it["from"] == "container:a" })
+    }
+
+    @Test
+    fun `C4 classifier helpers cover runtime namespace and responsibility branches`() {
+        val inferer = C4ModelInferer()
+        val intType = Int::class.javaPrimitiveType!!
+        val listType = arrayOf<Class<*>>(List::class.java)
+        val stringType = arrayOf<Class<*>>(String::class.java)
+        val fourIntTypes = arrayOf<Class<*>>(intType, intType, intType, intType)
+        val fiveIntTypes = arrayOf<Class<*>>(intType, intType, intType, intType, intType)
+        val twoStringTypes = arrayOf<Class<*>>(String::class.java, String::class.java)
+        val threeStringTypes = arrayOf<Class<*>>(String::class.java, String::class.java, String::class.java)
+        val graphListTypes = arrayOf<Class<*>>(Graph::class.java, List::class.java)
+        val listListTypes = arrayOf<Class<*>>(List::class.java, List::class.java)
+        val setStringListTypes = arrayOf<Class<*>>(Set::class.java, String::class.java, List::class.java)
+        val setMapMapStringTypes = arrayOf<Class<*>>(Set::class.java, Map::class.java, Map::class.java, String::class.java)
+        val containerPairTypes = arrayOf<Class<*>>(String::class.java, String::class.java, String::class.java, String::class.java)
+        val componentPairTypes = arrayOf<Class<*>>(
+            String::class.java,
+            String::class.java,
+            String::class.java,
+            String::class.java,
+            String::class.java,
+            String::class.java
+        )
+        val componentResponsibilityTypes = arrayOf<Class<*>>(String::class.java, intType, intType, intType, intType)
+
+        assertEquals(
+            "runtime:java",
+            ExternalSystemClassifier.key(null, "java.util.List")
+        )
+        assertEquals(
+            "runtime:kotlin",
+            ExternalSystemClassifier.key(null, "kotlin.String")
+        )
+        assertEquals(
+            "runtime:scala",
+            ExternalSystemClassifier.key(null, "scala.Option")
+        )
+        assertEquals(
+            "namespace:joptsimple",
+            ExternalSystemClassifier.key(null, "joptsimple.OptionParser")
+        )
+        assertEquals(
+            "org",
+            ExternalSystemClassifier.namespaceGroup("org.Foo.Bar")
+        )
+        assertEquals(
+            "",
+            ExternalSystemClassifier.namespaceGroup("")
+        )
+        assertEquals(
+            "alpha",
+            ExternalSystemClassifier.namespaceGroup("alpha.beta.gamma.delta")
+        )
+
+        assertEquals("Java Runtime", ExternalSystemClassifier.name(null, "runtime:java", emptyList()))
+        assertEquals("Kotlin Runtime", ExternalSystemClassifier.name(null, "runtime:kotlin", emptyList()))
+        assertEquals("Scala Runtime", ExternalSystemClassifier.name(null, "runtime:scala", emptyList()))
+        assertEquals("lucene-core-9.12.0", ExternalSystemClassifier.name(null, "artifact:lucene-core-9.12.0", emptyList()))
+        assertEquals("org.apache.lucene", ExternalSystemClassifier.name(null, "namespace:org.apache.lucene", emptyList()))
+        val originFallbackGraph = DefaultGraph.Builder()
+            .apply { addClassOrigin("custom.External", "lib/custom-client.jar") }
+            .build()
+        assertEquals("lib/custom-client.jar", ExternalSystemClassifier.name(originFallbackGraph, "opaque", listOf("custom.External")))
+        assertEquals("artifact", ExternalSystemClassifier.source("artifact:lucene-core"))
+        assertEquals("runtime", ExternalSystemClassifier.source("runtime:java"))
+        assertEquals("namespace", ExternalSystemClassifier.source("namespace:org.apache"))
+        assertEquals("runtime", ExternalSystemClassifier.kind("runtime:java"))
+        assertEquals("library", ExternalSystemClassifier.kind("artifact:lucene-core"))
+        assertEquals("external-system", ExternalSystemClassifier.kind("namespace:org.apache"))
+        assertEquals("high", ExternalSystemClassifier.confidence("artifact:lucene-core"))
+        assertEquals("high", ExternalSystemClassifier.confidence("runtime:java"))
+        assertEquals("medium", ExternalSystemClassifier.confidence("namespace:org.apache"))
+        assertEquals(
+            "Provides language and platform runtime services used by the application",
+            ExternalSystemClassifier.responsibility("runtime", "runtime:java")
+        )
+        assertEquals(
+            "Provides reusable library capabilities linked from the application runtime",
+            ExternalSystemClassifier.responsibility("library", "artifact:lucene-core")
+        )
+        assertEquals(
+            "Represents an inferred external software system boundary grouped from referenced classes",
+            ExternalSystemClassifier.responsibility("external-system", "namespace:org.apache")
+        )
+        assertEquals(
+            "Language and platform runtime supporting the subject system",
+            ExternalSystemClassifier.description("runtime")
+        )
+        assertEquals(
+            "External collaborator inferred from code graph evidence",
+            ExternalSystemClassifier.description("other")
+        )
+        assertEquals(
+            "Search",
+            invokeExplorePrivate<String>(inferer, "inferSubjectName", threeStringTypes, "com.acme.search", null, "com.acme.SearchApp")
+        )
+        assertEquals("application-service", invokeExplorePrivate<String>(inferer, "inferContainerArchitectureType", stringType, "application-runtime"))
+        assertEquals("application-service", invokeExplorePrivate<String>(inferer, "inferContainerArchitectureType", stringType, "interface"))
+        assertEquals("application-component", invokeExplorePrivate<String>(inferer, "inferContainerArchitectureType", stringType, "capability"))
+        assertEquals("application-service", invokeExplorePrivate<String>(inferer, "inferComponentArchitectureType", stringType, "coordination"))
+        assertEquals("application-component", invokeExplorePrivate<String>(inferer, "inferComponentArchitectureType", stringType, "domain-component"))
+        assertEquals("runtime-platform", externalArchitectureType(ExternalDependencyKind.RUNTIME).wireName)
+        assertEquals("external-library", externalArchitectureType(ExternalDependencyKind.LIBRARY).wireName)
+        assertEquals("external-system", externalArchitectureType(ExternalDependencyKind.EXTERNAL_SYSTEM).wireName)
+
+        assertEquals("interface", invokeExplorePrivate<String>(inferer, "inferContainerKind", fourIntTypes, 1, 0, 0, 0))
+        assertEquals("integration", invokeExplorePrivate<String>(inferer, "inferContainerKind", fourIntTypes, 0, 1, 1, 3))
+        assertEquals("orchestrator", invokeExplorePrivate<String>(inferer, "inferContainerKind", fourIntTypes, 0, 1, 3, 0))
+        assertEquals("shared-capability", invokeExplorePrivate<String>(inferer, "inferContainerKind", fourIntTypes, 0, 3, 1, 0))
+        assertEquals("capability", invokeExplorePrivate<String>(inferer, "inferContainerKind", fourIntTypes, 0, 1, 1, 0))
+        assertTrue(invokeExplorePrivate<String>(inferer, "containerDescription", stringType, "capability").contains("Internal capability"))
+        assertNull(invokeExplorePrivate<String?>(inferer, "operationalContainerResponsibility", stringType, "capability"))
+        assertEquals(2, invokeExplorePrivate<Int>(inferer, "containerDependencyLayerRank", stringType, "capability"))
+        assertTrue(
+            invokeExplorePrivate<String>(
+                inferer,
+                "buildContainerRationale",
+                setStringListTypes,
+                setOf("com.acme.api", "com.acme.service"),
+                "com.acme.api",
+                emptyList<String>()
+            ).contains("mutually dependent")
+        )
+        assertEquals(
+            "Api and Service",
+            invokeExplorePrivate<String>(
+                inferer,
+                "inferContainerName",
+                setMapMapStringTypes,
+                linkedSetOf("com.acme.api", "com.acme.service"),
+                linkedMapOf("com.acme.api" to 10, "com.acme.service" to 10),
+                mapOf("api" to 1, "service" to 1),
+                "com.acme"
+            )
+        )
+        assertEquals("entrypoint", invokeExplorePrivate<String>(inferer, "inferComponentKind", fourIntTypes, 1, 0, 0, 0))
+        assertEquals("integration", invokeExplorePrivate<String>(inferer, "inferComponentKind", fourIntTypes, 0, 0, 0, 2))
+        assertEquals("orchestrator", invokeExplorePrivate<String>(inferer, "inferComponentKind", fourIntTypes, 0, 0, 2, 0))
+        assertEquals("shared-capability", invokeExplorePrivate<String>(inferer, "inferComponentKind", fourIntTypes, 0, 2, 0, 0))
+        assertEquals("coordination", invokeExplorePrivate<String>(inferer, "inferComponentKind", fourIntTypes, 0, 1, 1, 0))
+        assertEquals("domain-component", invokeExplorePrivate<String>(inferer, "inferComponentKind", fourIntTypes, 0, 0, 0, 0))
+
+        assertEquals("routes-to", invokeExplorePrivate<String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "interface", "capability"))
+        assertEquals("orchestrates", invokeExplorePrivate<String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "orchestrator", "capability"))
+        assertEquals("uses", invokeExplorePrivate<String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "capability", "shared-capability"))
+        assertEquals("uses", invokeExplorePrivate<String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "capability", "integration"))
+        assertEquals("collaborates-with", invokeExplorePrivate<String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "capability", "capability"))
+        assertEquals(
+            "container:transport" to "container:core",
+            invokeExplorePrivate<Pair<String, String>>(
+                inferer,
+                "canonicalContainerRelationshipPair",
+                containerPairTypes,
+                "container:core",
+                "container:transport",
+                "shared-capability",
+                "orchestrator"
+            )
+        )
+        assertEquals(
+            "container:transport" to "container:core",
+            invokeExplorePrivate<Pair<String, String>>(
+                inferer,
+                "canonicalContainerRelationshipPair",
+                containerPairTypes,
+                "container:transport",
+                "container:core",
+                "orchestrator",
+                "shared-capability"
+            )
+        )
+        assertEquals(
+            "component:IndexShard" to "component:ActionListener",
+            invokeExplorePrivate<Pair<String, String>>(
+                inferer,
+                "canonicalComponentRelationshipPair",
+                componentPairTypes,
+                "component:ActionListener",
+                "component:IndexShard",
+                "shared-capability",
+                "shared-capability",
+                "shared-capability",
+                "orchestrator"
+            )
+        )
+        assertEquals(
+            "component:SearchService" to "component:IndicesService",
+            invokeExplorePrivate<Pair<String, String>>(
+                inferer,
+                "canonicalComponentRelationshipPair",
+                componentPairTypes,
+                "component:SearchService",
+                "component:IndicesService",
+                "orchestrator",
+                "orchestrator",
+                "orchestrator",
+                "orchestrator"
+            )
+        )
+        val dependencyBoundaryGraph = DefaultGraph.Builder()
+            .apply { addArtifactDependency("client-a", "missing-b", 1) }
+            .build()
+        val dependencyBoundary = invokeExplorePrivate<Set<String>>(
+            inferer,
+            "selectRuntimeBoundaryLibraryIds",
+            graphListTypes,
+            dependencyBoundaryGraph,
+            listOf(
+                ExternalDependency(
+                    id = "dependency:artifact:client-a",
+                    name = "client-a",
+                    weight = 1,
+                    source = "artifact",
+                    kind = ExternalDependencyKind.LIBRARY,
+                    confidence = "high",
+                    responsibility = "test dependency"
+                )
+            )
+        )
+        assertEquals(setOf("dependency:artifact:client-a"), dependencyBoundary)
+        val callsiteOnlyMethod = MethodDescriptor(TypeDescriptor("com.callsites.Root"), "run", emptyList(), TypeDescriptor("void"))
+        val callsiteOnlyTarget = MethodDescriptor(TypeDescriptor("java.util.List"), "size", emptyList(), TypeDescriptor("int"))
+        assertEquals(
+            "com.callsites",
+            invokeExplorePrivate<String>(
+                inferer,
+                "deriveSystemBoundary",
+                listListTypes,
+                emptyList<MethodDescriptor>(),
+                listOf(CallSiteNode(NodeId.next(), callsiteOnlyMethod, callsiteOnlyTarget, 1, null, emptyList()))
+            )
+        )
+
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferContainerResponsibility", fiveIntTypes, 1, 0, 0, 0, 0).contains("inbound system interface"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 10, 1, 1, 4).contains("outward-facing capability"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 10, 4, 1, 0).contains("shared internal capability"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 10, 1, 4, 0).contains("orchestration boundary"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 10, 2, 2, 0).contains("balanced internal collaboration"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 0, 0, 0, 0).contains("cohesive internal capability"))
+
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 1, 0, 0, 0).contains("external requests"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 0, 0, 3).contains("external collaborators"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 0, 3, 0).contains("Coordinates work"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 3, 0, 0).contains("shared internal capability"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 2, 2, 0).contains("coordination path"))
+        assertTrue(invokeExplorePrivate<String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 0, 0, 0).contains("structurally central"))
+
+        assertEquals("Api routes work to Service", invokeExplorePrivate<String>(inferer, "describeArchitecturalDependency", threeStringTypes, "routes-to", "Api", "Service"))
+        assertEquals("Api orchestrates Service", invokeExplorePrivate<String>(inferer, "describeArchitecturalDependency", threeStringTypes, "orchestrates", "Api", "Service"))
+        assertEquals("Api uses Service", invokeExplorePrivate<String>(inferer, "describeArchitecturalDependency", threeStringTypes, "uses", "Api", "Service"))
+        assertEquals("Api collaborates with Service", invokeExplorePrivate<String>(inferer, "describeArchitecturalDependency", threeStringTypes, "collaborates-with", "Api", "Service"))
+        fun componentRelationship(from: String, to: String, kind: String = "uses", weight: Int = 1) =
+            C4Relationship(
+                from = from,
+                to = to,
+                type = C4RelationshipType.fromWire(kind),
+                kind = C4RelationshipKind.fromWire(kind),
+                description = kind,
+                weight = weight
+            )
+        assertEquals(
+            1,
+            invokeExplorePrivate<List<C4Relationship>>(
+                inferer,
+                "selectReadableComponentRelationships",
+                listType,
+                listOf(componentRelationship("component:a", "component:b"))
+            ).size
+        )
+        val fallbackSelected = invokeExplorePrivate<List<C4Relationship>>(
+            inferer,
+            "selectReadableComponentRelationships",
+            listType,
+            (1..8).map { index ->
+                componentRelationship("component:source", "component:target$index", weight = 20 - index)
+            }
+        )
+        assertTrue(fallbackSelected.size >= 6)
+        assertTrue(fallbackSelected.size <= 12)
+        assertFalse(fallbackSelected.any { it.from.isBlank() || it.to.isBlank() })
+        val collaborationOnlySelected = invokeExplorePrivate<List<C4Relationship>>(
+            inferer,
+            "selectReadableComponentRelationships",
+            listType,
+            listOf(
+                componentRelationship("component:a", "component:b", "collaborates-with", 2),
+                componentRelationship("component:b", "component:c", "collaborates-with", 1)
+            )
+        )
+        assertEquals(2, collaborationOnlySelected.size)
+
+        assertEquals("(default)", invokeExplorePrivate<String>(inferer, "internalPackageUnit", twoStringTypes, "NoPackage", "com.example"))
+        assertEquals("com.example.api", invokeExplorePrivate<String>(inferer, "internalPackageUnit", twoStringTypes, "com.example.api.Controller", "com.example"))
+        assertEquals("org.apache", invokeExplorePrivate<String>(inferer, "internalPackageUnit", twoStringTypes, "org.apache.lucene.IndexWriter", "com.example"))
+
+        val fallbackModel = inferer.buildViewModel(DefaultGraph.Builder().addMethod(callsiteOnlyMethod).build(), "unknown", 5)
+        assertEquals("all", fallbackModel["level"])
+        @Suppress("UNCHECKED_CAST")
+        assertEquals("context", (fallbackModel["context"] as Map<String, Any?>)["type"])
+
+        val utilMethod = MethodDescriptor(TypeDescriptor("com.example.common.JsonUtil"), "parse", emptyList(), TypeDescriptor("void"))
+        val otherUtilMethod = MethodDescriptor(TypeDescriptor("com.example.common.StringUtil"), "trim", emptyList(), TypeDescriptor("void"))
+        val utilityMainMethod = MethodDescriptor(
+            TypeDescriptor("com.example.UtilityApplication"),
+            "main",
+            listOf(TypeDescriptor("java.lang.String[]")),
+            TypeDescriptor("void")
+        )
+        val utilityOnlyComponentModel = inferer.buildViewModel(
+            DefaultGraph.Builder()
+                .addMethod(utilityMainMethod)
+                .addMethod(utilMethod)
+                .addMethod(otherUtilMethod)
+                .addNode(CallSiteNode(NodeId.next(), utilityMainMethod, utilMethod, 1, null, emptyList()))
+                .addNode(CallSiteNode(NodeId.next(), utilMethod, otherUtilMethod, 2, null, emptyList()))
+                .build(),
+            "component",
+            5
+        )
+        @Suppress("UNCHECKED_CAST")
+        val utilityView = utilityOnlyComponentModel["view"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val utilityElements = utilityView["elements"] as List<Map<String, Any?>>
+        assertTrue(utilityElements.any { (it["classes"] as? List<*>)?.contains("com.example.common.JsonUtil") == true })
+    }
+
+    @Test
+    fun `C4 text renderers cover external libraries runtime only and internal dependencies`() {
+        val apiType = TypeDescriptor("com.example.api.ApiController")
+        val serviceType = TypeDescriptor("com.example.service.SearchService")
+        val commonType = TypeDescriptor("com.example.common.SharedKernel")
+        val apiMethod = MethodDescriptor(apiType, "handle", emptyList(), TypeDescriptor("void"))
+        val serviceMethod = MethodDescriptor(serviceType, "search", emptyList(), TypeDescriptor("void"))
+        val commonMethod = MethodDescriptor(commonType, "normalize", emptyList(), TypeDescriptor("void"))
+        val luceneType = TypeDescriptor("org.apache.lucene.index.IndexWriter")
+        val logType = TypeDescriptor("org.apache.logging.log4j.Logger")
+        val runtimeType = TypeDescriptor("java.util.List")
+        val builder = DefaultGraph.Builder()
+            .addMethod(apiMethod)
+            .addMethod(serviceMethod)
+            .addMethod(commonMethod)
+            .addNode(CallSiteNode(NodeId.next(), apiMethod, serviceMethod, 1, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), serviceMethod, commonMethod, 2, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), apiMethod, MethodDescriptor(luceneType, "commit", emptyList(), TypeDescriptor("void")), 3, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), serviceMethod, MethodDescriptor(logType, "info", listOf(TypeDescriptor("java.lang.String")), TypeDescriptor("void")), 4, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), commonMethod, MethodDescriptor(runtimeType, "size", emptyList(), TypeDescriptor("int")), 5, null, emptyList()))
+        builder.addClassOrigin(luceneType.className, JavaArchiveLayout.bootInfLibEntry("lucene-core-9.12.0.jar"))
+        builder.addClassOrigin(logType.className, JavaArchiveLayout.bootInfLibEntry("log4j-api-2.23.1.jar"))
+        builder.addArtifactDependency("lucene-core-9.12.0", "log4j-api-2.23.1", 3)
+        builder.addMemberAnnotation(
+            apiType.className,
+            "<class>",
+            "org.springframework.web.bind.annotation.RequestMapping",
+            mapOf("value" to "/search")
+        )
+        builder.addMemberAnnotation(
+            apiType.className,
+            "handle",
+            "org.springframework.web.bind.annotation.GetMapping",
+            mapOf("value" to "/query")
+        )
+
+        val c4 = C4ArchitectureService()
+        val workspace = c4.buildModel(builder.build(), "all", 50)
+        val mermaid = c4.renderMermaid(workspace)
+        val plantUml = c4.renderPlantUml(workspace)
+
+        assertTrue(mermaid.contains("Lucene Core"))
+        assertTrue(mermaid.contains("Log4j API"))
+        assertTrue(mermaid.contains("builds on"))
+        assertFalse(plantUml.contains("Application Layer"), plantUml)
+        assertTrue(plantUml.contains("Library Layer"), plantUml)
+
+        val runtimeOnly = DefaultGraph.Builder()
+            .addMethod(commonMethod)
+            .addNode(CallSiteNode(NodeId.next(), commonMethod, MethodDescriptor(runtimeType, "size", emptyList(), TypeDescriptor("int")), 6, null, emptyList()))
+            .build()
+        val runtimeWorkspace = c4.buildModel(runtimeOnly, "context", 50)
+        val runtimePlantUml = c4.renderPlantUml(runtimeWorkspace)
+        assertTrue(runtimePlantUml.contains("Java Runtime"))
+        assertTrue(runtimePlantUml.contains("runs on"))
+    }
+
+    @Test
+    fun `C4 uses one full workspace model while text renderers crop their view`() {
+        val appType = TypeDescriptor("com.example.App")
+        val appMethod = MethodDescriptor(appType, "run", emptyList(), TypeDescriptor("void"))
+        val builder = DefaultGraph.Builder().addMethod(appMethod)
+        (1..20).forEach { index ->
+            val externalMethod = MethodDescriptor(
+                TypeDescriptor("partner$index.Client"),
+                "call",
+                emptyList(),
+                TypeDescriptor("void")
+            )
+            builder.addNode(CallSiteNode(NodeId.next(), appMethod, externalMethod, index, null, emptyList()))
+        }
+
+        val c4 = C4ArchitectureService()
+        val workspace = c4.buildModel(builder.build(), "context")
+        @Suppress("UNCHECKED_CAST")
+        val model = workspace["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val softwareSystems = model["softwareSystems"] as List<Map<String, Any?>>
+        val dependencyCount = softwareSystems.count {
+            (it["id"]?.toString() ?: "").startsWith("dependency:namespace:partner")
+        }
+        val mermaid = c4.renderMermaid(workspace)
+        val renderedDependencyCount = Regex("dependency_namespace_partner\\d+").findAll(mermaid)
+            .map { it.value }
+            .toSet()
+            .size
+
+        assertEquals(20, dependencyCount, "Structurizr workspace JSON model must keep every inferred dependency")
+        assertTrue(renderedDependencyCount < dependencyCount, "Mermaid should crop the full model for readability: $mermaid")
+        assertTrue(mermaid.contains("Mermaid view truncated"), mermaid)
+    }
+
+    @Test
+    fun `C4 container renderers preserve inbound evidence for shared foundation containers`() {
+        fun relationship(id: String, to: String, kind: String, weight: Int): Map<String, Any?> =
+            mapOf(
+                "id" to id,
+                "destinationId" to to,
+                "description" to kind,
+                "technology" to "call",
+                "kind" to kind,
+                "properties" to mapOf(
+                    "graphite.relationshipKind" to kind,
+                    "graphite.weight" to weight.toString()
+                )
+            )
+
+        fun container(
+            id: String,
+            name: String,
+            kind: String,
+            relationships: List<Map<String, Any?>> = emptyList()
+        ): Map<String, Any?> =
+            mapOf(
+                "id" to id,
+                "name" to name,
+                "description" to "$name responsibility",
+                "technology" to "JVM bytecode",
+                "properties" to mapOf(
+                    "graphite.kind" to kind,
+                    "graphite.architectureType" to "application-component"
+                ),
+                "relationships" to relationships
+            )
+
+        val workspace = mapOf(
+            "properties" to mapOf("graphite.level" to "container"),
+            "model" to mapOf(
+                "people" to emptyList<Map<String, Any?>>(),
+                "softwareSystems" to listOf(
+                    mapOf(
+                        "id" to "system:application",
+                        "name" to "Application",
+                        "description" to "Application",
+                        "properties" to mapOf("graphite.architectureType" to "software-system"),
+                        "containers" to listOf(
+                            container(
+                                id = "container:service",
+                                name = "Service",
+                                kind = "orchestrator",
+                                relationships = listOf(
+                                    relationship("rel-1", "container:db", "uses", 1000),
+                                    relationship("rel-2", "container:locator", "orchestrates", 900)
+                                )
+                            ),
+                            container("container:db", "Db", "capability"),
+                            container(
+                                id = "container:locator",
+                                name = "Locator",
+                                kind = "shared-capability",
+                                relationships = listOf(
+                                    relationship("rel-3", "container:config", "uses", 80)
+                                )
+                            ),
+                            container("container:config", "Config", "shared-capability")
+                        )
+                    )
+                )
+            )
+        )
+
+        val c4 = C4ArchitectureService()
+        val plantUml = c4.renderPlantUml(workspace)
+        val mermaid = c4.renderMermaid(workspace)
+
+        assertTrue(plantUml.contains("container_service --> container_locator : orchestrates"), plantUml)
+        assertTrue(plantUml.contains("container_locator --> container_config : uses"), plantUml)
+        assertTrue(mermaid.contains("container_service -->|orchestrates| container_locator"), mermaid)
+        assertTrue(mermaid.contains("container_locator -->|uses| container_config"), mermaid)
+    }
+
+    @Test
+    fun `C4 mapper and diagram helpers cover fallback semantics`() {
+        val graphiteModel = mapOf(
+            "level" to "context",
+            "availableLevels" to C4ArchitectureService.LEVELS,
+            "view" to mapOf(
+                "type" to "context",
+                "elements" to listOf(
+                    mapOf("id" to "system:a", "type" to "softwareSystem", "name" to "A", "kind" to "application", "architectureType" to "software-system"),
+                    mapOf("id" to "system:b", "type" to "softwareSystem", "name" to "B", "kind" to "external-system", "architectureType" to "external-system"),
+                    mapOf("id" to "dependency:raw", "type" to "softwareSystem", "name" to "Raw", "kind" to "library", "architectureType" to "external-library")
+                ),
+                "relationships" to listOf(
+                    mapOf("from" to "system:a", "to" to "system:b", "type" to "uses"),
+                    mapOf("from" to "system:b", "to" to "dependency:raw")
+                )
+            )
+        )
+        val workspace = C4StructurizrMapper().toWorkspace(graphiteModel)
+        @Suppress("UNCHECKED_CAST")
+        val model = workspace["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val systems = model["softwareSystems"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val relationships = systems.flatMap { (it["relationships"] as? List<Map<String, Any?>>).orEmpty() }
+        val mapType = arrayOf<Class<*>>(Map::class.java)
+
+        assertTrue(relationships.any { it["description"] == "uses" })
+        assertEquals("collaborates with", diagramRelationshipLabel(mapOf("properties" to mapOf("graphite.relationshipKind" to "collaborates-with"))))
+        assertEquals("external-library", invokeDiagramPrivate<String>("diagramArchitectureTypeOf", mapType, mapOf("id" to "dependency:raw")))
+        assertEquals("application-component", invokeDiagramPrivate<String>("diagramArchitectureTypeOf", mapType, mapOf("id" to "plain")))
+        assertEquals(
+            "external-systems",
+            invokeDiagramPrivate<String>("diagramLayerOf", mapType, mapOf("properties" to mapOf("graphite.architectureType" to "external-system")))
+        )
+        assertEquals(
+            "Interface Adapters",
+            invokeDiagramPrivate<String>("applicationContainerLayerOf", mapType, mapOf("properties" to mapOf("graphite.kind" to "interface")))
+        )
+    }
+
+    @Test
+    fun `C4 renderers cover truncation and component fallback plans`() {
+        val relationships = (1..205).map { index ->
+            mapOf(
+                "id" to "rel-$index",
+                "destinationId" to "dependency:external-$index",
+                "description" to "uses",
+                "properties" to mapOf(
+                    "graphite.relationshipKind" to "uses",
+                    "graphite.weight" to "1"
+                )
+            )
+        }
+        val externalSystems = (1..205).map { index ->
+            mapOf(
+                "id" to "dependency:external-$index",
+                "name" to "External $index",
+                "description" to "External system $index",
+                "properties" to mapOf("graphite.architectureType" to "external-library")
+            )
+        }
+        val contextWorkspace = mapOf(
+            "properties" to mapOf("graphite.level" to "context"),
+            "model" to mapOf(
+                "people" to emptyList<Map<String, Any?>>(),
+                "softwareSystems" to listOf(
+                    mapOf(
+                        "id" to "system:application",
+                        "name" to "Application",
+                        "description" to "Application",
+                        "properties" to mapOf("graphite.architectureType" to "software-system"),
+                        "relationships" to relationships
+                    )
+                ) + externalSystems
+            )
+        )
+        val componentWorkspace = mapOf(
+            "properties" to mapOf("graphite.level" to "component"),
+            "model" to mapOf(
+                "people" to emptyList<Map<String, Any?>>(),
+                "softwareSystems" to listOf(
+                    mapOf(
+                        "id" to "system:application",
+                        "name" to "Application",
+                        "description" to "Application",
+                        "properties" to mapOf("graphite.architectureType" to "software-system"),
+                        "containers" to listOf(
+                            mapOf(
+                                "id" to "container:runtime",
+                                "name" to "Runtime",
+                                "description" to "Runtime",
+                                "properties" to mapOf("graphite.kind" to "application-runtime"),
+                                "components" to listOf(
+                                    mapOf(
+                                        "id" to "component:standalone",
+                                        "name" to "Standalone",
+                                        "description" to "Standalone",
+                                        "properties" to mapOf("graphite.architectureType" to "application-component")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        val componentRelationships = (1..205).map { index ->
+            mapOf(
+                "id" to "component-rel-$index",
+                "destinationId" to "component:target-$index",
+                "description" to "uses",
+                "properties" to mapOf(
+                    "graphite.relationshipKind" to "uses",
+                    "graphite.weight" to "1"
+                )
+            )
+        }
+        val componentTruncationWorkspace = mapOf(
+            "properties" to mapOf("graphite.level" to "component"),
+            "model" to mapOf(
+                "people" to emptyList<Map<String, Any?>>(),
+                "softwareSystems" to listOf(
+                    mapOf(
+                        "id" to "system:application",
+                        "name" to "Application",
+                        "description" to "Application",
+                        "properties" to mapOf("graphite.architectureType" to "software-system"),
+                        "containers" to listOf(
+                            mapOf(
+                                "id" to "container:runtime",
+                                "name" to "Runtime",
+                                "description" to "Runtime",
+                                "properties" to mapOf("graphite.kind" to "application-runtime"),
+                                "components" to listOf(
+                                    mapOf(
+                                        "id" to "component:source",
+                                        "name" to "Source",
+                                        "description" to "Source",
+                                        "properties" to mapOf("graphite.architectureType" to "application-component"),
+                                        "relationships" to componentRelationships
+                                    )
+                                ) + (1..205).map { index ->
+                                    mapOf(
+                                        "id" to "component:target-$index",
+                                        "name" to "Target $index",
+                                        "description" to "Target $index",
+                                        "properties" to mapOf("graphite.architectureType" to "application-component")
+                                    )
+                                }
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        val c4 = C4ArchitectureService()
+
+        assertTrue(c4.renderMermaid(contextWorkspace).contains("Mermaid view truncated"))
+        assertTrue(c4.renderPlantUml(contextWorkspace).contains("PlantUML view truncated"))
+        assertTrue(c4.renderMermaid(componentWorkspace).contains("component_standalone"))
+        assertTrue(c4.renderMermaid(componentTruncationWorkspace).contains("Mermaid view truncated"))
+    }
+
+    @Test
+    fun `C4 Structurizr DSL renderer covers elements relationships and views`() {
+        val workspace = mapOf(
+            "name" to "Architecture \"Workspace\"",
+            "model" to mapOf(
+                "people" to listOf(
+                    mapOf(
+                        "id" to "person:operator",
+                        "name" to "Operator",
+                        "description" to "Runs the system",
+                        "relationships" to listOf(
+                            mapOf("id" to "rel-1", "destinationId" to "system:application", "description" to "starts")
+                        )
+                    )
+                ),
+                "softwareSystems" to listOf(
+                    mapOf(
+                        "id" to "system:application",
+                        "name" to "Application",
+                        "description" to "Subject",
+                        "relationships" to listOf(
+                            mapOf("id" to "rel-2", "destinationId" to "dependency:queue", "description" to "publishes to")
+                        ),
+                        "containers" to listOf(
+                            mapOf(
+                                "id" to "container:runtime",
+                                "name" to "Runtime",
+                                "description" to "JVM runtime",
+                                "technology" to "Java",
+                                "relationships" to listOf(
+                                    mapOf("id" to "rel-3", "destinationId" to "dependency:queue", "description" to "uses")
+                                ),
+                                "components" to listOf(
+                                    mapOf(
+                                        "id" to "component:api",
+                                        "name" to "API",
+                                        "description" to "Handles requests",
+                                        "technology" to "Kotlin",
+                                        "relationships" to listOf(
+                                            mapOf("id" to "rel-4", "destinationId" to "component:service", "description" to "calls")
+                                        )
+                                    ),
+                                    mapOf(
+                                        "id" to "component:service",
+                                        "name" to "Service",
+                                        "description" to "Coordinates work",
+                                        "technology" to "Kotlin"
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    mapOf(
+                        "id" to "dependency:queue",
+                        "name" to "Queue",
+                        "description" to "External queue"
+                    ),
+                    mapOf(
+                        "id" to "dependency.queue",
+                        "name" to "Queue Alias",
+                        "description" to "Exercises identifier collision handling"
+                    )
+                )
+            ),
+            "views" to mapOf(
+                "systemContextViews" to listOf(mapOf("key" to "context", "softwareSystemId" to "system:application")),
+                "containerViews" to listOf(mapOf("key" to "container", "softwareSystemId" to "system:application")),
+                "componentViews" to listOf(mapOf("key" to "component", "containerId" to "container:runtime"))
+            )
+        )
+
+        val dsl = C4ArchitectureService().renderStructurizrDsl(workspace)
+
+        assertTrue(dsl.contains("workspace \"Architecture \\\"Workspace\\\"\""), dsl)
+        assertTrue(dsl.contains("person \"Operator\""), dsl)
+        assertTrue(dsl.contains("softwareSystem \"Application\""), dsl)
+        assertTrue(dsl.contains("container \"Runtime\""), dsl)
+        assertTrue(dsl.contains("component \"API\""), dsl)
+        assertTrue(dsl.contains("-> g_system_application \"starts\""), dsl)
+        assertTrue(dsl.contains("-> g_dependency_queue \"publishes to\""), dsl)
+        assertTrue(dsl.contains("-> g_component_service \"calls\""), dsl)
+        assertTrue(dsl.contains("systemContext g_system_application \"context\""), dsl)
+        assertTrue(dsl.contains("container g_system_application \"container\""), dsl)
+        assertTrue(dsl.contains("component g_container_runtime \"component\""), dsl)
+        assertTrue(dsl.contains("theme default"), dsl)
+    }
+
+    @Test
+    fun `C4 model keeps runtime container and artifact dependency relationships`() {
+        fun method(className: String, name: String = "run") =
+            MethodDescriptor(TypeDescriptor(className), name, emptyList(), TypeDescriptor("void"))
+
+        val main = MethodDescriptor(
+            TypeDescriptor("com.acme.Main"),
+            "main",
+            listOf(TypeDescriptor("java.lang.String[]")),
+            TypeDescriptor("void")
+        )
+        val internalMethods = listOf(
+            method("com.acme.api.SearchController", "handle"),
+            method("com.acme.service.SearchService", "search"),
+            method("com.acme.repository.SearchRepository", "query"),
+            method("com.acme.common.JsonSupport", "parse"),
+            method("com.acme.model.DocumentModel", "shape")
+        )
+        val lucene = method("org.apache.lucene.index.IndexWriter", "commit")
+        val log4j = method("org.apache.logging.log4j.Logger", "info")
+        val runtime = method("java.util.Optional", "orElse")
+        val builder = DefaultGraph.Builder().addMethod(main)
+        internalMethods.forEach(builder::addMethod)
+        builder.addNode(CallSiteNode(NodeId.next(), main, internalMethods.first(), 1, null, emptyList()))
+        var line = 10
+        internalMethods.forEachIndexed { index, caller ->
+            internalMethods.drop(index + 1).forEach { callee ->
+                builder.addNode(CallSiteNode(NodeId.next(), caller, callee, line++, null, emptyList()))
+            }
+        }
+        builder.addNode(CallSiteNode(NodeId.next(), internalMethods[0], lucene, line++, null, emptyList()))
+        builder.addNode(CallSiteNode(NodeId.next(), internalMethods[1], log4j, line++, null, emptyList()))
+        builder.addNode(CallSiteNode(NodeId.next(), internalMethods[2], runtime, line++, null, emptyList()))
+        builder.addClassOrigin(lucene.declaringClass.className, "lib/lucene-core-9.12.0.jar")
+        builder.addClassOrigin(log4j.declaringClass.className, "lib/log4j-api-2.23.1.jar")
+        builder.addArtifactDependency("lucene-core-9.12.0", "log4j-api-2.23.1", 4)
+        builder.addMemberAnnotation(
+            "com.acme.api.SearchController",
+            "<class>",
+            "org.springframework.web.bind.annotation.RequestMapping",
+            mapOf("value" to "/search")
+        )
+        builder.addMemberAnnotation(
+            "com.acme.api.SearchController",
+            "handle",
+            "org.springframework.web.bind.annotation.PostMapping",
+            mapOf("value" to "/query")
+        )
+
+        val workspace = ExploreCommand().buildC4Model(builder.build(), "all", 50)
+        @Suppress("UNCHECKED_CAST")
+        val model = workspace["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val people = model["people"] as List<Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val systems = model["softwareSystems"] as List<Map<String, Any?>>
+        val application = systems.first { it["id"] == "system:application" }
+        @Suppress("UNCHECKED_CAST")
+        val containers = application["containers"] as List<Map<String, Any?>>
+        val containerRelationships = containers.flatMap { (it["relationships"] as? List<Map<String, Any?>>).orEmpty() }
+        val dependencyRelationships = systems.flatMap { (it["relationships"] as? List<Map<String, Any?>>).orEmpty() }
+
+        assertTrue(people.any { it["id"] == "person:http-clients" })
+        assertEquals(1, containers.size, "C4 container level should show the deployable runtime boundary, not package clusters")
+        val runtimeProperties = containers.single()["properties"] as Map<*, *>
+        assertEquals("application-service", runtimeProperties["graphite.kind"])
+        assertTrue((runtimeProperties["graphite.internalCapabilities"] as? String).orEmpty().contains("com.acme.api"))
+        @Suppress("UNCHECKED_CAST")
+        val runtimeComponents = containers.single()["components"] as List<Map<String, Any?>>
+        val apiComponent = runtimeComponents.first {
+            @Suppress("UNCHECKED_CAST")
+            val properties = it["properties"] as Map<String, String>
+            properties["graphite.classes"].orEmpty().contains("com.acme.api.SearchController")
+        }
+        @Suppress("UNCHECKED_CAST")
+        val apiComponentProperties = apiComponent["properties"] as Map<String, String>
+        assertTrue(
+            apiComponentProperties["graphite.classes"].orEmpty().contains("com.acme.api.SearchController"),
+            "C4 component identity should be the capability group, with implementation classes kept as evidence"
+        )
+        assertFalse(runtimeComponents.any { it["id"] == "component:com.acme.api.SearchController" })
+        assertFalse(containerRelationships.any { (it["destinationId"] as? String)?.startsWith("container:") == true })
+        assertTrue(containerRelationships.any { it["destinationId"] == "dependency:artifact:lucene-core-9.12.0" })
+        assertTrue(systems.any { it["id"] == "dependency:artifact:log4j-api-2.23.1" })
+        assertTrue(dependencyRelationships.any { it["destinationId"] == "dependency:artifact:log4j-api-2.23.1" })
+        val luceneRelationships = systems
+            .first { it["id"] == "dependency:artifact:lucene-core-9.12.0" }["relationships"] as? List<Map<String, Any?>>
+            ?: emptyList()
+        val log4jRelationships = systems
+            .first { it["id"] == "dependency:artifact:log4j-api-2.23.1" }["relationships"] as? List<Map<String, Any?>>
+            ?: emptyList()
+        assertTrue(luceneRelationships.any { it["destinationId"] == "dependency:artifact:log4j-api-2.23.1" })
+        assertFalse(luceneRelationships.any { it["destinationId"] == "dependency:runtime:java" })
+        assertTrue(log4jRelationships.any { it["destinationId"] == "dependency:runtime:java" })
+    }
+
+    @Test
+    fun `C4 context groups sibling library artifacts into one system`() {
+        val appType = TypeDescriptor("com.acme.App")
+        val appMethod = MethodDescriptor(appType, "run", emptyList(), TypeDescriptor("void"))
+        val luceneCore = MethodDescriptor(TypeDescriptor("org.apache.lucene.index.IndexWriter"), "commit", emptyList(), TypeDescriptor("void"))
+        val luceneQueries = MethodDescriptor(TypeDescriptor("org.apache.lucene.queries.CustomScoreQuery"), "rewrite", emptyList(), TypeDescriptor("void"))
+        val luceneHighlighter = MethodDescriptor(TypeDescriptor("org.apache.lucene.search.uhighlight.UnifiedHighlighter"), "highlight", emptyList(), TypeDescriptor("void"))
+        val runtime = MethodDescriptor(TypeDescriptor("java.util.List"), "size", emptyList(), TypeDescriptor("int"))
+        val builder = DefaultGraph.Builder()
+            .addMethod(appMethod)
+            .addNode(CallSiteNode(NodeId.next(), appMethod, luceneCore, 1, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), appMethod, luceneQueries, 2, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), appMethod, luceneHighlighter, 3, null, emptyList()))
+            .addNode(CallSiteNode(NodeId.next(), appMethod, runtime, 4, null, emptyList()))
+
+        builder.addClassOrigin(luceneCore.declaringClass.className, "lib/lucene-core-9.12.0.jar")
+        builder.addClassOrigin(luceneQueries.declaringClass.className, "lib/lucene-queries-9.12.0.jar")
+        builder.addClassOrigin(luceneHighlighter.declaringClass.className, "lib/lucene-highlighter-9.12.0.jar")
+        builder.addArtifactDependency("lucene-highlighter-9.12.0", "lucene-queries-9.12.0", 5)
+        builder.addArtifactDependency("lucene-queries-9.12.0", "lucene-core-9.12.0", 7)
+
+        val c4 = C4ArchitectureService()
+        val workspace = c4.buildModel(builder.build(), "context", 50)
+        val plantUml = c4.renderPlantUml(workspace)
+
+        assertTrue(plantUml.contains("component \"Lucene\""), plantUml)
+        assertFalse(plantUml.contains("Lucene Core"), plantUml)
+        assertFalse(plantUml.contains("Lucene Queries"), plantUml)
+        assertFalse(plantUml.contains("Lucene Highlighter"), plantUml)
+        assertEquals(1, Regex("dependency_library_lucene --> dependency_runtime_java").findAll(plantUml).count(), plantUml)
+    }
+
+    @Test
+    fun `C4 subject detection covers manifest continuation and plain main applications`() {
+        val bootMainType = TypeDescriptor("com.example.very.LongApplication")
+        val bootWorkerType = TypeDescriptor("com.example.very.Worker")
+        val bootMain = MethodDescriptor(bootMainType, "main", listOf(TypeDescriptor("java.lang.String[]")), TypeDescriptor("void"))
+        val bootWorker = MethodDescriptor(bootWorkerType, "run", emptyList(), TypeDescriptor("void"))
+        val bootGraph = DefaultGraph.Builder()
+            .setResources(
+                TestResourceAccessor(
+                    mapOf(
+                        JavaArchiveLayout.META_INF_MANIFEST to """
+                            Manifest-Version: 1.0
+                            ${JavaArchiveLayout.MAIN_CLASS_ATTRIBUTE}: ${JavaArchiveLayout.SPRING_BOOT_WAR_LAUNCHER}
+                            ${JavaArchiveLayout.START_CLASS_ATTRIBUTE}: com.example.very.Long
+                             Application
+
+                        """.trimIndent()
+                    )
+                )
+            )
+            .addMethod(bootMain)
+            .addMethod(bootWorker)
+            .addNode(CallSiteNode(NodeId.next(), bootMain, bootWorker, 1, null, emptyList()))
+            .apply {
+                addClassOrigin(bootMainType.className, JavaArchiveLayout.webInfLibEntry("long-app.jar"))
+                addClassOrigin(bootWorkerType.className, JavaArchiveLayout.webInfLibEntry("long-app.jar"))
+            }
+            .build()
+
+        val cliMainType = TypeDescriptor("com.tool.cli.Main")
+        val cliWorkerType = TypeDescriptor("com.tool.cli.Worker")
+        val cliMain = MethodDescriptor(cliMainType, "main", listOf(TypeDescriptor("java.lang.String[]")), TypeDescriptor("void"))
+        val cliWorker = MethodDescriptor(cliWorkerType, "execute", emptyList(), TypeDescriptor("void"))
+        val cliGraph = DefaultGraph.Builder()
+            .addMethod(cliMain)
+            .addMethod(cliWorker)
+            .addNode(CallSiteNode(NodeId.next(), cliMain, cliWorker, 1, null, emptyList()))
+            .build()
+
+        fun subject(workspace: Map<String, Any?>): Map<String, Any?> {
+            @Suppress("UNCHECKED_CAST")
+            val model = workspace["model"] as Map<String, Any?>
+            @Suppress("UNCHECKED_CAST")
+            val systems = model["softwareSystems"] as List<Map<String, Any?>>
+            return systems.first { (it["id"] as? String)?.startsWith("system:") == true }
+        }
+
+        val explore = ExploreCommand()
+        assertEquals("Long App", subject(explore.buildC4Model(bootGraph, "context", 50))["name"])
+        listOf(
+            JavaArchiveLayout.SPRING_BOOT_LAUNCH_WAR_LAUNCHER,
+            JavaArchiveLayout.SPRING_BOOT_PROPERTIES_LAUNCHER
+        ).forEach { launcher ->
+            val launcherGraph = DefaultGraph.Builder()
+                .setResources(
+                    TestResourceAccessor(
+                        mapOf(
+                            JavaArchiveLayout.META_INF_MANIFEST to """
+                                Manifest-Version: 1.0
+                                ${JavaArchiveLayout.MAIN_CLASS_ATTRIBUTE}: $launcher
+                                ${JavaArchiveLayout.START_CLASS_ATTRIBUTE}: com.example.very.LongApplication
+
+                            """.trimIndent()
+                        )
+                    )
+                )
+                .addMethod(bootMain)
+                .addMethod(bootWorker)
+                .addNode(CallSiteNode(NodeId.next(), bootMain, bootWorker, 1, null, emptyList()))
+                .apply {
+                    addClassOrigin(bootMainType.className, JavaArchiveLayout.webInfLibEntry("long-app.jar"))
+                    addClassOrigin(bootWorkerType.className, JavaArchiveLayout.webInfLibEntry("long-app.jar"))
+                }
+                .build()
+            assertEquals("Long App", subject(explore.buildC4Model(launcherGraph, "context", 50))["name"])
+        }
+        val cliSubject = subject(explore.buildC4Model(cliGraph, "context", 50))
+        assertEquals("system:application", cliSubject["id"])
+        @Suppress("UNCHECKED_CAST")
+        val model = explore.buildC4Model(cliGraph, "context", 50)["model"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val people = model["people"] as List<Map<String, Any?>>
+        assertTrue(people.any { it["id"] == "person:operators" })
+    }
+
+    @Test
+    fun `POST api cypher returns query results`() {
+        val (code, body) = post("/api/cypher", """{"query": "MATCH (n:IntConstant) RETURN n.value"}""")
+        assertEquals(200, code, "Expected 200, body: $body")
+        assertTrue(body.contains("columns"), "Response should contain 'columns', body: $body")
+    }
+
+    @Test
+    fun `POST api cypher returns a structured empty result when nothing matches`() {
+        val (code, body) = post(
+            "/api/cypher",
+            """{"query":"MATCH (n:IntConstant) WHERE n.value = -1 RETURN n.value"}"""
+        )
+
+        assertEquals(200, code, body)
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals(0.0, result[API_FIELD_ROW_COUNT])
+        assertEquals(emptyList<Any>(), result[API_FIELD_ROWS])
+    }
+
+    @Test
+    fun `POST api cypher returns error for bad query`() {
+        val (code, body) = post("/api/cypher", """{"query": "INVALID QUERY"}""")
+        assertEquals(400, code, "Expected 400 for invalid query, body: $body")
+        assertTrue(body.contains("error"), "Response should contain 'error', body: $body")
+    }
+
+    @Test
+    fun `GET api cypher with query param`() {
+        val (code, body) = get("/api/cypher?query=" + java.net.URLEncoder.encode("MATCH (n) RETURN n.id LIMIT 1", "UTF-8"))
+        assertEquals(200, code, "Expected 200, body: $body")
+    }
+
+    @Test
+    fun `GET api cypher applies server-side row limit`() {
+        val query = java.net.URLEncoder.encode("MATCH (n) RETURN n.id", "UTF-8")
+        val (code, body) = get("/api/cypher?query=$query&limit=1")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val rows = result["rows"] as List<Map<String, Any?>>
+        assertEquals(1, rows.size)
+        assertEquals(1.0, result["rowCount"])
+    }
+
+    @Test
+    fun `cypher endpoint returns 429 when work budget is exceeded`() {
+        val budgetGraph = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId.next(), 1))
+            .addNode(IntConstant(NodeId.next(), 2))
+            .build()
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1))
+
+        withExploreApp(budgetGraph, routes) { targetPort ->
+            val (limitedCode, limitedBody) = post(
+                targetPort,
+                "/api/cypher",
+                """{"query":"MATCH (n) RETURN n.id"}"""
+            )
+            assertEquals(429, limitedCode, limitedBody)
+            assertTrue(limitedBody.contains("cypher_work_budget_exceeded"), limitedBody)
+
+            val (metadataCode, metadataBody) = post(
+                targetPort,
+                "/api/cypher",
+                """{"query":"MATCH (n) UNWIND labels(n) AS label RETURN label, count(*) AS c ORDER BY c DESC LIMIT 50"}"""
+            )
+            assertEquals(200, metadataCode, metadataBody)
+        }
+    }
+
+    @Test
+    fun `serve command accepts but ignores deprecated cypher work budget`() {
+        val graph = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId.next(), 1))
+            .addNode(IntConstant(NodeId.next(), 2))
+            .build()
+        val localApp = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
+        }.start(0)
+        try {
+            ServeCommand().apply {
+                cypherWorkBudget = 1
+                registerApiRoutes(localApp, graph)
+            }
+            val (code, body) = post(
+                localApp.port(),
+                "/api/cypher",
+                """{"query":"MATCH (n) RETURN n.id"}"""
+            )
+            assertEquals(200, code, body)
+            val response: Map<String, Any?> = parseJson(body)
+            assertEquals(2.0, response[API_FIELD_ROW_COUNT])
+        } finally {
+            localApp.stop()
+        }
+    }
+
+    @Test
+    fun `cypher endpoint caps client timeout cancels work and releases capacity`() {
+        val started = CountDownLatch(1)
+        val interrupted = CountDownLatch(1)
+        val blockFirstScan = AtomicBoolean(true)
+        val backing = DefaultGraph.Builder().addNode(IntConstant(NodeId.next(), 1)).build()
+        val blockingGraph = object : Graph by backing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                if (blockFirstScan.compareAndSet(true, false)) {
+                    started.countDown()
+                    try {
+                        CountDownLatch(1).await()
+                    } catch (error: InterruptedException) {
+                        interrupted.countDown()
+                        throw error
+                    }
+                }
+                yieldAll(backing.nodes(type))
+            }
+        }
+        val routes = ExploreRoutes(
+            CypherQueryGuard(
+                maxConcurrent = 1,
+                maxWorkUnits = Long.MAX_VALUE,
+                maxTimeoutMillis = 50
+            )
+        )
+
+        withExploreApp(blockingGraph, routes) { targetPort ->
+            val (timeoutCode, timeoutBody) = post(
+                targetPort,
+                "/api/cypher",
+                """{"query":"MATCH (n) WHERE n.missing IS NOT NULL RETURN n.id","timeoutMs":500}"""
+            )
+            assertEquals(504, timeoutCode, timeoutBody)
+            assertTrue(timeoutBody.contains("cypher_query_timeout"), timeoutBody)
+            val timeoutResponse: Map<String, Any?> = parseJson(timeoutBody)
+            assertEquals(50.0, timeoutResponse[API_PARAM_TIMEOUT_MILLIS])
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            assertTrue(interrupted.await(5, TimeUnit.SECONDS))
+
+            val (nextCode, nextBody) = post(
+                targetPort,
+                "/api/cypher",
+                """{"query":"MATCH (n) RETURN n.id LIMIT 1"}"""
+            )
+            assertEquals(200, nextCode, nextBody)
+        }
+    }
+
+    @Test
+    fun `cypher endpoint rejects invalid timeout before consuming capacity`() {
+        val (invalidCode, invalidBody) = post(
+            "/api/cypher",
+            """{"query":"RETURN 1","timeoutMs":0}"""
+        )
+        assertEquals(400, invalidCode, invalidBody)
+        assertTrue(invalidBody.contains("timeoutMs"), invalidBody)
+
+        val (nextCode, nextBody) = post("/api/cypher", """{"query":"RETURN 1"}""")
+        assertEquals(200, nextCode, nextBody)
+    }
+
+    @Test
+    fun `cypher endpoint rejects excess concurrent queries`() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val backing = DefaultGraph.Builder().addNode(IntConstant(NodeId.next(), 1)).build()
+        val blockingGraph = object : Graph by backing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                started.countDown()
+                check(release.await(5, TimeUnit.SECONDS))
+                yieldAll(backing.nodes(type))
+            }
+        }
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10))
+        val executor = Executors.newSingleThreadExecutor()
+
+        try {
+            withExploreApp(blockingGraph, routes) { targetPort ->
+                val first = executor.submit<Pair<Int, String>> {
+                    post(targetPort, "/api/cypher", """{"query":"MATCH (n) RETURN n.id LIMIT 1"}""")
+                }
+                assertTrue(started.await(5, TimeUnit.SECONDS))
+
+                val (rejectedCode, rejectedBody) = post(
+                    targetPort,
+                    "/api/cypher",
+                    """{"query":"MATCH (n) RETURN n.id LIMIT 1"}"""
+                )
+                assertEquals(429, rejectedCode, rejectedBody)
+                assertTrue(rejectedBody.contains("cypher_concurrency_limit"), rejectedBody)
+
+                release.countDown()
+                val (firstCode, firstBody) = first.get(5, TimeUnit.SECONDS)
+                assertEquals(200, firstCode, firstBody)
+            }
+        } finally {
+            release.countDown()
+            executor.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `POST api cypher missing query returns 400`() {
+        val (code, _) = post("/api/cypher", """{}""")
+        assertEquals(400, code)
+    }
+
+    @Test
+    fun `GET api cypher missing query returns 400`() {
+        val (code, _) = get("/api/cypher")
+        assertEquals(400, code)
+    }
+}

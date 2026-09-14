@@ -346,7 +346,7 @@ java.lang.NoSuchMethodError: 'int org.objectweb.asm.Type.getArgumentCount(java.l
 
 ```
 java -Dandroid.jar.path=<android-all.jar> \
-  -jar graphite-sootup/build/libs/sootup-1.0.0-SNAPSHOT-jmh.jar \
+  -jar frontend/jvm/sootup/build/libs/sootup-1.0.0-SNAPSHOT-jmh.jar \
   '.*GraphBuildBenchmark.buildAndroidSdkGraph.*' -wi 0 -i 1 -f 1 -r 1s -w 1s
 ```
 
@@ -354,7 +354,7 @@ Result: `100524.865 ms/op`.
 
 **Root cause:** the `sootup` JMH Gradle harness was weaker than the already-repaired `webgraph` harness. It relied on fallback fixture discovery, did not pass exact `android-all` / Elasticsearch fixture paths into the forked JVM, did not explicitly force a consistent ASM family on all JMH configurations, and did not fail the Gradle task when JMH failed internally.
 
-**Accepted fix:** align `graphite-sootup/build.gradle.kts` with `graphite-webgraph/build.gradle.kts`:
+**Accepted fix:** align `frontend/jvm/sootup/build.gradle.kts` with `frontend/jvm/webgraph/build.gradle.kts`:
 
 - keep large fixture jars out of the JMH fat jar
 - pass fixture paths as `-Dandroid.jar.path` / `-Delasticsearch.jar.path`
@@ -1057,7 +1057,7 @@ adding permanent heap:
 ./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraph$' --no-daemon
 ./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='GraphEndToEndBenchmark.android_build_save_load_query' --no-daemon
-java -Xmx4g -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_build_save_load_query' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
+java -Xmx4g -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_build_save_load_query' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
 ./gradlew :core:check :webgraph:check --no-daemon
 ./gradlew :sootup:check --no-daemon
 ```
@@ -1128,7 +1128,7 @@ or failed to show a stable improvement, so those changes were removed.
 ./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraph$' --no-daemon
 ./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='GraphEndToEndBenchmark.android_build_save_load_query' --no-daemon
-java -Xmx4g -Delasticsearch.jar.path=... -Dandroid.jar.path=... -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_build_save_load_query$' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
+java -Xmx4g -Delasticsearch.jar.path=... -Dandroid.jar.path=... -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_build_save_load_query$' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
 ```
 
 **Main comparison:**
@@ -1181,7 +1181,7 @@ disabled.
 ./gradlew :core:check :sootup:check :query:check :webgraph:check --no-daemon
 ./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraph(EndToEndConfig|FastEndToEndConfig)?$' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='GraphEndToEndBenchmark.android(_fast)?_build_save_load_query$' --no-daemon
-java -Xmx4g -Delasticsearch.jar.path=... -Dandroid.jar.path=... -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_fast_build_save_load_query$' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
+java -Xmx4g -Delasticsearch.jar.path=... -Dandroid.jar.path=... -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_fast_build_save_load_query$' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
 ```
 
 **Main comparison:**
@@ -2517,7 +2517,7 @@ unchanged; only the number of BVGraph compression workers changed.
 ```
 JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home ./gradlew :webgraph:test --tests "io.johnsonlee.graphite.webgraph.GraphStoreTest" --no-daemon
 JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home ./gradlew :webgraph:jmh -Pjmh.filter='GraphEndToEndBenchmark.android_build_save_load_query$' -Dandroid.jar.path=/private/tmp/graphite-gradle-home/caches/modules-2/files-2.1/org.robolectric/android-all/14-robolectric-10818077/94b1490a891e9be559aa35c87cd8a0c163f32d83/android-all-14-robolectric-10818077.jar --no-daemon
-JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home java -Xmx4g -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_build_save_load_query$' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc -jvmArgsAppend '-Dandroid.jar.path=/private/tmp/graphite-gradle-home/caches/modules-2/files-2.1/org.robolectric/android-all/14-robolectric-10818077/94b1490a891e9be559aa35c87cd8a0c163f32d83/android-all-14-robolectric-10818077.jar'
+JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home GRADLE_USER_HOME=/private/tmp/graphite-gradle-home java -Xmx4g -jar frontend/jvm/webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_build_save_load_query$' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc -jvmArgsAppend '-Dandroid.jar.path=/private/tmp/graphite-gradle-home/caches/modules-2/files-2.1/org.robolectric/android-all/14-robolectric-10818077/94b1490a891e9be559aa35c87cd8a0c163f32d83/android-all-14-robolectric-10818077.jar'
 ```
 
 **Results:**

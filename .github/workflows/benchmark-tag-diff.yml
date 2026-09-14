@@ -102,10 +102,10 @@ jobs:
         ./gradlew -I "${PWD}/.github/scripts/benchmark-jmh-isolation.init.gradle" \
           :cypher:testClasses :cypher:jmhJar --no-daemon
         mkdir -p tag-jmh
-        mapfile -t JARS < <(find graphite-cypher/build/libs -name '*-jmh.jar' -type f)
+        mapfile -t JARS < <(find frontend/jvm/cypher/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
-        bash .github/scripts/verify-jmh-jar-isolation.sh graphite-cypher "${JARS[0]}"
+        bash .github/scripts/verify-jmh-jar-isolation.sh frontend/jvm/cypher "${JARS[0]}"
         install -m 0644 "${JARS[0]}" tag-jmh/benchmark.jar
 
     - name: Upload current JMH JAR
@@ -153,11 +153,12 @@ jobs:
         ./gradlew -I "${PWD}/controls/.github/scripts/benchmark-jmh-isolation.init.gradle" \
           :cypher:testClasses :cypher:jmhJar --no-daemon
         mkdir -p tag-jmh
-        mapfile -t JARS < <(find graphite-cypher/build/libs -name '*-jmh.jar' -type f)
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        mapfile -t JARS < <(find "$(jvm . cypher)/build/libs" -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
         bash controls/.github/scripts/verify-jmh-jar-isolation.sh \
-          graphite-cypher "${JARS[0]}"
+          "$(jvm . cypher)" "${JARS[0]}"
         install -m 0644 "${JARS[0]}" tag-jmh/benchmark.jar
 
     - name: Upload previous JMH JAR

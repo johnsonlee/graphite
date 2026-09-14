@@ -17,6 +17,7 @@ Follow these steps in order when working on a task:
    1. Check existing versions: `gh api /users/johnsonlee/packages/maven/io.johnsonlee.graphite.graphite-cli/versions --jq '.[].name' | head -5`
    2. Determine the next version number based on existing versions
    3. Show the user the current latest version and proposed new version for confirmation
+   4. Rehearse with a dry run first: `gh workflow run publish.yml --ref <branch> -f tag=vX.Y.Z` runs the release jobs from that branch and publishes nothing to any remote: Maven artifacts go to the runner's local repository (signed when the GPG secrets are available), the four binaries, `graphite.jar` and the rendered Homebrew formula are checked and kept as the `release-dry-run-vX.Y.Z` artifact, the formula is installed from those assets on macOS, and both image architectures are built. It does not exercise the Sonatype upload, the GitHub Release, the tap push or the registry push; a tag with a pre-release suffix (`vX.Y.Z-rc.1`) runs those for real without touching the default channels (GitHub pre-release, no tap update, no `latest` image tag). The dispatch trigger exists once the workflow is on `main`.
 9. **Update docs** — After tagging a release, update documentation (README version references, etc.) to reflect the new version. This is a docs-only change — commit and push directly to `main` without a PR.
 
 ## Project Overview
@@ -34,34 +35,49 @@ Graphite is a graph-based static analysis framework for JVM bytecode. It provide
 ./gradlew build
 
 # Build specific module
-./gradlew :graphite-core:build
+./gradlew :core:build
 
 # Run tests
 ./gradlew check
 
 # Run a specific test class
-./gradlew :graphite-sootup:test --tests "io.johnsonlee.graphite.sootup.UseCaseValidationTest"
+./gradlew :sootup:test --tests "io.johnsonlee.graphite.sootup.UseCaseValidationTest"
 ```
 
 ## Module Structure
 
 ```
 graphite/
-├── graphite-core/          # Core framework (zero external dependencies except fastutil)
-│   ├── core/               # Node, Edge, TypeDescriptor, MethodDescriptor
-│   ├── graph/              # Graph interface, DefaultGraph
-│   ├── analysis/           # DataFlowAnalysis
-│   ├── query/              # QueryDsl - declarative query API
-│   └── input/              # ProjectLoader interface, LoaderConfig
+├── frontend/
+│   └── jvm/                # JVM frontend: Kotlin Gradle projects (project names have no prefix)
+│       ├── core/           # Core framework (zero external dependencies except fastutil)
+│       │   ├── core/       # Node, Edge, TypeDescriptor, MethodDescriptor
+│       │   ├── graph/      # Graph interface, DefaultGraph
+│       │   ├── analysis/   # DataFlowAnalysis
+│       │   ├── query/      # QueryDsl - declarative query API
+│       │   └── input/      # ProjectLoader interface, LoaderConfig
+│       ├── sootup/         # SootUp backend + GraphiteExtension SPI
+│       ├── cypher/         # Kotlin Cypher engine (legacy server)
+│       ├── webgraph/       # Persisted graph writer/reader (WebGraph)
+│       ├── query/          # `graphite.jar`: build, query, serve
+│       └── explore/        # Legacy Kotlin Explorer server
 │
-├── graphite-sootup/        # SootUp backend + GraphiteExtension SPI
-│   └── sootup/             # JavaProjectLoader, SootUpAdapter
+├── backend/                # Rust backend: serves and queries persisted graphs
+│   ├── storage/            # mmap reader of the persisted graph, indexes, columns
+│   ├── cypher/             # Cypher parser, planner, executor
+│   ├── explore/            # HTTP server, UI, C4, topology
+│   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 │
-└── cli/
-    ├── find-args/          # Find argument constants CLI
-    ├── find-endpoints/     # Find HTTP endpoints CLI
-    └── find-dead-code/     # Find dead code CLI
+├── cli/                    # `graphite` CLI (Rust): build (runs the JVM frontend), query, serve, frontend
+└── Cargo.toml              # Cargo workspace root: backend/storage, backend/cypher, backend/explore, cli
 ```
+
+Gradle project paths are `:core`, `:sootup`, `:cypher`, `:webgraph`, `:query`, `:explore`
+(mapped to `frontend/jvm/<name>` in `settings.gradle.kts`); Cargo package names keep the
+`graphite-` prefix (`graphite-storage`, ...) while their directories do not. Rust commands
+(`cargo build`, `cargo test`) run from the repository root. See
+`docs/architecture-frontend-backend.md` for the frontend/backend split, the Graph IR, and
+the migration plan.
 
 ## Key Abstractions
 

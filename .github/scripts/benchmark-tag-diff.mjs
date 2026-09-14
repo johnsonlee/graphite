@@ -16,6 +16,9 @@ export const REPRESENTATIVE_BENCHMARKS = [
     "io.johnsonlee.graphite.cypher.CypherBenchmark.withPipeline"
 ];
 
+// Fingerprint inputs are keyed by their historical repository path so that fingerprints
+// stay comparable across the frontend/jvm layout move; each key resolves to the first
+// candidate path present at the commit being fingerprinted.
 export const HARNESS_FINGERPRINT_PATHS = [
     "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt"
 ];
@@ -25,6 +28,34 @@ export const JMH_CONFIG_FINGERPRINT_PATHS = [
     "gradle/libs.versions.toml",
     "graphite-cypher/build.gradle.kts"
 ];
+
+export const FINGERPRINT_PATH_CANDIDATES = {
+    "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt": [
+        "frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt",
+        "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt"
+    ],
+    "graphite-cypher/build.gradle.kts": [
+        "frontend/jvm/cypher/build.gradle.kts",
+        "graphite-cypher/build.gradle.kts"
+    ]
+};
+
+function showFingerprintInput(commitSha, file, cwd, encoding) {
+    const candidates = FINGERPRINT_PATH_CANDIDATES[file] ?? [file];
+    let lastError;
+    for (const candidate of candidates) {
+        try {
+            return execFileSync("git", ["show", `${commitSha}:${candidate}`], {
+                cwd,
+                encoding,
+                stdio: ["ignore", "pipe", "pipe"]
+            });
+        } catch (error) {
+            lastError = error;
+        }
+    }
+    throw lastError;
+}
 
 const BENCHMARK_PROTOCOL = {
     mode: "avgt",
@@ -398,11 +429,7 @@ function harnessFingerprint(commitSha, cwd) {
     hash.update(JSON.stringify(BENCHMARK_PROTOCOL));
     hash.update("\0");
     for (const file of HARNESS_FINGERPRINT_PATHS) {
-        const contents = execFileSync("git", ["show", `${commitSha}:${file}`], {
-            cwd,
-            encoding: null,
-            stdio: ["ignore", "pipe", "pipe"]
-        });
+        const contents = showFingerprintInput(commitSha, file, cwd, null);
         hash.update(file);
         hash.update("\0");
         hash.update(comparableHarnessSource(contents.toString("utf8")));
@@ -410,11 +437,7 @@ function harnessFingerprint(commitSha, cwd) {
     }
     const configurationSources = {};
     for (const file of JMH_CONFIG_FINGERPRINT_PATHS) {
-        configurationSources[file] = execFileSync("git", ["show", `${commitSha}:${file}`], {
-            cwd,
-            encoding: "utf8",
-            stdio: ["ignore", "pipe", "pipe"]
-        });
+        configurationSources[file] = showFingerprintInput(commitSha, file, cwd, "utf8");
     }
     hash.update("jmh-configuration\0");
     hash.update(comparableJmhConfiguration(configurationSources));

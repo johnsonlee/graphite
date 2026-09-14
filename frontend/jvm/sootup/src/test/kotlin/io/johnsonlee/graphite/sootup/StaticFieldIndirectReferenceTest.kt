@@ -1,0 +1,400 @@
+package io.johnsonlee.graphite.sootup
+
+import io.johnsonlee.graphite.Graphite
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.input.LoaderConfig
+import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.test.Test
+import kotlin.test.assertTrue
+
+/**
+ * Tests for static field indirect reference pattern in AB testing.
+ *
+ * This tests the common pattern where:
+ * 1. An enum defines AB test IDs: AbKey.SIMPLE_TEST_ID(1234)
+ * 2. A static field holds a list: static final List<AbKey> KEYS = Arrays.asList(AbKey.SIMPLE_TEST_ID)
+ * 3. The list is passed to SDK: abClient.getOption(KEYS)
+ *
+ * The analysis should trace from getOption(KEYS) back through the static field
+ * to find the enum constants and extract their constructor argument values.
+ */
+class StaticFieldIndirectReferenceTest {
+
+    // Expected enum values from AbKey enum constructor arguments
+    private val expectedAbKeyValues = mapOf(
+        "SIMPLE_TEST_ID" to 1234,
+        "CHECKOUT_FLOW" to 5678,
+        "NEW_ONBOARDING" to 9999
+    )
+
+    @Test
+    fun `should find enum constants through static field indirect reference`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false,
+            verbose = { println("[LOADER] $it") }
+        ))
+
+        val graph = loader.load(testClassesDir)
+        val graphite = Graphite.from(graph)
+
+        // Diagnostic: Check graph structure for static field pattern
+        println("\n=== DIAGNOSTIC: Graph structure for static field pattern ===")
+
+        // Find the static List fields
+        graph.nodes(FieldNode::class.java).filter {
+            it.descriptor.name in listOf("SIMPLE_TEST_KEYS", "CHECKOUT_KEYS", "SINGLE_KEY") &&
+            it.descriptor.declaringClass.className == "sample.ab.AbTestResolver"
+        }.forEach { field ->
+            println("\nField: ${field.descriptor.declaringClass.simpleName}.${field.descriptor.name}")
+            println("  FieldNode ID: ${field.id}")
+            println("  Type: ${field.descriptor.type}")
+
+            // Check incoming edges (stores to this field)
+            val incomingEdges = graph.incoming(field.id, DataFlowEdge::class.java).toList()
+            println("  Incoming edges (stores): ${incomingEdges.size}")
+            incomingEdges.forEach { edge ->
+                val fromNode = graph.node(edge.from)
+                println("    <- ${edge.kind}: ${fromNode?.javaClass?.simpleName} (ID: ${edge.from})")
+            }
+
+            // Check outgoing edges (loads from this field)
+            val outgoingEdges = graph.outgoing(field.id, DataFlowEdge::class.java).toList()
+            println("  Outgoing edges (loads): ${outgoingEdges.size}")
+            outgoingEdges.forEach { edge ->
+                val toNode = graph.node(edge.to)
+                println("    -> ${edge.kind}: ${toNode?.javaClass?.simpleName} (ID: ${edge.to})")
+            }
+        }
+
+        // Find AbKey enum constant fields
+        println("\n=== AbKey enum constant fields ===")
+        graph.nodes(FieldNode::class.java).filter {
+            it.descriptor.declaringClass.className == "sample.ab.AbKey"
+        }.forEach { field ->
+            val inCount = graph.incoming(field.id).count()
+            val outCount = graph.outgoing(field.id).count()
+            println("  ${field.descriptor.name}: incoming=$inCount, outgoing=$outCount")
+        }
+
+        // Check enum values extraction
+        println("\n=== Enum values from graph ===")
+        listOf("SIMPLE_TEST_ID", "CHECKOUT_FLOW", "NEW_ONBOARDING").forEach { enumName ->
+            val values = graph.enumValues("sample.ab.AbKey", enumName)
+            println("  AbKey.$enumName: $values")
+        }
+
+        println("\n=== Running query ===")
+
+        // Query for List<AbKey> parameter with collection expansion
+        val results = graphite.query {
+            findArgumentConstants {
+                method {
+                    declaringClass = "sample.ab.AbClient"
+                    name = "getOption"
+                    parameterTypes = listOf("java.util.List")
+                }
+                argumentIndex = 0
+            }
+        }
+
+        println("Found ${results.size} results for getOption(List<AbKey>)")
+
+        // Show all results, not just enum constants
+        println("\nAll constants found:")
+        results.forEach { result ->
+            println("  ${result.constant.javaClass.simpleName}: ${result.constant}")
+            println("    Caller: ${result.callSite.caller.name}")
+            println("    Path depth: ${result.propagationDepth}")
+            result.propagationPath?.let { path ->
+                println("    Propagation: ${path.toDisplayString()}")
+            }
+        }
+
+        val foundEnumConstants = results
+            .map { it.constant }
+            .filterIsInstance<EnumConstant>()
+
+        println("\nEnum constants found:")
+        foundEnumConstants.forEach { enum ->
+            println("  ${enum.enumType.simpleName}.${enum.enumName} = ${enum.value}")
+        }
+
+        val foundEnumNames = foundEnumConstants.map { it.enumName }.toSet()
+        val foundEnumValues = foundEnumConstants.mapNotNull { it.value as? Int }.toSet()
+
+        println("\nExpected enum names: ${expectedAbKeyValues.keys}")
+        println("Found enum names: $foundEnumNames")
+        println("Expected values: ${expectedAbKeyValues.values.toSet()}")
+        println("Found values: $foundEnumValues")
+
+        // Verify we find enum constants from static field patterns
+        // Pattern 1: SIMPLE_TEST_KEYS contains SIMPLE_TEST_ID(1234)
+        assertTrue(foundEnumNames.contains("SIMPLE_TEST_ID"),
+            "Should find SIMPLE_TEST_ID through static field SIMPLE_TEST_KEYS")
+
+        // Pattern 2: CHECKOUT_KEYS contains CHECKOUT_FLOW(5678) and NEW_ONBOARDING(9999)
+        assertTrue(foundEnumNames.contains("CHECKOUT_FLOW"),
+            "Should find CHECKOUT_FLOW through static field CHECKOUT_KEYS")
+        assertTrue(foundEnumNames.contains("NEW_ONBOARDING"),
+            "Should find NEW_ONBOARDING through static field CHECKOUT_KEYS")
+
+        // Verify we can extract the integer values from enum constructors
+        assertTrue(foundEnumValues.contains(1234),
+            "Should find value 1234 from AbKey.SIMPLE_TEST_ID")
+        assertTrue(foundEnumValues.contains(5678),
+            "Should find value 5678 from AbKey.CHECKOUT_FLOW")
+        assertTrue(foundEnumValues.contains(9999),
+            "Should find value 9999 from AbKey.NEW_ONBOARDING")
+    }
+
+    @Test
+    fun `should find enum through single static field reference`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false
+        ))
+
+        val graph = loader.load(testClassesDir)
+        val graphite = Graphite.from(graph)
+
+        // Query specifically for methods that use the SINGLE_KEY pattern
+        val results = graphite.query {
+            findArgumentConstants {
+                method {
+                    declaringClass = "sample.ab.AbClient"
+                    name = "getOption"
+                    parameterTypes = listOf("java.util.List")
+                }
+                argumentIndex = 0
+            }
+        }
+
+        // Filter to results from isSingleKeyEnabled method
+        val singleKeyResults = results.filter {
+            it.callSite.caller.name == "isSingleKeyEnabled"
+        }
+
+        println("Results from isSingleKeyEnabled: ${singleKeyResults.size}")
+        singleKeyResults.forEach { result ->
+            println("  ${result.constant}")
+        }
+
+        val foundEnums = singleKeyResults
+            .map { it.constant }
+            .filterIsInstance<EnumConstant>()
+            .map { it.enumName }
+            .toSet()
+
+        // Pattern 3: Arrays.asList(SINGLE_KEY) where SINGLE_KEY = AbKey.SIMPLE_TEST_ID
+        assertTrue(foundEnums.contains("SIMPLE_TEST_ID"),
+            "Should find SIMPLE_TEST_ID through static field SINGLE_KEY -> AbKey.SIMPLE_TEST_ID")
+    }
+
+    @Test
+    fun `should find direct enum reference in inline list`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false
+        ))
+
+        val graph = loader.load(testClassesDir)
+        val graphite = Graphite.from(graph)
+
+        val results = graphite.query {
+            findArgumentConstants {
+                method {
+                    declaringClass = "sample.ab.AbClient"
+                    name = "getOption"
+                    parameterTypes = listOf("java.util.List")
+                }
+                argumentIndex = 0
+            }
+        }
+
+        // Filter to results from isDirectEnumEnabled method (baseline - should already work)
+        val directResults = results.filter {
+            it.callSite.caller.name == "isDirectEnumEnabled"
+        }
+
+        println("Results from isDirectEnumEnabled: ${directResults.size}")
+        directResults.forEach { result ->
+            println("  ${result.constant}")
+        }
+
+        val foundEnums = directResults
+            .map { it.constant }
+            .filterIsInstance<EnumConstant>()
+            .map { it.enumName }
+            .toSet()
+
+        // Pattern 4: Arrays.asList(AbKey.SIMPLE_TEST_ID) - direct reference
+        assertTrue(foundEnums.contains("SIMPLE_TEST_ID"),
+            "Should find SIMPLE_TEST_ID through direct enum reference in Arrays.asList")
+    }
+
+    @Test
+    fun `should find constants through static field holding enum getId result`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false
+        ))
+
+        val graph = loader.load(testClassesDir)
+        val graphite = Graphite.from(graph)
+
+        // Query for getOption(Integer) - this is what getCachedIdOption calls
+        val results = graphite.query {
+            findArgumentConstants {
+                method {
+                    declaringClass = "sample.ab.AbClient"
+                    name = "getOption"
+                    parameterTypes = listOf("java.lang.Integer")
+                }
+                argumentIndex = 0
+            }
+        }
+
+        // Filter to results from getCachedIdOption and getCachedCheckoutOption methods
+        val cachedIdResults = results.filter {
+            it.callSite.caller.name in listOf("getCachedIdOption", "getCachedCheckoutOption")
+        }
+
+        println("\n=== Pattern 5 & 6: Static field holding enum.getId() result ===")
+        println("Results from cached ID methods: ${cachedIdResults.size}")
+        cachedIdResults.forEach { result ->
+            println("  Caller: ${result.callSite.caller.name}")
+            println("  Constant: ${result.constant}")
+            result.propagationPath?.let { path ->
+                println("  Path: ${path.toDisplayString()}")
+            }
+        }
+
+        // Expected: Should trace CACHED_SIMPLE_ID -> AbKey.SIMPLE_TEST_ID.getId() -> 1234
+        //           and CACHED_CHECKOUT_ID -> AbKey.CHECKOUT_FLOW.getId() -> 5678
+        val foundIntegers = cachedIdResults
+            .map { it.constant }
+            .filterIsInstance<IntConstant>()
+            .map { it.value }
+            .toSet()
+
+        val foundEnums = cachedIdResults
+            .map { it.constant }
+            .filterIsInstance<EnumConstant>()
+            .map { it.enumName to it.value }
+            .toSet()
+
+        println("Found integers: $foundIntegers")
+        println("Found enums with values: $foundEnums")
+
+        // The analysis should find either:
+        // 1. The integer constants directly (1234, 5678) if it traces through getId() return
+        // 2. The enum constants (SIMPLE_TEST_ID, CHECKOUT_FLOW) if it traces to the receiver
+        val foundValues = foundIntegers + foundEnums.mapNotNull { it.second as? Int }
+
+        assertTrue(foundValues.contains(1234) || foundEnums.any { it.first == "SIMPLE_TEST_ID" },
+            "Should find 1234 or SIMPLE_TEST_ID through CACHED_SIMPLE_ID static field")
+        assertTrue(foundValues.contains(5678) || foundEnums.any { it.first == "CHECKOUT_FLOW" },
+            "Should find 5678 or CHECKOUT_FLOW through CACHED_CHECKOUT_ID static field")
+    }
+
+    @Test
+    fun `should extract values from boxed Integer enum constructor parameters`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false,
+            verbose = { println("[LOADER] $it") }
+        ))
+
+        val graph = loader.load(testClassesDir)
+
+        // Check that boxed enum values are extracted correctly
+        println("\n=== Boxed Integer Enum Values ===")
+        listOf("BOXED_TEST_A", "BOXED_TEST_B", "BOXED_TEST_C").forEach { enumName ->
+            val values = graph.enumValues("sample.ab.AbKeyBoxed", enumName)
+            println("  AbKeyBoxed.$enumName: $values")
+        }
+
+        // Verify the boxed enum values are extracted
+        val boxedAValues = graph.enumValues("sample.ab.AbKeyBoxed", "BOXED_TEST_A") ?: emptyList()
+        val boxedBValues = graph.enumValues("sample.ab.AbKeyBoxed", "BOXED_TEST_B") ?: emptyList()
+        val boxedCValues = graph.enumValues("sample.ab.AbKeyBoxed", "BOXED_TEST_C") ?: emptyList()
+
+        assertTrue(boxedAValues.contains(1111),
+            "Should extract 1111 from AbKeyBoxed.BOXED_TEST_A (Integer constructor param), but got: $boxedAValues")
+        assertTrue(boxedBValues.contains(2222),
+            "Should extract 2222 from AbKeyBoxed.BOXED_TEST_B (Integer constructor param), but got: $boxedBValues")
+        assertTrue(boxedCValues.contains(3333),
+            "Should extract 3333 from AbKeyBoxed.BOXED_TEST_C (Integer constructor param), but got: $boxedCValues")
+    }
+
+    @Test
+    fun `should extract float, double, boolean, and long enum constructor values`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false,
+            verbose = { println("[LOADER] $it") }
+        ))
+
+        val graph = loader.load(testClassesDir)
+
+        // Check that mixed-type enum values are extracted correctly
+        println("\n=== Mixed Param Enum Values ===")
+        listOf("FLOAT_KEY", "DOUBLE_KEY", "BOOL_KEY", "LONG_KEY").forEach { enumName ->
+            val values = graph.enumValues("sample.ab.MixedParamKey", enumName)
+            println("  MixedParamKey.$enumName: $values")
+        }
+
+        // Verify float value
+        val floatValues = graph.enumValues("sample.ab.MixedParamKey", "FLOAT_KEY") ?: emptyList()
+        assertTrue(floatValues.any { it is Float && it == 1.5f },
+            "Should extract 1.5f from MixedParamKey.FLOAT_KEY, but got: $floatValues")
+
+        // Verify double value
+        val doubleValues = graph.enumValues("sample.ab.MixedParamKey", "DOUBLE_KEY") ?: emptyList()
+        assertTrue(doubleValues.any { it is Double && it == 2.718 },
+            "Should extract 2.718 from MixedParamKey.DOUBLE_KEY, but got: $doubleValues")
+
+        // Verify boolean value (JVM represents boolean true as int 1 in bytecode)
+        val boolValues = graph.enumValues("sample.ab.MixedParamKey", "BOOL_KEY") ?: emptyList()
+        assertTrue(boolValues.any { it == 1 },
+            "Should extract 1 (boolean true) from MixedParamKey.BOOL_KEY, but got: $boolValues")
+
+        // Verify long value (large value that would be truncated if stored as Int)
+        val longValues = graph.enumValues("sample.ab.MixedParamKey", "LONG_KEY") ?: emptyList()
+        assertTrue(longValues.any { it is Long && it == 9999999999L },
+            "Should extract 9999999999L from MixedParamKey.LONG_KEY, but got: $longValues")
+    }
+
+    private fun findTestClassesDir(): Path {
+        val projectDir = Path.of(System.getProperty("user.dir"))
+        val submodulePath = projectDir.resolve("build/classes/java/test")
+        val rootPath = projectDir.resolve("frontend/jvm/sootup/build/classes/java/test")
+        return if (submodulePath.exists()) submodulePath else rootPath
+    }
+}

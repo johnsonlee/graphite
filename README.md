@@ -37,7 +37,7 @@ Graphite builds a **program graph** from compiled bytecode — nodes are program
 | Find dead code | Entire codebase, 5M tokens | `branchScopes` + `callSites` → dead paths | **99.99%** |
 | Resolve type hierarchy | ~100 files per type chain | `supertypes` / `subtypes` → direct answer | **99%** |
 
-Graphite uses **Cypher** (the industry-standard graph query language) for querying. The Cypher engine is in the `graphite-cypher` module, powered by an ANTLR-based openCypher parser.
+Graphite uses **Cypher** (the industry-standard graph query language) for querying. The Cypher engine is in the `cypher` module (`frontend/jvm/cypher`), powered by an ANTLR-based openCypher parser.
 
 ## Why Not Tree-sitter?
 
@@ -100,6 +100,25 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -H 'Content-Type: application/json' \
   -d '{"path":"/data/graphs/orders-graph-v2"}'
 ```
+
+### What the formula installs
+
+`graphite` is a native binary (Rust). It carries `query` and `serve` itself and runs
+`build` through the JVM frontend, `graphite.jar`, which the formula installs next to it
+together with `openjdk@17`. Every command line written for the jar-based formula works
+unchanged, `--profile` and the `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` heap settings included.
+
+```bash
+graphite frontend list           # which frontend `build` will run, and where it came from
+graphite frontend describe jvm   # JSON: version, accepted inputs
+graphite frontend install jvm    # fetch the jar for this CLI's version into ~/.graphite/frontends
+```
+
+Outside Homebrew, `graphite build` finds the frontend through, in order:
+`GRAPHITE_FRONTEND_JVM` (a jar or launcher), a `graphite.jar` next to the binary or in a
+sibling `libexec/`, `graphite-frontend-jvm` on `PATH`, then `~/.graphite/frontends/jvm/`.
+It finds `java` through `GRAPHITE_JAVA`, `JAVA_HOME`, then `PATH`. The release also ships
+`graphite.jar` on its own; `java -jar graphite.jar build|query|serve` still works.
 
 ### Upgrading a legacy installation
 
@@ -375,14 +394,29 @@ drills down to its class overview.
 
 ## Architecture
 
+Graphite is split into per-language *frontends*, which turn compiled artifacts into a
+graph, one Rust *backend*, which stores, serves, and queries those graphs, and one Rust
+*CLI* (`graphite`) that drives both. See
+[docs/architecture-frontend-backend.md](docs/architecture-frontend-backend.md).
+
 ```
 graphite/
-├── graphite-core/          # Graph interface, nodes, edges, analysis
-├── graphite-cypher/        # Cypher query engine (ANTLR parser + executor)
-├── graphite-sootup/        # SootUp bytecode → graph builder
-├── graphite-webgraph/      # WebGraph disk persistence (BVGraph + LAW tools)
-├── graphite-query/         # CLI: build, query, serve
-└── graphite-explore/       # Explore HTTP routes and legacy standalone launcher
+├── frontend/
+│   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
+│       ├── core/           # Graph interface, nodes, edges, analysis
+│       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
+│       ├── sootup/         # SootUp bytecode → graph builder
+│       ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
+│       ├── query/          # CLI: build, query, serve
+│       └── explore/        # Explore HTTP routes and legacy standalone launcher
+├── backend/                # Rust backend
+│   ├── storage/            # mmap reader of the persisted graph, indexes, columns
+│   ├── cypher/             # Cypher parser, planner, executor
+│   ├── explore/            # HTTP server, UI, C4, topology
+│   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
+├── cli/                    # `graphite` CLI (Rust): build, query, serve, explore
+├── Cargo.toml              # Cargo workspace: backend/* and cli
+└── docs/
 ```
 
 ### Storage Format
@@ -446,11 +480,16 @@ dependencies {
 
 ## MCP Integration
 
-Connect LLMs to Graphite via [Model Context Protocol](https://modelcontextprotocol.io):
+The `graphite` binary is an [Model Context Protocol](https://modelcontextprotocol.io)
+server: the same thirteen tools the `graphite-mcp` npm package used to expose (`graphs`,
+`cypher`, `node`, `outgoing`, `incoming`, `annotations`, `endpoints`, `resources`,
+`resource`, `subgraph`, `overview`, `c4`, `openapi`), served in-process by the same code
+as the REST API. Two ways to connect:
 
-```bash
-npx graphite-mcp
-```
+- **stdio**, for local clients (Claude Code, Claude Desktop, Cursor): `graphite mcp`
+  opens the graphs itself; no server to start first.
+- **HTTP**, for remote or shared setups: every `graphite serve` also answers MCP at
+  `POST /mcp` (Streamable HTTP).
 
 Configure in Claude Code (`~/.claude/settings.json`):
 
@@ -458,13 +497,25 @@ Configure in Claude Code (`~/.claude/settings.json`):
 {
   "mcpServers": {
     "graphite": {
-      "command": "npx",
-      "args": ["graphite-mcp"],
-      "env": { "GRAPHITE_URL": "http://localhost:8080" }
+      "command": "graphite",
+      "args": ["mcp", "--graph", "app:/data/app-graph", "--graph", "billing:/data/billing-graph"]
     }
   }
 }
 ```
+
+or point an HTTP-capable client at a running server: `{"url": "http://localhost:8080/mcp"}`.
+`/mcp` validates the `Origin` header (DNS-rebinding protection): requests without one are
+accepted, loopback origins are accepted, any other origin is refused with 403 unless listed
+with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable; `*` allows
+all). The REST API is unaffected.
+
+Migrating from `npx graphite-mcp`: the tools, their arguments and their outputs are
+unchanged, and every protocol revision the npm package negotiated (`2024-11-05` through
+`2025-11-25`) is still accepted; replace the `command`/`args` with `graphite mcp` and the
+graphs it should open, and drop `GRAPHITE_URL`. The one argument change is that `node`,
+`outgoing` and `incoming` require `graph_id` (the package advertised it as optional and
+answered a 404 without it). The npm package is not published from v3.0.0 on.
 
 Start the Explorer first, then LLMs can query the graph:
 
@@ -505,7 +556,9 @@ send `"mode":"fanout"`; only this mode accepts `perGraphLimit` and
 `includeGraphRows`. In both modes, `limit` caps the total response row count.
 
 The MCP tools follow the same rule: omitting `graph_id` queries all graphs;
-providing `graph_id` selects exactly one graph. The `cypher` tool can also use
+providing `graph_id` selects exactly one graph. The exceptions are `node`,
+`outgoing` and `incoming`, whose node IDs are local to a graph: they require
+`graph_id`. The `cypher` tool can also use
 `graphs: ["orders", "billing"]` for an explicit subset or `all_graphs: true`
 with `mode: "cross-graph"` or `mode: "fanout"`.
 

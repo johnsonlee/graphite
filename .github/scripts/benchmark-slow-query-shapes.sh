@@ -9,9 +9,11 @@ FIXTURE=$(realpath "$5")
 mkdir -p "$6"
 OUTPUT=$(realpath "$6")
 test ! -e "$OUTPUT/initial-base-slow-shapes.json" || { echo 'Existing measurement series; use a fresh output directory.' >&2; exit 1; }
-HARNESS=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt
-CORPUS=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt
-EVALUATOR=graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt
+# JVM modules live under frontend/jvm/<module>; older revisions keep graphite-<module>.
+jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+HARNESS=src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt
+CORPUS=src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt
+EVALUATOR=src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt
 COMPARATOR="$CONTROLS/.github/scripts/benchmark-slow-query-shapes.mjs"
 PATCH="$CONTROLS/.github/scripts/benchmark-slow-query-shapes-subscript.patch"
 ALL_QUERIES=valueHit,valueMiss,qualifiedIdHit,qualifiedIdMiss,dynamicHit,dynamicMiss,wrappedCallerHit,wrappedCallerMiss,dataflowSourceHit,dataflowSourceMiss,dataflowTargetHit,dataflowTargetMiss
@@ -23,16 +25,16 @@ trap 'if [[ -n "$REFERENCE" ]]; then rm -rf -- "$REFERENCE"; fi' EXIT
 
 # Repair only the exact reviewed legacy implementation. Unknown bases are never patched.
 # They must pass the dynamic-hit oracle directly, or fail closed before timing.
-if [[ $(sha256sum "$BASE/$EVALUATOR" | cut -d' ' -f1) == b4c1bb76cde0be2bcc7b3485e4ac92fd28e0555839cb7d0954748436868510c8 ]]; then
+if [[ $(sha256sum "$(jvm "$BASE" cypher)/$EVALUATOR" | cut -d' ' -f1) == b4c1bb76cde0be2bcc7b3485e4ac92fd28e0555839cb7d0954748436868510c8 ]]; then
   test "$(sha256sum "$PATCH" | cut -d' ' -f1)" = 1ed0f211886dec1bfb2557983400afb34586405583acfbeef0f3f9c07136557a
   REFERENCE=$(mktemp -d "${RUNNER_TEMP:-/tmp}/graphite-slow-shapes-reference-XXXXXX")
   git clone --no-hardlinks "$BASE" "$REFERENCE"
   test "$(git -C "$REFERENCE" rev-parse HEAD)" = "$(git -C "$BASE" rev-parse HEAD)"
   git -C "$REFERENCE" apply --check "$PATCH"
   git -C "$REFERENCE" apply "$PATCH"
-  test "$(sha256sum "$REFERENCE/$EVALUATOR" | cut -d' ' -f1)" = be13e38c5a14d37e363f902571c169d7c0ad52f30a12b11227de57f2c9eef5fa
+  test "$(sha256sum "$(jvm "$REFERENCE" cypher)/$EVALUATOR" | cut -d' ' -f1)" = be13e38c5a14d37e363f902571c169d7c0ad52f30a12b11227de57f2c9eef5fa
   git -C "$REFERENCE" diff --binary > "$OUTPUT/slow-shapes-dynamic-reference.patch"
-  cp "$REFERENCE/$EVALUATOR" "$OUTPUT/slow-shapes-dynamic-reference-ExpressionEvaluator.kt"
+  cp "$(jvm "$REFERENCE" cypher)/$EVALUATOR" "$OUTPUT/slow-shapes-dynamic-reference-ExpressionEvaluator.kt"
   REFERENCE_KIND=base-plus-subscript-correctness-repair
 fi
 
@@ -47,18 +49,19 @@ fi
 
 build() {
   local revision=$1 source=$2
-  test ! -L "$source/$HARNESS" && test ! -L "$source/$CORPUS"
-  install -m 0644 "$CONTROLS/$HARNESS" "$source/$HARNESS"
-  install -m 0644 "$GATE/$CORPUS" "$source/$CORPUS"
-  cmp "$CONTROLS/$HARNESS" "$source/$HARNESS"
-  cmp "$GATE/$CORPUS" "$source/$CORPUS"
+  local webgraph; webgraph=$(jvm "$source" webgraph)
+  test ! -L "$webgraph/$HARNESS" && test ! -L "$webgraph/$CORPUS"
+  install -m 0644 "$(jvm "$CONTROLS" webgraph)/$HARNESS" "$webgraph/$HARNESS"
+  install -m 0644 "$(jvm "$GATE" webgraph)/$CORPUS" "$webgraph/$CORPUS"
+  cmp "$(jvm "$CONTROLS" webgraph)/$HARNESS" "$webgraph/$HARNESS"
+  cmp "$(jvm "$GATE" webgraph)/$CORPUS" "$webgraph/$CORPUS"
   "$source/gradlew" -p "$source" -I "$ISOLATION/$INIT" \
     :webgraph:testClasses :webgraph:jmhJar --max-workers=2 --no-daemon \
     > "$OUTPUT/$revision-slow-shapes-build.log" 2>&1
   local jars=()
-  mapfile -t jars < <(find "$source/graphite-webgraph/build/libs" -maxdepth 1 -name '*-jmh.jar' -type f)
+  mapfile -t jars < <(find "$webgraph/build/libs" -maxdepth 1 -name '*-jmh.jar' -type f)
   test "${#jars[@]}" -eq 1
-  bash "$ISOLATION/$VERIFIER" "$source/graphite-webgraph" "${jars[0]}"
+  bash "$ISOLATION/$VERIFIER" "$webgraph" "${jars[0]}"
   install -m 0644 "${jars[0]}" "$OUTPUT/$revision-slow-shapes.jar"
   sha256sum "$OUTPUT/$revision-slow-shapes.jar" >> "$OUTPUT/slow-shapes-jars.sha256"
 }
@@ -75,7 +78,7 @@ java -Xmx8g -XX:ActiveProcessorCount=4 "-Dandroid.graph.path=$FIXTURE" -cp "$ORA
 jq -n --arg baseSha "$(git -C "$BASE" rev-parse HEAD)" \
   --arg candidateSha "$(git -C "$CANDIDATE" rev-parse HEAD)" \
   --arg referenceKind "$REFERENCE_KIND" --arg fixture "$FIXTURE" \
-  --arg harnessSha256 "$(sha256sum "$CONTROLS/$HARNESS" | cut -d' ' -f1)" \
+  --arg harnessSha256 "$(sha256sum "$(jvm "$CONTROLS" webgraph)/$HARNESS" | cut -d' ' -f1)" \
   --arg comparatorSha256 "$(sha256sum "$COMPARATOR" | cut -d' ' -f1)" \
   '{baseSha:$baseSha,candidateSha:$candidateSha,referenceKind:$referenceKind,fixture:$fixture,
     harnessSha256:$harnessSha256,comparatorSha256:$comparatorSha256,

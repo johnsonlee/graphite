@@ -1,0 +1,175 @@
+name: Rust
+
+# No path filter: the differential below serves graphs built by the JVM frontend with the
+# Kotlin explorer as the baseline, so a frontend, Gradle or fixture change must run it too.
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '**' ]
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: rust-build-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt
+        targets: x86_64-unknown-linux-musl
+
+    - name: Cache cargo
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: .
+
+    - name: Format
+      run: cargo fmt --all --check
+
+    - name: Clippy
+      run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
+    - name: Build
+      run: cargo build --release --locked
+
+    - name: Unit tests
+      run: cargo test --release --locked
+
+    # The Linux release binary is a static musl build (it must run on any distribution
+    # and on the libc-less distroless image); build it as the publish workflow does,
+    # check it is static, then build the image from it and run it so the Dockerfile,
+    # the build context and the entrypoint are exercised on every change.
+    - name: Build the static Linux binary and run the graphite-explore image
+      env:
+        CC_x86_64_unknown_linux_musl: musl-gcc
+      run: |
+        sudo apt-get install -y -q musl-tools
+        cargo build --release --locked --target x86_64-unknown-linux-musl -p graphite-cli
+        bash .github/scripts/require-static.sh target/x86_64-unknown-linux-musl/release/graphite
+        mkdir -p release-assets/linux/amd64
+        cp target/x86_64-unknown-linux-musl/release/graphite release-assets/linux/amd64/graphite
+        docker build -f backend/explore/Dockerfile --build-arg VERSION=ci -t graphite-explore:ci .
+        docker run --rm --entrypoint /app/graphite graphite-explore:ci --version
+        docker run --rm graphite-explore:ci --help | grep -F -- '--graph'
+        rm -rf release-assets
+
+    # The in-memory CallSite index must reproduce the persisted one byte for byte.
+    # That test needs a real graph directory written by the Kotlin builder, so one is
+    # built here from this repository's own core module.
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    # `graphite build` is the Rust CLI driving the JVM frontend (graphite.jar), found
+    # here through GRAPHITE_FRONTEND_JVM as the Homebrew wrapper sets it.
+    - name: Build the JVM frontend, the Kotlin explorer and a persisted fixture graph
+      env:
+        GRAPHITE_FRONTEND_JVM: ${{ github.workspace }}/frontend/jvm/query/build/libs/graphite.jar
+        JAVA_TOOL_OPTIONS: -Xmx4g
+      run: |
+        ./gradlew :query:shadowJar :explore:shadowJar :core:jar --no-daemon -q
+        ./target/release/graphite frontend list
+        ./target/release/graphite frontend describe jvm | tee "${RUNNER_TEMP}/frontend.json"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["name"]=="jvm" and d["version"], d' "${RUNNER_TEMP}/frontend.json"
+        CORE_JAR=$(ls frontend/jvm/core/build/libs/core-*.jar | grep -v -- '-slim' | head -1)
+        ./target/release/graphite build "${CORE_JAR}" \
+          -o "${RUNNER_TEMP}/fixture-graph" --include io.johnsonlee.graphite
+        test -f "${RUNNER_TEMP}/fixture-graph/graph.callsite-string-index"
+        ls -la "${RUNNER_TEMP}/fixture-graph"
+        # A small application with several capabilities calling each other, so the
+        # component level has relationships to compare (the core jar is a library
+        # and infers no components at all).
+        mkdir -p "${RUNNER_TEMP}/acme-classes"
+        javac -d "${RUNNER_TEMP}/acme-classes" $(find backend/bench/fixtures/acme/src -name '*.java')
+        (cd "${RUNNER_TEMP}/acme-classes" && jar cfe "${RUNNER_TEMP}/acme.jar" com.acme.shop.api.Main com)
+        ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
+          -o "${RUNNER_TEMP}/acme-graph" --include com.acme
+        test -f "${RUNNER_TEMP}/acme-graph/graph.metadata"
+        # The jar's own build of the same input is identical apart from the timestamp
+        # comment in forward.properties: the CLI is a shell.
+        java -jar frontend/jvm/query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
+          -o "${RUNNER_TEMP}/acme-graph-direct" --include com.acme
+        diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-graph-direct"
+        # Without a frontend the shell says how to get one and exits 2.
+        set +e
+        env -u GRAPHITE_FRONTEND_JVM HOME="${RUNNER_TEMP}/nohome" PATH=/usr/bin:/bin \
+          ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" -o "${RUNNER_TEMP}/none"
+        STATUS=$?
+        set -e
+        test "${STATUS}" -eq 2
+
+    - name: Persisted-index equivalence against the real fixture
+      env:
+        GRAPHITE_INDEX_FIXTURE: ${{ runner.temp }}/fixture-graph
+      run: cargo test --release --locked -p graphite-storage in_memory_build_reproduces_a_real_persisted_index -- --nocapture
+
+    - name: Benchmark harness tests (fail-closed sampling and warmup)
+      run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
+
+    # The same persisted graph served by both servers, every parity check compared.
+    - name: Kotlin-vs-Rust differential over the fixture
+      run: |
+        FIXTURE="${RUNNER_TEMP}/fixture-graph"
+        ACME="${RUNNER_TEMP}/acme-graph"
+        # Two ids over the same graph, so the topology rule in backend/bench/topology can
+        # relate them and the topology route is compared with a real relation; the
+        # application fixture carries the component-level C4 checks.
+        java -Xmx3g -jar frontend/jvm/explore/build/libs/graphite-explore.jar \
+          --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}" \
+          --topology backend/bench/topology \
+          --port 18081 --metrics > "${RUNNER_TEMP}/kotlin.log" 2>&1 &
+        KOTLIN=$!
+        ./target/release/graphite serve \
+          --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}" \
+          --topology backend/bench/topology \
+          --port 18080 --metrics > "${RUNNER_TEMP}/rust.log" 2>&1 &
+        RUST=$!
+        for _ in $(seq 1 120); do
+          curl -sf http://localhost:18080/api/graphs >/dev/null && \
+            curl -sf http://localhost:18081/api/graphs >/dev/null && break
+          sleep 1
+        done
+        (cd backend/bench && python3 parity.py http://localhost:18081 http://localhost:18080)
+        STATUS=$?
+        # The MCP tools over stdio (`graphite mcp`) and over `POST /mcp` answer exactly
+        # what the REST API answers for the same graphs.
+        if [ "${STATUS}" -eq 0 ]; then
+          python3 backend/bench/mcp-smoke.py ./target/release/graphite http://localhost:18080 \
+            --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}"
+          STATUS=$?
+        fi
+        kill ${KOTLIN} ${RUST} || true
+        exit ${STATUS}
+
+  windows-check:
+    name: rust-check-windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache cargo
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: .
+    # MSVC has no jemalloc; the explorer must still build with the system allocator.
+    - name: Check
+      run: cargo check --workspace --all-targets --locked

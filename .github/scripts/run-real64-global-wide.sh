@@ -16,11 +16,13 @@ REPOSITORY=${5:-johnsonlee/graphite}
 OUTPUT_DIR=${6:-global-wide-results}
 FIXTURE_PROVENANCE=$(dirname "${MANIFEST}")/fixture-provenance.tsv
 FILTER=io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
-HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
-CORRECTNESS_PATH=graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
+# JVM modules live under frontend/jvm/<module>; older revisions keep graphite-<module>.
+jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+HARNESS_PATH=frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+CORRECTNESS_PATH=frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
 COMPARATOR_PATH=.github/scripts/benchmark-gate.mjs
 SCRIPT_PATH=.github/scripts/run-real64-global-wide.sh
-FIXTURE_VERIFIER_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
+FIXTURE_VERIFIER_PATH=frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
 REPRODUCIBILITY_SCRIPT_PATH=.github/scripts/test-fixture64-reproducibility.sh
 ZIP_HASHER_PATH=.github/scripts/canonical-zip-sha256.py
 GIST_EVIDENCE_PATH=.github/scripts/gist-evidence.mjs
@@ -89,6 +91,10 @@ git clone --no-checkout "${REPOSITORY_URL}" "${CANDIDATE_TREE}" >/dev/null
 git -C "${BASE_TREE}" checkout --detach "${BASE_SHA}" >/dev/null
 git -C "${CANDIDATE_TREE}" checkout --detach "${CANDIDATE_SHA}" >/dev/null
 test "$(git -C "${BASE_TREE}" rev-parse HEAD)" = "${BASE_SHA}"
+# The base revision may predate the frontend/jvm layout; mirror the candidate paths into it.
+BASE_WEBGRAPH=$(jvm "${BASE_TREE}" webgraph); BASE_WEBGRAPH=${BASE_WEBGRAPH#"${BASE_TREE}"/}
+BASE_HARNESS_PATH=${HARNESS_PATH/#frontend\/jvm\/webgraph/${BASE_WEBGRAPH}}
+BASE_CORRECTNESS_PATH=${CORRECTNESS_PATH/#frontend\/jvm\/webgraph/${BASE_WEBGRAPH}}
 test "$(git -C "${CANDIDATE_TREE}" rev-parse HEAD)" = "${CANDIDATE_SHA}"
 test -f "${CANDIDATE_TREE}/${HARNESS_PATH}"
 test -f "${CANDIDATE_TREE}/${CORRECTNESS_PATH}"
@@ -101,16 +107,16 @@ test -f "${CANDIDATE_TREE}/${GIST_EVIDENCE_PATH}"
 cmp -s "$0" "${CANDIDATE_TREE}/${SCRIPT_PATH}"
 
 # Both production revisions are measured with the byte-identical candidate-reviewed harness.
-cp "${CANDIDATE_TREE}/${HARNESS_PATH}" "${BASE_TREE}/${HARNESS_PATH}"
-cp "${CANDIDATE_TREE}/${CORRECTNESS_PATH}" "${BASE_TREE}/${CORRECTNESS_PATH}"
-cmp -s "${BASE_TREE}/${HARNESS_PATH}" "${CANDIDATE_TREE}/${HARNESS_PATH}"
-cmp -s "${BASE_TREE}/${CORRECTNESS_PATH}" "${CANDIDATE_TREE}/${CORRECTNESS_PATH}"
+cp "${CANDIDATE_TREE}/${HARNESS_PATH}" "${BASE_TREE}/${BASE_HARNESS_PATH}"
+cp "${CANDIDATE_TREE}/${CORRECTNESS_PATH}" "${BASE_TREE}/${BASE_CORRECTNESS_PATH}"
+cmp -s "${BASE_TREE}/${BASE_HARNESS_PATH}" "${CANDIDATE_TREE}/${HARNESS_PATH}"
+cmp -s "${BASE_TREE}/${BASE_CORRECTNESS_PATH}" "${CANDIDATE_TREE}/${CORRECTNESS_PATH}"
 
 "${BASE_TREE}/gradlew" -p "${BASE_TREE}" :webgraph:jmhJar --no-daemon
 "${CANDIDATE_TREE}/gradlew" -p "${CANDIDATE_TREE}" \
   :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
-BASE_JAR=$(find "${BASE_TREE}/graphite-webgraph/build/libs" -maxdepth 1 -name '*-jmh.jar' -print -quit)
-CANDIDATE_JAR=$(find "${CANDIDATE_TREE}/graphite-webgraph/build/libs" -maxdepth 1 -name '*-jmh.jar' -print -quit)
+BASE_JAR=$(find "${BASE_TREE}/${BASE_WEBGRAPH}/build/libs" -maxdepth 1 -name '*-jmh.jar' -print -quit)
+CANDIDATE_JAR=$(find "${CANDIDATE_TREE}/frontend/jvm/webgraph/build/libs" -maxdepth 1 -name '*-jmh.jar' -print -quit)
 test -f "${BASE_JAR}"
 test -f "${CANDIDATE_JAR}"
 
@@ -122,7 +128,7 @@ find_fixture_jar() {
   printf '%s\n' "${matches[0]}"
 }
 
-PINNED_FIXTURE_DIR=${CANDIDATE_TREE}/graphite-webgraph/build/benchmark-fixtures
+PINNED_FIXTURE_DIR=${CANDIDATE_TREE}/frontend/jvm/webgraph/build/benchmark-fixtures
 ANDROID_JAR=$(find_fixture_jar "${PINNED_FIXTURE_DIR}" 'android-all-*.jar')
 TIKA_JAR=$(find_fixture_jar "${PINNED_FIXTURE_DIR}" 'tika-app-*.jar')
 HIVE_JAR=$(find_fixture_jar "${PINNED_FIXTURE_DIR}" 'hive-exec-*.jar')
