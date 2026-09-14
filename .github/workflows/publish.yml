@@ -158,11 +158,16 @@ jobs:
           sha256sum -c "graphite-${RELEASE_VERSION}-${TARGET}.tar.gz.sha256"
         done
         sha256sum -c graphite.jar.sha256
+    # A tag with a pre-release suffix (v3.0.0-alpha.1, -beta.2, -rc.1) rehearses this
+    # workflow end to end without touching what users install by default: the GitHub
+    # Release is marked pre-release (so it is not "latest"), the Homebrew formula is
+    # left alone, and the image is not tagged `latest` (see the docker job).
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         name: Release ${{ env.RELEASE_TAG }}
         tag_name: ${{ env.RELEASE_TAG }}
+        prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
         generate_release_notes: true
         files: release-assets/*
       env:
@@ -175,6 +180,12 @@ jobs:
           echo "HOMEBREW_TAP_TOKEN not set — skipping tap update"
           exit 0
         fi
+        case "${RELEASE_TAG}" in
+          *-*)
+            echo "${RELEASE_TAG} is a pre-release — leaving Formula/graphite.rb at the current release"
+            exit 0
+            ;;
+        esac
 
         QUERY_SHA=$(sha256sum release-assets/graphite.jar | awk '{print $1}')
         asset_sha() { awk '{print $1}' "release-assets/graphite-${RELEASE_VERSION}-$1.tar.gz.sha256"; }
