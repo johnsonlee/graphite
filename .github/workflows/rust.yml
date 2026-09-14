@@ -112,11 +112,11 @@ jobs:
           -o "${RUNNER_TEMP}/acme.graphite" --include com.acme
         test -f "${RUNNER_TEMP}/acme.graphite"
         test ! -e "${RUNNER_TEMP}"/acme.graphite.build-*
-        ./target/release/graphite graph verify --verbose "${RUNNER_TEMP}/acme.graphite"
+        ./target/release/graphite verify --verbose "${RUNNER_TEMP}/acme.graphite"
         (cd "${RUNNER_TEMP}" && sha256sum -c acme.graphite.sha256)
         unzip -t "${RUNNER_TEMP}/acme.graphite"
         python3 -m zipfile -l "${RUNNER_TEMP}/acme.graphite" | grep -F META-INF/graphite.manifest
-        ./target/release/graphite graph unpack "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/acme-unpacked"
+        ./target/release/graphite unpack "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/acme-unpacked"
         diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-unpacked" --exclude=META-INF
         QUERY='MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS c ORDER BY c DESC, n.callee_class LIMIT 20'
         ./target/release/graphite query "${RUNNER_TEMP}/acme-graph" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-dir.csv"

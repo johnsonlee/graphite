@@ -459,7 +459,8 @@ A saved graph is a directory of these files, or the same files packed into **one
 `graphite query`, `serve` and `mcp` open either form. The file is a plain uncompressed
 (STORED) zip, so `unzip -l` and `jar tf` list it, with every entry page-aligned so the
 server serves it from one memory map exactly as it serves a directory, and a
-`META-INF/graphite.manifest` entry carrying each file's size and SHA-256. Because the
+`META-INF/graphite.manifest` entry carrying each file's size and SHA-256; `pack` refuses a
+set of files that is not a whole graph, and `verify` reports a missing required entry. Because the
 central directory is written last, a truncated file does not open at all, and packing is
 deterministic: the manifest's SHA-256 is the graph's fingerprint. A `.sha256` file in
 `sha256sum -c` format is written next to the container, so a copy or download is checked
@@ -467,11 +468,11 @@ with standard tools; the fingerprint says what the graph is, the file digest whe
 are the bytes that were built.
 
 ```bash
-graphite graph verify app.graphite        # CRC-32 per entry, SHA-256 against the manifest and app.graphite.sha256
+graphite verify app.graphite              # CRC-32 per entry, SHA-256 against the manifest and app.graphite.sha256
 sha256sum -c app.graphite.sha256          # the same file check without graphite
-graphite graph info app.graphite          # entries, sizes, fingerprint as JSON
-graphite graph pack  saved-graph/ app.graphite
-graphite graph unpack app.graphite saved-graph/   # for graphite.jar or the Kotlin API
+graphite info app.graphite                # entries, sizes, fingerprint, file digest as JSON
+graphite pack saved-graph/ -o app.graphite
+graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (default: current directory)
 ```
 
 Replacing a served graph is then one atomic `rename` of a new file over the old: the

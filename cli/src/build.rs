@@ -316,8 +316,13 @@ mod tests {
         let _ = std::fs::remove_dir_all(&root);
         let output = root.join("app.graphite");
         let stage = stage_dir_for(&output);
-        std::fs::create_dir_all(&stage).unwrap();
-        std::fs::write(stage.join("graph.metadata"), b"m").unwrap();
+        let write_graph = |stage: &Path| {
+            std::fs::create_dir_all(stage).unwrap();
+            for name in graphite_storage::container::REQUIRED_ENTRIES {
+                std::fs::write(stage.join(name), name.as_bytes()).unwrap();
+            }
+        };
+        write_graph(&stage);
         assert_eq!(
             finish_pack(
                 Pack {
@@ -331,8 +336,7 @@ mod tests {
         assert!(!stage.exists());
         assert!(!output.exists());
 
-        std::fs::create_dir_all(&stage).unwrap();
-        std::fs::write(stage.join("graph.metadata"), b"m").unwrap();
+        write_graph(&stage);
         assert_eq!(
             finish_pack(
                 Pack {

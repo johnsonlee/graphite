@@ -15,8 +15,8 @@
 
 mod build;
 mod frontend;
-mod graph;
 mod install;
+mod pack;
 
 use clap::{Parser, Subcommand};
 use graphite_cypher::context::GraphContext;
@@ -68,11 +68,14 @@ enum Command {
         #[command(subcommand)]
         command: FrontendCommand,
     },
-    /// Pack, unpack, verify or describe a saved graph as one .graphite file
-    Graph {
-        #[command(subcommand)]
-        command: graph::GraphCommand,
-    },
+    /// Pack a saved graph directory (or files) into one .graphite file
+    Pack(pack::PackArgs),
+    /// Unpack a .graphite file into a directory of the original files
+    Unpack(pack::UnpackArgs),
+    /// Check a .graphite file against its CRC-32s, manifest SHA-256s and .sha256 file
+    Verify(pack::VerifyArgs),
+    /// Describe a .graphite file as JSON: entries, sizes, fingerprint, file digest
+    Info(pack::InfoArgs),
 }
 
 /// `graphite mcp`: the graph selection of `serve`, no port.
@@ -142,7 +145,10 @@ fn main() -> std::process::ExitCode {
         Command::Serve(args) => serve(args),
         Command::Mcp(args) => graphite_explore::mcp::run_stdio(args.graphs),
         Command::Frontend { command } => frontend_command(&env, command),
-        Command::Graph { command } => graph::run(command),
+        Command::Pack(args) => pack::pack(args),
+        Command::Unpack(args) => pack::unpack(args),
+        Command::Verify(args) => pack::verify(args),
+        Command::Info(args) => pack::info(args),
     };
     match outcome {
         Ok(()) => std::process::ExitCode::SUCCESS,

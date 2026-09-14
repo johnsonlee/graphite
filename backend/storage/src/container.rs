@@ -34,6 +34,31 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 pub const EXTENSION: &str = "graphite";
+/// The entries every persisted graph has: what `Graph::load` opens unconditionally.
+/// The backward adjacency is not among them, since the frontend does not always write
+/// it and the reader derives it from `forward`. `pack` refuses a set of files lacking
+/// any of these and `verify` reports them, so a container is a graph or an error.
+pub const REQUIRED_ENTRIES: [&str; 9] = [
+    "forward.graph",
+    "forward.offsets",
+    "forward.properties",
+    "graph.labels",
+    "graph.metadata",
+    "graph.nodedata",
+    "graph.nodeoffsets",
+    "graph.strings",
+    "graph.typeindex",
+];
+
+/// The required entries absent from `names`, in [`REQUIRED_ENTRIES`] order.
+pub fn missing_required<'a>(names: impl Iterator<Item = &'a str>) -> Vec<&'static str> {
+    let present: std::collections::HashSet<&str> = names.collect();
+    REQUIRED_ENTRIES
+        .iter()
+        .copied()
+        .filter(|name| !present.contains(name))
+        .collect()
+}
 /// Extension of the whole-file digest written next to a packed container.
 pub const DIGEST_EXTENSION: &str = "sha256";
 pub const MANIFEST_NAME: &str = "META-INF/graphite.manifest";
@@ -400,6 +425,9 @@ impl Container {
                     failures.push(format!("{name}: listed in the manifest but missing"));
                 }
             }
+        }
+        for name in missing_required(self.entries.keys().map(String::as_str)) {
+            failures.push(format!("{name}: required entry missing"));
         }
         let file_sha256 = self.file_sha256();
         let digest_file = match read_digest_file(&digest_path(&self.path))? {
@@ -825,7 +853,6 @@ impl<W: Write> Writer<W> {
 /// Pack every file under `dir` into the container `out`, written to a sibling
 /// temporary file and renamed into place, so `out` is complete or absent.
 pub fn pack(dir: &Path, out: &Path) -> Result<PackReport, ContainerError> {
-    let shown = out.display().to_string();
     let files = walk(dir)?;
     if files.is_empty() {
         return Err(ContainerError::Format(
@@ -833,12 +860,53 @@ pub fn pack(dir: &Path, out: &Path) -> Result<PackReport, ContainerError> {
             "directory has no files to pack".into(),
         ));
     }
+    pack_files(&files, out)
+}
+
+/// Pack the named files (archive name, path) into the container `out`; see [`pack`].
+/// The set must carry every [`REQUIRED_ENTRIES`] name: a container is a graph.
+pub fn pack_files(files: &[(String, PathBuf)], out: &Path) -> Result<PackReport, ContainerError> {
+    let missing = missing_required(files.iter().map(|(name, _)| name.as_str()));
+    if !missing.is_empty() {
+        return Err(ContainerError::Format(
+            out.display().to_string(),
+            format!("not a graph: missing {}", missing.join(", ")),
+        ));
+    }
+    pack_files_unchecked(files, out)
+}
+
+/// [`pack_files`] without the required-entry check, for archives that are not graphs.
+fn pack_files_unchecked(
+    files: &[(String, PathBuf)],
+    out: &Path,
+) -> Result<PackReport, ContainerError> {
+    let shown = out.display().to_string();
+    if files.is_empty() {
+        return Err(ContainerError::Format(shown, "nothing to pack".into()));
+    }
+    let mut seen = std::collections::HashSet::new();
+    for (name, path) in files {
+        if !valid_name(name) {
+            return Err(ContainerError::Format(
+                path.display().to_string(),
+                format!("cannot archive {name:?}"),
+            ));
+        }
+        if !seen.insert(name) {
+            return Err(ContainerError::Format(
+                shown,
+                format!("duplicate entry {name}"),
+            ));
+        }
+    }
     let out_abs = std::fs::canonicalize(out.parent().unwrap_or(Path::new(".")))
         .ok()
         .map(|p| p.join(out.file_name().unwrap_or_default()));
     let mut manifest = Manifest::default();
     let mut planned = Vec::with_capacity(files.len() + 1);
     for (name, path) in files {
+        let (name, path) = (name.clone(), path.clone());
         if name == MANIFEST_NAME {
             continue;
         }
@@ -979,6 +1047,9 @@ mod tests {
     }
 
     fn fixture(dir: &Path) {
+        for name in REQUIRED_ENTRIES {
+            std::fs::write(dir.join(name), name.as_bytes()).unwrap();
+        }
         std::fs::write(dir.join("graph.metadata"), b"metadata bytes").unwrap();
         std::fs::write(
             dir.join("graph.nodedata"),
@@ -1000,21 +1071,16 @@ mod tests {
         fixture(&src);
         let out = root.join("g.graphite");
         let report = pack(&src, &out).unwrap();
-        assert_eq!(report.entries, 5);
+        assert_eq!(report.entries, REQUIRED_ENTRIES.len() + 2);
         assert_eq!(report.bytes, std::fs::metadata(&out).unwrap().len());
 
         let c = Container::open(&out).unwrap();
         let names: Vec<_> = c.entries().map(|e| e.name.clone()).collect();
-        assert_eq!(
-            names,
-            [
-                "META-INF/graphite.manifest",
-                "forward.properties",
-                "graph.metadata",
-                "graph.nodedata",
-                "nested/empty"
-            ]
-        );
+        let mut expected: Vec<String> = REQUIRED_ENTRIES.iter().map(|n| n.to_string()).collect();
+        expected.push(MANIFEST_NAME.into());
+        expected.push("nested/empty".into());
+        expected.sort();
+        assert_eq!(names, expected);
         for e in c.entries() {
             assert_eq!(e.offset % ALIGNMENT, 0, "{} is not page-aligned", e.name);
         }
@@ -1022,7 +1088,7 @@ mod tests {
         assert_eq!(c.bytes("nested/empty").unwrap().len(), 0);
         assert!(c.bytes("missing").is_none());
         let manifest = c.manifest().unwrap().unwrap();
-        assert_eq!(manifest.entries.len(), 4);
+        assert_eq!(manifest.entries.len(), REQUIRED_ENTRIES.len() + 1);
         assert_eq!(manifest.entries["graph.metadata"].size, 14);
         assert_eq!(c.fingerprint().unwrap(), report.fingerprint);
 
@@ -1047,7 +1113,7 @@ mod tests {
             .all(|e| e.sha_ok == Some(true)));
 
         let back = root.join("back");
-        assert_eq!(c.unpack(&back).unwrap(), 5);
+        assert_eq!(c.unpack(&back).unwrap(), REQUIRED_ENTRIES.len() + 2);
         for (name, _) in walk(&src).unwrap() {
             assert_eq!(
                 std::fs::read(src.join(&name)).unwrap(),
@@ -1135,6 +1201,41 @@ mod tests {
             Container::open(&cut),
             Err(ContainerError::Format(..))
         ));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn a_container_is_a_graph_or_an_error() {
+        let root = tempdir("required");
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        fixture(&src);
+        std::fs::remove_file(src.join("graph.strings")).unwrap();
+        std::fs::remove_file(src.join("forward.offsets")).unwrap();
+        let err = pack(&src, &root.join("g.graphite")).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            format!(
+                "{}: not a graphite container: not a graph: missing forward.offsets, graph.strings",
+                root.join("g.graphite").display()
+            )
+        );
+        assert!(!root.join("g.graphite").exists());
+        // An archive assembled without the check is opened, but verify names the gap.
+        let files = walk(&src).unwrap();
+        pack_files_unchecked(&files, &root.join("partial.graphite")).unwrap();
+        let v = Container::open(&root.join("partial.graphite"))
+            .unwrap()
+            .verify()
+            .unwrap();
+        assert_eq!(
+            v.failures,
+            [
+                "forward.offsets: required entry missing",
+                "graph.strings: required entry missing"
+            ]
+        );
+        assert!(missing_required(REQUIRED_ENTRIES.iter().copied()).is_empty());
         std::fs::remove_dir_all(root).unwrap();
     }
 

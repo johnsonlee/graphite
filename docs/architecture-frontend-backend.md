@@ -299,7 +299,7 @@ Every loader reads through `source.rs`: a graph is a directory of files or one
 `META-INF/graphite.manifest` of sizes and SHA-256 digests, mapped once and sliced per
 entry. The frontends keep writing directories; `graphite build -o x.graphite` stages the
 directory next to the output and the CLI packs it, so the single file exists for every
-frontend without any of them knowing. `graphite graph verify|info|pack|unpack` operate on
+frontend without any of them knowing. `graphite verify|info|pack|unpack` operate on
 the container. The v4 additions (manifest, symbol table, extension store) are further
 entries of the same archive.
 
