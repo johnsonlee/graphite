@@ -124,6 +124,19 @@ QUERIES = [
     "MATCH (n) WHERE n.callee_class CONTAINS 'javalin' RETURN n.callee_class, n.callee_name LIMIT 20",
     "MATCH (n) WHERE n.caller_class CONTAINS 'javalin' OR n.caller_name CONTAINS 'javalin' OR n.callee_class CONTAINS 'javalin' OR n.callee_name CONTAINS 'javalin' RETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
     "MATCH (n) WHERE toLower(coalesce(n.callee_class, '')) CONTAINS 'javalin' RETURN n.callee_class LIMIT 50",
+    # A conjunct the planner cannot push (IS NOT NULL, an ordering, a NOT) next to a
+    # pushable string search: the string side plans the scan and the WHERE clause
+    # judges every survivor, instead of the whole query decoding every node. The
+    # dropped conjunct must still be applied, so each pair below differs only by it.
+    "MATCH (n) WHERE n.graphId IS NOT NULL AND (coalesce(toString(n.value), '') CONTAINS 'get' OR coalesce(toString(n.name), '') CONTAINS 'get' OR coalesce(toString(n.id), '') CONTAINS 'get') RETURN count(*)",
+    "MATCH (n) WHERE (coalesce(toString(n.value), '') CONTAINS 'get' OR coalesce(toString(n.name), '') CONTAINS 'get' OR coalesce(toString(n.id), '') CONTAINS 'get') RETURN count(*)",
+    "MATCH (n) WHERE n.graphId IS NOT NULL AND (coalesce(toString(n.value), '') CONTAINS 'get' OR coalesce(toString(n.name), '') CONTAINS 'get') RETURN n.type, count(*) ORDER BY n.type",
+    "MATCH (n) WHERE n.graphId IS NOT NULL AND n.callee_class CONTAINS 'java' RETURN count(*)",
+    "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.line > 20 RETURN count(*)",
+    "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND NOT n.callee_name = 'toString' RETURN count(*)",
+    "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NULL RETURN count(*)",
+    "MATCH (n) WHERE (n.callee_class CONTAINS 'java' AND n.line > 20) OR n.callee_name = 'toString' RETURN count(*)",
+    "MATCH (n) WHERE n.line > 20 OR n.callee_class CONTAINS 'java' RETURN count(*)",
     "MATCH (n:CallSiteNode) WHERE n.callee_name = 'toString' RETURN n.caller_class LIMIT 10",
     "MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH 'java.util' RETURN n.callee_class LIMIT 10",
     "MATCH (n:CallSiteNode) WHERE n.callee_class ENDS WITH 'Objects' RETURN n.callee_class LIMIT 10",
