@@ -32,6 +32,8 @@ pub struct AppState {
     pub guard: Arc<CypherGuard>,
     pub version: String,
     pub metrics_enabled: bool,
+    /// HTTP request histograms, filled by `metrics::record_http` when enabled.
+    pub http_metrics: crate::metrics::HttpMetrics,
     pub started: Instant,
     /// Wall-clock start, for `process_start_time_seconds`. `Instant` is monotonic and
     /// carries no epoch, so the epoch reading is taken once here.
@@ -132,6 +134,7 @@ impl AppState {
             guard,
             version,
             metrics_enabled,
+            http_metrics: crate::metrics::HttpMetrics::default(),
             started: Instant::now(),
             start_time_epoch_seconds: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -268,6 +271,19 @@ pub fn router(state: Arc<AppState>) -> Router {
         app = app.route("/metrics", get(metrics));
     }
     app.with_state(state)
+}
+
+/// The finished router with HTTP request metrics recorded on every request, `/mcp`
+/// and unmatched paths included, when the server started with `--metrics`. Applied
+/// last so the `uri` label sees the matched route template of any route.
+pub fn instrumented(app: Router, state: Arc<AppState>) -> Router {
+    if !state.metrics_enabled {
+        return app;
+    }
+    app.layer(axum::middleware::from_fn_with_state(
+        state,
+        crate::metrics::record_http,
+    ))
 }
 
 // ---------------------------------------------------------------------------
@@ -1683,6 +1699,7 @@ async fn metrics(State(s): St) -> Response {
         "process_uptime_seconds {}\n",
         prometheus_double(s.started.elapsed().as_secs_f64())
     ));
+    out.push_str(&crate::metrics::render(&s, &prometheus_double));
     (
         StatusCode::OK,
         [(
@@ -1754,6 +1771,115 @@ async fn style_css(headers: HeaderMap) -> Response {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn metrics_app() -> (Router, Arc<AppState>) {
+        let dir = std::env::temp_dir().join(format!(
+            "graphite-metrics-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let registry = Arc::new(GraphRegistry::new(dir, LoadMode::Mapped));
+        let guard = Arc::new(CypherGuard::new(2, 1_000));
+        let state = Arc::new(AppState::new(registry, guard, "test".into(), true));
+        let app = instrumented(router(state.clone()), state.clone());
+        (app, state)
+    }
+
+    async fn get(app: &Router, path: &str) -> (StatusCode, String) {
+        use tower::ServiceExt;
+        let response = app
+            .clone()
+            .oneshot(
+                axum::http::Request::builder()
+                    .uri(path)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        let status = response.status();
+        let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        (status, String::from_utf8(bytes.to_vec()).unwrap())
+    }
+
+    /// `/metrics` carries the process, HTTP and graph families next to the Cypher ones,
+    /// and the HTTP histogram is keyed by route template, unmatched paths included.
+    #[tokio::test]
+    async fn metrics_expose_runtime_http_and_graph_families() {
+        let (app, state) = metrics_app();
+        assert_eq!(get(&app, "/api/graphs").await.0, StatusCode::OK);
+        assert_eq!(get(&app, "/api/graphs/nope").await.0, StatusCode::NOT_FOUND);
+        assert_eq!(get(&app, "/no/such/route").await.0, StatusCode::NOT_FOUND);
+        let (status, body) = get(&app, "/metrics").await;
+        assert_eq!(status, StatusCode::OK);
+        for family in [
+            "# TYPE graphite_cypher_query_duration_seconds histogram",
+            "# TYPE process_uptime_seconds gauge",
+            "# TYPE system_cpu_count gauge",
+            "# TYPE graphite_graphs_loaded gauge",
+            "graphite_graphs_loaded 0.0",
+            "graphite_graph_nodes 0.0",
+            "graphite_graph_mapped_bytes 0.0",
+            "# TYPE http_server_requests_active gauge",
+            // The scrape itself is in flight while it is answered.
+            "http_server_requests_active 1.0",
+            "# TYPE http_server_requests_seconds histogram",
+            "# TYPE http_server_requests_seconds_max gauge",
+        ] {
+            assert!(body.contains(family), "missing {family:?} in:\n{body}");
+        }
+        #[cfg(target_os = "linux")]
+        for family in [
+            "# TYPE process_cpu_seconds_total gauge",
+            "# TYPE process_resident_memory_bytes gauge",
+            "# TYPE process_open_fds gauge",
+            "# TYPE process_threads gauge",
+        ] {
+            assert!(body.contains(family), "missing {family:?} in:\n{body}");
+        }
+        // The route template, never the path that was requested.
+        assert!(body.contains(
+            "http_server_requests_seconds_count{method=\"GET\",outcome=\"SUCCESS\",status=\"200\",uri=\"/api/graphs\"} 1"
+        ), "{body}");
+        assert!(body.contains(
+            "http_server_requests_seconds_count{method=\"GET\",outcome=\"CLIENT_ERROR\",status=\"404\",uri=\"/api/graphs/{graphId}\"} 1"
+        ), "{body}");
+        assert!(body.contains(
+            "http_server_requests_seconds_count{method=\"GET\",outcome=\"CLIENT_ERROR\",status=\"404\",uri=\"NOT_FOUND\"} 1"
+        ), "{body}");
+        assert!(!body.contains("/api/graphs/nope"), "{body}");
+        assert!(body.contains(
+            "http_server_requests_seconds_bucket{method=\"GET\",outcome=\"SUCCESS\",status=\"200\",uri=\"/api/graphs\",le=\"+Inf\"} 1"
+        ), "{body}");
+        // The scrape itself is recorded once it has been answered.
+        let (_, again) = get(&app, "/metrics").await;
+        assert!(again.contains(
+            "http_server_requests_seconds_count{method=\"GET\",outcome=\"SUCCESS\",status=\"200\",uri=\"/metrics\"} 1"
+        ), "{again}");
+        assert_eq!(state.http_metrics.snapshot().len(), 4);
+        std::fs::remove_dir_all(state.registry.data_dir()).ok();
+    }
+
+    /// Without `--metrics` nothing is recorded and `/metrics` does not exist.
+    #[tokio::test]
+    async fn metrics_off_records_nothing() {
+        let dir = std::env::temp_dir().join(format!("graphite-metrics-off-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let registry = Arc::new(GraphRegistry::new(dir.clone(), LoadMode::Mapped));
+        let guard = Arc::new(CypherGuard::new(2, 1_000));
+        let state = Arc::new(AppState::new(registry, guard, "test".into(), false));
+        let app = instrumented(router(state.clone()), state.clone());
+        assert_eq!(get(&app, "/api/graphs").await.0, StatusCode::OK);
+        assert_eq!(get(&app, "/metrics").await.0, StatusCode::NOT_FOUND);
+        assert!(state.http_metrics.snapshot().is_empty());
+        std::fs::remove_dir_all(dir).ok();
+    }
 
     #[test]
     fn accept_header_beats_the_format_parameter() {

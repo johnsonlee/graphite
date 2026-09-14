@@ -109,6 +109,14 @@ pub struct CallSiteStringIndex {
 }
 
 impl CallSiteStringIndex {
+    /// Bytes of the index that are memory-mapped; zero for an index built in memory.
+    pub fn mapped_bytes(&self) -> u64 {
+        match &self.map {
+            IndexBytes::Mapped(m) => m.len() as u64,
+            IndexBytes::Owned(_) => 0,
+        }
+    }
+
     /// Load the index for a graph directory, or `None` when the file is absent.
     ///
     /// A file that does not match the graph is a hard error rather than a silent

@@ -528,6 +528,18 @@ def check_metrics():
     rf, rser = parse_exposition(rb)
     own = lambda d: {n: v for n, v in d.items() if n.startswith("graphite_")}
     kf, rf = own(kf), own(rf)
+    # Graph-serving gauges the Rust server exports and the Kotlin server never did.
+    # They are required of the Rust server and left out of the family comparison; a
+    # new graphite_* family on either side that is not listed here still fails it.
+    rust_only = {"graphite_graphs_loaded", "graphite_graph_nodes",
+                 "graphite_graph_edges", "graphite_graph_mapped_bytes"}
+    absent = sorted(rust_only - set(rf))
+    if absent:
+        failed += 1
+        failures.append(("GET /metrics rust-only families", "missing", "", str(absent)))
+    else:
+        passed += 1
+    rf = {n: v for n, v in rf.items() if n not in rust_only}
     missing = sorted(set(kf) - set(rf))
     extra = sorted(set(rf) - set(kf))
     if missing or extra:
@@ -543,7 +555,9 @@ def check_metrics():
             failed += 1
             failures.append((f"GET /metrics {name}", "TYPE or HELP differs",
                              str(kf[name]), str(rf[name])))
-    own_series = lambda d: {k: v for k, v in d.items() if k.startswith("graphite_")}
+    own_series = lambda d: {k: v for k, v in d.items()
+                            if k.startswith("graphite_")
+                            and k.split("{")[0] not in rust_only}
     kser, rser = own_series(kser), own_series(rser)
     if set(kser) == set(rser):
         passed += 1
