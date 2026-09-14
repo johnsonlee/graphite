@@ -114,10 +114,12 @@ jobs:
         set -e
         test "${STATUS}" -eq 2
 
-    - name: Persisted-index equivalence against the real fixture
+    - name: Persisted-index equivalence and relaxed scan plans against the real fixture
       env:
         GRAPHITE_INDEX_FIXTURE: ${{ runner.temp }}/fixture-graph
-      run: cargo test --release --locked -p graphite-storage in_memory_build_reproduces_a_real_persisted_index -- --nocapture
+      run: |
+        cargo test --release --locked -p graphite-storage in_memory_build_reproduces_a_real_persisted_index -- --nocapture
+        cargo test --release --locked -p graphite-cypher a_relaxed_plan_still_applies_the_dropped_conjunct -- --nocapture
 
     - name: Benchmark harness tests (fail-closed sampling and warmup)
       run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v

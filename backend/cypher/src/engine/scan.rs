@@ -4168,6 +4168,109 @@ mod tests {
         }
     }
 
+    /// A relaxed plan against a real graph: the conjunct the planner dropped must still
+    /// decide the rows. Runs when `GRAPHITE_INDEX_FIXTURE` names a persisted graph (CI
+    /// sets it to the graph built from the core jar); otherwise it is a no-op, like the
+    /// storage crate's fixture test.
+    #[test]
+    fn a_relaxed_plan_still_applies_the_dropped_conjunct() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            return;
+        };
+        let graph = std::sync::Arc::new(
+            graphite_storage::graph::Graph::load(std::path::Path::new(&dir)).unwrap(),
+        );
+        // Two ids over one graph: cross-graph mode, where graphId is a property.
+        let sources = ["a", "b"]
+            .into_iter()
+            .map(|id| super::super::Source {
+                id: std::sync::Arc::from(id),
+                graph: graph.clone(),
+            })
+            .collect();
+        let ex = super::super::Executor::new(sources, true);
+        let count = |q: &str| -> i64 {
+            let result = ex.execute(q, None).unwrap_or_else(|e| panic!("{q}: {e}"));
+            assert_eq!(result.rows.len(), 1, "{q}");
+            match result.rows[0].get("count(*)") {
+                Some(Value::Int(n)) => *n,
+                other => panic!("{q}: {other:?}"),
+            }
+        };
+        let (p, w) = parse_where(
+            "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.id > 1000 RETURN count(*)",
+        );
+        assert!(ScanPlan::build(&p, w.as_ref()).expect("planned").relaxed);
+
+        // A AND B plus (NOT A) AND B is B: only true when both relaxed plans apply A.
+        // (An ordering on the node id: never pushed, never null.)
+        let b = count("MATCH (n) WHERE n.callee_class CONTAINS 'java' RETURN count(*)");
+        let above =
+            count("MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.id > 1000 RETURN count(*)");
+        let not_above = count(
+            "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND NOT n.id > 1000 RETURN count(*)",
+        );
+        assert!(
+            b > 0 && above > 0 && not_above > 0,
+            "b={b} above={above} not_above={not_above}"
+        );
+        assert_eq!(above + not_above, b);
+
+        // The same partition over the annotation sweep, which has its own stream.
+        let named = count("MATCH (n) WHERE n.name CONTAINS 'Metadata' RETURN count(*)");
+        let named_above =
+            count("MATCH (n) WHERE n.name CONTAINS 'Metadata' AND n.id > 500 RETURN count(*)");
+        let named_not_above =
+            count("MATCH (n) WHERE n.name CONTAINS 'Metadata' AND NOT n.id > 500 RETURN count(*)");
+        assert!(
+            named > 0 && named_above > 0 && named_not_above > 0,
+            "named={named} named_above={named_above} named_not_above={named_not_above}"
+        );
+        assert_eq!(named_above + named_not_above, named);
+
+        // And over an annotation attribute the dictionary knows but no column holds
+        // (`xi` of kotlin.Metadata): the generic annotation sweep under a relaxed plan.
+        let xi = count("MATCH (n) WHERE n.xi CONTAINS '4' RETURN count(*)");
+        let xi_above = count("MATCH (n) WHERE n.xi CONTAINS '4' AND n.id > 500 RETURN count(*)");
+        let xi_not_above =
+            count("MATCH (n) WHERE n.xi CONTAINS '4' AND NOT n.id > 500 RETURN count(*)");
+        assert!(
+            xi > 0 && xi_above > 0 && xi_not_above > 0,
+            "xi={xi} xi_above={xi_above} xi_not_above={xi_not_above}"
+        );
+        assert_eq!(xi_above + xi_not_above, xi);
+
+        // The reported shape: `graphId IS NOT NULL` holds for every node here, so the
+        // relaxed count equals the plain one, and the opposite conjunct empties it.
+        let wrapped = "(coalesce(toString(n.value), '') CONTAINS 'get' \
+                       OR coalesce(toString(n.name), '') CONTAINS 'get' \
+                       OR coalesce(toString(n.id), '') CONTAINS 'get')";
+        let plain = count(&format!("MATCH (n) WHERE {wrapped} RETURN count(*)"));
+        assert!(plain > 0);
+        assert_eq!(
+            count(&format!(
+                "MATCH (n) WHERE n.graphId IS NOT NULL AND {wrapped} RETURN count(*)"
+            )),
+            plain
+        );
+        assert_eq!(
+            count(&format!(
+                "MATCH (n) WHERE n.graphId IS NULL AND {wrapped} RETURN count(*)"
+            )),
+            0
+        );
+        // An exact CallSite stream (`All`/`Column`) would skip the WHERE clause on an
+        // unrelaxed plan; relaxed, it must not: IS NULL on a name every call site has.
+        assert_eq!(
+            count("MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NULL RETURN count(*)"),
+            0
+        );
+        assert_eq!(
+            count("MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NOT NULL RETURN count(*)"),
+            b
+        );
+    }
+
     fn synthetic_leaf(property: &'static str, op: PushOp, literal: &str) -> StringPredicate {
         match leaf(property, op, literal) {
             PredTree::Leaf(p) => p,
