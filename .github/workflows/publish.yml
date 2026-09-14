@@ -139,12 +139,18 @@ jobs:
           # Linux binaries are static musl builds, as docs/architecture-frontend-backend.md
           # promises: no libc requirement, so the tarball runs on any distribution and
           # the image can be distroless `static`. Package checks the binary is static.
+          # x86_64 builds natively with Ubuntu's musl-tools. aarch64 is cross-compiled
+          # with cross-rs on the x86_64 runner: jemalloc's C build fails under the arm64
+          # musl-tools compiler (its configure finds no atomics), and cross's image ships
+          # a proper musl cross toolchain, the same way tikv-jemallocator's own CI builds
+          # this target. Its self-check runs the binary under qemu-user.
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             cc: CC_x86_64_unknown_linux_musl
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            cc: CC_aarch64_unknown_linux_musl
+            cross: true
+            exec: qemu-aarch64-static
           - os: macos-15-intel
             target: x86_64-apple-darwin
           - os: macos-latest
@@ -157,20 +163,30 @@ jobs:
       with:
         targets: ${{ matrix.target }}
     - name: Install the musl C toolchain
-      if: contains(matrix.target, 'musl')
+      if: contains(matrix.target, 'musl') && !matrix.cross
       run: |
         sudo apt-get install -y -q musl-tools
         echo "${{ matrix.cc }}=musl-gcc" >> "${GITHUB_ENV}"
+    - name: Install cross and qemu-user
+      if: matrix.cross
+      run: |
+        cargo install cross --locked
+        sudo apt-get install -y -q qemu-user-static
     - name: Build release binaries
       env:
         GRAPHITE_VERSION: ${{ env.RELEASE_VERSION }}
-      run: cargo build --release --locked --target ${{ matrix.target }} -p graphite-cli
+      run: |
+        if [ "${{ matrix.cross }}" = "true" ]; then
+          cross build --release --locked --target ${{ matrix.target }} -p graphite-cli
+        else
+          cargo build --release --locked --target ${{ matrix.target }} -p graphite-cli
+        fi
     - name: Package
       shell: bash
       run: |
         ASSET="graphite-${RELEASE_VERSION}-${{ matrix.target }}.tar.gz"
         mkdir -p release-assets
-        "target/${{ matrix.target }}/release/graphite" --version | grep -F "${RELEASE_VERSION}"
+        ${{ matrix.exec }} "target/${{ matrix.target }}/release/graphite" --version | grep -F "${RELEASE_VERSION}"
         case "${{ matrix.target }}" in
           *-linux-musl) bash .github/scripts/require-static.sh "target/${{ matrix.target }}/release/graphite" ;;
         esac
