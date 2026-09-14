@@ -3005,7 +3005,9 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(fixture64Job, /test-fixture64-reproducibility\.sh/);
     assert.match(fixture64Job, /actions\/cache\/restore@v5/);
     assert.match(fixture64Job, /actions\/cache\/save@v5/);
-    assert.match(fixture64Job, /fixture64-real-v1-temurin17/);
+    assert.match(fixture64Job, /fixture64-real-v2-temurin17/);
+    assert.match(fixture64Job, /verify-fixture64-corpus\.sh/);
+    assert.match(fixture64Job, /gradle\/actions\/setup-gradle@v6/);
     assert.match(fixture64Job, /frontend\/jvm\/webgraph\/build\/benchmark-fixtures\/\*\.jar/);
     assert.match(fixture64Job, /frontend\/jvm\/core\/src\/main\/\*\*/);
     assert.match(fixture64Job, /frontend\/jvm\/sootup\/src\/main\/\*\*/);
@@ -3018,10 +3020,14 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.doesNotMatch(fixture64Job, /MappedCallSiteStringIndexView\.kt/);
     assert.match(fixture64Job, /FIXTURE64_CACHE_HIT/);
     assert.match(fixture64Job, /if: steps\.fixture64-cache\.outputs\.cache-hit != 'true'/);
+    // The cache holds the corpus and the receipt it earned; the repeat copy is never cached.
     assert.match(
         fixture64Job,
-        /path: \|\n\s+shared-fixture64\/graphs\n\s+fixture64-repeat-cache/
+        /path: \|\n\s+shared-fixture64\/graphs\n\s+shared-fixture64\/fixture-reproducibility\.json/
     );
+    assert.doesNotMatch(fixture64Job, /fixture64-repeat-cache/);
+    assert.match(fixture64Job, /\$\{RUNNER_TEMP\}\/fixture64-repeat/);
+    assert.match(fixture64Job, /if \[\[ "\$\{FIXTURE64_CACHE_HIT\}" == true \]\]; then\n\s+test -f shared-fixture64\/fixture-reproducibility\.json\n\s+candidate\/\.github\/scripts\/verify-fixture64-corpus\.sh/);
     assert.match(fixture64Job, /fixture64\.complete\.json/);
     assert.match(fixture64Job, /Upload shared fixture64 corpus/);
     assert.match(fixture64Job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);

@@ -2107,7 +2107,9 @@ jobs:
   prepare-fixture64:
     name: prepare-fixture64
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # A cache miss generates the corpus twice (the second copy proves reproducibility):
+    # about 16 minutes on a hosted runner before the build, cache save and upload.
+    timeout-minutes: 40
     permissions:
       contents: read
 
@@ -2125,20 +2127,30 @@ jobs:
         distribution: temurin
         java-version: '17'
 
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
     - name: Build candidate fixture generator and pinned fixture JARs
       run: |
         candidate/gradlew -p candidate \
           :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
 
+    # The cache holds the corpus and the reproducibility receipt that was earned when it was
+    # generated. The key covers everything the generator reads (its sources, the pinned
+    # fixture JARs, the scripts), so a hit is a corpus this exact generator already produced
+    # twice with identical semantics; a hit re-verifies it below instead of regenerating the
+    # second copy. The repeat copy itself is never cached: it only exists to be compared.
     - name: Restore fixture64 graph cache
       id: fixture64-cache
       uses: actions/cache/restore@v5
       with:
         path: |
           shared-fixture64/graphs
-          fixture64-repeat-cache
+          shared-fixture64/fixture-reproducibility.json
         key: >-
-          ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v1-temurin17-${{
+          ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v2-temurin17-${{
           hashFiles('candidate/frontend/jvm/webgraph/build/benchmark-fixtures/*.jar',
           'candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties',
           'candidate/settings.gradle.kts', 'candidate/build.gradle.kts',
@@ -2156,7 +2168,8 @@ jobs:
           'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt',
           'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt',
           'candidate/.github/scripts/prepare-fixture64-graphs.sh',
-          'candidate/.github/scripts/test-fixture64-reproducibility.sh') }}
+          'candidate/.github/scripts/test-fixture64-reproducibility.sh',
+          'candidate/.github/scripts/verify-fixture64-corpus.sh') }}
 
     - name: Generate and authenticate one shared fixture64 artifact
       env:
@@ -2168,13 +2181,18 @@ jobs:
         FIXTURE_DIR=candidate/frontend/jvm/webgraph/build/benchmark-fixtures
         test -f "${CANDIDATE_JAR}"
         mkdir -p shared-fixture64
-        if [[ "${FIXTURE64_CACHE_HIT}" != true ]]; then
+        if [[ "${FIXTURE64_CACHE_HIT}" == true ]]; then
+          test -f shared-fixture64/fixture-reproducibility.json
+          candidate/.github/scripts/verify-fixture64-corpus.sh \
+            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
+            shared-fixture64/fixture-reproducibility.json
+        else
           candidate/.github/scripts/prepare-fixture64-graphs.sh \
             "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs
+          candidate/.github/scripts/test-fixture64-reproducibility.sh \
+            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
+            "${RUNNER_TEMP}/fixture64-repeat" shared-fixture64/fixture-reproducibility.json
         fi
-        candidate/.github/scripts/test-fixture64-reproducibility.sh \
-          "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
-          fixture64-repeat-cache shared-fixture64/fixture-reproducibility.json
         mapfile -t FIXTURE_JARS < <(find "${FIXTURE_DIR}" -maxdepth 1 -type f -name '*.jar' -print | sort)
         test "${#FIXTURE_JARS[@]}" -eq 4
         FIXTURE_JAR_SET_SHA=$(
@@ -2203,7 +2221,7 @@ jobs:
       with:
         path: |
           shared-fixture64/graphs
-          fixture64-repeat-cache
+          shared-fixture64/fixture-reproducibility.json
         key: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
 
     - name: Upload shared fixture64 corpus
