@@ -109,7 +109,7 @@ enum Transform {
 
 /// Pushdown operators. `Equals` has no `StrOp` counterpart: equality arrives as a
 /// comparison expression, not a string predicate.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum PushOp {
     Equals,
     Contains,
@@ -2480,6 +2480,13 @@ fn collect_tree(e: &Expr, variable: &str, relaxed: &mut bool) -> Option<PredTree
             collect_tree(a, variable, relaxed)?,
             collect_tree(b, variable, relaxed)?,
         ])),
+        // `<property> IN [literal, ...]` is the disjunction of one equality per element,
+        // and plans as one: a dictionary lookup per string, a record read per number.
+        // Before this it had no leaf at all, so `n.callee_name IN [...]`,
+        // `n.value IN [...]` and `n.id IN [...]` each decoded every node of every graph.
+        Expr::In { left, right } if matches!(right.as_ref(), Expr::ListLiteral(_)) => {
+            in_list_tree(left, right, variable)
+        }
         Expr::And(a, b) => {
             match (
                 collect_tree(a, variable, relaxed),
@@ -2504,6 +2511,39 @@ fn collect_tree(e: &Expr, variable: &str, relaxed: &mut bool) -> Option<PredTree
                 None
             }
         }
+    }
+}
+
+/// `<operand> IN [e1, e2, ...]` as `OR` of `<operand> = ei`, each a leaf; `None` when the
+/// list is empty (never true, and the matcher says so) or any element is not a string
+/// or number literal the equality leaves accept. A `NULL` element is skipped: it can
+/// make the whole test null but never true, and the WHERE clause re-checks the rows.
+fn in_list_tree(left: &Expr, right: &Expr, variable: &str) -> Option<PredTree> {
+    let Expr::ListLiteral(items) = right else {
+        return None;
+    };
+    let mut branches = Vec::with_capacity(items.len());
+    for item in items {
+        let mut leaves = Vec::new();
+        let pushed = match item {
+            Expr::Literal(crate::ast::Literal::Null) => continue,
+            Expr::Literal(crate::ast::Literal::Str(_)) => {
+                push_predicate(PushOp::Equals, left, item, variable, &mut leaves)
+            }
+            Expr::Literal(crate::ast::Literal::Int(_) | crate::ast::Literal::Float(_)) => {
+                push_numeric(left, item, variable, &mut leaves)
+            }
+            _ => false,
+        };
+        if !pushed || leaves.len() != 1 {
+            return None;
+        }
+        branches.push(PredTree::Leaf(leaves.pop()?));
+    }
+    match branches.len() {
+        0 => None,
+        1 => branches.pop(),
+        _ => Some(PredTree::Or(branches)),
     }
 }
 
@@ -4269,6 +4309,86 @@ mod tests {
             count("MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NOT NULL RETURN count(*)"),
             b
         );
+    }
+
+    /// `<property> IN [...]` plans as the disjunction of its elements' equalities.
+    #[test]
+    fn an_in_list_plans_as_a_disjunction_of_equalities() {
+        let (p, w) = parse_where(
+            "MATCH (n) WHERE n.callee_name IN ['toString', 'equals', 'hashCode'] RETURN n",
+        );
+        let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
+        assert!(!plan.relaxed);
+        let mut leaves = Vec::new();
+        plan.tree.leaves(&mut leaves);
+        assert_eq!(
+            leaves
+                .iter()
+                .map(|l| (l.prop().to_string(), l.op, l.literal.clone()))
+                .collect::<Vec<_>>(),
+            [
+                (
+                    "callee_name".to_string(),
+                    PushOp::Equals,
+                    "toString".to_string()
+                ),
+                (
+                    "callee_name".to_string(),
+                    PushOp::Equals,
+                    "equals".to_string()
+                ),
+                (
+                    "callee_name".to_string(),
+                    PushOp::Equals,
+                    "hashCode".to_string()
+                ),
+            ]
+        );
+        assert!(plan.tree.is_flat_or());
+
+        // Numbers on the node id and typed values; a wrapped operand; NULL skipped; a
+        // single element is one leaf; the list may sit inside any conjunction.
+        for q in [
+            "MATCH (n) WHERE n.id IN [1, 2, 3] RETURN n",
+            "MATCH (n:IntConstant) WHERE n.value IN [0, 1, 255] RETURN n",
+            "MATCH (n) WHERE toLower(n.value) IN ['a', 'b'] RETURN n",
+            "MATCH (n) WHERE toString(n.value) IN ['1', 'x'] RETURN n",
+            "MATCH (n) WHERE n.callee_name IN ['toString', null] RETURN n",
+            "MATCH (n) WHERE n.callee_name IN ['toString'] RETURN n",
+            "MATCH (n) WHERE n.graphId = 'app' AND n.id IN [1, 2] RETURN n",
+            "MATCH (n) WHERE n.type IN ['StringConstant', 'IntConstant'] AND n.value CONTAINS 'x' RETURN n",
+            "MATCH (n)-[r]->(m) WHERE n.value IN ['a', 'b'] RETURN m",
+            // Mixed element types plan like the equalities they stand for: `n.id = 'x'`
+            // is already a text leaf on the id column, so it is one branch here.
+            "MATCH (n) WHERE n.id IN [1, 'x'] RETURN n",
+        ] {
+            let (p, w) = parse_where(q);
+            if p[0].rels.is_empty() {
+                assert!(ScanPlan::build(&p, w.as_ref()).is_some(), "{q}");
+            } else {
+                assert!(super::super::hop::HopPlan::build(&p, w.as_ref()).is_some(), "{q}");
+            }
+        }
+        let (p, w) = parse_where("MATCH (n) WHERE n.callee_name IN ['toString'] RETURN n");
+        let mut leaves = Vec::new();
+        ScanPlan::build(&p, w.as_ref())
+            .unwrap()
+            .tree
+            .leaves(&mut leaves);
+        assert_eq!(leaves.len(), 1);
+
+        // Not pushable: an empty list, an element that is not a literal, a parameter, a
+        // list-valued property on the right, or an operand that is not this variable.
+        for q in [
+            "MATCH (n) WHERE n.callee_name IN [] RETURN n",
+            "MATCH (n) WHERE n.callee_name IN ['a', n.caller_name] RETURN n",
+            "MATCH (n) WHERE n.callee_name IN ['a', [1]] RETURN n",
+            "MATCH (n) WHERE n.callee_name IN [null] RETURN n",
+            "MATCH (n) WHERE 'x' IN ['a', 'b'] RETURN n",
+        ] {
+            let (p, w) = parse_where(q);
+            assert!(ScanPlan::build(&p, w.as_ref()).is_none(), "{q}");
+        }
     }
 
     fn synthetic_leaf(property: &'static str, op: PushOp, literal: &str) -> StringPredicate {
