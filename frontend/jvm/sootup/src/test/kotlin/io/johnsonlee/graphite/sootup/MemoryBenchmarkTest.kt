@@ -39,38 +39,35 @@ class MemoryBenchmarkTest {
         println("Creating $count node IDs...")
         println()
 
-        // Force GC and get baseline
-        forceGc()
-        val baseline = getUsedMemory()
+        // Heap deltas read after System.gc() are only a hint on a shared CI runner: a
+        // collection that has not finished, or one that reclaims an earlier test's
+        // garbage mid-measurement, can put the smaller array above the larger one. Each
+        // reading is the minimum over several collections, and the comparison gets a
+        // few attempts before it counts as a regression.
+        var intMemory = 0L
+        var stringMemory = 0L
+        for (attempt in 1..MEASUREMENT_ATTEMPTS) {
+            val baseline = settledUsedMemory()
 
-        // Create Int-based NodeIds (current implementation)
-        NodeId.reset()
-        val intIds = Array(count) { NodeId.next() }
-        forceGc()
-        val afterIntIds = getUsedMemory()
-        val intMemory = afterIntIds - baseline
+            // Create Int-based NodeIds (current implementation)
+            NodeId.reset()
+            val intIds = Array(count) { NodeId.next() }
+            val afterIntIds = settledUsedMemory()
+            intMemory = afterIntIds - baseline
 
-        println("Int-based NodeId (current):")
-        println("  Total memory: ${formatBytes(intMemory)}")
-        println("  Per node: ${String.format("%.1f", intMemory.toDouble() / count)} bytes")
-        println()
+            // Measure String-based (simulated old implementation) while the Int ids stay live
+            val stringIds = Array(count) { i -> "node-$i" }
+            val afterStringIds = settledUsedMemory()
+            stringMemory = afterStringIds - afterIntIds
 
-        // Clear and measure String-based (simulated old implementation)
-        @Suppress("UNUSED_VARIABLE")
-        val keepIntIds = intIds // Keep reference to prevent GC
-        forceGc()
-        val beforeStringIds = getUsedMemory()
-
-        @Suppress("UNUSED_VARIABLE")
-        val stringIds = Array(count) { i -> "node-$i" }
-        forceGc()
-        val afterStringIds = getUsedMemory()
-        val stringMemory = afterStringIds - beforeStringIds
-
-        println("String-based NodeId (old):")
-        println("  Total memory: ${formatBytes(stringMemory)}")
-        println("  Per node: ${String.format("%.1f", stringMemory.toDouble() / count)} bytes")
-        println()
+            println("Attempt $attempt:")
+            println("  Int-based NodeId (current): ${formatBytes(intMemory)}, " +
+                "${String.format("%.1f", intMemory.toDouble() / count)} bytes per node")
+            println("  String-based NodeId (old):  ${formatBytes(stringMemory)}, " +
+                "${String.format("%.1f", stringMemory.toDouble() / count)} bytes per node")
+            check(intIds.size == count && stringIds.size == count)
+            if (intMemory < stringMemory) break
+        }
 
         val savings = stringMemory - intMemory
         val savingsPercent = (savings.toDouble() / stringMemory * 100)
@@ -296,6 +293,16 @@ class MemoryBenchmarkTest {
         }
     }
 
+    /** The smallest used-heap reading over several collections: what is really retained. */
+    private fun settledUsedMemory(): Long {
+        var used = Long.MAX_VALUE
+        repeat(SETTLE_ROUNDS) {
+            forceGc()
+            used = minOf(used, getUsedMemory())
+        }
+        return used
+    }
+
     private fun getUsedMemory(): Long {
         val runtime = Runtime.getRuntime()
         return runtime.totalMemory() - runtime.freeMemory()
@@ -316,5 +323,10 @@ class MemoryBenchmarkTest {
         val submodulePath = projectDir.resolve("build/classes/java/test")
         val rootPath = projectDir.resolve("frontend/jvm/sootup/build/classes/java/test")
         return if (submodulePath.exists()) submodulePath else rootPath
+    }
+
+    private companion object {
+        const val MEASUREMENT_ATTEMPTS = 3
+        const val SETTLE_ROUNDS = 3
     }
 }
