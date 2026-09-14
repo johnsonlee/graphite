@@ -167,8 +167,10 @@ main() {
 # The stub keeps releases and assets in a directory and answers only the calls above.
 
 self_test() {
-  local root; root=$(mktemp -d)
-  trap 'rm -rf -- "${root}"' EXIT
+  # Not `local`: the EXIT trap runs after this function's locals are gone, and under
+  # `set -u` an unbound name there fails the script after every scenario has passed.
+  SELF_TEST_ROOT=$(mktemp -d); local root=${SELF_TEST_ROOT}
+  trap 'rm -rf -- "${SELF_TEST_ROOT}"' EXIT
   export RELEASE_TAG=v9.9.9-rc.1 RELEASE_VERSION=9.9.9-rc.1 PRERELEASE=true GH_REPO=acme/widgets
   export STUB=${root}/stub
   mkdir -p "${STUB}/bin" "${root}/assets"

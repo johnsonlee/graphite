@@ -121,6 +121,11 @@ jobs:
 
     - name: Benchmark harness tests (fail-closed sampling and warmup)
       run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
+    # The release scripts' own checks, so a release does not find out first.
+    - name: Release script self-tests
+      run: |
+        python3 .github/scripts/release-version.py --self-test
+        bash .github/scripts/publish-release.sh --self-test
 
     # The same persisted graph served by both servers, every parity check compared.
     - name: Kotlin-vs-Rust differential over the fixture
