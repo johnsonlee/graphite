@@ -20,7 +20,7 @@ pub const DEFAULT_PORT: u16 = 8080;
 /// Kotlin `graphite.jar serve` so that an existing command line keeps working unchanged.
 #[derive(Args, Debug, Clone)]
 pub struct GraphArgs {
-    /// Optional saved graph directory for single-graph startup
+    /// Optional saved graph (directory or .graphite file) for single-graph startup
     pub graph_dir: Option<PathBuf>,
 
     /// Data directory used to resolve relative graph paths and allow empty startup
@@ -181,7 +181,7 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
         let id = cli
             .id
             .clone()
-            .ok_or("--id is required when a positional graph directory is provided")?;
+            .ok_or("--id is required when a positional graph is provided")?;
         let served = registry.load(&id, dir, Some(load_mode))?;
         eprintln!(
             "Loaded graph '{}' from {} using {} mode",

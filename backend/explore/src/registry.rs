@@ -167,9 +167,9 @@ impl GraphRegistry {
     ) -> Result<Arc<ServedGraph>, String> {
         let id = validate_graph_id(id)?;
         let resolved = self.resolve_path(path);
-        if !resolved.is_dir() {
+        if !resolved.exists() {
             return Err(format!(
-                "Graph path is not a directory: {}",
+                "Graph path is not a directory or .graphite file: {}",
                 resolved.display()
             ));
         }

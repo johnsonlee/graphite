@@ -15,6 +15,7 @@
 
 mod build;
 mod frontend;
+mod graph_cmd;
 mod install;
 
 use clap::{Parser, Subcommand};
@@ -67,6 +68,11 @@ enum Command {
         #[command(subcommand)]
         command: FrontendCommand,
     },
+    /// Pack, unpack, verify or describe a saved graph as one .graphite file
+    Graph {
+        #[command(subcommand)]
+        command: graph_cmd::GraphCommand,
+    },
 }
 
 /// `graphite mcp`: the graph selection of `serve`, no port.
@@ -107,7 +113,7 @@ enum FrontendCommand {
 
 #[derive(Parser, Debug)]
 struct QueryArgs {
-    /// Path to saved graph directory
+    /// Path to a saved graph: a directory or a .graphite file
     graph_dir: PathBuf,
 
     /// Cypher query string
@@ -136,6 +142,7 @@ fn main() -> std::process::ExitCode {
         Command::Serve(args) => serve(args),
         Command::Mcp(args) => graphite_explore::mcp::run_stdio(args.graphs),
         Command::Frontend { command } => frontend_command(&env, command),
+        Command::Graph { command } => graph_cmd::run(command),
     };
     match outcome {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -230,8 +237,8 @@ fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<Stri
 }
 
 fn query(args: QueryArgs) -> Result<(), String> {
-    if !args.graph_dir.is_dir() {
-        return Err(format!("Not a directory: {}", args.graph_dir.display()));
+    if !args.graph_dir.exists() {
+        return Err(format!("No such graph: {}", args.graph_dir.display()));
     }
     if args.verbose {
         eprintln!("Loading graph from {}...", args.graph_dir.display());

@@ -454,6 +454,25 @@ Graphs are persisted using the [WebGraph](https://webgraph.di.unimi.it/) ecosyst
 | Node data | Compact binary with string table indices |
 | Metadata | Compact binary with string table indices |
 
+A saved graph is a directory of these files, or the same files packed into **one
+`.graphite` file**: `graphite build app.jar -o app.graphite` writes the file, and
+`graphite query`, `serve` and `mcp` open either form. The file is a plain uncompressed
+(STORED) zip, so `unzip -l` and `jar tf` list it, with every entry page-aligned so the
+server serves it from one memory map exactly as it serves a directory, and a
+`META-INF/graphite.manifest` entry carrying each file's size and SHA-256. Because the
+central directory is written last, a truncated file does not open at all, and packing is
+deterministic: the manifest's SHA-256 is the graph's fingerprint.
+
+```bash
+graphite graph verify app.graphite        # CRC-32 per entry, SHA-256 against the manifest
+graphite graph info app.graphite          # entries, sizes, fingerprint as JSON
+graphite graph pack  saved-graph/ app.graphite
+graphite graph unpack app.graphite saved-graph/   # for graphite.jar or the Kotlin API
+```
+
+Replacing a served graph is then one atomic `rename` of a new file over the old: the
+server's mapping stays bound to the old inode until the last in-flight query finishes.
+
 ## Analysis Capabilities
 
 | Capability | Description |
