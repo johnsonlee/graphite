@@ -30,8 +30,13 @@ measurements.
 
 Every push to `main` (and an optional manual dispatch) runs
 `.github/workflows/benchmark-pages.yml`. This post-merge workflow does not join the pull-request
-gate. It builds the current commit's Cypher JMH JAR once, records the method-level benchmark set as
-an informational absolute snapshot, and retains the raw JSON artifact for 90 days.
+gate. It builds the commit's `graphite` binary, opens the shared fixture64 corpus with
+`graphite serve` (restored from the same Actions cache `prepare-fixture64` and `warm-fixture64`
+use, generated and saved on a miss), runs the cross-graph plan of `backend/bench/fixture64.py`
+through `backend/bench/snapshot.py` in three sequential single-threaded passes, and records the
+per-shape medians and the per-pass P50/P95 as an informational absolute snapshot in the JMH
+result shape. The raw JSON and the server log are retained for 90 days. The paired PR report
+below it still comes from the JVM engine gate; the Rust engine has no paired gate yet.
 
 The report renderer also locates the successful paired benchmark artifact from the pull request
 associated with the main commit. When a direct push has no associated artifact, the page says so
@@ -347,6 +352,17 @@ Run the two benchmark sources directly:
 ./gradlew :webgraph:jmh -Pjmh.filter='AllFixtureWrappedDiscoveryLatencyBenchmark.*' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.*' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='.*WrappedDiscoveryResourceBenchmark.*' --no-daemon
+```
+
+Take the observatory's Rust engine snapshot locally against a prepared fixture64 corpus
+(`.github/scripts/prepare-fixture64-graphs.sh` writes `graphs.tsv`), then render the page from it:
+
+```bash
+cargo build --release -p graphite-cli
+python3 backend/bench/snapshot.py --manifest /path/to/fixture64/graphs.tsv \
+  --binary target/release/graphite --out main-rust-snapshot.json
+node .github/scripts/benchmark-pages.mjs build --snapshot main-rust-snapshot.json \
+  --output _site --sha "$(git rev-parse HEAD)" --run-url https://example.invalid/run
 ```
 
 The workflow deliberately keeps benchmark execution separate from unit-test coverage. Coverage

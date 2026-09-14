@@ -202,4 +202,5 @@ def main():
     json.dump({"queries": rows, "summary": summary}, open(args.out, "w"), indent=2)
     return 0
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())
