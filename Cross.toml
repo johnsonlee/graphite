@@ -1,0 +1,6 @@
+# cross-rs settings for the release builds that cross-compile (see publish.yml): the
+# aarch64 musl binary is built in cross's image, whose musl cross toolchain builds
+# jemalloc; Ubuntu's arm64 musl-tools does not. The version stamp must reach the
+# container's environment.
+[build.env]
+passthrough = ["GRAPHITE_VERSION"]
