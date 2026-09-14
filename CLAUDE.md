@@ -17,6 +17,7 @@ Follow these steps in order when working on a task:
    1. Check existing versions: `gh api /users/johnsonlee/packages/maven/io.johnsonlee.graphite.graphite-cli/versions --jq '.[].name' | head -5`
    2. Determine the next version number based on existing versions
    3. Show the user the current latest version and proposed new version for confirmation
+   4. Rehearse with a dry run first: `gh workflow run publish.yml --ref <branch> -f tag=vX.Y.Z` builds every artifact the tag would publish (Maven, the four binaries, `graphite.jar`, the Homebrew formula, the multi-arch image) from that branch and publishes nothing; inspect the `release-dry-run-vX.Y.Z` artifact. A tag with a pre-release suffix (`vX.Y.Z-rc.1`) then publishes for real without touching the default channels (GitHub pre-release, no tap update, no `latest` image tag).
 9. **Update docs** — After tagging a release, update documentation (README version references, etc.) to reflect the new version. This is a docs-only change — commit and push directly to `main` without a PR.
 
 ## Project Overview

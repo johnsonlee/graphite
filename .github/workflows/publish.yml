@@ -6,9 +6,22 @@ on:
       - 'v*'
   repository_dispatch:
     types: [publish]
+  # A dry run: every job builds and verifies exactly what a tag would publish, from the
+  # commit the workflow is started on, and publishes nothing (no Sonatype upload, no
+  # GitHub Release, no tap commit, no image push). The tag named here need not exist;
+  # it only stamps the version. Start one with
+  #   gh workflow run publish.yml --ref <branch> -f tag=v3.0.0
+  # and inspect the `release-dry-run-<tag>` artifact.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to rehearse (v-prefixed, e.g. v3.0.0-rc.1)'
+        required: true
+        type: string
 
 env:
-  RELEASE_TAG: ${{ github.event.client_payload.tag || github.ref_name }}
+  RELEASE_TAG: ${{ inputs.tag || github.event.client_payload.tag || github.ref_name }}
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
 
 jobs:
   # ---- Maven Central (Sonatype) ----
@@ -20,7 +33,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ env.RELEASE_TAG }}
+        ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
@@ -32,7 +45,14 @@ jobs:
           exit 1
         fi
         echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
+    - name: Build the Maven artifacts (dry run)
+      if: env.DRY_RUN == 'true'
+      run: ./gradlew clean assemble -S --no-daemon -Pversion=${RELEASE_VERSION}
+      env:
+        JAVA_OPTS: -Xmx8g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+        JVM_OPTS: -Xmx8g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
     - name: Publish to Sonatype Central
+      if: env.DRY_RUN != 'true'
       run: |
         echo "Publishing version ${RELEASE_VERSION} ..."
         echo "Create GPG private key"
@@ -79,7 +99,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ env.RELEASE_TAG }}
+        ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
     - name: Resolve release version
       shell: bash
       run: |
@@ -123,7 +143,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ env.RELEASE_TAG }}
+        ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
@@ -163,6 +183,7 @@ jobs:
     # Release is marked pre-release (so it is not "latest"), the Homebrew formula is
     # left alone, and the image is not tagged `latest` (see the docker job).
     - name: Create GitHub Release
+      if: env.DRY_RUN != 'true'
       uses: softprops/action-gh-release@v2
       with:
         name: Release ${{ env.RELEASE_TAG }}
@@ -172,21 +193,10 @@ jobs:
         files: release-assets/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Update Homebrew tap
-      env:
-        HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+    # The formula is rendered on every run (a dry run checks it too); only a real
+    # release of a non-pre-release tag pushes it to the tap.
+    - name: Render the Homebrew formula
       run: |
-        if [ -z "${HOMEBREW_TAP_TOKEN:-}" ]; then
-          echo "HOMEBREW_TAP_TOKEN not set — skipping tap update"
-          exit 0
-        fi
-        case "${RELEASE_TAG}" in
-          *-*)
-            echo "${RELEASE_TAG} is a pre-release — leaving Formula/graphite.rb at the current release"
-            exit 0
-            ;;
-        esac
-
         QUERY_SHA=$(sha256sum release-assets/graphite.jar | awk '{print $1}')
         asset_sha() { awk '{print $1}' "release-assets/graphite-${RELEASE_VERSION}-$1.tar.gz.sha256"; }
         SHA_MAC_ARM=$(asset_sha aarch64-apple-darwin)
@@ -195,9 +205,8 @@ jobs:
         SHA_LINUX_X86=$(asset_sha x86_64-unknown-linux-gnu)
         BASE="https://github.com/johnsonlee/graphite/releases/download/v${RELEASE_VERSION}"
 
-        git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
-        cd tap
-        mkdir -p Formula
+        mkdir -p formula/Formula
+        cd formula
 
         # The formula installs the Rust binary and the JVM frontend jar next to it.
         # `graphite build` finds the jar and openjdk@17 through the two variables the
@@ -253,7 +262,36 @@ jobs:
           end
         end
         RUBY
-
+        ruby -c Formula/graphite.rb
+        cat Formula/graphite.rb
+    - name: Keep what a dry run would have published
+      if: env.DRY_RUN == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-dry-run-${{ env.RELEASE_TAG }}
+        path: |
+          release-assets/*
+          formula/Formula/graphite.rb
+        if-no-files-found: error
+    - name: Update Homebrew tap
+      if: env.DRY_RUN != 'true'
+      env:
+        HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      run: |
+        if [ -z "${HOMEBREW_TAP_TOKEN:-}" ]; then
+          echo "HOMEBREW_TAP_TOKEN not set — skipping tap update"
+          exit 0
+        fi
+        case "${RELEASE_TAG}" in
+          *-*)
+            echo "${RELEASE_TAG} is a pre-release — leaving Formula/graphite.rb at the current release"
+            exit 0
+            ;;
+        esac
+        git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
+        mkdir -p tap/Formula
+        cp formula/Formula/graphite.rb tap/Formula/graphite.rb
+        cd tap
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         # The unversioned formulae track the current release. Version-pinned
@@ -276,7 +314,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ env.RELEASE_TAG }}
+        ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
     - name: Resolve release version
       run: |
         if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
@@ -284,12 +322,23 @@ jobs:
           exit 1
         fi
         echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
+    # A real release takes the binaries from the GitHub Release it just published; a
+    # dry run takes the same tarballs from this run's `binaries` artifacts.
+    - name: Take the Linux binaries from this run (dry run)
+      if: env.DRY_RUN == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        pattern: binaries-*-linux-gnu
+        merge-multiple: true
+        path: .
     - name: Download the Linux binaries from the GitHub Release
       run: |
         for PAIR in x86_64-unknown-linux-gnu:amd64 aarch64-unknown-linux-gnu:arm64; do
           TARGET=${PAIR%%:*}; ARCH=${PAIR##*:}
           ASSET="graphite-${RELEASE_VERSION}-${TARGET}.tar.gz"
-          gh release download "${RELEASE_TAG}" -p "${ASSET}" -p "${ASSET}.sha256" -D .
+          if [ "${DRY_RUN}" != true ]; then
+            gh release download "${RELEASE_TAG}" -p "${ASSET}" -p "${ASSET}.sha256" -D .
+          fi
           sha256sum -c "${ASSET}.sha256"
           mkdir -p "release-assets/linux/${ARCH}"
           tar -xzf "${ASSET}" -C "release-assets/linux/${ARCH}" graphite
@@ -299,12 +348,14 @@ jobs:
     - uses: docker/setup-qemu-action@v3
     - uses: docker/setup-buildx-action@v3
     - name: Login to GitHub Container Registry
+      if: env.DRY_RUN != 'true'
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to Docker Hub
+      if: env.DRY_RUN != 'true'
       uses: docker/login-action@v3
       with:
         username: johnsonlee
@@ -342,13 +393,14 @@ jobs:
       run: |
         docker run --rm --entrypoint /app/graphite graphite-explore:smoke --version | grep -F "${RELEASE_VERSION}"
         docker run --rm graphite-explore:smoke --help | grep -F -- '--graph'
+    # In a dry run both architectures are still built (arm64 under QEMU), nothing is pushed.
     - name: Build and push graphite-explore image
       uses: docker/build-push-action@v6
       with:
         context: .
         file: backend/explore/Dockerfile
         platforms: linux/amd64,linux/arm64
-        push: true
+        push: ${{ env.DRY_RUN != 'true' }}
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
         build-args: |
