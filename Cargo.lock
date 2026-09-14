@@ -399,8 +399,11 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "graphite-cypher",
+ "graphite-explore",
  "graphite-storage",
  "serde_json",
+ "sha2",
+ "tikv-jemallocator",
 ]
 
 [[package]]

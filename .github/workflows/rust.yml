@@ -57,11 +57,19 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Build the graphite CLI, the Kotlin explorer and a persisted fixture graph
+    # `graphite build` is the Rust CLI driving the JVM frontend (graphite.jar), found
+    # here through GRAPHITE_FRONTEND_JVM as the Homebrew wrapper sets it.
+    - name: Build the JVM frontend, the Kotlin explorer and a persisted fixture graph
+      env:
+        GRAPHITE_FRONTEND_JVM: ${{ github.workspace }}/frontend/jvm/query/build/libs/graphite.jar
+        JAVA_TOOL_OPTIONS: -Xmx4g
       run: |
         ./gradlew :query:shadowJar :explore:shadowJar :core:jar --no-daemon -q
+        ./target/release/graphite frontend list
+        ./target/release/graphite frontend describe jvm | tee "${RUNNER_TEMP}/frontend.json"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["name"]=="jvm" and d["version"], d' "${RUNNER_TEMP}/frontend.json"
         CORE_JAR=$(ls frontend/jvm/core/build/libs/core-*.jar | grep -v -- '-slim' | head -1)
-        java -Xmx4g -jar frontend/jvm/query/build/libs/graphite.jar build "${CORE_JAR}" \
+        ./target/release/graphite build "${CORE_JAR}" \
           -o "${RUNNER_TEMP}/fixture-graph" --include io.johnsonlee.graphite
         test -f "${RUNNER_TEMP}/fixture-graph/graph.callsite-string-index"
         ls -la "${RUNNER_TEMP}/fixture-graph"
@@ -71,9 +79,21 @@ jobs:
         mkdir -p "${RUNNER_TEMP}/acme-classes"
         javac -d "${RUNNER_TEMP}/acme-classes" $(find backend/bench/fixtures/acme/src -name '*.java')
         (cd "${RUNNER_TEMP}/acme-classes" && jar cfe "${RUNNER_TEMP}/acme.jar" com.acme.shop.api.Main com)
-        java -Xmx4g -jar frontend/jvm/query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
+        ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-graph" --include com.acme
         test -f "${RUNNER_TEMP}/acme-graph/graph.metadata"
+        # The jar's own build of the same input is identical apart from the timestamp
+        # comment in forward.properties: the CLI is a shell.
+        java -jar frontend/jvm/query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
+          -o "${RUNNER_TEMP}/acme-graph-direct" --include com.acme
+        diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-graph-direct"
+        # Without a frontend the shell says how to get one and exits 2.
+        set +e
+        env -u GRAPHITE_FRONTEND_JVM HOME="${RUNNER_TEMP}/nohome" PATH=/usr/bin:/bin \
+          ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" -o "${RUNNER_TEMP}/none"
+        STATUS=$?
+        set -e
+        test "${STATUS}" -eq 2
 
     - name: Persisted-index equivalence against the real fixture
       env:
@@ -96,7 +116,10 @@ jobs:
           --topology backend/bench/topology \
           --port 18081 --metrics > "${RUNNER_TEMP}/kotlin.log" 2>&1 &
         KOTLIN=$!
-        ./target/release/graphite-explore \
+        # `graphite serve` and the `graphite-explore` binary are the same code; the
+        # differential runs against the CLI, the binary is checked to start.
+        ./target/release/graphite-explore --help >/dev/null
+        ./target/release/graphite serve \
           --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}" \
           --topology backend/bench/topology \
           --port 18080 --metrics > "${RUNNER_TEMP}/rust.log" 2>&1 &

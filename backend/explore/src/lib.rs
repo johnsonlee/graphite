@@ -7,4 +7,5 @@ pub mod helpers;
 pub mod openapi;
 pub mod registry;
 pub mod routes;
+pub mod serve;
 pub mod topology;

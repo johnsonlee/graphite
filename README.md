@@ -101,6 +101,25 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -d '{"path":"/data/graphs/orders-graph-v2"}'
 ```
 
+### What the formula installs
+
+`graphite` is a native binary (Rust). It carries `query` and `serve` itself and runs
+`build` through the JVM frontend, `graphite.jar`, which the formula installs next to it
+together with `openjdk@17`. Every command line written for the jar-based formula works
+unchanged, `--profile` and the `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` heap settings included.
+
+```bash
+graphite frontend list           # which frontend `build` will run, and where it came from
+graphite frontend describe jvm   # JSON: version, accepted inputs
+graphite frontend install jvm    # fetch the jar for this CLI's version into ~/.graphite/frontends
+```
+
+Outside Homebrew, `graphite build` finds the frontend through, in order:
+`GRAPHITE_FRONTEND_JVM` (a jar or launcher), a `graphite.jar` next to the binary or in a
+sibling `libexec/`, `graphite-frontend-jvm` on `PATH`, then `~/.graphite/frontends/jvm/`.
+It finds `java` through `GRAPHITE_JAVA`, `JAVA_HOME`, then `PATH`. The release also ships
+`graphite.jar` on its own; `java -jar graphite.jar build|query|serve` still works.
+
 ### Upgrading a legacy installation
 
 An older installer may have placed `~/.graphite/bin/graphite` before Homebrew in `PATH`. In that case, installing or

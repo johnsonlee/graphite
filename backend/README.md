@@ -33,7 +33,9 @@ for the separate single-graph comparison.
 | `graphite-explore` | `explore/` | HTTP server exposing the Explorer API |
 
 The `graphite` CLI lives outside this directory, in `cli/` at the repository root; the Cargo
-workspace (`Cargo.toml` at the root) spans `backend/*` and `cli`.
+workspace (`Cargo.toml` at the root) spans `backend/*` and `cli`. `graphite serve` and the
+`graphite-explore` binary run the same `serve` module of this crate; `explore/Dockerfile`
+packages the binary for the `graphite-explore` container image.
 
 ## Build and run
 

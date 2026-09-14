@@ -67,7 +67,7 @@ graphite/
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 │
-├── cli/                    # `graphite` CLI (Rust); independent of any one frontend or backend crate
+├── cli/                    # `graphite` CLI (Rust): build (runs the JVM frontend), query, serve, frontend
 ├── Cargo.toml              # Cargo workspace root: backend/storage, backend/cypher, backend/explore, cli
 └── graphite-mcp/           # MCP server (npm)
 ```

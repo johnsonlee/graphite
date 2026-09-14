@@ -100,7 +100,7 @@ graphite/
 │   │   │                          phase 5, `cypher`, `webgraph`, `query`, `explore` (the
 │   │   │                          legacy JVM server and `graphite.jar`)
 │   │   ├── core/ sootup/ cypher/ webgraph/ query/ explore/
-│   │   └── (phase 1) IR writer; builds `graphite-frontend-jvm.jar`
+│   │   └── (phase 2) IR writer; builds `graphite-frontend-jvm.jar`
 │   ├── web/                       (phase 6) TypeScript frontend, npm package
 │   └── apple/                     (phase 7) Swift package
 ├── graphite-mcp/                  MCP server (npm); a client of the backend, not a frontend
@@ -364,11 +364,19 @@ A frontend is an executable named `graphite-frontend-<lang>` found on `PATH`, in
   `--allow-partial`).
 - `version`.
 
-The JVM frontend is a jar plus a tiny launcher script; the CLI locates `java` (`JAVA_HOME`,
-`PATH`, or `--java`) and runs it with the heap it runs today (`-Xmx4g` minimum for
-building). The Web frontend is an npm package with a `bin`; the Apple frontend is a Swift
-package binary. Each has its own release cadence and version; the CLI records the frontend
-name and version in the manifest.
+The JVM frontend is a jar plus a tiny launcher script; the CLI locates `java`
+(`GRAPHITE_JAVA`, `JAVA_HOME`, `PATH`) and runs it with the heap the Homebrew wrapper used
+(`JAVA_TOOL_OPTIONS`, else `JAVA_OPTS`, else `-Xmx8g`). The Web frontend is an npm package
+with a `bin`; the Apple frontend is a Swift package binary. Each has its own release
+cadence and version; the CLI records the frontend name and version in the manifest.
+
+**Phase 1 as shipped in PR #124.** The jar-era frontend has no `describe` or `--out` yet:
+`graphite build <args>` passes every argument to `graphite.jar build`, which writes the
+persisted graph directly, and the CLI answers `frontend describe jvm` itself (running the
+jar's `--version` for the version, reporting an empty `ir_schema`). `graphite frontend
+install jvm` fetches `graphite.jar` from the release of the CLI's own version and verifies
+it against the published `graphite.jar.sha256`. The three-command protocol above replaces
+this shell in phase 2 without changing the user-facing command.
 
 ### 6.6 Frontend distribution
 
@@ -409,7 +417,7 @@ is taken on trust.
 | Phase | Work | Exit criterion |
 |---|---|---|
 | 0 | Merge PR #124. Rust backend serves v3 graphs; Kotlin server still shipped. | 875/875 differential, gate green (done) |
-| 1 | `graphite` CLI gains `build` as a shell over the existing jar (`java -jar graphite.jar build ...`), `frontend list`, and the jar is published as `graphite-frontend-jvm`. One command line for users. | `graphite build` on the CI fixtures produces a graph the Rust and Kotlin servers answer identically |
+| 1 | `graphite` CLI gains `build` as a shell over the existing jar (`java -jar graphite.jar build ...`), `serve` (the Explorer, shared with the `graphite-explore` binary) and `frontend list/describe/install`; the release ships the binary per platform, the Homebrew formula installs it with the jar as its frontend, the container image serves with it. One command line for users. **Done in PR #124.** | `graphite build` on the CI fixtures produces the same graph as the jar (byte-identical but for a properties timestamp), and the 875-check differential runs against `graphite serve` |
 | 2 | Graph IR v1 spec, `graphite-ir` crate (reader, writer, JSONL bridge, `check`/`diff`), `graphite-build` indexer producing **v3** graphs from IR (no model change yet). JVM frontend emits IR alongside its direct save. | For every fixture graph (core jar, acme, the 64-graph corpus): `build` from the jar's IR is query-identical to the jar's own save (170-query digests + 875-case differential); `ir diff` between two runs is empty |
 | 3 | Persisted v4: manifest, persisted columns, symbol table, extension store; `build --from` re-index; backend reads v3 and v4. | v3 and v4 of the same graph answer every differential case identically; column pre-warm cost disappears from first-query latency |
 | 4 | Core model: `Module`/`Type`/`Member` nodes, `CONTAINS`, symbol references on the JVM frontend; aliases wired into property access, `keys()`, serialisation. Kotlin server frozen. | Old queries unchanged on v4 JVM graphs; C4 output byte-identical to today on the six reference graphs |
