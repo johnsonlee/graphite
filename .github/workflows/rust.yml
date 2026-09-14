@@ -126,8 +126,15 @@ jobs:
             curl -sf http://localhost:18081/api/graphs >/dev/null && break
           sleep 1
         done
-        cd backend/bench && python3 parity.py http://localhost:18081 http://localhost:18080
+        (cd backend/bench && python3 parity.py http://localhost:18081 http://localhost:18080)
         STATUS=$?
+        # The MCP tools over stdio (`graphite mcp`) and over `POST /mcp` answer exactly
+        # what the REST API answers for the same graphs.
+        if [ "${STATUS}" -eq 0 ]; then
+          python3 backend/bench/mcp-smoke.py ./target/release/graphite http://localhost:18080 \
+            --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}"
+          STATUS=$?
+        fi
         kill ${KOTLIN} ${RUST} || true
         exit ${STATUS}
 

@@ -103,7 +103,6 @@ graphite/
 │   │   └── (phase 2) IR writer; builds `graphite-frontend-jvm.jar`
 │   ├── web/                       (phase 6) TypeScript frontend, npm package
 │   └── apple/                     (phase 7) Swift package
-├── mcp/                           MCP server (npm package `graphite-mcp`); a client of the backend, not a frontend
 └── docs/
 ```
 
@@ -332,6 +331,13 @@ addition: the registry exposes `lang` per graph and the UI shows it; C4 inferenc
 `Module`/`Type`/`Member` and `CONTAINS` when present and falls back to the string-prefix
 heuristics for v3 graphs.
 
+The server also speaks the Model Context Protocol: the thirteen tools of the former
+`graphite-mcp` npm package (`graphs`, `openapi`, `cypher`, `node`, `outgoing`, `incoming`,
+`annotations`, `endpoints`, `resources`, `resource`, `subgraph`, `overview`, `c4`) are
+built in, each dispatched in-process to the same route handler the REST API runs. Two
+transports: `graphite mcp` over stdio for local clients, and `POST /mcp` on `graphite
+serve` (Streamable HTTP) for remote ones. The npm package is retired with v3.0.0.
+
 ### 6.4 CLI (`graphite`)
 
 ```
@@ -342,6 +348,7 @@ graphite serve   [--graph id:path]... [--data dir] [--port] [--topology file]...
 graphite query   <graph> '<cypher>' [--format json|table|csv]
 graphite explore <graph> --level context|container|component|all --format json|mermaid|plantuml|dsl
 graphite ir      check|convert|diff|stats
+graphite mcp     [--graph id:path]... [--data dir] [--topology file]...   # MCP over stdio
 graphite frontend list|install|describe
 ```
 
@@ -404,7 +411,7 @@ release, and a CLI release only requires new frontends when the IR schema itself
 
 Release mechanics: one tag on this repository builds and uploads the CLI binaries, the
 `graphite-explore` server image, the JVM frontend jar (from `frontend/jvm`, published to
-the Release and to Maven Central by the existing publish workflow) and the npm package;
+the Release and to Maven Central by the existing publish workflow);
 the Web and Apple frontends live in `frontend/web` and `frontend/apple` and ship from the
 same tag. For CI users a `graphite:jvm` container image bundles the CLI, a JRE and the JVM
 frontend so that `graphite build app.jar` works with no other install.
@@ -422,7 +429,7 @@ is taken on trust.
 | 3 | Persisted v4: manifest, persisted columns, symbol table, extension store; `build --from` re-index; backend reads v3 and v4. | v3 and v4 of the same graph answer every differential case identically; column pre-warm cost disappears from first-query latency |
 | 4 | Core model: `Module`/`Type`/`Member` nodes, `CONTAINS`, symbol references on the JVM frontend; aliases wired into property access, `keys()`, serialisation. Kotlin server frozen. | Old queries unchanged on v4 JVM graphs; C4 output byte-identical to today on the six reference graphs |
 | 5 | Retire Kotlin `serve`/`query`/`explore`/`cypher`: `graphite.jar` becomes the frontend only; Docker image, Homebrew formula and docs switch to the Rust binary; Kotlin modules deleted. | Release pipeline publishes one CLI + frontends; parity harness retargeted to v-1 Rust vs current Rust |
-| 6 | Web frontend (TypeScript). | The IR validates; the self-hosted UI (`graphite-explore` static app) and `graphite-mcp` build into graphs the explorer can browse; C4 on a multi-package workspace |
+| 6 | Web frontend (TypeScript). | The IR validates; the Explorer's own web UI (a TypeScript-free static app today, the first candidate) builds into a graph the explorer can browse; C4 on a multi-package workspace |
 | 7 | Apple frontend (Swift, then ObjC). | A sample iOS app builds; cross-graph queries across a JVM backend graph and a Swift client graph |
 
 Compatibility rules, enforced by the harness at every phase:
@@ -489,6 +496,9 @@ Each is a frontend with the same three commands; none needs a backend change.
 
 ## 9. Delivery and packaging
 
+- The first tag of this layout is `v3.0.0`: a major version, because the installed
+  `graphite` becomes a native binary with the jar as its frontend and the MCP server
+  moves from npm into it.
 - One release tag drives everything: the Rust CLI/server binaries (linux x86_64/aarch64
   musl, macOS x86_64/aarch64) as GitHub Release assets, the `graphite-explore` container
   image (a static binary on `distroless`), the Homebrew formula (`graphite`, no JDK

@@ -15,10 +15,11 @@ pub const VERSION: &str = match option_env!("GRAPHITE_VERSION") {
 };
 pub const DEFAULT_PORT: u16 = 8080;
 
-/// The `graphite serve` command line. Names, defaults and help text match the Kotlin
-/// `graphite.jar serve` so that an existing command line keeps working unchanged.
+/// Which graphs to open and how to run Cypher over them: the part of the `serve`
+/// command line that `graphite mcp` shares. Names, defaults and help text match the
+/// Kotlin `graphite.jar serve` so that an existing command line keeps working unchanged.
 #[derive(Args, Debug, Clone)]
-pub struct ServeArgs {
+pub struct GraphArgs {
     /// Optional saved graph directory for single-graph startup
     pub graph_dir: Option<PathBuf>,
 
@@ -33,10 +34,6 @@ pub struct ServeArgs {
     /// Required graph id for the optional positional graph
     #[arg(long)]
     pub id: Option<String>,
-
-    /// HTTP port
-    #[arg(long, short = 'p', default_value_t = DEFAULT_PORT)]
-    pub port: u16,
 
     /// Graph load mode: EAGER, MAPPED, AUTO. Defaults to MAPPED for multi-graph heap stability.
     #[arg(long = "load-mode", default_value = "MAPPED")]
@@ -63,14 +60,81 @@ pub struct ServeArgs {
     /// Maximum Cypher request timeout in milliseconds
     #[arg(long = "cypher-max-timeout-ms", default_value_t = DEFAULT_CYPHER_MAX_TIMEOUT_MILLIS)]
     pub cypher_max_timeout_ms: u64,
+}
+
+/// The `graphite serve` command line.
+#[derive(Args, Debug, Clone)]
+pub struct ServeArgs {
+    #[command(flatten)]
+    pub graphs: GraphArgs,
+
+    /// HTTP port
+    #[arg(long, short = 'p', default_value_t = DEFAULT_PORT)]
+    pub port: u16,
 
     /// Expose Prometheus performance metrics at /metrics
     #[arg(long)]
     pub metrics: bool,
 }
 
-/// Serve the graphs described by `cli`, blocking until the server stops.
-pub fn serve(cli: ServeArgs) -> Result<(), String> {
+/// Graphs opened and ready to serve: the shared state behind the HTTP API and the MCP
+/// tools, plus what startup learned about them.
+pub struct Opened {
+    pub state: Arc<AppState>,
+    pub registry: Arc<GraphRegistry>,
+    pub root: PathBuf,
+    pub topology_graphs: usize,
+    pub topology_relations: usize,
+}
+
+/// A runtime sized as the server's: Cypher queries run on the worker that received
+/// them (`block_in_place`) rather than on the blocking pool, so there are enough
+/// workers that the concurrency guard can be full and every core still has one free
+/// for the rest of the API.
+pub fn runtime(max_concurrent_cypher: usize) -> Result<tokio::runtime::Runtime, String> {
+    let cores = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1);
+    tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(cores + max_concurrent_cypher)
+        .enable_all()
+        .build()
+        .map_err(|e| e.to_string())
+}
+
+/// Report on stderr what `open` loaded, as the server does at startup.
+pub fn report_loaded(opened: &Opened, cli: &GraphArgs) {
+    eprintln!("Data: {}", opened.root.display());
+    eprintln!("Loaded graphs: {}", opened.registry.ids().join(", "));
+    // A graph written before `graph.callsite-string-index` existed gets the same
+    // index built in memory at load; say which, since it costs startup time and
+    // memory that the file would not.
+    let built: Vec<String> = opened
+        .registry
+        .list()
+        .iter()
+        .filter(|g| g.graph.call_site_index().is_some_and(|i| i.is_in_memory()))
+        .map(|g| g.id.clone())
+        .collect();
+    if !built.is_empty() {
+        eprintln!(
+            "CallSite string index built in memory for {} graph(s) without graph.callsite-string-index: {}",
+            built.len(),
+            built.join(", ")
+        );
+    }
+    eprintln!(
+        "Topology: {} graphs, {} relations",
+        opened.topology_graphs, opened.topology_relations
+    );
+    eprintln!(
+        "Cypher limits: {} concurrent, {}ms maximum timeout",
+        cli.max_concurrent_cypher, cli.cypher_max_timeout_ms
+    );
+}
+
+/// Warn once when this is a debug build; every long-running mode calls it first.
+pub fn warn_if_debug_build() {
     if cfg!(debug_assertions) {
         // A plain `cargo build` produces this binary. On the 64-graph corpus it runs
         // the backtest at P50 6.7 ms and P95 42 ms, against 1.0 ms and 3.9 ms for
@@ -81,6 +145,11 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
              its latency is 6-10x worse than a release build. Build with `cargo build --release`."
         );
     }
+}
+
+/// Open the graphs `cli` names and build the shared state, as the server does at
+/// startup: every graph loaded, the topology rules validated and the topology built.
+pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
     if cli.max_concurrent_cypher == 0 || cli.cypher_max_timeout_ms == 0 {
         return Err("Cypher concurrency and maximum timeout must be positive".into());
     }
@@ -147,61 +216,41 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
         registry.clone(),
         guard.clone(),
         VERSION.to_string(),
-        cli.metrics,
+        metrics,
     );
     app_state.topology_queries = topology_queries;
     // Built before the server listens, as the Kotlin server builds it: a rule that
     // fails against the loaded graphs is a startup error, not a runtime surprise.
     let (topology_graphs, topology_relations) = app_state.rebuild_topology()?;
-    let state = Arc::new(app_state);
+    Ok(Opened {
+        state: Arc::new(app_state),
+        registry,
+        root,
+        topology_graphs,
+        topology_relations,
+    })
+}
 
-    // Cypher queries run on the worker that received them (`block_in_place`) rather
-    // than on the blocking pool: the hand-off to that pool and back was a thread wake
-    // each way, a measurable share of a short request. A worker running a query is
-    // not serving anything else, so there are enough workers that the concurrency
-    // guard can be full and every core still has one free for the rest of the API.
-    let cores = std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(1);
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .worker_threads(cores + cli.max_concurrent_cypher)
-        .enable_all()
-        .build()
-        .map_err(|e| e.to_string())?;
+/// Serve the graphs described by `cli`, blocking until the server stops. The HTTP API
+/// also carries the MCP server at `/mcp` (see `crate::mcp`).
+pub fn serve(cli: ServeArgs) -> Result<(), String> {
+    warn_if_debug_build();
+    let opened = open(&cli.graphs, cli.metrics)?;
+    let runtime = runtime(cli.graphs.max_concurrent_cypher)?;
     runtime.block_on(async move {
         let listener = tokio::net::TcpListener::bind(("0.0.0.0", cli.port))
             .await
             .map_err(|e| e.to_string())?;
         let actual = listener.local_addr().map(|a| a.port()).unwrap_or(cli.port);
         eprintln!("Web UI: http://localhost:{actual}");
+        eprintln!("MCP: http://localhost:{actual}/mcp");
         if cli.metrics {
             eprintln!("Metrics: http://localhost:{actual}/metrics");
         }
-        eprintln!("Data: {}", root.display());
-        eprintln!("Loaded graphs: {}", registry.ids().join(", "));
-        // A graph written before `graph.callsite-string-index` existed gets the same
-        // index built in memory at load; say which, since it costs startup time and
-        // memory that the file would not.
-        let built: Vec<String> = registry
-            .list()
-            .iter()
-            .filter(|g| g.graph.call_site_index().is_some_and(|i| i.is_in_memory()))
-            .map(|g| g.id.clone())
-            .collect();
-        if !built.is_empty() {
-            eprintln!(
-                "CallSite string index built in memory for {} graph(s) without graph.callsite-string-index: {}",
-                built.len(),
-                built.join(", ")
-            );
-        }
-        eprintln!("Topology: {topology_graphs} graphs, {topology_relations} relations");
-        eprintln!(
-            "Cypher limits: {} concurrent, {}ms maximum timeout",
-            cli.max_concurrent_cypher, cli.cypher_max_timeout_ms
-        );
+        report_loaded(&opened, &cli.graphs);
         eprintln!("Press Ctrl+C to stop");
-        axum::serve(listener, router(state))
+        let api = router(opened.state.clone());
+        axum::serve(listener, crate::mcp::with_mcp_route(api))
             .await
             .map_err(|e| e.to_string())
     })

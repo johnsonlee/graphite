@@ -15,6 +15,7 @@ thiserror.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
 axum.workspace = true
+tower = { version = "0.5", features = ["util"] }
 clap.workspace = true
 parking_lot.workspace = true
 rayon.workspace = true

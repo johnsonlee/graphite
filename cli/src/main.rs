@@ -9,7 +9,8 @@
 //! - `query` is reproduced byte for byte: output of all three formats, the verbose lines,
 //!   the error text and the exit codes are compared against the Kotlin binary by
 //!   `backend/bench/parity-cli.py`.
-//! - `serve` is the Explorer (`graphite_explore::serve`).
+//! - `serve` is the Explorer (`graphite_explore::serve`), MCP included at `/mcp`.
+//! - `mcp` is the same Explorer as MCP tools over stdio (`graphite_explore::mcp`).
 //! - `frontend list|describe|install` manages frontends.
 
 mod build;
@@ -20,7 +21,7 @@ use clap::{Parser, Subcommand};
 use graphite_cypher::context::GraphContext;
 use graphite_cypher::engine::Executor;
 use graphite_cypher::tostring::{java_to_string, raw_json};
-use graphite_explore::serve::{serve, ServeArgs, VERSION};
+use graphite_explore::serve::{serve, GraphArgs, ServeArgs, VERSION};
 use graphite_storage::Graph;
 use serde_json::{Map, Value as J};
 use std::ffi::OsString;
@@ -57,13 +58,22 @@ enum Command {
     Build(BuildArgs),
     /// Execute a Cypher query against a saved graph
     Query(QueryArgs),
-    /// Serve one or more saved Graphite webgraphs over HTTP
+    /// Serve one or more saved Graphite webgraphs over HTTP (with MCP at /mcp)
     Serve(ServeArgs),
+    /// Serve the same graphs to an MCP client over stdio
+    Mcp(McpArgs),
     /// List, describe or install the frontends that build graphs
     Frontend {
         #[command(subcommand)]
         command: FrontendCommand,
     },
+}
+
+/// `graphite mcp`: the graph selection of `serve`, no port.
+#[derive(Parser, Debug)]
+struct McpArgs {
+    #[command(flatten)]
+    graphs: GraphArgs,
 }
 
 /// Everything after `build` belongs to the frontend, `--help` included.
@@ -124,6 +134,7 @@ fn main() -> std::process::ExitCode {
         Command::Build(args) => return exit_code(build::run(&env, &args.args)),
         Command::Query(args) => query(args),
         Command::Serve(args) => serve(args),
+        Command::Mcp(args) => graphite_explore::mcp::run_stdio(args.graphs),
         Command::Frontend { command } => frontend_command(&env, command),
     };
     match outcome {

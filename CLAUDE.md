@@ -68,8 +68,7 @@ graphite/
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 │
 ├── cli/                    # `graphite` CLI (Rust): build (runs the JVM frontend), query, serve, frontend
-├── Cargo.toml              # Cargo workspace root: backend/storage, backend/cypher, backend/explore, cli
-└── mcp/                    # MCP server (npm package `graphite-mcp`)
+└── Cargo.toml              # Cargo workspace root: backend/storage, backend/cypher, backend/explore, cli
 ```
 
 Gradle project paths are `:core`, `:sootup`, `:cypher`, `:webgraph`, `:query`, `:explore`

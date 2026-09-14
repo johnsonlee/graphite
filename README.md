@@ -416,7 +416,6 @@ graphite/
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 ├── cli/                    # `graphite` CLI (Rust): build, query, serve, explore
 ├── Cargo.toml              # Cargo workspace: backend/* and cli
-├── mcp/                    # MCP server (npm package `graphite-mcp`) in front of the Explorer API
 └── docs/
 ```
 
@@ -481,11 +480,16 @@ dependencies {
 
 ## MCP Integration
 
-Connect LLMs to Graphite via [Model Context Protocol](https://modelcontextprotocol.io):
+The `graphite` binary is an [Model Context Protocol](https://modelcontextprotocol.io)
+server: the same thirteen tools the `graphite-mcp` npm package used to expose (`graphs`,
+`cypher`, `node`, `outgoing`, `incoming`, `annotations`, `endpoints`, `resources`,
+`resource`, `subgraph`, `overview`, `c4`, `openapi`), served in-process by the same code
+as the REST API. Two ways to connect:
 
-```bash
-npx graphite-mcp
-```
+- **stdio**, for local clients (Claude Code, Claude Desktop, Cursor): `graphite mcp`
+  opens the graphs itself; no server to start first.
+- **HTTP**, for remote or shared setups: every `graphite serve` also answers MCP at
+  `POST /mcp` (Streamable HTTP).
 
 Configure in Claude Code (`~/.claude/settings.json`):
 
@@ -493,13 +497,18 @@ Configure in Claude Code (`~/.claude/settings.json`):
 {
   "mcpServers": {
     "graphite": {
-      "command": "npx",
-      "args": ["graphite-mcp"],
-      "env": { "GRAPHITE_URL": "http://localhost:8080" }
+      "command": "graphite",
+      "args": ["mcp", "--graph", "app:/data/app-graph", "--graph", "billing:/data/billing-graph"]
     }
   }
 }
 ```
+
+or point an HTTP-capable client at a running server: `{"url": "http://localhost:8080/mcp"}`.
+
+Migrating from `npx graphite-mcp`: the tools, their arguments and their outputs are
+unchanged; replace the `command`/`args` with `graphite mcp` and the graphs it should
+open, and drop `GRAPHITE_URL`. The npm package is not published from v3.0.0 on.
 
 Start the Explorer first, then LLMs can query the graph:
 
