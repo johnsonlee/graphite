@@ -78,7 +78,7 @@ java -Xmx8g -XX:ActiveProcessorCount=4 "-Dandroid.graph.path=$FIXTURE" -cp "$ORA
 jq -n --arg baseSha "$(git -C "$BASE" rev-parse HEAD)" \
   --arg candidateSha "$(git -C "$CANDIDATE" rev-parse HEAD)" \
   --arg referenceKind "$REFERENCE_KIND" --arg fixture "$FIXTURE" \
-  --arg harnessSha256 "$(sha256sum "$CONTROLS/$HARNESS" | cut -d' ' -f1)" \
+  --arg harnessSha256 "$(sha256sum "$(jvm "$CONTROLS" webgraph)/$HARNESS" | cut -d' ' -f1)" \
   --arg comparatorSha256 "$(sha256sum "$COMPARATOR" | cut -d' ' -f1)" \
   '{baseSha:$baseSha,candidateSha:$candidateSha,referenceKind:$referenceKind,fixture:$fixture,
     harnessSha256:$harnessSha256,comparatorSha256:$comparatorSha256,
