@@ -23,8 +23,10 @@ def fail(message):
     sys.exit(1)
 
 
-def http(base, method, path, body=None):
+def http(base, method, path, body=None, headers=None):
     req = urllib.request.Request(base + path, method=method)
+    for k, v in (headers or {}).items():
+        req.add_header(k, v)
     data = None
     if body is not None:
         req.add_header("Content-Type", "application/json")
@@ -186,7 +188,16 @@ def main():
     status, _ = http(base, "GET", "/mcp")
     if status != 405:
         fail(f"GET /mcp -> {status}, expected 405")
-    checks += 4
+    # DNS-rebinding protection: a foreign browser origin is refused, a loopback one is not.
+    status, _ = http(base, "POST", "/mcp", {"jsonrpc": "2.0", "id": 3, "method": "ping"},
+                     headers={"Origin": "http://evil.example"})
+    if status != 403:
+        fail(f"POST /mcp with a foreign Origin -> {status}, expected 403")
+    status, _ = http(base, "POST", "/mcp", {"jsonrpc": "2.0", "id": 4, "method": "ping"},
+                     headers={"Origin": "http://localhost:5173"})
+    if status != 200:
+        fail(f"POST /mcp with a loopback Origin -> {status}, expected 200")
+    checks += 6
 
     stdio.close()
     print(f"mcp-smoke: {checks} checks passed on stdio and /mcp over {len(graph_ids)} graph(s)")

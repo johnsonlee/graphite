@@ -505,6 +505,10 @@ Configure in Claude Code (`~/.claude/settings.json`):
 ```
 
 or point an HTTP-capable client at a running server: `{"url": "http://localhost:8080/mcp"}`.
+`/mcp` validates the `Origin` header (DNS-rebinding protection): requests without one are
+accepted, loopback origins are accepted, any other origin is refused with 403 unless listed
+with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable; `*` allows
+all). The REST API is unaffected.
 
 Migrating from `npx graphite-mcp`: the tools, their arguments and their outputs are
 unchanged; replace the `command`/`args` with `graphite mcp` and the graphs it should

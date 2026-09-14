@@ -75,6 +75,11 @@ pub struct ServeArgs {
     /// Expose Prometheus performance metrics at /metrics
     #[arg(long)]
     pub metrics: bool,
+
+    /// Browser origin allowed to call /mcp besides loopback origins (repeat for more;
+    /// '*' allows any origin). Requests without an Origin header are always accepted.
+    #[arg(long = "mcp-allowed-origin", value_name = "ORIGIN")]
+    pub mcp_allowed_origins: Vec<String>,
 }
 
 /// Graphs opened and ready to serve: the shared state behind the HTTP API and the MCP
@@ -250,7 +255,8 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
         report_loaded(&opened, &cli.graphs);
         eprintln!("Press Ctrl+C to stop");
         let api = router(opened.state.clone());
-        axum::serve(listener, crate::mcp::with_mcp_route(api))
+        let policy = crate::mcp::OriginPolicy::new(cli.mcp_allowed_origins.clone());
+        axum::serve(listener, crate::mcp::with_mcp_route(api, policy))
             .await
             .map_err(|e| e.to_string())
     })

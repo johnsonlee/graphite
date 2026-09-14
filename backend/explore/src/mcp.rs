@@ -11,7 +11,8 @@
 //!   clients speak.
 //! - Streamable HTTP (`POST /mcp` on `graphite serve`): one JSON-RPC message per
 //!   request, the response as JSON. The server never opens a stream of its own, so
-//!   `GET /mcp` answers 405 as the protocol allows for that case.
+//!   `GET /mcp` answers 405 as the protocol allows for that case. Every `/mcp` request
+//!   passes the [`OriginPolicy`] first (DNS-rebinding protection).
 //!
 //! The tools, their names, descriptions, argument schemas and defaults are those of
 //! the former `graphite-mcp` npm package, so an existing client configuration only
@@ -809,18 +810,108 @@ fn error_response(id: Value, code: i64, message: &str) -> Value {
     json!({"jsonrpc": "2.0", "id": id, "error": {"code": code, "message": message}})
 }
 
-/// The API router with the MCP endpoint mounted at `/mcp`.
-pub fn with_mcp_route(api: Router) -> Router {
+/// Which browser origins may reach `/mcp`.
+///
+/// The Streamable HTTP transport requires the server to validate `Origin` on every
+/// request: `graphite serve` binds all interfaces, and without the check a page on any
+/// site could resolve a name to the user's Explorer and call every tool, Cypher
+/// included, against the loaded graphs. A request without `Origin` (a CLI, an MCP
+/// client) is accepted; a request with one is accepted only when the origin is a
+/// loopback origin (`http://localhost`, `127.0.0.1`, `[::1]`, any port, http or https)
+/// or one the operator listed with `--mcp-allowed-origin`. `*` in that list allows any
+/// origin. The `null` origin of sandboxed pages is never accepted.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct OriginPolicy {
+    pub allowed: Vec<String>,
+}
+
+impl OriginPolicy {
+    pub fn new(allowed: Vec<String>) -> Self {
+        OriginPolicy {
+            allowed: allowed
+                .into_iter()
+                .map(|o| o.trim().trim_end_matches('/').to_ascii_lowercase())
+                .filter(|o| !o.is_empty())
+                .collect(),
+        }
+    }
+
+    pub fn allows(&self, origin: &str) -> bool {
+        let origin = origin.trim().trim_end_matches('/').to_ascii_lowercase();
+        if origin.is_empty() || origin == "null" {
+            return false;
+        }
+        if self.allowed.iter().any(|o| o == "*" || *o == origin) {
+            return true;
+        }
+        is_loopback_origin(&origin)
+    }
+}
+
+/// `http(s)://localhost`, `127.0.0.1`, or `[::1]`, with or without a port.
+fn is_loopback_origin(origin: &str) -> bool {
+    let rest = match origin
+        .strip_prefix("http://")
+        .or_else(|| origin.strip_prefix("https://"))
+    {
+        Some(r) => r,
+        None => return false,
+    };
+    if rest.contains('/') {
+        return false;
+    }
+    let host = if let Some(after) = rest.strip_prefix("[::1]") {
+        return after.is_empty() || is_port(after);
+    } else {
+        rest.split(':').next().unwrap_or("")
+    };
+    let port = &rest[host.len()..];
+    (host == "localhost" || host == "127.0.0.1") && (port.is_empty() || is_port(port))
+}
+
+fn is_port(text: &str) -> bool {
+    text.strip_prefix(':')
+        .is_some_and(|p| !p.is_empty() && p.len() <= 5 && p.bytes().all(|b| b.is_ascii_digit()))
+}
+
+/// The 403 for a request whose `Origin` the policy does not allow; `None` when the
+/// request may proceed.
+fn forbidden_origin(policy: &OriginPolicy, headers: &HeaderMap) -> Option<Response> {
+    let origin = headers.get(header::ORIGIN)?;
+    let text = origin.to_str().unwrap_or("");
+    if policy.allows(text) {
+        return None;
+    }
+    Some(
+        (
+            StatusCode::FORBIDDEN,
+            axum::Json(error_response(
+                Value::Null,
+                INVALID_REQUEST,
+                "Origin not allowed: /mcp accepts loopback origins and those listed with --mcp-allowed-origin",
+            )),
+        )
+            .into_response(),
+    )
+}
+
+/// The API router with the MCP endpoint mounted at `/mcp`, guarded by `policy`.
+pub fn with_mcp_route(api: Router, policy: OriginPolicy) -> Router {
     let server = Arc::new(McpServer::new(api.clone()));
     api.route("/mcp", post(mcp_post).get(mcp_get).delete(mcp_delete))
         .layer(Extension(server))
+        .layer(Extension(Arc::new(policy)))
 }
 
 async fn mcp_post(
     Extension(server): Extension<Arc<McpServer>>,
-    _headers: HeaderMap,
+    Extension(policy): Extension<Arc<OriginPolicy>>,
+    headers: HeaderMap,
     body: Bytes,
 ) -> Response {
+    if let Some(forbidden) = forbidden_origin(&policy, &headers) {
+        return forbidden;
+    }
     let message = match serde_json::from_slice::<Value>(&body) {
         Ok(v) => v,
         Err(e) => {
@@ -843,7 +934,10 @@ async fn mcp_post(
 }
 
 /// The server opens no stream of its own; the protocol lets it answer 405 here.
-async fn mcp_get() -> Response {
+async fn mcp_get(Extension(policy): Extension<Arc<OriginPolicy>>, headers: HeaderMap) -> Response {
+    if let Some(forbidden) = forbidden_origin(&policy, &headers) {
+        return forbidden;
+    }
     (
         StatusCode::METHOD_NOT_ALLOWED,
         [(header::ALLOW, "POST, DELETE")],
@@ -853,7 +947,13 @@ async fn mcp_get() -> Response {
 }
 
 /// Sessions are stateless here, so ending one is a no-op.
-async fn mcp_delete() -> Response {
+async fn mcp_delete(
+    Extension(policy): Extension<Arc<OriginPolicy>>,
+    headers: HeaderMap,
+) -> Response {
+    if let Some(forbidden) = forbidden_origin(&policy, &headers) {
+        return forbidden;
+    }
     StatusCode::OK.into_response()
 }
 
@@ -1287,10 +1387,154 @@ mod tests {
         std::fs::remove_dir_all(root).unwrap();
     }
 
+    #[test]
+    fn origin_policy_allows_loopback_and_listed_origins_only() {
+        let p = OriginPolicy::default();
+        for ok in [
+            "http://localhost",
+            "http://localhost:3000",
+            "https://localhost:8443/",
+            "http://127.0.0.1:8080",
+            "http://[::1]",
+            "http://[::1]:5173",
+            "HTTP://LocalHost:80",
+        ] {
+            assert!(p.allows(ok), "{ok}");
+        }
+        for bad in [
+            "http://evil.example",
+            "http://localhost.evil.example",
+            "http://localhost:abc",
+            "http://127.0.0.1:8080/path",
+            "http://127.0.0.2",
+            "null",
+            "",
+            "ftp://localhost",
+            "http://[::2]",
+        ] {
+            assert!(!p.allows(bad), "{bad}");
+        }
+        let p = OriginPolicy::new(vec!["https://Tools.Example.com/".into(), " ".into()]);
+        assert_eq!(p.allowed, vec!["https://tools.example.com".to_string()]);
+        assert!(p.allows("https://tools.example.com"));
+        assert!(!p.allows("https://tools.example.com:444"));
+        assert!(!p.allows("http://tools.example.com"));
+        assert!(p.allows("http://localhost:9"));
+        let any = OriginPolicy::new(vec!["*".into()]);
+        assert!(any.allows("http://evil.example"));
+        assert!(!any.allows("null"));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn origins_are_validated_on_every_mcp_request() {
+        let (server, root) = empty_server();
+        let app = with_mcp_route(
+            server.api.clone(),
+            OriginPolicy::new(vec!["https://tools.example.com".into()]),
+        );
+        let list = r#"{"jsonrpc":"2.0","id":1,"method":"tools/list"}"#;
+        let request = |method: Method, origin: Option<&str>| {
+            let mut b = Request::builder().method(method).uri("/mcp");
+            if let Some(o) = origin {
+                b = b.header(header::ORIGIN, o);
+            }
+            b.header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(list.to_string()))
+                .unwrap()
+        };
+        let status = |r: Response| r.status();
+        assert_eq!(
+            status(
+                app.clone()
+                    .oneshot(request(Method::POST, None))
+                    .await
+                    .unwrap()
+            ),
+            StatusCode::OK
+        );
+        assert_eq!(
+            status(
+                app.clone()
+                    .oneshot(request(Method::POST, Some("http://localhost:3000")))
+                    .await
+                    .unwrap()
+            ),
+            StatusCode::OK
+        );
+        assert_eq!(
+            status(
+                app.clone()
+                    .oneshot(request(Method::POST, Some("https://tools.example.com")))
+                    .await
+                    .unwrap()
+            ),
+            StatusCode::OK
+        );
+        let forbidden = app
+            .clone()
+            .oneshot(request(Method::POST, Some("http://evil.example")))
+            .await
+            .unwrap();
+        assert_eq!(forbidden.status(), StatusCode::FORBIDDEN);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(forbidden.into_body(), usize::MAX).await.unwrap())
+                .unwrap();
+        assert_eq!(body["error"]["code"], INVALID_REQUEST);
+        assert_eq!(
+            status(
+                app.clone()
+                    .oneshot(request(Method::POST, Some("null")))
+                    .await
+                    .unwrap()
+            ),
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            status(
+                app.clone()
+                    .oneshot(request(Method::GET, Some("http://evil.example")))
+                    .await
+                    .unwrap()
+            ),
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            status(
+                app.clone()
+                    .oneshot(request(Method::DELETE, Some("http://evil.example")))
+                    .await
+                    .unwrap()
+            ),
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            status(
+                app.clone()
+                    .oneshot(request(Method::DELETE, None))
+                    .await
+                    .unwrap()
+            ),
+            StatusCode::OK
+        );
+        // The REST API beside it is not affected by the MCP origin policy.
+        let api = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/graphs")
+                    .header(header::ORIGIN, "http://evil.example")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(api.status(), StatusCode::OK);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn the_http_endpoint_carries_the_same_dispatch() {
         let (server, root) = empty_server();
-        let app = with_mcp_route(server.api.clone());
+        let app = with_mcp_route(server.api.clone(), OriginPolicy::default());
         let post = |body: &str| {
             Request::builder()
                 .method(Method::POST)
