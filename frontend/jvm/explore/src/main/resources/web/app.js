@@ -686,7 +686,9 @@ async function runCypher() {
             html += '</tr>';
         });
         html += '</tbody></table>';
-        html += '<div class="query-summary">' + Number(data.rowCount || data.rows.length).toLocaleString() + ' rows returned</div>';
+        var returned = Number(data.rowCount || data.rows.length);
+        var more = data.total && data.total.relation === 'gte';
+        html += '<div class="query-summary">' + returned.toLocaleString() + (more ? '+ rows, more exist past the limit' : ' rows returned') + '</div>';
         resultDiv.innerHTML = html;
 
         // Collect node IDs from results
