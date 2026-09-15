@@ -4,7 +4,7 @@ use crate::guard::*;
 use crate::registry::{GraphRegistry, LoadMode};
 use crate::routes::{router, AppState};
 use clap::Args;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 /// The version the CLI reports and the server puts in `/api/version`: the release tag
@@ -23,7 +23,9 @@ pub struct GraphArgs {
     /// Optional saved graph (directory or .graphite file) for single-graph startup
     pub graph_dir: Option<PathBuf>,
 
-    /// Data directory used to resolve relative graph paths and allow empty startup
+    /// Data directory: relative graph paths resolve under it, an empty startup is
+    /// allowed, and every `*.graphite` file directly in it is served under its file
+    /// name (`orders.graphite` as `orders`)
     #[arg(long)]
     pub data: Option<PathBuf>,
 
@@ -152,6 +154,43 @@ pub fn warn_if_debug_build() {
     }
 }
 
+/// The `*.graphite` files directly under `data`, as (id, path) in file-name order; the
+/// id is the file name without the extension and must be a valid graph id. Directories
+/// and other files are not graphs here: a directory graph is named with `--graph`.
+pub fn discover_graphs(data: &Path) -> Result<Vec<(String, PathBuf)>, String> {
+    let entries = match std::fs::read_dir(data) {
+        Ok(entries) => entries,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(e) => return Err(format!("Cannot read --data {}: {e}", data.display())),
+    };
+    let mut found = Vec::new();
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("Cannot read --data {}: {e}", data.display()))?;
+        let path = entry.path();
+        let is_file = entry.file_type().map(|t| t.is_file()).unwrap_or(false)
+            || (path.is_file() && !path.is_dir());
+        if !is_file
+            || path.extension().and_then(|e| e.to_str())
+                != Some(graphite_storage::container::EXTENSION)
+        {
+            continue;
+        }
+        let stem = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or_default();
+        let id = crate::registry::validate_graph_id(stem).map_err(|why| {
+            format!(
+                "{}: the file name is not usable as a graph id: {why}",
+                path.display()
+            )
+        })?;
+        found.push((id, path));
+    }
+    found.sort();
+    Ok(found)
+}
+
 /// Open the graphs `cli` names and build the shared state, as the server does at
 /// startup: every graph loaded, the topology rules validated and the topology built.
 pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
@@ -210,6 +249,34 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
         );
         ids.push(served.id.clone());
     }
+    // Every `*.graphite` file directly under --data is a graph, its file name the id.
+    if cli.data.is_some() {
+        let data = &root;
+        let discovered = discover_graphs(data)?;
+        for (id, path) in &discovered {
+            if ids.iter().any(|i| i == id) {
+                return Err(format!(
+                    "Graph id '{id}' is both given with --graph and discovered as {} under --data",
+                    path.display()
+                ));
+            }
+            let served = registry.load(id, path, Some(load_mode))?;
+            eprintln!(
+                "Loaded graph '{}' from {} using {} mode",
+                served.id,
+                served.path.display(),
+                load_mode.name()
+            );
+            ids.push(served.id.clone());
+        }
+        if !discovered.is_empty() {
+            eprintln!(
+                "Discovered {} graph(s) in {}",
+                discovered.len(),
+                data.display()
+            );
+        }
+    }
     // Topology rules are validated at startup even though relations are derived lazily.
     let topology_queries = crate::topology::load_topology_queries(cli.topology.as_deref())?;
 
@@ -262,4 +329,50 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
         );
         axum::serve(listener, app).await.map_err(|e| e.to_string())
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tempdir(name: &str) -> PathBuf {
+        let dir =
+            std::env::temp_dir().join(format!("graphite-discover-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn discovery_lists_graphite_files_by_name_and_nothing_else() {
+        let root = tempdir("list");
+        std::fs::write(root.join("orders.graphite"), b"").unwrap();
+        std::fs::write(root.join("billing.graphite"), b"").unwrap();
+        std::fs::write(root.join("notes.txt"), b"").unwrap();
+        std::fs::write(root.join("orders.graphite.sha256"), b"").unwrap();
+        std::fs::create_dir_all(root.join("legacy-dir.graphite")).unwrap();
+        std::fs::create_dir_all(root.join("nested")).unwrap();
+        std::fs::write(root.join("nested/deep.graphite"), b"").unwrap();
+        let found = discover_graphs(&root).unwrap();
+        assert_eq!(
+            found,
+            [
+                ("billing".to_string(), root.join("billing.graphite")),
+                ("orders".to_string(), root.join("orders.graphite")),
+            ]
+        );
+        assert!(discover_graphs(&root.join("absent")).unwrap().is_empty());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn a_file_name_that_is_not_a_graph_id_fails_discovery() {
+        let root = tempdir("badname");
+        std::fs::write(root.join("orders.graphite"), b"").unwrap();
+        std::fs::write(root.join("bad name.graphite"), b"").unwrap();
+        let err = discover_graphs(&root).unwrap_err();
+        assert!(err.contains("bad name.graphite"), "{err}");
+        assert!(err.contains("not usable as a graph id"), "{err}");
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

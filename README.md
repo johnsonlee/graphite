@@ -86,7 +86,12 @@ graphite query --format json /data/app-graph \
 # Launch the web UI
 graphite serve --id app /data/app-graph --port 8080
 
-# Serve multiple graphs by id. Relative graph paths resolve under --data.
+# Serve every .graphite file in a directory, each under its file name
+# (/data/graphs/orders.graphite is served as `orders`).
+graphite serve --data /data/graphs --port 8080
+
+# Serve multiple graphs by id. Relative graph paths resolve under --data, and any
+# .graphite file directly under --data is served too.
 graphite serve --data /data/graphs \
   --graph orders:orders-graph \
   --graph billing:/data/billing-graph \
@@ -581,7 +586,8 @@ graphite serve --id app /path/to/saved-graph
 # The serve command defaults to --load-mode MAPPED for multi-graph heap stability.
 ```
 
-You can also start with no initial graph and hot-load services later:
+You can also start with no initial graph and hot-load services later (a `.graphite`
+file placed in `--data` before the next start is picked up by itself):
 
 ```bash
 graphite serve --data /data/graphs
