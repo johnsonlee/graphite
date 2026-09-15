@@ -18,8 +18,9 @@
 //! `java.io.DataOutput` wrote it, so accessors byte-swap on read and nothing is copied
 //! at load time.
 
+use crate::container::Bytes;
 use crate::io::{read_i32_at, read_i64_at};
-use memmap2::Mmap;
+use crate::source::GraphSource;
 use std::path::Path;
 
 pub const MAGIC: i32 = 0x4752_4353;
@@ -81,7 +82,7 @@ const TRIGRAM_FILTER_BITS: usize = 1 << 16;
 /// The index bytes: the persisted file mapped read-only, or the same layout assembled
 /// in memory for a graph that was built without the file.
 enum IndexBytes {
-    Mapped(Mmap),
+    Mapped(Bytes),
     Owned(Vec<u8>),
 }
 
@@ -127,18 +128,27 @@ impl CallSiteStringIndex {
         string_count: usize,
         content_identity: Option<&[u8; CONTENT_IDENTITY_BYTES]>,
     ) -> Result<Option<CallSiteStringIndex>, IndexError> {
-        let path = dir.join("graph.callsite-string-index");
-        if !path.exists() {
+        let src = GraphSource::open(dir)
+            .map_err(|e| IndexError::Io(dir.display().to_string(), std::io::Error::other(e)))?;
+        Self::load_from(&src, string_count, content_identity)
+    }
+
+    /// As [`Self::load`], from an already opened source (directory or container).
+    pub fn load_from(
+        src: &GraphSource,
+        string_count: usize,
+        content_identity: Option<&[u8; CONTENT_IDENTITY_BYTES]>,
+    ) -> Result<Option<CallSiteStringIndex>, IndexError> {
+        const NAME: &str = "graph.callsite-string-index";
+        let Some(map) = src
+            .bytes(NAME)
+            .map_err(|(path, e)| IndexError::Io(path, e))?
+        else {
             return Ok(None);
-        }
-        let file = std::fs::File::open(&path)
-            .map_err(|e| IndexError::Io(path.display().to_string(), e))?;
-        // SAFETY: read-only mapping of a file we do not modify.
-        let map = unsafe { Mmap::map(&file) }
-            .map_err(|e| IndexError::Io(path.display().to_string(), e))?;
+        };
         Self::parse(
             IndexBytes::Mapped(map),
-            &path.display().to_string(),
+            &src.describe(NAME),
             string_count,
             content_identity,
         )

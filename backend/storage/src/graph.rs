@@ -1,6 +1,7 @@
 //! Assembled persisted graph: nodes, edges, metadata, strings.
 
 use crate::bvgraph::{BvError, BvGraph};
+use crate::container::Bytes;
 use crate::io::{
     check_header, read_i32_at, read_i64_at, MAGIC_NODEDATA, MAGIC_NODEOFFSETS, MAGIC_TYPEINDEX,
 };
@@ -11,9 +12,8 @@ use crate::node::{
     read_call_site_strings, CallSiteStrings, MethodDesc, Node, NodeDecodeError, NodeId, StrId,
     NODE_HEADER_BYTES, TAG_CALL_SITE_NODE, TAG_COUNT,
 };
+use crate::source::{GraphSource, SourceError};
 use crate::strings::{StringTable, StringTableError};
-use memmap2::Mmap;
-use std::fs::File;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, thiserror::Error)]
@@ -34,12 +34,17 @@ pub enum GraphError {
     Node(#[from] NodeDecodeError),
     #[error("CallSite string index: {0}")]
     CallSiteIndex(String),
+    #[error(transparent)]
+    Container(#[from] crate::container::ContainerError),
 }
 
-fn mmap(path: &Path) -> Result<Mmap, GraphError> {
-    let f = File::open(path).map_err(|e| GraphError::Io(path.display().to_string(), e))?;
-    // SAFETY: read-only mapping of a file we do not modify.
-    unsafe { Mmap::map(&f) }.map_err(|e| GraphError::Io(path.display().to_string(), e))
+impl From<SourceError> for GraphError {
+    fn from(e: SourceError) -> GraphError {
+        match e {
+            SourceError::Io(path, e) => GraphError::Io(path, e),
+            SourceError::Container(e) => GraphError::Container(e),
+        }
+    }
 }
 
 /// Edge families and sub-kinds.
@@ -206,9 +211,9 @@ pub struct Graph {
     pub dir: PathBuf,
     pub node_version: u8,
     pub strings: StringTable,
-    nodedata: Mmap,
+    nodedata: Bytes,
     node_count: usize,
-    node_offsets: Mmap,
+    node_offsets: Bytes,
     /// number of entries in nodeoffsets (= maxNodeId + 1)
     node_capacity: usize,
     type_index: Vec<Vec<NodeId>>,
@@ -229,17 +234,20 @@ pub struct Graph {
 }
 
 impl Graph {
-    pub fn load(dir: &Path) -> Result<Graph, GraphError> {
-        let dir = dir.to_path_buf();
+    /// Load a graph from its directory or from a `.graphite` container file.
+    pub fn load(path: &Path) -> Result<Graph, GraphError> {
+        let dir = path.to_path_buf();
+        let src = GraphSource::open(path)?;
+        let io = |(path, e)| GraphError::Io(path, e);
         // Parallel-ish: strings and bvgraph are the heavy ones.
         let (strings, bv) = rayon::join(
-            || StringTable::load(&dir),
-            || BvGraph::load(&dir.join("forward")),
+            || StringTable::load(&src),
+            || BvGraph::load(&src, "forward"),
         );
         let strings = strings?;
         let bv = bv?;
 
-        let nodedata = mmap(&dir.join("graph.nodedata"))?;
+        let nodedata = src.require("graph.nodedata").map_err(io)?;
         if nodedata.len() < 8 {
             return Err(GraphError::BadHeader("graph.nodedata"));
         }
@@ -250,41 +258,42 @@ impl Graph {
         }
         let node_count = read_i32_at(&nodedata, 4).max(0) as usize;
 
-        let node_offsets = mmap(&dir.join("graph.nodeoffsets"))?;
+        let node_offsets = src.require("graph.nodeoffsets").map_err(io)?;
         check_header(read_i32_at(&node_offsets, 0), MAGIC_NODEOFFSETS)
             .ok_or(GraphError::BadHeader("graph.nodeoffsets"))?;
         let node_capacity = read_i32_at(&node_offsets, 4).max(0) as usize;
 
-        let type_index = load_type_index(&mmap(&dir.join("graph.typeindex"))?)?;
+        let type_index = load_type_index(&src.require("graph.typeindex").map_err(io)?)?;
 
-        let labels = mmap(&dir.join("graph.labels"))?;
+        let labels = src.require("graph.labels").map_err(io)?;
         let forward = build_forward_csr(&bv, &labels);
         drop(bv);
         let backward = build_backward_csr(&forward);
 
-        let comparisons = match std::fs::read(dir.join("graph.comparisons")) {
-            Ok(bytes) => Comparisons::parse(&bytes)?,
-            Err(_) => Comparisons::empty(),
+        let comparisons = match src.bytes("graph.comparisons").map_err(io)? {
+            Some(bytes) => Comparisons::parse(&bytes)?,
+            None => Comparisons::empty(),
         };
-        let metadata_bytes = std::fs::read(dir.join("graph.metadata"))
-            .map_err(|e| GraphError::Io(dir.join("graph.metadata").display().to_string(), e))?;
+        let metadata_bytes = src.require("graph.metadata").map_err(io)?;
         let metadata = Metadata::parse(&metadata_bytes)?;
-        let class_overview = match std::fs::read(dir.join("graph.classoverview")) {
-            Ok(bytes) => Some(ClassOverview::parse(&bytes)?),
-            Err(_) => None,
+        let class_overview = match src.bytes("graph.classoverview").map_err(io)? {
+            Some(bytes) => Some(ClassOverview::parse(&bytes)?),
+            None => None,
         };
-        let resources = match std::fs::read(dir.join("graph.resources")) {
-            Ok(bytes) => Some(Resources::parse(&bytes)?),
-            Err(_) => None,
+        let resources = match src.bytes("graph.resources").map_err(io)? {
+            Some(bytes) => Some(Resources::parse(&bytes)?),
+            None => None,
         };
         // The CallSite string accelerator the graph was built with. Its absence only
         // costs speed; a file that does not describe this graph is fatal, since
         // answering from a stale index would be wrong.
-        let content_identity = std::fs::read(dir.join("graph.callsite-string-content.identity"))
+        let content_identity = src
+            .bytes("graph.callsite-string-content.identity")
             .ok()
-            .and_then(|b| <[u8; 32]>::try_from(b.as_slice()).ok());
-        let call_site_index = crate::callsite_index::CallSiteStringIndex::load(
-            &dir,
+            .flatten()
+            .and_then(|b| <[u8; 32]>::try_from(&b[..]).ok());
+        let call_site_index = crate::callsite_index::CallSiteStringIndex::load_from(
+            &src,
             strings.len(),
             content_identity.as_ref(),
         )

@@ -167,7 +167,9 @@ impl GraphRegistry {
     ) -> Result<Arc<ServedGraph>, String> {
         let id = validate_graph_id(id)?;
         let resolved = self.resolve_path(path);
-        if !resolved.is_dir() {
+        // A directory or a .graphite container; the message is the Kotlin server's,
+        // byte for byte, because the differential harness compares error bodies.
+        if !resolved.exists() {
             return Err(format!(
                 "Graph path is not a directory: {}",
                 resolved.display()

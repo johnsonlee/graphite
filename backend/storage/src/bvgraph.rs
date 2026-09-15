@@ -2,10 +2,9 @@
 //! `basename.properties`, `basename.offsets`) with random access.
 
 use crate::bits::{nat2int, BitReader};
-use memmap2::Mmap;
+use crate::container::Bytes;
+use crate::source::GraphSource;
 use std::collections::HashMap;
-use std::fs::File;
-use std::path::Path;
 
 #[derive(Debug, thiserror::Error)]
 pub enum BvError {
@@ -149,31 +148,21 @@ impl BvProperties {
 /// A random-access BVGraph backed by a memory-mapped bitstream.
 pub struct BvGraph {
     props: BvProperties,
-    graph: Mmap,
+    graph: Bytes,
     /// Bit offset of each node's successor list (nodes + 1 entries).
     offsets: Vec<u64>,
 }
 
 impl BvGraph {
-    pub fn load(basename: &Path) -> Result<Self, BvError> {
-        let props_path = basename.with_extension("properties");
-        let text = std::fs::read_to_string(&props_path)
-            .map_err(|e| BvError::Io(props_path.display().to_string(), e))?;
-        let props = BvProperties::parse(&text)?;
-
-        let graph_path = basename.with_extension("graph");
-        let file = File::open(&graph_path)
-            .map_err(|e| BvError::Io(graph_path.display().to_string(), e))?;
-        // SAFETY: the file is opened read-only and is not expected to be modified
-        // while mapped; a modification would at worst yield garbage successors.
-        let graph = unsafe { Mmap::map(&file) }
-            .map_err(|e| BvError::Io(graph_path.display().to_string(), e))?;
-
-        let offsets_path = basename.with_extension("offsets");
-        let offsets_file = File::open(&offsets_path)
-            .map_err(|e| BvError::Io(offsets_path.display().to_string(), e))?;
-        let offsets_map = unsafe { Mmap::map(&offsets_file) }
-            .map_err(|e| BvError::Io(offsets_path.display().to_string(), e))?;
+    /// Load `<basename>.properties`, `.graph` and `.offsets` from the source.
+    pub fn load(src: &GraphSource, basename: &str) -> Result<Self, BvError> {
+        let io = |(path, e)| BvError::Io(path, e);
+        let props_bytes = src.require(&format!("{basename}.properties")).map_err(io)?;
+        let text = std::str::from_utf8(&props_bytes)
+            .map_err(|e| BvError::Properties(format!("{basename}.properties is not UTF-8: {e}")))?;
+        let props = BvProperties::parse(text)?;
+        let graph = src.require(&format!("{basename}.graph")).map_err(io)?;
+        let offsets_map = src.require(&format!("{basename}.offsets")).map_err(io)?;
         let mut offsets = Vec::with_capacity(props.nodes + 1);
         let mut r = BitReader::new(&offsets_map, 0);
         let mut acc = 0u64;

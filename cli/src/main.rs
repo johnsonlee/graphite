@@ -16,6 +16,7 @@
 mod build;
 mod frontend;
 mod install;
+mod pack;
 
 use clap::{Parser, Subcommand};
 use graphite_cypher::context::GraphContext;
@@ -67,6 +68,14 @@ enum Command {
         #[command(subcommand)]
         command: FrontendCommand,
     },
+    /// Pack a saved graph directory (or files) into one .graphite file
+    Pack(pack::PackArgs),
+    /// Unpack a .graphite file into a directory of the original files
+    Unpack(pack::UnpackArgs),
+    /// Check a .graphite file against its CRC-32s, manifest SHA-256s and .sha256 file
+    Verify(pack::VerifyArgs),
+    /// Describe a .graphite file as JSON: entries, sizes, fingerprint, file digest
+    Info(pack::InfoArgs),
 }
 
 /// `graphite mcp`: the graph selection of `serve`, no port.
@@ -107,7 +116,7 @@ enum FrontendCommand {
 
 #[derive(Parser, Debug)]
 struct QueryArgs {
-    /// Path to saved graph directory
+    /// Path to a saved graph: a directory or a .graphite file
     graph_dir: PathBuf,
 
     /// Cypher query string
@@ -136,6 +145,10 @@ fn main() -> std::process::ExitCode {
         Command::Serve(args) => serve(args),
         Command::Mcp(args) => graphite_explore::mcp::run_stdio(args.graphs),
         Command::Frontend { command } => frontend_command(&env, command),
+        Command::Pack(args) => pack::pack(args),
+        Command::Unpack(args) => pack::unpack(args),
+        Command::Verify(args) => pack::verify(args),
+        Command::Info(args) => pack::info(args),
     };
     match outcome {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -230,8 +243,8 @@ fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<Stri
 }
 
 fn query(args: QueryArgs) -> Result<(), String> {
-    if !args.graph_dir.is_dir() {
-        return Err(format!("Not a directory: {}", args.graph_dir.display()));
+    if !args.graph_dir.exists() {
+        return Err(format!("No such graph: {}", args.graph_dir.display()));
     }
     if args.verbose {
         eprintln!("Loading graph from {}...", args.graph_dir.display());

@@ -2,8 +2,8 @@
 //! Decoded eagerly into a compact arena for zero-copy lookups.
 
 use crate::javaser::{read_object, JavaSerError, Value};
+use crate::source::GraphSource;
 use sha2::{Digest, Sha256};
-use std::path::Path;
 
 #[derive(Debug, thiserror::Error)]
 pub enum StringTableError {
@@ -23,15 +23,14 @@ pub struct StringTable {
 }
 
 impl StringTable {
-    pub fn load(dir: &Path) -> Result<Self, StringTableError> {
-        let path = dir.join("graph.strings");
-        let data = std::fs::read(&path)
-            .map_err(|e| StringTableError::Io(path.display().to_string(), e))?;
+    pub fn load(src: &GraphSource) -> Result<Self, StringTableError> {
+        let data = src
+            .require("graph.strings")
+            .map_err(|(path, e)| StringTableError::Io(path, e))?;
         let mut table = Self::from_serialized(&data)?;
-        let id_path = dir.join("graph.strings.identity");
-        if let Ok(bytes) = std::fs::read(&id_path) {
+        if let Ok(Some(bytes)) = src.bytes("graph.strings.identity") {
             if bytes.len() == 32 {
-                table.identity = Some(bytes.try_into().unwrap());
+                table.identity = Some(bytes[..].try_into().unwrap());
             }
         }
         Ok(table)
