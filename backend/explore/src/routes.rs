@@ -1439,7 +1439,8 @@ async fn run_cypher(
             .collect();
         let ex = Executor::new(sources, cross)
             .with_cancel(permit.cancel.clone())
-            .with_compact();
+            .with_compact()
+            .with_probe();
         let out = ex.execute(&query, Some(limit.max(0) as usize));
         (out, ex)
     }));
@@ -1447,6 +1448,12 @@ async fn run_cypher(
     match result {
         Ok((Ok(r), ex)) => {
             guard.finish(Outcome::Success, elapsed);
+            let returned = match &r.compact {
+                Some(c) => c.values.len(),
+                None => r.rows.len(),
+            };
+            let mut extra = extra;
+            extra.push(("total", total_json(returned, r.more)));
             (
                 StatusCode::OK,
                 [(header::CONTENT_TYPE, "application/json")],
@@ -1462,6 +1469,19 @@ async fn run_cypher(
             guard.finish(Outcome::Failed, elapsed);
             error_json(StatusCode::INTERNAL_SERVER_ERROR, "Query execution failed")
         }
+    }
+}
+
+/// The `total` of a Cypher response, in the shape Elasticsearch gives `hits.total`:
+/// `{"value": n, "relation": "eq"}` when `returned` is every row, and
+/// `{"value": returned + 1, "relation": "gte"}` when the engine's probe saw a row past
+/// the limit, so `value` is a lower bound. The engine matches one row past each
+/// trailing literal LIMIT to know; nothing is counted.
+pub fn total_json(returned: usize, more: bool) -> J {
+    if more {
+        json!({ "value": returned + 1, "relation": "gte" })
+    } else {
+        json!({ "value": returned, "relation": "eq" })
     }
 }
 
@@ -1496,6 +1516,9 @@ async fn run_fanout(
     let outcome = tokio::task::spawn_blocking(move || {
         let mut remaining = limit;
         let mut truncated = false;
+        // Whether any graph had rows past its limit, or a graph was not queried at all.
+        let mut more = false;
+        let mut total_value = 0usize;
         let mut per_graph_out: Vec<J> = Vec::new();
         let mut all_rows: Vec<J> = Vec::new();
         let mut columns: Vec<String> = vec!["graphId".to_string()];
@@ -1503,13 +1526,17 @@ async fn run_fanout(
         for l in leases {
             if remaining <= 0 {
                 truncated = true;
+                more = true;
                 break;
             }
-            let ex =
-                Executor::single(l.id.as_str(), l.graph.clone()).with_cancel(permit.cancel.clone());
+            let ex = Executor::single(l.id.as_str(), l.graph.clone())
+                .with_cancel(permit.cancel.clone())
+                .with_probe();
             let take = per_graph.min(remaining).max(0) as usize;
             let r = ex.execute(&query, Some(take))?;
             queried += 1;
+            more |= r.more;
+            total_value += r.rows.len() + usize::from(r.more);
             for c in &r.columns {
                 if !columns.contains(c) {
                     columns.push(c.clone());
@@ -1538,6 +1565,7 @@ async fn run_fanout(
             entry.insert("graphId".into(), J::String(l.id.clone()));
             entry.insert("columns".into(), json!(r.columns));
             entry.insert("rowCount".into(), json!(rows.len()));
+            entry.insert("total".into(), total_json(rows.len(), r.more));
             if include_rows {
                 entry.insert("rows".into(), J::Array(rows.clone()));
             }
@@ -1553,6 +1581,10 @@ async fn run_fanout(
             "perGraphLimit": per_graph,
             "limit": limit,
             "truncated": truncated,
+            "total": json!({
+                "value": total_value,
+                "relation": if more { "gte" } else { "eq" },
+            }),
             "graphs": per_graph_out,
             "mode": "fanout",
         }))
