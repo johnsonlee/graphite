@@ -131,6 +131,31 @@ jobs:
         kill "${DISCOVER}"
         grep -F 'Discovered 1 graph(s)' "${RUNNER_TEMP}/discover.log"
         python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); ids=[g["id"] for g in d["graphs"]]; assert ids==["acme-shop"], ids' "${RUNNER_TEMP}/discover.json"
+        # Under --watch the directory is followed: a file that appears (renamed into place
+        # with its sidecar), disappears, or is replaced changes what is served.
+        ./target/release/graphite serve --data "${RUNNER_TEMP}/discover" --watch --watch-interval 1 --port 18091 \
+          > "${RUNNER_TEMP}/watch.log" 2>&1 &
+        WATCH=$!
+        ids() { curl -sf http://localhost:18091/api/graphs | python3 -c 'import json,sys; print(",".join(sorted(g["id"] for g in json.load(sys.stdin)["graphs"])))'; }
+        wait_ids() { for _ in $(seq 1 60); do [ "$(ids 2>/dev/null)" = "$1" ] && return 0; sleep 1; done; echo "expected graphs '$1', got '$(ids)'"; return 1; }
+        wait_ids acme-shop
+        cp "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/discover/billing.graphite.part"
+        mv "${RUNNER_TEMP}/discover/billing.graphite.part" "${RUNNER_TEMP}/discover/billing.graphite"
+        (cd "${RUNNER_TEMP}/discover" && sha256sum billing.graphite > billing.graphite.sha256)
+        wait_ids acme-shop,billing
+        rm "${RUNNER_TEMP}/discover/billing.graphite" "${RUNNER_TEMP}/discover/billing.graphite.sha256"
+        wait_ids acme-shop
+        cp "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/discover/acme-shop.graphite.new"
+        mv -f "${RUNNER_TEMP}/discover/acme-shop.graphite.new" "${RUNNER_TEMP}/discover/acme-shop.graphite"
+        for _ in $(seq 1 30); do grep -q "Reloaded graph 'acme-shop'" "${RUNNER_TEMP}/watch.log" && break; sleep 1; done
+        curl -sf -X POST http://localhost:18091/api/graphs/acme-shop/cypher -H 'Content-Type: application/json' \
+          -d '{"query":"MATCH (n:CallSiteNode) RETURN count(n) AS c"}' > "${RUNNER_TEMP}/after-reload.json"
+        kill "${WATCH}"
+        grep -F "Watching ${RUNNER_TEMP}/discover every 1s" "${RUNNER_TEMP}/watch.log"
+        grep -F "Loaded graph 'billing'" "${RUNNER_TEMP}/watch.log"
+        grep -F "Unloaded graph 'billing'" "${RUNNER_TEMP}/watch.log"
+        grep -F "Reloaded graph 'acme-shop'" "${RUNNER_TEMP}/watch.log"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["rows"][0]["c"] > 0, d' "${RUNNER_TEMP}/after-reload.json"
         QUERY='MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS c ORDER BY c DESC, n.callee_class LIMIT 20'
         ./target/release/graphite query "${RUNNER_TEMP}/acme-graph" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-dir.csv"
         ./target/release/graphite query "${RUNNER_TEMP}/acme.graphite" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-file.csv"
@@ -151,6 +176,7 @@ jobs:
         cargo test --release --locked -p graphite-storage in_memory_build_reproduces_a_real_persisted_index -- --nocapture
         cargo test --release --locked -p graphite-storage a_packed_graph_is_the_same_graph_as_its_directory -- --nocapture
         cargo test --release --locked -p graphite-cypher a_relaxed_plan_still_applies_the_dropped_conjunct -- --nocapture
+        cargo test --release --locked -p graphite-explore registry_catalog_swaps_a_real_graph -- --nocapture
 
     - name: Benchmark harness tests (fail-closed sampling and warmup)
       run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
