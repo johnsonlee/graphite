@@ -118,6 +118,19 @@ jobs:
         python3 -m zipfile -l "${RUNNER_TEMP}/acme.graphite" | grep -F META-INF/graphite.manifest
         ./target/release/graphite unpack "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/acme-unpacked"
         diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-unpacked" --exclude=META-INF
+        # A .graphite file under --data is served under its file name without --graph.
+        mkdir -p "${RUNNER_TEMP}/discover"
+        cp "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/discover/acme-shop.graphite"
+        ./target/release/graphite serve --data "${RUNNER_TEMP}/discover" --port 18090 \
+          > "${RUNNER_TEMP}/discover.log" 2>&1 &
+        DISCOVER=$!
+        for _ in $(seq 1 60); do
+          curl -sf http://localhost:18090/api/graphs > "${RUNNER_TEMP}/discover.json" && break
+          sleep 1
+        done
+        kill "${DISCOVER}"
+        grep -F 'Discovered 1 graph(s)' "${RUNNER_TEMP}/discover.log"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); ids=[g["id"] for g in d["graphs"]]; assert ids==["acme-shop"], ids' "${RUNNER_TEMP}/discover.json"
         QUERY='MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS c ORDER BY c DESC, n.callee_class LIMIT 20'
         ./target/release/graphite query "${RUNNER_TEMP}/acme-graph" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-dir.csv"
         ./target/release/graphite query "${RUNNER_TEMP}/acme.graphite" "${QUERY}" -f csv > "${RUNNER_TEMP}/from-file.csv"
