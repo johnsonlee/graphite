@@ -90,6 +90,10 @@ graphite serve --id app /data/app-graph --port 8080
 # (/data/graphs/orders.graphite is served as `orders`).
 graphite serve --data /data/graphs --port 8080
 
+# Follow the directory while serving: a .graphite file that appears, is replaced,
+# or is removed is loaded, reloaded, or unloaded without a restart.
+graphite serve --data /data/graphs --watch --port 8080
+
 # Serve multiple graphs by id. Relative graph paths resolve under --data, and any
 # .graphite file directly under --data is served too.
 graphite serve --data /data/graphs \
@@ -595,6 +599,15 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -H 'Content-Type: application/json' \
   -d '{"path":"orders-graph"}'
 ```
+
+With `--watch` the server does this by itself: every few seconds (`--watch-interval`,
+default 5) it scans `--data`, and a `.graphite` file that appeared, changed, or
+disappeared is loaded, reloaded, or unloaded. A file is only picked up once its size,
+modification time, and `.sha256` sidecar have been unchanged for two scans, so a copy in
+progress is left alone; put a new version in place with a rename, and write the sidecar
+last. Every container is verified against its manifest and sidecar before it is served,
+and a file that fails is skipped until it changes. Ids given with `--graph` are never
+touched by the watcher.
 
 Graph replacement is atomic for readers. Requests that already acquired the
 previous graph finish against that snapshot, requests acquired after the swap
