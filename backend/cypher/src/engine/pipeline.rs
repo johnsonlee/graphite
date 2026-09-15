@@ -31,6 +31,11 @@ pub struct QueryResult {
     /// Only an executor built with `with_compact` produces this, and only the HTTP
     /// Cypher route builds one: every other consumer keeps reading `rows`.
     pub compact: Option<CompactRows>,
+    /// Whether at least one more row exists beyond the ones returned. Only an executor
+    /// built with `with_probe` can set it: it runs every trailing literal `LIMIT n` as
+    /// `n + 1`, keeps `n` rows, and records whether the extra one arrived. Without the
+    /// probe, or when a segment's LIMIT is not a literal, this stays `false`.
+    pub more: bool,
 }
 
 /// Projected rows without the per-row map: one `Vec<Value>` per row in `columns`
@@ -125,12 +130,21 @@ impl Executor {
             }
         }
         let mut result: Option<QueryResult> = None;
+        let mut more = false;
         let mut seen: std::collections::HashSet<Vec<Key>> = std::collections::HashSet::new();
         for (i, (mut seg, all)) in segments.into_iter().enumerate() {
             if let Some(max) = max_rows {
                 inject_limit(&mut seg, max);
             }
-            let r = self.run_segment(&seg)?;
+            let keep = if self.probe {
+                probe_limit(&mut seg)
+            } else {
+                None
+            };
+            let mut r = self.run_segment(&seg)?;
+            if let Some(n) = keep {
+                more |= trim_probe(&mut r, n);
+            }
             match &mut result {
                 None => {
                     if i == 0 {
@@ -166,6 +180,7 @@ impl Executor {
             }
         }
         let mut res = result.unwrap_or_default();
+        res.more = more;
         // Strip internal keys except provenance.
         for row in &mut res.rows {
             row.retain(|k, _| !is_internal_key(k) || k == INTERNAL_PROVENANCE_KEY);
@@ -334,6 +349,7 @@ impl Executor {
             columns,
             rows,
             compact: None,
+            more: false,
         })
     }
 
@@ -535,6 +551,7 @@ impl Executor {
                                 columns,
                                 rows: Vec::new(),
                                 compact: Some(CompactRows { values, graph_ids }),
+                                more: false,
                             });
                         }
                         plan.run_nodes(
@@ -558,6 +575,7 @@ impl Executor {
                             columns,
                             rows: Vec::new(),
                             compact: Some(CompactRows { values, graph_ids }),
+                            more: false,
                         });
                     }
                 }
@@ -785,6 +803,7 @@ fn finish_fused(
         columns,
         rows,
         compact: None,
+        more: false,
     })
 }
 
@@ -858,6 +877,40 @@ fn inject_limit(seg: &mut Vec<Clause>, max: usize) {
         }
     } else {
         seg.push(lit);
+    }
+}
+
+/// The probe behind `QueryResult::more`: raise a segment's trailing literal `LIMIT n` to
+/// `n + 1` and return `n`. Every consumer of the limit (the early match bound, the
+/// fast paths, the fused shape, the row pipeline) reads that literal, so one rewrite
+/// reaches them all. A segment whose last clause is not a literal LIMIT is left alone
+/// and returns `None`: with no limit nothing is cut, and a parameterised limit is not
+/// probed.
+fn probe_limit(seg: &mut [Clause]) -> Option<usize> {
+    match seg.last_mut() {
+        Some(Clause::Limit(Expr::Literal(Literal::Int(n)))) if *n >= 0 => {
+            let keep = *n as usize;
+            *n += 1;
+            Some(keep)
+        }
+        _ => None,
+    }
+}
+
+/// Keep `n` rows of a probed segment; true when the extra row had arrived.
+fn trim_probe(r: &mut QueryResult, n: usize) -> bool {
+    match &mut r.compact {
+        Some(c) => {
+            let extra = c.values.len() > n;
+            c.values.truncate(n);
+            c.graph_ids.truncate(n);
+            extra
+        }
+        None => {
+            let extra = r.rows.len() > n;
+            r.rows.truncate(n);
+            extra
+        }
     }
 }
 
@@ -1450,4 +1503,165 @@ fn selected_value_filter(
     });
     let first = iter.next()?;
     Some(iter.fold(first, |acc, e| Expr::Or(Box::new(acc), Box::new(e))))
+}
+
+#[cfg(test)]
+mod probe_tests {
+    use super::super::Source;
+    use super::*;
+    use crate::parser::parse;
+
+    fn clauses(q: &str) -> Vec<Clause> {
+        parse(q).unwrap()
+    }
+
+    fn trailing_limit(seg: &[Clause]) -> Option<i64> {
+        match seg.last() {
+            Some(Clause::Limit(Expr::Literal(Literal::Int(n)))) => Some(*n),
+            _ => None,
+        }
+    }
+
+    #[test]
+    fn the_probe_raises_a_trailing_literal_limit_by_one_and_remembers_it() {
+        let mut seg = clauses("MATCH (n) RETURN n LIMIT 5");
+        assert_eq!(probe_limit(&mut seg), Some(5));
+        assert_eq!(trailing_limit(&seg), Some(6));
+        let mut zero = clauses("MATCH (n) RETURN n LIMIT 0");
+        assert_eq!(probe_limit(&mut zero), Some(0));
+        assert_eq!(trailing_limit(&zero), Some(1));
+        let mut skipped = clauses("MATCH (n) RETURN n ORDER BY n.line SKIP 2 LIMIT 3");
+        assert_eq!(probe_limit(&mut skipped), Some(3));
+        assert_eq!(trailing_limit(&skipped), Some(4));
+    }
+
+    #[test]
+    fn the_probe_leaves_other_segments_alone() {
+        let mut none = clauses("MATCH (n) RETURN n");
+        assert_eq!(probe_limit(&mut none), None);
+        let mut expr = clauses("MATCH (n) RETURN n LIMIT 2 + 3");
+        assert_eq!(probe_limit(&mut expr), None);
+        assert!(matches!(expr.last(), Some(Clause::Limit(_))));
+        let mut inner = clauses("MATCH (n) WITH n LIMIT 5 RETURN n");
+        assert_eq!(probe_limit(&mut inner), None);
+    }
+
+    #[test]
+    fn the_injected_cap_and_the_probe_compose() {
+        // The HTTP route injects the API cap first, then probes: the cap becomes the
+        // trailing literal, so the probe sees min(user limit, cap).
+        let mut seg = clauses("MATCH (n) RETURN n LIMIT 5000");
+        inject_limit(&mut seg, 1000);
+        assert_eq!(probe_limit(&mut seg), Some(1000));
+        assert_eq!(trailing_limit(&seg), Some(1001));
+        let mut seg = clauses("MATCH (n) RETURN n");
+        inject_limit(&mut seg, 1000);
+        assert_eq!(probe_limit(&mut seg), Some(1000));
+    }
+
+    #[test]
+    fn trimming_keeps_n_rows_and_reports_the_extra_one() {
+        let row = |i: i64| {
+            let mut r = Row::new();
+            r.insert("x".into(), Value::Int(i));
+            r
+        };
+        let mut r = QueryResult {
+            columns: vec!["x".into()],
+            rows: (0..4).map(row).collect(),
+            compact: None,
+            more: false,
+        };
+        assert!(trim_probe(&mut r, 3));
+        assert_eq!(r.rows.len(), 3);
+        assert!(!trim_probe(&mut r, 3));
+        let mut c = QueryResult {
+            columns: vec!["x".into()],
+            rows: Vec::new(),
+            compact: Some(CompactRows {
+                values: (0..2).map(|i| vec![Value::Int(i)]).collect(),
+                graph_ids: vec![Arc::from("g"), Arc::from("g")],
+            }),
+            more: false,
+        };
+        assert!(trim_probe(&mut c, 1));
+        let compact = c.compact.as_ref().unwrap();
+        assert_eq!(compact.values.len(), 1);
+        assert_eq!(compact.graph_ids.len(), 1);
+        assert!(!trim_probe(&mut c, 1));
+        assert!(!trim_probe(&mut c, 0) || c.compact.as_ref().unwrap().values.is_empty());
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): the probed rows are the rows a
+    /// plain execution returns, and `more` says whether a LIMIT cut anything.
+    #[test]
+    fn probed_execution_returns_the_same_rows_and_knows_when_more_exist() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let graph =
+            Arc::new(graphite_storage::graph::Graph::load(std::path::Path::new(&dir)).unwrap());
+        let sources = || {
+            vec![Source {
+                id: Arc::from("g"),
+                graph: graph.clone(),
+            }]
+        };
+        let plain = Executor::new(sources(), false);
+        let probed = Executor::new(sources(), false).with_probe();
+        let compact = Executor::new(sources(), false).with_compact().with_probe();
+        let cases: &[(&str, Option<usize>, bool)] = &[
+            ("MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 5", None, true),
+            ("MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 0", None, true),
+            ("MATCH (n:CallSiteNode) RETURN n.callee_name", Some(10), true),
+            ("MATCH (n:CallSiteNode) RETURN count(n) AS c", Some(10), false),
+            ("MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class AS c LIMIT 3", None, true),
+            ("MATCH (n:CallSiteNode) RETURN n.callee_name AS x ORDER BY x SKIP 2 LIMIT 3", None, true),
+            ("MATCH (n:CallSiteNode) WHERE n.callee_name = 'zzz_no_such' RETURN n LIMIT 5", None, false),
+            ("MATCH (n:CallSiteNode) RETURN n.callee_class AS c LIMIT 2 UNION MATCH (n:CallSiteNode) RETURN n.callee_class AS c LIMIT 2", None, true),
+            ("MATCH (n:CallSiteNode) WHERE n.callee_name = 'zzz_no_such' RETURN n", Some(10), false),
+        ];
+        for (q, cap, expect_more) in cases {
+            let a = plain
+                .execute(q, *cap)
+                .unwrap_or_else(|e| panic!("{q}: {e}"));
+            let b = probed
+                .execute(q, *cap)
+                .unwrap_or_else(|e| panic!("{q}: {e}"));
+            assert!(!a.more, "{q}: a plain execution never reports more");
+            assert_eq!(
+                a.rows.len(),
+                b.rows.len(),
+                "{q}: the probe changes the row count"
+            );
+            assert_eq!(b.more, *expect_more, "{q}: more");
+            let c = compact
+                .execute(q, *cap)
+                .unwrap_or_else(|e| panic!("{q}: {e}"));
+            let returned = c
+                .compact
+                .as_ref()
+                .map(|c| c.values.len())
+                .unwrap_or(c.rows.len());
+            assert_eq!(
+                returned,
+                a.rows.len(),
+                "{q}: the compact probe changes the row count"
+            );
+            assert_eq!(c.more, *expect_more, "{q}: compact more");
+        }
+        // ORDER BY: the probe must not change which rows come first.
+        let q = "MATCH (n:CallSiteNode) RETURN n.callee_name AS x ORDER BY x LIMIT 3";
+        let a = plain.execute(q, None).unwrap();
+        let b = probed.execute(q, None).unwrap();
+        let names = |r: &QueryResult| -> Vec<String> {
+            r.rows
+                .iter()
+                .map(|row| format!("{:?}", row.get("x")))
+                .collect()
+        };
+        assert_eq!(names(&a), names(&b));
+        assert!(b.more);
+    }
 }
