@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { validatePairedEvidence } from "./benchmark-pages.mjs";
 import { materializeGistFiles } from "./gist-evidence.mjs";
 import {
@@ -13,6 +14,7 @@ import {
     COMMENT_MARKER,
     aggregateGraphRoutingStates,
     aggregateReports,
+    compareRustLatency,
     canonicalCorrectnessManifest,
     combineLatencyShards,
     compareLatencyResources,
@@ -2750,13 +2752,16 @@ test("aggregate report fails closed when an artifact is missing", () => {
 
         assert.equal(aggregate.passed, false);
         assert.match(aggregate.body, new RegExp(COMMENT_MARKER));
-        assert.match(aggregate.body, /budgeted-collection: result artifact is missing/);
-        assert.match(aggregate.body, /explorer: result artifact is missing/);
-        assert.match(aggregate.body, /method-compatibility: result artifact is missing/);
-        assert.match(aggregate.body, /cypher-capacity: result artifact is missing/);
+        assert.match(aggregate.body, /rust-latency: result artifact is missing/);
         assert.match(aggregate.body, /large-corpus: result artifact is missing/);
         assert.match(aggregate.body, /graph-routing-pressure: result artifact is missing/);
         assert.match(aggregate.body, /global-wide-pressure: result artifact is missing/);
+        // Advisory JVM engine gates are reported as missing but never listed as an error.
+        for (const advisory of ["budgeted-collection", "explorer", "method-compatibility", "cypher-capacity",
+            "budgeted-mapped-string", "wrapped-query-latency"]) {
+            assert.doesNotMatch(aggregate.body, new RegExp(`${advisory}: result artifact is missing`));
+            assert.match(aggregate.body, new RegExp(`\\x60${advisory}\\x60 \\| \\*\\*MISSING \\(advisory\\)\\*\\*`));
+        }
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
@@ -2766,6 +2771,7 @@ test("aggregate report includes every independent benchmark gate", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-gate-complete-"));
     try {
         for (const [report, status, body] of [
+            ["rust-latency-report.md", "rust-latency-status.json", "rust latency report"],
             ["method-report.md", "method-status.json", "method report"],
             ["explorer-report.md", "explorer-status.json", "explorer report"],
             ["method-compatibility-report.md", "method-compatibility-status.json", "### Method migration report"],
@@ -2793,7 +2799,10 @@ test("aggregate report includes every independent benchmark gate", () => {
         assert.equal(aggregate.candidateSha, "b".repeat(40));
         assert.equal(aggregate.runner, "test-runner");
         assert.equal(aggregate.runUrl, "https://example.invalid/run");
-        assert.match(aggregate.body, /PASS — 11\/11 component reports passed/);
+        assert.match(aggregate.body, /PASS — 6\/6 blocking component reports passed; 6\/6 advisory JVM engine reports passed/);
+        assert.match(aggregate.body, /rust latency report/);
+        assert.match(aggregate.body, /`rust-latency` \| \*\*PASS\*\* \|/);
+        assert.match(aggregate.body, /`explorer` \| \*\*PASS \(advisory\)\*\* \|/);
         assert.match(aggregate.body, /### Coverage summary/);
         assert.match(aggregate.body, /#### Semantic correctness/);
         assert.match(aggregate.body, /#### Latency regression/);
@@ -2820,8 +2829,22 @@ test("aggregate report includes every independent benchmark gate", () => {
             runUrl: "https://example.invalid/run"
         });
         assert.equal(failed.passed, false);
-        assert.match(failed.body, /FAIL — 10\/11 component reports passed/);
+        assert.match(failed.body, /FAIL — 5\/6 blocking component reports passed; 6\/6 advisory/);
         assert.match(failed.body, /`method-level` \| \*\*FAIL\*\*/);
+
+        fs.writeFileSync(path.join(directory, "method-status.json"), JSON.stringify({ passed: true }));
+        fs.writeFileSync(path.join(directory, "latency-status.json"), JSON.stringify({ passed: false }));
+        const advisoryFailed = aggregateReports(directory, {
+            baseSha: "a".repeat(40),
+            candidateSha: "b".repeat(40),
+            runner: "test-runner",
+            runUrl: "https://example.invalid/run"
+        });
+        assert.equal(advisoryFailed.passed, true);
+        assert.deepEqual(advisoryFailed.errors, []);
+        assert.match(advisoryFailed.body, /PASS — 6\/6 blocking component reports passed; 5\/6 advisory/);
+        assert.match(advisoryFailed.body, /`wrapped-query-latency` \| \*\*FAIL \(advisory\)\*\*/);
+        assert.match(advisoryFailed.body, /Advisory gates measure the JVM query engine/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
@@ -2932,6 +2955,132 @@ test("artifact staging does not mix stale files into a partial retry", () => {
     }
 });
 
+function rustRow(benchmark, params, samples) {
+    const sorted = [...samples].sort((left, right) => left - right);
+    const middle = sorted.length >> 1;
+    return {
+        benchmark, params, mode: "sequential-pass",
+        primaryMetric: {
+            score: sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2,
+            scoreUnit: "ms/op", scoreConfidence: [sorted[0], sorted[sorted.length - 1]], rawData: [samples]
+        }
+    };
+}
+
+function rustSnapshot(scale = 1) {
+    return [
+        rustRow("rust.fixture64.global-wide-four-properties", { selectivity: "dense" }, [40, 41, 42].map((v) => v * scale)),
+        rustRow("rust.fixture64.global-wide-class-pair", { selectivity: "zero" }, [0.8, 0.9, 1.0].map((v) => v * scale)),
+        rustRow("rust.fixture64.aggregate", { statistic: "p50" }, [1.2, 1.3, 1.4].map((v) => v * scale)),
+        rustRow("rust.fixture64.aggregate", { statistic: "p95" }, [20, 21, 300].map((v) => v * scale))
+    ];
+}
+
+test("Rust latency comparison blocks only above the relative limit and the millisecond floor", () => {
+    const same = compareRustLatency(rustSnapshot(), rustSnapshot());
+    assert.equal(same.passed, true);
+    assert.deepEqual(same.errors, []);
+    assert.equal(same.minimum, 1);
+    assert.equal(same.rows.length, 4);
+
+    const slower = compareRustLatency(rustSnapshot(), rustSnapshot(1.3));
+    assert.equal(slower.passed, false);
+    const byKey = new Map(slower.rows.map((row) => [row.key, row]));
+    assert.equal(byKey.get("rust.fixture64.global-wide-four-properties[selectivity=dense]").blocked, true);
+    assert.equal(byKey.get("rust.fixture64.aggregate[statistic=p95]").blocked, true);
+    // +30% on a sub-millisecond row is under the floor: reported, never blocking.
+    const tiny = byKey.get("rust.fixture64.global-wide-class-pair[selectivity=zero]");
+    assert.equal(tiny.aboveThreshold, true);
+    assert.equal(tiny.aboveMinimum, false);
+    assert.equal(tiny.blocked, false);
+    // The wide cold/warm spread of a p95 row never rescues it: intervals are not consulted.
+    assert.equal(byKey.get("rust.fixture64.aggregate[statistic=p95]").confidenceSeparated, false);
+    const report = renderJmhReport(slower, "Rust engine fixture64 latency");
+    assert.match(report, /by at least 1 ms/);
+    assert.match(report, /`rust\.fixture64\.global-wide-class-pair\[selectivity=zero\]` .* \*\*NOISE\*\*/);
+    assert.match(report, /`rust\.fixture64\.global-wide-four-properties\[selectivity=dense\]` .* \*\*FAIL\*\*/);
+
+    const confirmed = confirmJmh(slower, compareRustLatency(rustSnapshot(), rustSnapshot()));
+    assert.equal(confirmed.passed, true);
+    assert.equal(confirmed.minimum, 1);
+    assert.equal(confirmed.rows.every((row) => !row.blocked), true);
+    const reconfirmed = confirmJmh(slower, compareRustLatency(rustSnapshot(), rustSnapshot(1.3)));
+    assert.equal(reconfirmed.passed, false);
+});
+
+test("Rust latency comparison rejects foreign, partial, or mis-united snapshots", () => {
+    const foreign = [...rustSnapshot(), rustRow("io.johnsonlee.graphite.cypher.CypherBenchmark.x", {}, [1, 2, 3])];
+    assert.match(compareRustLatency(foreign, foreign).errors.join("\n"), /is not a Rust engine measurement/);
+    const partial = rustSnapshot().slice(0, 2);
+    assert.match(compareRustLatency(partial, partial).errors.join("\n"), /aggregate\[statistic=p50\]: missing/);
+    const seconds = rustSnapshot().map((row) => ({ ...row, primaryMetric: { ...row.primaryMetric, scoreUnit: "s/op" } }));
+    assert.match(compareRustLatency(seconds, seconds).errors.join("\n"), /expected ms\/op/);
+    assert.match(compareRustLatency(rustSnapshot(), seconds).errors.join("\n"), /different mode or unit/);
+});
+
+test("Rust latency commands write the report and status the aggregate consumes", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-rust-latency-"));
+    const script = fileURLToPath(new URL("./benchmark-gate.mjs", import.meta.url));
+    try {
+        const write = (name, value) => { const file = path.join(directory, name); fs.writeFileSync(file, JSON.stringify(value)); return file; };
+        const base = write("base.json", rustSnapshot());
+        const slow = write("slow.json", rustSnapshot(1.3));
+        const initial = spawnSync(process.execPath, [script, "compare-rust-latency", "--base", base, "--candidate", slow,
+            "--threshold", "15", "--minimum", "1", "--report", path.join(directory, "initial.md"),
+            "--status", path.join(directory, "initial.json")], { encoding: "utf8" });
+        assert.equal(initial.status, 1, initial.stderr);
+        const confirmation = spawnSync(process.execPath, [script, "confirm-rust-latency",
+            "--initial", path.join(directory, "initial.json"), "--base", base, "--candidate", base,
+            "--threshold", "15", "--minimum", "1", "--report", path.join(directory, "rust-latency-report.md"),
+            "--status", path.join(directory, "rust-latency-status.json")], { encoding: "utf8" });
+        assert.equal(confirmation.status, 0, confirmation.stderr);
+        const status = JSON.parse(fs.readFileSync(path.join(directory, "rust-latency-status.json")));
+        assert.equal(status.passed, true);
+        assert.match(fs.readFileSync(path.join(directory, "rust-latency-report.md"), "utf8"),
+            /### Rust engine fixture64 latency \(paired base vs PR\)/);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("pull-request workflow runs the paired Rust engine gate and demotes the JVM engine gates", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
+    assert.match(job, /needs: \[candidate-gate-tests, prepare-fixture64\]/);
+    assert.match(job, /dtolnay\/rust-toolchain@stable/);
+    assert.match(job, /cargo build --release --locked -p graphite-cli --manifest-path base\/Cargo\.toml/);
+    assert.match(job, /cargo build --release --locked -p graphite-cli --manifest-path candidate\/Cargo\.toml/);
+    assert.match(job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
+    assert.match(job, /fixture64\.complete\.json/);
+    // The harness is the base's own snapshot script; the comparator is base-owned once main carries it.
+    assert.match(job, /HARNESS=base\/backend\/bench\/snapshot\.py/);
+    assert.match(job, /if ! grep -q 'compare-rust-latency' "\$\{COMPARATOR\}"/);
+    assert.match(job, /"\$\{BENCHMARK_REPORT_TRANSITION_SHA256\}"/);
+    assert.match(job, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
+    assert.match(job, /compare-rust-latency/);
+    assert.match(job, /confirm-rust-latency/);
+    assert.match(job, /--repetitions 5/);
+    assert.match(job, /name: benchmark-rust-latency-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
+
+    const enforcement = workflow.slice(workflow.indexOf("    - name: Enforce benchmark gate"), workflow.indexOf("  benchmark-comment:"));
+    assert.match(enforcement, /RUST_LATENCY_JOB: \$\{\{ needs\.rust-latency\.result \}\}/);
+    assert.match(enforcement, /\[ "\$\{RUST_LATENCY_JOB\}" != success \]/);
+    for (const advisory of ["EXPLORER_JOB", "METHOD_COMPATIBILITY_JOB", "CYPHER_CAPACITY_JOB",
+        "BUDGETED_COLLECTION_JOB", "BUDGETED_STRING_JOB", "LATENCY_JOB"]) {
+        assert.doesNotMatch(enforcement, new RegExp(`"\\$\\{${advisory}\\}" != success`));
+    }
+    for (const blocking of ["METHOD_JOB", "LARGE_CORPUS_JOB", "LATENCY_RESOURCES_JOB", "GRAPH_ROUTING_JOB",
+        "GLOBAL_WIDE_JOB", "CPU_ACCOUNTING_SMOKE_JOB", "SLOW_QUERY_SHAPES_JOB"]) {
+        assert.match(enforcement, new RegExp(`"\\$\\{${blocking}\\}" != success`));
+    }
+    const report = workflow.slice(workflow.indexOf("    - name: Build benchmark report"), workflow.indexOf("    - name: Upload aggregate benchmark report"));
+    assert.match(report, /if ! grep -q '"rust-latency"' "\$\{COMPARATOR\}"; then/);
+    const advisoryComponents = BENCHMARK_COMPONENTS.filter((component) => component.advisory === true).map((component) => component.name);
+    assert.deepEqual(advisoryComponents, ["explorer", "method-compatibility", "cypher-capacity",
+        "budgeted-collection", "budgeted-mapped-string", "wrapped-query-latency"]);
+    assert.equal(BENCHMARK_COMPONENTS[0].name, "rust-latency");
+});
+
 test("workflow component artifacts include the run attempt required by staging", () => {
     const workflow = fs.readFileSync(
         new URL("../workflows/benchmark.yml", import.meta.url),
@@ -2940,6 +3089,7 @@ test("workflow component artifacts include the run attempt required by staging",
     const pullRequest = "${{ github.event.pull_request.number }}";
     const runAttempt = "${{ github.run_attempt }}";
     const producers = [
+        "benchmark-rust-latency",
         "benchmark-method",
         "benchmark-explorer",
         "benchmark-method-compatibility",

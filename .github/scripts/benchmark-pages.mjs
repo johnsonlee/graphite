@@ -266,7 +266,8 @@ function renderCoverage() {
         const gates = domain.components.map((name) => {
             const component = componentByName.get(name);
             const icon = component.coverage === "complete" ? "✅" : "⚠️";
-            return `<li><span>${icon} <code>${escapeHtml(name)}</code></span><small>${escapeHtml(component.gap)}</small></li>`;
+            const advisory = component.advisory === true ? " <em>(advisory: JVM engine)</em>" : "";
+            return `<li><span>${icon} <code>${escapeHtml(name)}</code>${advisory}</span><small>${escapeHtml(component.gap)}</small></li>`;
         }).join("");
         const implemented = domain.components.length === 0
             ? "<p class=\"muted\">No implemented component gate.</p>"

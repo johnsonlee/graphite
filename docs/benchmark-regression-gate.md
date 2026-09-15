@@ -13,7 +13,11 @@ days.
 ## Report coverage taxonomy
 
 The aggregate comment separates a component's run result from its coverage scope. `PASS`/`FAIL`
-comes only from the nine blocking component reports. Coverage labels follow the model introduced in
+comes only from the blocking component reports. The gates that measure the JVM query engine
+(`explorer`, `method-compatibility`, `cypher-capacity`, `budgeted-collection`,
+`budgeted-mapped-string`, `wrapped-query-latency`) are advisory: `graphite serve` runs the Rust
+engine, so their reports are still built and shown but never decide the verdict. The paired
+measurement of the engine a release ships is `rust-latency`. Coverage labels follow the model introduced in
 PR #104: ✅ means an implemented gate has no identified gate-specific gap, while ⚠️ means the gate
 is implemented but intentionally incomplete. A passing component does not claim to cover its listed
 gap.
@@ -36,7 +40,7 @@ use, generated and saved on a miss), runs the cross-graph plan of `backend/bench
 through `backend/bench/snapshot.py` in three sequential single-threaded passes, and records the
 per-shape medians and the per-pass P50/P95 as an informational absolute snapshot in the JMH
 result shape. The raw JSON and the server log are retained for 90 days. The paired PR report
-below it still comes from the JVM engine gate; the Rust engine has no paired gate yet.
+below it carries the same engine's base-versus-candidate verdict from the `rust-latency` gate.
 
 The report renderer also locates the successful paired benchmark artifact from the pull request
 associated with the main commit. When a direct push has no associated artifact, the page says so
@@ -131,6 +135,31 @@ actors and credentials are within the repository-local trusted boundary. Fully d
 hostile build or runtime code requires base and candidate execution on separate runners, raw artifact
 comparison in a fresh base-only job, or an external required workflow/GitHub App. That isolation is
 not provided by this workflow.
+
+## Rust engine latency gate
+
+`rust-latency` is the paired gate of the engine `graphite serve` runs. The job builds the
+`graphite` CLI from the base and the candidate revision, downloads the shared fixture64 corpus
+that `prepare-fixture64` authenticated for this head, and runs the base's own
+`backend/bench/snapshot.py` against each binary in turn: the server opens the 64 graphs, and the
+cross-graph plan of `fixture64.py` (ten `global-wide` shapes at three selectivities, then the
+distribution cases) runs single-threaded for five sequential passes. Each row's score is the
+median over the passes, so the cold first pass never decides a row.
+
+The comparison is `compare-rust-latency` in `benchmark-gate.mjs`, base-owned like every other
+comparator (the candidate copy stands in, pinned to `BENCHMARK_REPORT_TRANSITION_SHA256`, only
+until `main` carries the command). It is a point-estimate policy with a floor: a row is a
+regression candidate when the candidate median exceeds the base median by more than 15% **and**
+by at least 1 ms. Most fixture64 shapes answer in about a millisecond on the Rust engine, where a
+hosted runner alone moves a point estimate by more than 15%; such rows are reported as `NOISE`
+and cannot block. Any regression candidate triggers a reverse-order confirmation (candidate first,
+then base, on a fresh port), and the row blocks only when the confirmation exceeds both limits
+again. Every row must be a `rust.fixture64.*` measurement in `ms/op`, and the per-pass
+`aggregate` P50 and P95 rows must be present on both sides, or the comparison fails closed.
+
+Cost on a hosted runner: two release builds (cached by `Swatinem/rust-cache` per workspace),
+about three minutes of cold graph opening per engine, and under a minute of queries per engine;
+a confirmation doubles the measurement.
 
 ## Wrapped case-insensitive latency gate
 

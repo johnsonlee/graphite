@@ -18,10 +18,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
-  BENCHMARK_REPORT_TRANSITION_SHA256: 9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
+  BENCHMARK_REPORT_TRANSITION_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -2915,6 +2915,152 @@ jobs:
       if: always()
       run: jq -e '.passed == true' benchmark-results/global-wide-status.json >/dev/null
 
+  rust-latency:
+    name: rust-latency-gate
+    needs: [candidate-gate-tests, prepare-fixture64]
+    runs-on: ubuntu-latest
+    # Two release builds of the CLI, then each engine opens the 64 graphs once (about three
+    # minutes cold on a hosted runner) and answers the fixture64 plan five times; a regression
+    # candidate repeats both in reverse order.
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+        persist-credentials: false
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache cargo
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: |
+          base
+          candidate
+
+    # The engines under test are the same `graphite` binary a release ships, one per revision.
+    - name: Build the base and candidate engines
+      run: |
+        cargo build --release --locked -p graphite-cli --manifest-path base/Cargo.toml
+        cargo build --release --locked -p graphite-cli --manifest-path candidate/Cargo.toml
+        base/target/release/graphite --version
+        candidate/target/release/graphite --version
+
+    - name: Download shared fixture64 corpus
+      uses: actions/download-artifact@v8
+      with:
+        name: shared-fixture64-${{ github.event.pull_request.head.sha }}
+        path: shared-fixture64
+
+    - name: Verify the shared fixture64 corpus
+      env:
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        COMPLETE=shared-fixture64/fixture64.complete.json
+        jq -e --arg sha "${CANDIDATE_SHA}" \
+          '.schema == "graphite-shared-fixture64-v1" and .complete == true and .candidateSha == $sha' \
+          "${COMPLETE}" >/dev/null
+        test "$(sha256sum shared-fixture64/graphs/graphs.tsv | cut -d' ' -f1)" = \
+          "$(jq -r .manifestSha256 "${COMPLETE}")"
+        test "$(sha256sum shared-fixture64/graphs/fixture-provenance.tsv | cut -d' ' -f1)" = \
+          "$(jq -r .provenanceSha256 "${COMPLETE}")"
+        test "$(sha256sum shared-fixture64/fixture-reproducibility.json | cut -d' ' -f1)" = \
+          "$(jq -r .receiptSha256 "${COMPLETE}")"
+
+    # The harness is the base's own snapshot script, run identically against both engines.
+    # The comparator is base-owned too; until main carries the Rust gate the candidate copy
+    # stands in, pinned to the reviewed hash and only after the candidate's own tests passed.
+    - name: Select the base-owned harness and comparator
+      id: controls
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+      run: |
+        set -euo pipefail
+        HARNESS=base/backend/bench/snapshot.py
+        if [[ ! -f "${HARNESS}" ]]; then
+          HARNESS=candidate/backend/bench/snapshot.py
+        fi
+        test -f "${HARNESS}"
+        COMPARATOR=base/.github/scripts/benchmark-gate.mjs
+        if ! grep -q 'compare-rust-latency' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            "${BENCHMARK_REPORT_TRANSITION_SHA256}"
+          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
+        fi
+        echo "harness=${HARNESS}" >> "${GITHUB_OUTPUT}"
+        echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
+
+    - name: Measure base then PR
+      env:
+        HARNESS: ${{ steps.controls.outputs.harness }}
+      run: |
+        set -euo pipefail
+        mkdir -p benchmark-results
+        for REVISION in base candidate; do
+          python3 "${HARNESS}" \
+            --manifest shared-fixture64/graphs/graphs.tsv \
+            --binary "${REVISION}/target/release/graphite" \
+            --port 18080 --repetitions 5 \
+            --server-log "benchmark-results/${REVISION}-rust-serve.log" \
+            --out "benchmark-results/${REVISION}-rust.json"
+        done
+
+    - name: Compare Rust engine latency
+      env:
+        HARNESS: ${{ steps.controls.outputs.harness }}
+        COMPARATOR: ${{ steps.controls.outputs.comparator }}
+      run: |
+        set -euo pipefail
+        if node "${COMPARATOR}" compare-rust-latency \
+          --base benchmark-results/base-rust.json \
+          --candidate benchmark-results/candidate-rust.json \
+          --threshold 15 --minimum 1 \
+          --report benchmark-results/initial-rust-latency-report.md \
+          --status benchmark-results/initial-rust-latency-status.json; then
+          mv benchmark-results/initial-rust-latency-report.md benchmark-results/rust-latency-report.md
+          mv benchmark-results/initial-rust-latency-status.json benchmark-results/rust-latency-status.json
+        else
+          for REVISION in candidate base; do
+            python3 "${HARNESS}" \
+              --manifest shared-fixture64/graphs/graphs.tsv \
+              --binary "${REVISION}/target/release/graphite" \
+              --port 18081 --repetitions 5 \
+              --server-log "benchmark-results/${REVISION}-rust-confirmation-serve.log" \
+              --out "benchmark-results/${REVISION}-rust-confirmation.json"
+          done
+          node "${COMPARATOR}" confirm-rust-latency \
+            --initial benchmark-results/initial-rust-latency-status.json \
+            --base benchmark-results/base-rust-confirmation.json \
+            --candidate benchmark-results/candidate-rust-confirmation.json \
+            --threshold 15 --minimum 1 \
+            --report benchmark-results/rust-latency-report.md \
+            --status benchmark-results/rust-latency-status.json
+        fi
+
+    - name: Upload Rust engine latency results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-rust-latency-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
   slow-query-shapes:
     name: slow-query-shapes
     needs: [candidate-gate-tests, prepare-latency-fixtures]
@@ -3006,7 +3152,7 @@ jobs:
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting, slow-query-shapes]
+    needs: [candidate-gate-tests, rust-latency, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting, slow-query-shapes]
     runs-on: ubuntu-latest
 
     steps:
@@ -3076,6 +3222,14 @@ jobs:
           COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
           grep -q '"global-wide-pressure"' "${COMPARATOR}"
         fi
+        # Until main carries the Rust engine gate, the reviewed candidate reporter aggregates it.
+        if ! grep -q '"rust-latency"' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            "${BENCHMARK_REPORT_TRANSITION_SHA256}"
+          COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
+          grep -q '"rust-latency"' "${COMPARATOR}"
+        fi
         node '${{ steps.slow-report-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.mjs' aggregate \
           --base-comparator "${COMPARATOR}" \
           --directory benchmark-results \
@@ -3130,6 +3284,7 @@ jobs:
       if: always()
       env:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+        RUST_LATENCY_JOB: ${{ needs.rust-latency.result }}
         METHOD_JOB: ${{ needs.method-level.result }}
         EXPLORER_JOB: ${{ needs.explorer.result }}
         METHOD_COMPATIBILITY_JOB: ${{ needs.method-compatibility.result }}
@@ -3144,14 +3299,20 @@ jobs:
         CPU_ACCOUNTING_SMOKE_JOB: ${{ needs.validate-cpu-accounting.result }}
         SLOW_QUERY_SHAPES_JOB: ${{ needs.slow-query-shapes.result }}
       run: |
+        # The JVM engine gates (explorer, method-compatibility, cypher-capacity, budgeted-*,
+        # wrapped-query-latency) are advisory: their reports are still built and shown, but
+        # `graphite serve` runs the Rust engine, whose paired gate is rust-latency.
+        for ADVISORY in EXPLORER_JOB METHOD_COMPATIBILITY_JOB CYPHER_CAPACITY_JOB \
+          BUDGETED_COLLECTION_JOB BUDGETED_STRING_JOB LATENCY_JOB; do
+          if [ "${!ADVISORY}" != success ]; then
+            echo "::warning::Advisory JVM engine job ${ADVISORY} finished with ${!ADVISORY}"
+          fi
+        done
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
-          [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
-          [ "${METHOD_COMPATIBILITY_JOB}" != success ] || \
-          [ "${CYPHER_CAPACITY_JOB}" != success ] || \
-          [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
-          [ "${BUDGETED_STRING_JOB}" != success ] || \
+          [ "${RUST_LATENCY_JOB}" != success ] || \
+          [ "${METHOD_JOB}" != success ] || \
           [ "${LARGE_CORPUS_JOB}" != success ] || \
-          [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ] || \
+          [ "${LATENCY_RESOURCES_JOB}" != success ] || \
           [ "${GRAPH_ROUTING_JOB}" != success ] || [ "${GLOBAL_WIDE_JOB}" != success ] || \
           [ "${CPU_ACCOUNTING_SMOKE_JOB}" != success ] || \
           [ "${SLOW_QUERY_SHAPES_JOB}" != success ]; then
