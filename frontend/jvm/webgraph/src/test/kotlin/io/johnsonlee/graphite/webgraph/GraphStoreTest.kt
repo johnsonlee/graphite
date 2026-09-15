@@ -298,6 +298,51 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `saving the same graph twice writes byte-identical files`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(64) { nodeId ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor("example.Caller${nodeId % 4}"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke$nodeId", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+            repeat(63) { nodeId ->
+                addEdge(DataFlowEdge(NodeId(nodeId), NodeId(nodeId + 1), DataFlowKind.ASSIGN))
+            }
+        }.build()
+        val first = Files.createTempDirectory("webgraph-stable-first")
+        val second = Files.createTempDirectory("webgraph-stable-second")
+        try {
+            GraphStore.save(graph, first)
+            Thread.sleep(1_100)
+            GraphStore.save(graph, second)
+            val names = Files.list(first).use { it.map { p -> p.fileName.toString() }.toList() }.sorted()
+            assertEquals(names, Files.list(second).use { it.map { p -> p.fileName.toString() }.toList() }.sorted())
+            for (name in names) {
+                assertTrue(
+                    Files.readAllBytes(first.resolve(name)).contentEquals(Files.readAllBytes(second.resolve(name))),
+                    "$name differs between two saves of the same graph"
+                )
+            }
+            val properties = Files.readAllLines(first.resolve("forward.properties"))
+            assertTrue(properties.none { it.startsWith("#") }, "forward.properties still carries comments: $properties")
+            assertTrue(properties.any { it.startsWith("arcs=") })
+            // The stripped file still loads: the persisted graph round-trips.
+            assertEquals(64, GraphStore.load(first).nodes(Node::class.java).count())
+        } finally {
+            first.toFile().deleteRecursively()
+            second.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     @Suppress("LongMethod")
     fun `split raw scans reuse exact matches from the existing persisted index`() {
         val returnType = TypeDescriptor("void")

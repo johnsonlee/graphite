@@ -311,7 +311,22 @@ private fun storeAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): Immu
         0,
         BACKWARD_COMPRESSION_THREADS
     )
+    stripPropertiesComments(dir.resolve("$BACKWARD_GRAPH.properties"))
     return BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
+}
+
+/**
+ * Drops the comment lines `java.util.Properties.store` puts at the top of a `.properties`
+ * file. One of them is the wall-clock time of the write, so two builds of the same graph
+ * differed in that line and nothing else, which changed the container fingerprint of every
+ * rebuild. No reader depends on the comments: `Properties.load` and the Rust parser skip them.
+ */
+internal fun stripPropertiesComments(properties: Path) {
+    val lines = Files.readAllLines(properties, Charsets.ISO_8859_1)
+    val kept = lines.filterNot { it.startsWith("#") || it.startsWith("!") }
+    if (kept.size != lines.size) {
+        Files.write(properties, kept, Charsets.ISO_8859_1)
+    }
 }
 
 private fun hasPersistedBackwardGraph(dir: Path): Boolean =
@@ -639,6 +654,7 @@ object GraphStore {
             BVGraph.DEFAULT_MIN_INTERVAL_LENGTH, BVGraph.DEFAULT_ZETA_K,
             0, compressionThreads
         )
+        stripPropertiesComments(dir.resolve("$FORWARD_GRAPH.properties"))
 
         // 5. Store labels + comparisons
         BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
