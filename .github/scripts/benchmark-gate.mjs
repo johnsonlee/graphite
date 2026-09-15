@@ -16,6 +16,7 @@ export const BENCHMARK_COVERAGE_DOMAINS = [
     {
         name: "Latency regression",
         components: [
+            "rust-latency",
             "method-level",
             "budgeted-collection",
             "budgeted-mapped-string",
@@ -47,7 +48,17 @@ export const BENCHMARK_COVERAGE_DOMAINS = [
     }
 ];
 
+// Advisory components still run and still report, but their verdict never flips the gate:
+// they measure the JVM query engine, which `graphite serve` no longer ships. `rust-latency`
+// is the paired base-vs-candidate measurement of the engine a release runs.
 export const BENCHMARK_COMPONENTS = [
+    {
+        name: "rust-latency",
+        report: "rust-latency-report.md",
+        status: "rust-latency-status.json",
+        coverage: "partial",
+        gap: "Sequential single-threaded passes on one hosted runner; rows under the 1 ms floor cannot block."
+    },
     {
         name: "method-level",
         report: "method-report.md",
@@ -57,6 +68,7 @@ export const BENCHMARK_COMPONENTS = [
     },
     {
         name: "explorer",
+        advisory: true,
         report: "explorer-report.md",
         status: "explorer-status.json",
         coverage: "partial",
@@ -64,6 +76,7 @@ export const BENCHMARK_COMPONENTS = [
     },
     {
         name: "method-compatibility",
+        advisory: true,
         report: "method-compatibility-report.md",
         status: "method-compatibility-status.json",
         coverage: "partial",
@@ -71,6 +84,7 @@ export const BENCHMARK_COMPONENTS = [
     },
     {
         name: "cypher-capacity",
+        advisory: true,
         report: "cypher-capacity-report.md",
         status: "cypher-capacity-status.json",
         coverage: "partial",
@@ -78,6 +92,7 @@ export const BENCHMARK_COMPONENTS = [
     },
     {
         name: "budgeted-collection",
+        advisory: true,
         report: "budgeted-collection-report.md",
         status: "budgeted-collection-status.json",
         coverage: "partial",
@@ -85,6 +100,7 @@ export const BENCHMARK_COMPONENTS = [
     },
     {
         name: "budgeted-mapped-string",
+        advisory: true,
         report: "budgeted-string-report.md",
         status: "budgeted-string-status.json",
         coverage: "partial",
@@ -99,6 +115,7 @@ export const BENCHMARK_COMPONENTS = [
     },
     {
         name: "wrapped-query-latency",
+        advisory: true,
         report: "latency-report.md",
         status: "latency-status.json",
         coverage: "complete",
@@ -282,7 +299,7 @@ function confidenceBounds(metric) {
 }
 
 function isLowerBetter(mode) {
-    return ["avgt", "sample", "ss"].includes(String(mode).toLowerCase());
+    return ["avgt", "sample", "ss", "sequential-pass"].includes(String(mode).toLowerCase());
 }
 
 function regressionPercent(baseScore, candidateScore, lowerIsBetter) {
@@ -407,6 +424,47 @@ export function makeJmhAdvisory(comparison) {
     };
 }
 
+export const RUST_LATENCY_BENCHMARK_PREFIX = "rust.fixture64.";
+const RUST_LATENCY_TITLE = "Rust engine fixture64 latency (paired base vs PR)";
+export const RUST_LATENCY_AGGREGATE_KEYS = [
+    "rust.fixture64.aggregate[statistic=p50]",
+    "rust.fixture64.aggregate[statistic=p95]"
+];
+
+// The Rust engine answers most fixture64 shapes in about a millisecond, where a hosted runner
+// moves a point estimate by more than 15% on its own. A row therefore blocks only when it
+// exceeds the relative limit by at least `minimum` (ms) as well, and only after the reverse-order
+// confirmation run says the same. Confidence intervals are the min-max spread over passes,
+// which the cold first pass always widens, so they never decide anything here.
+export function compareRustLatency(baseResults, candidateResults, threshold = 15, minimum = 1) {
+    const comparison = compareJmh(baseResults, candidateResults, threshold, true);
+    const errors = [...comparison.errors];
+    for (const [revision, results] of [["base", baseResults], ["candidate", candidateResults]]) {
+        for (const result of results) {
+            if (!String(result.benchmark).startsWith(RUST_LATENCY_BENCHMARK_PREFIX)) {
+                errors.push(`${revision}: ${benchmarkKey(result)} is not a Rust engine measurement`);
+            }
+        }
+    }
+    const keys = new Set(comparison.rows.map((row) => row.key));
+    for (const key of RUST_LATENCY_AGGREGATE_KEYS) {
+        if (!keys.has(key)) errors.push(`${key}: missing from the paired results`);
+    }
+    const rows = comparison.rows.map((row) => {
+        if (row.unit !== "ms/op") errors.push(`${row.key}: expected ms/op, found ${row.unit}`);
+        const increase = row.candidateScore - row.baseScore;
+        const aboveMinimum = increase >= minimum;
+        return { ...row, minimum, aboveMinimum, blocked: row.blocked && aboveMinimum };
+    });
+    return {
+        passed: errors.length === 0 && rows.every((row) => !row.blocked),
+        errors,
+        thresholdOnly: true,
+        minimum,
+        rows
+    };
+}
+
 export function confirmJmh(initial, confirmation) {
     const errors = [
         ...initial.errors,
@@ -435,6 +493,7 @@ export function confirmJmh(initial, confirmation) {
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
         thresholdOnly: initial.thresholdOnly === true,
+        ...(initial.minimum === undefined ? {} : { minimum: initial.minimum }),
         rows
     };
 }
@@ -442,6 +501,12 @@ export function confirmJmh(initial, confirmation) {
 export function renderJmhReport(comparison, title = "Method-level JMH") {
     const decisionRule = comparison.advisory === true
         ? ["This metric is reported for context and does not block the regression gate."]
+        : comparison.minimum !== undefined
+        ? [
+            `A row runs reverse-order confirmation whenever it exceeds the 15% limit by at least ${comparison.minimum} ms,`,
+            "regardless of confidence interval overlap, and blocks only when the confirmation does the same.",
+            "Rows under the floor are reported as NOISE."
+        ]
         : comparison.thresholdOnly === true
         ? [
             "A row runs reverse-order confirmation whenever it exceeds the 15% limit, regardless of confidence",
@@ -2838,17 +2903,23 @@ export function aggregateReports(directory, metadata) {
     for (const component of BENCHMARK_COMPONENTS) {
         const reportFile = path.join(directory, component.report);
         const statusFile = path.join(directory, component.status);
+        const advisory = component.advisory === true;
         if (!fs.existsSync(reportFile) || !fs.existsSync(statusFile)) {
-            errors.push(`${component.name}: result artifact is missing`);
-            passed = false;
-            results.set(component.name, "MISSING");
+            if (advisory) {
+                results.set(component.name, "MISSING (advisory)");
+            } else {
+                errors.push(`${component.name}: result artifact is missing`);
+                passed = false;
+                results.set(component.name, "MISSING");
+            }
             continue;
         }
         reports.set(component.name, fs.readFileSync(reportFile, "utf8").trim());
         const status = readJson(statusFile);
         const componentPassed = status.passed === true;
-        results.set(component.name, componentPassed ? "PASS" : "FAIL");
-        if (!componentPassed) passed = false;
+        if (advisory) results.set(component.name, componentPassed ? "PASS (advisory)" : "FAIL (advisory)");
+        else results.set(component.name, componentPassed ? "PASS" : "FAIL");
+        if (!componentPassed && !advisory) passed = false;
     }
 
     const componentByName = new Map(BENCHMARK_COMPONENTS.map((component) => [component.name, component]));
@@ -2875,13 +2946,20 @@ export function aggregateReports(directory, metadata) {
         return section;
     });
 
-    const passedComponents = [...results.values()].filter((componentResult) => componentResult === "PASS").length;
+    const blocking = BENCHMARK_COMPONENTS.filter((component) => component.advisory !== true);
+    const advisoryComponents = BENCHMARK_COMPONENTS.filter((component) => component.advisory === true);
+    const passedComponents = blocking.filter((component) => results.get(component.name) === "PASS").length;
+    const passedAdvisory = advisoryComponents
+        .filter((component) => results.get(component.name) === "PASS (advisory)").length;
     const result = passed && errors.length === 0 ? "PASS" : "FAIL";
     const body = [
         COMMENT_MARKER,
         "## Benchmark Regression Gate",
         "",
-        `**${result} — ${passedComponents}/${BENCHMARK_COMPONENTS.length} component reports passed**`,
+        `**${result} — ${passedComponents}/${blocking.length} blocking component reports passed` +
+            (advisoryComponents.length === 0
+                ? "**"
+                : `; ${passedAdvisory}/${advisoryComponents.length} advisory JVM engine reports passed**`),
         "",
         `Base: \`${metadata.baseSha.slice(0, 12)}\`  `,
         `PR: \`${metadata.candidateSha.slice(0, 12)}\`  `,
@@ -2891,6 +2969,7 @@ export function aggregateReports(directory, metadata) {
         "",
         "Coverage labels follow the gate model: ✅ has no identified gate-specific gap; ⚠️ is implemented but incomplete.",
         "Run result and coverage are separate: PASS is evidence only for the stated contract, not for a listed gap or an uncovered family.",
+        "Advisory gates measure the JVM query engine, which `graphite serve` no longer ships; their result is recorded but never blocks.",
         "",
         "| Coverage domain | Gate | Run result | Coverage | Known gap |",
         "|---|---|:---:|:---:|---|",
@@ -3159,6 +3238,32 @@ function combineLatencyShardsCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function compareRustLatencyCommand(args) {
+    const comparison = compareRustLatency(
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        Number(args.threshold ?? 15),
+        Number(args.minimum ?? 1)
+    );
+    writeFile(requireArg(args, "report"), renderJmhReport(comparison, RUST_LATENCY_TITLE));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
+function confirmRustLatencyCommand(args) {
+    const initial = readJson(requireArg(args, "initial"));
+    const confirmation = compareRustLatency(
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        Number(args.threshold ?? 15),
+        Number(args.minimum ?? 1)
+    );
+    const comparison = confirmJmh(initial, confirmation);
+    writeFile(requireArg(args, "report"), renderJmhReport(comparison, RUST_LATENCY_TITLE));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function confirmJmhCommand(args) {
     const initial = readJson(requireArg(args, "initial"));
     const confirmation = compareJmh(
@@ -3227,6 +3332,8 @@ function main(argv) {
     else if (command === "compare-latency-resources") compareLatencyResourcesCommand(args);
     else if (command === "confirm-latency-resources") confirmLatencyResourcesCommand(args);
     else if (command === "confirm-jmh") confirmJmhCommand(args);
+    else if (command === "compare-rust-latency") compareRustLatencyCommand(args);
+    else if (command === "confirm-rust-latency") confirmRustLatencyCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);
     else if (command === "stage-artifacts") stageLatestArtifactsCommand(args);

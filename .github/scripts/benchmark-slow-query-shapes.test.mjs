@@ -136,11 +136,11 @@ test("CLI aggregation adds the required report without allowing an existing fail
         assert.equal(invoke().status, 0);
         const passed = JSON.parse(fs.readFileSync(output));
         assert.equal(passed.passed, true);
-        assert.match(passed.body, /12\/12 component reports passed/);
+        assert.match(passed.body, /7\/7 blocking component reports passed; 6\/6 advisory JVM engine reports passed/);
         fs.writeFileSync(path.join(directory, original.BENCHMARK_COMPONENTS[0].status), JSON.stringify({ passed: false }));
         assert.equal(invoke().status, 0);
         assert.equal(JSON.parse(fs.readFileSync(output)).passed, false);
-        assert.equal(original.BENCHMARK_COMPONENTS.length, 11);
+        assert.equal(original.BENCHMARK_COMPONENTS.length, 12);
     } finally { fs.rmSync(directory, { recursive: true }); }
 });
 
