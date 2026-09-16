@@ -323,6 +323,22 @@ LIMIT 50
 Their stable string identity is available through `elementId(method)`;
 `id(method)` returns `null` because no numeric graph-node id exists.
 
+Every Cypher response says whether the rows it returned are all there are. Next
+to `rowCount` (the rows in the response) there is `total`, in the shape
+Elasticsearch gives `hits.total`:
+
+```json
+{ "columns": ["n.callee_name"], "rows": [ … ], "rowCount": 1000,
+  "total": { "value": 1001, "relation": "gte" } }
+```
+
+`relation` is `eq` when `value` is the exact number of rows the query has, and
+`gte` when at least `value` rows exist and the response was cut by a `LIMIT`, the
+`limit` parameter (default 1000, at most 5000), or a fan-out `perGraphLimit`. The
+engine learns this by matching one row past the limit, so nothing is counted;
+`LIMIT 0` therefore answers "does any row exist". On `/api/cypher/graphs` every
+per-graph entry carries its own `total` as well.
+
 A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
 and then calling `/api/graphs/{graphId}/cypher` for each entry performs
 client-side fan-out and repeats HTTP and Cypher parsing overhead.

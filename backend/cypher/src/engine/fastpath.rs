@@ -109,6 +109,7 @@ fn count_result(ex: &Executor, item: &ReturnItem, per_source: &[i64], named: boo
         columns: vec![column],
         rows: vec![row],
         compact: None,
+        more: false,
     }
 }
 
@@ -240,6 +241,7 @@ pub fn grouped_call_site_property(
         columns,
         rows,
         compact: None,
+        more: false,
     }))
 }
 
@@ -389,6 +391,7 @@ pub fn distinct_string_property(
         columns: vec![column],
         rows,
         compact: None,
+        more: false,
     }))
 }
 
