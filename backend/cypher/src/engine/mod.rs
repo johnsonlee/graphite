@@ -112,6 +112,8 @@ pub struct Executor {
     /// Whether a result may come back as `QueryResult::compact` instead of rows. Off by
     /// default; only a consumer that reads the compact form asks for it.
     pub compact: bool,
+    /// Probe one row past every trailing literal LIMIT; see `QueryResult::more`.
+    pub probe: bool,
     /// Distinguishes this executor's cached node decodes from any earlier executor's
     /// on the same thread. Monotonic, so it never repeats the way an address can.
     epoch: u64,
@@ -137,6 +139,7 @@ impl Executor {
             cancel: CancelToken::new(),
             scoped: false,
             compact: false,
+            probe: false,
             epoch: EPOCH.fetch_add(1, Ordering::Relaxed),
             poll: AtomicU64::new(0),
         }
@@ -155,6 +158,13 @@ impl Executor {
     /// Allow the compact result form; see `QueryResult::compact`.
     pub fn with_compact(mut self) -> Self {
         self.compact = true;
+        self
+    }
+
+    /// Report whether more rows exist beyond a LIMIT (`QueryResult::more`), at the cost
+    /// of matching one row past every trailing literal limit.
+    pub fn with_probe(mut self) -> Self {
+        self.probe = true;
         self
     }
 

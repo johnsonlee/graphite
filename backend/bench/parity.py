@@ -34,9 +34,13 @@ def strip_placeholder(o):
         return [strip_placeholder(v) for v in o]
     return o
 
+# Rust-only additions to a Cypher response: the Kotlin server never emits them, so they
+# are dropped before comparing rather than reported as a divergence.
+RUST_ONLY = {"total"}  # {"value", "relation"}: whether rows exist past the limit
+
 def norm(o):
     if isinstance(o, dict):
-        return {k: ("<volatile>" if k in VOLATILE else norm(v)) for k, v in o.items()}
+        return {k: ("<volatile>" if k in VOLATILE else norm(v)) for k, v in o.items() if k not in RUST_ONLY}
     if isinstance(o, list):
         return [norm(v) for v in o]
     return o

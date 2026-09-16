@@ -128,7 +128,15 @@ jobs:
           curl -sf http://localhost:18090/api/graphs > "${RUNNER_TEMP}/discover.json" && break
           sleep 1
         done
+        # Every Cypher response carries `total`: exact when nothing was cut, a lower
+        # bound one past the rows returned when a LIMIT cut the result.
+        curl -sf -X POST http://localhost:18090/api/graphs/acme-shop/cypher -H 'Content-Type: application/json' \
+          -d '{"query":"MATCH (n:CallSiteNode) RETURN count(n) AS c"}' > "${RUNNER_TEMP}/counted.json"
+        curl -sf -X POST http://localhost:18090/api/graphs/acme-shop/cypher -H 'Content-Type: application/json' \
+          -d '{"query":"MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 5"}' > "${RUNNER_TEMP}/limited.json"
         kill "${DISCOVER}"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["rows"][0]["c"] > 5 and d["total"] == {"value": 1, "relation": "eq"}, d' "${RUNNER_TEMP}/counted.json"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["rowCount"] == 5 and d["total"] == {"value": 6, "relation": "gte"}, d' "${RUNNER_TEMP}/limited.json"
         grep -F 'Discovered 1 graph(s)' "${RUNNER_TEMP}/discover.log"
         python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); ids=[g["id"] for g in d["graphs"]]; assert ids==["acme-shop"], ids' "${RUNNER_TEMP}/discover.json"
         # Under --watch the directory is followed: a file that appears (renamed into place
@@ -177,6 +185,7 @@ jobs:
         cargo test --release --locked -p graphite-storage a_packed_graph_is_the_same_graph_as_its_directory -- --nocapture
         cargo test --release --locked -p graphite-cypher a_relaxed_plan_still_applies_the_dropped_conjunct -- --nocapture
         cargo test --release --locked -p graphite-explore registry_catalog_swaps_a_real_graph -- --nocapture
+        cargo test --release --locked -p graphite-cypher probed_execution_returns_the_same_rows_and_knows_when_more_exist -- --nocapture
 
     - name: Benchmark harness tests (fail-closed sampling and warmup)
       run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
