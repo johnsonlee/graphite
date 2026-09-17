@@ -323,8 +323,9 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
         eprintln!("Press Ctrl+C to stop");
         let api = router(opened.state.clone());
         let policy = crate::mcp::OriginPolicy::new(cli.mcp_allowed_origins.clone());
+        let mcp_metrics = cli.metrics.then(|| opened.state.mcp_metrics.clone());
         let app = crate::routes::instrumented(
-            crate::mcp::with_mcp_route(api, policy),
+            crate::mcp::with_mcp_route(api, policy, mcp_metrics),
             opened.state.clone(),
         );
         axum::serve(listener, app).await.map_err(|e| e.to_string())

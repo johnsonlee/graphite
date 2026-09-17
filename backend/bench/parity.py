@@ -558,7 +558,9 @@ def check_metrics():
     # They are required of the Rust server and left out of the family comparison; a
     # new graphite_* family on either side that is not listed here still fails it.
     rust_only = {"graphite_graphs_loaded", "graphite_graph_nodes",
-                 "graphite_graph_edges", "graphite_graph_mapped_bytes"}
+                 "graphite_graph_edges", "graphite_graph_mapped_bytes",
+                 "graphite_mcp_requests_total", "graphite_mcp_tool_duration_seconds",
+                 "graphite_mcp_tool_duration_seconds_max"}
     absent = sorted(rust_only - set(rf))
     if absent:
         failed += 1
