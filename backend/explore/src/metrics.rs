@@ -106,6 +106,72 @@ impl HttpMetrics {
     }
 }
 
+/// Which JSON-RPC methods `/mcp` counts. Anything else is `other`, so the label set
+/// is fixed however a client names its methods.
+pub const MCP_METHODS: [&str; 5] = ["initialize", "ping", "tools/list", "tools/call", "other"];
+
+/// One `graphite_mcp_tool_duration_seconds` series: tool name and outcome.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct McpToolKey {
+    /// A name from `mcp::tools()`; an unknown tool is refused before it is timed.
+    pub tool: &'static str,
+    /// `ok` when the tool answered, `error` when it returned `isError`.
+    pub ok: bool,
+}
+
+impl McpToolKey {
+    pub fn outcome(&self) -> &'static str {
+        if self.ok {
+            "ok"
+        } else {
+            "error"
+        }
+    }
+}
+
+/// MCP metrics over `POST /mcp`: requests by JSON-RPC method and tool calls by tool and
+/// outcome. Both label sets are closed (the method list above, the tool list in
+/// `mcp::tools()`), so a client can never create a series. The stdio transport
+/// (`graphite mcp`) has no `/metrics` and records nothing.
+#[derive(Default)]
+pub struct McpMetrics {
+    requests: Mutex<BTreeMap<&'static str, u64>>,
+    tools: Mutex<BTreeMap<McpToolKey, Series>>,
+}
+
+impl McpMetrics {
+    /// Count one JSON-RPC request; a method outside [`MCP_METHODS`] counts as `other`.
+    pub fn record_request(&self, method: &str) {
+        let label = MCP_METHODS
+            .iter()
+            .copied()
+            .find(|m| *m == method && *m != "other")
+            .unwrap_or("other");
+        *self.requests.lock().entry(label).or_default() += 1;
+    }
+
+    /// Time one tool call that reached its tool.
+    pub fn record_tool(&self, tool: &'static str, ok: bool, nanos: u64) {
+        self.tools
+            .lock()
+            .entry(McpToolKey { tool, ok })
+            .or_default()
+            .observe(nanos);
+    }
+
+    pub fn requests(&self) -> Vec<(&'static str, u64)> {
+        self.requests.lock().iter().map(|(k, v)| (*k, *v)).collect()
+    }
+
+    pub fn tools(&self) -> Vec<(McpToolKey, Series)> {
+        self.tools
+            .lock()
+            .iter()
+            .map(|(k, s)| (k.clone(), s.clone()))
+            .collect()
+    }
+}
+
 /// Tower middleware: time every request and record it under its route template.
 pub async fn record_http(State(state): State<Arc<AppState>>, req: Request, next: Next) -> Response {
     let method = req.method().as_str().to_string();
@@ -348,6 +414,51 @@ pub fn render(state: &AppState, fmt: &dyn Fn(f64) -> String) -> String {
             fmt(s.max_nanos as f64 / 1e9)
         ));
     }
+
+    let mcp = &state.mcp_metrics;
+    out.push_str("# HELP graphite_mcp_requests_total JSON-RPC requests over POST /mcp by method\n");
+    out.push_str("# TYPE graphite_mcp_requests_total counter\n");
+    for (method, count) in mcp.requests() {
+        out.push_str(&format!(
+            "graphite_mcp_requests_total{{method=\"{method}\"}} {count}\n"
+        ));
+    }
+    let tools = mcp.tools();
+    out.push_str(
+        "# HELP graphite_mcp_tool_duration_seconds MCP tool call duration by tool and outcome\n",
+    );
+    out.push_str("# TYPE graphite_mcp_tool_duration_seconds histogram\n");
+    for (k, s) in &tools {
+        let labels = format!("outcome=\"{}\",tool=\"{}\"", k.outcome(), k.tool);
+        for (slo, at_or_below) in DURATION_SLO_NANOS.iter().zip(s.buckets) {
+            out.push_str(&format!(
+                "graphite_mcp_tool_duration_seconds_bucket{{{labels},le=\"{}\"}} {at_or_below}\n",
+                fmt(*slo as f64 / 1e9)
+            ));
+        }
+        out.push_str(&format!(
+            "graphite_mcp_tool_duration_seconds_bucket{{{labels},le=\"+Inf\"}} {}\n",
+            s.count
+        ));
+        out.push_str(&format!(
+            "graphite_mcp_tool_duration_seconds_count{{{labels}}} {}\n",
+            s.count
+        ));
+        out.push_str(&format!(
+            "graphite_mcp_tool_duration_seconds_sum{{{labels}}} {}\n",
+            fmt(s.sum_nanos as f64 / 1e9)
+        ));
+    }
+    out.push_str("# HELP graphite_mcp_tool_duration_seconds_max MCP tool call duration by tool and outcome\n");
+    out.push_str("# TYPE graphite_mcp_tool_duration_seconds_max gauge\n");
+    for (k, s) in &tools {
+        out.push_str(&format!(
+            "graphite_mcp_tool_duration_seconds_max{{outcome=\"{}\",tool=\"{}\"}} {}\n",
+            k.outcome(),
+            k.tool,
+            fmt(s.max_nanos as f64 / 1e9)
+        ));
+    }
     out
 }
 
@@ -459,5 +570,66 @@ mod tests {
         );
         assert_eq!(m.snapshot().len(), MAX_URI_VALUES + 1);
         assert_eq!(m.dropped.load(Ordering::Relaxed), 1);
+    }
+
+    #[test]
+    fn mcp_requests_count_by_a_closed_method_set_and_tools_by_tool_and_outcome() {
+        let m = McpMetrics::default();
+        for method in [
+            "initialize",
+            "ping",
+            "tools/list",
+            "tools/call",
+            "tools/call",
+        ] {
+            m.record_request(method);
+        }
+        for method in ["resources/list", "other", "prompts/get"] {
+            m.record_request(method);
+        }
+        let requests: BTreeMap<_, _> = m.requests().into_iter().collect();
+        assert_eq!(requests["initialize"], 1);
+        assert_eq!(requests["tools/call"], 2);
+        assert_eq!(
+            requests["other"], 3,
+            "everything outside MCP_METHODS is `other`"
+        );
+        assert!(MCP_METHODS.contains(&"other"));
+
+        m.record_tool("cypher", true, 40_000_000);
+        m.record_tool("cypher", true, 2_000_000_000);
+        m.record_tool("cypher", false, 5_000_000);
+        let tools: BTreeMap<_, _> = m.tools().into_iter().collect();
+        let ok = &tools[&McpToolKey {
+            tool: "cypher",
+            ok: true,
+        }];
+        assert_eq!(
+            (ok.count, ok.sum_nanos, ok.max_nanos),
+            (2, 2_040_000_000, 2_000_000_000)
+        );
+        // 40 ms is at or below the 50 ms objective; 2 s is at or below 5 s.
+        assert_eq!(ok.buckets, [0, 1, 1, 1, 1, 2, 2, 2]);
+        let err = &tools[&McpToolKey {
+            tool: "cypher",
+            ok: false,
+        }];
+        assert_eq!(err.count, 1);
+        assert_eq!(
+            McpToolKey {
+                tool: "cypher",
+                ok: false
+            }
+            .outcome(),
+            "error"
+        );
+        assert_eq!(
+            McpToolKey {
+                tool: "cypher",
+                ok: true
+            }
+            .outcome(),
+            "ok"
+        );
     }
 }

@@ -379,7 +379,15 @@ descriptors, start time, uptime), `system_load_average_1m` and `system_cpu_count
 status and outcome, plus `http_server_requests_active`; and the graphs it serves,
 `graphite_graphs_loaded`, `graphite_graph_nodes`, `graphite_graph_edges` and
 `graphite_graph_mapped_bytes`. Cypher metrics cover active queries, concurrency
-limit, rejections and duration by fixed outcome. (The legacy `graphite.jar serve`
+limit, rejections and duration by fixed outcome. MCP over `POST /mcp` is covered
+too: `graphite_mcp_requests_total` counts JSON-RPC requests by method
+(`initialize`, `ping`, `tools/list`, `tools/call`, anything else as `other`) and
+`graphite_mcp_tool_duration_seconds` is a latency histogram by `tool` (the names
+`tools/list` returns) and `outcome` (`ok`, or `error` when the tool answered
+`isError`), with the same buckets as the Cypher histogram. A tool call is one
+`/mcp` request in `http_server_requests_seconds`; the API hop it makes inside the
+process is not counted again. `graphite mcp` over stdio has no `/metrics` and
+records nothing. (The legacy `graphite.jar serve`
 exports JVM heap, GC and thread metrics and Jetty's request timer instead.)
 Graph ids, query text, keywords, classes and methods are never used as metric
 labels. HTTP URI labels are route templates and are capped at 64 distinct values;

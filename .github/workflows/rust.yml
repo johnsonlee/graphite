@@ -227,6 +227,15 @@ jobs:
             --graph app:"${FIXTURE}" --graph app2:"${FIXTURE}" --graph acme:"${ACME}"
           STATUS=$?
         fi
+        # With --metrics, the tool call the smoke just made over POST /mcp is timed per
+        # tool and outcome.
+        if [ "${STATUS}" -eq 0 ]; then
+          curl -sf http://localhost:18080/metrics > "${RUNNER_TEMP}/rust-metrics.txt"
+          grep -E '^graphite_mcp_requests_total\{method="tools/call"\} [1-9]' "${RUNNER_TEMP}/rust-metrics.txt" && \
+            grep -E '^graphite_mcp_tool_duration_seconds_count\{outcome="ok",tool="graphs"\} [1-9]' "${RUNNER_TEMP}/rust-metrics.txt" && \
+            grep -E '^graphite_mcp_tool_duration_seconds_max\{outcome="ok",tool="graphs"\} ' "${RUNNER_TEMP}/rust-metrics.txt"
+          STATUS=$?
+        fi
         kill ${KOTLIN} ${RUST} || true
         exit ${STATUS}
 
