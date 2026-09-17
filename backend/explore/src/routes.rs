@@ -34,6 +34,8 @@ pub struct AppState {
     pub metrics_enabled: bool,
     /// HTTP request histograms, filled by `metrics::record_http` when enabled.
     pub http_metrics: crate::metrics::HttpMetrics,
+    /// MCP request and tool-call metrics, filled by `mcp::McpServer` when enabled.
+    pub mcp_metrics: Arc<crate::metrics::McpMetrics>,
     pub started: Instant,
     /// Wall-clock start, for `process_start_time_seconds`. `Instant` is monotonic and
     /// carries no epoch, so the epoch reading is taken once here.
@@ -135,6 +137,7 @@ impl AppState {
             version,
             metrics_enabled,
             http_metrics: crate::metrics::HttpMetrics::default(),
+            mcp_metrics: Arc::new(crate::metrics::McpMetrics::default()),
             started: Instant::now(),
             start_time_epoch_seconds: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

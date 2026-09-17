@@ -21,6 +21,7 @@
 //! the former `graphite-mcp` npm package, so an existing client configuration only
 //! changes its `command`.
 
+use crate::metrics::McpMetrics;
 use crate::serve::{open, report_loaded, runtime, warn_if_debug_build, GraphArgs, VERSION};
 use axum::body::{to_bytes, Body, Bytes};
 use axum::extract::Extension;
@@ -30,6 +31,7 @@ use axum::routing::post;
 use axum::Router;
 use serde_json::{json, Map, Value};
 use std::sync::Arc;
+use std::time::Instant;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 use tower::ServiceExt;
 
@@ -637,6 +639,9 @@ fn plan_cypher(a: &ToolArgs) -> Result<ApiCall, String> {
 /// The MCP server: JSON-RPC dispatch over an API router.
 pub struct McpServer {
     api: Router,
+    /// Where requests and tool calls are recorded; `None` keeps the transport free of
+    /// instrumentation, as `graphite serve` without `--metrics` and `graphite mcp` are.
+    metrics: Option<Arc<McpMetrics>>,
 }
 
 /// The text of a tool result, or the error text of a failed one.
@@ -647,7 +652,15 @@ enum ToolOutcome {
 
 impl McpServer {
     pub fn new(api: Router) -> Self {
-        McpServer { api }
+        McpServer { api, metrics: None }
+    }
+
+    /// A server that records every request and tool call into `metrics`.
+    pub fn with_metrics(api: Router, metrics: Arc<McpMetrics>) -> Self {
+        McpServer {
+            api,
+            metrics: Some(metrics),
+        }
     }
 
     /// Send `call` through the API router and return the response body as text.
@@ -757,6 +770,9 @@ impl McpServer {
         if is_notification {
             return None;
         }
+        if let Some(metrics) = &self.metrics {
+            metrics.record_request(method);
+        }
         let result = match method {
             "initialize" => Ok(self.initialize(&params)),
             "ping" => Ok(json!({})),
@@ -798,9 +814,10 @@ impl McpServer {
             INVALID_PARAMS,
             "tools/call requires a tool name".to_string(),
         ))?;
-        if !tools().iter().any(|t| t.name == name) {
+        // The tool's own `&'static str` name is the metric label, never the client's.
+        let Some(tool) = tools().iter().map(|t| t.name).find(|t| *t == name) else {
             return Err((INVALID_PARAMS, format!("Tool {name} not found")));
-        }
+        };
         let empty = Map::new();
         let arguments = match params.get("arguments") {
             None | Some(Value::Null) => &empty,
@@ -812,10 +829,15 @@ impl McpServer {
                 ))
             }
         };
-        let outcome = match plan(name, arguments) {
+        let started = Instant::now();
+        let outcome = match plan(tool, arguments) {
             Ok(call) => self.dispatch(&call).await,
             Err(message) => ToolOutcome::Err(message),
         };
+        if let Some(metrics) = &self.metrics {
+            let ok = matches!(outcome, ToolOutcome::Ok(_));
+            metrics.record_tool(tool, ok, started.elapsed().as_nanos() as u64);
+        }
         Ok(match outcome {
             ToolOutcome::Ok(text) => json!({"content": [{"type": "text", "text": text}]}),
             ToolOutcome::Err(text) => {
@@ -930,8 +952,15 @@ fn forbidden_origin(policy: &OriginPolicy, headers: &HeaderMap) -> Option<Respon
 }
 
 /// The API router with the MCP endpoint mounted at `/mcp`, guarded by `policy`.
-pub fn with_mcp_route(api: Router, policy: OriginPolicy) -> Router {
-    let server = Arc::new(McpServer::new(api.clone()));
+pub fn with_mcp_route(
+    api: Router,
+    policy: OriginPolicy,
+    metrics: Option<Arc<McpMetrics>>,
+) -> Router {
+    let server = Arc::new(match metrics {
+        Some(m) => McpServer::with_metrics(api.clone(), m),
+        None => McpServer::new(api.clone()),
+    });
     api.route("/mcp", post(mcp_post).get(mcp_get).delete(mcp_delete))
         .layer(Extension(server))
         .layer(Extension(Arc::new(policy)))
@@ -1397,8 +1426,9 @@ mod tests {
     /// A directory of its own per call: the process id separates test processes and a
     /// counter separates the tests one process runs in parallel (a timestamp did not,
     /// two tests could draw the same nanosecond and one would remove the other's root).
-    fn empty_server() -> (McpServer, std::path::PathBuf) {
-        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+    fn empty_state(metrics_enabled: bool) -> (Arc<AppState>, std::path::PathBuf) {
         let root = std::env::temp_dir().join(format!(
             "graphite-mcp-test-{}-{}",
             std::process::id(),
@@ -1410,7 +1440,17 @@ mod tests {
             LoadMode::parse("MAPPED").unwrap(),
         ));
         let guard = Arc::new(CypherGuard::new(2, 10_000));
-        let state = Arc::new(AppState::new(registry, guard, "test".into(), false));
+        let state = Arc::new(AppState::new(
+            registry,
+            guard,
+            "test".into(),
+            metrics_enabled,
+        ));
+        (state, root)
+    }
+
+    fn empty_server() -> (McpServer, std::path::PathBuf) {
+        let (state, root) = empty_state(false);
         (McpServer::new(router(state)), root)
     }
 
@@ -1602,7 +1642,7 @@ mod tests {
             "\n",
         );
         let (mut client, server_side) = tokio::io::duplex(64 * 1024);
-        let started = std::time::Instant::now();
+        let started = Instant::now();
         serve_lines(server, input.as_bytes(), server_side)
             .await
             .unwrap();
@@ -1666,6 +1706,7 @@ mod tests {
         let app = with_mcp_route(
             server.api.clone(),
             OriginPolicy::new(vec!["https://tools.example.com".into()]),
+            None,
         );
         let list = r#"{"jsonrpc":"2.0","id":1,"method":"tools/list"}"#;
         let request = |method: Method, origin: Option<&str>| {
@@ -1769,7 +1810,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn the_http_endpoint_carries_the_same_dispatch() {
         let (server, root) = empty_server();
-        let app = with_mcp_route(server.api.clone(), OriginPolicy::default());
+        let app = with_mcp_route(server.api.clone(), OriginPolicy::default(), None);
         let post = |body: &str| {
             Request::builder()
                 .method(Method::POST)
@@ -1919,5 +1960,144 @@ mod tests {
             .unwrap();
         assert_eq!(api.status(), StatusCode::OK);
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn tool_calls_are_timed_by_tool_and_outcome_and_requests_counted_by_method() {
+        let (server, root) = empty_server();
+        let metrics = Arc::new(McpMetrics::default());
+        let server = McpServer::with_metrics(server.api.clone(), metrics.clone());
+        let call = |id: u64, method: &str, params: Value| json!({"jsonrpc": "2.0", "id": id, "method": method, "params": params});
+        server.handle(&call(1, "initialize", json!({}))).await;
+        server.handle(&call(2, "tools/list", Value::Null)).await;
+        server.handle(&call(3, "tools/list", Value::Null)).await;
+        server.handle(&call(4, "resources/list", Value::Null)).await;
+        // A notification is not a request and is not counted.
+        server
+            .handle(&json!({"jsonrpc": "2.0", "method": "notifications/initialized"}))
+            .await;
+        // Answered: `graphs` over an empty registry.
+        server
+            .handle(&call(5, "tools/call", json!({"name": "graphs"})))
+            .await;
+        // Refused by the tool: a graph that is not loaded.
+        server
+            .handle(&call(
+                6,
+                "tools/call",
+                json!({"name": "graphs", "arguments": {"graph_id": "nope"}}),
+            ))
+            .await;
+        // Refused before any tool runs: neither is timed.
+        server
+            .handle(&call(7, "tools/call", json!({"name": "bogus"})))
+            .await;
+        server
+            .handle(&call(
+                8,
+                "tools/call",
+                json!({"name": "graphs", "arguments": 3}),
+            ))
+            .await;
+
+        let requests: std::collections::BTreeMap<_, _> = metrics.requests().into_iter().collect();
+        assert_eq!(requests.get("initialize"), Some(&1));
+        assert_eq!(requests.get("tools/list"), Some(&2));
+        assert_eq!(requests.get("tools/call"), Some(&4));
+        assert_eq!(requests.get("other"), Some(&1));
+        assert_eq!(requests.get("ping"), None);
+
+        let tools = metrics.tools();
+        let series = |ok: bool| {
+            tools
+                .iter()
+                .find(|(k, _)| k.tool == "graphs" && k.ok == ok)
+                .map(|(_, s)| s.clone())
+                .unwrap_or_else(|| panic!("no graphs series with ok={ok}"))
+        };
+        assert_eq!(series(true).count, 1);
+        assert_eq!(series(false).count, 1);
+        assert_eq!(
+            tools.len(),
+            2,
+            "only the calls that reached the tool: {tools:?}"
+        );
+        assert!(tools.iter().all(|(k, _)| k.tool == "graphs"));
+        std::fs::remove_dir_all(root).ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn a_server_without_metrics_records_nothing() {
+        let (server, root) = empty_server();
+        server
+            .handle(&json!({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "graphs"}}))
+            .await;
+        assert!(server.metrics.is_none());
+        std::fs::remove_dir_all(root).ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn the_metrics_route_exposes_the_mcp_families_after_a_tool_call() {
+        let (state, root) = empty_state(true);
+        let app = crate::routes::instrumented(
+            with_mcp_route(
+                router(state.clone()),
+                OriginPolicy::default(),
+                Some(state.mcp_metrics.clone()),
+            ),
+            state.clone(),
+        );
+        let scrape = || async {
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method(Method::GET)
+                        .uri("/metrics")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+            String::from_utf8(bytes.to_vec()).unwrap()
+        };
+        // The families are present before any MCP traffic, with no series.
+        let before = scrape().await;
+        assert!(before.contains("# TYPE graphite_mcp_requests_total counter\n"));
+        assert!(before.contains("# TYPE graphite_mcp_tool_duration_seconds histogram\n"));
+        assert!(before.contains("# TYPE graphite_mcp_tool_duration_seconds_max gauge\n"));
+        assert!(!before.contains("graphite_mcp_tool_duration_seconds_count"));
+
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/mcp")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"graphs"}}"#,
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let after = scrape().await;
+        assert!(after.contains("graphite_mcp_requests_total{method=\"tools/call\"} 1\n"));
+        assert!(after.contains(
+            "graphite_mcp_tool_duration_seconds_count{outcome=\"ok\",tool=\"graphs\"} 1\n"
+        ));
+        assert!(after.contains(
+            "graphite_mcp_tool_duration_seconds_bucket{outcome=\"ok\",tool=\"graphs\",le=\"+Inf\"} 1\n"
+        ));
+        assert!(after
+            .contains("graphite_mcp_tool_duration_seconds_max{outcome=\"ok\",tool=\"graphs\"} "));
+        // The tool's inner API hop is not a second HTTP request: only `/mcp` is counted.
+        assert!(after.contains("uri=\"/mcp\""));
+        assert!(!after.contains("uri=\"/api/graphs\""));
+        std::fs::remove_dir_all(root).ok();
     }
 }
