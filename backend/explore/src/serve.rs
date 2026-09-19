@@ -88,6 +88,15 @@ pub struct ServeArgs {
     /// '*' allows any origin). Requests without an Origin header are always accepted.
     #[arg(long = "mcp-allowed-origin", value_name = "ORIGIN")]
     pub mcp_allowed_origins: Vec<String>,
+
+    /// Follow --data while serving: a `*.graphite` file that appears, changes or
+    /// disappears is loaded, reloaded or unloaded without a restart
+    #[arg(long, requires = "data")]
+    pub watch: bool,
+
+    /// Seconds between two scans of --data under --watch
+    #[arg(long = "watch-interval", default_value_t = 5, value_name = "SECONDS")]
+    pub watch_interval: u64,
 }
 
 /// Graphs opened and ready to serve: the shared state behind the HTTP API and the MCP
@@ -313,7 +322,14 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
 /// also carries the MCP server at `/mcp` (see `crate::mcp`).
 pub fn serve(cli: ServeArgs) -> Result<(), String> {
     warn_if_debug_build();
+    if cli.watch && cli.watch_interval == 0 {
+        return Err("--watch-interval must be positive".into());
+    }
     let opened = open(&cli.graphs, cli.metrics)?;
+    if cli.watch {
+        let watcher = crate::watch::for_server(opened.state.clone(), &opened.root)?;
+        crate::watch::spawn(watcher, std::time::Duration::from_secs(cli.watch_interval));
+    }
     let runtime = runtime(cli.graphs.max_concurrent_cypher)?;
     runtime.block_on(async move {
         let listener = tokio::net::TcpListener::bind(("0.0.0.0", cli.port))
