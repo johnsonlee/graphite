@@ -13,6 +13,12 @@ pub const VERSION: &str = match option_env!("GRAPHITE_VERSION") {
     Some(v) => v,
     None => env!("CARGO_PKG_VERSION"),
 };
+/// The commit the binary was built from, when the build sets `GRAPHITE_COMMIT` (the
+/// release workflow does); `unknown` otherwise. Reported by `graphite_build_info`.
+pub const COMMIT: &str = match option_env!("GRAPHITE_COMMIT") {
+    Some(c) => c,
+    None => "unknown",
+};
 pub const DEFAULT_PORT: u16 = 8080;
 
 /// Which graphs to open and how to run Cypher over them: the part of the `serve`

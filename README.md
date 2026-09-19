@@ -374,7 +374,14 @@ descriptors, start time, uptime), `system_load_average_1m` and `system_cpu_count
 `http_server_requests_seconds`, a latency histogram by HTTP method, route template,
 status and outcome, plus `http_server_requests_active`; and the graphs it serves,
 `graphite_graphs_loaded`, `graphite_graph_nodes`, `graphite_graph_edges` and
-`graphite_graph_mapped_bytes`. Cypher metrics cover active queries, concurrency
+`graphite_graph_mapped_bytes`. Two `_info` gauges carry identity for a fleet:
+`graphite_build_info{version,commit}` (the commit when the release build set it,
+`unknown` otherwise) and `graphite_graph_info{graph,fingerprint}`, one per served
+graph, where the fingerprint is the SHA-256 of the graph's manifest, the same for a
+directory and for the `.graphite` file packed from it, so a rollout can check that
+every instance serves the same build and the same graphs. Which instance a scrape
+came from is the scraper's `instance` label, as usual; no series carries a host
+name. Cypher metrics cover active queries, concurrency
 limit, rejections and duration by fixed outcome. MCP over `POST /mcp` is covered
 too: `graphite_mcp_requests_total` counts JSON-RPC requests by method
 (`initialize`, `ping`, `tools/list`, `tools/call`, anything else as `other`) and

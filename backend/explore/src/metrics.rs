@@ -283,6 +283,20 @@ const libc_SC_CLK_TCK: i32 = 2;
 #[allow(non_upper_case_globals)]
 const libc_SC_PAGESIZE: i32 = 30;
 
+/// A label value in exposition format: backslash, double quote and newline escaped.
+fn label(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for c in value.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
 /// Render everything this module knows, in exposition format, for appending after the
 /// Cypher families. `fmt` renders a double the way the Cypher families do.
 pub fn render(state: &AppState, fmt: &dyn Fn(f64) -> String) -> String {
@@ -361,13 +375,33 @@ pub fn render(state: &AppState, fmt: &dyn Fn(f64) -> String) -> String {
         "Bytes of served graphs that are memory-mapped rather than owned",
         fmt(graphs.iter().map(|g| g.graph.mapped_bytes()).sum::<u64>() as f64),
     );
-
     let http = &state.http_metrics;
     gauge(
         "http_server_requests_active",
         "HTTP requests accepted and not yet answered",
         fmt(http.in_flight.load(Ordering::Relaxed) as f64),
     );
+    // Identity, Prometheus-style: an `_info` gauge whose value is 1 and whose labels
+    // carry the facts. What a fleet needs to tell its instances apart is added by the
+    // scraper (`instance`, `job`); these say which build and which graphs an instance
+    // is serving.
+    out.push_str("# HELP graphite_build_info The version and commit of the serving binary\n");
+    out.push_str("# TYPE graphite_build_info gauge\n");
+    out.push_str(&format!(
+        "graphite_build_info{{commit=\"{}\",version=\"{}\"}} 1\n",
+        label(crate::serve::COMMIT),
+        label(&state.version)
+    ));
+    out.push_str("# HELP graphite_graph_info The content fingerprint of each served graph\n");
+    out.push_str("# TYPE graphite_graph_info gauge\n");
+    for g in &graphs {
+        out.push_str(&format!(
+            "graphite_graph_info{{fingerprint=\"{}\",graph=\"{}\"}} 1\n",
+            label(g.fingerprint.as_deref().unwrap_or("unknown")),
+            label(&g.id)
+        ));
+    }
+
     // Same shape as `graphite_cypher_query_duration_seconds`: counts as integers,
     // sums and gauges as doubles, one `_max` family apart.
     out.push_str("# HELP http_server_requests_seconds HTTP request duration by route template\n");
@@ -631,5 +665,13 @@ mod tests {
             .outcome(),
             "ok"
         );
+    }
+
+    #[test]
+    fn label_values_are_escaped_for_the_exposition_format() {
+        assert_eq!(label("plain-1.2_3"), "plain-1.2_3");
+        assert_eq!(label("a\"b"), "a\\\"b");
+        assert_eq!(label("a\\b"), "a\\\\b");
+        assert_eq!(label("a\nb"), "a\\nb");
     }
 }

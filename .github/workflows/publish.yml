@@ -183,6 +183,7 @@ jobs:
     - name: Build release binaries
       env:
         GRAPHITE_VERSION: ${{ env.RELEASE_VERSION }}
+        GRAPHITE_COMMIT: ${{ github.sha }}
       run: |
         if [ "${{ matrix.cross }}" = "true" ]; then
           cross build --release --locked --target ${{ matrix.target }} -p graphite-cli

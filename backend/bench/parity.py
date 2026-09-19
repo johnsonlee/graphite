@@ -560,7 +560,8 @@ def check_metrics():
     rust_only = {"graphite_graphs_loaded", "graphite_graph_nodes",
                  "graphite_graph_edges", "graphite_graph_mapped_bytes",
                  "graphite_mcp_requests_total", "graphite_mcp_tool_duration_seconds",
-                 "graphite_mcp_tool_duration_seconds_max"}
+                 "graphite_mcp_tool_duration_seconds_max",
+                 "graphite_build_info", "graphite_graph_info"}
     absent = sorted(rust_only - set(rf))
     if absent:
         failed += 1
