@@ -18,6 +18,7 @@ kotlin-compiler-fixture = "2.0.21"
 javalin = "6.4.0"
 micrometer = "1.13.4"
 jmh = "1.37"
+protobuf = "4.28.3"
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
@@ -47,4 +48,6 @@ javalin-micrometer = { module = "io.javalin:javalin-micrometer", version.ref = "
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
