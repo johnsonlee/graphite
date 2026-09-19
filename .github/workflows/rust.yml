@@ -210,6 +210,17 @@ jobs:
             grep -E '^graphite_mcp_tool_duration_seconds_max\{outcome="ok",tool="graphs"\} ' "${RUNNER_TEMP}/rust-metrics.txt"
           STATUS=$?
         fi
+        # Identity: the build, and every served graph with its content fingerprint. The
+        # two ids over the same directory report the same fingerprint, and the packed
+        # container of that directory reports it too.
+        if [ "${STATUS}" -eq 0 ]; then
+          grep -E '^graphite_build_info\{commit="[^"]+",version="[^"]+"\} 1$' "${RUNNER_TEMP}/rust-metrics.txt" && \
+            grep -E '^graphite_graph_info\{fingerprint="[0-9a-f]{64}",graph="app"\} 1$' "${RUNNER_TEMP}/rust-metrics.txt" && \
+            test "$(grep -E '^graphite_graph_info\{fingerprint="[0-9a-f]{64}",graph="app2?"\} 1$' "${RUNNER_TEMP}/rust-metrics.txt" | sed 's/.*fingerprint="\([0-9a-f]*\)".*/\1/' | sort -u | wc -l)" -eq 1 && \
+            test "$(grep -E '^graphite_graph_info\{fingerprint="[0-9a-f]{64}",graph="acme"\} 1$' "${RUNNER_TEMP}/rust-metrics.txt" | sed 's/.*fingerprint="\([0-9a-f]*\)".*/\1/')" = \
+              "$(python3 -c 'import hashlib,sys,zipfile; print(hashlib.sha256(zipfile.ZipFile(sys.argv[1]).read("META-INF/graphite.manifest")).hexdigest())' "${RUNNER_TEMP}/acme.graphite")"
+          STATUS=$?
+        fi
         kill ${KOTLIN} ${RUST} || true
         exit ${STATUS}
 

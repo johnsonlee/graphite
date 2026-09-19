@@ -608,6 +608,34 @@ fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
+/// The content fingerprint of a graph at `path`, whichever form it takes: for a
+/// `.graphite` container the SHA-256 of its manifest; for a directory the SHA-256 of
+/// the manifest [`pack`] would write for it, so a directory and the container packed
+/// from it report the same fingerprint.
+pub fn fingerprint_of(path: &Path) -> Result<String, ContainerError> {
+    if path.is_file() {
+        let container = Container::open(path)?;
+        return Ok(container
+            .fingerprint()
+            .unwrap_or_else(|| container.file_sha256()));
+    }
+    let mut manifest = Manifest::default();
+    for (name, file) in walk(path)? {
+        if name == MANIFEST_NAME {
+            continue;
+        }
+        let d = digest_file(&file)?;
+        manifest.entries.insert(
+            name,
+            ManifestEntry {
+                size: d.size,
+                sha256: d.sha256,
+            },
+        );
+    }
+    Ok(hex(&Sha256::digest(manifest.render().as_bytes())))
+}
+
 /// Every regular file under `dir`, as (archive name, path), sorted by name.
 fn walk(dir: &Path) -> Result<Vec<(String, PathBuf)>, ContainerError> {
     fn visit(
@@ -1281,5 +1309,22 @@ mod tests {
             Err(ContainerError::Format(..))
         ));
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn a_directory_and_the_container_packed_from_it_share_a_fingerprint() {
+        let dir = tempdir("fingerprint-dir");
+        fixture(&dir);
+        let out = tempdir("fingerprint-out").join("g.graphite");
+        let report = pack(&dir, &out).unwrap();
+        let from_dir = fingerprint_of(&dir).unwrap();
+        assert_eq!(from_dir, report.fingerprint);
+        assert_eq!(from_dir, fingerprint_of(&out).unwrap());
+        assert_eq!(from_dir.len(), 64);
+        // A byte changes, the fingerprint changes.
+        std::fs::write(dir.join("graph.metadata"), b"other metadata").unwrap();
+        assert_ne!(fingerprint_of(&dir).unwrap(), from_dir);
+        std::fs::remove_dir_all(dir).ok();
+        std::fs::remove_dir_all(out.parent().unwrap()).ok();
     }
 }

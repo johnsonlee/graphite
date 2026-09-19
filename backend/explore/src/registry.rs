@@ -82,6 +82,9 @@ pub struct ServedGraph {
     pub stats: GraphStats,
     pub generation: u64,
     pub graph: Arc<Graph>,
+    /// The content fingerprint (see `graphite_storage::container::fingerprint_of`),
+    /// `None` when it could not be computed.
+    pub fingerprint: Option<String>,
 }
 
 impl ServedGraph {
@@ -179,6 +182,8 @@ impl GraphRegistry {
         // Load before taking the lock so a slow load never blocks readers.
         let graph = Graph::load(&resolved).map_err(|e| e.to_string())?;
         let stats = GraphStats::of(&graph);
+        // Hashes every file once per load; what `graphite_graph_info` reports.
+        let fingerprint = graphite_storage::container::fingerprint_of(&resolved).ok();
         let served = Arc::new(ServedGraph {
             id: id.clone(),
             path: resolved,
@@ -187,6 +192,7 @@ impl GraphRegistry {
             stats,
             generation: self.next_generation.fetch_add(1, Ordering::SeqCst),
             graph: Arc::new(graph),
+            fingerprint,
         });
         self.graphs.lock().insert(id, served.clone());
         Ok(served)
