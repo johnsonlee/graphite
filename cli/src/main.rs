@@ -6,6 +6,8 @@
 //! - `build` is a shell over the JVM frontend (`graphite.jar build`, the SootUp
 //!   analysis): every argument is passed through, and the frontend is found as
 //!   `frontend.rs` describes.
+//! - `import` is the same shell over `graphite.jar import`: it persists the Graph IR
+//!   another frontend wrote (`graphite-frontend-apple build --out app.graphite-ir`).
 //! - `query` is reproduced byte for byte: output of all three formats, the verbose lines,
 //!   the error text and the exit codes are compared against the Kotlin binary by
 //!   `backend/bench/parity-cli.py`.
@@ -57,6 +59,9 @@ enum Command {
     /// Build graph from JAR/WAR/APK/directory and save to disk (runs the JVM frontend)
     #[command(disable_help_flag = true, disable_version_flag = true)]
     Build(BuildArgs),
+    /// Import a Graph IR written by a language frontend (.graphite-ir) and save the graph
+    #[command(disable_help_flag = true, disable_version_flag = true)]
+    Import(BuildArgs),
     /// Execute a Cypher query against a saved graph
     Query(QueryArgs),
     /// Serve one or more saved Graphite webgraphs over HTTP (with MCP at /mcp)
@@ -141,6 +146,7 @@ fn main() -> std::process::ExitCode {
     };
     let outcome = match command {
         Command::Build(args) => return exit_code(build::run(&env, &args.args)),
+        Command::Import(args) => return exit_code(build::run_import(&env, &args.args)),
         Command::Query(args) => query(args),
         Command::Serve(args) => serve(args),
         Command::Mcp(args) => graphite_explore::mcp::run_stdio(args.graphs),

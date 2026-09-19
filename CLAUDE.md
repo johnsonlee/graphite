@@ -48,19 +48,22 @@ Graphite is a graph-based static analysis framework for JVM bytecode. It provide
 
 ```
 graphite/
+├── ir/                     # graphite_ir.proto: the protobuf Graph IR non-JVM frontends write
 ├── frontend/
-│   └── jvm/                # JVM frontend: Kotlin Gradle projects (project names have no prefix)
-│       ├── core/           # Core framework (zero external dependencies except fastutil)
-│       │   ├── core/       # Node, Edge, TypeDescriptor, MethodDescriptor
-│       │   ├── graph/      # Graph interface, DefaultGraph
-│       │   ├── analysis/   # DataFlowAnalysis
-│       │   ├── query/      # QueryDsl - declarative query API
-│       │   └── input/      # ProjectLoader interface, LoaderConfig
-│       ├── sootup/         # SootUp backend + GraphiteExtension SPI
-│       ├── cypher/         # Kotlin Cypher engine (legacy server)
-│       ├── webgraph/       # Persisted graph writer/reader (WebGraph)
-│       ├── query/          # `graphite.jar`: build, query, serve
-│       └── explore/        # Legacy Kotlin Explorer server
+│   ├── jvm/                # JVM frontend: Kotlin Gradle projects (project names have no prefix)
+│   │   ├── core/           # Core framework (zero external dependencies except fastutil)
+│   │   │   ├── core/       # Node, Edge, TypeDescriptor, MethodDescriptor
+│   │   │   ├── graph/      # Graph interface, DefaultGraph
+│   │   │   ├── analysis/   # DataFlowAnalysis
+│   │   │   ├── query/      # QueryDsl - declarative query API
+│   │   │   └── input/      # ProjectLoader interface, LoaderConfig
+│   │   ├── ir/             # IrReader: protobuf IR stream → FullGraphBuilder (generated bindings excluded from coverage)
+│   │   ├── sootup/         # SootUp backend + GraphiteExtension SPI
+│   │   ├── cypher/         # Kotlin Cypher engine (legacy server)
+│   │   ├── webgraph/       # Persisted graph writer/reader (WebGraph)
+│   │   ├── query/          # `graphite.jar`: build, import, query, serve
+│   │   └── explore/        # Legacy Kotlin Explorer server
+│   └── apple/              # Swift frontend (SwiftPM): IndexStoreDB + SwiftSyntax → Graph IR; swift.sh build|test
 │
 ├── backend/                # Rust backend: serves and queries persisted graphs
 │   ├── storage/            # mmap reader of the persisted graph, indexes, columns
@@ -68,11 +71,11 @@ graphite/
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 │
-├── cli/                    # `graphite` CLI (Rust): build (runs the JVM frontend), query, serve, frontend
+├── cli/                    # `graphite` CLI (Rust): build and import (run the JVM frontend), query, serve, frontend
 └── Cargo.toml              # Cargo workspace root: backend/storage, backend/cypher, backend/explore, cli
 ```
 
-Gradle project paths are `:core`, `:sootup`, `:cypher`, `:webgraph`, `:query`, `:explore`
+Gradle project paths are `:core`, `:ir`, `:sootup`, `:cypher`, `:webgraph`, `:query`, `:explore`
 (mapped to `frontend/jvm/<name>` in `settings.gradle.kts`); Cargo package names keep the
 `graphite-` prefix (`graphite-storage`, ...) while their directories do not. Rust commands
 (`cargo build`, `cargo test`) run from the repository root. See

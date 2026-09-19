@@ -1,0 +1,120 @@
+name: Apple frontend
+
+# The Swift frontend end to end: build and test the package, index the AcmeShop fixture,
+# import the IR with graphite.jar through the Rust CLI, then query and serve the graph.
+on:
+  push:
+    branches: [ '*' ]
+    paths:
+      - 'frontend/apple/**'
+      - 'ir/**'
+      - 'frontend/jvm/ir/**'
+      - 'frontend/jvm/query/**'
+      - 'cli/**'
+      - '.github/workflows/apple.yml'
+  pull_request:
+    branches: [ '**' ]
+    paths:
+      - 'frontend/apple/**'
+      - 'ir/**'
+      - 'frontend/jvm/ir/**'
+      - 'frontend/jvm/query/**'
+      - 'cli/**'
+      - '.github/workflows/apple.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  apple:
+    name: apple-frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: swift:6.1
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache cargo
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: .
+
+    - name: Cache SwiftPM
+      uses: actions/cache@v4
+      with:
+        path: frontend/apple/.build
+        key: swiftpm-${{ runner.os }}-6.1-${{ hashFiles('frontend/apple/Package.resolved') }}
+        restore-keys: swiftpm-${{ runner.os }}-6.1-
+
+    - name: Build the frontend
+      run: frontend/apple/swift.sh build -c release
+
+    - name: Test the frontend
+      run: frontend/apple/swift.sh test
+
+    - name: Build graphite.jar and the CLI
+      run: |
+        ./gradlew :query:shadowJar --no-daemon
+        cargo build --release --locked -p graphite-cli
+
+    - name: Index the fixture, import it and query the graph
+      env:
+        GRAPHITE_FRONTEND_JVM: frontend/jvm/query/build/libs/graphite.jar
+      run: |
+        set -euo pipefail
+        FRONTEND=frontend/apple/.build/release/graphite-frontend-apple
+        "${FRONTEND}" describe | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["name"]=="graphite-frontend-apple" and d["ir_schema"]==[1], d'
+        "${FRONTEND}" version
+        "${FRONTEND}" build --package frontend/apple/Fixtures/AcmeShop --out "${RUNNER_TEMP}/acme.graphite-ir"
+        test -s "${RUNNER_TEMP}/acme.graphite-ir"
+        # The Rust CLI runs the jar's import and packs the result when -o names a .graphite file.
+        ./target/release/graphite import "${RUNNER_TEMP}/acme.graphite-ir" -o "${RUNNER_TEMP}/acme.graphite"
+        ./target/release/graphite verify "${RUNNER_TEMP}/acme.graphite"
+        # A directory output works too and is the same graph.
+        ./target/release/graphite import "${RUNNER_TEMP}/acme.graphite-ir" -o "${RUNNER_TEMP}/acme-graph"
+        ./target/release/graphite unpack "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/acme-unpacked"
+        diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-unpacked" --exclude=META-INF
+        Q=./target/release/graphite
+        G="${RUNNER_TEMP}/acme.graphite"
+        # Literal arguments flow into their call sites in position.
+        "${Q}" query "${G}" "MATCH (s:Constant)-[:DATAFLOW]->(c:CallSite) WHERE c.callee_name = 'isEnabled(_:default:)' RETURN s.value ORDER BY s.value" -f csv | tee "${RUNNER_TEMP}/flags.csv"
+        grep -Fx '"payments.charge"' "${RUNNER_TEMP}/flags.csv"
+        grep -Fx 'true' "${RUNNER_TEMP}/flags.csv"
+        # Methods carry demangled Swift signatures.
+        "${Q}" query "${G}" "MATCH (m:Method) WHERE m.class = 'AcmeShop.CartService' RETURN m.name ORDER BY m.name" -f csv | tee "${RUNNER_TEMP}/methods.csv"
+        grep -Fx '"checkout(order:method:)"' "${RUNNER_TEMP}/methods.csv"
+        grep -Fx '"init(client:)"' "${RUNNER_TEMP}/methods.csv"
+        # Fields, annotations and call sites are there with their Swift names.
+        "${Q}" query "${G}" "MATCH (f:Field) WHERE f.class = 'AcmeShop.CartService' AND f.static = true RETURN f.name" -f csv | grep -Fx '"maxItems"'
+        "${Q}" query "${G}" "MATCH (a:Annotation) RETURN a.name, a.member" -f csv | grep -Fx '"available","checkout(order:)"'
+        "${Q}" query "${G}" "MATCH (c:CallSite) WHERE c.caller_name = 'checkout(order:method:)' RETURN c.callee_name ORDER BY c.callee_name" -f csv | grep -Fx '"charge(amount:currency:method:)"'
+
+    - name: Serve the graph
+      run: |
+        set -euo pipefail
+        ./target/release/graphite serve --graph acme:"${RUNNER_TEMP}/acme.graphite" --port 18095 > "${RUNNER_TEMP}/serve.log" 2>&1 &
+        SERVER=$!
+        for _ in $(seq 1 60); do
+          curl -sf http://localhost:18095/api/graphs > "${RUNNER_TEMP}/graphs.json" && break
+          sleep 1
+        done
+        curl -sf -X POST http://localhost:18095/api/graphs/acme/cypher -H 'Content-Type: application/json' \
+          -d '{"query":"MATCH (c:CallSite) RETURN count(c) AS calls"}' > "${RUNNER_TEMP}/calls.json"
+        kill "${SERVER}"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert [g["id"] for g in d["graphs"]]==["acme"], d' "${RUNNER_TEMP}/graphs.json"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["rows"][0]["calls"] >= 15, d' "${RUNNER_TEMP}/calls.json"

@@ -102,7 +102,7 @@ graphite/
 │   │   ├── core/ sootup/ cypher/ webgraph/ query/ explore/
 │   │   └── (phase 2) IR writer; builds `graphite-frontend-jvm.jar`
 │   ├── web/                       (phase 6) TypeScript frontend, npm package
-│   └── apple/                     (phase 7) Swift package
+│   └── apple/                     Swift package: `graphite-frontend-apple` (phase 7, first cut shipped)
 └── docs/
 ```
 
@@ -205,8 +205,21 @@ core names are listed in addition only when they are not aliases of a listed key
 - Self-describing and versioned; forward-compatible for extension properties.
 - Inspectable with off-the-shelf tools.
 
-### 4.2 Carrier: Apache Arrow IPC (stream format), zstd-compressed record batches
+### 4.2 Carrier
 
+**As shipped: protobuf.** The first IR in the tree is `ir/graphite_ir.proto` (package
+`graphite.ir.v1`): a stream of length-delimited `Chunk` messages (header, interned string
+batches, node/edge/method/type-relation/class-origin/enum-value/artifact batches, trailer)
+that mirrors the JVM core model one to one, so `graphite.jar import` builds a
+`DefaultGraph` from it and saves it with the existing writer, and `graphite import` packs
+the result. It meets the streaming, versioning and few-hundred-lines requirements with a
+generated library on every platform (`protobuf-java` on the JVM, `swift-protobuf` for the
+Apple frontend), and it was the shortest path to a second language in the graph. It is
+not columnar: the Arrow carrier below remains the design for the indexer phase, where
+the persisted format changes and the IR is read in bounded memory by the Rust backend;
+the protobuf schema's kinds and fields map onto the Arrow tables directly.
+
+**Design target: Apache Arrow IPC (stream format), zstd-compressed record batches.**
 Arrow is the choice for the long term: it is columnar, dictionary encoding is built in,
 batches stream, the schema travels with the data, zstd/lz4 buffer compression is part of
 the IPC format, and DuckDB/Polars/pyarrow open it directly for inspection and ad-hoc
@@ -439,7 +452,7 @@ is taken on trust.
 | 4 | Core model: `Module`/`Type`/`Member` nodes, `CONTAINS`, symbol references on the JVM frontend; aliases wired into property access, `keys()`, serialisation. Kotlin server frozen. | Old queries unchanged on v4 JVM graphs; C4 output byte-identical to today on the six reference graphs |
 | 5 | Retire Kotlin `serve`/`query`/`explore`/`cypher`: `graphite.jar` becomes the frontend only; Docker image, Homebrew formula and docs switch to the Rust binary; Kotlin modules deleted. | Release pipeline publishes one CLI + frontends; parity harness retargeted to v-1 Rust vs current Rust |
 | 6 | Web frontend (TypeScript). | The IR validates; the Explorer's own web UI (a TypeScript-free static app today, the first candidate) builds into a graph the explorer can browse; C4 on a multi-package workspace |
-| 7 | Apple frontend (Swift, then ObjC). | A sample iOS app builds; cross-graph queries across a JVM backend graph and a Swift client graph |
+| 7 | Apple frontend (Swift, then ObjC). **First cut shipped:** `frontend/apple` writes the protobuf IR from the index store and SwiftSyntax; `graphite import` persists it; CI indexes the `AcmeShop` fixture, imports it and queries it. Remaining: SIL data flow, ObjC, Xcode project input beyond an index store. | A sample iOS app builds; cross-graph queries across a JVM backend graph and a Swift client graph |
 
 Compatibility rules, enforced by the harness at every phase:
 
@@ -495,6 +508,25 @@ protocols. Data flow needs SIL: a second stage over `swiftc -emit-sil` is where
 directory. Resources: `Info.plist`, `.xcconfig`, `.strings`, asset catalogs (names only).
 Compiled binaries (Mach-O with symbols) are a possible later input at the symbol level
 only.
+
+**As shipped (`frontend/apple`, Swift 6.1, Linux and macOS).** `graphite-frontend-apple
+build --package <dir> --out <ir>` runs `swift build`, reads `.build/debug/index/store`
+with IndexStoreDB (or `--index-store <dir> --sources <dir>` for an Xcode store), parses
+each file with SwiftSyntax, demangles every USR with one `swift-demangle` run and writes
+the protobuf IR. What it emits, in core-model terms: a class origin per type
+(`Module.Outer.Inner` → module), `EXTENDS`/`IMPLEMENTS` relations from `baseOf`
+occurrences, a method per function/initializer/deinitializer with the demangled
+signature (name `checkout(order:method:)`, parameter and return types as Swift prints
+them, `Swift.Void` for `()`), a field per stored or computed property, enum values per
+case, an annotation per attribute (`available`, `objc`, property wrappers; the argument
+text as `arguments`), and a call site per non-implicit call occurrence (operators
+included, accessor calls excluded) attributed to its enclosing function or property
+initializer. Literal arguments become `Constant` nodes with `PARAMETER_PASS` edges into
+the call site; other arguments keep their slot as `LocalVariable` nodes named by their
+source text, so `argumentIndex` queries hold. Not yet: SIL data flow, ObjC, resources,
+`.xcodeproj` inputs (an index store from Xcode works today). The `AcmeShop` fixture
+package and the CI job `apple.yml` exercise the whole path: frontend → IR →
+`graphite import` → `graphite query`/`serve`.
 
 ### 8.4 Later candidates
 

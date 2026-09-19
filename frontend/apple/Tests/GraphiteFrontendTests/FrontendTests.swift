@@ -116,7 +116,8 @@ final class FrontendTests: XCTestCase {
         XCTAssertTrue(methods.contains("AcmeShop.FeatureFlags.isEnabled(_:default:)(Swift.String, Swift.Bool) -> Swift.Bool"))
         XCTAssertTrue(methods.contains("AcmeShop.Repository.find(id:)(Swift.String) -> AcmeShop.Order?"))
         XCTAssertTrue(methods.contains("AcmeShop.Analytics.init()() -> AcmeShop.Analytics"))
-        XCTAssertEqual(methods.count, 16)
+        XCTAssertFalse(methods.contains { $0.contains("getter:") }, "an explicit getter is not a method of its own: \(methods)")
+        XCTAssertEqual(methods.count, 14)
 
         let fields = ir.nodes.values.compactMap { node -> String? in
             guard case .field(let f) = node.kind else { return nil }

@@ -234,6 +234,9 @@ public final class IndexReader {
             model.types.append(TypeDecl(symbol: symbol, kind: typeKind, module: module, position: position, container: container?.usr))
             return
         }
+        // An explicit accessor (`var total: Double { ... }`) is a definition of its own;
+        // the property it belongs to is the member the graph keeps.
+        if let container, IndexReader.isProperty(container.kind), symbol.kind != .parameter { return }
         let memberKind: MemberKind
         var isStatic = false
         switch symbol.kind {
@@ -269,6 +272,13 @@ public final class IndexReader {
             container: container?.usr,
             overrides: overrides
         ))
+    }
+
+    static func isProperty(_ kind: IndexSymbolKind) -> Bool {
+        switch kind {
+        case .instanceProperty, .classProperty, .staticProperty, .variable, .field: return true
+        default: return false
+        }
     }
 
     static func isTypeLike(_ kind: IndexSymbolKind) -> Bool {

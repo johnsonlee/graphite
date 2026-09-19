@@ -125,6 +125,43 @@ sibling `libexec/`, `graphite-frontend-jvm` on `PATH`, then `~/.graphite/fronten
 It finds `java` through `GRAPHITE_JAVA`, `JAVA_HOME`, then `PATH`. The release also ships
 `graphite.jar` on its own; `java -jar graphite.jar build|query|serve` still works.
 
+### Other languages: the Swift frontend
+
+`graphite build` analyses JVM bytecode. Other languages come as separate frontends that
+write a **Graph IR** (`ir/graphite_ir.proto`, a stream of protobuf chunks) which
+`graphite import` persists with the same writer, so the result is queried and served like
+any other graph.
+
+The first one is [`frontend/apple`](frontend/apple), a Swift package that indexes a
+SwiftPM package (or an Xcode index store) with the compiler's index store, SwiftSyntax
+and `swift-demangle`:
+
+```bash
+# Build the frontend once (Swift 6.1; swift.sh adds the flags indexstore-db needs on Linux)
+frontend/apple/swift.sh build -c release
+
+# Index a package: runs `swift build`, reads .build/debug/index/store, writes the IR
+frontend/apple/.build/release/graphite-frontend-apple build --package ~/src/MyApp --out myapp.graphite-ir
+
+# Or an existing Xcode index store
+graphite-frontend-apple build --index-store ~/Library/Developer/Xcode/DerivedData/MyApp-*/Index.noindex/DataStore \
+  --sources ~/src/MyApp/Sources --out myapp.graphite-ir
+
+# Persist and query: the JVM frontend's writer, the Rust CLI's query and serve
+graphite import myapp.graphite-ir -o myapp.graphite
+graphite query myapp.graphite "MATCH (s:Constant)-[:DATAFLOW]->(c:CallSite) WHERE c.callee_name = 'isEnabled(_:default:)' RETURN s.value"
+graphite serve --graph myapp:myapp.graphite
+```
+
+What the Swift graph holds today: every type with its module (`Module.Outer.Inner`
+names), supertypes and protocol conformances as `EXTENDS`/`IMPLEMENTS`, methods with
+demangled signatures (`checkout(order:method:)`, parameter and return types as Swift
+prints them), stored and computed properties as fields, enum cases, attributes as
+annotations, and every call site with its caller and callee; literal arguments (strings,
+numbers, booleans, `nil`) are `Constant` nodes flowing into the call with
+`PARAMETER_PASS`, other arguments keep their position as `LocalVariable` nodes named by
+their source text. Data flow through variables and returns (SIL) is the next step.
+
 ### Upgrading a legacy installation
 
 An older installer may have placed `~/.graphite/bin/graphite` before Homebrew in `PATH`. In that case, installing or
@@ -460,20 +497,23 @@ graph, one Rust *backend*, which stores, serves, and queries those graphs, and o
 
 ```
 graphite/
+├── ir/                     # graphite_ir.proto: the Graph IR other frontends write
 ├── frontend/
-│   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
-│       ├── core/           # Graph interface, nodes, edges, analysis
-│       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
-│       ├── sootup/         # SootUp bytecode → graph builder
-│       ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
-│       ├── query/          # `graphite.jar`: the build frontend, plus legacy query/serve
-│       └── explore/        # Legacy Kotlin Explorer server
+│   ├── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
+│   │   ├── core/           # Graph interface, nodes, edges, analysis
+│   │   ├── ir/             # Graph IR reader (protobuf bindings + DefaultGraph builder)
+│   │   ├── cypher/         # Cypher query engine (ANTLR parser + executor)
+│   │   ├── sootup/         # SootUp bytecode → graph builder
+│   │   ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
+│   │   ├── query/          # `graphite.jar`: build and import, plus legacy query/serve
+│   │   └── explore/        # Legacy Kotlin Explorer server
+│   └── apple/              # Swift frontend: index store + SwiftSyntax → Graph IR
 ├── backend/                # Rust backend
 │   ├── storage/            # mmap reader of the persisted graph, indexes, columns
 │   ├── cypher/             # Cypher parser, planner, executor
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
-├── cli/                    # `graphite` CLI (Rust): build, query, serve, mcp, frontend
+├── cli/                    # `graphite` CLI (Rust): build, import, query, serve, mcp, frontend
 ├── Cargo.toml              # Cargo workspace: backend/* and cli
 └── docs/
 ```

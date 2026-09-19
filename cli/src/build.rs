@@ -1,9 +1,11 @@
-//! `graphite build`: a shell over the JVM frontend.
+//! `graphite build` and `graphite import`: shells over the JVM frontend.
 //!
 //! Every argument after `build` goes to the frontend untouched, `--help` included, so the
 //! command line a user has today for `graphite.jar build` keeps working. The one argument
 //! the shell interprets is `--profile`, which the Homebrew wrapper around the jar used to
-//! turn into an async-profiler agent; it does the same here.
+//! turn into an async-profiler agent; it does the same here. `import` is the same shell
+//! over `graphite.jar import`, which persists a Graph IR another frontend wrote (the Swift
+//! frontend, `frontend/apple`) with the writer `build` uses.
 //!
 //! One output form is the shell's too: when `-o` names a `.graphite` file, the frontend
 //! writes a staging directory next to it (the frontend only ever writes directories) and
@@ -83,8 +85,14 @@ impl Invocation {
     }
 }
 
-/// What to run for `graphite build <args>` with the frontend `fe`.
-pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocation, String> {
+/// What to run for `graphite <subcommand> <args>` (`build` or `import`) with the
+/// frontend `fe`.
+pub fn invocation_for(
+    env: &Env,
+    fe: &Frontend,
+    subcommand: &str,
+    args: &[OsString],
+) -> Result<Invocation, String> {
     let mut passthrough = Vec::with_capacity(args.len());
     let mut profile = false;
     for arg in args {
@@ -103,7 +111,7 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
                         .into(),
                 );
             }
-            let mut argv = vec![OsString::from("build")];
+            let mut argv = vec![OsString::from(subcommand)];
             argv.extend(passthrough);
             Ok(Invocation {
                 program: exe.clone(),
@@ -120,7 +128,7 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
             }
             argv.push(OsString::from("-jar"));
             argv.push(jar.as_os_str().to_os_string());
-            argv.push(OsString::from("build"));
+            argv.push(OsString::from(subcommand));
             argv.extend(passthrough);
             let mut vars = Vec::new();
             if let Some(opts) = frontend::default_java_tool_options(env) {
@@ -138,9 +146,17 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
 
 /// The message when no frontend is installed. Exit code 2, as for unsupported input.
 pub fn missing_frontend_message() -> String {
+    missing_frontend_message_for("build")
+}
+
+fn missing_frontend_message_for(subcommand: &str) -> String {
+    let purpose = match subcommand {
+        "import" => "persist a Graph IR written by another frontend",
+        _ => "analyse JAR/WAR/APK inputs",
+    };
     format!(
-        "No JVM frontend found. `graphite build` runs the JVM frontend (graphite.jar) to \
-         analyse JAR/WAR/APK inputs.\n\
+        "No JVM frontend found. `graphite {subcommand}` runs the JVM frontend (graphite.jar) to \
+         {purpose}.\n\
          Install it with `graphite frontend install jvm`, or set {} to a graphite.jar.",
         frontend::JVM_FRONTEND_VAR
     )
@@ -148,11 +164,20 @@ pub fn missing_frontend_message() -> String {
 
 /// Run `graphite build` and return the exit code to use.
 pub fn run(env: &Env, args: &[OsString]) -> i32 {
+    run_subcommand(env, "build", args)
+}
+
+/// Run `graphite import <ir> -o <output>` (the jar's `import`) and return the exit code.
+pub fn run_import(env: &Env, args: &[OsString]) -> i32 {
+    run_subcommand(env, "import", args)
+}
+
+fn run_subcommand(env: &Env, subcommand: &str, args: &[OsString]) -> i32 {
     let Some(fe) = frontend::locate_jvm(env) else {
-        eprintln!("{}", missing_frontend_message());
+        eprintln!("{}", missing_frontend_message_for(subcommand));
         return 2;
     };
-    let inv = match invocation(env, &fe, args) {
+    let inv = match invocation_for(env, &fe, subcommand, args) {
         Ok(inv) => inv,
         Err(message) => {
             eprintln!("Error: {message}");
@@ -232,6 +257,10 @@ mod tests {
         args.iter().map(OsString::from).collect()
     }
 
+    fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocation, String> {
+        invocation_for(env, fe, "build", args)
+    }
+
     #[test]
     fn jar_invocation_passes_every_argument_through_after_build() {
         let env = env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]);
@@ -243,7 +272,7 @@ mod tests {
             "com.example",
             "--help",
         ]);
-        let inv = invocation(&env, &jar_frontend(), &args).unwrap();
+        let inv = invocation_for(&env, &jar_frontend(), "build", &args).unwrap();
         assert_eq!(inv.program, Path::new("/usr/bin/java"));
         assert_eq!(
             inv.args,
@@ -266,6 +295,49 @@ mod tests {
     }
 
     #[test]
+    fn import_invocation_runs_the_jar_import_with_the_same_shell() {
+        let env = env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]);
+        let args = os(&["app.graphite-ir", "-o", "/tmp/app.graphite"]);
+        let inv = invocation_for(&env, &jar_frontend(), "import", &args).unwrap();
+        assert_eq!(inv.program, Path::new("/usr/bin/java"));
+        let stage = stage_dir_for(Path::new("/tmp/app.graphite"));
+        assert_eq!(
+            inv.args,
+            os(&[
+                "-jar",
+                "/opt/graphite/graphite.jar",
+                "import",
+                "app.graphite-ir",
+                "-o",
+                stage.to_str().unwrap()
+            ])
+        );
+        assert_eq!(
+            inv.pack,
+            Some(Pack {
+                stage,
+                output: PathBuf::from("/tmp/app.graphite")
+            })
+        );
+        let launcher = Frontend {
+            lang: "jvm",
+            launch: Launch::Executable(PathBuf::from("/opt/graphite/graphite-frontend-jvm")),
+            found_via: "test",
+        };
+        let inv = invocation_for(
+            &env,
+            &launcher,
+            "import",
+            &os(&["app.graphite-ir", "-o", "/tmp/g"]),
+        )
+        .unwrap();
+        assert_eq!(inv.args, os(&["import", "app.graphite-ir", "-o", "/tmp/g"]));
+        assert!(missing_frontend_message_for("import").contains("`graphite import`"));
+        assert!(missing_frontend_message_for("import").contains("persist a Graph IR"));
+        assert!(missing_frontend_message().contains("analyse JAR/WAR/APK inputs"));
+    }
+
+    #[test]
     fn a_graphite_output_is_staged_in_a_sibling_directory_and_packed() {
         let env = env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]);
         let stage = stage_dir_for(Path::new("/tmp/out/app.graphite"));
@@ -280,7 +352,7 @@ mod tests {
             os(&["a.jar", "--output", "/tmp/out/app.graphite"]),
             os(&["a.jar", "--output=/tmp/out/app.graphite"]),
         ] {
-            let inv = invocation(&env, &jar_frontend(), &form).unwrap();
+            let inv = invocation_for(&env, &jar_frontend(), "build", &form).unwrap();
             assert_eq!(
                 inv.pack,
                 Some(Pack {
@@ -439,7 +511,7 @@ mod tests {
         );
         assert_eq!(inv.args, os(&["build", "a.jar", "-o", "g"]));
         assert!(inv.env.is_empty());
-        assert!(invocation(&env, &fe, &os(&["--profile"])).is_err());
+        assert!(invocation_for(&env, &fe, "build", &os(&["--profile"])).is_err());
     }
 
     #[test]
