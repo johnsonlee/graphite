@@ -219,6 +219,34 @@ impl Executor {
                             let out = self.run_fused(&matcher, &ev, rows, patterns, &shape)?;
                             return Ok(out);
                         }
+                        // `MATCH [WHERE] WITH ...`: the same streaming scan, projection
+                        // and group-by as the RETURN shape, with the clauses after the
+                        // WITH left to the loop. Without this the match ran through the
+                        // generic matcher -- every node decoded, the WHERE interpreted
+                        // per node, every survivor kept as a row until the WITH -- and a
+                        // grouped count over a fleet timed out where the same query
+                        // written with RETURN answered in milliseconds.
+                        if let Some((shape, with_where, consumed)) =
+                            FusedShape::detect_with(&clauses[i..])
+                        {
+                            let budget = compute_early_limit(&clauses[i..]);
+                            let (cols, projected) =
+                                self.run_fused_with(&matcher, &ev, rows, patterns, &shape, budget)?;
+                            columns = cols;
+                            rows = projected;
+                            if let Some(w) = with_where {
+                                let mut out = Vec::with_capacity(rows.len());
+                                for r in rows {
+                                    self.tick()?;
+                                    if ev.eval(w, &r)?.as_bool() == Some(true) {
+                                        out.push(r);
+                                    }
+                                }
+                                rows = out;
+                            }
+                            i += consumed;
+                            continue;
+                        }
                     }
                     let early_limit = compute_early_limit(&clauses[i..]);
                     rows = self.exec_match(
@@ -460,88 +488,14 @@ impl Executor {
             None
         };
 
-        if aggregated {
-            // Streaming group-by.
-            let items = items.unwrap();
-            let plan = AggPlan::new(items)?;
-            let columns: Vec<String> = items
-                .iter()
-                .map(|it| {
-                    it.alias
-                        .clone()
-                        .unwrap_or_else(|| to_cypher_string(&it.expr))
-                })
-                .collect();
-            let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
-            let mut consume = |row: Row| -> CypherResult<bool> {
-                let mut keyv = Vec::with_capacity(plan.group_exprs.len());
-                let mut vals = Vec::with_capacity(plan.group_exprs.len());
-                for e in &plan.group_exprs {
-                    let v = ev.eval(e, &row)?;
-                    keyv.push(value_key(&v));
-                    vals.push(v);
-                }
-                let acc = groups.entry(keyv).or_insert_with(|| GroupAcc {
-                    first_row: row.clone(),
-                    group_values: vals,
-                    agg_inputs: vec![Vec::new(); plan.aggs.len()],
-                });
-                for (ai, agg) in plan.aggs.iter().enumerate() {
-                    let v = match &agg.arg {
-                        Some(e) => ev.eval(e, &row)?,
-                        None => star_input(agg, &row),
-                    };
-                    acc.agg_inputs[ai].push(v);
-                }
-                merge_provenance(&mut acc.first_row, &row);
-                Ok(true)
-            };
-            for r in rows {
-                self.stream_match(
-                    matcher,
-                    ev,
-                    &r,
-                    patterns,
-                    shape.where_clause.as_ref(),
-                    &scan,
-                    &hop,
-                    &mut consume,
-                )?;
-            }
-            let out = finalize_groups(ev, &plan, items, groups, shape.order.as_deref())?;
-            return finish_fused(ev, columns, out, shape);
-        }
-
-        // Non-aggregated: stream projection.
-        let mut out: Vec<Row> = Vec::new();
-        let mut columns: Vec<String> = match items {
-            Some(items) => items
-                .iter()
-                .map(|it| {
-                    it.alias
-                        .clone()
-                        .unwrap_or_else(|| to_cypher_string(&it.expr))
-                })
-                .collect(),
-            None => Vec::new(),
-        };
-        // Index of each distinct key into `out`, not just the set of keys. Finding the
-        // row to merge provenance into by scanning `out` is linear, and it runs once per
-        // duplicate — quadratic on the shape that produces duplicates by the million.
-        let mut seen: std::collections::HashMap<Vec<Key>, usize> = std::collections::HashMap::new();
-        // A cross-graph DISTINCT cannot stop when it has enough rows. Each row carries the
-        // set of graphs it was seen in, and a graph reached after the limit can still hold
-        // a duplicate of a row already emitted — which belongs in that row's provenance.
-        // The baseline keeps scanning for exactly this reason; stopping early produced
-        // rows identical in every visible column but missing a contributing graph.
-        let names = items.map(item_names).unwrap_or_default();
         // The compact path: no ordering, no DISTINCT, a single empty seed (so nothing
         // precedes the MATCH), a pushed-down scan, and a RETURN of the scanned node's
         // own properties. Everything a row would carry is then already in hand.
-        if self.compact && shape.order.is_none() && !shape.distinct {
+        if !aggregated && self.compact && shape.order.is_none() && !shape.distinct {
             if let (Some(plan), Some(items), [seed]) = (&scan, items, rows.as_slice()) {
                 if seed.is_empty() {
                     if let Some(keys) = simple_property_keys(items, plan.variable()) {
+                        let columns = item_names(items);
                         let mut values: Vec<Vec<Value>> = Vec::new();
                         let mut graph_ids: Vec<Arc<str>> = Vec::new();
                         // A zero budget means no rows: the sink below only checks the
@@ -581,6 +535,126 @@ impl Executor {
                 }
             }
         }
+
+        let (columns, out) = self.fused_rows(
+            matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated,
+        )?;
+        finish_fused(ev, columns, out, shape)
+    }
+
+    /// Fused MATCH [WHERE] WITH: the rows the WITH projects, exactly as `project` would
+    /// build them from the generic match -- order stashes, provenance and all -- so the
+    /// loop can run the WITH's own WHERE and whatever follows over them. `budget`
+    /// bounds the match the way `exec_match`'s early limit does, and is `None` unless
+    /// the segment's LIMIT provably bounds it (see `compute_early_limit`).
+    fn run_fused_with(
+        &self,
+        matcher: &Matcher,
+        ev: &Evaluator,
+        rows: Vec<Row>,
+        patterns: &[Pattern],
+        shape: &FusedShape,
+        budget: Option<usize>,
+    ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+        if has_unknown_label(patterns) {
+            return project(
+                ev,
+                vec![],
+                shape.items.as_deref(),
+                shape.distinct,
+                shape.order.as_deref(),
+            );
+        }
+        let aggregated = match &shape.items {
+            Some(items) => items.iter().any(|it| contains_aggregation(&it.expr)),
+            None => false,
+        };
+        let scan = super::scan::ScanPlan::build(patterns, shape.where_clause.as_ref());
+        let hop = if scan.is_none() {
+            super::hop::HopPlan::build(patterns, shape.where_clause.as_ref())
+        } else {
+            None
+        };
+        self.fused_rows(
+            matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated,
+        )
+    }
+
+    /// Stream the match into the projection: a group-by when the items aggregate, a
+    /// row per match otherwise, stopping at `budget` rows where the shape allows it.
+    /// Returns the columns and the rows before ORDER BY / SKIP / LIMIT are applied.
+    #[allow(clippy::too_many_arguments)]
+    fn fused_rows(
+        &self,
+        matcher: &Matcher,
+        ev: &Evaluator,
+        rows: Vec<Row>,
+        patterns: &[Pattern],
+        shape: &FusedShape,
+        scan: &Option<super::scan::ScanPlan>,
+        hop: &Option<super::hop::HopPlan>,
+        budget: Option<usize>,
+        aggregated: bool,
+    ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+        let items = shape.items.as_deref();
+        if aggregated {
+            // Streaming group-by.
+            let items = items.unwrap();
+            let plan = AggPlan::new(items)?;
+            let columns = item_names(items);
+            let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
+            let mut consume = |row: Row| -> CypherResult<bool> {
+                let mut keyv = Vec::with_capacity(plan.group_exprs.len());
+                let mut vals = Vec::with_capacity(plan.group_exprs.len());
+                for e in &plan.group_exprs {
+                    let v = ev.eval(e, &row)?;
+                    keyv.push(value_key(&v));
+                    vals.push(v);
+                }
+                let acc = groups.entry(keyv).or_insert_with(|| GroupAcc {
+                    first_row: row.clone(),
+                    group_values: vals,
+                    agg_inputs: vec![Vec::new(); plan.aggs.len()],
+                });
+                for (ai, agg) in plan.aggs.iter().enumerate() {
+                    let v = match &agg.arg {
+                        Some(e) => ev.eval(e, &row)?,
+                        None => star_input(agg, &row),
+                    };
+                    acc.agg_inputs[ai].push(v);
+                }
+                merge_provenance(&mut acc.first_row, &row);
+                Ok(true)
+            };
+            for r in rows {
+                self.stream_match(
+                    matcher,
+                    ev,
+                    &r,
+                    patterns,
+                    shape.where_clause.as_ref(),
+                    scan,
+                    hop,
+                    &mut consume,
+                )?;
+            }
+            let out = finalize_groups(ev, &plan, items, groups, shape.order.as_deref())?;
+            return Ok((columns, out));
+        }
+
+        // Non-aggregated: stream projection.
+        let mut out: Vec<Row> = Vec::new();
+        let mut columns: Vec<String> = items.map(item_names).unwrap_or_default();
+        // Index of each distinct key into `out`, not just the set of keys. Finding the
+        // row to merge provenance into by scanning `out` is linear, and it runs once per
+        // duplicate — quadratic on the shape that produces duplicates by the million.
+        let mut seen: std::collections::HashMap<Vec<Key>, usize> = std::collections::HashMap::new();
+        // A cross-graph DISTINCT cannot stop when it has enough rows. Each row carries the
+        // set of graphs it was seen in, and a graph reached after the limit can still hold
+        // a duplicate of a row already emitted — which belongs in that row's provenance.
+        // The baseline keeps scanning for exactly this reason; stopping early produced
+        // rows identical in every visible column but missing a contributing graph.
+        let names = items.map(item_names).unwrap_or_default();
         let distinct_provenance = shape.distinct && self.cross;
         // Provenance completion runs as a targeted second pass where it can, so the
         // first pass may stop at the limit like any other.
@@ -654,8 +728,8 @@ impl Executor {
                 &r,
                 patterns,
                 shape.where_clause.as_ref(),
-                &scan,
-                &hop,
+                scan,
+                hop,
                 &mut consume,
             )?;
             if !cont {
@@ -719,7 +793,7 @@ impl Executor {
                 }
             }
         }
-        finish_fused(ev, columns, out, shape)
+        Ok((columns, out))
     }
 
     /// Enumerate matches of `patterns` from `row`, applying the WHERE filter (and scan pushdown).
@@ -857,6 +931,43 @@ impl FusedShape {
             skip,
             limit,
         })
+    }
+
+    /// Shape: MATCH [WHERE] WITH <items> [WHERE], with anything at all after it.
+    ///
+    /// The WITH's own WHERE and the clauses that follow are the loop's, so the shape
+    /// carries no SKIP or LIMIT, and only the ORDER BY that directly follows the WITH
+    /// -- the one `project` stashes sort values for. Returns the shape, the WITH's
+    /// WHERE, and the number of clauses the shape spans.
+    fn detect_with(clauses: &[Clause]) -> Option<(FusedShape, Option<&Expr>, usize)> {
+        let mut i = 1;
+        let mut where_clause = None;
+        if let Some(Clause::Where(e)) = clauses.get(i) {
+            where_clause = Some(e.clone());
+            i += 1;
+        }
+        let (distinct, items, with_where) = match clauses.get(i) {
+            Some(Clause::With {
+                distinct,
+                items,
+                where_clause,
+            }) => (*distinct, items.clone(), where_clause.as_ref()),
+            _ => return None,
+        };
+        i += 1;
+        let order = next_order_by(&clauses[i..]).map(|o| o.to_vec());
+        Some((
+            FusedShape {
+                where_clause,
+                items,
+                distinct,
+                order,
+                skip: None,
+                limit: None,
+            },
+            with_where,
+            i,
+        ))
     }
 }
 
@@ -1663,5 +1774,185 @@ mod probe_tests {
         };
         assert_eq!(names(&a), names(&b));
         assert!(b.more);
+    }
+}
+
+#[cfg(test)]
+mod with_prefix_tests {
+    use super::super::{Executor, Source};
+    use super::*;
+    use crate::parser::parse;
+
+    fn detect(q: &str) -> Option<(FusedShape, Option<Expr>, usize)> {
+        let clauses = parse(q).unwrap();
+        FusedShape::detect_with(&clauses).map(|(s, w, n)| (s, w.cloned(), n))
+    }
+
+    #[test]
+    fn the_with_prefix_spans_match_where_and_with_and_keeps_the_with_order_by() {
+        let (shape, with_where, n) = detect(
+            "MATCH (n) WHERE n.x = 1 WITH n.a AS a, count(*) AS c RETURN a, c ORDER BY c LIMIT 5",
+        )
+        .expect("MATCH WHERE WITH is the prefix shape");
+        assert_eq!(n, 3);
+        assert!(shape.where_clause.is_some());
+        assert!(with_where.is_none());
+        // The ORDER BY belongs to the RETURN, not the WITH.
+        assert!(shape.order.is_none());
+        assert!(shape.skip.is_none() && shape.limit.is_none());
+        assert!(!shape.distinct);
+        assert_eq!(shape.items.as_ref().map(|i| i.len()), Some(2));
+
+        let (shape, with_where, n) =
+            detect("MATCH (n) WITH DISTINCT n.a AS a ORDER BY a LIMIT 5 RETURN a").unwrap();
+        assert_eq!(n, 2);
+        assert!(shape.where_clause.is_none());
+        assert!(with_where.is_none());
+        assert!(shape.distinct);
+        assert!(
+            shape.order.is_some(),
+            "the ORDER BY after the WITH is the WITH's"
+        );
+
+        let (shape, with_where, n) = detect("MATCH (n) WITH n WHERE n.x = 1 RETURN n").unwrap();
+        assert_eq!(n, 2);
+        assert!(shape.where_clause.is_none());
+        assert!(with_where.is_some());
+        assert!(shape.items.is_some());
+
+        let (shape, _, _) = detect("MATCH (n) WITH * RETURN *").unwrap();
+        assert!(shape.items.is_none(), "WITH * projects the row as it is");
+    }
+
+    #[test]
+    fn anything_but_a_with_after_the_match_is_not_the_prefix_shape() {
+        for q in [
+            "MATCH (n) RETURN n",
+            "MATCH (n) WHERE n.x = 1 RETURN n LIMIT 5",
+            "MATCH (n) UNWIND [1, 2] AS i WITH n, i RETURN n, i",
+            "MATCH (n) MATCH (m) WITH n, m RETURN n, m",
+        ] {
+            assert!(detect(q).is_none(), "{q}");
+        }
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`, the core jar in CI), as two
+    /// sources in cross-graph mode: every WITH-prefixed shape produces the rows,
+    /// columns and provenance the generic pipeline produces. The generic rows come
+    /// from the same query with `UNWIND [1] AS one` between the match and the WITH,
+    /// which keeps the row set and forces the row-by-row path.
+    #[test]
+    fn a_fused_with_prefix_answers_as_the_generic_pipeline_does() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let graph =
+            Arc::new(graphite_storage::graph::Graph::load(std::path::Path::new(&dir)).unwrap());
+        let sources: Vec<Source> = ["a", "b"]
+            .iter()
+            .map(|id| Source {
+                id: Arc::from(*id),
+                graph: graph.clone(),
+            })
+            .collect();
+        let ex = Executor::new(sources, true);
+        let render = |r: &QueryResult| -> Vec<String> {
+            let mut out = vec![format!("columns={:?}", r.columns)];
+            for row in &r.rows {
+                let cells: Vec<String> = r
+                    .columns
+                    .iter()
+                    .map(|c| format!("{:?}", row.get(c)))
+                    .collect();
+                out.push(format!(
+                    "{} | {:?}",
+                    cells.join(" | "),
+                    QueryResult::graph_ids(row)
+                ));
+            }
+            out
+        };
+        // (match and where, the rest); the generic twin gets an UNWIND in between.
+        let cases: &[(&str, &str, bool)] = &[
+            // The reported shape: a grouped count per graph over a call-site prefix.
+            (
+                r#"MATCH (n {type: "CallSiteNode"}) WHERE n.callee_class STARTS WITH "java.util." AND NOT n.caller_class STARTS WITH "java.util.""#,
+                r#"WITH n.graphId AS graphId, split(replace(n.callee_class, "java.util.", ""), ".")[0] AS provider, count(*) AS calls RETURN graphId, provider, calls ORDER BY graphId ASC, calls DESC LIMIT 160"#,
+                true,
+            ),
+            // A label, no WHERE, a grouped count.
+            (
+                "MATCH (n:CallSiteNode)",
+                "WITH n.callee_name AS m, count(*) AS k RETURN m, k ORDER BY k DESC, m LIMIT 5",
+                true,
+            ),
+            // A row-preserving WITH under a LIMIT: the match stops early in scan order.
+            (
+                r#"MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH "java.util.""#,
+                "WITH n.callee_class AS c, n.callee_name AS m RETURN c, m LIMIT 50",
+                true,
+            ),
+            // The WITH's own WHERE.
+            (
+                r#"MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH "java.util.""#,
+                r#"WITH n.callee_class AS c, n.callee_name AS m WHERE m STARTS WITH "get" RETURN c, m ORDER BY c, m LIMIT 50"#,
+                true,
+            ),
+            // DISTINCT across graphs: both graphs end up in each row's provenance.
+            (
+                r#"MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH "java.util.""#,
+                "WITH DISTINCT n.callee_class AS c RETURN c ORDER BY c LIMIT 30",
+                true,
+            ),
+            // An ORDER BY on the WITH over pre-projection expressions, then LIMIT.
+            (
+                r#"MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH "java.util.""#,
+                "WITH n ORDER BY n.callee_name DESC, n.callee_class, n.id LIMIT 10 RETURN n.callee_name AS m, n.graphId AS g",
+                true,
+            ),
+            // WITH * with a WHERE, then a grouped RETURN.
+            (
+                r#"MATCH (n:CallSiteNode) WHERE n.callee_name = "get""#,
+                r#"WITH * WHERE n.callee_class CONTAINS "Map" RETURN n.callee_class AS c, count(*) AS k ORDER BY k DESC, c LIMIT 15"#,
+                true,
+            ),
+            // Aggregates without a group, one of them over the synthetic graphId.
+            (
+                r#"MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH "java.util.""#,
+                "WITH count(*) AS k, collect(DISTINCT n.graphId) AS gs RETURN k, size(gs) AS g",
+                true,
+            ),
+            // An unknown label: no candidates, and a count of zero.
+            ("MATCH (n:NoSuchLabel)", "WITH count(*) AS k RETURN k", true),
+            ("MATCH (n:NoSuchLabel)", "WITH n.x AS x RETURN x", false),
+        ];
+        for (head, rest, expect_rows) in cases {
+            let fused = format!("{head} {rest}");
+            let generic = format!("{head} UNWIND [1] AS one {rest}");
+            let a = ex
+                .execute(&fused, Some(1000))
+                .unwrap_or_else(|e| panic!("{fused}: {e}"));
+            let b = ex
+                .execute(&generic, Some(1000))
+                .unwrap_or_else(|e| panic!("{generic}: {e}"));
+            assert_eq!(!a.rows.is_empty(), *expect_rows, "{fused}: rows");
+            assert_eq!(render(&a), render(&b), "{fused}");
+        }
+        // The reported shape's rows really do name their graph, and both graphs.
+        let r = ex
+            .execute(
+                r#"MATCH (n {type: "CallSiteNode"}) WHERE n.callee_class STARTS WITH "java.util." WITH n.graphId AS g, count(*) AS c RETURN g, c ORDER BY g"#,
+                None,
+            )
+            .unwrap();
+        let ids: Vec<String> = r
+            .rows
+            .iter()
+            .map(|row| format!("{:?}", row.get("g")))
+            .collect();
+        assert_eq!(ids, [r#"Some(Str("a"))"#, r#"Some(Str("b"))"#]);
+        assert_eq!(QueryResult::graph_ids(&r.rows[0]), ["a"]);
+        assert_eq!(QueryResult::graph_ids(&r.rows[1]), ["b"]);
     }
 }
