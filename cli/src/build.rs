@@ -1,8 +1,7 @@
-//! `graphite build`: a shell over the JVM frontend.
+//! `graphite build` and `graphite import`: shells over the frontends.
 //!
-//! The shell forwards frontend options, including `--help`. It consumes `--profile`
-//! before the `--` separator to add the async-profiler agent to the JVM frontend JAR
-//! invocation. Arguments after the separator are forwarded as positional inputs.
+//! The shell dispatches JVM artifacts, explicit JavaScript artifacts, and Swift packages or Xcode projects.
+//! Apple frontends write protobuf IR, which the JVM importer persists.
 //!
 //! One output form is the shell's too: when `-o` names a `.graphite` file, the frontend
 //! writes a staging directory next to it (the frontend only ever writes directories) and
@@ -84,8 +83,14 @@ impl Invocation {
     }
 }
 
-/// What to run for `graphite build <args>` with the frontend `fe`.
-pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocation, String> {
+/// What to run for `graphite <subcommand> <args>` (`build` or `import`) with the
+/// frontend `fe`.
+pub fn invocation_for(
+    env: &Env,
+    fe: &Frontend,
+    subcommand: &str,
+    args: &[OsString],
+) -> Result<Invocation, String> {
     let mut passthrough = Vec::with_capacity(args.len());
     let mut profile = false;
     let mut start = 0;
@@ -103,7 +108,7 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
                         .into(),
                 );
             }
-            let mut argv = vec![OsString::from("build")];
+            let mut argv = vec![OsString::from(subcommand)];
             let frontend_args_start = argv.len();
             argv.extend(passthrough);
             Ok(Invocation {
@@ -124,7 +129,7 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
             }
             argv.push(OsString::from("-jar"));
             argv.push(jar.as_os_str().to_os_string());
-            argv.push(OsString::from("build"));
+            argv.push(OsString::from(subcommand));
             let frontend_args_start = argv.len();
             argv.extend(passthrough);
             let mut vars = Vec::new();
@@ -141,14 +146,293 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
     }
 }
 
-/// The message when no frontend is installed. Exit code 2, as for unsupported input.
-pub fn missing_frontend_message() -> String {
+/// The message when the frontend for `lang` is not installed. Exit code 2, as for
+/// unsupported input.
+pub fn missing_frontend_message_for(lang: &str) -> String {
+    match lang {
+        "apple" => format!(
+            "No Apple frontend found. `graphite build` on a Swift package or an Xcode project \
+             runs the Apple frontend ({}) to index it.\n\
+             Install it with `graphite frontend install apple`, or set {} to the executable.",
+            frontend::APPLE_FRONTEND_EXE,
+            frontend::APPLE_FRONTEND_VAR
+        ),
+        "js" => frontend::missing_js_message(),
+        _ => missing_jvm_message("build"),
+    }
+}
+
+fn missing_jvm_message(subcommand: &str) -> String {
+    let purpose = match subcommand {
+        "import" => "persist a Graph IR written by another frontend",
+        _ => "analyse JAR/WAR/APK inputs",
+    };
     format!(
-        "No JVM frontend found. `graphite build` runs the JVM frontend (graphite.jar) to \
-         analyse JAR/WAR/APK inputs.\n\
+        "No JVM frontend found. `graphite {subcommand}` runs the JVM frontend (graphite.jar) to \
+         {purpose}.\n\
          Install it with `graphite frontend install jvm`, or set {} to a graphite.jar.",
         frontend::JVM_FRONTEND_VAR
     )
+}
+
+/// Which frontend a `graphite build` command line is for, and the executable when
+/// `--frontend` names one.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Choice {
+    pub lang: &'static str,
+    pub frontend: Option<PathBuf>,
+}
+
+/// Choose the frontend: `--lang`, then `--frontend`, then the first input argument.
+fn select_frontend(args: &[OsString]) -> Result<(Choice, Vec<OsString>), String> {
+    let (lang, forwarded) = crate::build_ts::select_language(args)?;
+    let explicit_language = forwarded.len() != args.len();
+    let option = crate::build_args::frontend_option(&forwarded)?;
+    let frontend = option
+        .as_ref()
+        .map(|opt| PathBuf::from(opt.value.expect("validated frontend")));
+    let lang = if explicit_language {
+        lang.name()
+    } else if frontend.is_some() {
+        "apple"
+    } else {
+        crate::build_args::walk(&forwarded)
+            .find(|opt| opt.positional)
+            .map_or("jvm", |opt| lang_of_input(Path::new(opt.raw)))
+    };
+    if frontend.is_some() && lang != "apple" {
+        return Err(
+            "--frontend selects an Apple protocol frontend; use it with --lang apple".into(),
+        );
+    }
+    let forwarded = option
+        .map(|opt| opt.without(&forwarded))
+        .unwrap_or(forwarded);
+    Ok((Choice { lang, frontend }, forwarded))
+}
+
+/// The frontend an input belongs to when nothing says otherwise.
+pub fn lang_of_input(input: &Path) -> &'static str {
+    let name = input
+        .file_name()
+        .map(|n| n.to_string_lossy())
+        .unwrap_or_default();
+    if name == "Package.swift" || input.join("Package.swift").is_file() {
+        return "apple";
+    }
+    if is_xcode_project(input) {
+        return "apple";
+    }
+    "jvm"
+}
+
+/// An `.xcodeproj` or `.xcworkspace` path (a trailing slash allowed).
+fn is_xcode_project(input: &Path) -> bool {
+    matches!(
+        input.extension().and_then(|e| e.to_str()),
+        Some("xcodeproj") | Some("xcworkspace")
+    )
+}
+
+/// A `graphite build` for the Apple frontend, split into what the shell needs and what
+/// the frontend gets.
+#[derive(Debug, PartialEq, Eq)]
+pub struct AppleBuild {
+    /// The positional input, passed as `--package` or, for an `.xcodeproj` or
+    /// `.xcworkspace`, as `--project`.
+    pub input: Option<PathBuf>,
+    pub output: PathBuf,
+    pub allow_partial: bool,
+    /// Every other argument, in order.
+    pub passthrough: Vec<OsString>,
+}
+
+/// Split the arguments of an Apple build. `-o` is required: the shell, not the frontend,
+/// writes the graph.
+pub fn split_apple_args(args: &[OsString]) -> Result<AppleBuild, String> {
+    let output = crate::build_args::output_option(args)?;
+    let mut input = None;
+    let mut allow_partial = false;
+    let mut passthrough = Vec::new();
+    let mut sources = false;
+    let mut end = 0;
+    for arg in crate::build_args::walk(args) {
+        if arg.range.start != end || !arg.positional {
+            sources = false;
+        }
+        end = arg.range.end;
+        if arg.flag("--allow-partial") {
+            allow_partial = true;
+        } else if arg.flag("--out")
+            || (!arg.positional && arg.raw.as_encoded_bytes().starts_with(b"--out="))
+        {
+            return Err("--out is the frontend's; give the graph output with -o".into());
+        } else if matches!(arg.name, Some("--lang" | "--frontend" | "-o" | "--output")) {
+            continue;
+        } else if arg.positional && !sources && input.is_none() {
+            input = Some(PathBuf::from(arg.raw));
+        } else {
+            sources |= arg.name == Some("--sources");
+            passthrough.extend_from_slice(&args[arg.range]);
+        }
+    }
+    Ok(AppleBuild {
+        input,
+        output: PathBuf::from(
+            output
+                .ok_or(
+                    "the Apple frontend needs an output: -o <graph directory or .graphite file>",
+                )?
+                .value
+                .expect("validated output"),
+        ),
+        allow_partial,
+        passthrough,
+    })
+}
+
+/// The frontend's `build` command line for an Apple build.
+pub fn apple_invocation(fe: &Frontend, build: &AppleBuild, ir: &Path) -> Invocation {
+    let mut argv = vec![OsString::from("build"), OsString::from("--out"), ir.into()];
+    if let Some(input) = &build.input {
+        if is_xcode_project(input) {
+            argv.push(OsString::from("--project"));
+            argv.push(input.clone().into());
+        } else {
+            let root = if input.file_name().is_some_and(|n| n == "Package.swift") {
+                input.parent().map(Path::to_path_buf).unwrap_or_default()
+            } else {
+                input.clone()
+            };
+            argv.push(OsString::from("--package"));
+            argv.push(root.into());
+        }
+    }
+    argv.extend(build.passthrough.iter().cloned());
+    Invocation {
+        program: fe.path().to_path_buf(),
+        args: argv,
+        env: Vec::new(),
+        frontend_args_start: 1,
+    }
+}
+
+/// Run an Apple build: describe, build the IR, import it. Returns the exit code.
+fn run_apple(env: &Env, choice: &Choice, args: &[OsString]) -> i32 {
+    let fe = match &choice.frontend {
+        Some(exe) => Frontend {
+            lang: "apple",
+            launch: Launch::Executable(exe.clone()),
+            found_via: "--frontend",
+        },
+        None => match frontend::locate_apple(env) {
+            Some(fe) => fe,
+            None => {
+                eprintln!("{}", missing_frontend_message_for("apple"));
+                return 2;
+            }
+        },
+    };
+    let build = match split_apple_args(args) {
+        Ok(b) => b,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 1;
+        }
+    };
+    let described =
+        frontend::own_description(&fe).and_then(|own| frontend::ir_schema_supported(&own));
+    if let Err(message) = described {
+        eprintln!("Error: {message}");
+        return 2;
+    }
+    let packed = build
+        .output
+        .extension()
+        .is_some_and(|e| e == graphite_storage::container::EXTENSION);
+    let publication = if packed {
+        Publication::inspect(&build.output).map(Some)
+    } else {
+        crate::build_output::require_absent(&build.output).map(|_| None)
+    };
+    let publication = match publication {
+        Ok(p) => p,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 1;
+        }
+    };
+    let stage = match Stage::new(&build.output) {
+        Ok(s) => s,
+        Err(error) => {
+            eprintln!("Error: could not stage {}: {error}", build.output.display());
+            return 1;
+        }
+    };
+    let ir = stage.0.join("frontend.graphite-ir");
+    let inv = apple_invocation(&fe, &build, &ir);
+    eprintln!("Running {} build", fe.path().display());
+    let code = match stage.run(&mut inv.command()) {
+        Ok(status) => status.code().unwrap_or(1),
+        Err(e) => {
+            eprintln!("Error: could not run {}: {e}", inv.program.display());
+            return 1;
+        }
+    };
+    let proceed = match code {
+        0 => true,
+        3 if build.allow_partial => {
+            eprintln!("Warning: the frontend wrote a partial graph; importing it because of --allow-partial");
+            true
+        }
+        3 => {
+            eprintln!("Error: the frontend wrote a partial graph; pass --allow-partial to import it anyway");
+            false
+        }
+        2 => {
+            eprintln!("Error: the frontend does not support this input");
+            false
+        }
+        _ => false,
+    };
+    if !proceed {
+        return code;
+    }
+    let import_args = [
+        ir.as_os_str().to_os_string(),
+        OsString::from("-o"),
+        stage.graph().into(),
+    ];
+    let Some(importer) = frontend::locate_jvm(env) else {
+        eprintln!("{}", missing_jvm_message("import"));
+        return 2;
+    };
+    let inv = match invocation_for(env, &importer, "import", &import_args) {
+        Ok(inv) => inv,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 1;
+        }
+    };
+    match stage.run(&mut inv.command()) {
+        Ok(status) if !status.success() => return status.code().unwrap_or(1),
+        Err(error) => {
+            eprintln!("Error: could not run {}: {error}", inv.program.display());
+            return 1;
+        }
+        Ok(_) => {}
+    }
+    let published = match publication {
+        Some(publication) => stage.pack(&build.output, publication),
+        None => stage.publish_directory(&build.output),
+    };
+    match published {
+        Ok(()) => 0,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            1
+        }
+    }
 }
 
 /// Run `graphite build` and return the exit code to use.
@@ -162,33 +446,50 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
             return 2;
         }
     };
-    let (lang, args) = match crate::build_ts::select_language(args) {
+    let (choice, args) = match select_frontend(args) {
         Ok(selected) => selected,
         Err(message) => {
             eprintln!("Error: {message}");
             return 2;
         }
     };
-    if lang == frontend::Lang::Js {
-        return crate::build_ts::run(env, &args);
+    match choice.lang {
+        "js" => crate::build_ts::run(env, &args),
+        "apple" => run_apple(env, &choice, &args),
+        _ => run_subcommand(env, "build", &args, output),
     }
-    run_jvm(env, &args, output)
 }
 
-fn run_jvm(env: &Env, args: &[OsString], output: Option<PathBuf>) -> i32 {
-    let output = output.filter(|_| !crate::build_args::requests_help_or_version(args));
+pub fn run_import(env: &Env, args: &[OsString]) -> i32 {
+    match fold::output_of(args) {
+        Ok(output) => run_subcommand(env, "import", args, output),
+        Err(message) => {
+            eprintln!("Error: {message}");
+            2
+        }
+    }
+}
+
+fn run_subcommand(env: &Env, subcommand: &str, args: &[OsString], output: Option<PathBuf>) -> i32 {
+    let output = output
+        .filter(|_| subcommand == "build" && !crate::build_args::requests_help_or_version(args));
     let Some(fe) = frontend::locate_jvm(env) else {
-        eprintln!("{}", missing_frontend_message());
+        eprintln!("{}", missing_jvm_message(subcommand));
         return 2;
     };
     // Resolve a supported default once; a two-pass fold reuses this environment.
     // Explicit user options and executable frontends bypass capability detection.
-    let build_env = match jvm_options::build_env(env, &fe, args) {
-        Ok(env) => env,
-        Err(error) => {
-            eprintln!("Error: could not finish the JVM capability check: {error}");
-            return 1;
+    // The default is the build's: `import` keeps the environment it was given.
+    let build_env = if subcommand == "build" {
+        match jvm_options::build_env(env, &fe, args) {
+            Ok(env) => env,
+            Err(error) => {
+                eprintln!("Error: could not finish the JVM capability check: {error}");
+                return 1;
+            }
         }
+    } else {
+        std::borrow::Cow::Borrowed(env)
     };
     let env = build_env.as_ref();
     // A fold file with `select` rules needs a graph to run them on: two builds. An output
@@ -205,12 +506,12 @@ fn run_jvm(env: &Env, args: &[OsString], output: Option<PathBuf>) -> i32 {
             return run_with_selects(env, &fe, args, &output, plan, &selects);
         }
     }
-    run_frontend(env, &fe, args)
+    run_frontend(env, &fe, subcommand, args)
 }
 
-/// One frontend build with `args`, packed when the output is a `.graphite` file.
-fn run_frontend(env: &Env, fe: &Frontend, args: &[OsString]) -> i32 {
-    let mut inv = match invocation(env, fe, args) {
+/// One frontend run of `subcommand` with `args`, packed when the output is a `.graphite` file.
+fn run_frontend(env: &Env, fe: &Frontend, subcommand: &str, args: &[OsString]) -> i32 {
+    let mut inv = match invocation_for(env, fe, subcommand, args) {
         Ok(inv) => inv,
         Err(message) => {
             eprintln!("Error: {message}");
@@ -285,7 +586,7 @@ fn run_two_passes(
             return 2;
         }
     };
-    let first = run_frontend(env, fe, &staged);
+    let first = run_frontend(env, fe, "build", &staged);
     if first != 0 {
         return first;
     }
@@ -302,7 +603,12 @@ fn run_two_passes(
         return 1;
     }
     eprintln!("Building the graph with the selected call sites folded");
-    run_frontend(env, fe, &fold::with_fold_file(args, &resolved_path))
+    run_frontend(
+        env,
+        fe,
+        "build",
+        &fold::with_fold_file(args, &resolved_path),
+    )
 }
 
 /// Run the `select` queries on the graph in `stage` and fill their call sites into the
@@ -364,6 +670,14 @@ mod tests {
         args.iter().map(OsString::from).collect()
     }
 
+    fn choose(args: &[OsString]) -> Result<Choice, String> {
+        super::select_frontend(args).map(|(choice, _)| choice)
+    }
+
+    fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocation, String> {
+        invocation_for(env, fe, "build", args)
+    }
+
     #[test]
     fn jar_invocation_passes_every_argument_through_after_build() {
         let env = env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]);
@@ -375,7 +689,7 @@ mod tests {
             "com.example",
             "--help",
         ]);
-        let inv = invocation(&env, &jar_frontend(), &args).unwrap();
+        let inv = invocation_for(&env, &jar_frontend(), "build", &args).unwrap();
         assert_eq!(inv.program, Path::new("/usr/bin/java"));
         assert_eq!(
             inv.args,
@@ -395,6 +709,44 @@ mod tests {
             inv.env,
             vec![("JAVA_TOOL_OPTIONS".to_string(), OsString::from("-Xmx8g"))]
         );
+    }
+
+    #[test]
+    fn import_invocation_runs_the_jar_import_with_the_same_shell() {
+        let env = env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]);
+        let args = os(&["app.graphite-ir", "-o", "/tmp/app.graphite"]);
+        let mut inv = invocation_for(&env, &jar_frontend(), "import", &args).unwrap();
+        assert_eq!(inv.program, Path::new("/usr/bin/java"));
+        let pack = inv.prepare_pack().unwrap().unwrap();
+        assert_eq!(pack.output, Path::new("/tmp/app.graphite"));
+        assert_eq!(
+            &inv.args[..5],
+            os(&[
+                "-jar",
+                "/opt/graphite/graphite.jar",
+                "import",
+                "app.graphite-ir",
+                "-o"
+            ])
+        );
+        assert_eq!(Path::new(&inv.args[5]), pack.stage.graph());
+        let launcher = Frontend {
+            lang: "jvm",
+            launch: Launch::Executable(PathBuf::from("/opt/graphite/graphite-frontend-jvm")),
+            found_via: "test",
+        };
+        let inv = invocation_for(
+            &env,
+            &launcher,
+            "import",
+            &os(&["app.graphite-ir", "-o", "/tmp/g"]),
+        )
+        .unwrap();
+        assert_eq!(inv.args, os(&["import", "app.graphite-ir", "-o", "/tmp/g"]));
+        assert!(missing_jvm_message("import").contains("`graphite import`"));
+        assert!(missing_jvm_message("import").contains("persist a Graph IR"));
+        assert!(missing_frontend_message_for("jvm").contains("graphite.jar"));
+        assert!(missing_frontend_message_for("apple").contains("frontend install apple"));
     }
 
     #[test]
@@ -627,7 +979,7 @@ mod tests {
         );
         assert_eq!(inv.args, os(&["build", "a.jar", "-o", "g"]));
         assert!(inv.env.is_empty());
-        assert!(invocation(&env, &fe, &os(&["--profile"])).is_err());
+        assert!(invocation_for(&env, &fe, "build", &os(&["--profile"])).is_err());
     }
 
     #[test]
@@ -641,6 +993,299 @@ mod tests {
     fn run_without_a_frontend_exits_two_with_the_install_hint() {
         let env = env_with(&[("PATH", "/nonexistent")]);
         assert_eq!(run(&env, &os(&["a.jar"])), 2);
-        assert!(missing_frontend_message().contains("graphite frontend install jvm"));
+        assert!(missing_frontend_message_for("jvm").contains("graphite frontend install jvm"));
+    }
+
+    #[test]
+    fn the_frontend_is_chosen_by_lang_then_frontend_then_input() {
+        let root = std::env::temp_dir().join(format!("graphite-choose-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("pkg")).unwrap();
+        std::fs::write(
+            root.join("pkg/Package.swift"),
+            b"// swift-tools-version:5.10",
+        )
+        .unwrap();
+        let pkg = root.join("pkg").to_string_lossy().into_owned();
+        let manifest = root
+            .join("pkg/Package.swift")
+            .to_string_lossy()
+            .into_owned();
+
+        assert_eq!(
+            choose(&os(&["app.jar", "-o", "g"])).unwrap(),
+            Choice {
+                lang: "jvm",
+                frontend: None
+            }
+        );
+        assert_eq!(choose(&os(&[])).unwrap().lang, "jvm");
+        assert_eq!(choose(&os(&["--help"])).unwrap().lang, "jvm");
+        assert_eq!(choose(&os(&[&pkg, "-o", "g"])).unwrap().lang, "apple");
+        assert_eq!(choose(&os(&[&manifest, "-o", "g"])).unwrap().lang, "apple");
+        assert_eq!(
+            choose(&os(&["App.xcodeproj", "-o", "g"])).unwrap().lang,
+            "apple"
+        );
+        assert_eq!(choose(&os(&["App.xcworkspace"])).unwrap().lang, "apple");
+        assert_eq!(
+            choose(&os(&["--lang", "swift", "-o", "g"])).unwrap().lang,
+            "apple"
+        );
+        assert_eq!(choose(&os(&["--lang=jvm", &pkg])).unwrap().lang, "jvm");
+        // -o's value and a frontend option's value are never the input.
+        assert_eq!(choose(&os(&["-o", &pkg])).unwrap().lang, "jvm");
+        assert_eq!(
+            choose(&os(&["--package", &pkg, "-o", "g"])).unwrap().lang,
+            "jvm"
+        );
+        assert_eq!(
+            choose(&os(&[
+                "--frontend",
+                "/opt/fe",
+                "--index-store",
+                "s",
+                "-o",
+                "g"
+            ]))
+            .unwrap(),
+            Choice {
+                lang: "apple",
+                frontend: Some(PathBuf::from("/opt/fe"))
+            }
+        );
+        assert_eq!(
+            choose(&os(&["--frontend=/opt/fe"])).unwrap().frontend,
+            Some(PathBuf::from("/opt/fe"))
+        );
+        assert!(choose(&os(&["--lang", "web"]))
+            .unwrap_err()
+            .contains("unknown frontend"));
+        assert!(choose(&os(&["--lang"])).unwrap_err().contains("requires"));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn apple_arguments_are_split_into_input_output_and_passthrough() {
+        let build = split_apple_args(&os(&[
+            "--lang",
+            "apple",
+            "MyApp",
+            "-o",
+            "/tmp/my.graphite",
+            "--configuration",
+            "release",
+            "--sources",
+            "a",
+            "b",
+            "--skip-build",
+            "--allow-partial",
+        ]))
+        .unwrap();
+        assert_eq!(
+            build,
+            AppleBuild {
+                input: Some(PathBuf::from("MyApp")),
+                output: PathBuf::from("/tmp/my.graphite"),
+                allow_partial: true,
+                passthrough: os(&[
+                    "--configuration",
+                    "release",
+                    "--sources",
+                    "a",
+                    "b",
+                    "--skip-build"
+                ]),
+            }
+        );
+        let build = split_apple_args(&os(&[
+            "--index-store",
+            "/s",
+            "--sources",
+            "/src",
+            "--output=/g",
+            "--frontend=/fe",
+        ]))
+        .unwrap();
+        assert_eq!(build.input, None);
+        assert_eq!(build.output, PathBuf::from("/g"));
+        assert_eq!(
+            build.passthrough,
+            os(&["--index-store", "/s", "--sources", "/src"])
+        );
+        assert!(split_apple_args(&os(&["MyApp"]))
+            .unwrap_err()
+            .contains("-o"));
+        assert!(split_apple_args(&os(&["MyApp", "-o"]))
+            .unwrap_err()
+            .contains("requires"));
+        assert!(split_apple_args(&os(&["MyApp", "--out", "x"]))
+            .unwrap_err()
+            .contains("--out is the frontend's"));
+
+        let separated = split_apple_args(&os(&[
+            "--sources",
+            "A.swift",
+            "B.swift",
+            "-o",
+            "g",
+            "--",
+            "-App.xcworkspace",
+        ]))
+        .unwrap();
+        assert_eq!(
+            separated.input.as_deref(),
+            Some(Path::new("-App.xcworkspace"))
+        );
+        assert_eq!(
+            separated.passthrough,
+            os(&["--sources", "A.swift", "B.swift"])
+        );
+
+        let fe = Frontend {
+            lang: "apple",
+            launch: Launch::Executable(PathBuf::from("/opt/graphite-frontend-apple")),
+            found_via: "test",
+        };
+        let ir = PathBuf::from("/tmp/stage/frontend.graphite-ir");
+        let build = split_apple_args(&os(&[
+            "MyApp/Package.swift",
+            "-o",
+            "/tmp/my.graphite",
+            "--skip-build",
+        ]))
+        .unwrap();
+        let inv = apple_invocation(&fe, &build, &ir);
+        assert_eq!(inv.program, Path::new("/opt/graphite-frontend-apple"));
+        let mut expected = os(&["build", "--out"]);
+        expected.push(ir.as_os_str().to_os_string());
+        expected.extend(os(&["--package", "MyApp", "--skip-build"]));
+        assert_eq!(inv.args, expected);
+        let build = split_apple_args(&os(&["--index-store", "/s", "-o", "/g"])).unwrap();
+        let inv = apple_invocation(&fe, &build, &ir);
+        assert!(!inv.args.iter().any(|a| a == "--package"));
+        assert_eq!(lang_of_input(Path::new("lib.aar")), "jvm");
+
+        // An Xcode project or workspace is passed as --project, with its build options.
+        let build = split_apple_args(&os(&[
+            "ios/Acme.xcworkspace",
+            "--scheme",
+            "Acme",
+            "--destination",
+            "generic/platform=iOS Simulator",
+            "--derived-data",
+            "/dd",
+            "-o",
+            "/tmp/acme.graphite",
+        ]))
+        .unwrap();
+        assert_eq!(build.input, Some(PathBuf::from("ios/Acme.xcworkspace")));
+        let inv = apple_invocation(&fe, &build, &ir);
+        let mut expected = os(&["build", "--out"]);
+        expected.push(ir.as_os_str().to_os_string());
+        expected.extend(os(&[
+            "--project",
+            "ios/Acme.xcworkspace",
+            "--scheme",
+            "Acme",
+            "--destination",
+            "generic/platform=iOS Simulator",
+            "--derived-data",
+            "/dd",
+        ]));
+        assert_eq!(inv.args, expected);
+        assert_eq!(lang_of_input(Path::new("Acme.xcodeproj/")), "apple");
+        assert_eq!(
+            choose(&os(&["--scheme", "Acme", "Acme.xcodeproj", "-o", "g"]))
+                .unwrap()
+                .lang,
+            "apple"
+        );
+    }
+
+    /// The whole Apple path with a stub frontend and a stub jar: describe is checked,
+    /// the IR goes to import, the IR file is removed, exit codes pass through.
+    #[cfg(unix)]
+    #[test]
+    fn an_apple_build_describes_builds_and_imports() {
+        use std::os::unix::fs::PermissionsExt;
+        let root =
+            std::env::temp_dir().join(format!("graphite-apple-build-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let fe = root.join("fe.sh");
+        let java = root.join("java.sh");
+        let log = root.join("java.log");
+        // The stub frontend: describe reports schema 1; build writes its --out and exits
+        // with GRAPHITE_STUB_EXIT.
+        std::fs::write(
+            &fe,
+            "#!/bin/sh\nif [ \"$1\" = describe ]; then echo \"{\\\"ir_schema\\\": [${GRAPHITE_STUB_SCHEMA:-1}]}\"; exit 0; fi\n\
+             shift; while [ $# -gt 0 ]; do if [ \"$1\" = --out ]; then echo ir > \"$2\"; fi; shift; done\n\
+             exit ${GRAPHITE_STUB_EXIT:-0}\n",
+        )
+        .unwrap();
+        std::fs::write(
+            &java,
+            format!("#!/bin/sh\necho \"$@\" >> {}\n[ \"$3\" = import ] && grep -qx ir \"$4\" && mkdir -p \"$6\" && echo imported > \"$6/result\"\n", log.display()),
+        )
+        .unwrap();
+        for f in [&fe, &java] {
+            std::fs::set_permissions(f, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        let jar = root.join("graphite.jar");
+        std::fs::write(&jar, b"jar").unwrap();
+        let env = env_with(&[
+            ("GRAPHITE_JAVA", java.to_str().unwrap()),
+            ("GRAPHITE_FRONTEND_JVM", jar.to_str().unwrap()),
+            ("GRAPHITE_FRONTEND_APPLE", fe.to_str().unwrap()),
+        ]);
+        let output = root.join("out-graph");
+        let args = os(&[
+            "--lang",
+            "apple",
+            "MyApp",
+            "-o",
+            output.to_str().unwrap(),
+            "--skip-build",
+        ]);
+
+        assert_eq!(run(&env, &args), 0);
+        let logged = std::fs::read_to_string(&log).unwrap();
+        assert!(logged.contains("import"), "{logged}");
+        assert!(logged.contains(".graphite-ir -o"), "{logged}");
+        assert_eq!(
+            std::fs::read_to_string(output.join("result")).unwrap(),
+            "imported\n"
+        );
+        std::fs::remove_dir_all(&output).unwrap();
+        assert!(!std::fs::read_dir(&root).unwrap().any(|e| e
+            .unwrap()
+            .file_name()
+            .to_string_lossy()
+            .contains(".graphite-ir")));
+
+        // Exit codes: unsupported input, partial without and with --allow-partial.
+        std::env::set_var("GRAPHITE_STUB_EXIT", "2");
+        assert_eq!(run(&env, &args), 2);
+        std::env::set_var("GRAPHITE_STUB_EXIT", "3");
+        assert_eq!(run(&env, &args), 3);
+        let mut partial = args.clone();
+        partial.push(OsString::from("--allow-partial"));
+        assert_eq!(run(&env, &partial), 0);
+        std::env::set_var("GRAPHITE_STUB_EXIT", "0");
+        // A schema this CLI does not read is refused before building.
+        std::env::set_var("GRAPHITE_STUB_SCHEMA", "7");
+        assert_eq!(run(&env, &args), 2);
+        std::env::remove_var("GRAPHITE_STUB_SCHEMA");
+        std::env::remove_var("GRAPHITE_STUB_EXIT");
+        // No output, no frontend, an explicit --frontend that cannot run.
+        assert_eq!(run(&env, &os(&["--lang", "apple", "MyApp"])), 1);
+        let no_fe = env_with(&[("GRAPHITE_JAVA", java.to_str().unwrap())]);
+        assert_eq!(run(&no_fe, &os(&["--lang", "apple", "-o", "g"])), 2);
+        assert_eq!(
+            run(&env, &os(&["--frontend", "/nonexistent/fe", "-o", "g"])),
+            2
+        );
+        assert_eq!(run(&env, &os(&["--lang", "web"])), 2);
+        std::fs::remove_dir_all(root).unwrap();
     }
 }

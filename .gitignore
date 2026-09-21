@@ -26,3 +26,6 @@ __pycache__/
 
 # Transient packed-output publication claims
 *.graphite.lock/
+
+# SwiftPM
+.build/

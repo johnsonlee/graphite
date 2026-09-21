@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:IrReader.kt$IrReader$fun read(input: InputStream): Pair&lt;Graph, IrSummary></ID>
+    <ID>CyclomaticComplexMethod:IrReader.kt$IrReader$private fun readNode(n: io.johnsonlee.graphite.ir.v1.Node)</ID>
+    <ID>LongMethod:IrReaderTest.kt$IrReaderTest$@Test fun `every node and edge kind round-trips into the core model`()</ID>
+    <ID>LoopWithTooManyJumpStatements:IrReader.kt$IrReader$while</ID>
+    <ID>MagicNumber:IrReader.kt$IrReader$5</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$.</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$FieldRef.newBuilder().setDeclaringClass(ir.type("AcmeShop.CartService")).setName(ir.str("client")).setType(ir.type("AcmeShop.ApiClient"))</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$ResourceValue.newBuilder().setPath("Info.plist").setKey("CFBundleName").setValue(v("Acme")).setFormat("plist").setProfile("Debug")</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$assertTrue(failure(ir.bytes(Trailer.newBuilder().setNodeCount(1).setEdgeCount(0).setStringCount(4).build())).contains("declares 4 strings"))</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$assertTrue(failure(ir.bytes(Trailer.newBuilder().setNodeCount(1).setEdgeCount(9).setStringCount(0).build())).contains("declares 9 edges"))</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$assertTrue(failure(ir.bytes(Trailer.newBuilder().setNodeCount(5).setEdgeCount(0).setStringCount(0).build())).contains("declares 5 nodes"))</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$assertTrue(failure(two().edge(0, 1) { setControlFlow(io.johnsonlee.graphite.ir.v1.ControlFlowEdge.getDefaultInstance()) }.bytes()).contains("control-flow edge has no kind"))</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$assertTrue(failure(two().edge(0, 1) { setDataFlow(io.johnsonlee.graphite.ir.v1.DataFlowEdge.getDefaultInstance()) }.bytes()).contains("data-flow edge has no kind"))</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$assertTrue(failure(two().edge(0, 1) { setResource(io.johnsonlee.graphite.ir.v1.ResourceEdge.getDefaultInstance()) }.bytes()).contains("resource edge has no kind"))</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$assertTrue(failure(two().edge(0, 1) { setType(io.johnsonlee.graphite.ir.v1.TypeEdge.getDefaultInstance()) }.bytes()).contains("type relation has no kind"))</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$dangling.node(0) { setCallSite(CallSite.newBuilder().setCaller(dangling.method("A", "f")).setCallee(dangling.method("B", "g")).addArguments(9)) }</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$io.johnsonlee.graphite.ir.v1.ControlFlowEdge.newBuilder().setKind(io.johnsonlee.graphite.ir.v1.ControlFlowKind.BRANCH_FALSE)</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrReaderTest$io.johnsonlee.graphite.ir.v1.ControlFlowEdge.newBuilder().setKind(io.johnsonlee.graphite.ir.v1.ControlFlowKind.BRANCH_TRUE)</ID>
+    <ID>MaxLineLength:IrReaderTest.kt$IrStream$chunks.add(Chunk.newBuilder().setEdges(EdgeBatch.newBuilder().addEdges(Edge.newBuilder().setFrom(from).setTo(to).apply(build))).build())</ID>
+    <ID>ThrowsCount:IrReader.kt$IrReader$fun read(input: InputStream): Pair&lt;Graph, IrSummary></ID>
+    <ID>ThrowsCount:IrReader.kt$IrReader$private fun check(tail: io.johnsonlee.graphite.ir.v1.Trailer, head: Header)</ID>
+  </CurrentIssues>
+</SmellBaseline>

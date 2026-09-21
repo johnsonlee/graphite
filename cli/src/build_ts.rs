@@ -14,7 +14,7 @@ pub fn select_language(args: &[OsString]) -> Result<(Lang, Vec<OsString>), Strin
     let value = opt
         .value
         .and_then(|v| v.to_str())
-        .ok_or("--lang requires jvm, js, ts or es")?;
+        .ok_or("--lang requires jvm, js, ts, es or apple")?;
     Ok((Lang::parse(value)?, opt.without(args)))
 }
 
