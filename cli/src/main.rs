@@ -6,6 +6,8 @@
 //! - `build` is a shell over the JVM frontend (`graphite.jar build`, the SootUp
 //!   analysis): every argument is passed through, and the frontend is found as
 //!   `frontend.rs` describes.
+//! - `import` is the same shell over `graphite.jar import`: it persists the Graph IR
+//!   another frontend wrote (`graphite-frontend-apple build --out app.graphite-ir`).
 //! - `query` is reproduced byte for byte: output of all three formats, the verbose lines,
 //!   the error text and the exit codes are compared against the Kotlin binary by
 //!   `backend/bench/parity-cli.py`.
@@ -57,6 +59,9 @@ enum Command {
     /// Build graph from JAR/WAR/APK/directory and save to disk (runs the JVM frontend)
     #[command(disable_help_flag = true, disable_version_flag = true)]
     Build(BuildArgs),
+    /// Import a Graph IR written by a language frontend (.graphite-ir) and save the graph
+    #[command(disable_help_flag = true, disable_version_flag = true)]
+    Import(BuildArgs),
     /// Execute a Cypher query against a saved graph
     Query(QueryArgs),
     /// Serve one or more saved Graphite webgraphs over HTTP (with MCP at /mcp)
@@ -98,12 +103,12 @@ enum FrontendCommand {
     List,
     /// Describe a frontend as JSON: kind, path, version, accepted inputs
     Describe {
-        /// Frontend language: jvm
+        /// Frontend language: jvm, apple
         lang: String,
     },
     /// Download a frontend from a GitHub release into ~/.graphite/frontends
     Install {
-        /// Frontend language: jvm
+        /// Frontend language: jvm, apple
         lang: String,
         /// Release version to install (default: this CLI's version)
         #[arg(long)]
@@ -141,6 +146,7 @@ fn main() -> std::process::ExitCode {
     };
     let outcome = match command {
         Command::Build(args) => return exit_code(build::run(&env, &args.args)),
+        Command::Import(args) => return exit_code(build::run_import(&env, &args.args)),
         Command::Query(args) => query(args),
         Command::Serve(args) => serve(args),
         Command::Mcp(args) => graphite_explore::mcp::run_stdio(args.graphs),
@@ -166,26 +172,38 @@ fn exit_code(code: i32) -> std::process::ExitCode {
 fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(), String> {
     match command {
         FrontendCommand::List => {
-            match frontend::locate_jvm(env) {
-                Some(fe) => {
-                    let version = frontend_version(env, &fe).unwrap_or_else(|| "unknown".into());
-                    println!(
-                        "jvm\t{}\t{}\t(via {})",
-                        version,
-                        fe.path().display(),
-                        fe.found_via
-                    );
+            for lang in frontend::LANGS {
+                match frontend::locate(env, lang) {
+                    Some(fe) => {
+                        let version =
+                            frontend_version(env, &fe).unwrap_or_else(|| "unknown".into());
+                        println!(
+                            "{lang}\t{}\t{}\t(via {})",
+                            version,
+                            fe.path().display(),
+                            fe.found_via
+                        );
+                    }
+                    None => {
+                        println!("{lang}\tnot installed\t-\t(graphite frontend install {lang})")
+                    }
                 }
-                None => println!("jvm\tnot installed\t-\t(graphite frontend install jvm)"),
             }
             Ok(())
         }
         FrontendCommand::Describe { lang } => {
-            require_jvm_lang(&lang)?;
-            let fe = frontend::locate_jvm(env).ok_or_else(build::missing_frontend_message)?;
+            let lang = require_lang(&lang)?;
+            let fe = frontend::locate(env, lang)
+                .ok_or_else(|| build::missing_frontend_message_for(lang))?;
             let version = frontend_version(env, &fe);
-            let text = serde_json::to_string_pretty(&frontend::describe(&fe, version))
-                .map_err(|e| e.to_string())?;
+            let own = if lang == "apple" {
+                Some(frontend::own_description(&fe)?)
+            } else {
+                None
+            };
+            let text =
+                serde_json::to_string_pretty(&frontend::describe(&fe, version, own.as_ref()))
+                    .map_err(|e| e.to_string())?;
             println!("{text}");
             Ok(())
         }
@@ -194,7 +212,7 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             version,
             skip_checksum,
         } => {
-            require_jvm_lang(&lang)?;
+            let lang = require_lang(&lang)?;
             let version = match version {
                 Some(v) => v.trim_start_matches('v').to_string(),
                 None if option_env!("GRAPHITE_VERSION").is_some() => VERSION.to_string(),
@@ -205,20 +223,25 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
                     )
                 }
             };
-            install::install_jvm(env, &version, skip_checksum).map(|_| ())
+            match lang {
+                "apple" => install::install_apple(env, &version, skip_checksum).map(|_| ()),
+                _ => install::install_jvm(env, &version, skip_checksum).map(|_| ()),
+            }
         }
     }
 }
 
-fn require_jvm_lang(lang: &str) -> Result<(), String> {
-    if lang == "jvm" {
-        Ok(())
-    } else {
-        Err(format!("unknown frontend '{lang}'; available: jvm"))
-    }
+fn require_lang(lang: &str) -> Result<&'static str, String> {
+    frontend::canonical_lang(lang).ok_or_else(|| {
+        format!(
+            "unknown frontend '{lang}'; available: {}",
+            frontend::LANGS.join(", ")
+        )
+    })
 }
 
-/// The frontend's own version, by running it with `--version` (`graphite 2.4.8`).
+/// The frontend's own version: `--version` for the jar (`graphite 2.4.8`), `version` for
+/// a protocol frontend (`0.1.0`).
 fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<String> {
     let mut cmd = match &fe.launch {
         frontend::Launch::Jar(jar) => {
@@ -230,7 +253,11 @@ fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<Stri
     };
     // A JVM started only to print its version needs no 8 GiB reservation.
     let out = cmd
-        .arg("--version")
+        .arg(if fe.lang == "jvm" {
+            "--version"
+        } else {
+            "version"
+        })
         .env("JAVA_TOOL_OPTIONS", "-Xmx256m")
         .output()
         .ok()?;
@@ -238,8 +265,15 @@ fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<Stri
         return None;
     }
     let text = String::from_utf8_lossy(&out.stdout);
-    text.lines()
-        .find_map(|l| l.strip_prefix("graphite ").map(|v| v.trim().to_string()))
+    if fe.lang == "jvm" {
+        text.lines()
+            .find_map(|l| l.strip_prefix("graphite ").map(|v| v.trim().to_string()))
+    } else {
+        text.lines()
+            .next()
+            .map(|l| l.trim().to_string())
+            .filter(|l| !l.is_empty())
+    }
 }
 
 fn query(args: QueryArgs) -> Result<(), String> {
