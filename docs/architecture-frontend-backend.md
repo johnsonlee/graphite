@@ -111,7 +111,7 @@ graphite/
 │   │   ├── core/ sootup/ cypher/ webgraph/ query/ explore/
 │   │   └── (phase 2) IR writer; builds `graphite-frontend-jvm.jar`
 │   ├── web/                       (phase 6) TypeScript frontend, npm package
-│   └── apple/                     (phase 7) Swift package
+│   └── apple/                     Swift package: `graphite-frontend-apple` (phase 7, first cut shipped)
 └── docs/
 ```
 
@@ -214,8 +214,21 @@ core names are listed in addition only when they are not aliases of a listed key
 - Self-describing and versioned; forward-compatible for extension properties.
 - Inspectable with off-the-shelf tools.
 
-### 4.2 Carrier: Apache Arrow IPC (stream format), zstd-compressed record batches
+### 4.2 Carrier
 
+**As shipped: protobuf.** The first IR in the tree is `ir/graphite_ir.proto` (package
+`graphite.ir.v1`): a stream of length-delimited `Chunk` messages (header, interned string
+batches, node/edge/method/type-relation/class-origin/enum-value/artifact batches, trailer)
+that mirrors the JVM core model one to one, so `graphite.jar import` builds a
+`DefaultGraph` from it and saves it with the existing writer, and `graphite import` packs
+the result. It meets the streaming, versioning and few-hundred-lines requirements with a
+generated library on every platform (`protobuf-java` on the JVM, `swift-protobuf` for the
+Apple frontend), and it was the shortest path to a second language in the graph. It is
+not columnar: the Arrow carrier below remains the design for the indexer phase, where
+the persisted format changes and the IR is read in bounded memory by the Rust backend;
+the protobuf schema's kinds and fields map onto the Arrow tables directly.
+
+**Design target: Apache Arrow IPC (stream format), zstd-compressed record batches.**
 Arrow is the choice for the long term: it is columnar, dictionary encoding is built in,
 batches stream, the schema travels with the data, zstd/lz4 buffer compression is part of
 the IPC format, and DuckDB/Polars/pyarrow open it directly for inspection and ad-hoc
@@ -415,7 +428,7 @@ artifact in its language's own ecosystem, and the CLI fetches, verifies and runs
 |---|---|---|---|
 | jvm | `graphite-frontend-jvm-<ver>.jar` (fat jar) + `graphite-frontend-jvm` launcher | GitHub Release asset; Maven Central `io.johnsonlee.graphite:frontend-jvm` (for Gradle/Maven users who embed it); Homebrew `graphite-frontend-jvm` (depends on `openjdk@17`) | JDK 17+ |
 | web | npm package `@johnsonlee/graphite-frontend-web` with a `bin` | npm; GitHub Release tarball | Node 20+ |
-| apple | `graphite-frontend-apple` static binary (macOS x86_64/arm64) | GitHub Release asset; Homebrew | Xcode toolchain for index/SIL |
+| apple | `graphite-frontend-apple` binary (macOS arm64/x86_64, Linux x86_64; **shipped**: `publish.yml` builds it per target, the formula installs it next to the CLI, `graphite frontend install apple` fetches and verifies it) | GitHub Release asset; Homebrew | Xcode toolchain for index/SIL |
 
 How the CLI finds one, in order: `--frontend <exe>`, `GRAPHITE_FRONTEND_<LANG>`, an
 executable `graphite-frontend-<lang>` on `PATH`, then `~/.graphite/frontends/<lang>/<ver>/`.
@@ -451,7 +464,7 @@ is taken on trust.
 | 4 | Core model: `Module`/`Type`/`Member` nodes, `CONTAINS`, symbol references on the JVM frontend; aliases wired into property access, `keys()`, serialisation. Kotlin server frozen. | Old queries unchanged on v4 JVM graphs; C4 output byte-identical to today on the six reference graphs |
 | 5 | Retire Kotlin `serve`/`query`/`explore`/`cypher`: `graphite.jar` becomes the frontend only; Docker image, Homebrew formula and docs switch to the Rust binary; Kotlin modules deleted. | Release pipeline publishes one CLI + frontends; parity harness retargeted to v-1 Rust vs current Rust |
 | 6 | Web frontend (TypeScript). | The IR validates; the Explorer's own web UI (a TypeScript-free static app today, the first candidate) builds into a graph the explorer can browse; C4 on a multi-package workspace |
-| 7 | Apple frontend (Swift, then ObjC). | A sample iOS app builds; cross-graph queries across a JVM backend graph and a Swift client graph |
+| 7 | Apple frontend (Swift, then ObjC). **First cut shipped:** `frontend/apple` writes the protobuf IR from the index store and SwiftSyntax; `graphite build` dispatches to it and imports the IR; the release ships it per target, the formula installs it, `graphite frontend install apple` fetches it; CI indexes the `AcmeShop` fixture through both paths and queries it. An `.xcodeproj`/`.xcworkspace` input builds through `xcodebuild` (scheme picked when there is one, index store forced on, signing off) and reads its derived data; macOS CI builds the `AcmeApp` fixture project and Linux CI imports and queries its IR. Objective-C sources are indexed with the Swift ones (declarations with their Clang-spelled types, calls, both directions across the boundary; the `AcmeApp` workspace fixture is mixed). Remaining: SIL data flow, Objective-C literal arguments. | A sample iOS app builds; cross-graph queries across a JVM backend graph and a Swift client graph |
 
 Compatibility rules, enforced by the harness at every phase:
 
@@ -508,6 +521,85 @@ directory. Resources: `Info.plist`, `.xcconfig`, `.strings`, asset catalogs (nam
 Compiled binaries (Mach-O with symbols) are a possible later input at the symbol level
 only.
 
+**As shipped (`frontend/apple`, Swift 6.1, Linux and macOS).** `graphite build
+<package> -o <graph>` (the CLI picks the Apple frontend for a `Package.swift`, `--lang
+apple` or `--frontend`) runs the frontend's `describe`, checks its IR schema, runs its
+`build --out <ir>` and imports the IR; the frontend's own `graphite-frontend-apple
+build --package <dir> --out <ir>` runs `swift build`, takes the built targets' source
+files from `swift package describe` (so a target with a custom `path:` is graphed with
+the rest, not only what sits under `Sources/`), reads `.build/debug/index/store` with
+IndexStoreDB (or `--index-store <dir> --sources <dir>` for an Xcode store), parses each
+file with SwiftSyntax, demangles every USR with one `swift-demangle` run and writes
+the protobuf IR. What it emits, in core-model terms: a class origin per type
+(`Module.Outer.Inner` → module), `EXTENDS`/`IMPLEMENTS` relations from `baseOf`
+occurrences, a method per function/initializer/deinitializer with the demangled
+signature (name `checkout(order:method:)`, parameter and return types as Swift prints
+them, `Swift.Void` for `()`), a field per stored or computed property, enum values per
+case, an annotation per attribute (`available`, `objc`, property wrappers; the argument
+text as `arguments`), and a call site per non-implicit call occurrence (operators
+included, accessor calls excluded) attributed to its enclosing function or property
+initializer. Literal arguments become `Constant` nodes with `PARAMETER_PASS` edges into
+the call site; other arguments keep their slot as `LocalVariable` nodes named by their
+source text, so `argumentIndex` queries hold. Declarations exposed to Objective-C carry
+Clang USRs (`c:@M@App@objc(cs)AppDelegate(im)application:didFinishLaunchingWithOptions:`)
+that the demangler cannot read: `ClangUSR` gives the declaring type (module-qualified for
+Swift declarations, bare for imported ones) and the syntax pass gives the parameter and
+return types as written, qualified where the name is known; Objective-C callees are named
+by their class the same way. An `.xcodeproj` or `.xcworkspace` input is
+built with `xcodebuild` (the project's only scheme, or `--scheme`; `--destination`,
+`--configuration`; `COMPILER_INDEX_STORE_ENABLE=YES`, code signing off; derived data in a
+per-project temporary directory or `--derived-data`) and indexed from that derived data,
+with every `.swift`, `.m`, `.mm` and `.h` file under the project's directory as the index
+reader's input, the Swift files as the Swift syntax pass's and the others as the
+Objective-C declaration pass's. Objective-C comes out of the same index store (Clang writes
+it with `-index-store-path`, which Xcode enables with the same setting): a class is one
+declaration whether its `@interface` sits in a header and its `@implementation` in the
+`.m`, a `@protocol` (declaration only, in Clang's index) is a type, members declared only
+in a header (`@property`, a protocol's methods) count, instance variables and class
+properties are fields, categories extend the class they name, methods are named by
+selector, and call sites across the language boundary are attributed in both directions
+(Objective-C → Swift through the generated `-Swift.h`, Swift → Objective-C through a
+bridging header); the `AcmeApp` workspace fixture asserts both in CI. The types of
+Objective-C members are not in the index store; `ObjectiveCSyntax` reads them from the
+`@interface`, `@implementation` and `@protocol` blocks of each `.h`, `.m` and `.mm` file
+(a tokenizer that skips comments, strings and preprocessor lines, so no compile flags are
+needed) and records them at the position of the declared name, where the index puts the
+occurrence. They are spelled as Clang spells them, nullability included: `NSString *
+_Nonnull`, `instancetype _Nullable`, `void (^ _Nonnull)(BOOL, NSError * _Nullable)`,
+`NSDictionary<NSString *, NSArray<NSNumber *> *> *`, `id<Auditing>`, `char[8]`; `nullable`
+and `_Nullable` forms are one spelling, and inside `NS_ASSUME_NONNULL_BEGIN` / `#pragma
+clang assume_nonnull begin` an unannotated pointer, `id`, `instancetype`, `Class`, `SEL`
+or block is `_Nonnull`, as Clang types it. Ownership qualifiers and Interface Builder
+markers are not part of the type; `IBAction` is `void`; trailing macros
+(`NS_SWIFT_NAME(...)`, `API_AVAILABLE(...)`) are skipped. A method defined in an
+`@implementation` takes its types from its `@interface` or `@protocol` declaration when
+there is one, as Clang merges the declaration's nullability into the definition. The
+descriptor is built once per USR, so a Swift or Objective-C call site into an
+Objective-C method carries the declaration's types. The pass covers every Clang
+declaration the reader emits, not only a container's members: C functions (declarations
+and definitions, parameter names dropped, `void` and `...` no parameters) and globals
+(`static`, `extern`, initializers dropped, `int (*hook)(int)` function pointers) at file
+scope and inside an `@implementation`, the fields of a `struct` or `union` (an anonymous
+struct is named by its typedef, from its `c:@SA@Name` USR), the accessors a property
+names (`getter=wasRead` is a `() -> T` method at that token, `setter=setRead:` a `(T) ->
+void` one), and the instance variables `@synthesize` creates, which take their property's
+type: the index links the ivar to the property it backs at the `@synthesize` token (an
+`accessorOf` relation, kept as `IndexModel.synthesized`), which may be a protocol's or a
+superclass's property (`c:objc(pl)ProfileManager(py)badgeStore` backing
+`c:objc(cs)Fake@_badgeStore`); failing that the emitter looks for the property named by
+the `@synthesize property = ivar` mapping (or `_name` → `name`) in the class, its
+superclasses and the protocols it adopts, since the `.m` cannot spell the type itself. The header of an `@interface` is parsed
+grammatically (category or extension group, generic parameters, `: Super`, protocol
+list) and only a `{` attached to it opens the instance variable block; a `typedef
+NS_ENUM(...) { … };`, `enum` or `struct` body after it is a declaration of its own, and
+every parser loop consumes a token or exits, so no file hangs the frontend. Objective-C
+call sites carry no literal arguments (no Clang expression pass yet). Not yet: SIL data flow, resources. The `AcmeShop` fixture package and the CI job `apple.yml`
+exercise the whole path: frontend → IR → `graphite import` → `graphite query`/`serve`, and
+the installed path: the release tarball installed with `graphite frontend install apple`
+from a `file://` release directory, then `graphite build` on the package through it; the
+`AcmeApp` fixture project is built with `xcodebuild` on macOS and its IR imported and
+queried on Linux.
+
 ### 8.4 Later candidates
 
 Go (`go/packages` + `golang.org/x/tools/go/ssa` give types, calls and SSA data flow
@@ -517,10 +609,11 @@ Each is a frontend with the same three commands; none needs a backend change.
 
 ## 9. Delivery and packaging
 
-- The first tag of this layout is `v2.5.0` (rehearsed as `v3.0.0-alpha1` to `-alpha6`).
-  It stays in the 2.x line: the REST routes, the MCP tools and the Maven coordinates
-  are those of 2.4.8; what changes is packaging, the installed `graphite` becomes a
-  native binary with the jar as its frontend and the MCP server moves from npm into it.
+- The first release of this layout was `v2.5.0` (2026-09-15), followed by `v2.6.0` and
+  `v2.7.0`. It stayed in the 2.x line: the REST routes, the MCP tools and the Maven
+  coordinates are those of 2.4.8; what changed is packaging, the installed `graphite`
+  became a native binary with the jar as its frontend and the MCP server moved from npm
+  into it.
 - One release tag drives everything: the Rust CLI/server binaries (linux x86_64/aarch64
   musl, macOS x86_64/aarch64) as GitHub Release assets, the `graphite-explore` container
   image (a static binary on `distroless`), the Homebrew formula (`graphite`, no JDK

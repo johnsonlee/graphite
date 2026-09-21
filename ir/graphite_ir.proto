@@ -1,0 +1,379 @@
+// Graphite Graph IR, schema version 1.
+//
+// What a language frontend hands to the backend: the program graph as the JVM frontend's
+// core model expresses it today (nodes, edges, methods, type relations, annotations,
+// resources), language-neutral, so that `graphite.jar import` can persist it with the
+// same writer the JVM frontend uses and `graphite serve` can serve it unchanged.
+//
+// Carrier: a stream of length-delimited `Chunk` messages (each prefixed by its varint
+// byte length, as protobuf's `writeDelimitedTo` / `parseDelimitedFrom` and swift-protobuf's
+// `BinaryDelimited` produce). A writer emits chunks as it goes and never holds the graph
+// in memory; a reader consumes them in order. The first chunk is a `Header`, the last a
+// `Trailer`; a stream without a trailer is truncated and refused.
+//
+// Ids. Strings are interned: every `StringBatch` appends to one table, and a string id is
+// the position in that table, assigned from 0 in stream order. Nodes carry their own id;
+// ids are dense from 0 and unique. Edges, call-site receivers and arguments refer to
+// node ids; a reference to an id no node declared is an error. Types, methods and fields
+// are described inline by `TypeRef` / `MethodRef` / `FieldRef` and carry string ids.
+//
+// Compatibility. Fields are only ever added; a reader ignores unknown fields; a header
+// whose `schema_version` a reader does not know is refused.
+syntax = "proto3";
+
+package graphite.ir.v1;
+
+option java_package = "io.johnsonlee.graphite.ir.v1";
+option java_multiple_files = true;
+option java_outer_classname = "GraphiteIrProto";
+option swift_prefix = "GraphiteIR";
+
+// One length-delimited unit of the stream.
+message Chunk {
+  oneof chunk {
+    Header header = 1;
+    StringBatch strings = 2;
+    NodeBatch nodes = 3;
+    EdgeBatch edges = 4;
+    MethodBatch methods = 5;
+    TypeRelationBatch type_relations = 6;
+    ClassOriginBatch class_origins = 7;
+    EnumValueBatch enum_values = 8;
+    ArtifactDependencyBatch artifact_dependencies = 9;
+    Trailer trailer = 15;
+  }
+}
+
+message Header {
+  // Always 1 for this file.
+  uint32 schema_version = 1;
+  // The source language: "jvm", "swift", "objc", "typescript", ...
+  string language = 2;
+  Frontend frontend = 3;
+  Source source = 4;
+  // Frontend options that shaped the graph, for the record (include filters, ...).
+  map<string, string> options = 5;
+}
+
+message Frontend {
+  string name = 1;
+  string version = 2;
+}
+
+message Source {
+  // "jar", "apk", "swiftpm", "xcodeproj", "index-store", ...
+  string kind = 1;
+  string path = 2;
+  // A digest of the input when the frontend has one (hex), else empty.
+  string digest = 3;
+}
+
+message Trailer {
+  uint64 node_count = 1;
+  uint64 edge_count = 2;
+  uint64 string_count = 3;
+}
+
+message StringBatch {
+  repeated string values = 1;
+}
+
+// A named type with optional type arguments. `name` is a string id of the qualified name
+// in the frontend's own spelling ("java.util.List", "AcmeShop.CartService").
+message TypeRef {
+  uint32 name = 1;
+  repeated TypeRef type_arguments = 2;
+}
+
+// A callable: declaring type, name, parameter types, return type. `name` is a string id.
+message MethodRef {
+  TypeRef declaring_class = 1;
+  uint32 name = 2;
+  repeated TypeRef parameter_types = 3;
+  TypeRef return_type = 4;
+}
+
+message FieldRef {
+  TypeRef declaring_class = 1;
+  uint32 name = 2;
+  TypeRef type = 3;
+}
+
+// A typed scalar or structure: annotation attribute values, enum constructor arguments,
+// resource values. Strings are inline here, not interned; these are few.
+message Value {
+  oneof value {
+    bool null_value = 1;
+    string string_value = 2;
+    int64 int_value = 3;
+    double double_value = 4;
+    bool bool_value = 5;
+    ValueList list_value = 6;
+    ValueMap map_value = 7;
+    // A reference to an enum case: "com.acme.Color" and "RED".
+    EnumRef enum_value = 8;
+  }
+}
+
+message ValueList {
+  repeated Value values = 1;
+}
+
+message ValueMap {
+  repeated NamedValue entries = 1;
+}
+
+message NamedValue {
+  string name = 1;
+  Value value = 2;
+}
+
+message EnumRef {
+  string enum_class = 1;
+  string enum_name = 2;
+}
+
+message NodeBatch {
+  repeated Node nodes = 1;
+}
+
+message Node {
+  uint32 id = 1;
+  oneof kind {
+    IntConstant int_constant = 2;
+    LongConstant long_constant = 3;
+    FloatConstant float_constant = 4;
+    DoubleConstant double_constant = 5;
+    BooleanConstant boolean_constant = 6;
+    StringConstant string_constant = 7;
+    NullConstant null_constant = 8;
+    EnumConstant enum_constant = 9;
+    LocalVariable local_variable = 10;
+    Field field = 11;
+    Parameter parameter = 12;
+    Return return = 13;
+    ResourceFile resource_file = 14;
+    ResourceValue resource_value = 15;
+    CallSite call_site = 16;
+    Annotation annotation = 17;
+  }
+}
+
+message IntConstant { int32 value = 1; }
+message LongConstant { int64 value = 1; }
+message FloatConstant { float value = 1; }
+message DoubleConstant { double value = 1; }
+message BooleanConstant { bool value = 1; }
+// `value` is a string id.
+message StringConstant { uint32 value = 1; }
+message NullConstant {}
+
+message EnumConstant {
+  TypeRef enum_type = 1;
+  // String id of the case name.
+  uint32 enum_name = 2;
+  // User-defined constructor arguments, name and ordinal excluded.
+  repeated Value constructor_args = 3;
+}
+
+message LocalVariable {
+  // String id.
+  uint32 name = 1;
+  TypeRef type = 2;
+  MethodRef method = 3;
+}
+
+message Field {
+  FieldRef field = 1;
+  bool is_static = 2;
+}
+
+message Parameter {
+  uint32 index = 1;
+  TypeRef type = 2;
+  MethodRef method = 3;
+}
+
+message Return {
+  MethodRef method = 1;
+  // The resolved actual type when it differs from the declared one (generics).
+  TypeRef actual_type = 2;
+}
+
+// A non-code file the program reads: `path` within the input, `source` (the artifact or
+// module it came from), `format` ("plist", "strings", "properties", "yaml", ...),
+// `profile` when the file is one variant of several (Spring profiles, build configs).
+message ResourceFile {
+  string path = 1;
+  string source = 2;
+  string format = 3;
+  optional string profile = 4;
+}
+
+message ResourceValue {
+  string path = 1;
+  string key = 2;
+  Value value = 3;
+  string format = 4;
+  optional string profile = 5;
+}
+
+// A call expression in `caller`'s body to `callee`. `receiver` and `arguments` are node
+// ids of the value nodes the call reads, when the frontend tracks them.
+message CallSite {
+  MethodRef caller = 1;
+  MethodRef callee = 2;
+  optional int32 line = 3;
+  optional uint32 receiver = 4;
+  repeated uint32 arguments = 5;
+}
+
+// Metadata attached to a class or one of its members: `name` is the annotation's
+// qualified name (or the Swift attribute, "@objc"), `class_name` the declaring type,
+// `member_name` the method or field, or "<class>" for the type itself.
+message Annotation {
+  string name = 1;
+  string class_name = 2;
+  string member_name = 3;
+  repeated NamedValue values = 4;
+}
+
+message EdgeBatch {
+  repeated Edge edges = 1;
+}
+
+message Edge {
+  uint32 from = 1;
+  uint32 to = 2;
+  oneof kind {
+    DataFlowEdge data_flow = 3;
+    ResourceEdge resource = 4;
+    CallEdge call = 5;
+    TypeEdge type = 6;
+    ControlFlowEdge control_flow = 7;
+  }
+}
+
+message DataFlowEdge {
+  DataFlowKind kind = 1;
+}
+
+enum DataFlowKind {
+  DATA_FLOW_KIND_UNSPECIFIED = 0;
+  ASSIGN = 1;
+  PARAMETER_PASS = 2;
+  RETURN_VALUE = 3;
+  FIELD_STORE = 4;
+  FIELD_LOAD = 5;
+  ARRAY_STORE = 6;
+  ARRAY_LOAD = 7;
+  CAST = 8;
+  PHI = 9;
+}
+
+message ResourceEdge {
+  ResourceRelation kind = 1;
+}
+
+enum ResourceRelation {
+  RESOURCE_RELATION_UNSPECIFIED = 0;
+  OPENS = 1;
+  LOADS = 2;
+  BUNDLE_CANDIDATE = 3;
+  LOOKUP = 4;
+  ENUMERATES = 5;
+}
+
+message CallEdge {
+  bool is_virtual = 1;
+  bool is_dynamic = 2;
+}
+
+message TypeEdge {
+  TypeRelation kind = 1;
+}
+
+enum TypeRelation {
+  TYPE_RELATION_UNSPECIFIED = 0;
+  EXTENDS = 1;
+  IMPLEMENTS = 2;
+}
+
+message ControlFlowEdge {
+  ControlFlowKind kind = 1;
+  optional BranchComparison comparison = 2;
+}
+
+enum ControlFlowKind {
+  CONTROL_FLOW_KIND_UNSPECIFIED = 0;
+  SEQUENTIAL = 1;
+  BRANCH_TRUE = 2;
+  BRANCH_FALSE = 3;
+  SWITCH_CASE = 4;
+  SWITCH_DEFAULT = 5;
+  EXCEPTION = 6;
+  RETURN = 7;
+}
+
+message BranchComparison {
+  ComparisonOp operator = 1;
+  uint32 comparand = 2;
+}
+
+enum ComparisonOp {
+  COMPARISON_OP_UNSPECIFIED = 0;
+  EQ = 1;
+  NE = 2;
+  LT = 3;
+  GE = 4;
+  GT = 5;
+  LE = 6;
+}
+
+// Every callable the program declares, whether or not a call site names it.
+message MethodBatch {
+  repeated MethodRef methods = 1;
+}
+
+// The type hierarchy: subtype extends or implements (conforms to) supertype.
+message TypeRelationBatch {
+  repeated TypeRelationEntry relations = 1;
+}
+
+message TypeRelationEntry {
+  TypeRef subtype = 1;
+  TypeRef supertype = 2;
+  TypeRelation relation = 3;
+}
+
+// Where a type came from: the artifact, module or target that declares it.
+message ClassOriginBatch {
+  repeated ClassOrigin origins = 1;
+}
+
+message ClassOrigin {
+  string class_name = 1;
+  string source = 2;
+}
+
+// The constructor arguments of an enum case, so a query can read `Color.RED`'s values.
+message EnumValueBatch {
+  repeated EnumValueEntry entries = 1;
+}
+
+message EnumValueEntry {
+  string enum_class = 1;
+  string enum_name = 2;
+  repeated Value values = 3;
+}
+
+// Weighted dependencies between artifacts (modules), for the topology and C4 views.
+message ArtifactDependencyBatch {
+  repeated ArtifactDependency dependencies = 1;
+}
+
+message ArtifactDependency {
+  string from_artifact = 1;
+  string to_artifact = 2;
+  uint32 weight = 3;
+}
