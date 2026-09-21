@@ -1,5 +1,6 @@
 //! `graphite frontend install`: fetch a frontend from a GitHub release into
-//! `~/.graphite/frontends/<lang>/<version>/` and verify its checksum.
+//! `~/.graphite/frontends/<lang>/<version>/` and verify its checksum. The JVM frontend
+//! is one jar; the Apple frontend is a tarball per target holding one executable.
 //!
 //! Downloads go through `curl`, which every macOS and most Linux installs carry, rather
 //! than an HTTP client compiled into the binary. The checksum file published next to the
@@ -24,21 +25,34 @@ pub fn install(
     semver::Version::parse(version)
         .map_err(|e| format!("invalid release version '{version}': {e}"))?;
     match lang {
+        Lang::Apple => install_apple(env, version, skip_checksum),
         Lang::Jvm => install_jvm(env, version, skip_checksum),
         Lang::Js if skip_checksum => Err("--skip-checksum is only supported for legacy JVM releases; install the JS frontend without this flag".into()),
         Lang::Js => js::install_js(env, version),
     }
 }
 
-/// Where the JVM frontend jar for `version` lives once installed.
-pub fn jvm_install_path(env: &Env, version: &str) -> Result<PathBuf, String> {
+/// Where a frontend's file for `version` lives once installed.
+fn install_path(env: &Env, lang: &str, version: &str, file: &str) -> Result<PathBuf, String> {
     let dir = env
         .frontends_dir()
         .ok_or("cannot determine the home directory (HOME is unset)")?;
-    Ok(dir
-        .join("jvm")
-        .join(version)
-        .join(frontend::JVM_FRONTEND_JAR))
+    Ok(dir.join(lang).join(version).join(file))
+}
+
+/// Where the JVM frontend jar for `version` lives once installed.
+pub fn jvm_install_path(env: &Env, version: &str) -> Result<PathBuf, String> {
+    install_path(env, "jvm", version, frontend::JVM_FRONTEND_JAR)
+}
+
+/// Where the Apple frontend executable for `version` lives once installed.
+pub fn apple_install_path(env: &Env, version: &str) -> Result<PathBuf, String> {
+    install_path(
+        env,
+        "apple",
+        version,
+        &frontend::exe_name(frontend::APPLE_FRONTEND_EXE),
+    )
 }
 
 /// The hex digest in a `sha256sum`-style file: the first token of the first line.
@@ -86,6 +100,24 @@ fn download(url: &str, target: &Path) -> Result<(), String> {
     }
 }
 
+/// Reuse checksum validation across all release frontends and clean a failed download.
+fn fetch_verified(
+    url: &str,
+    part: &Path,
+    complete: &Path,
+    skip_checksum: bool,
+) -> Result<(), String> {
+    let dir = part.parent().expect("download path has a parent");
+    let asset = url.rsplit('/').next().expect("release asset");
+    download_verified(
+        url,
+        part,
+        &dir.join(format!("{asset}.sha256")),
+        skip_checksum,
+    )
+    .inspect_err(|_| discard_partial_install(dir, complete))
+}
+
 /// Install the JVM frontend for `version`. Returns the jar path; an existing install of
 /// that version is left alone.
 pub fn install_jvm(env: &Env, version: &str, skip_checksum: bool) -> Result<PathBuf, String> {
@@ -100,13 +132,8 @@ pub fn install_jvm(env: &Env, version: &str, skip_checksum: bool) -> Result<Path
     let dir = jar.parent().expect("install path has a parent");
     std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
     let part = dir.join(format!("{}.part", frontend::JVM_FRONTEND_JAR));
-    let url = frontend::release_asset_url(version, frontend::JVM_RELEASE_ASSET);
-    if let Err(error) =
-        download_verified(&url, &part, &dir.join("graphite.jar.sha256"), skip_checksum)
-    {
-        discard_partial_install(dir);
-        return Err(error);
-    }
+    let url = frontend::configured_release_url(env, version, frontend::JVM_RELEASE_ASSET);
+    fetch_verified(&url, &part, &jar, skip_checksum)?;
     std::fs::rename(&part, &jar).map_err(|e| format!("{}: {e}", jar.display()))?;
     eprintln!("Installed JVM frontend {version} at {}", jar.display());
     Ok(jar)
@@ -146,11 +173,76 @@ fn download_verified(
     }
 }
 
+/// Install the Apple frontend for `version`: the tarball for this machine's target,
+/// verified, unpacked into the version directory. Returns the executable path; an
+/// existing install of that version is left alone.
+pub fn install_apple(env: &Env, version: &str, skip_checksum: bool) -> Result<PathBuf, String> {
+    let exe = apple_install_path(env, version)?;
+    if exe.is_file() {
+        eprintln!(
+            "Apple frontend {version} is already installed at {}",
+            exe.display()
+        );
+        return Ok(exe);
+    }
+    let target = frontend::host_target().ok_or_else(|| {
+        format!(
+            "the Apple frontend is released for macOS and Linux (x86_64, aarch64), not for \
+             {}-{}; build it from frontend/apple and set {}",
+            std::env::consts::OS,
+            std::env::consts::ARCH,
+            frontend::APPLE_FRONTEND_VAR
+        )
+    })?;
+    let dir = exe.parent().expect("install path has a parent");
+    std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    let asset = frontend::apple_release_asset(version, target);
+    let part = dir.join(format!("{asset}.part"));
+    let url = frontend::configured_release_url(env, version, &asset);
+    fetch_verified(&url, &part, &exe, skip_checksum)?;
+    if let Err(e) = unpack(&part, dir, &exe) {
+        discard_partial_install(dir, &exe);
+        return Err(e);
+    }
+    let _ = std::fs::remove_file(&part);
+    eprintln!("Installed Apple frontend {version} at {}", exe.display());
+    Ok(exe)
+}
+
+/// Unpack a `.tar.gz` into `dir` with the system `tar` and check `expected` came out of
+/// it, executable.
+fn unpack(archive: &Path, dir: &Path, expected: &Path) -> Result<(), String> {
+    let status = Command::new("tar")
+        .arg("-xzf")
+        .arg(archive)
+        .arg("-C")
+        .arg(dir)
+        .status()
+        .map_err(|e| format!("tar is required to unpack {}: {e}", archive.display()))?;
+    if !status.success() {
+        return Err(format!("could not unpack {}", archive.display()));
+    }
+    if !expected.is_file() {
+        return Err(format!(
+            "{} does not contain {}",
+            archive.display(),
+            expected.file_name().unwrap_or_default().to_string_lossy()
+        ));
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(expected, std::fs::Permissions::from_mode(0o755))
+            .map_err(|e| format!("{}: {e}", expected.display()))?;
+    }
+    Ok(())
+}
+
 /// Remove what a failed install left in its version directory (the `.part` download,
 /// a checksum file) and the directory itself, so the directory never counts as an
 /// install and never hides an older, complete one from the frontend lookup.
-fn discard_partial_install(dir: &Path) {
-    if dir.join(frontend::JVM_FRONTEND_JAR).is_file() {
+fn discard_partial_install(dir: &Path, complete: &Path) {
+    if complete.is_file() {
         return;
     }
     let _ = std::fs::remove_dir_all(dir);
@@ -167,7 +259,7 @@ mod tests {
             home: Some(root.path().into()),
             ..Default::default()
         };
-        for lang in [Lang::Js, Lang::Jvm] {
+        for lang in frontend::LANGS {
             for version in ["", "../escape", "1.2.3/a", "1.2.3?query", "2.5.0-rc.01"] {
                 let error = install(&env, lang, version, false).unwrap_err();
                 assert!(error.starts_with("invalid release version"), "{error}");
@@ -187,6 +279,11 @@ mod tests {
             PathBuf::from("/home/u/.graphite/frontends/jvm/2.4.8/graphite-frontend-jvm.jar")
         );
         assert!(jvm_install_path(&Env::default(), "2.4.8").is_err());
+        assert_eq!(
+            apple_install_path(&env, "2.6.0").unwrap(),
+            PathBuf::from("/home/u/.graphite/frontends/apple/2.6.0")
+                .join(frontend::exe_name(frontend::APPLE_FRONTEND_EXE))
+        );
     }
 
     #[test]
@@ -223,12 +320,13 @@ mod tests {
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(dir.join("graphite-frontend-jvm.jar.part"), b"half").unwrap();
         std::fs::write(dir.join("graphite.jar.sha256"), b"x").unwrap();
-        discard_partial_install(&dir);
+        let jar = dir.join(frontend::JVM_FRONTEND_JAR);
+        discard_partial_install(&dir, &jar);
         assert!(!dir.exists());
         // A complete install is never discarded.
         std::fs::create_dir_all(&dir).unwrap();
-        std::fs::write(dir.join(frontend::JVM_FRONTEND_JAR), b"jar").unwrap();
-        discard_partial_install(&dir);
+        std::fs::write(&jar, b"jar").unwrap();
+        discard_partial_install(&dir, &jar);
         assert!(dir.join(frontend::JVM_FRONTEND_JAR).is_file());
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -244,6 +342,97 @@ mod tests {
         std::fs::create_dir_all(jar.parent().unwrap()).unwrap();
         std::fs::write(&jar, b"jar").unwrap();
         assert_eq!(install_jvm(&env, "9.9.9", false).unwrap(), jar);
+        let exe = apple_install_path(&env, "9.9.9").unwrap();
+        std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
+        std::fs::write(&exe, b"exe").unwrap();
+        assert_eq!(install_apple(&env, "9.9.9", false).unwrap(), exe);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    /// A release directory served over `file://`: the tarball and its checksum, as the
+    /// publish workflow lays them out.
+    #[cfg(unix)]
+    #[test]
+    fn the_apple_frontend_is_installed_from_a_verified_tarball() {
+        let root =
+            std::env::temp_dir().join(format!("graphite-apple-install-{}", std::process::id()));
+        let release = root.join("release");
+        std::fs::create_dir_all(&release).unwrap();
+        let payload = root.join("payload");
+        std::fs::create_dir_all(&payload).unwrap();
+        std::fs::write(
+            payload.join(frontend::APPLE_FRONTEND_EXE),
+            b"#!/bin/sh\necho 0.1.0\n",
+        )
+        .unwrap();
+        let target = frontend::host_target().unwrap();
+        let asset = frontend::apple_release_asset("9.9.9", target);
+        let archive = release.join(&asset);
+        assert!(Command::new("tar")
+            .arg("-czf")
+            .arg(&archive)
+            .arg("-C")
+            .arg(&payload)
+            .arg(frontend::APPLE_FRONTEND_EXE)
+            .status()
+            .unwrap()
+            .success());
+        let mut env = Env {
+            home: Some(root.join("home")),
+            ..Default::default()
+        };
+        env.vars.insert(
+            "GRAPHITE_RELEASE_BASE".into(),
+            format!("file://{}", release.display()).into(),
+        );
+
+        // No checksum published: refused unless --skip-checksum.
+        let err = install_apple(&env, "9.9.9", false).unwrap_err();
+        assert!(err.contains("SHA-256 checksum is required"), "{err}");
+        assert!(!root.join("home/.graphite/frontends/apple/9.9.9").exists());
+
+        // A wrong checksum is a refusal that leaves nothing behind.
+        std::fs::write(
+            release.join(format!("{asset}.sha256")),
+            format!("{}  {asset}\n", "0".repeat(64)),
+        )
+        .unwrap();
+        let err = install_apple(&env, "9.9.9", false).unwrap_err();
+        assert!(err.contains("checksum mismatch"), "{err}");
+        assert!(!root.join("home/.graphite/frontends/apple/9.9.9").exists());
+
+        // The right checksum installs an executable the lookup then finds.
+        let digest = sha256_of(&archive).unwrap();
+        std::fs::write(
+            release.join(format!("{asset}.sha256")),
+            format!("{digest}  {asset}\n"),
+        )
+        .unwrap();
+        let exe = install_apple(&env, "9.9.9", false).unwrap();
+        assert_eq!(exe, apple_install_path(&env, "9.9.9").unwrap());
+        let out = Command::new(&exe).output().unwrap();
+        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "0.1.0");
+        assert!(!exe.parent().unwrap().join(format!("{asset}.part")).exists());
+        let found = frontend::locate_apple(&env).unwrap();
+        assert_eq!(found.path(), exe);
+        assert_eq!(found.found_via, "~/.graphite/frontends");
+
+        // A tarball without the executable is refused.
+        let empty = root.join("empty");
+        std::fs::create_dir_all(empty.join("other")).unwrap();
+        let bad_asset = frontend::apple_release_asset("9.9.8", target);
+        assert!(Command::new("tar")
+            .arg("-czf")
+            .arg(release.join(&bad_asset))
+            .arg("-C")
+            .arg(&empty)
+            .arg("other")
+            .status()
+            .unwrap()
+            .success());
+        let err = install_apple(&env, "9.9.8", true).unwrap_err();
+        assert!(err.contains("does not contain"), "{err}");
+        assert!(!root.join("home/.graphite/frontends/apple/9.9.8").exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 }

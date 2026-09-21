@@ -6,6 +6,15 @@ use std::path::Path;
 // Value-taking options in the JVM BuildCommand, plus the language selector owned by the shell.
 const VALUE_OPTIONS: &[&str] = &[
     "--lang",
+    "--frontend",
+    "--package",
+    "--project",
+    "--scheme",
+    "--configuration",
+    "--destination",
+    "--derived-data",
+    "--index-store",
+    "--sources",
     "-o",
     "--output",
     "--include",
@@ -153,7 +162,16 @@ pub(crate) fn language_option(args: &[OsString]) -> Result<Option<Arg<'_>>, Stri
         args,
         &["--lang"],
         "specify --lang only once",
-        "--lang requires jvm, js, ts or es",
+        "--lang requires jvm, js, ts, es or apple",
+    )
+}
+
+pub(crate) fn frontend_option(args: &[OsString]) -> Result<Option<Arg<'_>>, String> {
+    unique(
+        args,
+        &["--frontend"],
+        "specify --frontend only once",
+        "--frontend requires an executable",
     )
 }
 

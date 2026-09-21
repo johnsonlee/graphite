@@ -25,3 +25,9 @@ historical measurements and main/release Pages deployments are retired. Historic
 and optimization records remain in the repository. The
 [previous workflow documentation](https://github.com/johnsonlee/graphite/blob/7c693e0f29ef5abf318640bdb20c31bf84d8818e/docs/benchmark-regression-gate.md)
 describes those historical results; it is not the current acceptance policy.
+
+Apple frontend construction correctness is also exercised by
+[the Apple workflow](../.github/workflows/apple.yml): Swift tests, SwiftPM and Xcode
+fixtures, production Graph IR import, saved-graph queries and serving. These
+single-application checks provide correctness evidence; performance acceptance
+still requires representative multi-graph load tests.

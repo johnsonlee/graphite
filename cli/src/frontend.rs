@@ -1,8 +1,7 @@
 //! Locating and describing frontends.
 //!
-//! Frontends turn compiled artifacts into graphs. The JVM frontend runs SootUp;
-//! the JavaScript frontend analyzes emitted JS using a bundled TypeScript compiler.
-//! This module locates their launchers and runtimes and reports what it found. Nothing here touches the real environment directly: every lookup goes through
+//! The JVM frontend persists graphs, the JavaScript frontend emits JSON interchange,
+//! and the Apple frontend emits protobuf IR. Discovery and description use
 //! [`Env`], so the search order is unit-tested against fake homes and PATHs.
 
 use serde_json::{json, Map, Value};
@@ -14,6 +13,7 @@ use std::path::{Path, PathBuf};
 pub(crate) enum Lang {
     Jvm,
     Js,
+    Apple,
 }
 
 const MANAGED_FRONTENDS: &str = "~/.graphite/frontends";
@@ -21,12 +21,21 @@ const JS_ALIASES: &[&str] = &["javascript", "ts", "typescript", "es"];
 
 impl Lang {
     pub(crate) fn parse(value: &str) -> Result<Self, String> {
-        match value {
-            "jvm" => Ok(Self::Jvm),
+        match value.to_ascii_lowercase().as_str() {
+            "jvm" | "java" | "kotlin" | "android" => Ok(Self::Jvm),
+            "apple" | "swift" | "ios" | "macos" => Ok(Self::Apple),
             name if name == "js" || JS_ALIASES.contains(&name) => Ok(Self::Js),
             _ => Err(format!(
-                "unknown frontend '{value}'; available: jvm, js (aliases: ts, es)"
+                "unknown frontend '{value}'; available: jvm, js (aliases: ts, es), apple"
             )),
+        }
+    }
+
+    pub(crate) fn name(self) -> &'static str {
+        match self {
+            Self::Jvm => "jvm",
+            Self::Js => "js",
+            Self::Apple => "apple",
         }
     }
 }
@@ -143,6 +152,26 @@ impl Frontend {
         }
     }
 }
+
+/// The frontends this CLI knows, in `frontend list` order.
+pub const LANGS: [Lang; 3] = [Lang::Jvm, Lang::Js, Lang::Apple];
+
+/// The IR schema versions this CLI's `import` reads (`ir/graphite_ir.proto`).
+pub const IR_SCHEMAS: [u64; 1] = [1];
+
+pub fn locate(env: &Env, lang: Lang) -> Option<Frontend> {
+    match lang {
+        Lang::Jvm => locate_jvm(env),
+        Lang::Js => locate_js(env),
+        Lang::Apple => locate_apple(env),
+    }
+}
+
+/// The environment variable that pins the Apple frontend executable.
+pub const APPLE_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_APPLE";
+/// The Apple frontend's executable name (on `PATH`, next to `graphite`, or under
+/// `~/.graphite/frontends/apple/<version>/`).
+pub const APPLE_FRONTEND_EXE: &str = "graphite-frontend-apple";
 
 /// The environment variable that pins the JVM frontend jar.
 pub const JVM_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_JVM";
@@ -373,6 +402,82 @@ fn newest_installed<K: Ord>(
         .map(|(_, path)| path)
 }
 
+/// `name`, with `.exe` on Windows.
+pub fn exe_name(name: &str) -> String {
+    if cfg!(windows) {
+        format!("{name}.exe")
+    } else {
+        name.to_string()
+    }
+}
+
+/// Find the Apple frontend. The order, first match wins:
+///
+/// 1. `GRAPHITE_FRONTEND_APPLE`: the executable.
+/// 2. `graphite-frontend-apple` next to this executable, or in a sibling `libexec/`
+///    (the Homebrew layout).
+/// 3. `graphite-frontend-apple` on `PATH`.
+/// 4. The highest version under `~/.graphite/frontends/apple/<version>/`.
+pub fn locate_apple(env: &Env) -> Option<Frontend> {
+    if let Some(pinned) = env.var_path(APPLE_FRONTEND_VAR) {
+        return Some(Frontend {
+            lang: "apple",
+            launch: Launch::Executable(pinned),
+            found_via: APPLE_FRONTEND_VAR,
+        });
+    }
+    let name = exe_name(APPLE_FRONTEND_EXE);
+    if let Some(exe_dir) = env.exe.as_ref().and_then(|e| e.parent()) {
+        let mut dirs = vec![exe_dir.to_path_buf()];
+        if let Some(prefix) = exe_dir.parent() {
+            dirs.push(prefix.join("libexec"));
+        }
+        for dir in dirs {
+            let exe = dir.join(&name);
+            if exe.is_file() {
+                return Some(Frontend {
+                    lang: "apple",
+                    launch: Launch::Executable(exe),
+                    found_via: "next to the graphite executable",
+                });
+            }
+        }
+    }
+    if let Some(exe) = env.which(APPLE_FRONTEND_EXE) {
+        return Some(Frontend {
+            lang: "apple",
+            launch: Launch::Executable(exe),
+            found_via: "PATH",
+        });
+    }
+    let installed = env.frontends_dir()?.join("apple");
+    let exe = newest_installed(&installed, &name, Path::is_file, |name| {
+        Some(VersionKey::parse(name))
+    })?;
+    Some(Frontend {
+        lang: "apple",
+        launch: Launch::Executable(exe),
+        found_via: "~/.graphite/frontends",
+    })
+}
+
+/// The Rust-style target triple of the machine this CLI runs on, as the Apple frontend's
+/// release assets are named; `None` where no asset is published.
+pub fn host_target() -> Option<&'static str> {
+    match (std::env::consts::OS, std::env::consts::ARCH) {
+        ("macos", "aarch64") => Some("aarch64-apple-darwin"),
+        ("macos", "x86_64") => Some("x86_64-apple-darwin"),
+        ("linux", "x86_64") => Some("x86_64-unknown-linux-gnu"),
+        ("linux", "aarch64") => Some("aarch64-unknown-linux-gnu"),
+        _ => None,
+    }
+}
+
+/// The Apple frontend's release asset for a version and target.
+pub fn apple_release_asset(version: &str, target: &str) -> String {
+    format!("{APPLE_FRONTEND_EXE}-{version}-{target}.tar.gz")
+}
+
 /// Sort key for a version string: numeric components, then a flag for "is a release"
 /// (no suffix), then the suffix text.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -453,8 +558,10 @@ pub fn profiler_agent_arg(env: &Env) -> Result<OsString, String> {
 }
 
 /// What `frontend describe` reports for a located frontend. `version` is whatever the
-/// caller could learn by running it (`None` when it could not be run).
-pub fn describe(frontend: &Frontend, version: Option<String>) -> Value {
+/// caller could learn by running it (`None` when it could not be run); `own` is the
+/// frontend's own `describe` output when it speaks the protocol (the Apple frontend),
+/// whose `inputs`, `ir_schema`, `aliases` and `indexable` are carried over.
+pub fn describe(frontend: &Frontend, version: Option<String>, own: Option<&Value>) -> Value {
     let mut m = Map::new();
     m.insert("name".into(), json!(frontend.lang));
     m.insert(
@@ -468,33 +575,85 @@ pub fn describe(frontend: &Frontend, version: Option<String>) -> Value {
     m.insert("path".into(), json!(frontend.path().to_string_lossy()));
     m.insert("found_via".into(), json!(frontend.found_via));
     m.insert("version".into(), json!(version));
-    m.insert(
-        "inputs".into(),
-        if frontend.lang == "js" {
+    if frontend.lang == "jvm" {
+        m.insert(
+            "inputs".into(),
+            json!(["jar", "war", "apk", "aar", "dex", "class directory"]),
+        );
+        // The jar-era frontend writes the persisted graph itself; it emits no IR yet.
+        m.insert("ir_schema".into(), json!([]));
+        m.insert("writes".into(), json!("persisted-graph"));
+    } else if frontend.lang == "js" {
+        m.insert(
+            "inputs".into(),
             json!([
                 ".js",
                 ".mjs",
                 ".cjs",
                 "compiled artifact directory (.next, dist, build)"
-            ])
-        } else {
-            json!(["jar", "war", "apk", "aar", "dex", "class directory"])
-        },
-    );
-    if frontend.lang == "js" {
+            ]),
+        );
         m.insert("aliases".into(), json!(JS_ALIASES));
         m.insert("ir_schema".into(), json!(["graphite-graph-v1"]));
         m.insert("writes".into(), json!("graph-json"));
     } else {
-        m.insert("ir_schema".into(), json!([]));
-        m.insert("writes".into(), json!("persisted-graph"));
+        for key in ["inputs", "ir_schema", "aliases", "indexable"] {
+            let value = own
+                .and_then(|o| o.get(key))
+                .cloned()
+                .unwrap_or_else(|| json!([]));
+            m.insert(key.into(), value);
+        }
+        m.insert("writes".into(), json!("ir"));
     }
     Value::Object(m)
 }
 
-/// The URL of a release asset for `version` (a bare version, no `v`).
+/// Whether a frontend's `describe` output names an IR schema this CLI reads.
+pub fn ir_schema_supported(own: &Value) -> Result<(), String> {
+    let schemas: Vec<u64> = own
+        .get("ir_schema")
+        .and_then(Value::as_array)
+        .map(|a| a.iter().filter_map(Value::as_u64).collect())
+        .unwrap_or_default();
+    if schemas.iter().any(|s| IR_SCHEMAS.contains(s)) {
+        Ok(())
+    } else {
+        Err(format!(
+            "the frontend writes IR schema {schemas:?}; this graphite reads {IR_SCHEMAS:?}. \
+             Update graphite or install a matching frontend."
+        ))
+    }
+}
+
+/// Run a protocol frontend's `describe` and parse it.
+pub fn own_description(frontend: &Frontend) -> Result<Value, String> {
+    let out = std::process::Command::new(frontend.path())
+        .arg("describe")
+        .output()
+        .map_err(|e| format!("could not run {}: {e}", frontend.path().display()))?;
+    if !out.status.success() {
+        return Err(format!(
+            "{} describe failed with {}",
+            frontend.path().display(),
+            out.status
+        ));
+    }
+    serde_json::from_slice(&out.stdout)
+        .map_err(|e| format!("{} describe is not JSON: {e}", frontend.path().display()))
+}
+
 pub fn release_asset_url(version: &str, asset: &str) -> String {
     format!("https://github.com/johnsonlee/graphite/releases/download/v{version}/{asset}")
+}
+
+/// The URL of a release asset for `version` (a bare version, no `v`). `GRAPHITE_RELEASE_BASE`
+/// replaces the release directory (tests and CI point it at a `file://` directory).
+pub fn configured_release_url(env: &Env, version: &str, asset: &str) -> String {
+    match env.var("GRAPHITE_RELEASE_BASE") {
+        Some(base) => format!("{}/{asset}", base.to_string_lossy().trim_end_matches('/')),
+        None => release_asset_url(version, asset),
+    }
 }
 
 #[cfg(test)]
@@ -793,7 +952,7 @@ mod tests {
             launch: Launch::Jar(PathBuf::from("/x/graphite.jar")),
             found_via: "PATH",
         };
-        let d = describe(&fe, Some("2.4.8".into()));
+        let d = describe(&fe, Some("2.4.8".into()), None);
         assert_eq!(d["name"], "jvm");
         assert_eq!(d["kind"], "jar");
         assert_eq!(d["path"], "/x/graphite.jar");
@@ -804,7 +963,7 @@ mod tests {
             launch: Launch::Executable(PathBuf::from("/x/fe")),
             found_via: "PATH",
         };
-        let d = describe(&fe, None);
+        let d = describe(&fe, None, None);
         assert_eq!(d["kind"], "executable");
         assert!(d["version"].is_null());
     }
@@ -835,7 +994,7 @@ mod tests {
                 .insert(TS_FRONTEND_VAR.into(), entry.clone().into_os_string());
             let frontend = locate_js(&env).unwrap();
             assert_eq!(frontend.launch, Launch::Node(entry));
-            let descriptor = describe(&frontend, Some("1.0.0".into()));
+            let descriptor = describe(&frontend, Some("1.0.0".into()), None);
             assert_eq!(descriptor["name"], "js");
             assert_eq!(descriptor["kind"], "node");
             assert_eq!(descriptor["writes"], "graph-json");
@@ -881,5 +1040,167 @@ mod tests {
             release_asset_url("2.4.8", JVM_RELEASE_ASSET),
             "https://github.com/johnsonlee/graphite/releases/download/v2.4.8/graphite.jar"
         );
+    }
+
+    #[test]
+    fn apple_lookup_order_is_variable_exe_dir_path_then_home_install() {
+        let pinned = PathBuf::from("/opt/fe/graphite-frontend-apple");
+        let env = env_with(&[(APPLE_FRONTEND_VAR, &pinned)]);
+        let found = locate_apple(&env).unwrap();
+        assert_eq!(found.lang, "apple");
+        assert_eq!(found.launch, Launch::Executable(pinned));
+        assert_eq!(found.found_via, APPLE_FRONTEND_VAR);
+        assert_eq!(locate(&env, Lang::Apple), locate_apple(&env));
+        assert!(Lang::parse("web").is_err());
+
+        let root = temp_dir("apple");
+        let libexec = root.join("libexec").join(exe_name(APPLE_FRONTEND_EXE));
+        touch(&libexec);
+        let env = Env {
+            exe: Some(root.join("bin").join("graphite")),
+            ..Default::default()
+        };
+        let found = locate_apple(&env).unwrap();
+        assert_eq!(found.launch, Launch::Executable(libexec.clone()));
+        assert_eq!(found.found_via, "next to the graphite executable");
+
+        let on_path = root.join("path").join(exe_name(APPLE_FRONTEND_EXE));
+        touch(&on_path);
+        let mut env = env_with(&[("PATH", &root.join("path"))]);
+        env.home = Some(root.join("home"));
+        let found = locate_apple(&env).unwrap();
+        assert_eq!(found.launch, Launch::Executable(on_path));
+        assert_eq!(found.found_via, "PATH");
+
+        let env = Env {
+            home: Some(root.join("home")),
+            ..Default::default()
+        };
+        assert_eq!(locate_apple(&env), None);
+        let old = root
+            .join("home/.graphite/frontends/apple/2.5.0")
+            .join(exe_name(APPLE_FRONTEND_EXE));
+        let new = root
+            .join("home/.graphite/frontends/apple/2.6.0")
+            .join(exe_name(APPLE_FRONTEND_EXE));
+        touch(&old);
+        touch(&new);
+        // A version directory without the binary is not an install.
+        std::fs::create_dir_all(root.join("home/.graphite/frontends/apple/9.9.9")).unwrap();
+        let found = locate_apple(&env).unwrap();
+        assert_eq!(found.launch, Launch::Executable(new));
+        assert_eq!(found.found_via, "~/.graphite/frontends");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn languages_have_aliases_and_a_fixed_order() {
+        assert_eq!(Lang::parse("jvm").ok().map(Lang::name), Some("jvm"));
+        assert_eq!(Lang::parse("Kotlin").ok().map(Lang::name), Some("jvm"));
+        assert_eq!(Lang::parse("swift").ok().map(Lang::name), Some("apple"));
+        assert_eq!(Lang::parse("iOS").ok().map(Lang::name), Some("apple"));
+        assert_eq!(Lang::parse("web").ok().map(Lang::name), None);
+        assert_eq!(LANGS.map(Lang::name), ["jvm", "js", "apple"]);
+    }
+
+    #[test]
+    fn apple_description_carries_the_frontends_own_fields_and_checks_the_schema() {
+        let fe = Frontend {
+            lang: "apple",
+            launch: Launch::Executable(PathBuf::from("/opt/fe/graphite-frontend-apple")),
+            found_via: "PATH",
+        };
+        let own = json!({"name": "graphite-frontend-apple", "ir_schema": [1], "inputs": ["Package.swift"], "aliases": {"swift": "apple"}});
+        let d = describe(&fe, Some("0.1.0".into()), Some(&own));
+        assert_eq!(d["kind"], "executable");
+        assert_eq!(d["writes"], "ir");
+        assert_eq!(d["ir_schema"], json!([1]));
+        assert_eq!(d["inputs"], json!(["Package.swift"]));
+        assert_eq!(d["aliases"]["swift"], "apple");
+        assert_eq!(d["indexable"], json!([]));
+        let d = describe(&fe, None, None);
+        assert_eq!(d["ir_schema"], json!([]));
+        assert!(d["version"].is_null());
+
+        assert!(ir_schema_supported(&own).is_ok());
+        let err = ir_schema_supported(&json!({"ir_schema": [2]})).unwrap_err();
+        assert!(err.contains("writes IR schema [2]"), "{err}");
+        assert!(ir_schema_supported(&json!({})).is_err());
+    }
+
+    #[test]
+    fn apple_release_assets_are_named_by_version_and_target_and_the_base_can_move() {
+        assert_eq!(
+            apple_release_asset("2.6.0", "aarch64-apple-darwin"),
+            "graphite-frontend-apple-2.6.0-aarch64-apple-darwin.tar.gz"
+        );
+        let env = env_with(&[("GRAPHITE_RELEASE_BASE", Path::new("file:///tmp/rel/"))]);
+        assert_eq!(
+            configured_release_url(&env, "2.6.0", "x.tar.gz"),
+            "file:///tmp/rel/x.tar.gz"
+        );
+        if cfg!(any(target_os = "macos", target_os = "linux")) {
+            let target = host_target().unwrap();
+            assert!(target.contains(std::env::consts::ARCH), "{target}");
+        }
+    }
+
+    /// Runs a stub script just written by this test. Tests run in parallel threads, and a
+    /// thread that forks while another still holds a freshly written script open for
+    /// writing hands that descriptor to its child until exec, so an exec of the script in
+    /// that window fails with ETXTBSY ("Text file busy"); that is a test-harness race, not
+    /// a frontend result, and the run is retried.
+    #[cfg(unix)]
+    fn describe_stub(fe: &Frontend) -> Result<serde_json::Value, String> {
+        for _ in 0..50 {
+            match own_description(fe) {
+                Err(error) if error.contains("Text file busy") => {
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                }
+                result => return result,
+            }
+        }
+        own_description(fe)
+    }
+
+    #[test]
+    fn own_description_runs_the_frontend() {
+        let root = temp_dir("describe");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            // Each variant is its own file: an executable is never rewritten while a
+            // previous run of it may still be exiting.
+            let stub = |name: &str, body: &str| {
+                let script = root.join(name);
+                std::fs::write(&script, body).unwrap();
+                std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+                Frontend {
+                    lang: "apple",
+                    launch: Launch::Executable(script),
+                    found_via: "test",
+                }
+            };
+            let fe = stub(
+                "fe.sh",
+                "#!/bin/sh\ntest \"$1\" = describe && echo '{\"ir_schema\": [1]}'\n",
+            );
+            assert_eq!(describe_stub(&fe).unwrap()["ir_schema"], json!([1]));
+            let not_json = stub("not-json.sh", "#!/bin/sh\necho not json\n");
+            assert!(describe_stub(&not_json).unwrap_err().contains("not JSON"));
+            let failing = stub("failing.sh", "#!/bin/sh\nexit 3\n");
+            assert!(describe_stub(&failing)
+                .unwrap_err()
+                .contains("describe failed"));
+        }
+        let missing = Frontend {
+            lang: "apple",
+            launch: Launch::Executable(root.join("missing")),
+            found_via: "test",
+        };
+        assert!(own_description(&missing)
+            .unwrap_err()
+            .contains("could not run"));
+        std::fs::remove_dir_all(root).unwrap();
     }
 }
