@@ -1652,3 +1652,69 @@ plain graph properties and unsupported expressions retain normal evaluation.
 Namespace-only matches retain the ordinary lazy scan. No-LIMIT/order/aggregate
 paths have source-access correctness evidence, not separate latency claims.
 The subsequent required-gate integration is recorded separately from this experiment.
+
+### 2026-09-21 - Attempt 038: Stream `MATCH [WHERE] WITH` through the Rust scan pushdown
+
+**Production evidence:** an agent's provider-distribution query over the whole
+fleet timed out at the 60-second server maximum in cross-graph mode
+(`all_graphs: true`, `mode: cross-graph`), while the same query fanned out over
+six graphs completed:
+
+```cypher
+MATCH (n {type: "CallSiteNode"})
+WHERE n.callee_class STARTS WITH "com.example.apigateway.services."
+  AND NOT n.caller_class STARTS WITH "com.example.apigateway.services."
+WITH n.graphId AS graphId,
+     split(replace(n.callee_class, "com.example.apigateway.services.", ""), ".")[0] AS provider,
+     count(*) AS calls
+RETURN graphId, provider, calls
+ORDER BY graphId ASC, calls DESC
+LIMIT 160
+```
+
+**Root cause:** the Rust engine's fused shape (`FusedShape::detect` in
+`backend/cypher/src/engine/pipeline.rs`) covered `MATCH [WHERE] RETURN ...`
+only. With a `WITH` in its place the match ran through the generic matcher:
+every call site of every graph decoded, the `WHERE` interpreted per node, and
+every survivor kept as a row until the `WITH` grouped them. The cost was the
+corpus size whatever the predicate matched, so the fleet-wide form could not
+finish while the same query written with `RETURN` answered from the CallSite
+string index in a fraction of the time.
+
+**Design:** `FusedShape::detect_with` recognises the `MATCH [WHERE] WITH <items>
+[WHERE]` prefix. `run_fused` is split so the `RETURN` shape and the `WITH`
+prefix share `fused_rows`, the streaming scan pushdown, projection and
+group-by. The `WITH`'s own `WHERE` and every clause after it stay with the
+clause loop, so the rows it sees are the ones `project()` would have built
+(order stashes, provenance and all) and no clause semantics change. A
+row-preserving `WITH` under a literal `LIMIT` keeps the early bound
+`compute_early_limit` already gave the generic match.
+
+**Fixture/method:** sixteen copies of one 63K-node persisted graph (the SootUp
+packages of `graphite.jar`) loaded as sixteen cross-graph sources, release
+build, four CPUs, the reported query with a dense prefix (`sootup.core.`) and a
+sparse one (`sootup.core.jimple.common.constant.`), second of two runs.
+
+| Shape | Before | After | `RETURN` twin |
+|-------|-------:|------:|--------------:|
+| Reported query, dense prefix | `620-746 ms` | `100 ms` | `98 ms` |
+| Reported query, sparse prefix | `580 ms` | `7.5 ms` | n/a |
+
+**Verification:** `GRAPHITE_NO_FASTPATH=1` and the new path produce
+byte-identical rows, columns and provenance on eight `WITH` shapes over the
+sixteen-copy corpus. A fixture-gated test (`GRAPHITE_INDEX_FIXTURE`, the core
+jar graph CI builds) runs ten `WITH` shapes as two cross-graph sources against
+the generic pipeline, forced by an `UNWIND [1] AS one` between the match and
+the `WITH`: grouped counts, a `LIMIT`-bounded row-preserving `WITH`, the
+`WITH`'s own `WHERE`, `WITH DISTINCT`, `WITH ... ORDER BY ... LIMIT` on
+pre-projection expressions, `WITH *`, group-less aggregates over `graphId`,
+and an unknown label. Two parse-level tests pin what is and is not the prefix
+shape. `cargo test --workspace` with the fixture, `cargo fmt --check` and the
+Rust, unit-test and benchmark-regression workflows pass; `rust-latency` is
+within noise on every fixture64 row.
+
+**Conclusion:** keep. The `WITH` prefix now costs what the `RETURN` form
+costs, proportional to what the predicate matches rather than to the corpus.
+A grouped non-distinct `count` still keeps one placeholder value per matched
+row until the group is finalised (pre-existing); a running counter is the
+next step if fleet-scale counts show memory pressure.
