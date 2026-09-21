@@ -5,6 +5,7 @@
     <ID>CyclomaticComplexMethod:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>
     <ID>NestedBlockDepth:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>
     <ID>PrintStackTrace:BuildCommand.kt$BuildCommand$e</ID>
+    <ID>PrintStackTrace:ImportCommand.kt$ImportCommand$e</ID>
     <ID>PrintStackTrace:QueryCommand.kt$QueryCommand$e</ID>
     <ID>ReturnCount:BuildCommand.kt$BuildCommand$override fun call(): Int</ID>
     <ID>ReturnCount:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>

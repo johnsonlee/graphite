@@ -17,3 +17,6 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 .kotlin/
 target/
+
+# SwiftPM
+.build/

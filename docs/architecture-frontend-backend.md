@@ -102,7 +102,7 @@ graphite/
 │   │   ├── core/ sootup/ cypher/ webgraph/ query/ explore/
 │   │   └── (phase 2) IR writer; builds `graphite-frontend-jvm.jar`
 │   ├── web/                       (phase 6) TypeScript frontend, npm package
-│   └── apple/                     (phase 7) Swift package
+│   └── apple/                     Swift package: `graphite-frontend-apple` (phase 7, first cut shipped)
 └── docs/
 ```
 
@@ -205,8 +205,21 @@ core names are listed in addition only when they are not aliases of a listed key
 - Self-describing and versioned; forward-compatible for extension properties.
 - Inspectable with off-the-shelf tools.
 
-### 4.2 Carrier: Apache Arrow IPC (stream format), zstd-compressed record batches
+### 4.2 Carrier
 
+**As shipped: protobuf.** The first IR in the tree is `ir/graphite_ir.proto` (package
+`graphite.ir.v1`): a stream of length-delimited `Chunk` messages (header, interned string
+batches, node/edge/method/type-relation/class-origin/enum-value/artifact batches, trailer)
+that mirrors the JVM core model one to one, so `graphite.jar import` builds a
+`DefaultGraph` from it and saves it with the existing writer, and `graphite import` packs
+the result. It meets the streaming, versioning and few-hundred-lines requirements with a
+generated library on every platform (`protobuf-java` on the JVM, `swift-protobuf` for the
+Apple frontend), and it was the shortest path to a second language in the graph. It is
+not columnar: the Arrow carrier below remains the design for the indexer phase, where
+the persisted format changes and the IR is read in bounded memory by the Rust backend;
+the protobuf schema's kinds and fields map onto the Arrow tables directly.
+
+**Design target: Apache Arrow IPC (stream format), zstd-compressed record batches.**
 Arrow is the choice for the long term: it is columnar, dictionary encoding is built in,
 batches stream, the schema travels with the data, zstd/lz4 buffer compression is part of
 the IPC format, and DuckDB/Polars/pyarrow open it directly for inspection and ad-hoc
@@ -406,7 +419,7 @@ artifact in its language's own ecosystem, and the CLI fetches, verifies and runs
 |---|---|---|---|
 | jvm | `graphite-frontend-jvm-<ver>.jar` (fat jar) + `graphite-frontend-jvm` launcher | GitHub Release asset; Maven Central `io.johnsonlee.graphite:frontend-jvm` (for Gradle/Maven users who embed it); Homebrew `graphite-frontend-jvm` (depends on `openjdk@17`) | JDK 17+ |
 | web | npm package `@johnsonlee/graphite-frontend-web` with a `bin` | npm; GitHub Release tarball | Node 20+ |
-| apple | `graphite-frontend-apple` static binary (macOS x86_64/arm64) | GitHub Release asset; Homebrew | Xcode toolchain for index/SIL |
+| apple | `graphite-frontend-apple` binary (macOS arm64/x86_64, Linux x86_64; **shipped**: `publish.yml` builds it per target, the formula installs it next to the CLI, `graphite frontend install apple` fetches and verifies it) | GitHub Release asset; Homebrew | Xcode toolchain for index/SIL |
 
 How the CLI finds one, in order: `--frontend <exe>`, `GRAPHITE_FRONTEND_<LANG>`, an
 executable `graphite-frontend-<lang>` on `PATH`, then `~/.graphite/frontends/<lang>/<ver>/`.
@@ -442,7 +455,7 @@ is taken on trust.
 | 4 | Core model: `Module`/`Type`/`Member` nodes, `CONTAINS`, symbol references on the JVM frontend; aliases wired into property access, `keys()`, serialisation. Kotlin server frozen. | Old queries unchanged on v4 JVM graphs; C4 output byte-identical to today on the six reference graphs |
 | 5 | Retire Kotlin `serve`/`query`/`explore`/`cypher`: `graphite.jar` becomes the frontend only; Docker image, Homebrew formula and docs switch to the Rust binary; Kotlin modules deleted. | Release pipeline publishes one CLI + frontends; parity harness retargeted to v-1 Rust vs current Rust |
 | 6 | Web frontend (TypeScript). | The IR validates; the Explorer's own web UI (a TypeScript-free static app today, the first candidate) builds into a graph the explorer can browse; C4 on a multi-package workspace |
-| 7 | Apple frontend (Swift, then ObjC). | A sample iOS app builds; cross-graph queries across a JVM backend graph and a Swift client graph |
+| 7 | Apple frontend (Swift, then ObjC). **First cut shipped:** `frontend/apple` writes the protobuf IR from the index store and SwiftSyntax; `graphite build` dispatches to it and imports the IR; the release ships it per target, the formula installs it, `graphite frontend install apple` fetches it; CI indexes the `AcmeShop` fixture through both paths and queries it. An `.xcodeproj`/`.xcworkspace` input builds through `xcodebuild` (scheme picked when there is one, index store forced on, signing off) and reads its derived data; macOS CI builds the `AcmeApp` fixture project and Linux CI imports and queries its IR. Remaining: SIL data flow, ObjC. | A sample iOS app builds; cross-graph queries across a JVM backend graph and a Swift client graph |
 
 Compatibility rules, enforced by the harness at every phase:
 
@@ -499,6 +512,40 @@ directory. Resources: `Info.plist`, `.xcconfig`, `.strings`, asset catalogs (nam
 Compiled binaries (Mach-O with symbols) are a possible later input at the symbol level
 only.
 
+**As shipped (`frontend/apple`, Swift 6.1, Linux and macOS).** `graphite build
+<package> -o <graph>` (the CLI picks the Apple frontend for a `Package.swift`, `--lang
+apple` or `--frontend`) runs the frontend's `describe`, checks its IR schema, runs its
+`build --out <ir>` and imports the IR; the frontend's own `graphite-frontend-apple
+build --package <dir> --out <ir>` runs `swift build`, reads `.build/debug/index/store`
+with IndexStoreDB (or `--index-store <dir> --sources <dir>` for an Xcode store), parses
+each file with SwiftSyntax, demangles every USR with one `swift-demangle` run and writes
+the protobuf IR. What it emits, in core-model terms: a class origin per type
+(`Module.Outer.Inner` → module), `EXTENDS`/`IMPLEMENTS` relations from `baseOf`
+occurrences, a method per function/initializer/deinitializer with the demangled
+signature (name `checkout(order:method:)`, parameter and return types as Swift prints
+them, `Swift.Void` for `()`), a field per stored or computed property, enum values per
+case, an annotation per attribute (`available`, `objc`, property wrappers; the argument
+text as `arguments`), and a call site per non-implicit call occurrence (operators
+included, accessor calls excluded) attributed to its enclosing function or property
+initializer. Literal arguments become `Constant` nodes with `PARAMETER_PASS` edges into
+the call site; other arguments keep their slot as `LocalVariable` nodes named by their
+source text, so `argumentIndex` queries hold. Declarations exposed to Objective-C carry
+Clang USRs (`c:@M@App@objc(cs)AppDelegate(im)application:didFinishLaunchingWithOptions:`)
+that the demangler cannot read: `ClangUSR` gives the declaring type (module-qualified for
+Swift declarations, bare for imported ones) and the syntax pass gives the parameter and
+return types as written, qualified where the name is known; Objective-C callees are named
+by their class the same way. An `.xcodeproj` or `.xcworkspace` input is
+built with `xcodebuild` (the project's only scheme, or `--scheme`; `--destination`,
+`--configuration`; `COMPILER_INDEX_STORE_ENABLE=YES`, code signing off; derived data in a
+per-project temporary directory or `--derived-data`) and indexed from that derived data,
+with every `.swift` file under the project's directory as the syntax pass's input. Not yet:
+SIL data flow, ObjC, resources. The `AcmeShop` fixture package and the CI job `apple.yml`
+exercise the whole path: frontend → IR → `graphite import` → `graphite query`/`serve`, and
+the installed path: the release tarball installed with `graphite frontend install apple`
+from a `file://` release directory, then `graphite build` on the package through it; the
+`AcmeApp` fixture project is built with `xcodebuild` on macOS and its IR imported and
+queried on Linux.
+
 ### 8.4 Later candidates
 
 Go (`go/packages` + `golang.org/x/tools/go/ssa` give types, calls and SSA data flow
@@ -508,10 +555,11 @@ Each is a frontend with the same three commands; none needs a backend change.
 
 ## 9. Delivery and packaging
 
-- The first tag of this layout is `v2.5.0` (rehearsed as `v3.0.0-alpha1` to `-alpha6`).
-  It stays in the 2.x line: the REST routes, the MCP tools and the Maven coordinates
-  are those of 2.4.8; what changes is packaging, the installed `graphite` becomes a
-  native binary with the jar as its frontend and the MCP server moves from npm into it.
+- The first release of this layout was `v2.5.0` (2026-09-15), followed by `v2.6.0` and
+  `v2.7.0`. It stayed in the 2.x line: the REST routes, the MCP tools and the Maven
+  coordinates are those of 2.4.8; what changed is packaging, the installed `graphite`
+  became a native binary with the jar as its frontend and the MCP server moved from npm
+  into it.
 - One release tag drives everything: the Rust CLI/server binaries (linux x86_64/aarch64
   musl, macOS x86_64/aarch64) as GitHub Release assets, the `graphite-explore` container
   image (a static binary on `distroless`), the Homebrew formula (`graphite`, no JDK

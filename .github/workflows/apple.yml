@@ -1,0 +1,293 @@
+name: Apple frontend
+
+# The Swift frontend end to end: build and test the package, index the AcmeShop fixture,
+# import the IR with graphite.jar through the Rust CLI, then query and serve the graph.
+# On macOS the AcmeApp Xcode project is built with xcodebuild and its graph queried too.
+on:
+  push:
+    branches: [ '*' ]
+    paths:
+      - 'frontend/apple/**'
+      - 'ir/**'
+      - 'frontend/jvm/ir/**'
+      - 'frontend/jvm/query/**'
+      - 'cli/**'
+      - '.github/workflows/apple.yml'
+  pull_request:
+    branches: [ '**' ]
+    paths:
+      - 'frontend/apple/**'
+      - 'ir/**'
+      - 'frontend/jvm/ir/**'
+      - 'frontend/jvm/query/**'
+      - 'cli/**'
+      - '.github/workflows/apple.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  apple:
+    name: apple-frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: swift:6.1
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    # The swift image has the Swift toolchain and little else: the Rust and Java actions
+    # need curl, cargo needs a C toolchain (cc, make for jemalloc), the assertions python3.
+    - name: Install curl, python3 and a C toolchain
+      run: apt-get update -q && apt-get install -y -q --no-install-recommends curl ca-certificates python3 build-essential
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache cargo
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: .
+
+    - name: Cache SwiftPM
+      uses: actions/cache@v4
+      with:
+        path: frontend/apple/.build
+        key: swiftpm-${{ runner.os }}-6.1-${{ hashFiles('frontend/apple/Package.resolved') }}
+        restore-keys: swiftpm-${{ runner.os }}-6.1-
+
+    - name: Build the frontend
+      run: frontend/apple/swift.sh build -c release
+
+    - name: Test the frontend
+      run: frontend/apple/swift.sh test
+
+    - name: Build graphite.jar and the CLI
+      run: |
+        ./gradlew :query:shadowJar --no-daemon
+        cargo build --release --locked -p graphite-cli
+
+    # The container's default shell is sh; the steps use bash for pipefail.
+    - name: Index the fixture, import it and query the graph
+      shell: bash
+      env:
+        GRAPHITE_FRONTEND_JVM: frontend/jvm/query/build/libs/graphite.jar
+      run: |
+        set -euo pipefail
+        FRONTEND=frontend/apple/.build/release/graphite-frontend-apple
+        "${FRONTEND}" describe | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["name"]=="graphite-frontend-apple" and d["ir_schema"]==[1], d'
+        "${FRONTEND}" version
+        "${FRONTEND}" build --package frontend/apple/Fixtures/AcmeShop --out "${RUNNER_TEMP}/acme.graphite-ir"
+        test -s "${RUNNER_TEMP}/acme.graphite-ir"
+        # The Rust CLI runs the jar's import and packs the result when -o names a .graphite file.
+        ./target/release/graphite import "${RUNNER_TEMP}/acme.graphite-ir" -o "${RUNNER_TEMP}/acme.graphite"
+        ./target/release/graphite verify "${RUNNER_TEMP}/acme.graphite"
+        # A directory output works too and is the same graph.
+        ./target/release/graphite import "${RUNNER_TEMP}/acme.graphite-ir" -o "${RUNNER_TEMP}/acme-graph"
+        ./target/release/graphite unpack "${RUNNER_TEMP}/acme.graphite" "${RUNNER_TEMP}/acme-unpacked"
+        diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-unpacked" --exclude=META-INF
+        Q=./target/release/graphite
+        G="${RUNNER_TEMP}/acme.graphite"
+        # Literal arguments flow into their call sites in position.
+        "${Q}" query "${G}" "MATCH (s:Constant)-[:DATAFLOW]->(c:CallSite) WHERE c.callee_name = 'isEnabled(_:default:)' RETURN s.value ORDER BY s.value" -f csv | tee "${RUNNER_TEMP}/flags.csv"
+        grep -Fx '"payments.charge"' "${RUNNER_TEMP}/flags.csv"
+        grep -Fx 'true' "${RUNNER_TEMP}/flags.csv"
+        # Methods carry demangled Swift signatures.
+        "${Q}" query "${G}" "MATCH (m:Method) WHERE m.class = 'AcmeShop.CartService' RETURN m.name ORDER BY m.name" -f csv | tee "${RUNNER_TEMP}/methods.csv"
+        grep -Fx '"checkout(order:method:)"' "${RUNNER_TEMP}/methods.csv"
+        grep -Fx '"init(client:)"' "${RUNNER_TEMP}/methods.csv"
+        # Fields, annotations and call sites are there with their Swift names.
+        "${Q}" query "${G}" "MATCH (f:Field) WHERE f.class = 'AcmeShop.CartService' AND f.static = true RETURN f.name" -f csv | grep -Fx '"maxItems"'
+        "${Q}" query "${G}" "MATCH (a:Annotation) RETURN a.name, a.member" -f csv | grep -Fx '"available","checkout(order:)"'
+        "${Q}" query "${G}" "MATCH (c:CallSite) WHERE c.caller_name = 'checkout(order:method:)' RETURN c.callee_name ORDER BY c.callee_name" -f csv | grep -Fx '"charge(amount:currency:method:)"'
+
+    # The installed path: the tarball the publish workflow ships, served from a
+    # directory over file://, installed with checksum verification into a fresh HOME,
+    # found by `frontend list`, and driven by `graphite build` on the package itself
+    # (describe, build --out, import), so the user-facing command line is exercised.
+    - name: Install the frontend from a release directory and build through the CLI
+      shell: bash
+      env:
+        GRAPHITE_FRONTEND_JVM: frontend/jvm/query/build/libs/graphite.jar
+      run: |
+        set -euo pipefail
+        ASSET="graphite-frontend-apple-9.9.9-x86_64-unknown-linux-gnu.tar.gz"
+        mkdir -p "${RUNNER_TEMP}/release" "${RUNNER_TEMP}/home"
+        tar -czf "${RUNNER_TEMP}/release/${ASSET}" -C frontend/apple/.build/release graphite-frontend-apple
+        (cd "${RUNNER_TEMP}/release" && sha256sum "${ASSET}" > "${ASSET}.sha256")
+        export HOME="${RUNNER_TEMP}/home" GRAPHITE_RELEASE_BASE="file://${RUNNER_TEMP}/release"
+        ./target/release/graphite frontend install apple --version 9.9.9
+        ./target/release/graphite frontend list | tee "${RUNNER_TEMP}/list.txt"
+        grep -E '^apple\s+0\.1\.0\s+.*/frontends/apple/9\.9\.9/graphite-frontend-apple' "${RUNNER_TEMP}/list.txt"
+        ./target/release/graphite frontend describe apple | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["writes"]=="ir" and d["ir_schema"]==[1] and d["found_via"]=="~/.graphite/frontends", d'
+        # No --lang: a directory holding Package.swift is the Apple frontend's input.
+        ./target/release/graphite build frontend/apple/Fixtures/AcmeShop -o "${RUNNER_TEMP}/via-cli.graphite" --skip-build
+        ./target/release/graphite verify "${RUNNER_TEMP}/via-cli.graphite"
+        test ! -e "${RUNNER_TEMP}"/via-cli.graphite.ir-*
+        ./target/release/graphite query "${RUNNER_TEMP}/via-cli.graphite" "MATCH (m:Method) WHERE m.class = 'AcmeShop.CartService' RETURN m.name ORDER BY m.name" -f csv | grep -Fx '"checkout(order:method:)"'
+        # The same graph as the frontend-then-import path.
+        ./target/release/graphite unpack "${RUNNER_TEMP}/via-cli.graphite" "${RUNNER_TEMP}/via-cli-unpacked"
+        diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/via-cli-unpacked" --exclude=META-INF
+        # An explicit language and an index store input, without a package build.
+        ./target/release/graphite build --lang swift --index-store frontend/apple/Fixtures/AcmeShop/.build/debug/index/store \
+          --sources frontend/apple/Fixtures/AcmeShop/Sources -o "${RUNNER_TEMP}/via-store"
+        test -f "${RUNNER_TEMP}/via-store/graph.metadata"
+        # An .xcodeproj input goes to the Apple frontend as --project; with --skip-build and a
+        # derived data directory that already holds an index store (the package's, under
+        # Xcode's layout) the whole path runs without Xcode. The real build runs on macOS below.
+        mkdir -p "${RUNNER_TEMP}/fake/AcmeApp.xcodeproj" "${RUNNER_TEMP}/dd/Index.noindex"
+        echo '// !$*UTF8*$!' > "${RUNNER_TEMP}/fake/AcmeApp.xcodeproj/project.pbxproj"
+        ln -s "${PWD}/frontend/apple/Fixtures/AcmeShop/.build/debug/index/store" "${RUNNER_TEMP}/dd/Index.noindex/DataStore"
+        ./target/release/graphite build "${RUNNER_TEMP}/fake/AcmeApp.xcodeproj" --skip-build --derived-data "${RUNNER_TEMP}/dd" \
+          --sources frontend/apple/Fixtures/AcmeShop/Sources -o "${RUNNER_TEMP}/via-xcodeproj.graphite"
+        ./target/release/graphite verify "${RUNNER_TEMP}/via-xcodeproj.graphite"
+        ./target/release/graphite query "${RUNNER_TEMP}/via-xcodeproj.graphite" "MATCH (m:Method) WHERE m.class = 'AcmeShop.CartService' RETURN m.name ORDER BY m.name" -f csv | grep -Fx '"checkout(order:method:)"'
+        # Without Xcode a real project build is refused with the frontend's message.
+        if ./target/release/graphite build "${RUNNER_TEMP}/fake/AcmeApp.xcodeproj" -o "${RUNNER_TEMP}/x.graphite" 2> "${RUNNER_TEMP}/noxcode.log"; then exit 1; fi
+        grep -F 'no xcodebuild found' "${RUNNER_TEMP}/noxcode.log"
+        # Anything else still goes to the JVM frontend: its usage comes from the jar.
+        HELP=$(./target/release/graphite build --help 2>&1 || true)
+        grep -Fi 'usage: graphite build' <<< "${HELP}"
+
+    # The Linux CLI and jar, for the job that imports the IR the macOS build writes.
+    - name: Upload the CLI and graphite.jar
+      uses: actions/upload-artifact@v7
+      with:
+        name: graphite-linux-x86_64
+        path: |
+          target/release/graphite
+          frontend/jvm/query/build/libs/graphite.jar
+        if-no-files-found: error
+        retention-days: 1
+
+    - name: Serve the graph
+      shell: bash
+      run: |
+        set -euo pipefail
+        ./target/release/graphite serve --graph acme:"${RUNNER_TEMP}/acme.graphite" --port 18095 > "${RUNNER_TEMP}/serve.log" 2>&1 &
+        SERVER=$!
+        for _ in $(seq 1 60); do
+          curl -sf http://localhost:18095/api/graphs > "${RUNNER_TEMP}/graphs.json" && break
+          sleep 1
+        done
+        curl -sf -X POST http://localhost:18095/api/graphs/acme/cypher -H 'Content-Type: application/json' \
+          -d '{"query":"MATCH (c:CallSite) RETURN count(c) AS calls"}' > "${RUNNER_TEMP}/calls.json"
+        kill "${SERVER}"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert [g["id"] for g in d["graphs"]]==["acme"], d' "${RUNNER_TEMP}/graphs.json"
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["rows"][0]["calls"] >= 15, d' "${RUNNER_TEMP}/calls.json"
+
+  # The documented entry point on macOS: swift.sh under the system Bash 3.2, the Xcode
+  # toolchain's IndexStoreDB and swift-demangle, the fixture end to end.
+  apple-macos:
+    name: apple-frontend-macos
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    - name: Cache SwiftPM
+      uses: actions/cache@v4
+      with:
+        path: frontend/apple/.build
+        key: swiftpm-${{ runner.os }}-${{ hashFiles('frontend/apple/Package.resolved') }}
+        restore-keys: swiftpm-${{ runner.os }}-
+
+    - name: Build and test with the system Bash
+      run: |
+        /bin/bash --version | head -1
+        /bin/bash frontend/apple/swift.sh build -c release
+        /bin/bash frontend/apple/swift.sh test
+        frontend/apple/.build/release/graphite-frontend-apple describe
+
+    # An Xcode project as the input: xcodebuild builds the fixture app's only scheme for
+    # the simulator with the index store on and signing off, and the IR is written from
+    # its derived data. The Linux job below imports and queries it.
+    - name: Index the AcmeApp Xcode project
+      run: |
+        set -euo pipefail
+        FRONTEND=frontend/apple/.build/release/graphite-frontend-apple
+        xcodebuild -version
+        "${FRONTEND}" build --project frontend/apple/Fixtures/AcmeApp/AcmeApp.xcodeproj \
+          --destination 'generic/platform=iOS Simulator' --out "${RUNNER_TEMP}/acmeapp.graphite-ir" 2> "${RUNNER_TEMP}/acmeapp.log"
+        tail -1 "${RUNNER_TEMP}/acmeapp.log"
+        grep -E 'graphite-frontend-apple [0-9.]+: 3 files, [0-9]+ types' "${RUNNER_TEMP}/acmeapp.log"
+        test -s "${RUNNER_TEMP}/acmeapp.graphite-ir"
+        # The second run is incremental in the same derived data and gives the same graph.
+        "${FRONTEND}" build --project frontend/apple/Fixtures/AcmeApp/AcmeApp.xcodeproj \
+          --destination 'generic/platform=iOS Simulator' --out "${RUNNER_TEMP}/acmeapp-again.graphite-ir" 2> /dev/null
+        cmp "${RUNNER_TEMP}/acmeapp.graphite-ir" "${RUNNER_TEMP}/acmeapp-again.graphite-ir"
+        # A scheme that does not exist fails in xcodebuild, and the failure is reported.
+        if "${FRONTEND}" build --project frontend/apple/Fixtures/AcmeApp/AcmeApp.xcodeproj --scheme Nope \
+          --out "${RUNNER_TEMP}/nope.graphite-ir" 2> "${RUNNER_TEMP}/nope.log"; then exit 1; fi
+        grep -F 'xcodebuild failed with exit code' "${RUNNER_TEMP}/nope.log"
+
+    - name: Upload the AcmeApp IR
+      uses: actions/upload-artifact@v7
+      with:
+        name: acmeapp-graphite-ir
+        path: ${{ runner.temp }}/acmeapp.graphite-ir
+        if-no-files-found: error
+        retention-days: 1
+
+  # The IR of the Xcode build, imported and queried with the Linux CLI: the app's own
+  # module, its methods, the literal that flows into the feature flag check.
+  apple-xcode-graph:
+    name: apple-xcode-graph
+    needs: [apple, apple-macos]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
+    - name: Download the CLI, the jar and the IR
+      uses: actions/download-artifact@v8
+      with:
+        path: ${{ runner.temp }}/in
+
+    - name: Import and query the AcmeApp graph
+      env:
+        GRAPHITE_FRONTEND_JVM: ${{ runner.temp }}/in/graphite-linux-x86_64/frontend/jvm/query/build/libs/graphite.jar
+      run: |
+        set -euo pipefail
+        Q="${RUNNER_TEMP}/in/graphite-linux-x86_64/target/release/graphite"
+        chmod +x "${Q}"
+        G="${RUNNER_TEMP}/acmeapp.graphite"
+        "${Q}" import "${RUNNER_TEMP}/in/acmeapp-graphite-ir/acmeapp.graphite-ir" -o "${G}"
+        "${Q}" verify "${G}"
+        "${Q}" query "${G}" "MATCH (m:Method) WHERE m.class = 'AcmeApp.CheckoutService' RETURN m.name ORDER BY m.name" -f csv | tee "${RUNNER_TEMP}/methods.csv"
+        grep -Fx '"pay(amount:)"' "${RUNNER_TEMP}/methods.csv"
+        grep -Fx '"init(client:)"' "${RUNNER_TEMP}/methods.csv"
+        "${Q}" query "${G}" "MATCH (s:Constant)-[:DATAFLOW]->(c:CallSite) WHERE c.callee_name = 'isEnabled(_:default:)' RETURN s.value ORDER BY s.value" -f csv | tee "${RUNNER_TEMP}/flags.csv"
+        grep -Fx '"payments.charge"' "${RUNNER_TEMP}/flags.csv"
+        "${Q}" query "${G}" "MATCH (c:CallSite) WHERE c.caller_name = 'pay(amount:)' RETURN c.callee_name ORDER BY c.callee_name" -f csv | grep -Fx '"send(path:retries:)"'
+        "${Q}" query "${G}" "MATCH (f:Field) WHERE f.class = 'AcmeApp.CheckoutService' AND f.static = true RETURN f.name" -f csv | grep -Fx '"maxAmount"'
+        # A UIKit delegate method has a Clang USR the demangler cannot read: its declaring
+        # type comes from the USR, its parameter and return types from the source.
+        "${Q}" query "${G}" "MATCH (m:Method) WHERE m.name = 'application(_:didFinishLaunchingWithOptions:)' RETURN m.class, m.return_type, m.parameter_types" -f csv | tee "${RUNNER_TEMP}/delegate.csv"
+        grep -F '"AcmeApp.AppDelegate","Swift.Bool"' "${RUNNER_TEMP}/delegate.csv"
+        grep -F 'UIApplication' "${RUNNER_TEMP}/delegate.csv"
+        grep -F 'LaunchOptionsKey' "${RUNNER_TEMP}/delegate.csv"
+        # Its Objective-C callee is named by its class, and its own call sites are attributed to it.
+        "${Q}" query "${G}" "MATCH (c:CallSite) WHERE c.caller_name = 'application(_:didFinishLaunchingWithOptions:)' RETURN c.callee_class, c.callee_name ORDER BY c.callee_name" -f csv | tee "${RUNNER_TEMP}/delegate-calls.csv"
+        grep -Fx '"UIApplication","registerForRemoteNotifications()"' "${RUNNER_TEMP}/delegate-calls.csv"
+        grep -Fx '"AcmeApp.FeatureFlags","isEnabled(_:default:)"' "${RUNNER_TEMP}/delegate-calls.csv"
+        "${Q}" query "${G}" "MATCH (s:Constant)-[:DATAFLOW]->(c:CallSite) WHERE c.caller_name = 'application(_:didFinishLaunchingWithOptions:)' RETURN s.value" -f csv | grep -Fx '"launch.tracking"'
+        "${Q}" query "${G}" "MATCH (f:Field) WHERE f.class = 'AcmeApp.AppDelegate' RETURN f.name, f.type" -f csv | grep -Fx '"window","UIWindow?"'

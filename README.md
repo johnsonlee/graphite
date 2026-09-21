@@ -109,14 +109,16 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 ### What the formula installs
 
 `graphite` is a native binary (Rust). It carries `query` and `serve` itself and runs
-`build` through the JVM frontend, `graphite.jar`, which the formula installs next to it
-together with `openjdk@17`. Every command line written for the jar-based formula works
+`build` through a frontend: the JVM frontend, `graphite.jar`, which the formula installs
+next to it together with `openjdk@17`, and the Apple frontend, `graphite-frontend-apple`,
+which it installs next to it too (macOS, and Linux x86_64). Every command line written for the jar-based formula works
 unchanged, `--profile` and the `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` heap settings included.
 
 ```bash
-graphite frontend list           # which frontend `build` will run, and where it came from
-graphite frontend describe jvm   # JSON: version, accepted inputs
+graphite frontend list           # which frontends `build` will run, and where each came from
+graphite frontend describe jvm   # JSON: version, accepted inputs (also: apple)
 graphite frontend install jvm    # fetch the jar for this CLI's version into ~/.graphite/frontends
+graphite frontend install apple  # fetch the Swift frontend for this machine, checksum verified
 ```
 
 Outside Homebrew, `graphite build` finds the frontend through, in order:
@@ -124,6 +126,95 @@ Outside Homebrew, `graphite build` finds the frontend through, in order:
 sibling `libexec/`, `graphite-frontend-jvm` on `PATH`, then `~/.graphite/frontends/jvm/`.
 It finds `java` through `GRAPHITE_JAVA`, `JAVA_HOME`, then `PATH`. The release also ships
 `graphite.jar` on its own; `java -jar graphite.jar build|query|serve` still works.
+
+### Inputs by language
+
+`graphite build` picks the frontend by its input. A build artifact goes to the JVM
+frontend; a Swift package or an Xcode index store goes to the Apple frontend.
+`--lang jvm|apple` (aliases `swift`, `ios`, `macos`) overrides the detection and
+`--frontend <executable>` names a frontend directly.
+
+| Language / platform | Input | Frontend | Notes |
+|---|---|---|---|
+| Java, Kotlin (JVM) | `.jar`, `.war`, a class directory | jvm | `--include com.example` limits the packages; build the artifact first (`./gradlew assemble`, `mvn package`) |
+| Android | `.apk`, `.aar` | jvm | `--android-sdk`, or the SDK lookup below |
+| Swift package | `Package.swift`, or a directory holding one | apple | runs `swift build` and reads its index store; `--skip-build` when it is already built |
+| Swift app (Xcode) | `.xcodeproj`, `.xcworkspace` | apple | runs `xcodebuild` on the project's only scheme (`--scheme` otherwise), with `--destination`, `--configuration`, `--derived-data`; or `--index-store` + `--sources` for a store Xcode already wrote |
+
+For APK inputs, Graphite uses Android platform jars to resolve the APK's target
+API level. Pass `--android-sdk` with the Android SDK root. If omitted,
+Graphite searches in this order:
+
+1. `ANDROID_HOME`, then `ANDROID_SDK_ROOT`.
+2. Default SDK roots for the current OS:
+   - macOS: `~/Library/Android/sdk`,
+     `/opt/homebrew/share/android-commandlinetools`,
+     `/usr/local/share/android-commandlinetools`
+   - Linux: `~/Android/Sdk`, `~/android-sdk`, `/opt/android-sdk`,
+     `/usr/local/android-sdk`, `/usr/lib/android-sdk`
+   - Windows: `%USERPROFILE%\AppData\Local\Android\Sdk`
+3. SDK roots inferred from `adb`, `emulator`, or `sdkmanager` on `PATH`.
+
+### Other languages: the Swift frontend
+
+Swift inputs go to the **Apple frontend**, `graphite-frontend-apple`, a Swift binary
+that indexes the package with the compiler's index store, SwiftSyntax and
+`swift-demangle`. It needs the Swift toolchain that builds the package (Xcode, or
+swift.org's on Linux). The Homebrew formula installs it next to the CLI; elsewhere, one
+command fetches it from the release:
+
+```bash
+graphite frontend install apple      # ~/.graphite/frontends/apple/<version>/, checksum verified
+graphite frontend list               # jvm and apple, with version and where each was found
+
+# Index a package: runs `swift build`, reads its index store, writes the graph
+graphite build ~/src/MyApp -o myapp.graphite
+graphite build ~/src/MyApp -o myapp.graphite --skip-build     # the package is already built
+
+# Index an Xcode project or workspace: runs xcodebuild (index store on, signing off),
+# reads the derived data's index store, writes the graph
+graphite build ~/src/MyApp/MyApp.xcworkspace -o myapp.graphite
+graphite build ~/src/MyApp/MyApp.xcworkspace -o myapp.graphite --scheme MyApp \
+  --destination 'generic/platform=iOS Simulator' --configuration Release
+# Or an index store Xcode already wrote, without building
+graphite build --lang swift --index-store ~/Library/Developer/Xcode/DerivedData/MyApp-*/Index.noindex/DataStore \
+  --sources ~/src/MyApp -o myapp.graphite
+
+# Then as any other graph
+graphite query myapp.graphite "MATCH (s:Constant)-[:DATAFLOW]->(c:CallSite) WHERE c.callee_name = 'isEnabled(_:default:)' RETURN s.value"
+graphite serve --graph myapp:myapp.graphite
+```
+
+`graphite build` finds the Apple frontend through `GRAPHITE_FRONTEND_APPLE`,
+`graphite-frontend-apple` next to the binary or in a sibling `libexec/`, on `PATH`, then
+`~/.graphite/frontends/apple/`.
+
+Under the hood every non-JVM frontend writes a **Graph IR** (`ir/graphite_ir.proto`, a
+stream of protobuf chunks) and `graphite import <ir> -o <graph>` persists it with the
+JVM frontend's writer; `build` does both steps and removes the IR. The frontend itself
+speaks a three-command protocol (`describe`, `build --out`, `version`) and can be run on
+its own, or built from source with `frontend/apple/swift.sh build -c release`.
+
+For a project or workspace the frontend picks the scheme when there is exactly one
+(shared schemes, as `xcodebuild -list` reports them) and asks for `--scheme` otherwise; it
+builds with `COMPILER_INDEX_STORE_ENABLE=YES` and code signing off, into a per-project
+derived data directory under the temporary directory (`--derived-data` names another,
+Xcode's own included, and `--skip-build` reads it without building), and walks every
+`.swift` file under the project's directory unless `--sources` says which.
+
+What the Swift graph holds today: every type with its module (`Module.Outer.Inner`
+names), supertypes and protocol conformances as `EXTENDS`/`IMPLEMENTS`, methods with
+demangled signatures (`checkout(order:method:)`, parameter and return types as Swift
+prints them), stored and computed properties as fields, enum cases, attributes as
+annotations, and every call site with its caller and callee; literal arguments (strings,
+numbers, booleans, `nil`) are `Constant` nodes flowing into the call with
+`PARAMETER_PASS`, other arguments keep their position as `LocalVariable` nodes named by
+their source text. Declarations exposed to Objective-C (`@objc` members, UIKit delegate
+and action methods, `NSObject` subclasses' overrides) are keyed by Clang USRs that
+`swift-demangle` cannot read; their declaring type comes from the USR and their parameter
+and return types from the source, qualified where the name is known (`Bool` → `Swift.Bool`,
+the project's own types with their module, UIKit types bare). Data flow through variables
+and returns (SIL) is the next step.
 
 ### Upgrading a legacy installation
 
@@ -139,20 +230,6 @@ brew upgrade johnsonlee/tap/graphite
 graphite --version
 graphite build app.jar -o /data/app-graph --include com.example
 ```
-
-For APK inputs, Graphite uses Android platform jars to resolve the APK's target
-API level. Pass `--android-sdk` with the Android SDK root. If omitted,
-Graphite searches in this order:
-
-1. `ANDROID_HOME`, then `ANDROID_SDK_ROOT`.
-2. Default SDK roots for the current OS:
-   - macOS: `~/Library/Android/sdk`,
-     `/opt/homebrew/share/android-commandlinetools`,
-     `/usr/local/share/android-commandlinetools`
-   - Linux: `~/Android/Sdk`, `~/android-sdk`, `/opt/android-sdk`,
-     `/usr/local/android-sdk`, `/usr/lib/android-sdk`
-   - Windows: `%USERPROFILE%\AppData\Local\Android\Sdk`
-3. SDK roots inferred from `adb`, `emulator`, or `sdkmanager` on `PATH`.
 
 ## Kotlin API
 
@@ -460,20 +537,23 @@ graph, one Rust *backend*, which stores, serves, and queries those graphs, and o
 
 ```
 graphite/
+├── ir/                     # graphite_ir.proto: the Graph IR other frontends write
 ├── frontend/
-│   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
-│       ├── core/           # Graph interface, nodes, edges, analysis
-│       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
-│       ├── sootup/         # SootUp bytecode → graph builder
-│       ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
-│       ├── query/          # `graphite.jar`: the build frontend, plus legacy query/serve
-│       └── explore/        # Legacy Kotlin Explorer server
+│   ├── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
+│   │   ├── core/           # Graph interface, nodes, edges, analysis
+│   │   ├── ir/             # Graph IR reader (protobuf bindings + DefaultGraph builder)
+│   │   ├── cypher/         # Cypher query engine (ANTLR parser + executor)
+│   │   ├── sootup/         # SootUp bytecode → graph builder
+│   │   ├── webgraph/       # WebGraph disk persistence (BVGraph + LAW tools)
+│   │   ├── query/          # `graphite.jar`: build and import, plus legacy query/serve
+│   │   └── explore/        # Legacy Kotlin Explorer server
+│   └── apple/              # Swift frontend: index store + SwiftSyntax → Graph IR
 ├── backend/                # Rust backend
 │   ├── storage/            # mmap reader of the persisted graph, indexes, columns
 │   ├── cypher/             # Cypher parser, planner, executor
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
-├── cli/                    # `graphite` CLI (Rust): build, query, serve, mcp, frontend
+├── cli/                    # `graphite` CLI (Rust): build, import, query, serve, mcp, frontend
 ├── Cargo.toml              # Cargo workspace: backend/* and cli
 └── docs/
 ```
