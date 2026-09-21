@@ -200,6 +200,9 @@ impl Executor {
             if let Some(r) = super::fastpath::distinct_string_property(self, clauses)? {
                 return Ok(r);
             }
+            if let Some(r) = super::schema::schema_histogram(self, clauses)? {
+                return Ok(r);
+            }
         }
         let ev = Evaluator::new(self, &self.params);
         let matcher = Matcher { ex: self, ev: &ev };

@@ -6,6 +6,7 @@ pub mod matching;
 pub mod pipeline;
 pub mod props;
 pub mod scan;
+pub mod schema;
 
 use crate::context::GraphContext;
 use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};

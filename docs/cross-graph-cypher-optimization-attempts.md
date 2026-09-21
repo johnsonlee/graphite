@@ -1718,3 +1718,84 @@ costs, proportional to what the predicate matches rather than to the corpus.
 A grouped non-distinct `count` still keeps one placeholder value per matched
 row until the group is finalised (pre-existing); a running counter is the
 next step if fleet-scale counts show memory pressure.
+
+### 2026-09-21 - Attempt 039: Answer schema-exploration shapes from the type index and edge labels
+
+**Production evidence:** the label histogram an agent runs first against a fleet
+timed out at the 60-second server maximum in cross-graph mode:
+
+```cypher
+MATCH (n) RETURN labels(n) AS labels, count(*) AS c ORDER BY c DESC LIMIT 40
+```
+
+`MATCH (n) RETURN count(*)` on the same fleet answers at once from the type index.
+
+**Root cause:** the Rust engine's aggregate fast paths covered `count(*)`, a
+grouped CallSite property and a distinct string property. Every other
+schema-exploration shape ran through the streaming group-by: a row built per
+node or per edge, `labels(n)` / `type(r)` / `keys(n)` evaluated on each, a
+key encoded and a group looked up per row. Sixteen copies of a 63K-node graph
+(one million nodes, one million edges) measured, cross-graph, release build,
+four CPUs:
+
+| Shape | Generic pipeline |
+|-------|-----------------:|
+| `labels(n), count(*)` / `DISTINCT labels(n)` | `0.9-1.1 s` |
+| `n.graphId, count(*)` / `DISTINCT n.graphId` | `0.8-0.9 s` |
+| `()-[r]->()` type histogram, `DISTINCT type(r)`, `count(r)` | `0.7-1.1 s` |
+| `(a)-[r]->(b)` labels/type/labels histogram | `1.7-2.0 s` |
+| `UNWIND keys(n) AS k RETURN k, count(*)` | `10-13.6 s` |
+
+At a microsecond per node the fleet-scale forms cannot finish.
+
+**Design:** `backend/cypher/src/engine/schema.rs` recognises the exact shape
+`MATCH <single node | single directed hop> [UNWIND keys(n) AS k] RETURN
+[DISTINCT] <items> [ORDER BY <output columns>] [LIMIT literal]`, with no
+WHERE, no property maps, no path variable, and every item one of `labels(x)`,
+`type(r)`, `x.graphId` (cross-graph mode), the unwound key, `count(*)` or
+`count(<bound variable>)`. Everything else falls through to the pipeline, which
+stays the single source of truth for semantics.
+
+A node shape is one fact per (graph, type tag) weighted by the type's count;
+`keys()` reads one decoded node per type, since a type's key set is fixed, and
+decodes annotation nodes one by one because their values add keys. A hop shape
+sweeps each graph's CSR label bytes into a flat 16 x 256 x 16 table, deciding
+once per label byte whether it matches the relationship types and reading each
+target's tag without decoding its record; graphs are swept in parallel, polling
+cancellation on a thread-local counter rather than the executor's shared atomic
+(which, bounced between cores once per node, cost more than the sweep), and
+their facts absorbed in source order. Groups keep the (graph, node id,
+position) of the node or edge that opened them, so the first-seen order, the
+`ORDER BY` on output columns, the `LIMIT` and the cross-graph provenance are the
+pipeline's.
+
+**Measurements:** the same sixteen-copy corpus, second of two runs.
+
+| Shape | Before | After |
+|-------|-------:|------:|
+| `labels(n), count(*) ... LIMIT 40` | `864 ms` | `0.2 ms` |
+| `DISTINCT labels(n)` | `1,101 ms` | `0.1 ms` |
+| `n.graphId, count(*)` | `844 ms` | `< 0.1 ms` |
+| `()-[r]->() RETURN type(r), count(*)` | `1,030 ms` | `7 ms` |
+| `()-[r]->() RETURN count(r)` | `744 ms` | `7 ms` |
+| `(a)-[r]->(b) RETURN labels(a), type(r), labels(b), count(*)` | `1,791 ms` | `7 ms` |
+| `UNWIND keys(n) AS k RETURN k, count(*) ... LIMIT 50` | `10,069 ms` | `40 ms` |
+| `UNWIND keys(n) AS k RETURN labels(n), k, count(*)` | `11,991 ms` | `77 ms` |
+
+**Verification:** thirty shapes -- aliases and bare expressions, `count(*)`,
+`count(n)`, `count(r)`, `count(k)`, `DISTINCT`, ascending and descending
+`ORDER BY` on one and two columns, `LIMIT` including `LIMIT 0`, typed and
+untyped relationships, both directions, labelled and unlabelled ends,
+`graphId` on nodes and hop ends, an unknown label, and shapes the fast path
+declines -- produce byte-identical columns, rows and provenance under
+`GRAPHITE_NO_FASTPATH=1` and the fast path, over the sixteen-copy cross-graph
+corpus and over one plain graph. A fixture-gated test runs twenty-four of
+those shapes as two cross-graph sources and as one plain source against the
+pipeline (forced by `UNWIND [1] AS one`), and asserts which of them the fast
+path answered. Two tests pin the recognised and the declined shapes without a
+graph. `cargo test -p graphite-cypher` with the fixture, `cargo clippy` and
+`cargo fmt --check` pass.
+
+**Conclusion:** keep. Schema exploration now costs the number of types and
+graphs, or one pass over the edge label bytes, rather than the number of
+nodes; the first queries an agent runs against a fleet answer in milliseconds.
