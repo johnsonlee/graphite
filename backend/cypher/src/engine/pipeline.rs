@@ -1,6 +1,7 @@
 //! Clause pipeline: MATCH / WHERE / WITH / RETURN / UNWIND / ORDER BY / SKIP / LIMIT / UNION.
 
 use super::matching::{has_unknown_label, Matcher};
+use super::partition::{row_weight, PartitionPlan, INTERNAL_WEIGHT_KEY};
 use super::Executor;
 use crate::ast::{Clause, Expr, Literal, OrderItem, Pattern, ReturnItem};
 use crate::eval::{contains_aggregation, is_aggregation_name, Evaluator};
@@ -81,16 +82,20 @@ pub fn add_provenance(row: &mut Row, ex: &Executor, v: &Value) {
 }
 
 pub fn add_provenance_id(row: &mut Row, gid: Arc<str>) {
-    let mut ids: Vec<Value> = match row.get(INTERNAL_PROVENANCE_KEY) {
-        Some(Value::List(l)) => l.as_ref().clone(),
-        _ => vec![],
-    };
-    if ids.iter().any(|x| x.as_str() == Some(&gid)) {
+    // The list is kept sorted by id, so a new id goes in at its sorted position,
+    // in place when the row owns the list.
+    if let Some(Value::List(ids)) = row.get_mut(INTERNAL_PROVENANCE_KEY) {
+        let at = ids.partition_point(|x| x.as_str() < Some(&gid));
+        if ids.get(at).and_then(|x| x.as_str()) == Some(&gid) {
+            return;
+        }
+        Arc::make_mut(ids).insert(at, Value::Str(gid));
         return;
     }
-    ids.push(Value::Str(gid));
-    ids.sort_by(|a, b| a.as_str().cmp(&b.as_str()));
-    row.insert(INTERNAL_PROVENANCE_KEY.to_string(), Value::list(ids));
+    row.insert(
+        INTERNAL_PROVENANCE_KEY.to_string(),
+        Value::list(vec![Value::Str(gid)]),
+    );
 }
 
 pub(crate) fn merge_provenance(into: &mut Row, from: &Row) {
@@ -200,9 +205,6 @@ impl Executor {
             if let Some(r) = super::fastpath::distinct_string_property(self, clauses)? {
                 return Ok(r);
             }
-            if let Some(r) = super::schema::schema_histogram(self, clauses)? {
-                return Ok(r);
-            }
         }
         let ev = Evaluator::new(self, &self.params);
         let matcher = Matcher { ex: self, ev: &ev };
@@ -217,6 +219,17 @@ impl Executor {
                     optional,
                     where_clause,
                 } => {
+                    if !*optional && rows.len() == 1 && rows[0].is_empty() {
+                        // An aggregation whose expressions read no more of a node than
+                        // its type or a few string columns runs once per partition of
+                        // such nodes, weighted, and the clauses after the match run
+                        // unchanged over those rows.
+                        if let Some((plan, consumed)) = PartitionPlan::build(self, &clauses[i..]) {
+                            rows = plan.rows(self, &ev)?;
+                            i += consumed;
+                            continue;
+                        }
+                    }
                     if !*optional {
                         if let Some(shape) = FusedShape::detect(&clauses[i..]) {
                             let out = self.run_fused(&matcher, &ev, rows, patterns, &shape)?;
@@ -618,13 +631,16 @@ impl Executor {
                     first_row: row.clone(),
                     group_values: vals,
                     agg_inputs: vec![Vec::new(); plan.aggs.len()],
+                    agg_weights: vec![Vec::new(); plan.aggs.len()],
                 });
+                let weight = row_weight(&row);
                 for (ai, agg) in plan.aggs.iter().enumerate() {
                     let v = match &agg.arg {
                         Some(e) => ev.eval(e, &row)?,
                         None => star_input(agg, &row),
                     };
                     acc.agg_inputs[ai].push(v);
+                    acc.agg_weights[ai].push(weight);
                 }
                 merge_provenance(&mut acc.first_row, &row);
                 Ok(true)
@@ -1196,6 +1212,9 @@ fn project_row(
     if let Some(p) = row.get(INTERNAL_PROVENANCE_KEY) {
         out.insert(INTERNAL_PROVENANCE_KEY.to_string(), p.clone());
     }
+    if let Some(wt) = row.get(INTERNAL_WEIGHT_KEY) {
+        out.insert(INTERNAL_WEIGHT_KEY.to_string(), wt.clone());
+    }
     if !distinct || order_before_distinct {
         stash_order_values(ev, row, &mut out, order, columns)?;
     }
@@ -1371,6 +1390,62 @@ struct GroupAcc {
     first_row: Row,
     group_values: Vec<Value>,
     agg_inputs: Vec<Vec<Value>>,
+    /// How many rows each input stands for; see `partition`.
+    agg_weights: Vec<Vec<i64>>,
+}
+
+/// An aggregate over inputs that each stand for `weights` rows: `count` sums the
+/// weights of its non-null inputs, `sum` and `avg` weigh theirs, and `min` and `max`
+/// read the values alone. Every other aggregate is refused a weighted input by the
+/// partition planner, so reaching it here is a bug.
+/// Above this magnitude a floating-point sum of integers can round, and the order
+/// of the row-by-row fold would start to matter.
+const EXACT_SUM_MAGNITUDE: i128 = 1 << 53;
+
+/// The aggregates over weighted rows. `sum` and `avg` are only ever handed
+/// bounded integer inputs (the planner declines anything else): the exact integer
+/// total is taken, and it equals the row-by-row floating fold whatever that fold's
+/// order as long as the magnitudes total below 2^53, which is checked here rather
+/// than assumed.
+fn aggregate_weighted(name: &str, values: &[Value], weights: &[i64]) -> CypherResult<Value> {
+    let lower = name.to_ascii_lowercase();
+    let live = || values.iter().zip(weights).filter(|(v, _)| !v.is_null());
+    let exact_total = || -> CypherResult<f64> {
+        let (mut total, mut magnitude) = (0i128, 0i128);
+        for (v, w) in live() {
+            let Value::Int(i) = v else {
+                return Err(CypherError::Runtime(format!(
+                    "Aggregation {name} over weighted rows needs integer inputs, found {v:?}"
+                )));
+            };
+            total += *i as i128 * *w as i128;
+            magnitude += i.unsigned_abs() as i128 * *w as i128;
+        }
+        if magnitude > EXACT_SUM_MAGNITUDE {
+            return Err(CypherError::Runtime(format!(
+                "Aggregation {name} over weighted rows exceeds the exact floating range"
+            )));
+        }
+        Ok(total as f64)
+    };
+    Ok(match lower.as_str() {
+        "count" => Value::Int(live().map(|(_, w)| *w).sum()),
+        "sum" => Value::Float(exact_total()?),
+        "avg" => {
+            let n: i64 = live().map(|(_, w)| *w).sum();
+            if n == 0 {
+                Value::Null
+            } else {
+                Value::Float(exact_total()? / n as f64)
+            }
+        }
+        "min" | "max" => aggregate(name, values)?,
+        _ => {
+            return Err(CypherError::Runtime(format!(
+                "Aggregation {name} cannot be applied to weighted rows"
+            )))
+        }
+    })
 }
 
 fn finalize_groups(
@@ -1393,11 +1468,17 @@ fn finalize_groups(
         let mut tmp = acc.first_row.clone();
         for (ai, agg) in plan.aggs.iter().enumerate() {
             let mut inputs = acc.agg_inputs[ai].clone();
-            if agg.distinct {
+            let weights = &acc.agg_weights[ai];
+            let v = if agg.distinct {
+                // Distinct values: what each row stood for is immaterial.
                 let mut seen = std::collections::HashSet::new();
                 inputs.retain(|v| seen.insert(value_key(v)));
-            }
-            let v = aggregate(&agg.name, &inputs)?;
+                aggregate(&agg.name, &inputs)?
+            } else if weights.iter().all(|w| *w == 1) {
+                aggregate(&agg.name, &inputs)?
+            } else {
+                aggregate_weighted(&agg.name, &inputs, weights)?
+            };
             tmp.insert(format!("{AGG_PLACEHOLDER_PREFIX}{ai}"), v);
         }
         let mut row = Row::new();
@@ -1423,6 +1504,7 @@ fn finalize_groups(
             first_row: Row::new(),
             group_values: vec![],
             agg_inputs: vec![Vec::new(); plan.aggs.len()],
+            agg_weights: vec![Vec::new(); plan.aggs.len()],
         };
         out.push(compute(acc)?);
         return Ok(out);
@@ -1490,13 +1572,16 @@ fn project(
                 first_row: row.clone(),
                 group_values: vals,
                 agg_inputs: vec![Vec::new(); plan.aggs.len()],
+                agg_weights: vec![Vec::new(); plan.aggs.len()],
             });
+            let weight = row_weight(&row);
             for (ai, agg) in plan.aggs.iter().enumerate() {
                 let v = match &agg.arg {
                     Some(e) => ev.eval(e, &row)?,
                     None => star_input(agg, &row),
                 };
                 acc.agg_inputs[ai].push(v);
+                acc.agg_weights[ai].push(weight);
             }
             merge_provenance(&mut acc.first_row, &row);
         }
@@ -1527,6 +1612,9 @@ fn project(
                 Some(&idx) => merge_provenance(&mut dedup[idx], &r),
                 None => {
                     seen.insert(k, dedup.len());
+                    let mut r = r;
+                    // A distinct row stands for itself, whatever it was weighted before.
+                    r.shift_remove(INTERNAL_WEIGHT_KEY);
                     dedup.push(r);
                 }
             }
@@ -1908,6 +1996,7 @@ mod with_prefix_tests {
                 "WITH DISTINCT n.callee_class AS c RETURN c ORDER BY c LIMIT 30",
                 true,
             ),
+
             // An ORDER BY on the WITH over pre-projection expressions, then LIMIT.
             (
                 r#"MATCH (n:CallSiteNode) WHERE n.callee_class STARTS WITH "java.util.""#,

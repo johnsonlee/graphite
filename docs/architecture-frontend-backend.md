@@ -342,8 +342,11 @@ heuristics for v3 graphs.
 
 The server also speaks the Model Context Protocol: the thirteen tools of the former
 `graphite-mcp` npm package (`graphs`, `openapi`, `cypher`, `node`, `outgoing`, `incoming`,
-`annotations`, `endpoints`, `resources`, `resource`, `subgraph`, `overview`, `c4`) are
-built in, each dispatched in-process to the same route handler the REST API runs. Two
+`annotations`, `endpoints`, `resources`, `resource`, `subgraph`, `overview`, `c4`) plus
+`schema` (`GET /api/schema`, `GET /api/graphs/{id}/schema`: label sets with node counts
+and keys, relationship types with counts, the most frequent `(labels)-[type]->(labels)`
+patterns) are built in, each dispatched in-process to the same route handler the REST API
+runs. Two
 transports: `graphite mcp` over stdio for local clients, and `POST /mcp` on `graphite
 serve` (Streamable HTTP) for remote ones. The npm package is retired with v2.5.0.
 

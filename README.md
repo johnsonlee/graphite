@@ -570,10 +570,17 @@ dependencies {
 ## MCP Integration
 
 The `graphite` binary is an [Model Context Protocol](https://modelcontextprotocol.io)
-server: the same thirteen tools the `graphite-mcp` npm package used to expose (`graphs`,
+server: the thirteen tools the `graphite-mcp` npm package used to expose (`graphs`,
 `cypher`, `node`, `outgoing`, `incoming`, `annotations`, `endpoints`, `resources`,
-`resource`, `subgraph`, `overview`, `c4`, `openapi`), served in-process by the same code
-as the REST API. Two ways to connect:
+`resource`, `subgraph`, `overview`, `c4`, `openapi`) plus `schema`, served in-process by
+the same code as the REST API. `schema` (`GET /api/schema`, `GET /api/graphs/{id}/schema`)
+describes what a graph holds -- every label set with its node count and property keys,
+every relationship type with its count, the most frequent `(labels)-[type]->(labels)`
+patterns -- in milliseconds, so an agent reads it before writing Cypher instead of
+discovering the graph with `MATCH (n) RETURN labels(n), keys(n), count(*)` probes. Those
+probes are answered per type as well (see the partitioned evaluation in
+`backend/cypher/src/engine/partition.rs`), but one call is cheaper than a conversation.
+Two ways to connect:
 
 - **stdio**, for local clients (Claude Code, Claude Desktop, Cursor): `graphite mcp`
   opens the graphs itself; no server to start first.

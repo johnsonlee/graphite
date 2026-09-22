@@ -229,27 +229,9 @@ impl<'a> Matcher<'a> {
             }
             NodeClass::Tags(tags) => {
                 for (si, src) in self.ex.sources.iter().enumerate() {
-                    // The types' id lists are each ascending; they are merged so the
-                    // graph is walked in id order across types, as the Kotlin server
-                    // walks it -- the order a LIMIT cuts.
-                    let mut lists: Vec<(&[u32], usize)> = tags
-                        .iter()
-                        .map(|&tag| (src.graph.ids_by_tag(tag), 0usize))
-                        .filter(|(ids, _)| !ids.is_empty())
-                        .collect();
-                    while let Some(best) = lists
-                        .iter()
-                        .enumerate()
-                        .map(|(i, (ids, pos))| (ids[*pos], i))
-                        .min()
-                        .map(|(_, i)| i)
-                    {
-                        let (ids, pos) = &mut lists[best];
-                        let id = ids[*pos];
-                        *pos += 1;
-                        if *pos >= ids.len() {
-                            lists.swap_remove(best);
-                        }
+                    let walk =
+                        MergedWalk::new(tags.iter().map(|&tag| (tag, src.graph.ids_by_tag(tag))));
+                    for (_, id) in walk {
                         self.ex.tick()?;
                         let v = Value::Node(NodeRef {
                             source: si as SourceIdx,
@@ -652,3 +634,70 @@ impl<'a> Matcher<'a> {
 
 #[allow(dead_code)]
 fn _expr_marker(_: &Expr) {}
+
+/// The order one graph's nodes of a class are walked: the class's type id lists, each
+/// in nodedata write order, merged by their current heads, smallest id first. With
+/// ascending lists that is id order across types, as the Kotlin server walks it (the
+/// order a LIMIT cuts); a type a frontend wrote out of id order keeps its own order
+/// within the walk. The matcher and the partitioned evaluation share this one walk,
+/// so both meet the graph's nodes, and first meet each group, in the same order.
+pub(crate) struct MergedWalk<'a> {
+    lists: Vec<(u8, &'a [u32], usize)>,
+}
+
+impl<'a> MergedWalk<'a> {
+    pub(crate) fn new(lists: impl IntoIterator<Item = (u8, &'a [u32])>) -> Self {
+        MergedWalk {
+            lists: lists
+                .into_iter()
+                .filter(|(_, ids)| !ids.is_empty())
+                .map(|(tag, ids)| (tag, ids, 0usize))
+                .collect(),
+        }
+    }
+}
+
+impl Iterator for MergedWalk<'_> {
+    type Item = (u8, u32);
+
+    fn next(&mut self) -> Option<(u8, u32)> {
+        let best = self
+            .lists
+            .iter()
+            .enumerate()
+            .map(|(i, (_, ids, pos))| (ids[*pos], i))
+            .min()
+            .map(|(_, i)| i)?;
+        let (tag, ids, pos) = &mut self.lists[best];
+        let item = (*tag, ids[*pos]);
+        *pos += 1;
+        if *pos >= ids.len() {
+            self.lists.swap_remove(best);
+        }
+        Some(item)
+    }
+}
+
+#[cfg(test)]
+mod walk_tests {
+    use super::MergedWalk;
+
+    #[test]
+    fn a_merged_walk_takes_the_smallest_head_and_keeps_each_lists_own_order() {
+        let a = [5u32, 1];
+        let b = [3u32];
+        let w = [2u32, 9];
+        let walk: Vec<(u8, u32)> =
+            MergedWalk::new([(0u8, &a[..]), (1, &b[..]), (2, &w[..])]).collect();
+        assert_eq!(walk, [(2, 2), (1, 3), (0, 5), (0, 1), (2, 9)]);
+        // Ascending lists merge into id order; empty lists are skipped.
+        let x = [1u32, 4, 6];
+        let y = [2u32, 3, 5];
+        let e: [u32; 0] = [];
+        let ids: Vec<u32> = MergedWalk::new([(0u8, &x[..]), (1, &e[..]), (2, &y[..])])
+            .map(|(_, id)| id)
+            .collect();
+        assert_eq!(ids, [1, 2, 3, 4, 5, 6]);
+        assert_eq!(MergedWalk::new([(0u8, &e[..])]).count(), 0);
+    }
+}

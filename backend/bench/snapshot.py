@@ -42,7 +42,22 @@ def plan(graphs, distributions):
     for d in distributions:
         rows.append(({"case": d["case"]}, "global-wide-four-properties",
                      fixture64.SHAPES[0][1](d["term"])))
+    for name, query in SCHEMA_SHAPES:
+        rows.append(({"selectivity": "schema"}, name, query))
     return rows
+
+
+# The schema-exploration shapes an agent runs first against a fleet, answered per type
+# rather than per node on both revisions; measured over the whole corpus, so a fallback
+# to the row pipeline shows as a regression against the base.
+SCHEMA_SHAPES = [
+    ("schema-label-histogram",
+     "MATCH (n) RETURN labels(n) AS labels, count(*) AS c ORDER BY c DESC LIMIT 40"),
+    ("schema-key-histogram",
+     "MATCH (n) UNWIND keys(n) AS k RETURN k, count(*) AS c ORDER BY c DESC LIMIT 50"),
+    ("schema-relationship-histogram",
+     "MATCH (a)-[r]->(b) RETURN labels(a) AS a, type(r) AS t, labels(b) AS b, count(*) AS c ORDER BY c DESC LIMIT 40"),
+]
 
 
 def median(values):

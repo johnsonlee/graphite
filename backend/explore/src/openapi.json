@@ -696,6 +696,49 @@
         ]
       }
     },
+    "/api/schema": {
+      "get": {
+        "summary": "Describe every loaded graph, grouped by graphId: label sets with node counts and property keys, relationship types with counts, and the most frequent (labels)-[type]->(labels) patterns",
+        "responses": {
+          "200": {
+            "description": "Schema description per graph"
+          },
+          "400": {
+            "description": "Invalid timeoutMs"
+          },
+          "429": {
+            "description": "Cypher concurrency limit exceeded"
+          },
+          "504": {
+            "description": "Schema description timeout exceeded"
+          },
+          "503": {
+            "description": "Schema description cancelled while the client remained connected"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "description": "Maximum number of patterns per graph, most frequent first (default 50, at most 1000)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "timeoutMs",
+            "required": false,
+            "description": "Positive client timeout in milliseconds, capped by the server maximum",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
     "/api/cypher": {
       "get": {
         "summary": "Execute one query over the union of all loaded graphs",
@@ -1182,6 +1225,61 @@
             "description": "Maximum number of classes",
             "schema": {
               "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/graphs/{graphId}/schema": {
+      "get": {
+        "summary": "Describe one explicit graph: label sets with node counts and property keys, relationship types with counts, and the most frequent (labels)-[type]->(labels) patterns",
+        "responses": {
+          "200": {
+            "description": "Schema description"
+          },
+          "400": {
+            "description": "Invalid timeoutMs"
+          },
+          "429": {
+            "description": "Cypher concurrency limit exceeded"
+          },
+          "504": {
+            "description": "Schema description timeout exceeded"
+          },
+          "503": {
+            "description": "Schema description cancelled while the client remained connected"
+          },
+          "404": {
+            "description": "Graph not loaded"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "graphId",
+            "required": true,
+            "description": "Unique graph id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "description": "Maximum number of patterns, most frequent first (default 50, at most 1000)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "timeoutMs",
+            "required": false,
+            "description": "Positive client timeout in milliseconds, capped by the server maximum",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
             }
           }
         ]

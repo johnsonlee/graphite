@@ -60,6 +60,8 @@ mod tests {
         assert!(paths.contains_key("/api/graphs/{graphId}/subgraph"));
         assert!(paths.contains_key("/api/overview"));
         assert!(paths.contains_key("/api/graphs/{graphId}/overview"));
+        assert!(paths.contains_key("/api/schema"));
+        assert!(paths.contains_key("/api/graphs/{graphId}/schema"));
     }
 
     #[test]
@@ -71,6 +73,26 @@ mod tests {
         }
         let d = responses["429"]["description"].as_str().unwrap();
         assert!(!d.contains("work budget"), "{d}");
+    }
+
+    /// The schema routes run under the Cypher guard, so they document the same
+    /// deadline parameter and the same capacity and timeout failures.
+    #[test]
+    fn schema_paths_document_the_guard_contract() {
+        let doc = build_openapi("1");
+        for path in ["/api/schema", "/api/graphs/{graphId}/schema"] {
+            let op = &doc["paths"][path]["get"];
+            for code in ["400", "429", "503", "504"] {
+                assert!(op["responses"].get(code).is_some(), "{path} missing {code}");
+            }
+            let params = op["parameters"].as_array().unwrap();
+            let timeout = params
+                .iter()
+                .find(|p| p["name"] == json!("timeoutMs"))
+                .unwrap_or_else(|| panic!("{path} has no timeoutMs"));
+            assert_eq!(timeout["schema"]["minimum"], json!(1));
+            assert!(params.iter().any(|p| p["name"] == json!("limit")));
+        }
     }
 
     #[test]

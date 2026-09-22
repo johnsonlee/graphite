@@ -37,6 +37,10 @@ def strip_placeholder(o):
 # Rust-only additions to a Cypher response: the Kotlin server never emits them, so they
 # are dropped before comparing rather than reported as a divergence.
 RUST_ONLY = {"total"}  # {"value", "relation"}: whether rows exist past the limit
+# Routes the Rust server serves and the Kotlin server never had: their OpenAPI entries
+# are dropped from the Rust document before it is compared with the baseline's, and
+# the routes themselves are checked on their own below (`check_schema`).
+RUST_ONLY_PATHS = {"/api/schema", "/api/graphs/{graphId}/schema"}
 
 def norm(o):
     if isinstance(o, dict):
@@ -401,6 +405,9 @@ for method, path, body in CASES:
     try:
         kj = strip_placeholder(norm(json.loads(kb)))
         rj = strip_placeholder(norm(json.loads(rb)))
+        if path in ("/openapi.json", "/swagger.json"):
+            for rust_only in RUST_ONLY_PATHS:
+                rj.get("paths", {}).pop(rust_only, None)
         same = kj == rj
         kd, rd = json.dumps(kj, sort_keys=True)[:400], json.dumps(rj, sort_keys=True)[:400]
     except Exception:
@@ -607,6 +614,65 @@ def check_metrics():
 
 check_metrics()
 
+# The schema routes exist on the Rust server only (the Kotlin server predates them), so
+# they are checked for what they promise rather than against a baseline: the Kotlin
+# server does not answer them, and the Rust description agrees with the Rust Cypher
+# engine on every count it reports, the node counts by label set and the relationship
+# counts by type.
+SCHEMA_CASES = [
+    ("GET", "/api/graphs/app/schema?limit=5", None),
+    ("GET", "/api/schema?limit=5", None),
+    ("GET", "/api/graphs/missing/schema", None),
+]
+
+def cypher_rows(path, query):
+    status, body = fetch(RUST, "POST", path, json.dumps({"query": query}))
+    if status != 200:
+        return None
+    return [{k: v for k, v in row.items() if not k.startswith("$")}
+            for row in json.loads(body)["rows"]]
+
+def check_schema():
+    global passed, failed
+    for m, path, body in SCHEMA_CASES:
+        ks, _ = fetch(KOTLIN, m, path, body)
+        rs, rb = fetch(RUST, m, path, body)
+        expected = 404 if "missing" in path else 200
+        if ks == 404 and rs == expected:
+            passed += 1
+        else:
+            failed += 1
+            failures.append((f"{m} {path}", f"status kotlin {ks} (expected 404), rust {rs} (expected {expected})", "", rb[:300]))
+    _, one = fetch(RUST, "GET", "/api/graphs/app/schema?limit=5")
+    _, every = fetch(RUST, "GET", "/api/schema?limit=5")
+    try:
+        one = json.loads(one)
+        every = json.loads(every)
+    except Exception:
+        return
+    nodes = cypher_rows("/api/graphs/app/cypher",
+                        "MATCH (n) RETURN labels(n) AS labels, count(*) AS count ORDER BY count DESC, labels ASC")
+    rels = cypher_rows("/api/graphs/app/cypher",
+                       "MATCH ()-[r]->() RETURN type(r) AS type, count(*) AS count ORDER BY count DESC, type ASC")
+    checks = [
+        ("nodes agree with cypher", [{"labels": n["labels"], "count": n["count"]} for n in one["nodes"]] == nodes),
+        ("relationships agree with cypher", one["relationships"] == rels),
+        ("every node type lists keys", all(n["keys"] for n in one["nodes"])),
+        ("patterns honour the limit", len(one["patterns"]) <= 5 and all(
+            set(p) == {"from", "type", "to", "count"} for p in one["patterns"])),
+        ("the grouped route carries the same description",
+         any(r["graphId"] == "app" and r["data"] == one for r in every["results"])
+         and every["graphCount"] == len(every["results"])),
+    ]
+    for label, ok in checks:
+        if ok:
+            passed += 1
+        else:
+            failed += 1
+            failures.append((f"GET /api/graphs/app/schema: {label}", "differs", "", json.dumps(one)[:300]))
+
+check_schema()
+
 # Every method and path the OpenAPI document advertises must be exercised above. The
 # document is the server's public contract, so an endpoint it declares and this suite
 # never calls is an untested promise -- and that is how the cross-graph routes and the
@@ -622,7 +688,7 @@ def spec_coverage():
         if m.lower() in ("get", "post", "put", "delete", "patch", "head")
     }
     exercised = set()
-    for m, path, _ in CASES + [(m, p, b) for m, p, b in CASES_MUTATING]:
+    for m, path, _ in CASES + [(m, p, b) for m, p, b in CASES_MUTATING] + SCHEMA_CASES:
         p = path.split("?")[0]
         p = re.sub(r"/node/[^/]+", "/node/{id}", p)
         p = re.sub(r"/api/graphs/[^/]+/resources/.+", "/api/graphs/{graphId}/resources/{path}", p)

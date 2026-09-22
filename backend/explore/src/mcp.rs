@@ -97,7 +97,7 @@ pub fn tools() -> Vec<ToolDef> {
         },
         ToolDef {
             name: "cypher",
-            description: "Execute a true cross-graph Cypher query across all graphs by default, one explicit graph with graph_id, or an explicit graph set with graphs/all_graphs",
+            description: "Execute a true cross-graph Cypher query across all graphs by default, one explicit graph with graph_id, or an explicit graph set with graphs/all_graphs. Call schema first to learn the labels, property keys, relationship types and patterns a graph holds, rather than discovering them with exploratory queries",
             input_schema: schema(
                 json!({
                     "query": {"type": "string", "description": "Cypher query string"},
@@ -225,6 +225,17 @@ pub fn tools() -> Vec<ToolDef> {
                     "level": {"type": "string", "enum": ["context", "container", "component", "all"], "default": "all", "description": "C4 view level"},
                     "format": {"type": "string", "enum": ["json", "dsl", "mermaid", "plantuml"], "default": "json", "description": "Output format"},
                     "limit": {"type": "number", "default": 200, "description": "Max containers or components"}
+                }),
+                &[],
+            ),
+        },
+        ToolDef {
+            name: "schema",
+            description: "Describe what a graph holds before writing Cypher against it: every label set with its node count and property keys, every relationship type with its count, and the most frequent (labels)-[type]->(labels) patterns, for one graph with graph_id or for every loaded graph, grouped by graphId. Answered per type in milliseconds; prefer it to MATCH (n) RETURN labels(n), keys(n) ... exploration",
+            input_schema: schema(
+                json!({
+                    "graph_id": graph_id_property("Explicit graph id; omit to describe all graphs"),
+                    "limit": {"type": "integer", "minimum": 0, "maximum": 1000, "default": 50, "description": "Maximum number of (labels)-[type]->(labels) patterns per graph, most frequent first"}
                 }),
                 &[],
             ),
@@ -398,6 +409,23 @@ impl ToolArgs<'_> {
             .ok_or_else(|| format!("{key} is required"))
     }
 
+    /// An integer argument within `min..=max`, or `default` when absent. A fraction
+    /// or a value out of range is refused rather than silently replaced: the route
+    /// parses the parameter as an integer and would fall back to its default.
+    fn integer_in(&self, key: &str, min: i64, max: i64, default: i64) -> Result<String, String> {
+        let value = match self.present(key) {
+            None => return Ok(default.to_string()),
+            Some(Value::Number(n)) => n
+                .as_i64()
+                .or_else(|| n.as_f64().filter(|f| f.fract() == 0.0).map(|f| f as i64)),
+            Some(_) => None,
+        };
+        match value {
+            Some(i) if (min..=max).contains(&i) => Ok(i.to_string()),
+            _ => Err(format!("{key} must be an integer between {min} and {max}")),
+        }
+    }
+
     fn positive_integer(&self, key: &str) -> Result<Option<i64>, String> {
         match self.present(key) {
             None => Ok(None),
@@ -557,6 +585,11 @@ pub fn plan(tool: &str, args: &Map<String, Value>) -> Result<ApiCall, String> {
                 .param("limit", limit);
             call.text = format != "json";
             Ok(call)
+        }
+        "schema" => {
+            let graph_id = a.string("graph_id")?;
+            let limit = a.integer_in("limit", 0, 1000, 50)?;
+            Ok(ApiCall::get(graph_api_path(graph_id.as_deref(), "/schema")).param("limit", limit))
         }
         other => Err(format!("Tool {other} not found")),
     }
@@ -1142,7 +1175,7 @@ mod tests {
     }
 
     #[test]
-    fn the_thirteen_tools_are_the_npm_packages_in_order() {
+    fn the_thirteen_npm_tools_come_first_in_order_then_schema() {
         let names: Vec<&str> = tools().iter().map(|t| t.name).collect();
         assert_eq!(
             names,
@@ -1159,7 +1192,8 @@ mod tests {
                 "resource",
                 "subgraph",
                 "overview",
-                "c4"
+                "c4",
+                "schema"
             ]
         );
         for tool in tools() {
@@ -1170,6 +1204,47 @@ mod tests {
         assert_eq!(
             tools()[12].input_schema["properties"]["level"]["default"],
             "all"
+        );
+        assert!(tools()[13].input_schema.get("required").is_none());
+        assert!(tools()[2].description.contains("Call schema first"));
+    }
+
+    #[test]
+    fn schema_describes_one_graph_or_all_with_a_pattern_limit() {
+        assert_eq!(
+            plan("schema", &args(&[])).unwrap().uri(),
+            "/api/schema?limit=50"
+        );
+        assert_eq!(
+            plan(
+                "schema",
+                &args(&[("graph_id", json!("a/b")), ("limit", json!(5))])
+            )
+            .unwrap()
+            .uri(),
+            "/api/graphs/a%2Fb/schema?limit=5"
+        );
+        assert_eq!(
+            plan("schema", &args(&[("graph_id", json!(1))])).unwrap_err(),
+            plan("overview", &args(&[("graph_id", json!(1))])).unwrap_err()
+        );
+        // A whole-number float is the integer it names; anything else is refused
+        // rather than silently replaced by the route's default.
+        assert_eq!(
+            plan("schema", &args(&[("limit", json!(3.0))]))
+                .unwrap()
+                .uri(),
+            "/api/schema?limit=3"
+        );
+        for bad in [json!(1.5), json!(-1), json!(1001), json!("5")] {
+            assert_eq!(
+                plan("schema", &args(&[("limit", bad)])).unwrap_err(),
+                "limit must be an integer between 0 and 1000"
+            );
+        }
+        assert_eq!(
+            tools()[13].input_schema["properties"]["limit"]["type"],
+            "integer"
         );
     }
 
@@ -1496,7 +1571,7 @@ mod tests {
             .handle(&json!({"jsonrpc": "2.0", "id": 4, "method": "tools/list"}))
             .await
             .unwrap();
-        assert_eq!(list["result"]["tools"].as_array().unwrap().len(), 13);
+        assert_eq!(list["result"]["tools"].as_array().unwrap().len(), 14);
         assert_eq!(list["result"]["tools"][0]["name"], "graphs");
         assert!(list["result"]["tools"][2]["inputSchema"]["properties"]["query"].is_object());
 
@@ -1828,7 +1903,7 @@ mod tests {
         let body: Value =
             serde_json::from_slice(&to_bytes(response.into_body(), usize::MAX).await.unwrap())
                 .unwrap();
-        assert_eq!(body["result"]["tools"].as_array().unwrap().len(), 13);
+        assert_eq!(body["result"]["tools"].as_array().unwrap().len(), 14);
 
         let accepted = app
             .clone()

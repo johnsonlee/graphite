@@ -20,6 +20,7 @@ env:
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
   LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
   BENCHMARK_REPORT_TRANSITION_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
+  RUST_LATENCY_TRANSITION_HARNESS_SHA256: a3f35a03dd9cff6272365125283f2143996fc53a73dc497d83e994392a9eb7c6
   REAL_ONLY_LATENCY_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
   LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
@@ -2991,7 +2992,13 @@ jobs:
       run: |
         set -euo pipefail
         HARNESS=base/backend/bench/snapshot.py
-        if [[ ! -f "${HARNESS}" ]]; then
+        # The plan is base-owned too; until main carries the schema shapes the candidate
+        # copy stands in, pinned to the reviewed hash and only after the candidate's own
+        # tests passed, so both revisions answer the same plan.
+        if [[ ! -f "${HARNESS}" ]] || ! grep -q 'SCHEMA_SHAPES' "${HARNESS}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/backend/bench/snapshot.py | cut -d' ' -f1)" = \
+            "${RUST_LATENCY_TRANSITION_HARNESS_SHA256}"
           HARNESS=candidate/backend/bench/snapshot.py
         fi
         test -f "${HARNESS}"

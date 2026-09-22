@@ -49,11 +49,17 @@ class FakeClient:
 class SnapshotTest(unittest.TestCase):
     def test_plan_covers_every_shape_at_every_selectivity_then_the_cases(self):
         work = snapshot.plan(GRAPHS, DISTRIBUTIONS)
-        self.assertEqual(len(work), 3 * len(snapshot.fixture64.SHAPES) + 1)
+        shapes = 3 * len(snapshot.fixture64.SHAPES)
+        self.assertEqual(len(work), shapes + 1 + len(snapshot.SCHEMA_SHAPES))
         self.assertEqual(work[0][0], {"selectivity": "zero"})
         self.assertIn("'zz'", work[0][2])
-        self.assertEqual(work[-1][0], {"case": "one-graph"})
-        self.assertIn("'only'", work[-1][2])
+        self.assertEqual(work[shapes][0], {"case": "one-graph"})
+        self.assertIn("'only'", work[shapes][2])
+        # The schema shapes come last, once each, and read no search term.
+        for params, name, query in work[shapes + 1:]:
+            self.assertEqual(params, {"selectivity": "schema"})
+            self.assertTrue(name.startswith("schema-"))
+            self.assertNotIn("'", query)
 
     def test_rows_are_jmh_shaped_with_medians_and_aggregates(self):
         work = snapshot.plan(GRAPHS, DISTRIBUTIONS)
@@ -66,14 +72,17 @@ class SnapshotTest(unittest.TestCase):
         self.assertEqual(first["mode"], "sequential-pass")
         self.assertEqual(first["params"], {"selectivity": "zero"})
         self.assertEqual(first["primaryMetric"]["scoreUnit"], "ms/op")
-        # Samples 1, 32, 63 for the first query: median 32, spread [1, 63].
-        self.assertEqual(first["primaryMetric"]["score"], 32.0)
-        self.assertEqual(first["primaryMetric"]["scoreConfidence"], [1.0, 63.0])
+        # The fake client answers call number k in k ms, so the first query's samples
+        # are 1, n + 1 and 2n + 1 over n queries a pass: median n + 1, spread [1, 2n + 1].
+        n = len(work)
+        self.assertEqual(first["primaryMetric"]["score"], float(n + 1))
+        self.assertEqual(first["primaryMetric"]["scoreConfidence"], [1.0, float(2 * n + 1)])
         self.assertEqual(first["rowCount"], 1)
         self.assertEqual(len(first["digest"]), 16)
         aggregates = [r for r in rows if r["benchmark"] == "rust.fixture64.aggregate"]
         self.assertEqual([r["params"]["statistic"] for r in aggregates], ["p50", "p95"])
-        self.assertEqual(aggregates[1]["primaryMetric"]["scoreConfidence"][0], 30.0)
+        p95_of_first_pass = snapshot.fixture64.percentile(list(range(1, n + 1)), 0.95)
+        self.assertEqual(aggregates[1]["primaryMetric"]["scoreConfidence"][0], float(p95_of_first_pass))
         self.assertIn("pass 3/3", out.getvalue())
         keys = {(r["benchmark"], json.dumps(r["params"], sort_keys=True)) for r in rows}
         self.assertEqual(len(keys), len(rows))

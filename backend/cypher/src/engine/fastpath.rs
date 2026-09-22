@@ -399,7 +399,7 @@ pub fn distinct_string_property(
 ///
 /// Only fixed-layout records qualify: the id must sit at a constant offset with no
 /// variable-length field in front of it.
-fn raw_string_field(tag: u8, property: &str) -> Option<StringField> {
+pub(crate) fn raw_string_field(tag: u8, property: &str) -> Option<StringField> {
     use graphite_storage::node::*;
     let at = |i: usize| Some(StringField::Fixed(NODE_HEADER_BYTES + i * 4));
     match (tag, property) {
@@ -424,7 +424,7 @@ fn raw_string_field(tag: u8, property: &str) -> Option<StringField> {
 }
 
 #[derive(Clone, Copy)]
-enum StringField {
+pub(crate) enum StringField {
     /// A string id at a constant byte offset from the record start.
     Fixed(usize),
     /// One of the four CallSite properties, which need the caller's arity to locate.
@@ -432,7 +432,7 @@ enum StringField {
 }
 
 #[inline]
-fn read_string_field(data: &[u8], offset: usize, field: StringField) -> StrId {
+pub(crate) fn read_string_field(data: &[u8], offset: usize, field: StringField) -> StrId {
     match field {
         StringField::Fixed(delta) => {
             i32::from_be_bytes(data[offset + delta..offset + delta + 4].try_into().unwrap())
