@@ -105,7 +105,7 @@ def main():
     listed = stdio.request("tools/list")["result"]["tools"]
     names = [t["name"] for t in listed]
     expected = ["graphs", "openapi", "cypher", "node", "outgoing", "incoming", "annotations",
-                "endpoints", "resources", "resource", "subgraph", "overview", "c4"]
+                "endpoints", "resources", "resource", "subgraph", "overview", "c4", "schema"]
     if names != expected:
         fail(f"tools/list: {names}")
 
@@ -155,6 +155,8 @@ def main():
     check("c4", {"graph_id": first, "level": "container", "format": "mermaid"},
           "GET", f"/api/graphs/{first}/architecture/c4?level=container&format=mermaid&limit=200",
           text=True)
+    check("schema", {"graph_id": first, "limit": 5}, "GET", f"/api/graphs/{first}/schema?limit=5")
+    check("schema", {}, "GET", "/api/schema?limit=50")
 
     # Node IDs are graph-local and the API has no all-graph node route (the Kotlin server
     # has none either), so these three tools require graph_id instead of answering 404.

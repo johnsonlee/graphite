@@ -584,6 +584,50 @@ impl ScanPlan {
         )
     }
 
+    /// Sweep candidates and hand each survivor's node reference to `sink`, the full
+    /// WHERE re-check applied where the stream could not verify it. A row is built
+    /// only for that re-check, never for a verified survivor.
+    pub(crate) fn run_ids(
+        &self,
+        ex: &Executor,
+        ev: &Evaluator,
+        where_clause: Option<&Expr>,
+        sink: &mut dyn FnMut(NodeRef) -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        let where_clause = self.clause.as_ref().or(where_clause);
+        let seed = Row::new();
+        self.run_inner(
+            ex,
+            ev,
+            &seed,
+            where_clause,
+            &mut |value, provenance, verified| {
+                let Value::Node(n) = value else {
+                    return Ok(true);
+                };
+                if let Some(w) = where_clause {
+                    if !verified {
+                        let mut r = Row::with_capacity(2);
+                        r.insert(self.variable.clone(), Value::Node(n));
+                        match provenance {
+                            Some(p) => {
+                                r.insert(
+                                    super::pipeline::INTERNAL_PROVENANCE_KEY.to_string(),
+                                    p.clone(),
+                                );
+                            }
+                            None => add_provenance(&mut r, ex, &Value::Node(n)),
+                        }
+                        if ev.eval(w, &r)?.as_bool() != Some(true) {
+                            return Ok(true);
+                        }
+                    }
+                }
+                sink(n)
+            },
+        )
+    }
+
     /// The scan variable.
     pub fn variable(&self) -> &str {
         &self.variable

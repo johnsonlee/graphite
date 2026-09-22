@@ -16,6 +16,9 @@ pub const DEFAULT_EDGE_LIMIT: i64 = 200;
 pub const MAX_EDGE_LIMIT: i64 = 2000;
 pub const DEFAULT_OVERVIEW_LIMIT: i64 = 200;
 pub const MAX_OVERVIEW_LIMIT: i64 = 1000;
+/// `(labels)-[type]->(labels)` patterns a schema description lists, most frequent first.
+pub const DEFAULT_SCHEMA_PATTERN_LIMIT: i64 = 50;
+pub const MAX_SCHEMA_PATTERN_LIMIT: i64 = 1000;
 pub const MAX_OVERVIEW_CALL_SITES: usize = 100_000;
 pub const MAX_OVERVIEW_EDGES: usize = 50_000;
 pub const MAX_OVERVIEW_CLASSES: usize = 20_000;

@@ -13,7 +13,7 @@ use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::Router;
-use graphite_cypher::engine::{Executor, QueryResult, Source};
+use graphite_cypher::engine::{CancelToken, Executor, QueryResult, Source};
 use graphite_cypher::materialize::materialize;
 use graphite_cypher::CypherError;
 use serde_json::{json, Map, Value as J};
@@ -236,6 +236,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/endpoints", get(all_endpoints))
         .route("/api/architecture/c4", get(all_c4))
         .route("/api/overview", get(all_overview))
+        .route("/api/schema", get(all_schema))
         .route("/api/cypher", get(cypher_all).post(cypher_all))
         .route("/api/cypher/graphs", get(cypher_graphs).post(cypher_graphs))
         // graph-scoped routes
@@ -248,6 +249,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/graphs/{graphId}/endpoints", get(graph_endpoints))
         .route("/api/graphs/{graphId}/architecture/c4", get(graph_c4))
         .route("/api/graphs/{graphId}/overview", get(graph_overview))
+        .route("/api/graphs/{graphId}/schema", get(graph_schema))
         .route(
             "/api/graphs/{graphId}/cypher",
             get(cypher_one).post(cypher_one),
@@ -653,6 +655,164 @@ async fn graph_resources(
         Ok(v) => ok_json(v),
         Err(r) => r,
     }
+}
+
+// ---------------------------------------------------------------------------
+// Schema
+// ---------------------------------------------------------------------------
+
+/// What a graph holds, for an agent about to write Cypher against it: every label
+/// set with its node count and property keys, every relationship type with its
+/// count, and the most frequent `(labels)-[type]->(labels)` patterns. Each part is
+/// one Cypher aggregation the engine answers per type rather than per node, so the
+/// whole description costs milliseconds on any graph.
+fn schema_payload(
+    l: &GraphLease,
+    patterns: i64,
+    cancel: &Arc<CancelToken>,
+) -> Result<J, CypherError> {
+    let ex = Executor::new(
+        vec![Source {
+            id: Arc::from(l.id.as_str()),
+            graph: l.graph.clone(),
+        }],
+        false,
+    )
+    .with_cancel(cancel.clone());
+    let run = |query: &str| -> Result<Vec<Vec<J>>, CypherError> {
+        let r = ex.execute(query, None)?;
+        Ok(r.rows
+            .iter()
+            .map(|row| {
+                r.columns
+                    .iter()
+                    .map(|c| materialize(&row[c], &ex))
+                    .collect()
+            })
+            .collect())
+    };
+    let mut keys_by_labels: HashMap<String, J> = HashMap::new();
+    for row in run(
+        "MATCH (n) UNWIND keys(n) AS k RETURN labels(n) AS labels, collect(DISTINCT k) AS keys",
+    )? {
+        keys_by_labels.insert(row[0].to_string(), row[1].clone());
+    }
+    let nodes: Vec<J> = run(
+        "MATCH (n) RETURN labels(n) AS labels, count(*) AS count ORDER BY count DESC, labels ASC",
+    )?
+    .into_iter()
+    .map(|row| {
+        let keys = keys_by_labels
+            .get(&row[0].to_string())
+            .cloned()
+            .unwrap_or_else(|| json!([]));
+        json!({ "labels": row[0], "count": row[1], "keys": keys })
+    })
+    .collect();
+    let relationships: Vec<J> = run(
+        "MATCH ()-[r]->() RETURN type(r) AS type, count(*) AS count ORDER BY count DESC, type ASC",
+    )?
+    .into_iter()
+    .map(|row| json!({ "type": row[0], "count": row[1] }))
+    .collect();
+    let patterns: Vec<J> = run(&format!(
+        "MATCH (a)-[r]->(b) RETURN labels(a) AS from, type(r) AS type, labels(b) AS to, count(*) AS count \
+         ORDER BY count DESC, from ASC, type ASC, to ASC LIMIT {patterns}"
+    ))?
+    .into_iter()
+    .map(|row| json!({ "from": row[0], "type": row[1], "to": row[2], "count": row[3] }))
+    .collect();
+    Ok(json!({
+        "nodes": nodes,
+        "relationships": relationships,
+        "patterns": patterns,
+    }))
+}
+
+fn schema_pattern_limit(q: &Params) -> i64 {
+    bounded_limit(
+        q.get("limit").map(|s| s.as_str()),
+        DEFAULT_SCHEMA_PATTERN_LIMIT,
+        MAX_SCHEMA_PATTERN_LIMIT,
+    )
+}
+
+async fn graph_schema(
+    State(s): St,
+    AxPath(gid): AxPath<String>,
+    Query(q): Query<Params>,
+) -> Response {
+    let l = match lease(&s, &gid) {
+        Ok(l) => l,
+        Err(r) => return r,
+    };
+    schema_response(s, vec![l], &q, false).await
+}
+
+async fn all_schema(State(s): St, Query(q): Query<Params>) -> Response {
+    let leases = s.registry.acquire_all();
+    schema_response(s, leases, &q, true).await
+}
+
+/// A schema description is a handful of whole-graph aggregations, so it runs as one
+/// query under the Cypher guard: it takes a concurrency permit, or answers 429 like
+/// any query when the server is at capacity, and every aggregation of every graph
+/// runs on the permit's cancel token, so the configured (or `timeoutMs`) deadline
+/// bounds the whole request and cancels it on timeout.
+async fn schema_response(
+    s: Arc<AppState>,
+    leases: Vec<GraphLease>,
+    q: &Params,
+    grouped_output: bool,
+) -> Response {
+    let limit = schema_pattern_limit(q);
+    let timeout = match read_timeout("", q) {
+        Ok(t) => t,
+        Err(r) => return r,
+    };
+    let permit = match s.guard.try_acquire(timeout) {
+        Ok(p) => p,
+        Err(limit) => return concurrency_limit_response(limit),
+    };
+    let timeout_millis = permit.timeout_millis;
+    let started = Instant::now();
+    let result: Result<Vec<J>, CypherError> = tokio::task::block_in_place(|| {
+        leases
+            .iter()
+            .map(|l| schema_payload(l, limit, &permit.cancel).map(|v| grouped(&l.id, v)))
+            .collect()
+    });
+    let elapsed = started.elapsed().as_nanos() as u64;
+    match result {
+        Ok(mut results) => {
+            s.guard.finish(Outcome::Success, elapsed);
+            if grouped_output {
+                ok_json(grouped_envelope(leases.len(), results))
+            } else {
+                ok_json(results.remove(0)["data"].take())
+            }
+        }
+        Err(e) => {
+            s.guard.finish(Outcome::of(Some(&e)), elapsed);
+            cypher_error_response(&e, timeout_millis)
+        }
+    }
+}
+
+/// The 429 a query gets when the guard has no permit to spare.
+fn concurrency_limit_response(limit: ConcurrencyLimit) -> Response {
+    (
+        StatusCode::TOO_MANY_REQUESTS,
+        [
+            (header::CONTENT_TYPE, "application/json"),
+            (header::RETRY_AFTER, "1"),
+        ],
+        pretty(&json!({
+            "error": limit.message(),
+            "code": "cypher_concurrency_limit",
+        })),
+    )
+        .into_response()
 }
 
 async fn all_resources(State(s): St, Query(q): Query<Params>) -> Response {
@@ -1409,20 +1569,7 @@ async fn run_cypher(
 ) -> Response {
     let permit = match s.guard.try_acquire(timeout) {
         Ok(p) => p,
-        Err(limit) => {
-            return (
-                StatusCode::TOO_MANY_REQUESTS,
-                [
-                    (header::CONTENT_TYPE, "application/json"),
-                    (header::RETRY_AFTER, "1"),
-                ],
-                pretty(&json!({
-                    "error": limit.message(),
-                    "code": "cypher_concurrency_limit",
-                })),
-            )
-                .into_response();
-        }
+        Err(limit) => return concurrency_limit_response(limit),
     };
     let timeout_millis = permit.timeout_millis;
     let guard = s.guard.clone();
@@ -1841,6 +1988,126 @@ mod tests {
             .await
             .unwrap();
         (status, String::from_utf8(bytes.to_vec()).unwrap())
+    }
+
+    /// The schema routes answer an empty registry with an empty envelope and an
+    /// unknown graph with 404, and clamp the pattern limit.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn schema_routes_without_graphs() {
+        let (app, _) = metrics_app();
+        let (status, body) = get(&app, "/api/schema?limit=abc").await;
+        assert_eq!(status, StatusCode::OK);
+        let v: J = serde_json::from_str(&body).unwrap();
+        assert_eq!(v["graphCount"], 0);
+        assert_eq!(v["results"], json!([]));
+        let (status, body) = get(&app, "/api/graphs/nope/schema").await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        assert!(body.contains("Graph not loaded: nope"), "{body}");
+        let (status, _) = get(&app, "/api/graphs/bad%20id/schema").await;
+        assert_ne!(status, StatusCode::OK);
+        let (status, body) = get(&app, "/api/schema?timeoutMs=soon").await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert!(body.contains("timeoutMs"), "{body}");
+    }
+
+    /// The schema routes run under the Cypher guard: with no permit to spare they
+    /// answer the same 429 a query gets, and a description counts as one query.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn schema_routes_take_a_query_permit() {
+        let (_, state) = metrics_app();
+        let full = Arc::new(AppState::new(
+            state.registry.clone(),
+            Arc::new(CypherGuard::new(1, 1_000)),
+            "test".into(),
+            true,
+        ));
+        let app = instrumented(router(full.clone()), full.clone());
+        let held = full.guard.try_acquire(None).ok().expect("a free permit");
+        let (status, body) = get(&app, "/api/schema").await;
+        assert_eq!(status, StatusCode::TOO_MANY_REQUESTS, "{body}");
+        assert!(body.contains("cypher_concurrency_limit"), "{body}");
+        // An unknown graph is refused before a permit is sought.
+        let (status, _) = get(&app, "/api/graphs/nope/schema").await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        drop(held);
+        let (status, _) = get(&app, "/api/schema").await;
+        assert_eq!(status, StatusCode::OK);
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`, the core jar in CI): the
+    /// description carries every type the graph holds with the count the type index
+    /// gives, keys for each, every relationship type, and at most `limit` patterns,
+    /// per graph under `/api/schema` and alone under the graph's own route.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn schema_describes_a_loaded_graph() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let (app, state) = metrics_app();
+        state
+            .registry
+            .load("core", std::path::Path::new(&dir), None)
+            .unwrap();
+        let (status, body) = get(&app, "/api/graphs/core/schema?limit=3").await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        let v: J = serde_json::from_str(&body).unwrap();
+        let nodes = v["nodes"].as_array().unwrap();
+        assert!(!nodes.is_empty());
+        let lease = state.registry.acquire("core").unwrap().unwrap();
+        let total: i64 = nodes.iter().map(|n| n["count"].as_i64().unwrap()).sum();
+        assert_eq!(total, lease.graph.node_count() as i64);
+        let call_sites = nodes
+            .iter()
+            .find(|n| n["labels"] == json!(["CallSiteNode"]))
+            .expect("call sites");
+        assert_eq!(
+            call_sites["count"].as_i64().unwrap(),
+            lease
+                .graph
+                .count_by_tag(graphite_storage::node::TAG_CALL_SITE_NODE) as i64
+        );
+        let keys = call_sites["keys"].as_array().unwrap();
+        assert!(keys.contains(&json!("callee_class")), "{keys:?}");
+        // Counts descend; the keys of every type are listed.
+        assert!(nodes
+            .windows(2)
+            .all(|w| w[0]["count"].as_i64() >= w[1]["count"].as_i64()));
+        assert!(nodes
+            .iter()
+            .all(|n| !n["keys"].as_array().unwrap().is_empty()));
+        let rels = v["relationships"].as_array().unwrap();
+        assert!(
+            rels.iter().any(|r| r["type"] == json!("DATAFLOW")),
+            "{rels:?}"
+        );
+        let rel_total: i64 = rels.iter().map(|r| r["count"].as_i64().unwrap()).sum();
+        assert_eq!(rel_total, lease.graph.edge_count() as i64);
+        let patterns = v["patterns"].as_array().unwrap();
+        assert_eq!(patterns.len(), 3);
+        assert!(patterns[0]["count"].as_i64() >= patterns[2]["count"].as_i64());
+        for p in patterns {
+            assert!(p["from"].is_array() && p["type"].is_string() && p["to"].is_array());
+        }
+
+        let (status, body) = get(&app, "/api/schema").await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        let all: J = serde_json::from_str(&body).unwrap();
+        assert_eq!(all["graphCount"], 1);
+        assert_eq!(all["results"][0]["graphId"], "core");
+        assert_eq!(all["results"][0]["data"]["nodes"], v["nodes"]);
+        assert_eq!(
+            all["results"][0]["data"]["patterns"]
+                .as_array()
+                .unwrap()
+                .len(),
+            (DEFAULT_SCHEMA_PATTERN_LIMIT as usize).min(
+                all["results"][0]["data"]["patterns"]
+                    .as_array()
+                    .unwrap()
+                    .len()
+            )
+        );
     }
 
     /// `/metrics` carries the process, HTTP and graph families next to the Cypher ones,

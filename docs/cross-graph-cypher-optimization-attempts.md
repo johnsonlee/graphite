@@ -1799,3 +1799,192 @@ graph. `cargo test -p graphite-cypher` with the fixture, `cargo clippy` and
 **Conclusion:** keep. Schema exploration now costs the number of types and
 graphs, or one pass over the edge label bytes, rather than the number of
 nodes; the first queries an agent runs against a fleet answer in milliseconds.
+
+### 2026-09-22 - Attempt 040: Project `keys(n)` in the schema fast path
+
+**Production evidence:** the follow-up schema query, with the key set projected
+next to the labels rather than unwound, still timed out on the fleet:
+
+```cypher
+MATCH (n) RETURN labels(n) AS labels, keys(n) AS keys, count(*) AS c ORDER BY c DESC LIMIT 40
+```
+
+Attempt 039 accepted `keys()` only through `UNWIND keys(n) AS k`, so this shape
+fell back to the row-per-node group-by.
+
+**Design:** `keys(n)` of the single node is now a schema term like `labels(n)`:
+the list a node returns is a function of its type (one decoded node per type),
+except for annotation nodes, whose values add keys and which are decoded one by
+one. The term is declined on a hop's ends, where it would need a map per edge.
+
+**Measurements:** the sixteen-copy corpus of Attempt 039, second of two runs.
+
+| Shape | Before | After |
+|-------|-------:|------:|
+| `labels(n), keys(n), count(*) ... LIMIT 40` | `4,145 ms` | `52 ms` |
+| `keys(n), count(*)` / `DISTINCT keys(n)` | `3,520-3,636 ms` | `41-45 ms` |
+| `UNWIND keys(n) AS k RETURN keys(n), k, count(*)` | `31,600 ms` | `146 ms` |
+| `n.graphId, keys(n), count(*)` | `3,604 ms` | `42 ms` |
+
+The remaining tens of milliseconds are the annotation nodes (23K per copy),
+decoded for their dynamic keys.
+
+**Verification:** ten `keys()` shapes, projected, distinct, unwound, combined
+with `labels`, `graphId` and `count(n)`, over a label and over annotations
+only, plus a hop and a bare projection the fast path declines, produce
+byte-identical rows, columns and provenance under `GRAPHITE_NO_FASTPATH=1` and
+the fast path, across the sixteen cross-graph copies and one plain graph. The
+fixture-gated parity test gains four of them and the recognised and declined
+shape tests gain the projected form. `cargo test -p graphite-cypher` with the
+fixture, `cargo clippy` and `cargo fmt --check` pass.
+
+**Conclusion:** keep.
+
+### 2026-09-22 - Attempt 041: Partitioned evaluation by dependence level, and a `schema` tool
+
+**Production evidence:** attempts 038, 039 and 040 each answered one family of
+schema-exploration shapes by recognising it. Every phrasing the recogniser
+did not name -- `size(labels(n))`, `head(keys(n))`, `toLower(type(r))`, a
+`CASE` over the label count, `WITH labels(n) AS l WHERE size(l) > 1`, a hop
+with `WHERE type(r) = "DATAFLOW"`, `sum`/`avg`/`min`/`max` over a key count,
+`count(DISTINCT keys(n))`, `UNWIND keys(n) AS k WITH k WHERE k STARTS WITH
+"c"` -- fell back to the row-per-node pipeline and timed out on the fleet
+(the last one took 57 s on the sixteen-copy corpus). Recognising shapes is a
+race against every alias an agent can write; it cannot be won case by case.
+
+**Design:** `backend/cypher/src/engine/partition.rs` replaces the shape fast
+path (`schema.rs` is gone) with a classification of what each expression of
+an aggregating segment reads of a matched node:
+
+| level     | determined by                          | examples                          |
+|-----------|----------------------------------------|-----------------------------------|
+| `Const`   | nothing                                | `1`, `$p`, `count(*)`, `count(n)` |
+| `Source`  | the graph                              | `n.graphId`                       |
+| `Tag`     | the node's type                        | `labels(n)`, `keys(n)`, `type(r)` |
+| `Column`  | raw string ids on the record           | `n.callee_class`, `n.name`        |
+| `Keys`    | the node's set of property keys        | `keys(n)` of an annotation        |
+| `Content` | the decoded record                     | `n.line`, `id(n)`, `n`            |
+
+A pure function, operator, `CASE`, comprehension or predicate is at the level
+of its arguments; anything unknown is `Content`. The WHERE, the unwound lists,
+the non-aggregating `WITH` projections and the aggregation's own items are
+joined per (graph, type), and each type is enumerated at the coarsest level
+that determines every expression: one row for the type, weighted by its
+population; one row per distinct tuple of the columns read (a raw sweep, or
+the string pushdown's survivors when the WHERE has one); one row per distinct
+key set for the annotations, whose values add keys of their own (the record
+decoded for its keys, as the shape fast path did); or one row per node.
+Every row binds a representative node, so the existing evaluator computes the
+expressions unchanged, and carries a hidden weight that the group-by applies:
+`count` sums weights, `sum` and `avg` weigh their inputs, `min`, `max` and the
+`DISTINCT` aggregates ignore them; a `DISTINCT` projection drops the weight.
+`sum` and `avg` are weighed only over bounded integer arguments (`size`,
+`length`, `sign`, literals up to 2^20, and sums, differences, remainders,
+`abs`, `coalesce` and `CASE`s of those): the exact integer total is taken, and
+as long as the magnitudes total below 2^53 -- checked at aggregation time, not
+assumed -- every partial sum of the row-by-row floating fold is exact whatever
+its order, so the weighted result equals it to the bit. A floating input such
+as `sum(0.3)` or `avg(pi())`, a product, a decoded property or a large literal
+(`sum(9007199254740892)`, whose partial sums leave the exact range) is left to
+the pipeline.
+Rows come out in the order the pipeline first meets each partition -- the
+matcher's own walk over the types' id lists (`MergedWalk`, now shared by the
+matcher and the partition, so a type a frontend wrote out of id order is
+walked the same way by both) or the string pushdown's order -- so first-seen
+group order, the tie order of an `ORDER BY`, provenance and `LIMIT` are
+untouched.
+A hop is partitioned by (type of a, label, type of b) from one pass over the
+edge label bytes when nothing reads beyond `Tag`; each slot keeps the earliest
+edge the matcher meets, which on ascending type lists is the smallest (node,
+position) and otherwise the smallest by the walk's rank of the node, in either
+direction (a fixture-gated test reverses every type list of the fixture and
+checks the parity list on the copy). Segments with an aggregate
+that cannot be weighted (`percentileDisc`, `stDev`, `collect(*)`), a node
+carried into the aggregation, a page or sort before it, an undirected or
+variable-length hop, or a record read on every type take the general pipeline
+as before, which stays the single source of truth. So does a `DISTINCT`
+projection without an aggregate that reads a column: it has no weight to
+apply and its partitions are its own output, which the row pipeline streams
+and cuts at a `LIMIT` (the `rust-latency` gate's `RETURN DISTINCT` shapes
+were 486 ms partitioned against 14 ms streamed on the sixteen-copy corpus). `Executor::
+without_partitioning()` forces that pipeline for measurement and parity.
+Across graphs, when nothing reads the graph itself (`graphId`), a whole type
+or a key set met in every graph is one row weighing them all and carrying
+every graph, placed where the first was met, and a hop slot likewise: the
+outputs of such a row are fixed by the type, so every graph's copy would open
+the same groups, and the merged row opens them at the same place with the
+same weight and provenance. The sixty-four-graph gate corpus then feeds the
+pipeline a few dozen rows for a histogram instead of a few thousand (the label
+histogram runs in 0.2 ms against the fast path's 0.7, the key histogram in
+0.5 against 2.6, the relationship histogram in 4 against 10 on sixty-four
+copies of the core jar). The hop sweep's slot table is two zero-initialised
+arrays and the list of slots met, so a small graph pays for the slots it has
+rather than a megabyte of fill, and the plan analyses each type once for all
+graphs rather than once per graph.
+
+The explore server gains `GET /api/schema` and `GET /api/graphs/{id}/schema`
+and the MCP server a fourteenth tool, `schema`: label sets with node counts
+and property keys, relationship types with counts, and the most frequent
+`(labels)-[type]->(labels)` patterns, built from three partitioned Cypher
+aggregations per graph. The `cypher` tool's description sends agents to it
+before they write a query.
+
+**Measurements:** the sixteen-copy corpus of Attempt 039, second of two runs,
+`GRAPHITE_NO_FASTPATH=1` against the partition.
+
+| Shape | Before | After |
+|-------|-------:|------:|
+| `size(labels(n)), count(*)` | `1,441 ms` | `0.8 ms` |
+| `CASE WHEN size(labels(n)) > 1 ... END, count(*)` | `1,369 ms` | `0.6 ms` |
+| `WITH labels(n) AS l WHERE size(l) > 1 RETURN l, count(*)` | `3,284 ms` | `0.8 ms` |
+| `head(keys(n)), count(*)` | `3,254 ms` | `68 ms` |
+| `toLower(type(r)), count(*)` | `1,464 ms` | `10 ms` |
+| `(a)-[r]->(b) WHERE type(r) = "DATAFLOW" RETURN labels(a), labels(b), count(*)` | `2,561 ms` | `9 ms` |
+| `labels(n), sum/avg/min/max(size(keys(n)))` | `9,371 ms` | `187 ms` |
+| `labels(n), count(DISTINCT keys(n))` | `5,161 ms` | `84 ms` |
+| `UNWIND keys(n) AS k WITH k WHERE k STARTS WITH "c" RETURN k, count(*)` | `57,048 ms` | `308 ms` |
+| `count(DISTINCT n.graphId)` | `976 ms` | `0.6 ms` |
+| `n.type, count(*) ... LIMIT 10` | `1,260 ms` | `169 ms` |
+| `labels(n), n.name, count(*)` (a column of some types, decoded on others) | `1,713 ms` | `157 ms` |
+| `MATCH (n {type: "CallSiteNode"}) RETURN labels(n), count(*)` | `582 ms` | `59 ms` |
+| the Attempt 038 provider query (two columns) | `496 ms` | `123 ms` |
+
+The shapes of attempts 039 and 040 keep or improve their speed: the
+`keys(n)` shapes, including `UNWIND keys(n)` over every type, run in
+`24-34 ms` against `38-52 ms` under the shape fast path (and `146 ms` for
+`UNWIND keys(n) AS k RETURN keys(n), k, count(*)`), because an annotation's
+key set is a partition of its own and the pipeline meets one row per key set
+rather than one per annotation. The hop histograms run in `6-7 ms` against the
+fast path's `7-8 ms`: the edge sweep reads a target's type from a byte table
+filled once from the type index rather than from two dependent reads of the
+node table per edge. `backend/bench/snapshot.py` now carries three
+schema shapes (the label, key and relationship histograms, which the base
+answers from its shape fast path too) and the `rust-latency` gate runs them on
+both revisions: the workflow takes the candidate's plan, pinned to its reviewed
+hash, whenever the base's has none.
+
+**Verification:** eighty-four shapes -- the thirty-nine of attempts 039 and
+040 and forty-five compositions (pure functions, `CASE`, comprehensions,
+`WITH ... WHERE`, `UNWIND` of labels and keys, weighted `sum`/`avg`/`min`/
+`max`, `count(DISTINCT)` and `collect(DISTINCT)`, mixed column and decoded
+properties, hop filters on `type(r)` and on `labels(a) = labels(b)`, unions,
+and shapes the partition declines) -- produce byte-identical columns, rows
+and provenance under `GRAPHITE_NO_FASTPATH=1` and the partition, over the
+sixteen-copy cross-graph corpus and over one plain graph. The parity found
+one defect before it shipped: a `WITH DISTINCT` kept the weights of the rows
+it deduplicated, so a `count(*)` after it counted nodes rather than distinct
+values. A fixture-gated test runs sixty of those shapes as two cross-graph
+sources and as one, asserting parity against `without_partitioning()` and
+which shapes the partition claims; unit tests pin the classification of
+forty expressions against a synthetic call-site type; two more check a whole
+type's weight against the type index and a column partition's row count
+against `DISTINCT`. The explore server's schema routes are tested against the
+fixture (counts against the type index and the edge count, the pattern
+limit, the grouped envelope) and without graphs. `rust.yml` now runs the
+fixture-gated cypher and explore tests with the fixture. `cargo test` for both
+crates with the fixture, `cargo clippy --workspace` and `cargo fmt --check`
+pass.
+
+**Conclusion:** keep. Schema exploration costs the number of types, graphs
+and distinct column values a segment reads, however it is phrased; and an
+agent has a tool that answers the whole question in one call.

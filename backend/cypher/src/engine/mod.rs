@@ -3,10 +3,10 @@
 pub mod fastpath;
 pub mod hop;
 pub mod matching;
+pub mod partition;
 pub mod pipeline;
 pub mod props;
 pub mod scan;
-pub mod schema;
 
 use crate::context::GraphContext;
 use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
@@ -115,6 +115,9 @@ pub struct Executor {
     pub compact: bool,
     /// Probe one row past every trailing literal LIMIT; see `QueryResult::more`.
     pub probe: bool,
+    /// Run aggregations once per partition of nodes their expressions cannot tell
+    /// apart (see `partition`). On by default; off, every match is a row per node.
+    pub partition: bool,
     /// Distinguishes this executor's cached node decodes from any earlier executor's
     /// on the same thread. Monotonic, so it never repeats the way an address can.
     epoch: u64,
@@ -141,6 +144,7 @@ impl Executor {
             scoped: false,
             compact: false,
             probe: false,
+            partition: true,
             epoch: EPOCH.fetch_add(1, Ordering::Relaxed),
             poll: AtomicU64::new(0),
         }
@@ -159,6 +163,14 @@ impl Executor {
     /// Allow the compact result form; see `QueryResult::compact`.
     pub fn with_compact(mut self) -> Self {
         self.compact = true;
+        self
+    }
+
+    /// Evaluate every match as its own row, never per partition. Exists so the gain
+    /// from partitioning can be measured, and its exactness checked, against the
+    /// row-per-node pipeline.
+    pub fn without_partitioning(mut self) -> Self {
+        self.partition = false;
         self
     }
 
