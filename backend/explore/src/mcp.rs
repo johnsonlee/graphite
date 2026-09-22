@@ -22,7 +22,9 @@
 //! changes its `command`.
 
 use crate::metrics::McpMetrics;
-use crate::serve::{open, report_loaded, runtime, warn_if_debug_build, GraphArgs, VERSION};
+use crate::serve::{
+    open, report_c4_warmup, report_loaded, runtime, warn_if_debug_build, GraphArgs, VERSION,
+};
 use axum::body::{to_bytes, Body, Bytes};
 use axum::extract::Extension;
 use axum::http::{header, HeaderMap, Method, Request, StatusCode};
@@ -675,6 +677,10 @@ pub struct McpServer {
     /// Where requests and tool calls are recorded; `None` keeps the transport free of
     /// instrumentation, as `graphite serve` without `--metrics` and `graphite mcp` are.
     metrics: Option<Arc<McpMetrics>>,
+    /// The server state whose request activity every handled message counts toward,
+    /// so MCP control traffic (a `ping`, `initialize`, `tools/list`) keeps the C4
+    /// warm-up's idle gate closed like any API request. `None` in tests.
+    activity: Option<Arc<crate::routes::AppState>>,
 }
 
 /// The text of a tool result, or the error text of a failed one.
@@ -685,7 +691,11 @@ enum ToolOutcome {
 
 impl McpServer {
     pub fn new(api: Router) -> Self {
-        McpServer { api, metrics: None }
+        McpServer {
+            api,
+            metrics: None,
+            activity: None,
+        }
     }
 
     /// A server that records every request and tool call into `metrics`.
@@ -693,7 +703,14 @@ impl McpServer {
         McpServer {
             api,
             metrics: Some(metrics),
+            activity: None,
         }
+    }
+
+    /// Count every message this server handles as request activity on `state`.
+    pub fn with_activity(mut self, state: Arc<crate::routes::AppState>) -> Self {
+        self.activity = Some(state);
+        self
     }
 
     /// Send `call` through the API router and return the response body as text.
@@ -746,6 +763,10 @@ impl McpServer {
     /// Handle one JSON-RPC message (or a batch). `None` for notifications, which get
     /// no response.
     pub async fn handle(&self, message: &Value) -> Option<Value> {
+        let _in_flight = self
+            .activity
+            .as_ref()
+            .map(|state| crate::routes::InFlight::enter(state.clone()));
         if let Value::Array(batch) = message {
             if batch.is_empty() {
                 return Some(error_response(
@@ -882,6 +903,11 @@ impl McpServer {
     /// Handle one line of the stdio transport. Unparseable input gets a parse error
     /// response; a notification gets none.
     pub async fn handle_text(&self, line: &str) -> Option<String> {
+        // Counted from the first byte, so a line that fails to parse is a request too.
+        let _in_flight = self
+            .activity
+            .as_ref()
+            .map(|state| crate::routes::InFlight::enter(state.clone()));
         let message = match serde_json::from_str::<Value>(line) {
             Ok(v) => v,
             Err(e) => {
@@ -989,12 +1015,26 @@ pub fn with_mcp_route(
     api: Router,
     policy: OriginPolicy,
     metrics: Option<Arc<McpMetrics>>,
+    activity: Option<Arc<crate::routes::AppState>>,
 ) -> Router {
-    let server = Arc::new(match metrics {
+    let server = match metrics {
         Some(m) => McpServer::with_metrics(api.clone(), m),
         None => McpServer::new(api.clone()),
+    };
+    let mut endpoint = post(mcp_post).get(mcp_get).delete(mcp_delete);
+    let server = Arc::new(match activity {
+        Some(state) => {
+            // Every request to the endpoint counts, whatever becomes of it: an origin
+            // or version refusal, a body that fails to parse, a GET or DELETE.
+            endpoint = endpoint.layer(axum::middleware::from_fn_with_state(
+                state.clone(),
+                crate::routes::note_request,
+            ));
+            server.with_activity(state)
+        }
+        None => server,
     });
-    api.route("/mcp", post(mcp_post).get(mcp_get).delete(mcp_delete))
+    api.route("/mcp", endpoint)
         .layer(Extension(server))
         .layer(Extension(Arc::new(policy)))
 }
@@ -1093,10 +1133,14 @@ pub fn run_stdio(cli: GraphArgs) -> Result<(), String> {
     warn_if_debug_build();
     let opened = open(&cli, false)?;
     report_loaded(&opened, &cli);
+    report_c4_warmup(opened.state.warm_c4());
     eprintln!("MCP server ready on stdio ({} tools)", tools().len());
     let runtime = runtime(cli.max_concurrent_cypher)?;
     runtime.block_on(async move {
-        let server = Arc::new(McpServer::new(crate::routes::router(opened.state.clone())));
+        let server = Arc::new(
+            McpServer::new(crate::routes::router(opened.state.clone()))
+                .with_activity(opened.state.clone()),
+        );
         serve_lines(server, tokio::io::stdin(), tokio::io::stdout()).await
     })
 }
@@ -1782,6 +1826,7 @@ mod tests {
             server.api.clone(),
             OriginPolicy::new(vec!["https://tools.example.com".into()]),
             None,
+            None,
         );
         let list = r#"{"jsonrpc":"2.0","id":1,"method":"tools/list"}"#;
         let request = |method: Method, origin: Option<&str>| {
@@ -1885,7 +1930,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn the_http_endpoint_carries_the_same_dispatch() {
         let (server, root) = empty_server();
-        let app = with_mcp_route(server.api.clone(), OriginPolicy::default(), None);
+        let app = with_mcp_route(server.api.clone(), OriginPolicy::default(), None, None);
         let post = |body: &str| {
             Request::builder()
                 .method(Method::POST)
@@ -2101,6 +2146,76 @@ mod tests {
         std::fs::remove_dir_all(root).ok();
     }
 
+    /// A message the router never sees (a `ping` over stdio or `/mcp`) still counts as
+    /// request activity, so MCP control traffic keeps the C4 warm-up waiting.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn every_mcp_message_counts_as_request_activity() {
+        let (state, root) = empty_state(false);
+        let server = McpServer::new(router(state.clone())).with_activity(state.clone());
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        assert!(state.idle_for() >= std::time::Duration::from_millis(30));
+        let pong = server
+            .handle_text(r#"{"jsonrpc":"2.0","id":7,"method":"ping"}"#)
+            .await
+            .unwrap();
+        assert!(pong.contains(r#""id":7"#), "{pong}");
+        assert!(state.idle_for() < std::time::Duration::from_millis(30));
+        // And one over the HTTP endpoint, mounted with the same activity.
+        let app = with_mcp_route(
+            router(state.clone()),
+            OriginPolicy::default(),
+            None,
+            Some(state.clone()),
+        );
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        assert!(state.idle_for() >= std::time::Duration::from_millis(30));
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/mcp")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .header(header::ACCEPT, "application/json, text/event-stream")
+                    .body(Body::from(r#"{"jsonrpc":"2.0","id":8,"method":"ping"}"#))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(state.idle_for() < std::time::Duration::from_millis(30));
+        // Refused or unparseable traffic is traffic: a line that fails to parse over
+        // stdio, a GET the endpoint does not serve, a POST whose body is not JSON.
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        assert!(state.idle_for() >= std::time::Duration::from_millis(30));
+        assert!(server
+            .handle_text("not json")
+            .await
+            .unwrap()
+            .contains("Parse error"));
+        assert!(state.idle_for() < std::time::Duration::from_millis(30));
+        for (method, body) in [(Method::GET, ""), (Method::POST, "nope")] {
+            tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+            assert!(state.idle_for() >= std::time::Duration::from_millis(30));
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method(method.clone())
+                        .uri("/mcp")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .header(header::ACCEPT, "application/json, text/event-stream")
+                        .body(Body::from(body))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert!(!response.status().is_success(), "{method} was refused");
+            assert!(state.idle_for() < std::time::Duration::from_millis(30));
+        }
+        std::fs::remove_dir_all(root).ok();
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn a_server_without_metrics_records_nothing() {
         let (server, root) = empty_server();
@@ -2119,6 +2234,7 @@ mod tests {
                 router(state.clone()),
                 OriginPolicy::default(),
                 Some(state.mcp_metrics.clone()),
+                None,
             ),
             state.clone(),
         );

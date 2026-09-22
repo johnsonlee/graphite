@@ -163,6 +163,14 @@ jobs:
         cargo test --release --locked -p graphite-cypher a_fused_with_prefix_answers_as_the_generic_pipeline_does -- --nocapture
         cargo test --release --locked -p graphite-cypher partition::tests -- --nocapture
         cargo test --release --locked -p graphite-explore schema_describes_a_loaded_graph -- --nocapture
+        # The C4 build bound, warm-up and cache against a real graph, and the retained footprint.
+        cargo test --release --locked -p graphite-explore --lib -- --nocapture \
+          an_abandoned_c4_request_keeps_its_permit_until_the_build_ends \
+          a_burst_for_one_cold_graph_holds_one_permit \
+          the_warm_up_build_counts_against_the_permits \
+          a_request_on_a_replaced_generation_does_not_repopulate_the_cache \
+          waiters_leave_the_blocking_pool_to_the_builder
+        cargo test --release --locked -p graphite-explore --test c4_footprint -- --nocapture
 
     - name: Benchmark harness tests (fail-closed sampling and warmup)
       run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
