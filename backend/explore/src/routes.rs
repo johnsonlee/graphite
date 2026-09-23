@@ -26,6 +26,9 @@ pub const MAX_RESOURCE_LIMIT: i64 = 1000;
 pub const DEFAULT_ENDPOINT_LIMIT: i64 = 200;
 pub const MAX_ENDPOINT_LIMIT: i64 = 2000;
 pub const MAX_RESOURCE_BYTES: usize = 1_048_576;
+/// How long the server must have been idle before the C4 warm-up builds a graph.
+pub const C4_WARM_QUIET: std::time::Duration = std::time::Duration::from_secs(2);
+const C4_WARM_POLL: std::time::Duration = std::time::Duration::from_millis(200);
 
 pub struct AppState {
     pub registry: Arc<GraphRegistry>,
@@ -40,10 +43,27 @@ pub struct AppState {
     /// Wall-clock start, for `process_start_time_seconds`. `Instant` is monotonic and
     /// carries no epoch, so the epoch reading is taken once here.
     pub start_time_epoch_seconds: f64,
-    /// Built C4 workspaces, keyed by graph identity and level. Inference walks the
-    /// whole graph, and a loaded graph never changes, so the result is worth keeping.
-    /// Replacing a graph produces a new `Arc`, which misses and re-infers.
-    c4_cache: parking_lot::Mutex<HashMap<(usize, String), Arc<J>>>,
+    /// C4 inference per loaded graph, built once and shared by every level, format and
+    /// caller (see `crate::c4::cache`). Filled ahead of the first request by `warm_c4`.
+    c4: crate::c4::cache::C4Cache,
+    /// Permits for C4 builds in flight, one per core: a fleet-wide request fans out
+    /// over every graph, and unbounded builds would time-slice each other so that even
+    /// one graph's request waits for the whole fleet. A permit is owned by the blocking
+    /// job that builds, not by the request awaiting it, since the job outlives a
+    /// request whose client gave up.
+    c4_builds: Arc<tokio::sync::Semaphore>,
+    /// When a request last arrived or finished, in milliseconds since `started`, and
+    /// how many are in flight; kept by the router for every request, MCP over stdio
+    /// included. The C4 warm-up only builds while nothing is in flight and the server
+    /// has been idle for `C4_WARM_QUIET`, so it never takes cores from a query.
+    last_request_millis: std::sync::atomic::AtomicU64,
+    requests_in_flight: std::sync::atomic::AtomicUsize,
+    /// Graph ids waiting to be warmed, and whether the one worker that drains them
+    /// is alive (see `warm_c4_graphs`).
+    c4_warm: parking_lot::Mutex<C4WarmQueue>,
+    /// How long the server must be idle before the worker builds; `C4_WARM_QUIET`
+    /// unless a test shortens it.
+    c4_warm_quiet: std::time::Duration,
     /// The topology rules from `--topology`, and the graph built from them, with the
     /// registry catalog it was built against so a later load or unload marks it stale
     /// until the rebuild that follows it lands.
@@ -143,24 +163,223 @@ impl AppState {
                 .duration_since(std::time::UNIX_EPOCH)
                 .map(|d| d.as_secs_f64())
                 .unwrap_or(0.0),
-            c4_cache: parking_lot::Mutex::new(HashMap::new()),
+            c4: crate::c4::cache::C4Cache::default(),
+            c4_builds: Arc::new(tokio::sync::Semaphore::new(
+                std::thread::available_parallelism().map_or(1, |n| n.get()),
+            )),
+            last_request_millis: std::sync::atomic::AtomicU64::new(0),
+            requests_in_flight: std::sync::atomic::AtomicUsize::new(0),
+            c4_warm: parking_lot::Mutex::new(C4WarmQueue::default()),
+            c4_warm_quiet: C4_WARM_QUIET,
             topology_queries: Vec::new(),
             topology: parking_lot::RwLock::new(None),
         }
     }
 
-    fn c4_model(&self, lease: &GraphLease, level: &str) -> Arc<J> {
+    /// The C4 workspace of a leased graph at `level`.
+    ///
+    /// Inference runs on the blocking pool, never on a runtime worker: it walks the
+    /// whole graph and can take seconds on a large one, and the MCP transport must keep
+    /// answering pings and other tools meanwhile. Once built it is cached for the
+    /// graph's generation, so only the first request (or `warm_c4`) pays for it, and
+    /// concurrent requests for the same graph wait for that one build.
+    async fn c4_model(self: &Arc<Self>, lease: &GraphLease, level: &str) -> Result<Arc<J>, String> {
+        let generation = lease.generation;
+        let failed = |e: tokio::task::JoinError| {
+            format!("C4 inference failed for graph '{}': {e}", lease.id)
+        };
         if graphite_cypher::engine::optimizations_disabled() {
-            return Arc::new(crate::c4::build_model(&lease.graph, level));
+            // The parity path builds every time, still one build per core.
+            let permit = self
+                .c4_builds
+                .clone()
+                .acquire_owned()
+                .await
+                .map_err(|e| e.to_string())?;
+            let (graph, level) = (lease.graph.clone(), level.to_string());
+            return tokio::task::spawn_blocking(move || {
+                let _permit = permit;
+                Arc::new(crate::c4::build_model(&graph, &level))
+            })
+            .await
+            .map_err(failed);
         }
-        let key = (Arc::as_ptr(&lease.graph) as usize, level.to_string());
-        if let Some(hit) = self.c4_cache.lock().get(&key).cloned() {
-            return hit;
-        }
-        let model = Arc::new(crate::c4::build_model(&lease.graph, level));
-        self.c4_cache.lock().insert(key, model.clone());
-        model
+        // The inference first. The cache elects exactly one builder per generation
+        // (see `crate::c4::cache::C4Cache::claim`), and only that caller takes a build
+        // permit: a warm graph answers at once, and a request for a graph whose build
+        // is in flight only waits for it, holding no permit. The permit moves into the
+        // blocking job: `spawn_blocking` runs to completion even after the request
+        // that awaited it is dropped, and the bound is on builds running, not on
+        // clients still waiting. A build that fails frees its slot, and its waiters
+        // claim again, so the retry goes through the same election.
+        let inference = loop {
+            match self.c4.claim(generation) {
+                crate::c4::cache::Claim::Ready(inference) => break inference,
+                crate::c4::cache::Claim::Build(ticket) => {
+                    let permit = self
+                        .c4_builds
+                        .clone()
+                        .acquire_owned()
+                        .await
+                        .map_err(|e| e.to_string())?;
+                    let graph = lease.graph.clone();
+                    break tokio::task::spawn_blocking(move || {
+                        let _permit = permit;
+                        ticket.build(|| crate::c4::Inference::of(&graph))
+                    })
+                    .await
+                    .map_err(failed)?;
+                }
+                crate::c4::cache::Claim::Wait(waiter) => {
+                    // Parked on the slot, not on a blocking-pool thread: those are
+                    // for builds, and the builder must find one free.
+                    if let Some(inference) = waiter.wait_async().await {
+                        break inference;
+                    }
+                }
+            }
+        };
+        // Assembled from the inference this request claimed, so nothing is ever
+        // built again here, whatever happened to the cache entry meanwhile.
+        let state = self.clone();
+        let level = level.to_string();
+        let model = tokio::task::spawn_blocking(move || {
+            state.c4.model(generation, &level, &inference, |inference| {
+                inference.assemble(&level)
+            })
+        })
+        .await
+        .map_err(failed)?;
+        // This request may have leased a generation that was replaced or unloaded
+        // while it waited (for a permit, or for a build): it still answers from the
+        // snapshot it holds, but the cache keeps only what the registry serves.
+        self.prune_c4();
+        Ok(model)
     }
+
+    /// Record request activity now: the clock the warm-up's idleness is read from.
+    fn note_request(&self) {
+        let millis = self.started.elapsed().as_millis() as u64;
+        self.last_request_millis
+            .store(millis, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// How long the server has gone without a request: zero while one is in flight,
+    /// otherwise the time since the last one arrived or finished.
+    pub fn idle_for(&self) -> std::time::Duration {
+        if self
+            .requests_in_flight
+            .load(std::sync::atomic::Ordering::Relaxed)
+            > 0
+        {
+            return std::time::Duration::ZERO;
+        }
+        let last = self
+            .last_request_millis
+            .load(std::sync::atomic::Ordering::Relaxed);
+        self.started
+            .elapsed()
+            .saturating_sub(std::time::Duration::from_millis(last))
+    }
+
+    /// Queue every loaded graph for the C4 warm-up (see `warm_c4_graphs`) and return
+    /// how many were queued.
+    pub fn warm_c4(self: &Arc<Self>) -> usize {
+        let ids = self.registry.ids();
+        let count = ids.len();
+        self.warm_c4_graphs(ids);
+        count
+    }
+
+    /// Queue graphs, by id, for inference on one background worker, so the first
+    /// request for any level or format finds it built. Each build starts only once
+    /// the server has been idle for `c4_warm_quiet`, so the warm-up yields to traffic
+    /// rather than competing with it; a request that arrives first builds (or waits
+    /// for) its own graph, and the worker then finds it cached.
+    ///
+    /// There is at most one worker, started when the queue goes from empty to
+    /// non-empty and gone once it has drained. The queue holds ids, not leases, and
+    /// an id already queued is not queued twice: however often a graph is loaded or
+    /// replaced under traffic, nothing accumulates but one entry per id, and the
+    /// worker leases only the generation current when its turn comes, so an unloaded
+    /// graph is dropped and a replaced one is built once, in its final form.
+    fn warm_c4_graphs(self: &Arc<Self>, ids: impl IntoIterator<Item = String>) {
+        if graphite_cypher::engine::optimizations_disabled() {
+            return;
+        }
+        let mut queue = self.c4_warm.lock();
+        queue.pending.extend(ids);
+        if queue.pending.is_empty() || queue.running {
+            return;
+        }
+        queue.running = true;
+        drop(queue);
+        let state = self.clone();
+        if std::thread::Builder::new()
+            .name("c4-warm".into())
+            .spawn(move || state.run_c4_warm())
+            .is_err()
+        {
+            self.c4_warm.lock().running = false;
+        }
+    }
+
+    /// The warm-up worker: drain the queue in id order, one idle wait and one build
+    /// per id, and exit once it is empty.
+    fn run_c4_warm(self: Arc<Self>) {
+        loop {
+            let next = {
+                let mut queue = self.c4_warm.lock();
+                match queue.pending.pop_first() {
+                    Some(id) => id,
+                    None => {
+                        // Under the same lock `warm_c4_graphs` pushes and reads
+                        // `running` with, so no push slips between empty and gone.
+                        queue.running = false;
+                        return;
+                    }
+                }
+            };
+            while self.idle_for() < self.c4_warm_quiet {
+                std::thread::sleep(C4_WARM_POLL);
+            }
+            // Leased only now: whatever the id serves at this point is what gets
+            // built, and an id unloaded meanwhile has nothing to build.
+            let Ok(Some(lease)) = self.registry.acquire(&next) else {
+                continue;
+            };
+            // Built already, or being built for a request: nothing to add.
+            let crate::c4::cache::Claim::Build(ticket) = self.c4.claim(lease.generation) else {
+                continue;
+            };
+            // The warm build counts against the same per-core budget as a request's,
+            // so traffic arriving mid-warm never exceeds it; a plain thread, so it
+            // polls for a permit rather than awaiting one.
+            let permit = loop {
+                match self.c4_builds.clone().try_acquire_owned() {
+                    Ok(permit) => break permit,
+                    Err(_) => std::thread::sleep(C4_WARM_POLL),
+                }
+            };
+            ticket.build(|| crate::c4::Inference::of(&lease.graph));
+            drop(permit);
+            // Replaced or unloaded during the build: keep nothing for it.
+            self.prune_c4();
+        }
+    }
+
+    /// Drop C4 state for generations the registry no longer serves.
+    fn prune_c4(&self) {
+        let live: Vec<u64> = self.registry.catalog_version().into_values().collect();
+        self.c4.retain(&live);
+    }
+}
+
+/// What the C4 warm-up worker still has to do.
+#[derive(Default)]
+struct C4WarmQueue {
+    pending: std::collections::BTreeSet<String>,
+    running: bool,
 }
 
 pub type St = State<Arc<AppState>>;
@@ -275,7 +494,48 @@ pub fn router(state: Arc<AppState>) -> Router {
     if state.metrics_enabled {
         app = app.route("/metrics", get(metrics));
     }
-    app.with_state(state)
+    app.with_state(state.clone())
+        .layer(axum::middleware::from_fn_with_state(state, note_request))
+}
+
+/// Count the request in flight and stamp its arrival and completion on the state, for
+/// the C4 warm-up's idle detection. Applied to the whole router, so MCP over stdio
+/// counts too. Completion is stamped by a guard's `Drop`, so a request whose future is
+/// dropped before it answers (the client timed out or went away) releases its count
+/// exactly as one that finished.
+pub async fn note_request(
+    State(s): St,
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Response {
+    let _in_flight = InFlight::enter(s);
+    next.run(request).await
+}
+
+/// One request counted in flight on the state until this is dropped.
+pub struct InFlight(Arc<AppState>);
+
+impl InFlight {
+    /// Count one request in flight on `state` until the guard drops. The router's
+    /// middleware uses it for every route; the MCP server uses it for every message
+    /// it handles, which the router never sees (a `ping`, `initialize` or `tools/list`
+    /// over stdio or `/mcp` is a request too).
+    pub fn enter(state: Arc<AppState>) -> InFlight {
+        state
+            .requests_in_flight
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        state.note_request();
+        InFlight(state)
+    }
+}
+
+impl Drop for InFlight {
+    fn drop(&mut self) {
+        self.0.note_request();
+        self.0
+            .requests_in_flight
+            .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
+    }
 }
 
 /// The finished router with HTTP request metrics recorded on every request, `/mcp`
@@ -353,6 +613,10 @@ async fn load_graph(
                 let _ = s.registry.unload(&id);
                 return error_json(StatusCode::BAD_REQUEST, &e);
             }
+            // A replaced graph's C4 state goes with it; the new one is inferred ahead
+            // of its first request.
+            s.prune_c4();
+            s.warm_c4_graphs([g.id.clone()]);
             ok_json(json!({ "graph": g.to_api_map() }))
         }
         Err(e) => error_json(StatusCode::BAD_REQUEST, &e),
@@ -371,6 +635,7 @@ async fn unload_graph(State(s): St, AxPath(id): AxPath<String>) -> Response {
             s.registry.restore(served.clone());
             return error_json(StatusCode::BAD_REQUEST, &e);
         }
+        s.prune_c4();
     }
     if removed.is_some() {
         // A 204 has no body, but the baseline still emits Javalin's default
@@ -1051,8 +1316,10 @@ async fn graph_c4(
         Ok(v) => v,
         Err(r) => return r,
     };
-    let workspace = s.c4_model(&l, &level);
-    render_c4(&workspace, &format)
+    match s.c4_model(&l, &level).await {
+        Ok(workspace) => render_c4(&workspace, &format),
+        Err(e) => error_json(StatusCode::INTERNAL_SERVER_ERROR, &e),
+    }
 }
 
 fn render_c4(workspace: &J, format: &str) -> Response {
@@ -1076,9 +1343,25 @@ async fn all_c4(State(s): St, Query(q): Query<Params>, headers: HeaderMap) -> Re
         Err(r) => return r,
     };
     let leases = s.registry.acquire_all();
+    // Every graph at once: each build has its own blocking thread, and the graphs
+    // that are already warm answer immediately.
+    let mut pending = tokio::task::JoinSet::new();
+    for (i, l) in leases.iter().enumerate() {
+        let (s, l, level) = (s.clone(), l.clone(), level.clone());
+        pending.spawn(async move { (i, s.c4_model(&l, &level).await) });
+    }
+    let mut built: Vec<Option<Arc<J>>> = vec![None; leases.len()];
+    while let Some(next) = pending.join_next().await {
+        match next {
+            Ok((i, Ok(model))) => built[i] = Some(model),
+            Ok((_, Err(e))) => return error_json(StatusCode::INTERNAL_SERVER_ERROR, &e),
+            Err(e) => return error_json(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()),
+        }
+    }
     let models: Vec<(String, Arc<J>)> = leases
         .iter()
-        .map(|l| (l.id.clone(), s.c4_model(l, &level)))
+        .zip(built)
+        .map(|(l, m)| (l.id.clone(), m.expect("every graph was built")))
         .collect();
     if format == "json" {
         let results: Vec<J> = models
@@ -2108,6 +2391,400 @@ mod tests {
                     .len()
             )
         );
+    }
+
+    /// The C4 warm-up reads idleness from the request stamp every route applies.
+    #[tokio::test]
+    async fn every_request_resets_the_idle_clock_the_c4_warm_up_waits_on() {
+        let (app, state) = metrics_app();
+        // Fresh state counts as idle since start.
+        std::thread::sleep(std::time::Duration::from_millis(30));
+        assert!(state.idle_for() >= std::time::Duration::from_millis(30));
+        assert_eq!(get(&app, "/no/such/route").await.0, StatusCode::NOT_FOUND);
+        assert!(state.idle_for() < std::time::Duration::from_millis(30));
+        assert!(state.idle_for() < C4_WARM_QUIET);
+        std::thread::sleep(std::time::Duration::from_millis(30));
+        assert!(state.idle_for() >= std::time::Duration::from_millis(30));
+        // A request in flight, however long it runs, keeps the server busy.
+        state
+            .requests_in_flight
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        std::thread::sleep(std::time::Duration::from_millis(30));
+        assert_eq!(state.idle_for(), std::time::Duration::ZERO);
+        state
+            .requests_in_flight
+            .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
+        assert!(state.idle_for() >= std::time::Duration::from_millis(60));
+        // An empty registry has nothing to warm, and starts no worker.
+        assert_eq!(state.warm_c4(), 0);
+        assert!(!state.c4_warm.lock().running);
+    }
+
+    /// Loads and replacements queue ids for one worker, never a thread each: under
+    /// traffic the queue coalesces, and once the server goes quiet the worker drains
+    /// it and exits, leasing nothing it did not build.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn warm_up_loads_share_one_worker_that_drains_and_exits() {
+        let (_, state) = metrics_app();
+        // Keep the server busy while thirty loads and replacements arrive.
+        state
+            .requests_in_flight
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        for i in 0..30 {
+            state.warm_c4_graphs([format!("g{}", i % 3)]);
+        }
+        {
+            let queue = state.c4_warm.lock();
+            assert!(queue.running);
+            // Thirty loads of three ids leave at most those three queued (the one the
+            // worker took can be queued again behind it), never thirty.
+            assert!(queue.pending.len() <= 3, "{:?}", queue.pending);
+        }
+        // The worker names itself as it starts, so give it a moment to appear; it
+        // is one thread, never thirty.
+        #[cfg(target_os = "linux")]
+        {
+            let named = std::time::Instant::now();
+            while warm_threads() == 0 {
+                assert!(named.elapsed() < std::time::Duration::from_secs(5));
+                tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+            }
+            assert_eq!(warm_threads(), 1);
+        }
+        // Traffic stops: the worker finds no such graphs, drains, and exits.
+        state
+            .requests_in_flight
+            .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
+        let started = std::time::Instant::now();
+        while state.c4_warm.lock().running {
+            assert!(started.elapsed() < std::time::Duration::from_secs(30));
+            tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+        }
+        assert!(state.c4_warm.lock().pending.is_empty());
+        #[cfg(target_os = "linux")]
+        {
+            let gone = std::time::Instant::now();
+            while warm_threads() != 0 {
+                assert!(gone.elapsed() < std::time::Duration::from_secs(5));
+                tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+            }
+        }
+        // A later load starts a fresh worker.
+        state.warm_c4_graphs(["late".to_string()]);
+        assert!(state.c4_warm.lock().running);
+    }
+
+    /// Threads of this process named `c4-warm`.
+    #[cfg(target_os = "linux")]
+    fn warm_threads() -> usize {
+        std::fs::read_dir("/proc/self/task")
+            .map(|tasks| {
+                tasks
+                    .flatten()
+                    .filter(|t| {
+                        std::fs::read_to_string(t.path().join("comm"))
+                            .map(|c| c.trim() == "c4-warm")
+                            .unwrap_or(false)
+                    })
+                    .count()
+            })
+            .unwrap_or(0)
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): a C4 request whose client gave
+    /// up keeps its build permit until the build it started actually ends, so a run of
+    /// timeouts cannot start more builds than there are permits.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn an_abandoned_c4_request_keeps_its_permit_until_the_build_ends() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let dir = std::path::PathBuf::from(dir);
+        let registry = Arc::new(GraphRegistry::new(
+            dir.parent().map(|p| p.to_path_buf()).unwrap_or_default(),
+            LoadMode::Mapped,
+        ));
+        registry.load("fixture", &dir, None).unwrap();
+        let guard = Arc::new(CypherGuard::new(2, 1_000));
+        let mut state = AppState::new(registry, guard, "test".into(), false);
+        state.c4_builds = Arc::new(tokio::sync::Semaphore::new(1));
+        let state = Arc::new(state);
+        let lease = state.registry.acquire("fixture").unwrap().unwrap();
+        let generation = lease.generation;
+        let request = tokio::spawn({
+            let state = state.clone();
+            async move { state.c4_model(&lease, "all").await.map(|_| ()) }
+        });
+        let started = std::time::Instant::now();
+        while !state.c4.is_building(generation) {
+            if state.c4.is_warm(generation) {
+                eprintln!("the fixture built before the request could be abandoned; skipping");
+                return;
+            }
+            assert!(started.elapsed() < std::time::Duration::from_secs(30));
+            tokio::task::yield_now().await;
+        }
+        assert_eq!(state.c4_builds.available_permits(), 0);
+        request.abort();
+        assert!(request.await.unwrap_err().is_cancelled());
+        // The build is still running on the blocking pool, and so is its permit.
+        assert!(state.c4.is_building(generation));
+        assert_eq!(state.c4_builds.available_permits(), 0);
+        while !state.c4.is_warm(generation) {
+            assert!(started.elapsed() < std::time::Duration::from_secs(60));
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+        }
+        while state.c4_builds.available_permits() == 0 {
+            assert!(started.elapsed() < std::time::Duration::from_secs(60));
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+        }
+        assert_eq!(state.c4_builds.available_permits(), 1);
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): a burst of cold requests for
+    /// one graph elects one builder, and only that builder holds a permit, so the
+    /// burst leaves the build budget to every other graph.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn a_burst_for_one_cold_graph_holds_one_permit() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let dir = std::path::PathBuf::from(dir);
+        let registry = Arc::new(GraphRegistry::new(
+            dir.parent().map(|p| p.to_path_buf()).unwrap_or_default(),
+            LoadMode::Mapped,
+        ));
+        registry.load("fixture", &dir, None).unwrap();
+        let guard = Arc::new(CypherGuard::new(2, 1_000));
+        let mut state = AppState::new(registry, guard, "test".into(), false);
+        state.c4_builds = Arc::new(tokio::sync::Semaphore::new(8));
+        let state = Arc::new(state);
+        let lease = state.registry.acquire("fixture").unwrap().unwrap();
+        let generation = lease.generation;
+        let gate = Arc::new(tokio::sync::Barrier::new(8));
+        let requests: Vec<_> = (0..8)
+            .map(|_| {
+                let (state, lease, gate) = (state.clone(), lease.clone(), gate.clone());
+                tokio::spawn(async move {
+                    gate.wait().await;
+                    state.c4_model(&lease, "all").await.map(|_| ())
+                })
+            })
+            .collect();
+        let started = std::time::Instant::now();
+        while !state.c4.is_building(generation) {
+            if state.c4.is_warm(generation) {
+                eprintln!("the fixture built before the burst could be observed; skipping");
+                return;
+            }
+            assert!(started.elapsed() < std::time::Duration::from_secs(30));
+            tokio::task::yield_now().await;
+        }
+        // Let every request in the burst reach its claim.
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+        if state.c4.is_building(generation) {
+            assert_eq!(
+                state.c4_builds.available_permits(),
+                7,
+                "same-generation waiters hold no permit"
+            );
+        }
+        for r in requests {
+            r.await.unwrap().unwrap();
+        }
+        assert_eq!(state.c4_builds.available_permits(), 8);
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): the warm-up's build takes one
+    /// of the request permits, so a request arriving mid-warm for another cold graph
+    /// waits for it rather than building alongside.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn the_warm_up_build_counts_against_the_permits() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let dir = std::path::PathBuf::from(dir);
+        let registry = Arc::new(GraphRegistry::new(
+            dir.parent().map(|p| p.to_path_buf()).unwrap_or_default(),
+            LoadMode::Mapped,
+        ));
+        registry.load("a", &dir, None).unwrap();
+        registry.load("b", &dir, None).unwrap();
+        let guard = Arc::new(CypherGuard::new(2, 1_000));
+        let mut state = AppState::new(registry, guard, "test".into(), false);
+        state.c4_builds = Arc::new(tokio::sync::Semaphore::new(1));
+        state.c4_warm_quiet = std::time::Duration::ZERO;
+        let state = Arc::new(state);
+        let a = state.registry.acquire("a").unwrap().unwrap();
+        let b = state.registry.acquire("b").unwrap().unwrap();
+        state.warm_c4_graphs(["a".to_string()]);
+        let started = std::time::Instant::now();
+        while !state.c4.is_building(a.generation) {
+            if state.c4.is_warm(a.generation) {
+                eprintln!("the fixture warmed before it could be observed; skipping");
+                return;
+            }
+            assert!(started.elapsed() < std::time::Duration::from_secs(30));
+            tokio::task::yield_now().await;
+        }
+        assert_eq!(state.c4_builds.available_permits(), 0);
+        let request = tokio::spawn({
+            let (state, b) = (state.clone(), b.clone());
+            async move { state.c4_model(&b, "all").await.map(|_| ()) }
+        });
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        if state.c4.is_building(a.generation) {
+            assert!(
+                !state.c4.is_building(b.generation),
+                "b waits for a's permit"
+            );
+        }
+        request.await.unwrap().unwrap();
+        while state.c4_warm.lock().running {
+            assert!(started.elapsed() < std::time::Duration::from_secs(60));
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+        }
+        assert!(state.c4.is_warm(a.generation) && state.c4.is_warm(b.generation));
+        assert_eq!(state.c4_builds.available_permits(), 1);
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): a request that leased a
+    /// generation, then waited while that graph was replaced, answers from its own
+    /// snapshot but leaves nothing for the retired generation in the cache.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn a_request_on_a_replaced_generation_does_not_repopulate_the_cache() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let dir = std::path::PathBuf::from(dir);
+        let registry = Arc::new(GraphRegistry::new(
+            dir.parent().map(|p| p.to_path_buf()).unwrap_or_default(),
+            LoadMode::Mapped,
+        ));
+        registry.load("g", &dir, None).unwrap();
+        let guard = Arc::new(CypherGuard::new(2, 1_000));
+        let mut state = AppState::new(registry, guard, "test".into(), false);
+        // No permit yet: the request claims its slot and waits.
+        state.c4_builds = Arc::new(tokio::sync::Semaphore::new(0));
+        let state = Arc::new(state);
+        let old = state.registry.acquire("g").unwrap().unwrap();
+        let request = tokio::spawn({
+            let (state, old) = (state.clone(), old.clone());
+            async move { state.c4_model(&old, "context").await.map(|_| ()) }
+        });
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+        // Replaced under it, and pruned as the load route prunes.
+        let new = state.registry.load("g", &dir, None).unwrap();
+        assert_ne!(new.generation, old.generation);
+        state.prune_c4();
+        state.c4_builds.add_permits(1);
+        request.await.unwrap().unwrap();
+        assert!(
+            !state.c4.is_warm(old.generation),
+            "the retired generation is not kept"
+        );
+        assert_eq!(state.c4_builds.available_permits(), 1);
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): waiters on a build hold no
+    /// blocking-pool thread, so a builder that was waiting for its permit still finds
+    /// a thread to build on however many requests wait on it.
+    #[test]
+    fn waiters_leave_the_blocking_pool_to_the_builder() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .worker_threads(2)
+            .max_blocking_threads(2)
+            .enable_all()
+            .build()
+            .unwrap();
+        runtime.block_on(async move {
+            let dir = std::path::PathBuf::from(dir);
+            let registry = Arc::new(GraphRegistry::new(
+                dir.parent().map(|p| p.to_path_buf()).unwrap_or_default(),
+                LoadMode::Mapped,
+            ));
+            registry.load("g", &dir, None).unwrap();
+            let guard = Arc::new(CypherGuard::new(2, 1_000));
+            let mut state = AppState::new(registry, guard, "test".into(), false);
+            state.c4_builds = Arc::new(tokio::sync::Semaphore::new(1));
+            let state = Arc::new(state);
+            let lease = state.registry.acquire("g").unwrap().unwrap();
+            // Hold the only permit, so the elected builder waits for it while the
+            // waiters queue up behind the slot.
+            let held = state.c4_builds.clone().acquire_owned().await.unwrap();
+            let requests: Vec<_> = (0..4)
+                .map(|_| {
+                    let (state, lease) = (state.clone(), lease.clone());
+                    tokio::spawn(async move { state.c4_model(&lease, "all").await.map(|_| ()) })
+                })
+                .collect();
+            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+            drop(held);
+            for r in requests {
+                tokio::time::timeout(std::time::Duration::from_secs(30), r)
+                    .await
+                    .expect("the builder was starved by its own waiters")
+                    .unwrap()
+                    .unwrap();
+            }
+            assert!(state.c4.is_warm(lease.generation));
+        });
+    }
+
+    /// A request whose future is dropped before it answers, as when the client times
+    /// out and goes away, releases its in-flight count like one that finished.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn a_cancelled_request_releases_its_in_flight_count() {
+        use tower::ServiceExt;
+        let (_, state) = metrics_app();
+        let app = Router::new()
+            .route(
+                "/pending",
+                axum::routing::get(|| async {
+                    std::future::pending::<()>().await;
+                    StatusCode::OK
+                }),
+            )
+            .layer(axum::middleware::from_fn_with_state(
+                state.clone(),
+                note_request,
+            ));
+        let pending = tokio::spawn(
+            app.oneshot(
+                axum::http::Request::builder()
+                    .uri("/pending")
+                    .body(Body::empty())
+                    .unwrap(),
+            ),
+        );
+        let started = std::time::Instant::now();
+        while state
+            .requests_in_flight
+            .load(std::sync::atomic::Ordering::Relaxed)
+            == 0
+        {
+            assert!(started.elapsed() < std::time::Duration::from_secs(5));
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+        }
+        assert_eq!(state.idle_for(), std::time::Duration::ZERO);
+        pending.abort();
+        assert!(pending.await.unwrap_err().is_cancelled());
+        assert_eq!(
+            state
+                .requests_in_flight
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
+        // Completion was stamped on the way out, so the idle clock restarts here.
+        assert!(state.idle_for() < C4_WARM_QUIET);
     }
 
     /// `/metrics` carries the process, HTTP and graph families next to the Cypher ones,

@@ -66,10 +66,76 @@ const SUBJECT_FALLBACK_NAME: &str = "Subject";
 
 /// Build the Structurizr workspace for one graph at the requested level.
 pub fn build_model(g: &Graph, level: &str) -> J {
-    match level {
-        "container" => build_container_model(g),
-        "component" => build_component_model(g),
-        _ => build_context_model(g, level),
+    Inference::of(g).assemble(level)
+}
+
+/// Everything the levels share, inferred from the graph once.
+///
+/// Inference walks every method and call site several times and is where a C4 request
+/// spends its time; assembling a level's workspace from the result is cheap. A server
+/// keeps one of these per loaded graph so every level, format and repeat request pays
+/// for inference once (see `AppState::c4_model`).
+pub struct Inference {
+    /// Of the gathered inputs, only what assembly reads is kept: the endpoint lists that
+    /// drove inference are reduced to their count. What remains is the inferred layout,
+    /// one entry per container, component and dependency with each entry's lists capped
+    /// by the C4 constants, so a retained inference is of the order of the workspaces it
+    /// assembles (tens of kilobytes for a 1.55M-node graph) and never grows with the
+    /// graph's classes or methods (see `c4::cache` and `tests/c4_footprint.rs`).
+    system_boundary: String,
+    subject: subject::Subject,
+    endpoint_count: usize,
+    capability_layout: containers::ContainerLayout,
+    runtime_layout: containers::ContainerLayout,
+    /// `None` when the subject has no runtime container (a library).
+    component_view: Option<components::ComponentView>,
+    class_count: usize,
+    method_count: usize,
+}
+
+impl Inference {
+    pub fn of(g: &Graph) -> Inference {
+        let inputs = Inputs::gather(g);
+        let capability_layout = containers::infer_layout(
+            g,
+            &inputs.system_boundary,
+            &inputs.endpoint_classes,
+            &inputs.endpoint_paths,
+            usize::MAX,
+        );
+        let runtime_layout = containers::infer_operational_layout(
+            &inputs.subject.role,
+            &inputs.subject.name,
+            &capability_layout,
+        );
+        let component_view = components::build_view(
+            g,
+            &inputs.system_boundary,
+            &inputs.endpoint_classes,
+            &inputs.subject.role,
+            &inputs.subject.name,
+            &capability_layout,
+            usize::MAX,
+        );
+        Inference {
+            system_boundary: inputs.system_boundary,
+            subject: inputs.subject,
+            endpoint_count: inputs.endpoint_classes.len(),
+            capability_layout,
+            runtime_layout,
+            component_view,
+            class_count: distinct_class_count(g),
+            method_count: g.method_count(),
+        }
+    }
+
+    /// The Structurizr workspace at `level`, exactly as `build_model` builds it.
+    pub fn assemble(&self, level: &str) -> J {
+        match level {
+            "container" => build_container_model(self),
+            "component" => build_component_model(self),
+            _ => build_context_model(self, level),
+        }
     }
 }
 
@@ -80,20 +146,12 @@ pub fn build_model(g: &Graph, level: &str) -> J {
 /// subject degenerates to a placeholder, the dependencies are described and tagged as
 /// plain external dependencies rather than by kind, and every relationship hangs off the
 /// runtime container instead of the system.
-fn build_container_model(g: &Graph) -> J {
-    let inputs = Inputs::gather(g);
-    let capability_layout = containers::infer_layout(
-        g,
-        &inputs.system_boundary,
-        &inputs.endpoint_classes,
-        &inputs.endpoint_paths,
-        usize::MAX,
-    );
-    let runtime_layout = containers::infer_operational_layout(
-        &inputs.subject.role,
-        &inputs.subject.name,
-        &capability_layout,
-    );
+fn build_container_model(inf: &Inference) -> J {
+    let Inference {
+        capability_layout,
+        runtime_layout,
+        ..
+    } = inf;
     let deps = &runtime_layout.external_dependencies;
 
     // Every dependency is "an external dependency" here: the kind survives only as a
@@ -450,24 +508,8 @@ impl Inputs {
 /// placeholder system, and synthesises a container purely to hang the components off --
 /// which is why the container here carries no properties and is described as
 /// "synthesized for component view" rather than by what it is.
-fn build_component_model(g: &Graph) -> J {
-    let inputs = Inputs::gather(g);
-    let capability_layout = containers::infer_layout(
-        g,
-        &inputs.system_boundary,
-        &inputs.endpoint_classes,
-        &inputs.endpoint_paths,
-        usize::MAX,
-    );
-    let view = components::build_view(
-        g,
-        &inputs.system_boundary,
-        &inputs.endpoint_classes,
-        &inputs.subject.role,
-        &inputs.subject.name,
-        &capability_layout,
-        usize::MAX,
-    );
+fn build_component_model(inf: &Inference) -> J {
+    let view = &inf.component_view;
 
     let level_prop = json!("component");
     let available = json!(super::LEVELS);
@@ -590,22 +632,16 @@ fn build_component_model(g: &Graph) -> J {
     })
 }
 
-fn build_context_model(g: &Graph, level: &str) -> J {
-    let Inputs {
-        endpoint_classes,
-        endpoint_paths,
+fn build_context_model(inf: &Inference, level: &str) -> J {
+    let Inference {
         system_boundary,
         subject,
-    } = Inputs::gather(g);
-    let capability_layout = containers::infer_layout(
-        g,
-        &system_boundary,
-        &endpoint_classes,
-        &endpoint_paths,
-        usize::MAX,
-    );
-    let runtime_layout =
-        containers::infer_operational_layout(&subject.role, &subject.name, &capability_layout);
+        endpoint_count,
+        ..
+    } = inf;
+    let endpoint_count = *endpoint_count;
+    let capability_layout = &inf.capability_layout;
+    let runtime_layout = &inf.runtime_layout;
 
     let want_context = level == "context" || level == "all";
     let want_container = level == "container" || level == "all";
@@ -744,17 +780,7 @@ fn build_context_model(g: &Graph, level: &str) -> J {
     // and the component view merged onto the context model, so the container element,
     // its dependency edges and its components are the ones those views produce -- not
     // an approximation assembled from the capability layout.
-    let component_view = want_component.then(|| {
-        components::build_view(
-            g,
-            &system_boundary,
-            &endpoint_classes,
-            &subject.role,
-            &subject.name,
-            &capability_layout,
-            usize::MAX,
-        )
-    });
+    let component_view = want_component.then_some(inf.component_view.as_ref());
     let internal_capabilities: Vec<J> = capability_layout
         .containers
         .iter()
@@ -891,9 +917,9 @@ fn build_context_model(g: &Graph, level: &str) -> J {
                 "graphite.whySelected",
                 json!("Dominant namespace boundary inferred from internal classes and call-site traffic"),
             ),
-            ("graphite.methods", json!(g.method_count())),
-            ("graphite.endpoints", json!(endpoint_classes.len())),
-            ("graphite.classes", json!(distinct_class_count(g))),
+            ("graphite.methods", json!(inf.method_count)),
+            ("graphite.endpoints", json!(endpoint_count)),
+            ("graphite.classes", json!(inf.class_count)),
             // At `all` the container view's boundary is merged onto the same subject
             // element, after the context view has already described it.
             (
@@ -931,14 +957,14 @@ fn build_context_model(g: &Graph, level: &str) -> J {
                     json!([{
                         "id": "rel-1",
                         "destinationId": subject.id,
-                        "description": subject::describe_invocation(&subject, endpoint_classes.len()),
+                        "description": subject::describe_invocation(subject, endpoint_count),
                         "technology": "uses",
                         "tags": format!("Relationship,{GRAPHITE_TAG},uses"),
                         "properties": {
                             "graphite.view": "context",
                             "graphite.relationshipKind": "uses",
                             "graphite.evidence": serde_json::to_string_pretty(
-                                &subject::invocation_evidence(&subject, endpoint_classes.len())
+                                &subject::invocation_evidence(subject, endpoint_count)
                             ).unwrap_or_default(),
                         },
                     }]),

@@ -6,6 +6,7 @@
 //! (clusters of tightly-coupled package units) and components. The result is mapped
 //! to a Structurizr workspace, which the renderers turn into Mermaid, PlantUML or DSL.
 
+pub mod cache;
 pub mod constants;
 pub mod util;
 
@@ -21,7 +22,7 @@ mod subject;
 use graphite_storage::Graph;
 use serde_json::Value as J;
 
-pub use model::build_model;
+pub use model::{build_model, Inference};
 pub use render::{render_dsl, render_mermaid, render_plantuml};
 
 pub const LEVELS: [&str; 4] = ["context", "container", "component", "all"];

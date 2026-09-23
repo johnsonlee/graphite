@@ -108,6 +108,8 @@ pub struct GraphLease {
     pub id: String,
     pub graph: Arc<Graph>,
     pub stats: GraphStats,
+    /// The registry generation of the served graph (see `ServedGraph::generation`).
+    pub generation: u64,
 }
 
 pub struct GraphRegistry {
@@ -238,6 +240,7 @@ impl GraphRegistry {
             id: s.id.clone(),
             graph: s.graph.clone(),
             stats: s.stats,
+            generation: s.generation,
         }))
     }
 
@@ -250,6 +253,7 @@ impl GraphRegistry {
                 id: s.id.clone(),
                 graph: s.graph.clone(),
                 stats: s.stats,
+                generation: s.generation,
             })
             .collect()
     }
@@ -269,6 +273,7 @@ impl GraphRegistry {
                     id: s.id.clone(),
                     graph: s.graph.clone(),
                     stats: s.stats,
+                    generation: s.generation,
                 }),
                 None => return Err(GraphAcquireError::NotLoaded(id)),
             }

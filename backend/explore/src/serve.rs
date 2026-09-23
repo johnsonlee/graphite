@@ -146,6 +146,13 @@ pub fn report_loaded(opened: &Opened, cli: &GraphArgs) {
     );
 }
 
+/// Announce the background C4 warm-up `AppState::warm_c4` started, if any.
+pub fn report_c4_warmup(graphs: usize) {
+    if graphs > 0 {
+        eprintln!("C4 views: inferring {graphs} graph(s) in the background");
+    }
+}
+
 /// Warn once when this is a debug build; every long-running mode calls it first.
 pub fn warn_if_debug_build() {
     if cfg!(debug_assertions) {
@@ -326,12 +333,13 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
             eprintln!("Metrics: http://localhost:{actual}/metrics");
         }
         report_loaded(&opened, &cli.graphs);
+        report_c4_warmup(opened.state.warm_c4());
         eprintln!("Press Ctrl+C to stop");
         let api = router(opened.state.clone());
         let policy = crate::mcp::OriginPolicy::new(cli.mcp_allowed_origins.clone());
         let mcp_metrics = cli.metrics.then(|| opened.state.mcp_metrics.clone());
         let app = crate::routes::instrumented(
-            crate::mcp::with_mcp_route(api, policy, mcp_metrics),
+            crate::mcp::with_mcp_route(api, policy, mcp_metrics, Some(opened.state.clone())),
             opened.state.clone(),
         );
         axum::serve(listener, app).await.map_err(|e| e.to_string())
