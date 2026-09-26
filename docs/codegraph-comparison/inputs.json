@@ -1,0 +1,38 @@
+[
+  {
+    "artifact": "guava",
+    "version": "33.4.0-jre",
+    "url": "https://repo.maven.apache.org/maven2/com/google/guava/guava/33.4.0-jre/guava-33.4.0-jre.jar",
+    "sha256": "b918c98a7e44dbe94ebd9fe3e40cddaadb5a93e6a78eb6008b42df237241e538"
+  },
+  {
+    "artifact": "guava",
+    "version": "33.4.0-jre",
+    "url": "https://repo.maven.apache.org/maven2/com/google/guava/guava/33.4.0-jre/guava-33.4.0-jre-sources.jar",
+    "sha256": "55ef6603b6ab1f6e3ae810b127561650ed682eb5f3fb50a212a658a74087b457"
+  },
+  {
+    "artifact": "commons-lang3",
+    "version": "3.17.0",
+    "url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar",
+    "sha256": "6ee731df5c8e5a2976a1ca023b6bb320ea8d3539fbe64c8a1d5cb765127c33b4"
+  },
+  {
+    "artifact": "commons-lang3",
+    "version": "3.17.0",
+    "url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0-sources.jar",
+    "sha256": "5fdcac21ad329766054a95367d7583dfcdca737d221d5e01a5f2a198c04c6b18"
+  },
+  {
+    "artifact": "kotlin-compiler",
+    "version": "2.0.21",
+    "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler/2.0.21/kotlin-compiler-2.0.21.jar",
+    "sha256": "0e272ff5af49e060b85c4ba7cbdb3518f15f7b2426f591cdf8fd2d704a28c077"
+  },
+  {
+    "artifact": "kotlin-compiler",
+    "version": "2.0.21",
+    "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler/2.0.21/kotlin-compiler-2.0.21-sources.jar",
+    "sha256": "1501688ae1680969c47e41bc69a6ed93bc2862b99c32b5a601a3c7a2910a8bcd"
+  }
+]

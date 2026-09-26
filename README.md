@@ -73,6 +73,12 @@ The graph is a static analysis of the supplied artifacts. Coverage depends on th
 included classes, dependencies, and supported analysis patterns; reflection and
 dynamic loading can leave relationships unresolved.
 
+**Measured against CodeGraph 1.6.0:** Graphite identifies verified Kotlin-to-Java
+property calls missing from its graph, exposes programmable aggregation through
+MCP, and delivered **2.38–2.65× lower median latency** across five runs of the same
+nine-caller lookup on Commons Lang. See the [comparison, raw results and reproduction steps](docs/codegraph-comparison.md)
+for the exact versions, query scope and larger-project findings.
+
 ## Production Scale
 
 **100M+ nodes across 40+ graphs, served by one process.**
