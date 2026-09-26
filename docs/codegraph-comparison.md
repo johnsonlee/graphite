@@ -15,7 +15,7 @@ In Kotlin compiler 2.0.21, `fqName.isRoot` is property syntax for a call to the 
 
 In `org/jetbrains/kotlin/backend/common/extensions/IrPluginContextImpl.kt`, five paths use this property: `resolveMemberScope`, `referenceClass`, `referenceTypeAlias`, `referenceFunctions`, and `referenceProperties`. Graphite identifies these callers. CodeGraph indexed the source methods but its persisted graph contained no edges from that file to an `isRoot` node. Source inspection and `javap -c -p` independently confirmed the calls.
 
-The full requests returned 87 bytecode caller signatures from Graphite and 10 source callers from CodeGraph. These counts are not a recall score: compiler-generated methods and source methods have different identities. The five checked paths establish a concrete semantic difference. [Raw responses](codegraph-comparison/kotlin-compiler-mcp.json)
+The full requests returned 87 bytecode caller signatures from Graphite and 10 source callers from CodeGraph. These counts are not a recall score: compiler-generated methods and source methods have different identities. The five checked paths establish a concrete semantic difference. [Raw responses](codegraph-comparison/kotlin-compiler-mcp.json) · [Source, SQL and bytecode audit](codegraph-comparison/kotlin-semantic-check.json)
 
 ## Programmable queries for high-fan-in methods
 
@@ -28,7 +28,7 @@ WHERE c.callee_class = 'com.google.common.base.Preconditions'
 RETURN count(DISTINCT c.caller_signature) AS callers
 ```
 
-CodeGraph's database contained 997 distinct source caller nodes for these definitions, while its MCP callers tool returned 100 entries with a “100 found” heading. Its handler clamps the requested limit to 100. Graphite's default row response also has a cap, but reports truncation explicitly; aggregation computes the count without returning every caller. [Raw responses](codegraph-comparison/guava-mcp.json)
+CodeGraph's database contained 997 distinct source caller nodes for these definitions, while its MCP callers tool returned 100 entries with a “100 found” heading. Its handler clamps the requested limit to 100. Graphite's default row response also has a cap, but reports truncation explicitly; aggregation computes the count without returning every caller. [Raw responses](codegraph-comparison/guava-mcp.json) · [Aggregate query and SQL counts](codegraph-comparison/guava-counts.json)
 
 The different counts reflect different graph models and are not presented as a coverage score. CodeGraph's SQLite database remains accessible to a separately written client; the comparison here concerns the tools exposed to agents through MCP.
 

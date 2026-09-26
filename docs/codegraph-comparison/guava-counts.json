@@ -1,0 +1,16 @@
+{
+  "graphite_query": "MATCH (c:CallSiteNode) WHERE c.callee_class = 'com.google.common.base.Preconditions' AND c.callee_name = 'checkNotNull' RETURN count(DISTINCT c.caller_signature) AS callers",
+  "graphite_result": {
+    "columns": [
+      "callers"
+    ],
+    "rows": [
+      {
+        "callers": 1016
+      }
+    ],
+    "rowCount": 1
+  },
+  "codegraph_sql": "select count(distinct e.source) from edges e join nodes n on n.id=e.target where n.name='checkNotNull' and n.file_path='com/google/common/base/Preconditions.java' and e.kind='calls'",
+  "codegraph_result": 997
+}
