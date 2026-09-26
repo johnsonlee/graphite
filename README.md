@@ -2,60 +2,75 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-**Structured codebase context for LLMs.** Graphite turns JVM bytecode into a queryable program graph — so AI agents can understand your codebase without reading every file.
+**A queryable program graph for JVM and Android apps, built for AI agents.**
 
-## The Problem
+Graphite turns compiled JARs and APKs into a local graph of calls, dataflow, types,
+annotations, and bundled resources. Explore it with Cypher, a web UI, or an AI
+agent through the built-in [MCP server](#mcp-integration).
 
-LLMs working with code face a fundamental constraint: **context windows are finite, but codebases are not.**
+Use it when an answer depends on relationships across your application:
 
-Dumping source files into a prompt is wasteful. Most tokens describe boilerplate, imports, and formatting — not the relationships that matter. An LLM trying to understand "what calls this method?" or "what constants flow into this API?" must read hundreds of files to answer questions that a graph can answer in milliseconds.
+- **Trace feature flags and configuration:** find constants that flow into an API
+  argument, including through fields and method calls.
+- **Map a backend:** discover annotated HTTP endpoints and inspect their callers,
+  types, and packaged configuration.
+- **Investigate an Android app:** build a graph from an APK and query its code
+  relationships with the same tools.
+- **Give an agent structured context:** let it discover the graph schema and query
+  the relevant program elements through MCP.
 
-## The Solution
+Graphite works from compiled artifacts, so you can inspect an application without
+its source checkout. The current frontend supports JVM and Android inputs; building
+a graph requires Java, and APK analysis also requires Android platform jars.
 
-Graphite builds a **program graph** from compiled bytecode — nodes are program elements (methods, fields, constants, call sites), edges are relationships (dataflow, calls, type hierarchy). LLMs query the graph instead of reading source code.
+[Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
 
-**Before Graphite:** Feed 500 source files (~2M tokens) to find AB test IDs.
-**With Graphite:** Query `graph.callSites(pattern)` → get 23 constants in 12 tokens.
+## See It Work
 
-### What the Graph Captures
+Ask **“Which constant reaches `enableFeature`, and who calls it?”** The
+[runnable Java example](docs/quickstart-demo.md) compiles a small JAR, builds its
+graph, and returns `42` and `demo.Checkout.startCheckout()` from two queries.
+No application server or AI subscription is needed.
 
-| Relationship | Example | LLM Use Case |
-|-------------|---------|---------------|
-| **Dataflow** | `x = 42; foo(x)` → constant 42 flows to `foo` | Track config values, feature flags, API keys |
-| **Call graph** | `UserService.save()` calls `Repository.insert()` | Understand execution paths without reading source |
-| **Type hierarchy** | `AdminUser extends User implements Auditable` | Resolve polymorphism, find implementations |
-| **Annotations** | `@GetMapping("/api/users")` on `listUsers()` | Discover endpoints, serialization rules, DI config |
-| **Lambda/method ref** | `items.stream().map(User::getName)` | Trace functional pipelines |
-| **Resources** | `config/application.yml` inside a fat JAR | Cross-reference code with config files |
+After installing Graphite and JDK 17 or newer:
 
-### Token Efficiency
+```bash
+git clone https://github.com/johnsonlee/graphite.git
+cd graphite
+bash examples/quickstart/run.sh
+```
 
-| Task | Raw Source | Graphite Query | Reduction |
-|------|-----------|----------------|-----------|
-| Find all AB test IDs | ~500 files, 2M tokens | `callSites` + `backwardSlice` → 23 results | **99.99%** |
-| Map REST endpoints | ~200 controllers, 800K tokens | `memberAnnotations` scan → structured list | **99.9%** |
-| Find dead code | Entire codebase, 5M tokens | `branchScopes` + `callSites` → dead paths | **99.99%** |
-| Resolve type hierarchy | ~100 files per type chain | `supertypes` / `subtypes` → direct answer | **99%** |
+See the walkthrough for the complete queries, expected JSON, and the command to
+open the saved graph in the web Explorer.
 
-Graphite uses **Cypher** (the industry-standard graph query language) for querying. The `graphite` binary runs the Rust engine in `backend/cypher` for `query`, `serve` and `mcp`; the Kotlin API's `graph.query(...)` runs the ANTLR-based engine in `frontend/jvm/cypher`. Both speak the same read-oriented dialect and are checked against each other by a differential harness (`backend/bench`).
+## What the Graph Captures
 
-## Why Not Tree-sitter?
+| Relationship | Example | Question it helps answer |
+|-------------|---------|-------------------------|
+| **Dataflow** | `x = 42; foo(x)` → constant 42 flows to `foo` | Which constants can reach this argument? |
+| **Call graph** | `UserService.save()` calls `Repository.insert()` | Where is this method called? |
+| **Type hierarchy** | `AdminUser extends User implements Auditable` | Which indexed types implement this interface? |
+| **Annotations** | `@GetMapping("/api/users")` on `listUsers()` | Which endpoints are declared in this app? |
+| **Lambda/method ref** | `items.stream().map(User::getName)` | Which method does this reference target? |
+| **Resources** | `config/application.yml` inside a fat JAR | Where is a packaged configuration key read? |
 
-Tools like [GitNexus](https://github.com/nicobailon/gitnexus), Aider, and most LLM code assistants use [Tree-sitter](https://tree-sitter.github.io/) for codebase understanding. Tree-sitter parses syntax — it sees **text structure**, not **program semantics**.
+Graphite uses a **read-oriented Cypher subset** for querying. The `graphite` binary
+runs the Rust engine in `backend/cypher` for `query`, `serve`, and `mcp`; the Kotlin
+API's `graph.query(...)` runs the ANTLR-based engine in `frontend/jvm/cypher`. A
+differential harness (`backend/bench`) checks the two implementations against each
+other.
 
-| Capability | Tree-sitter | Graphite |
-|-----------|-------------|----------|
-| "What type is this variable?" | No — sees `var x = foo()`, can't resolve `foo`'s return type | Yes — full type resolution from bytecode |
-| "What values flow into this parameter?" | No — can't cross method boundaries | Yes — inter-procedural backward slice |
-| "Does this interface have implementations?" | Heuristic grep for class names | Yes — complete type hierarchy from class metadata |
-| "What does this lambda actually call?" | No — `invokedynamic` is invisible in source | Yes — MethodHandle extraction from bootstrap args |
-| "Is this field used via reflection/DI?" | No — annotation semantics are opaque | Yes — annotation values are queryable data |
-| "What's the real type of `Object` fields?" | No — requires dataflow across methods | Yes — cross-method field assignment tracking |
-| Controller inheritance | No — can't resolve inherited annotations | Yes — walks type hierarchy for endpoint discovery |
+## Why a Bytecode Graph?
 
-**The fundamental issue:** Tree-sitter operates on **syntax** (one file at a time, no type resolution, no cross-file dataflow). Graphite operates on **semantics** (compiled bytecode with full type information, inter-procedural analysis, resolved generics).
+Source search and syntax trees help you locate and read code. Graphite adds
+relationships extracted from compiled artifacts: method and field descriptors,
+class hierarchies, annotations, lambda targets, and dataflow edges. These let an
+agent ask a focused question and receive structured results to investigate further.
 
-For LLMs, this difference is critical. A syntax tree tells you what code *looks like*. A program graph tells you what code *does*.
+The graph is a static analysis of the artifacts you supply. Its coverage depends
+on the included classes, available dependencies, and supported analysis patterns;
+dynamic loading and reflection can leave relationships unresolved. It is useful
+context for code investigation, not a complete account of runtime behavior.
 
 ## Quick Start
 

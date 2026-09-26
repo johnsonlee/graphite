@@ -1,0 +1,24 @@
+name: Bug report
+description: Report an installation, graph build, or query problem.
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Versions and environment
+      description: Include graphite --version, OS, Java version, and installation method.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include the command or Cypher query and a small shareable example when possible. Remove secrets and proprietary data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual results
+      description: Include relevant error output and explain what you expected.
+    validations:
+      required: true
