@@ -3,6 +3,15 @@
 Status: proposal (design for review). Owner: johnsonlee. Baseline: PR #124 (the Rust
 backend) on top of `main` at #128.
 
+**Reading this document:** this is a design proposal anchored to the baseline
+above, not a current feature inventory. The Rust CLI now runs `query`, `serve`,
+and `mcp`, while `build` delegates to the JVM frontend.
+[PR #154](https://github.com/johnsonlee/graphite/pull/154) implements the Swift / iOS
+frontend and protobuf Graph IR and is currently in progress. The TypeScript
+frontend remains a proposal; neither should be read as a released capability.
+See the [README architecture](../README.md#architecture) and
+[runnable demo](quickstart-demo.md) for the current user workflow.
+
 Graphite today is one JVM program: SootUp builds the graph, the same jar persists it, serves
 it and answers Cypher over it. PR #124 adds a Rust server and CLI that read the persisted
 graph, and the differential harness shows the two servers answer identically. That leaves the

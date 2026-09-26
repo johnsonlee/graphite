@@ -1,0 +1,15 @@
+name: Share a use case
+description: Describe a code investigation you want Graphite to support.
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: What question are you trying to answer?
+      description: Describe the task and what makes it difficult today.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Application and input context
+      description: For example, JVM backend or Android app, JAR or APK, relevant framework, and whether you have tried Graphite. Do not include private artifacts or secrets.

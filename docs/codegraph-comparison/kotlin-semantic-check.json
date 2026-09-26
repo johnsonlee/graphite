@@ -1,0 +1,74 @@
+{
+  "source_file": "org/jetbrains/kotlin/backend/common/extensions/IrPluginContextImpl.kt",
+  "source_lines": [
+    {
+      "line": 66,
+      "text": "        if (fqName.isRoot || pkg.fragments.isNotEmpty()) return pkg.memberScope"
+    },
+    {
+      "line": 114,
+      "text": "        assert(!fqName.isRoot)"
+    },
+    {
+      "line": 125,
+      "text": "        assert(!fqName.isRoot)"
+    },
+    {
+      "line": 142,
+      "text": "        assert(!fqName.isRoot)"
+    },
+    {
+      "line": 151,
+      "text": "        assert(!fqName.isRoot)"
+    }
+  ],
+  "codegraph_sql": "select a.name,b.name,e.kind from edges e join nodes a on a.id=e.source join nodes b on b.id=e.target where a.file_path='org/jetbrains/kotlin/backend/common/extensions/IrPluginContextImpl.kt' and b.name='isRoot'",
+  "codegraph_result": [],
+  "javap_command": "javap -c -p -classpath kotlin-compiler-2.0.21.jar org.jetbrains.kotlin.backend.common.extensions.IrPluginContextImpl",
+  "javap_invocations": [
+    "12: invokevirtual #131                // Method org/jetbrains/kotlin/name/FqName.isRoot:()Z",
+    "7: invokevirtual #131                // Method org/jetbrains/kotlin/name/FqName.isRoot:()Z",
+    "7: invokevirtual #131                // Method org/jetbrains/kotlin/name/FqName.isRoot:()Z",
+    "7: invokevirtual #131                // Method org/jetbrains/kotlin/name/FqName.isRoot:()Z",
+    "7: invokevirtual #131                // Method org/jetbrains/kotlin/name/FqName.isRoot:()Z"
+  ],
+  "indexed_methods_sql": "select name,start_line from nodes where file_path='org/jetbrains/kotlin/backend/common/extensions/IrPluginContextImpl.kt' and name in ('resolveMemberScope','referenceClass','referenceTypeAlias','referenceFunctions','referenceProperties')",
+  "indexed_methods": [
+    [
+      "referenceClass",
+      112
+    ],
+    [
+      "referenceClass",
+      158
+    ],
+    [
+      "referenceFunctions",
+      140
+    ],
+    [
+      "referenceFunctions",
+      170
+    ],
+    [
+      "referenceProperties",
+      149
+    ],
+    [
+      "referenceProperties",
+      174
+    ],
+    [
+      "referenceTypeAlias",
+      123
+    ],
+    [
+      "referenceTypeAlias",
+      162
+    ],
+    [
+      "resolveMemberScope",
+      63
+    ]
+  ]
+}

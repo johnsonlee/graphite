@@ -2,60 +2,151 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
+English · [简体中文](README.zh.md)
+
 **Structured codebase context for LLMs.** Graphite turns JVM bytecode into a queryable program graph — so AI agents can understand your codebase without reading every file.
+
+[Production scale](#production-scale) · [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
+
+![Graphite Explorer: class relationships in a 64-graph, 19.4M-node workspace](docs/images/fixture64-explorer.png)
+
+**64 graphs · 19.4M nodes · 20.4M edges.** Explore class relationships within a
+loaded corpus of Android, Tika, Hive, and Kotlin compiler bytecode.
+[Reproduce this view](docs/public-scale-demo.md).
 
 ## The Problem
 
-LLMs working with code face a fundamental constraint: **context windows are finite, but codebases are not.**
+LLMs working with code face a fundamental constraint: **a codebase can exceed
+what fits in a single prompt.** Finding a method is only the beginning. To answer “which
+constants reach this API?” or “what calls this method?”, an agent must connect
+information spread across callers, fields, types, and dependencies.
 
-Dumping source files into a prompt is wasteful. Most tokens describe boilerplate, imports, and formatting — not the relationships that matter. An LLM trying to understand "what calls this method?" or "what constants flow into this API?" must read hundreds of files to answer questions that a graph can answer in milliseconds.
+Source files contain the evidence, but retrieving files still leaves the agent to
+reconstruct those relationships. Graphite makes the relationships queryable so an
+agent can retrieve focused context for the question it is trying to answer.
 
 ## The Solution
 
-Graphite builds a **program graph** from compiled bytecode — nodes are program elements (methods, fields, constants, call sites), edges are relationships (dataflow, calls, type hierarchy). LLMs query the graph instead of reading source code.
+Graphite builds a **program graph**: nodes represent program elements and edges
+represent relationships such as calls and dataflow. An agent can discover the
+schema, query the graph with Cypher through MCP, and receive structured results.
+The same graph is available through the CLI and web Explorer.
 
-**Before Graphite:** Feed 500 source files (~2M tokens) to find AB test IDs.
-**With Graphite:** Query `graph.callSites(pattern)` → get 23 constants in 12 tokens.
+For example, to investigate a feature flag, query the constants that flow into the
+flag API and the methods containing those call sites. The result gives the agent
+specific evidence to inspect further. The walkthrough below demonstrates both
+queries and their actual output.
 
-### What the Graph Captures
+## Why Not Just Tree-sitter?
 
-| Relationship | Example | LLM Use Case |
-|-------------|---------|---------------|
-| **Dataflow** | `x = 42; foo(x)` → constant 42 flows to `foo` | Track config values, feature flags, API keys |
-| **Call graph** | `UserService.save()` calls `Repository.insert()` | Understand execution paths without reading source |
-| **Type hierarchy** | `AdminUser extends User implements Auditable` | Resolve polymorphism, find implementations |
-| **Annotations** | `@GetMapping("/api/users")` on `listUsers()` | Discover endpoints, serialization rules, DI config |
-| **Lambda/method ref** | `items.stream().map(User::getName)` | Trace functional pipelines |
-| **Resources** | `config/application.yml` inside a fat JAR | Cross-reference code with config files |
+**Program semantics are Graphite's foundation.** Its graph models values,
+parameters, returns, fields, calls, and types so that code relationships become
+queryable context for agents.
 
-### Token Efficiency
+The JVM frontend starts from **compiled bytecode**: method descriptors, field
+references, and instructions already carry information established by the
+compiler. Graphite builds its program model from that foundation and can analyze
+application artifacts and third-party dependencies **without their source code**.
+Its JVM analysis API includes backward slicing across method parameters to find
+which caller arguments supply a value.
 
-| Task | Raw Source | Graphite Query | Reduction |
-|------|-----------|----------------|-----------|
-| Find all AB test IDs | ~500 files, 2M tokens | `callSites` + `backwardSlice` → 23 results | **99.99%** |
-| Map REST endpoints | ~200 controllers, 800K tokens | `memberAnnotations` scan → structured list | **99.9%** |
-| Find dead code | Entire codebase, 5M tokens | `branchScopes` + `callSites` → dead paths | **99.99%** |
-| Resolve type hierarchy | ~100 files per type chain | `supertypes` / `subtypes` → direct answer | **99%** |
+[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) supplies syntax trees.
+Building comparable program analysis on top requires symbol and type resolution,
+control-flow and dataflow models, argument/parameter mapping, and interprocedural
+analysis. Those are substantial analysis layers beyond the parser. Graphite
+provides a program-graph foundation, persistent storage, and Cypher/MCP access
+in one system.
 
-Graphite uses **Cypher** (the industry-standard graph query language) for querying. The `graphite` binary runs the Rust engine in `backend/cypher` for `query`, `serve` and `mcp`; the Kotlin API's `graph.query(...)` runs the ANTLR-based engine in `frontend/jvm/cypher`. Both speak the same read-oriented dialect and are checked against each other by a differential harness (`backend/bench`).
+That foundation also operates at production scale: **100M+ nodes across 40+
+graphs in one process**, with a [reproducible public 64-graph demonstration](docs/public-scale-demo.md)
+containing 19.4 million nodes.
 
-## Why Not Tree-sitter?
+| Question | Information beyond syntax | Graphite's queryable context |
+|----------|---------------------------|-----------------------------|
+| Which constants reach this argument? | Dataflow through assignments, fields, and calls | Constant nodes and dataflow relationships |
+| Where is this method called? | Method identities and call targets | Call sites with caller and callee descriptors |
+| Which types implement this interface? | Resolved type relationships | Indexed class and interface hierarchy |
+| What does this method reference target? | Compiler-generated linkage | Targets extracted from supported bootstrap method handles |
+| Where is this configuration key read? | Connections between code and packaged resources | Resource values and supported lookup relationships |
 
-Tools like [GitNexus](https://github.com/nicobailon/gitnexus), Aider, and most LLM code assistants use [Tree-sitter](https://tree-sitter.github.io/) for codebase understanding. Tree-sitter parses syntax — it sees **text structure**, not **program semantics**.
+The graph is a static analysis of the supplied artifacts. Coverage depends on the
+included classes, dependencies, and supported analysis patterns; reflection and
+dynamic loading can leave relationships unresolved.
 
-| Capability | Tree-sitter | Graphite |
-|-----------|-------------|----------|
-| "What type is this variable?" | No — sees `var x = foo()`, can't resolve `foo`'s return type | Yes — full type resolution from bytecode |
-| "What values flow into this parameter?" | No — can't cross method boundaries | Yes — inter-procedural backward slice |
-| "Does this interface have implementations?" | Heuristic grep for class names | Yes — complete type hierarchy from class metadata |
-| "What does this lambda actually call?" | No — `invokedynamic` is invisible in source | Yes — MethodHandle extraction from bootstrap args |
-| "Is this field used via reflection/DI?" | No — annotation semantics are opaque | Yes — annotation values are queryable data |
-| "What's the real type of `Object` fields?" | No — requires dataflow across methods | Yes — cross-method field assignment tracking |
-| Controller inheritance | No — can't resolve inherited annotations | Yes — walks type hierarchy for endpoint discovery |
+**Measured against CodeGraph 1.6.0:** Graphite identifies verified Kotlin-to-Java
+property calls missing from its graph, exposes programmable aggregation through
+MCP, and delivered **2.38–2.65× lower median latency** across five runs of the same
+nine-caller lookup on Commons Lang. See the [comparison, raw results and reproduction steps](docs/codegraph-comparison.md)
+for the exact versions, query scope and larger-project findings.
 
-**The fundamental issue:** Tree-sitter operates on **syntax** (one file at a time, no type resolution, no cross-file dataflow). Graphite operates on **semantics** (compiled bytecode with full type information, inter-procedural analysis, resolved generics).
+## Production Scale
 
-For LLMs, this difference is critical. A syntax tree tells you what code *looks like*. A program graph tells you what code *does*.
+**100M+ nodes across 40+ graphs, served by one process.**
+
+Measured on a production deployment of `graphite serve` (Rust backend, graphs
+memory-mapped):
+
+| | |
+|---|---|
+| Graphs served by one process | 40+ |
+| Nodes | 100M+ |
+| Edges | 100M+ |
+| Methods | 10M+ |
+| Call sites | 20M+ |
+| Cypher latency, P50 | ~500 ms |
+| Cypher latency, P95 | ~15 s |
+
+Latency is over the mixed production query stream, most of it cross-graph. Narrow
+queries (a class, a method, a constant) answer from the string indexes in
+milliseconds; the P95 is the broad shapes that search every property of every
+node. `--metrics` exposes the same figures for your own deployment as
+`http_server_requests_seconds` and the Cypher families.
+
+## Try It Locally
+
+Ask **“Which constant reaches `enableFeature`, and who calls it?”** The
+[runnable Java example](docs/quickstart-demo.md) compiles a small JAR, builds its
+graph, and returns `42` and `demo.Checkout.startCheckout()` from two queries.
+No application server or AI subscription is needed.
+
+After installing Graphite and JDK 17 or newer:
+
+```bash
+git clone https://github.com/johnsonlee/graphite.git
+cd graphite
+bash examples/quickstart/run.sh
+```
+
+See the walkthrough for the complete queries, expected JSON, and the command to
+open the saved graph in the web Explorer.
+
+## What the Graph Captures
+
+| Relationship | Example | Question it helps answer |
+|-------------|---------|-------------------------|
+| **Dataflow** | `x = 42; foo(x)` → constant 42 flows to `foo` | Which constants can reach this argument? |
+| **Call graph** | `UserService.save()` calls `Repository.insert()` | Where is this method called? |
+| **Type hierarchy** | `AdminUser extends User implements Auditable` | Which indexed types implement this interface? |
+| **Annotations** | `@GetMapping("/api/users")` on `listUsers()` | Which endpoints are declared in this app? |
+| **Lambda/method ref** | `items.stream().map(User::getName)` | Which method does this reference target? |
+| **Resources** | `config/application.yml` inside a fat JAR | Where is a packaged configuration key read? |
+
+Graphite uses a **read-oriented Cypher subset** for querying. The `graphite` binary
+runs the Rust engine in `backend/cypher` for `query`, `serve`, and `mcp`; the Kotlin
+API's `graph.query(...)` runs the ANTLR-based engine in `frontend/jvm/cypher`. A
+differential harness (`backend/bench`) checks the two implementations against each
+other.
+
+## Frontend Support
+
+The current released frontend reads JVM and Android artifacts. Graph building
+requires Java; APK analysis also requires Android platform jars. These inputs
+can be analyzed without their source checkout.
+
+**In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
+adds an Apple frontend for Swift packages and Xcode projects, feeding the shared
+program graph through Graph IR. This work is not yet merged. Language frontends
+extend the input paths to Graphite's structured context and query tools.
 
 ## Quick Start
 
@@ -430,27 +521,6 @@ The Explorer homepage displays this topology by default when more than one
 graph is loaded. Isolated graphs remain visible, and double-clicking a graph
 drills down to its class overview.
 
-## Scale
-
-Measured on a production deployment of `graphite serve` (Rust backend, graphs
-memory-mapped):
-
-| | |
-|---|---|
-| Graphs served by one process | 40+ |
-| Nodes | 100M+ |
-| Edges | 100M+ |
-| Methods | 10M+ |
-| Call sites | 20M+ |
-| Cypher latency, P50 | ~500 ms |
-| Cypher latency, P95 | ~15 s |
-
-Latency is over the mixed production query stream, most of it cross-graph. Narrow
-queries (a class, a method, a constant) answer from the string indexes in
-milliseconds; the P95 is the broad shapes that search every property of every
-node. `--metrics` exposes the same figures for your own deployment as
-`http_server_requests_seconds` and the Cypher families.
-
 ## Architecture
 
 Graphite is split into per-language *frontends*, which turn compiled artifacts into a
@@ -569,7 +639,7 @@ dependencies {
 
 ## MCP Integration
 
-The `graphite` binary is an [Model Context Protocol](https://modelcontextprotocol.io)
+The `graphite` binary is a [Model Context Protocol](https://modelcontextprotocol.io)
 server: the thirteen tools the `graphite-mcp` npm package used to expose (`graphs`,
 `cypher`, `node`, `outgoing`, `incoming`, `annotations`, `endpoints`, `resources`,
 `resource`, `subgraph`, `overview`, `c4`, `openapi`) plus `schema`, served in-process by
@@ -587,7 +657,22 @@ Two ways to connect:
 - **HTTP**, for remote or shared setups: every `graphite serve` also answers MCP at
   `POST /mcp` (Streamable HTTP).
 
-Configure in Claude Code (`~/.claude/settings.json`):
+For **Claude Code**, run this from your project directory after building a graph.
+Replace `/data/app-graph` with the absolute path to your saved graph:
+
+```bash
+claude mcp add --transport stdio --scope project graphite -- \
+  graphite mcp --graph app:/data/app-graph
+```
+
+This creates or updates `.mcp.json` at the project root. Open Claude Code, approve
+the project server when prompted, and use `/mcp` to check its connection. See the
+[Claude Code MCP documentation](https://code.claude.com/docs/en/mcp#project-scope)
+for configuration scopes. The `graphite` executable must be on the client's
+`PATH`; otherwise use its absolute path as the command.
+
+For clients that accept an `mcpServers` JSON configuration, use the following
+entry in the client's MCP configuration file. Repeat `--graph` to load more graphs:
 
 ```json
 {
@@ -600,7 +685,15 @@ Configure in Claude Code (`~/.claude/settings.json`):
 }
 ```
 
-or point an HTTP-capable client at a running server: `{"url": "http://localhost:8080/mcp"}`.
+Alternatively, start `graphite serve --id app /data/app-graph` and connect Claude
+Code over HTTP:
+
+```bash
+claude mcp add --transport http --scope project graphite http://localhost:8080/mcp
+```
+
+Choose either stdio or HTTP for the `graphite` entry. Other HTTP-capable clients
+can connect to `http://localhost:8080/mcp` using their Streamable HTTP settings.
 `/mcp` validates the `Origin` header (DNS-rebinding protection): requests without one are
 accepted, loopback origins are accepted, any other origin is refused with 403 unless listed
 with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable; `*` allows
@@ -615,7 +708,7 @@ answered a 404 without it). The npm package is not published from v2.5.0 on; its
 version, 2.4.8, keeps working against a 2.5.0 server because it only calls the REST
 routes above.
 
-Start the Explorer first, then LLMs can query the graph:
+For HTTP connections, start the Explorer first; stdio opens the graph directly:
 
 ```bash
 # Start Explorer

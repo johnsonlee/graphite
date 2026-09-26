@@ -1,0 +1,10 @@
+{
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "cpu": "Apple M3 Max",
+  "memory_bytes": 68719476736,
+  "graphite": "2.8.0",
+  "codegraph": "1.6.0",
+  "codegraph_release_commit": "dfccdf62547fcd76d343344d823a0e1998d3a89f",
+  "codegraph_main_inspected_separately": "ba3c21e50d9129d2f5f3843ec3728868ae6d47a1"
+}

@@ -1,0 +1,114 @@
+{
+  "scope": "persistent MCP stdio request/response; five warmups; thirty alternating samples; no startup timing",
+  "params": {
+    "graphite": {
+      "name": "cypher",
+      "arguments": {
+        "graph_id": "test",
+        "query": "MATCH (c:CallSiteNode) WHERE c.callee_class = 'org.jetbrains.kotlin.name.FqName' AND c.callee_name = 'isRoot' RETURN DISTINCT c.caller_signature AS caller"
+      }
+    },
+    "codegraph": {
+      "name": "codegraph_callers",
+      "arguments": {
+        "symbol": "isRoot",
+        "file": "org/jetbrains/kotlin/name/FqName.java",
+        "limit": 100
+      }
+    }
+  },
+  "results": {
+    "codegraph": {
+      "content": [
+        {
+          "type": "text",
+          "text": "**Callers of isRoot (10 found)**\n\n- getScopeForPackage (method) - org/jetbrains/kotlin/js/translate/context/StaticContext.java:625\n- parent (method) - org/jetbrains/kotlin/name/FqName.java:66\n- setFqName (method) - org/jetbrains/kotlin/psi/KtPackageDirective.java:121\n- internalNameByClassId (method) - org/jetbrains/kotlin/resolve/jvm/JvmClassName.java:34\n- getTopLevelClassifierDescriptors (method) - org/jetbrains/kotlin/resolve/lazy/ResolveSession.java:298\n- getClassOrObjectDescriptorsByFqName (method) - org/jetbrains/kotlin/resolve/lazy/ResolveSessionUtils.java:50\n- findClassByRelativePath (method) - org/jetbrains/kotlin/resolve/lazy/ResolveSessionUtils.java:81\n- addMeAndParentPackages (method) - org/jetbrains/kotlin/resolve/lazy/declarations/FileBasedDeclarationProviderFactory.java:61\n- getAllDeclaredSubPackagesOf (method) - org/jetbrains/kotlin/resolve/lazy/declarations/FileBasedDeclarationProviderFactory.java:73\n- computeNameAsString (method) - org/jetbrains/kotlin/psi/KtImportInfo.kt:27 \u2014 via callback registration"
+        }
+      ]
+    },
+    "graphite": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"columns\": [\n    \"caller\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"org.jetbrains.kotlin.serialization.js.KotlinJavascriptSerializationUtil.getSubPackagesFqNames(org.jetbrains.kotlin.descriptors.PackageFragmentProvider,org.jetbrains.kotlin.name.FqName,java.util.Set)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.serialization.js.KotlinJavascriptPackageFragmentProviderKt.createKotlinJavascriptPackageFragmentProvider(org.jetbrains.kotlin.storage.StorageManager,org.jetbrains.kotlin.descriptors.ModuleDescriptor,org.jetbrains.kotlin.metadata.js.JsProtoBuf$Header,java.util.List,org.jetbrains.kotlin.utils.JsMetadataVersion,org.jetbrains.kotlin.serialization.deserialization.DeserializationConfiguration,org.jetbrains.kotlin.incremental.components.LookupTracker)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.serialization.js.JsSerializerProtocol.getKjsmFilePath(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.serialization.deserialization.builtins.BuiltInSerializerProtocol.shortName(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.scopes.DescriptorKindExclude$TopLevelPackages.excludes(org.jetbrains.kotlin.descriptors.DeclarationDescriptor)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory.addMeAndParentPackages(org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory$Index,org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory.lambda$getAllDeclaredSubPackagesOf$1(org.jetbrains.kotlin.name.FqName,org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.lazy.ResolveSessionUtils.getClassOrObjectDescriptorsByFqName(org.jetbrains.kotlin.descriptors.ModuleDescriptor,org.jetbrains.kotlin.name.FqName,java.util.function.Predicate)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.lazy.ResolveSessionUtils.findClassByRelativePath(org.jetbrains.kotlin.resolve.scopes.MemberScope,org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.lazy.ResolveSession.getTopLevelClassifierDescriptors(org.jetbrains.kotlin.name.FqName,org.jetbrains.kotlin.incremental.components.LookupLocation)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.jvm.JvmClassName.internalNameByClassId(org.jetbrains.kotlin.name.ClassId)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt.resolveTopLevelClass(org.jetbrains.kotlin.descriptors.ModuleDescriptor,org.jetbrains.kotlin.name.FqName,org.jetbrains.kotlin.incremental.components.LookupLocation)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.QualifiedExpressionResolver.quickResolveToPackage(org.jetbrains.kotlin.descriptors.ModuleDescriptor,java.util.List,org.jetbrains.kotlin.resolve.BindingTrace,org.jetbrains.kotlin.resolve.QualifierPosition)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.resolve.DeclarationResolver.checkRedeclarationsInPackages(org.jetbrains.kotlin.resolve.lazy.TopLevelDescriptorProvider,com.google.common.collect.Multimap)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.psi.debugText.DebugTextUtilKt.getDebugText(org.jetbrains.kotlin.psi.KtElement)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.psi.KtPsiFactory.createPackageDirectiveIfNeeded(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.psi.KtPsiFactory.createImportDirective(org.jetbrains.kotlin.resolve.ImportPath)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.psi.KtPsiFactory.appendImport(java.lang.StringBuilder,org.jetbrains.kotlin.resolve.ImportPath)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.psi.KtPackageDirective.setFqName(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.psi.KtImportInfo.computeNameAsString()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.FqNamesUtilKt.isSubpackageOf(org.jetbrains.kotlin.name.FqName,org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.FqNamesUtilKt.isOneSegmentFQN(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.FqNamesUtilKt.tail(org.jetbrains.kotlin.name.FqName,org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.FqNamesUtilKt.parentOrNull(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.FqName.parent()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.ClassId.<init>(org.jetbrains.kotlin.name.FqName,org.jetbrains.kotlin.name.FqName,boolean)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.ClassId.getOuterClassId()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.ClassId.getOutermostClassId()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.ClassId.isNestedClass()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.ClassId.asSingleFqName()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.ClassId.asString()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.ClassId.asFqNameString()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.name.ClassId.toString()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.load.kotlin.DescriptorBasedTypeSignatureMappingKt.computeInternalName(org.jetbrains.kotlin.descriptors.ClassDescriptor,org.jetbrains.kotlin.load.kotlin.TypeMappingConfiguration)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.load.java.lazy.descriptors.LazyJavaPackageScope.classes$lambda$1(org.jetbrains.kotlin.load.java.lazy.descriptors.LazyJavaPackageScope,org.jetbrains.kotlin.load.java.lazy.LazyJavaResolverContext,org.jetbrains.kotlin.load.java.lazy.descriptors.LazyJavaPackageScope$FindClassRequest)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.load.java.lazy.descriptors.LazyJavaClassDescriptor$LazyJavaClassTypeConstructor.getPurelyImplementedSupertype()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.load.java.components.AbstractJavaResolverCache.findInPackageFragments(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.library.metadata.impl.KlibMetadataModuleDescriptorFactoryImpl.createPackageFragmentProvider(org.jetbrains.kotlin.library.KotlinLibrary,org.jetbrains.kotlin.library.metadata.PackageAccessHandler,java.util.List,org.jetbrains.kotlin.storage.StorageManager,org.jetbrains.kotlin.descriptors.ModuleDescriptor,org.jetbrains.kotlin.serialization.deserialization.DeserializationConfiguration,org.jetbrains.kotlin.descriptors.PackageFragmentProvider,org.jetbrains.kotlin.incremental.components.LookupTracker)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.js.translate.context.StaticContext.getScopeForPackage(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.js.translate.context.DeclarationExporter.getLocalPackageName(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.js.naming.NameSuggestion.generate(org.jetbrains.kotlin.descriptors.DeclarationDescriptor,org.jetbrains.kotlin.resolve.BindingContext)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.ir.util.KotlinLikeDumper.visitFile(org.jetbrains.kotlin.ir.declarations.IrFile,org.jetbrains.kotlin.ir.declarations.IrDeclaration)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.ir.util.IrUtilsKt.computeFqNameString(org.jetbrains.kotlin.ir.declarations.IrDeclarationWithName,java.lang.StringBuilder)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.ir.backend.js.export.ExportModelGenerator.generateExport(org.jetbrains.kotlin.ir.declarations.IrPackageFragment)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.incremental.BuildUtilKt.getChangedAndImpactedSymbols(java.util.List,java.lang.Iterable,org.jetbrains.kotlin.build.report.ICReporter)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.incremental.AbiSnapshotDiffService$Companion.doCompute(org.jetbrains.kotlin.incremental.AbiSnapshot,org.jetbrains.kotlin.incremental.AbiSnapshot,org.jetbrains.kotlin.incremental.IncrementalCacheCommon,java.util.Collection)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.session.MetadataLibraryBasedSymbolProvider.computePackagePartsInfos(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.session.KlibIcCacheBasedSymbolProvider.knownPackagesInLibraries_delegate$lambda$4(org.jetbrains.kotlin.fir.session.KlibIcCacheBasedSymbolProvider)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.session.KlibBasedSymbolProvider.knownPackagesInLibraries_delegate$lambda$6(org.jetbrains.kotlin.fir.session.KlibBasedSymbolProvider)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.resolve.transformers.SupertypeComputationSession.breakLoopFor$checkIsInLoop(org.jetbrains.kotlin.fir.resolve.transformers.SupertypeComputationSession,java.util.Set,java.util.Set,java.util.Set,java.util.List,org.jetbrains.kotlin.fir.FirSession,org.jetbrains.kotlin.fir.declarations.FirClassLikeDeclaration,boolean,boolean)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.resolve.transformers.ImportUtilsKt.findLongestExistingPackage(org.jetbrains.kotlin.fir.resolve.providers.FirSymbolProvider,org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.resolve.transformers.FirImportResolveTransformer.transformImport(org.jetbrains.kotlin.fir.declarations.FirImport,java.lang.Object)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.resolve.FirSamResolver.createSyntheticConstructorSymbol(org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.resolve.DeclarationUtilsKt.getContainingDeclaration(org.jetbrains.kotlin.fir.declarations.FirClassLikeDeclaration,org.jetbrains.kotlin.fir.FirSession)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.resolve.DeclarationUtilsKt.getContainingDeclaration(org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol,org.jetbrains.kotlin.fir.FirSession)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.renderer.FirPackageDirectiveRenderer.render(org.jetbrains.kotlin.fir.FirPackageDirective)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.java.FirJavaElementFinder.findClass(java.lang.String,com.intellij.psi.search.GlobalSearchScope)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.builder.AbstractRawFirBuilder.callableIdForName(org.jetbrains.kotlin.name.Name)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.backend.FirMangleComputer.visitParent(org.jetbrains.kotlin.fir.declarations.FirDeclaration)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.analysis.js.checkers.declaration.FirJsPackageDirectiveChecker.check(org.jetbrains.kotlin.fir.declarations.FirFile,org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext,org.jetbrains.kotlin.diagnostics.DiagnosticReporter)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.analysis.checkers.extended.PlatformClassMappedToKotlinImportsChecker.check(org.jetbrains.kotlin.fir.declarations.FirFile,org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext,org.jetbrains.kotlin.diagnostics.DiagnosticReporter)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirPackageConflictsWithClassifierChecker.check(org.jetbrains.kotlin.fir.declarations.FirFile,org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext,org.jetbrains.kotlin.diagnostics.DiagnosticReporter)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirImportsChecker.checkAllUnderFromEnumEntry(org.jetbrains.kotlin.fir.declarations.FirImport,org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext,org.jetbrains.kotlin.diagnostics.DiagnosticReporter)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirImportsChecker.checkAllUnderFromObject(org.jetbrains.kotlin.fir.declarations.FirImport,org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext,org.jetbrains.kotlin.diagnostics.DiagnosticReporter)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirImportsChecker.resolvesToClass(org.jetbrains.kotlin.fir.declarations.FirResolvedImport,org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirImportsChecker.checkImportApiStatus(org.jetbrains.kotlin.fir.declarations.FirImport,org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext,org.jetbrains.kotlin.diagnostics.DiagnosticReporter)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.descriptors.runtime.components.ReflectKotlinClassFinderKt.toRuntimeFqName(org.jetbrains.kotlin.name.ClassId)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.descriptors.runtime.components.ReflectJavaClassFinder.findClass(org.jetbrains.kotlin.load.java.JavaClassFinder$Request)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.descriptors.impl.SubpackagesScope.getContributedDescriptors(org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter,kotlin.jvm.functions.Function1)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.descriptors.impl.LazyPackageViewDescriptorImpl.getContainingDeclaration()\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.descriptors.PackageFragmentProviderImpl.getSubPackagesOf$lambda$4(org.jetbrains.kotlin.name.FqName,org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.descriptors.DescriptorUtilKt.resolveClassByFqName(org.jetbrains.kotlin.descriptors.ModuleDescriptor,org.jetbrains.kotlin.name.FqName,org.jetbrains.kotlin.incremental.components.LookupLocation)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.cli.jvm.modules.CliJavaModuleFinder.createModuleFromSignature$lambda$14$lambda$12$lambda$11(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl.findClass(java.lang.String,com.intellij.psi.search.GlobalSearchScope)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl.findClasses$lambda$14(org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl,java.lang.String,com.intellij.psi.search.GlobalSearchScope)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.cli.jvm.compiler.CliKotlinAsJavaSupport.findFilesForFacade(org.jetbrains.kotlin.name.FqName,com.intellij.psi.search.GlobalSearchScope)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.backend.jvm.mapping.IrTypeMapper.computeClassInternalName(org.jetbrains.kotlin.ir.declarations.IrClass,int)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.backend.common.serialization.mangle.ir.IrMangleComputer$Visitor.visitPackageFragment(org.jetbrains.kotlin.ir.declarations.IrPackageFragment)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.backend.common.serialization.mangle.descriptor.DescriptorMangleComputer$Visitor.visitPackageFragmentDescriptor(org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor,java.lang.Void)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.backend.common.extensions.IrPluginContextImpl.resolveMemberScope(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.backend.common.extensions.IrPluginContextImpl.referenceClass(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.backend.common.extensions.IrPluginContextImpl.referenceTypeAlias(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.backend.common.extensions.IrPluginContextImpl.referenceFunctions(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.backend.common.extensions.IrPluginContextImpl.referenceProperties(org.jetbrains.kotlin.name.FqName)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.asJava.finder.JavaElementFinder.findSyntheticInnerClass(org.jetbrains.kotlin.name.FqName,java.lang.String,com.intellij.psi.search.GlobalSearchScope,java.util.List,kotlin.jvm.functions.Function1)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.asJava.KotlinAsJavaSupportBase.getScriptClasses(org.jetbrains.kotlin.name.FqName,com.intellij.psi.search.GlobalSearchScope)\"\n    },\n    {\n      \"caller\": \"org.jetbrains.kotlin.analysis.decompiler.psi.text.BuildDecompiledTextKt.buildDecompiledTextImpl$appendDecompiledTextAndPackageName(java.lang.StringBuilder,org.jetbrains.kotlin.name.FqName)\"\n    }\n  ],\n  \"rowCount\": 87,\n  \"total\": {\n    \"value\": 87,\n    \"relation\": \"eq\"\n  }\n}"
+        }
+      ]
+    }
+  },
+  "samples_ms": {
+    "graphite": [
+      0.270083,
+      0.250917,
+      0.24725,
+      0.331209,
+      0.294916,
+      0.24825,
+      0.242041,
+      0.254625,
+      0.257916,
+      0.247042,
+      0.243959,
+      0.26975,
+      0.257666,
+      0.285375,
+      0.255083,
+      0.251584,
+      0.252125,
+      0.274834,
+      0.270208,
+      0.246125,
+      0.236833,
+      0.253833,
+      0.244458,
+      0.242958,
+      0.24075,
+      0.238333,
+      0.244166,
+      0.246459,
+      0.284458,
+      0.255542
+    ],
+    "codegraph": [
+      0.569875,
+      0.434083,
+      0.517083,
+      0.455042,
+      0.39625,
+      0.35,
+      0.37875,
+      0.360291,
+      0.344542,
+      0.324416,
+      0.3425,
+      0.494125,
+      0.359917,
+      0.342667,
+      0.399417,
+      0.358334,
+      0.395459,
+      0.381333,
+      0.355084,
+      0.354792,
+      0.364417,
+      0.331167,
+      0.339958,
+      0.340333,
+      0.330875,
+      0.36175,
+      0.368834,
+      0.34175,
+      0.35225,
+      0.333959
+    ]
+  },
+  "summary": {
+    "graphite": {
+      "median_ms": 0.2518545,
+      "p95_ms": 0.294916
+    },
+    "codegraph": {
+      "median_ms": 0.3591255,
+      "p95_ms": 0.517083
+    }
+  }
+}

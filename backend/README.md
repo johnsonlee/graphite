@@ -3,12 +3,14 @@
 A Rust reimplementation of `graphite-explore`. It reads the same on-disk graph format
 and serves the same HTTP API, so it is a drop-in replacement for the Kotlin server.
 
-`graphite` (the `query` subcommand) matches the Kotlin CLI on all 148 byte-level checks
-of stdout, stderr and exit code; `build` and `serve` are not ported.
+The current Rust `graphite` CLI runs `query`, `serve`, and `mcp`; `build` delegates
+bytecode analysis and graph creation to the JVM frontend. For a runnable first
+example, see the [quickstart demo](../docs/quickstart-demo.md).
 
-The server matches the Kotlin server on all 150 differential checks — every method and path the OpenAPI document declares, which the suite enforces as a checklist, and on the 64-graph gate
-corpus all 34 query results are byte-identical. Both counts have a boundary — the
-`graphite` CLI is not ported, and several routes and levels are untested — set out in
+The historical parity report records 148 byte-level checks for `query`, 150 server
+differential checks, and 34 byte-identical query results on the 64-graph gate
+corpus. These counts describe the tested revisions and coverage in that report,
+not a guarantee of parity for every current route or command. See
 [What the parity suite covers, and what it does not](../docs/rust-explorer-parity-and-latency.md#what-the-parity-suite-covers-and-what-it-does-not).
 
 Against the repository's real baseline — 64 graphs, 19.4M nodes, cold, P95 taken across

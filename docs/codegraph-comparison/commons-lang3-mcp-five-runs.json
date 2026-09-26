@@ -1,0 +1,592 @@
+[
+  {
+    "rss_kib_after_queries": {
+      "graphite": 24064,
+      "codegraph": 102784
+    },
+    "scope": "persistent MCP stdio request/response; five warmups; thirty alternating samples; no startup timing",
+    "params": {
+      "graphite": {
+        "name": "cypher",
+        "arguments": {
+          "graph_id": "test",
+          "query": "MATCH (c:CallSiteNode) WHERE c.callee_class = 'org.apache.commons.lang3.StringUtils' AND c.callee_name = 'isBlank' RETURN DISTINCT c.caller_signature AS caller"
+        }
+      },
+      "codegraph": {
+        "name": "codegraph_callers",
+        "arguments": {
+          "symbol": "isBlank",
+          "file": "org/apache/commons/lang3/StringUtils.java",
+          "limit": 100
+        }
+      }
+    },
+    "results": {
+      "codegraph": {
+        "content": [
+          {
+            "type": "text",
+            "text": "**Callers of isBlank (9 found)**\n\n- defaultIfBlank (method) - org/apache/commons/lang3/StringUtils.java:1562\n- getIfBlank (method) - org/apache/commons/lang3/StringUtils.java:2263\n- isAnyBlank (method) - org/apache/commons/lang3/StringUtils.java:3522\n- isNotBlank (method) - org/apache/commons/lang3/StringUtils.java:3773\n- notBlank (method) - org/apache/commons/lang3/Validate.java:779\n- createBigDecimal (method) - org/apache/commons/lang3/math/NumberUtils.java:162\n- createNumber (method) - org/apache/commons/lang3/math/NumberUtils.java:320\n- containsAllWords (method) - org/apache/commons/lang3/text/WordUtils.java:194\n- wrap (method) - org/apache/commons/lang3/text/WordUtils.java:631"
+          }
+        ]
+      },
+      "graphite": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"columns\": [\n    \"caller\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"org.apache.commons.lang3.Validate.notBlank(java.lang.CharSequence,java.lang.String,java.lang.Object[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.defaultIfBlank(java.lang.CharSequence,java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.getIfBlank(java.lang.CharSequence,java.util.function.Supplier)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isAnyBlank(java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isNotBlank(java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.containsAllWords(java.lang.CharSequence,java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.wrap(java.lang.String,int,java.lang.String,boolean,java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createBigDecimal(java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createNumber(java.lang.String)\"\n    }\n  ],\n  \"rowCount\": 9,\n  \"total\": {\n    \"value\": 9,\n    \"relation\": \"eq\"\n  }\n}"
+          }
+        ]
+      }
+    },
+    "samples_ms": {
+      "graphite": [
+        0.130125,
+        0.127584,
+        0.120917,
+        0.13,
+        0.102667,
+        0.1335,
+        0.111208,
+        0.101084,
+        0.107541,
+        0.109083,
+        0.100875,
+        0.156458,
+        0.130166,
+        0.101083,
+        0.117209,
+        0.098834,
+        0.112208,
+        0.10775,
+        0.106625,
+        0.136208,
+        0.11525,
+        0.105292,
+        0.098541,
+        0.112542,
+        0.107375,
+        0.102625,
+        0.098042,
+        0.122708,
+        0.107041,
+        0.10575
+      ],
+      "codegraph": [
+        0.426875,
+        0.367459,
+        0.307708,
+        0.273167,
+        0.397,
+        0.284875,
+        0.269125,
+        0.230708,
+        0.351833,
+        0.2585,
+        0.2595,
+        0.242,
+        0.2925,
+        0.258917,
+        0.255,
+        0.228958,
+        0.257916,
+        0.226542,
+        1.982,
+        0.269583,
+        0.257,
+        0.246209,
+        0.265542,
+        0.253542,
+        0.244708,
+        0.227125,
+        0.255875,
+        0.22225,
+        0.245583,
+        0.214208
+      ]
+    },
+    "summary": {
+      "graphite": {
+        "median_ms": 0.1084165,
+        "p95_ms": 0.136208
+      },
+      "codegraph": {
+        "median_ms": 0.258208,
+        "p95_ms": 0.426875
+      }
+    }
+  },
+  {
+    "rss_kib_after_queries": {
+      "graphite": 24064,
+      "codegraph": 99280
+    },
+    "scope": "persistent MCP stdio request/response; five warmups; thirty alternating samples; no startup timing",
+    "params": {
+      "graphite": {
+        "name": "cypher",
+        "arguments": {
+          "graph_id": "test",
+          "query": "MATCH (c:CallSiteNode) WHERE c.callee_class = 'org.apache.commons.lang3.StringUtils' AND c.callee_name = 'isBlank' RETURN DISTINCT c.caller_signature AS caller"
+        }
+      },
+      "codegraph": {
+        "name": "codegraph_callers",
+        "arguments": {
+          "symbol": "isBlank",
+          "file": "org/apache/commons/lang3/StringUtils.java",
+          "limit": 100
+        }
+      }
+    },
+    "results": {
+      "codegraph": {
+        "content": [
+          {
+            "type": "text",
+            "text": "**Callers of isBlank (9 found)**\n\n- defaultIfBlank (method) - org/apache/commons/lang3/StringUtils.java:1562\n- getIfBlank (method) - org/apache/commons/lang3/StringUtils.java:2263\n- isAnyBlank (method) - org/apache/commons/lang3/StringUtils.java:3522\n- isNotBlank (method) - org/apache/commons/lang3/StringUtils.java:3773\n- notBlank (method) - org/apache/commons/lang3/Validate.java:779\n- createBigDecimal (method) - org/apache/commons/lang3/math/NumberUtils.java:162\n- createNumber (method) - org/apache/commons/lang3/math/NumberUtils.java:320\n- containsAllWords (method) - org/apache/commons/lang3/text/WordUtils.java:194\n- wrap (method) - org/apache/commons/lang3/text/WordUtils.java:631"
+          }
+        ]
+      },
+      "graphite": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"columns\": [\n    \"caller\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"org.apache.commons.lang3.Validate.notBlank(java.lang.CharSequence,java.lang.String,java.lang.Object[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.defaultIfBlank(java.lang.CharSequence,java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.getIfBlank(java.lang.CharSequence,java.util.function.Supplier)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isAnyBlank(java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isNotBlank(java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.containsAllWords(java.lang.CharSequence,java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.wrap(java.lang.String,int,java.lang.String,boolean,java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createBigDecimal(java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createNumber(java.lang.String)\"\n    }\n  ],\n  \"rowCount\": 9,\n  \"total\": {\n    \"value\": 9,\n    \"relation\": \"eq\"\n  }\n}"
+          }
+        ]
+      }
+    },
+    "samples_ms": {
+      "graphite": [
+        0.178584,
+        0.177333,
+        0.155583,
+        0.123333,
+        0.141459,
+        0.127791,
+        0.10525,
+        0.1135,
+        0.132083,
+        0.116333,
+        0.112709,
+        0.106791,
+        0.10475,
+        0.102708,
+        0.110291,
+        0.107125,
+        0.103333,
+        0.110709,
+        0.103084,
+        0.108834,
+        0.100875,
+        0.112333,
+        0.101083,
+        0.098709,
+        0.103333,
+        0.103542,
+        0.102375,
+        0.10575,
+        0.104167,
+        0.097708
+      ],
+      "codegraph": [
+        0.307542,
+        0.314084,
+        0.43575,
+        0.326542,
+        0.402792,
+        0.284542,
+        0.369,
+        0.277,
+        0.283,
+        0.249584,
+        0.253709,
+        0.22325,
+        0.283209,
+        0.253459,
+        0.287792,
+        0.240959,
+        0.2805,
+        0.251042,
+        0.252417,
+        0.225417,
+        0.261333,
+        0.241208,
+        0.269291,
+        0.217667,
+        0.246667,
+        0.215458,
+        0.255291,
+        0.232291,
+        0.240625,
+        0.205916
+      ]
+    },
+    "summary": {
+      "graphite": {
+        "median_ms": 0.106958,
+        "p95_ms": 0.177333
+      },
+      "codegraph": {
+        "median_ms": 0.2545,
+        "p95_ms": 0.402792
+      }
+    }
+  },
+  {
+    "rss_kib_after_queries": {
+      "graphite": 23904,
+      "codegraph": 91840
+    },
+    "scope": "persistent MCP stdio request/response; five warmups; thirty alternating samples; no startup timing",
+    "params": {
+      "graphite": {
+        "name": "cypher",
+        "arguments": {
+          "graph_id": "test",
+          "query": "MATCH (c:CallSiteNode) WHERE c.callee_class = 'org.apache.commons.lang3.StringUtils' AND c.callee_name = 'isBlank' RETURN DISTINCT c.caller_signature AS caller"
+        }
+      },
+      "codegraph": {
+        "name": "codegraph_callers",
+        "arguments": {
+          "symbol": "isBlank",
+          "file": "org/apache/commons/lang3/StringUtils.java",
+          "limit": 100
+        }
+      }
+    },
+    "results": {
+      "codegraph": {
+        "content": [
+          {
+            "type": "text",
+            "text": "**Callers of isBlank (9 found)**\n\n- defaultIfBlank (method) - org/apache/commons/lang3/StringUtils.java:1562\n- getIfBlank (method) - org/apache/commons/lang3/StringUtils.java:2263\n- isAnyBlank (method) - org/apache/commons/lang3/StringUtils.java:3522\n- isNotBlank (method) - org/apache/commons/lang3/StringUtils.java:3773\n- notBlank (method) - org/apache/commons/lang3/Validate.java:779\n- createBigDecimal (method) - org/apache/commons/lang3/math/NumberUtils.java:162\n- createNumber (method) - org/apache/commons/lang3/math/NumberUtils.java:320\n- containsAllWords (method) - org/apache/commons/lang3/text/WordUtils.java:194\n- wrap (method) - org/apache/commons/lang3/text/WordUtils.java:631"
+          }
+        ]
+      },
+      "graphite": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"columns\": [\n    \"caller\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"org.apache.commons.lang3.Validate.notBlank(java.lang.CharSequence,java.lang.String,java.lang.Object[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.defaultIfBlank(java.lang.CharSequence,java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.getIfBlank(java.lang.CharSequence,java.util.function.Supplier)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isAnyBlank(java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isNotBlank(java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.containsAllWords(java.lang.CharSequence,java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.wrap(java.lang.String,int,java.lang.String,boolean,java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createBigDecimal(java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createNumber(java.lang.String)\"\n    }\n  ],\n  \"rowCount\": 9,\n  \"total\": {\n    \"value\": 9,\n    \"relation\": \"eq\"\n  }\n}"
+          }
+        ]
+      }
+    },
+    "samples_ms": {
+      "graphite": [
+        0.163417,
+        0.157416,
+        0.111209,
+        0.126208,
+        0.104334,
+        0.104333,
+        0.103292,
+        0.110834,
+        0.102167,
+        0.114541,
+        0.105667,
+        0.116459,
+        0.111625,
+        0.129125,
+        0.111833,
+        0.102708,
+        0.103583,
+        0.106708,
+        0.101083,
+        0.098291,
+        0.109334,
+        0.106542,
+        0.0905,
+        0.106625,
+        0.105708,
+        0.1035,
+        0.094959,
+        0.104708,
+        0.1135,
+        0.1035
+      ],
+      "codegraph": [
+        0.457583,
+        0.33775,
+        0.312667,
+        0.282917,
+        0.293334,
+        0.252,
+        0.282792,
+        0.26525,
+        0.35925,
+        0.277375,
+        0.268042,
+        0.2345,
+        0.385709,
+        0.292292,
+        0.278334,
+        0.242625,
+        0.268917,
+        0.23325,
+        0.253875,
+        0.217292,
+        0.246458,
+        0.254292,
+        0.2585,
+        0.6685,
+        0.247375,
+        0.218958,
+        0.248583,
+        0.213041,
+        0.239875,
+        0.209959
+      ]
+    },
+    "summary": {
+      "graphite": {
+        "median_ms": 0.106125,
+        "p95_ms": 0.157416
+      },
+      "codegraph": {
+        "median_ms": 0.26187499999999997,
+        "p95_ms": 0.457583
+      }
+    }
+  },
+  {
+    "rss_kib_after_queries": {
+      "graphite": 23984,
+      "codegraph": 96848
+    },
+    "scope": "persistent MCP stdio request/response; five warmups; thirty alternating samples; no startup timing",
+    "params": {
+      "graphite": {
+        "name": "cypher",
+        "arguments": {
+          "graph_id": "test",
+          "query": "MATCH (c:CallSiteNode) WHERE c.callee_class = 'org.apache.commons.lang3.StringUtils' AND c.callee_name = 'isBlank' RETURN DISTINCT c.caller_signature AS caller"
+        }
+      },
+      "codegraph": {
+        "name": "codegraph_callers",
+        "arguments": {
+          "symbol": "isBlank",
+          "file": "org/apache/commons/lang3/StringUtils.java",
+          "limit": 100
+        }
+      }
+    },
+    "results": {
+      "codegraph": {
+        "content": [
+          {
+            "type": "text",
+            "text": "**Callers of isBlank (9 found)**\n\n- defaultIfBlank (method) - org/apache/commons/lang3/StringUtils.java:1562\n- getIfBlank (method) - org/apache/commons/lang3/StringUtils.java:2263\n- isAnyBlank (method) - org/apache/commons/lang3/StringUtils.java:3522\n- isNotBlank (method) - org/apache/commons/lang3/StringUtils.java:3773\n- notBlank (method) - org/apache/commons/lang3/Validate.java:779\n- createBigDecimal (method) - org/apache/commons/lang3/math/NumberUtils.java:162\n- createNumber (method) - org/apache/commons/lang3/math/NumberUtils.java:320\n- containsAllWords (method) - org/apache/commons/lang3/text/WordUtils.java:194\n- wrap (method) - org/apache/commons/lang3/text/WordUtils.java:631"
+          }
+        ]
+      },
+      "graphite": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"columns\": [\n    \"caller\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"org.apache.commons.lang3.Validate.notBlank(java.lang.CharSequence,java.lang.String,java.lang.Object[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.defaultIfBlank(java.lang.CharSequence,java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.getIfBlank(java.lang.CharSequence,java.util.function.Supplier)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isAnyBlank(java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isNotBlank(java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.containsAllWords(java.lang.CharSequence,java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.wrap(java.lang.String,int,java.lang.String,boolean,java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createBigDecimal(java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createNumber(java.lang.String)\"\n    }\n  ],\n  \"rowCount\": 9,\n  \"total\": {\n    \"value\": 9,\n    \"relation\": \"eq\"\n  }\n}"
+          }
+        ]
+      }
+    },
+    "samples_ms": {
+      "graphite": [
+        0.13025,
+        0.133083,
+        0.120042,
+        0.169708,
+        0.137,
+        0.107292,
+        0.097375,
+        0.109334,
+        0.105792,
+        0.1185,
+        0.099875,
+        0.137958,
+        0.110875,
+        0.109083,
+        0.109708,
+        0.112959,
+        0.0945,
+        0.106875,
+        0.101958,
+        0.105542,
+        0.123375,
+        0.112084,
+        0.110958,
+        0.102292,
+        0.09675,
+        0.111208,
+        0.129333,
+        0.109292,
+        0.113667,
+        0.11975
+      ],
+      "codegraph": [
+        0.459375,
+        0.330833,
+        0.4075,
+        0.316208,
+        0.41325,
+        0.2945,
+        0.29925,
+        0.235167,
+        0.265625,
+        0.249291,
+        0.358292,
+        0.294125,
+        0.259,
+        0.247625,
+        0.248666,
+        0.2165,
+        0.280042,
+        0.300875,
+        0.24625,
+        0.231958,
+        0.370292,
+        0.285375,
+        0.2815,
+        0.228792,
+        0.32525,
+        0.289333,
+        0.306583,
+        0.312291,
+        0.294625,
+        0.330666
+      ]
+    },
+    "summary": {
+      "graphite": {
+        "median_ms": 0.1109165,
+        "p95_ms": 0.137958
+      },
+      "codegraph": {
+        "median_ms": 0.2943125,
+        "p95_ms": 0.41325
+      }
+    }
+  },
+  {
+    "rss_kib_after_queries": {
+      "graphite": 24016,
+      "codegraph": 100288
+    },
+    "scope": "persistent MCP stdio request/response; five warmups; thirty alternating samples; no startup timing",
+    "params": {
+      "graphite": {
+        "name": "cypher",
+        "arguments": {
+          "graph_id": "test",
+          "query": "MATCH (c:CallSiteNode) WHERE c.callee_class = 'org.apache.commons.lang3.StringUtils' AND c.callee_name = 'isBlank' RETURN DISTINCT c.caller_signature AS caller"
+        }
+      },
+      "codegraph": {
+        "name": "codegraph_callers",
+        "arguments": {
+          "symbol": "isBlank",
+          "file": "org/apache/commons/lang3/StringUtils.java",
+          "limit": 100
+        }
+      }
+    },
+    "results": {
+      "codegraph": {
+        "content": [
+          {
+            "type": "text",
+            "text": "**Callers of isBlank (9 found)**\n\n- defaultIfBlank (method) - org/apache/commons/lang3/StringUtils.java:1562\n- getIfBlank (method) - org/apache/commons/lang3/StringUtils.java:2263\n- isAnyBlank (method) - org/apache/commons/lang3/StringUtils.java:3522\n- isNotBlank (method) - org/apache/commons/lang3/StringUtils.java:3773\n- notBlank (method) - org/apache/commons/lang3/Validate.java:779\n- createBigDecimal (method) - org/apache/commons/lang3/math/NumberUtils.java:162\n- createNumber (method) - org/apache/commons/lang3/math/NumberUtils.java:320\n- containsAllWords (method) - org/apache/commons/lang3/text/WordUtils.java:194\n- wrap (method) - org/apache/commons/lang3/text/WordUtils.java:631"
+          }
+        ]
+      },
+      "graphite": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"columns\": [\n    \"caller\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"org.apache.commons.lang3.Validate.notBlank(java.lang.CharSequence,java.lang.String,java.lang.Object[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.defaultIfBlank(java.lang.CharSequence,java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.getIfBlank(java.lang.CharSequence,java.util.function.Supplier)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isAnyBlank(java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.StringUtils.isNotBlank(java.lang.CharSequence)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.containsAllWords(java.lang.CharSequence,java.lang.CharSequence[])\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.text.WordUtils.wrap(java.lang.String,int,java.lang.String,boolean,java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createBigDecimal(java.lang.String)\"\n    },\n    {\n      \"caller\": \"org.apache.commons.lang3.math.NumberUtils.createNumber(java.lang.String)\"\n    }\n  ],\n  \"rowCount\": 9,\n  \"total\": {\n    \"value\": 9,\n    \"relation\": \"eq\"\n  }\n}"
+          }
+        ]
+      }
+    },
+    "samples_ms": {
+      "graphite": [
+        0.1275,
+        0.117917,
+        0.151041,
+        0.117542,
+        0.11075,
+        0.122458,
+        0.111208,
+        0.112959,
+        0.1205,
+        0.117667,
+        0.111959,
+        0.105375,
+        0.106291,
+        0.101708,
+        0.110542,
+        0.106042,
+        0.103667,
+        0.105,
+        0.105917,
+        0.109333,
+        0.111,
+        0.108166,
+        0.104333,
+        0.106958,
+        0.100167,
+        0.102666,
+        0.101291,
+        0.120417,
+        0.117959,
+        0.099959
+      ],
+      "codegraph": [
+        0.3225,
+        0.3065,
+        0.289917,
+        0.411917,
+        0.323083,
+        0.262583,
+        0.272958,
+        0.237792,
+        0.405209,
+        0.305542,
+        0.269333,
+        0.232875,
+        0.283833,
+        0.251833,
+        0.26425,
+        0.238041,
+        0.246959,
+        0.239583,
+        0.263292,
+        0.238167,
+        0.267209,
+        0.26225,
+        0.270209,
+        0.223917,
+        0.312208,
+        0.243584,
+        0.279625,
+        0.254166,
+        0.2565,
+        0.214167
+      ]
+    },
+    "summary": {
+      "graphite": {
+        "median_ms": 0.1099375,
+        "p95_ms": 0.1275
+      },
+      "codegraph": {
+        "median_ms": 0.263771,
+        "p95_ms": 0.405209
+      }
+    }
+  }
+]
