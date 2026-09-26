@@ -5,9 +5,11 @@ backend) on top of `main` at #128.
 
 **Reading this document:** this is a design proposal anchored to the baseline
 above, not a current feature inventory. The Rust CLI now runs `query`, `serve`,
-and `mcp`, while `build` delegates to the JVM frontend. The proposed TypeScript
-and Swift frontends and Graph IR pipeline below should not be read as released
-capabilities. See the [README architecture](../README.md#architecture) and
+and `mcp`, while `build` delegates to the JVM frontend.
+[PR #154](https://github.com/johnsonlee/graphite/pull/154) implements the Swift / iOS
+frontend and protobuf Graph IR and is currently in progress. The TypeScript
+frontend remains a proposal; neither should be read as a released capability.
+See the [README architecture](../README.md#architecture) and
 [runnable demo](quickstart-demo.md) for the current user workflow.
 
 Graphite today is one JVM program: SootUp builds the graph, the same jar persists it, serves

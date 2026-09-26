@@ -23,6 +23,11 @@ Graphite works from compiled artifacts, so you can inspect an application withou
 its source checkout. The current frontend supports JVM and Android inputs; building
 a graph requires Java, and APK analysis also requires Android platform jars.
 
+**In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
+adds an Apple frontend for Swift packages and Xcode projects, feeding the shared
+program graph through Graph IR. This work is not yet merged; JVM and Android are
+the currently released input paths.
+
 [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
 
 ## See It Work
