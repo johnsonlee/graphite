@@ -43,6 +43,10 @@ bash examples/quickstart/run.sh
 See the walkthrough for the complete queries, expected JSON, and the command to
 open the saved graph in the web Explorer.
 
+![Graphite Explorer running the demo query and returning flag 42 and method enableFeature](docs/images/quickstart-explorer.png)
+
+Actual output from the included example, running Graphite 2.8.0.
+
 ## What the Graph Captures
 
 | Relationship | Example | Question it helps answer |
@@ -584,7 +588,7 @@ dependencies {
 
 ## MCP Integration
 
-The `graphite` binary is an [Model Context Protocol](https://modelcontextprotocol.io)
+The `graphite` binary is a [Model Context Protocol](https://modelcontextprotocol.io)
 server: the thirteen tools the `graphite-mcp` npm package used to expose (`graphs`,
 `cypher`, `node`, `outgoing`, `incoming`, `annotations`, `endpoints`, `resources`,
 `resource`, `subgraph`, `overview`, `c4`, `openapi`) plus `schema`, served in-process by
@@ -602,7 +606,22 @@ Two ways to connect:
 - **HTTP**, for remote or shared setups: every `graphite serve` also answers MCP at
   `POST /mcp` (Streamable HTTP).
 
-Configure in Claude Code (`~/.claude/settings.json`):
+For **Claude Code**, run this from your project directory after building a graph.
+Replace `/data/app-graph` with the absolute path to your saved graph:
+
+```bash
+claude mcp add --transport stdio --scope project graphite -- \
+  graphite mcp --graph app:/data/app-graph
+```
+
+This creates or updates `.mcp.json` at the project root. Open Claude Code, approve
+the project server when prompted, and use `/mcp` to check its connection. See the
+[Claude Code MCP documentation](https://code.claude.com/docs/en/mcp#project-scope)
+for configuration scopes. The `graphite` executable must be on the client's
+`PATH`; otherwise use its absolute path as the command.
+
+For clients that accept an `mcpServers` JSON configuration, use the following
+entry in the client's MCP configuration file. Repeat `--graph` to load more graphs:
 
 ```json
 {
@@ -615,7 +634,15 @@ Configure in Claude Code (`~/.claude/settings.json`):
 }
 ```
 
-or point an HTTP-capable client at a running server: `{"url": "http://localhost:8080/mcp"}`.
+Alternatively, start `graphite serve --id app /data/app-graph` and connect Claude
+Code over HTTP:
+
+```bash
+claude mcp add --transport http --scope project graphite http://localhost:8080/mcp
+```
+
+Choose either stdio or HTTP for the `graphite` entry. Other HTTP-capable clients
+can connect to `http://localhost:8080/mcp` using their Streamable HTTP settings.
 `/mcp` validates the `Origin` header (DNS-rebinding protection): requests without one are
 accepted, loopback origins are accepted, any other origin is refused with 403 unless listed
 with `graphite serve --mcp-allowed-origin https://tools.example.com` (repeatable; `*` allows
@@ -630,7 +657,7 @@ answered a 404 without it). The npm package is not published from v2.5.0 on; its
 version, 2.4.8, keeps working against a 2.5.0 server because it only calls the REST
 routes above.
 
-Start the Explorer first, then LLMs can query the graph:
+For HTTP connections, start the Explorer first; stdio opens the graph directly:
 
 ```bash
 # Start Explorer

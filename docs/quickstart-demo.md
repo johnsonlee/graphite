@@ -95,6 +95,12 @@ Run it and open [the local Explorer](http://localhost:8080) to inspect the graph
 Stop the server with Ctrl+C. You can delete the printed temporary directory when
 finished.
 
+In the Explorer, paste the constant query above into **Cypher query** and click
+**Run query**. This screenshot shows that query running against the included
+example on Graphite 2.8.0:
+
+![Explorer shows flag 42 reaching enableFeature](images/quickstart-explorer.png)
+
 ## Use your own JAR
 
 Replace the input and package filter with those for your application:
