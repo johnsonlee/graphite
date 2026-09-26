@@ -8,6 +8,12 @@ English · [简体中文](README.zh-CN.md)
 
 [Production scale](#production-scale) · [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
 
+![Graphite Explorer: class relationships in a 64-graph, 19.4M-node workspace](docs/images/fixture64-explorer.png)
+
+**64 graphs · 19.4M nodes · 20.4M edges.** Explore class relationships within a
+loaded corpus of Android, Tika, Hive, and Kotlin compiler bytecode.
+[Reproduce this view](docs/public-scale-demo.md).
+
 ## The Problem
 
 LLMs working with code face a fundamental constraint: **a codebase can exceed

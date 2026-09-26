@@ -8,6 +8,10 @@
 
 [生产环境规模](#生产环境规模) · [运行演示](docs/quickstart-demo.md) · [快速开始](#快速开始) · [接入 AI 智能体](#mcp-集成) · [Kotlin API](#kotlin-api)
 
+![Graphite Explorer：64 图、1940 万节点工作区中的类调用关系](docs/images/fixture64-explorer.png)
+
+**64 张图 · 1940 万节点 · 2040 万条边。** 在已加载的 Android、Tika、Hive 和 Kotlin 编译器字节码图集中探索类调用关系。[复现这个视图](docs/public-scale-demo.md)。
+
 ## 问题
 
 LLM 处理代码时面临一个根本约束：**代码库的大小可能超出单次提示词能够容纳的范围。** 找到一个方法只是起点。要回答“哪些常量会传入这个 API？”或“谁调用了这个方法？”，智能体必须串联分散在调用方、字段、类型和依赖项中的信息。
