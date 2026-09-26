@@ -4,7 +4,7 @@
 
 **Structured codebase context for LLMs.** Graphite turns JVM bytecode into a queryable program graph — so AI agents can understand your codebase without reading every file.
 
-[Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
+[Production scale](#production-scale) · [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
 
 ## The Problem
 
@@ -52,7 +52,30 @@ The graph is a static analysis of the supplied artifacts. Coverage depends on th
 included classes, dependencies, and supported analysis patterns; reflection and
 dynamic loading can leave relationships unresolved.
 
-## See It Work
+## Production Scale
+
+**100M+ nodes across 40+ graphs, served by one process.**
+
+Measured on a production deployment of `graphite serve` (Rust backend, graphs
+memory-mapped):
+
+| | |
+|---|---|
+| Graphs served by one process | 40+ |
+| Nodes | 100M+ |
+| Edges | 100M+ |
+| Methods | 10M+ |
+| Call sites | 20M+ |
+| Cypher latency, P50 | ~500 ms |
+| Cypher latency, P95 | ~15 s |
+
+Latency is over the mixed production query stream, most of it cross-graph. Narrow
+queries (a class, a method, a constant) answer from the string indexes in
+milliseconds; the P95 is the broad shapes that search every property of every
+node. `--metrics` exposes the same figures for your own deployment as
+`http_server_requests_seconds` and the Cypher families.
+
+## Try It Locally
 
 Ask **“Which constant reaches `enableFeature`, and who calls it?”** The
 [runnable Java example](docs/quickstart-demo.md) compiles a small JAR, builds its
@@ -69,10 +92,6 @@ bash examples/quickstart/run.sh
 
 See the walkthrough for the complete queries, expected JSON, and the command to
 open the saved graph in the web Explorer.
-
-![Graphite Explorer running the demo query and returning flag 42 and method enableFeature](docs/images/quickstart-explorer.png)
-
-Actual output from the included example, running Graphite 2.8.0.
 
 ## What the Graph Captures
 
@@ -474,27 +493,6 @@ RETURN graphId(call) AS source,
 The Explorer homepage displays this topology by default when more than one
 graph is loaded. Isolated graphs remain visible, and double-clicking a graph
 drills down to its class overview.
-
-## Scale
-
-Measured on a production deployment of `graphite serve` (Rust backend, graphs
-memory-mapped):
-
-| | |
-|---|---|
-| Graphs served by one process | 40+ |
-| Nodes | 100M+ |
-| Edges | 100M+ |
-| Methods | 10M+ |
-| Call sites | 20M+ |
-| Cypher latency, P50 | ~500 ms |
-| Cypher latency, P95 | ~15 s |
-
-Latency is over the mixed production query stream, most of it cross-graph. Narrow
-queries (a class, a method, a constant) answer from the string indexes in
-milliseconds; the P95 is the broad shapes that search every property of every
-node. `--metrics` exposes the same figures for your own deployment as
-`http_server_requests_seconds` and the Cypher families.
 
 ## Architecture
 
