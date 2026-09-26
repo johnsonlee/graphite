@@ -4,31 +4,53 @@
 
 **Structured codebase context for LLMs.** Graphite turns JVM bytecode into a queryable program graph — so AI agents can understand your codebase without reading every file.
 
-The graph captures calls, dataflow, types, annotations, and bundled resources.
-Explore it with Cypher, a web UI, or an AI agent through the built-in
-[MCP server](#mcp-integration).
-
-Use it when an answer depends on relationships across your application:
-
-- **Trace feature flags and configuration:** find constants that flow into an API
-  argument, including through fields and method calls.
-- **Map a backend:** discover annotated HTTP endpoints and inspect their callers,
-  types, and packaged configuration.
-- **Investigate an Android app:** build a graph from an APK and query its code
-  relationships with the same tools.
-- **Give an agent structured context:** let it discover the graph schema and query
-  the relevant program elements through MCP.
-
-Graphite works from compiled artifacts, so you can inspect an application without
-its source checkout. The current frontend supports JVM and Android inputs; building
-a graph requires Java, and APK analysis also requires Android platform jars.
-
-**In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
-adds an Apple frontend for Swift packages and Xcode projects, feeding the shared
-program graph through Graph IR. This work is not yet merged; JVM and Android are
-the currently released input paths.
-
 [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
+
+## The Problem
+
+LLMs working with code face a fundamental constraint: **a codebase can exceed
+what fits in a single prompt.** Finding a method is only the beginning. To answer “which
+constants reach this API?” or “what calls this method?”, an agent must connect
+information spread across callers, fields, types, and dependencies.
+
+Source files contain the evidence, but retrieving files still leaves the agent to
+reconstruct those relationships. Graphite makes the relationships queryable so an
+agent can retrieve focused context for the question it is trying to answer.
+
+## The Solution
+
+Graphite builds a **program graph**: nodes represent program elements and edges
+represent relationships such as calls and dataflow. An agent can discover the
+schema, query the graph with Cypher through MCP, and receive structured results.
+The same graph is available through the CLI and web Explorer.
+
+For example, to investigate a feature flag, query the constants that flow into the
+flag API and the methods containing those call sites. The result gives the agent
+specific evidence to inspect further. The walkthrough below demonstrates both
+queries and their actual output.
+
+## Why Not Just Tree-sitter?
+
+[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) builds syntax trees from
+source files. Those trees are useful for locating declarations and expressions.
+Questions about resolved types or values flowing between methods require
+additional semantic analysis beyond parsing. Tools built on Tree-sitter can add
+that analysis; the parser alone is not the whole tool.
+
+Graphite's current JVM frontend uses compiled bytecode and analysis to expose
+those relationships as a persistent graph:
+
+| Question | Information beyond syntax | Graphite's queryable context |
+|----------|---------------------------|-----------------------------|
+| Which constants reach this argument? | Dataflow through assignments, fields, and calls | Constant nodes and dataflow relationships |
+| Where is this method called? | Method identities and call targets | Call sites with caller and callee descriptors |
+| Which types implement this interface? | Resolved type relationships | Indexed class and interface hierarchy |
+| What does this method reference target? | Compiler-generated linkage | Targets extracted from supported bootstrap method handles |
+| Where is this configuration key read? | Connections between code and packaged resources | Resource values and supported lookup relationships |
+
+The graph is a static analysis of the supplied artifacts. Coverage depends on the
+included classes, dependencies, and supported analysis patterns; reflection and
+dynamic loading can leave relationships unresolved.
 
 ## See It Work
 
@@ -69,17 +91,16 @@ API's `graph.query(...)` runs the ANTLR-based engine in `frontend/jvm/cypher`. A
 differential harness (`backend/bench`) checks the two implementations against each
 other.
 
-## Why a Bytecode Graph?
+## Frontend Support
 
-Source search and syntax trees help you locate and read code. Graphite adds
-relationships extracted from compiled artifacts: method and field descriptors,
-class hierarchies, annotations, lambda targets, and dataflow edges. These let an
-agent ask a focused question and receive structured results to investigate further.
+The current released frontend reads JVM and Android artifacts. Graph building
+requires Java; APK analysis also requires Android platform jars. These inputs
+can be analyzed without their source checkout.
 
-The graph is a static analysis of the artifacts you supply. Its coverage depends
-on the included classes, available dependencies, and supported analysis patterns;
-dynamic loading and reflection can leave relationships unresolved. It is useful
-context for code investigation, not a complete account of runtime behavior.
+**In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
+adds an Apple frontend for Swift packages and Xcode projects, feeding the shared
+program graph through Graph IR. This work is not yet merged. Language frontends
+extend the input paths to Graphite's structured context and query tools.
 
 ## Quick Start
 
