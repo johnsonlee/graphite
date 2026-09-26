@@ -112,8 +112,36 @@ graphite query --format json app-graph \
    RETURN call.caller_signature, call.callee_class, call.callee_name LIMIT 10"
 ```
 
-Then target a class or method from those results. For agent access, follow the
-[MCP setup](../README.md#mcp-integration).
+Then target a class or method from those results.
+
+## Give an agent the same context
+
+Keep the demo files and use the absolute `checkout-graph` path printed by the
+script. For Claude Code, run this in the project where you want to use the agent,
+replacing `/absolute/path/to/checkout-graph` with that path:
+
+```bash
+claude mcp add --transport stdio --scope project graphite -- \
+  graphite mcp --graph demo:/absolute/path/to/checkout-graph
+```
+
+Open Claude Code, approve the project MCP server when prompted, and check `/mcp`.
+Then ask:
+
+> Use Graphite to inspect the demo graph. Discover its schema, then find which
+> constant reaches demo.Checkout.enableFeature and which method calls it. Show
+> the queries and the returned evidence. Use the graph rather than reading the
+> Java source, and distinguish what the graph shows from runtime assumptions.
+
+The evidence should identify `42` and `demo.Checkout.startCheckout()`, as above.
+The agent's wording and tool sequence can vary. For other clients and HTTP
+transport, see [MCP setup](../README.md#mcp-integration).
+
+The underlying stdio MCP path was independently checked on Graphite 2.8.0:
+initialization succeeded, `tools/list` exposed `schema` and `cypher`, and calling
+`cypher` with `graph_id: "demo"` and the constant query returned
+`{"flag":42,"method":"enableFeature"}`. This verifies the tool response, not a
+particular model's answer or token savings.
 
 Static analysis covers the artifacts and patterns Graphite can resolve; reflection
 and dynamically loaded code can leave relationships missing. This small example
