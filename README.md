@@ -39,14 +39,27 @@ queries and their actual output.
 
 ## Why Not Just Tree-sitter?
 
-[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) builds syntax trees from
-source files. Those trees are useful for locating declarations and expressions.
-Questions about resolved types or values flowing between methods require
-additional semantic analysis beyond parsing. Tools built on Tree-sitter can add
-that analysis; the parser alone is not the whole tool.
+**Program semantics are Graphite's foundation.** Its graph models values,
+parameters, returns, fields, calls, and types so that code relationships become
+queryable context for agents.
 
-Graphite's current JVM frontend uses compiled bytecode and analysis to expose
-those relationships as a persistent graph:
+The JVM frontend starts from **compiled bytecode**: method descriptors, field
+references, and instructions already carry information established by the
+compiler. Graphite builds its program model from that foundation and can analyze
+application artifacts and third-party dependencies **without their source code**.
+Its JVM analysis API includes backward slicing across method parameters to find
+which caller arguments supply a value.
+
+[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) supplies syntax trees.
+Building comparable program analysis on top requires symbol and type resolution,
+control-flow and dataflow models, argument/parameter mapping, and interprocedural
+analysis. Those are substantial analysis layers beyond the parser. Graphite
+provides a program-graph foundation, persistent storage, and Cypher/MCP access
+in one system.
+
+That foundation also operates at production scale: **100M+ nodes across 40+
+graphs in one process**, with a [reproducible public 64-graph demonstration](docs/public-scale-demo.md)
+containing 19.4 million nodes.
 
 | Question | Information beyond syntax | Graphite's queryable context |
 |----------|---------------------------|-----------------------------|
