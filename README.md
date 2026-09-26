@@ -2,11 +2,11 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-**A queryable program graph for JVM and Android apps, built for AI agents.**
+**Structured codebase context for LLMs.** Graphite turns JVM bytecode into a queryable program graph — so AI agents can understand your codebase without reading every file.
 
-Graphite turns compiled JARs and APKs into a local graph of calls, dataflow, types,
-annotations, and bundled resources. Explore it with Cypher, a web UI, or an AI
-agent through the built-in [MCP server](#mcp-integration).
+The graph captures calls, dataflow, types, annotations, and bundled resources.
+Explore it with Cypher, a web UI, or an AI agent through the built-in
+[MCP server](#mcp-integration).
 
 Use it when an answer depends on relationships across your application:
 
