@@ -104,6 +104,22 @@ candidate comparator test job. It then installs that pinned harness into both re
 pinned comparator. Any other pre-protocol base fails closed. Once `main` contains the protocol, the
 workflow automatically returns to base-owned controls and never selects candidate controls.
 
+A graph-shape transition is equally bounded. The base-owned large-corpus job installs the base
+harness into the candidate, and its comparator requires identical graph shapes, so a pull request
+that intentionally changes the graph cannot be measured by it. The workflow therefore selects
+`shape-transition` only when the exact base harness, the candidate harness, and the candidate
+comparator match their pinned `LARGE_CORPUS_SHAPE_*_SHA256` values and `candidate-gate-tests`
+passes. In that mode neither harness is overwritten: the base asserts its own counts and the
+candidate asserts the new ones, both corpus runs and the reverse-order confirmation execute, and
+`compare-large-corpus --shape-transition` accepts only the comparator's pinned
+`LARGE_CORPUS_SHAPE_TRANSITION`. Each revision must match its pinned node, edge, method, and call-site
+counts exactly, and persisted size must change by the pinned per-corpus delta within the usual 4 KiB
+tolerance. Timing, heap, and CallSite-index lifecycle checks are unchanged. Any other combination
+falls through to the base-owned or legacy controls. The base pin names the pre-transition harness, so
+once the transition merges the base digest no longer matches and the branch is never selected again.
+The current transition removes the `RESOURCE_LOOKUP` edges from `System.getProperty` to packaged
+files (Tika −92,576, Hive −27,209, Kotlin compiler −1,890 edges).
+
 The coverage-taxonomy rollout changes presentation only. The base-owned aggregator always writes
 the authoritative verdict and is the only status enforced by the required check. If that exact base
 does not yet render the coverage summary, a candidate renderer is allowed only when its reviewed

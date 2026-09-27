@@ -53,6 +53,17 @@ Strict validation results:
 | Hive | 5,986,673 | 6,378,063 | 6,161,463 | 404,016 | 1,437,647 | 506,335,478 | 21.694 s | 5.620 s | 185 ms | 3.007 s | 30.506 s | 3,993,927,680 B | 180 s / 4 GiB hard cap |
 | Kotlin compiler | 3,268,537 | 3,674,711 | 3,559,500 | 249,669 | 900,366 | 289,113,024 | 11.209 s | 3.154 s | 126 ms | 1.932 s | 16.421 s | 3,088,251,984 B | 120 s / 4 GiB hard cap |
 
+### Graph-shape baseline changes
+
+The table above is the 2026-08-27 recording; the gate asserts the current counts in
+`LargeCorpusPerformanceGateTest`. Changes to the expected graph shape since then:
+
+| Change | Tika edges (source / persisted) | Hive edges | Kotlin compiler edges |
+| --- | ---: | ---: | ---: |
+| `System.getProperty` is no longer linked to every packaged configuration file by `RESOURCE_LOOKUP` | 4,405,147 / 4,249,806 (−92,576) | 6,350,854 / 6,134,254 (−27,209) | 3,672,821 / 3,557,610 (−1,890) |
+
+Node, method and call-site counts are unchanged.
+
 The source graph can contain multiple outgoing edges to the same target. `GraphStore` is a simple
 graph and preserves the last such edge, so the gate records both the source's logical edge count
 and the unique `(from, to)` count expected after persistence. It then compares mapped node, method,

@@ -20,6 +20,7 @@ import {
     compareLatencyResources,
     confirmLatencyResources,
     confirmLargeCorpus,
+    LARGE_CORPUS_SHAPE_TRANSITION,
     LATENCY_EXPECTED_BENCHMARK_KEYS,
     LATENCY_EXPECTED_SHARDS,
     LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS,
@@ -2684,6 +2685,206 @@ test("large-corpus confirmation cannot clear a graph-shape failure", () => {
 
     assert.equal(confirmed.passed, false);
     assert.match(confirmed.errors.join("\n"), /hive\/nodes: graph shape changed/);
+});
+
+const syntheticShapeTransition = Object.fromEntries(expectedLargeCorpora.map((corpus) => [corpus, {
+    base: { nodes: 100, sourceEdges: 200, persistedEdges: 190, methods: 80, callSites: 60 },
+    candidate: { nodes: 100, sourceEdges: 150, persistedEdges: 140, methods: 80, callSites: 60 },
+    persistedBytesDelta: -50_000
+}]));
+const transitionedCorpusLog = corpusLog(Object.fromEntries(expectedLargeCorpora.map((corpus) => [corpus, {
+    sourceEdges: 150,
+    persistedEdges: 140,
+    persistedBytes: 100_000_000 - 50_000
+}])));
+
+test("large-corpus shape transition accepts exactly the pinned shape change", () => {
+    const comparison = compareLargeCorpus(baseCorpusLog, transitionedCorpusLog, {
+        shapeTransition: syntheticShapeTransition
+    });
+
+    assert.deepEqual(comparison.errors, []);
+    assert.equal(comparison.passed, true);
+    assert.equal(comparison.shapeTransition, true);
+    assert.match(renderLargeCorpusReport(comparison), /Graph-shape transition: each revision must match/);
+});
+
+test("large-corpus shape change still fails without the transition", () => {
+    const comparison = compareLargeCorpus(baseCorpusLog, transitionedCorpusLog);
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.shapeTransition, false);
+    assert.match(comparison.errors.join("\n"), /hive\/sourceEdges: graph shape changed from 200 to 150/);
+    assert.match(comparison.errors.join("\n"), /hive\/persistedBytes: persisted size changed/);
+});
+
+test("large-corpus shape transition rejects a wrong edge delta in the pinned direction", () => {
+    const candidate = corpusLog(Object.fromEntries(expectedLargeCorpora.map((corpus) => [corpus, {
+        sourceEdges: corpus === "hive" ? 151 : 150,
+        persistedEdges: 140,
+        persistedBytes: 100_000_000 - 50_000
+    }])));
+    const comparison = compareLargeCorpus(baseCorpusLog, candidate, { shapeTransition: syntheticShapeTransition });
+
+    assert.equal(comparison.passed, false);
+    assert.deepEqual(comparison.errors, [
+        "hive/sourceEdges: candidate graph shape 151 does not match the transition candidate 150"
+    ]);
+});
+
+test("large-corpus shape transition keeps nodes, methods and call sites exact", () => {
+    for (const field of ["nodes", "methods", "callSites"]) {
+        const candidate = corpusLog(Object.fromEntries(expectedLargeCorpora.map((corpus) => [corpus, {
+            sourceEdges: 150,
+            persistedEdges: 140,
+            persistedBytes: 100_000_000 - 50_000,
+            ...(corpus === "tika" ? { [field]: 99 } : {})
+        }])));
+        const comparison = compareLargeCorpus(baseCorpusLog, candidate, {
+            shapeTransition: syntheticShapeTransition
+        });
+
+        assert.equal(comparison.passed, false, field);
+        assert.deepEqual(comparison.errors, [
+            `tika/${field}: candidate graph shape 99 does not match the transition candidate ` +
+                `${syntheticShapeTransition.tika.candidate[field]}`
+        ]);
+    }
+});
+
+test("large-corpus shape transition applies the persisted-size tolerance around the pinned delta", () => {
+    const withBytes = (persistedBytes) => corpusLog(Object.fromEntries(expectedLargeCorpora.map((corpus) => [
+        corpus,
+        { sourceEdges: 150, persistedEdges: 140, persistedBytes: corpus === "hive" ? persistedBytes : 99_950_000 }
+    ])));
+    const options = { shapeTransition: syntheticShapeTransition };
+
+    assert.equal(compareLargeCorpus(baseCorpusLog, withBytes(99_950_000 + 4_096), options).passed, true);
+    assert.equal(compareLargeCorpus(baseCorpusLog, withBytes(99_950_000 - 4_096), options).passed, true);
+    for (const drifted of [99_950_000 + 4_097, 99_950_000 - 4_097, 100_000_000]) {
+        const comparison = compareLargeCorpus(baseCorpusLog, withBytes(drifted), options);
+        assert.equal(comparison.passed, false, String(drifted));
+        assert.match(
+            comparison.errors.join("\n"),
+            /hive\/persistedBytes: persisted size changed from 100000000 to \d+ \(expected delta -50000\)/
+        );
+    }
+});
+
+test("large-corpus shape transition fails once the base no longer has the pinned base shape", () => {
+    // After the transition merges, the base itself produces the candidate shape.
+    const comparison = compareLargeCorpus(transitionedCorpusLog, transitionedCorpusLog, {
+        shapeTransition: syntheticShapeTransition
+    });
+
+    assert.equal(comparison.passed, false);
+    assert.match(
+        comparison.errors.join("\n"),
+        /hive\/sourceEdges: base graph shape 150 does not match the transition base 200/
+    );
+});
+
+test("large-corpus shape transition requires every corpus in the manifest", () => {
+    const { hive, ...withoutHive } = syntheticShapeTransition;
+    const comparison = compareLargeCorpus(baseCorpusLog, transitionedCorpusLog, { shapeTransition: withoutHive });
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /hive: missing from the graph-shape transition/);
+});
+
+test("large-corpus shape transition confirmation keeps the transition and its shape errors", () => {
+    const options = { shapeTransition: syntheticShapeTransition };
+    const drifted = corpusLog(Object.fromEntries(expectedLargeCorpora.map((corpus) => [corpus, {
+        sourceEdges: corpus === "hive" ? 151 : 150,
+        persistedEdges: 140,
+        persistedBytes: 99_950_000
+    }])));
+    const initial = compareLargeCorpus(baseCorpusLog, drifted, options);
+    const confirmed = confirmLargeCorpus(initial, compareLargeCorpus(baseCorpusLog, transitionedCorpusLog, options));
+
+    assert.equal(confirmed.passed, false);
+    assert.equal(confirmed.shapeTransition, true);
+    assert.match(confirmed.errors.join("\n"), /hive\/sourceEdges: candidate graph shape 151/);
+});
+
+test("workflow selects the pinned shape transition fail-closed and only before the base-owned branch", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const harness = fs.readFileSync(new URL(
+        "../../frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
+            "LargeCorpusPerformanceGateTest.kt",
+        import.meta.url
+    ));
+    const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
+    const sha256 = (contents) => crypto.createHash("sha256").update(contents).digest("hex");
+    const pin = (name) => workflow.match(new RegExp(`\\n  ${name}: ([0-9a-f]{64})\\n`))?.[1];
+
+    assert.equal(pin("LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256"), sha256(harness));
+    assert.equal(pin("LARGE_CORPUS_SHAPE_COMPARATOR_SHA256"), sha256(comparator));
+    // The base pin is the pre-transition harness; the candidate harness differs, so once it reaches
+    // main the base digest no longer matches and the transition can never be selected again.
+    assert.equal(
+        pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"),
+        "97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775"
+    );
+    assert.notEqual(pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"), sha256(harness));
+
+    const select = workflow.slice(
+        workflow.indexOf("- name: Select trusted large-corpus controls"),
+        workflow.indexOf("- name: Benchmark PR large corpora")
+    );
+    const shapeBranch = select.slice(select.indexOf('if [[ "${BASE_HARNESS_SHA256}"'), select.indexOf("elif "));
+    assert.match(shapeBranch, /"\$\{BASE_HARNESS_SHA256\}" = "\$\{LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256\}"/);
+    assert.match(
+        shapeBranch,
+        /"\$\{CANDIDATE_HARNESS_SHA256\}" = "\$\{LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256\}"/
+    );
+    assert.match(shapeBranch, /"\$\{CANDIDATE_COMPARATOR_SHA256\}" = "\$\{LARGE_CORPUS_SHAPE_COMPARATOR_SHA256\}"/);
+    assert.match(shapeBranch, /"\$\{CANDIDATE_GATE_TEST_JOB\}" = success/);
+    assert.match(shapeBranch, /mode=shape-transition/);
+    assert.match(shapeBranch, /comparator-args=--shape-transition/);
+    // The transition never copies one revision's harness over the other.
+    assert.doesNotMatch(shapeBranch, /install -m|rm -f/);
+    assert.ok(select.indexOf("mode=shape-transition") < select.indexOf("mode=base-owned"));
+    assert.ok(select.indexOf("mode=base-owned") < select.indexOf("mode=pinned-transition"));
+
+    const compare = workflow.slice(workflow.indexOf("- name: Compare large-corpus results"));
+    assert.match(
+        compare,
+        /compare-large-corpus \\\n\s+\$\{\{ steps\.large-corpus-controls\.outputs\.comparator-args \}\}/
+    );
+    assert.match(
+        compare,
+        /confirm-large-corpus \\\n\s+\$\{\{ steps\.large-corpus-controls\.outputs\.comparator-args \}\}/
+    );
+});
+
+test("pinned large-corpus shape transition matches the harness baselines", () => {
+    const harness = fs.readFileSync(
+        new URL(
+            "../../frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
+                "LargeCorpusPerformanceGateTest.kt",
+            import.meta.url
+        ),
+        "utf8"
+    );
+    const count = (text) => Number(text.replaceAll("_", ""));
+    assert.deepEqual(Object.keys(LARGE_CORPUS_SHAPE_TRANSITION), expectedLargeCorpora);
+    for (const [corpus, transition] of Object.entries(LARGE_CORPUS_SHAPE_TRANSITION)) {
+        const block = harness.match(new RegExp(`id = "${corpus}",[\\s\\S]*?callSiteCount = ([\\d_]+)`));
+        assert.ok(block, corpus);
+        for (const [field, key] of [
+            ["nodes", "nodeCount"], ["sourceEdges", "sourceEdgeCount"], ["persistedEdges", "persistedEdgeCount"],
+            ["methods", "methodCount"], ["callSites", "callSiteCount"]
+        ]) {
+            const value = count(block[0].match(new RegExp(`${key} = ([\\d_]+)`))[1]);
+            assert.equal(transition.candidate[field], value, `${corpus}/${field}`);
+        }
+        for (const field of ["nodes", "methods", "callSites"]) {
+            assert.equal(transition.base[field], transition.candidate[field], `${corpus}/${field}`);
+        }
+        assert.ok(transition.candidate.sourceEdges < transition.base.sourceEdges, corpus);
+        assert.ok(transition.persistedBytesDelta < 0, corpus);
+    }
 });
 
 test("large-corpus comparison validates required measurements", () => {

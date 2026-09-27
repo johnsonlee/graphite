@@ -17,12 +17,15 @@ env:
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
-  BENCHMARK_REPORT_TRANSITION_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
+  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: db14578349451d744c777743905fb3a6b5d0419be1f7cdd955e8063369d79293
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
+  LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
+  LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256: db14578349451d744c777743905fb3a6b5d0419be1f7cdd955e8063369d79293
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
+  BENCHMARK_REPORT_TRANSITION_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: a3f35a03dd9cff6272365125283f2143996fc53a73dc497d83e994392a9eb7c6
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 3829577e31dd329c8a44c7e6e680fa0143732c7494cd89c6bcfd78ee6e98ecff
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -1469,7 +1472,23 @@ jobs:
         BASE_HARNESS="$(jvm base webgraph)/${HARNESS}"
         CANDIDATE_HARNESS="$(jvm candidate webgraph)/${HARNESS}"
         COMPARATOR='.github/scripts/benchmark-gate.mjs'
-        if grep -Fq 'mappedLoadSamples=' "${BASE_HARNESS}" && \
+        test ! -L "${BASE_HARNESS}"
+        test ! -L "${CANDIDATE_HARNESS}"
+        test ! -L "candidate/${COMPARATOR}"
+        BASE_HARNESS_SHA256="$(sha256sum "${BASE_HARNESS}" | cut -d' ' -f1)"
+        CANDIDATE_HARNESS_SHA256="$(sha256sum "${CANDIDATE_HARNESS}" | cut -d' ' -f1)"
+        CANDIDATE_COMPARATOR_SHA256="$(sha256sum "candidate/${COMPARATOR}" | cut -d' ' -f1)"
+        # One-time graph-shape transition: each revision keeps and runs its own harness, and the pinned
+        # candidate comparator accepts only the exact pinned shape change. Once main carries the new
+        # harness its digest no longer matches the base pin, and this branch is never selected again.
+        if [[ "${BASE_HARNESS_SHA256}" = "${LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256}" && \
+          "${CANDIDATE_HARNESS_SHA256}" = "${LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256}" && \
+          "${CANDIDATE_COMPARATOR_SHA256}" = "${LARGE_CORPUS_SHAPE_COMPARATOR_SHA256}" && \
+          "${CANDIDATE_GATE_TEST_JOB}" = success ]]; then
+          echo "comparator=candidate/${COMPARATOR}" >> "${GITHUB_OUTPUT}"
+          echo "comparator-args=--shape-transition" >> "${GITHUB_OUTPUT}"
+          echo "mode=shape-transition" >> "${GITHUB_OUTPUT}"
+        elif grep -Fq 'mappedLoadSamples=' "${BASE_HARNESS}" && \
           grep -Fq 'productionIndexPrepared=' "${BASE_HARNESS}" && \
           grep -Fq 'LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5' "base/${COMPARATOR}"; then
           test ! -L "${CANDIDATE_HARNESS}"
@@ -1516,6 +1535,7 @@ jobs:
     - name: Compare large-corpus results
       run: |
         if node "${{ steps.large-corpus-controls.outputs.comparator }}" compare-large-corpus \
+          ${{ steps.large-corpus-controls.outputs.comparator-args }} \
           --base benchmark-results/base-large-corpus.log \
           --candidate benchmark-results/candidate-large-corpus.log \
           --report benchmark-results/initial-large-corpus-report.md \
@@ -1531,6 +1551,7 @@ jobs:
             -Dlarge.corpus.record=true --no-daemon 2>&1 \
             | tee benchmark-results/candidate-large-corpus-confirmation.log
           node "${{ steps.large-corpus-controls.outputs.comparator }}" confirm-large-corpus \
+            ${{ steps.large-corpus-controls.outputs.comparator-args }} \
             --initial benchmark-results/initial-large-corpus-status.json \
             --base benchmark-results/base-large-corpus-confirmation.log \
             --candidate benchmark-results/candidate-large-corpus-confirmation.log \

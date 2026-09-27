@@ -190,6 +190,28 @@ const LARGE_CORPUS_SHAPE_FIELDS = ["nodes", "sourceEdges", "persistedEdges", "me
 const LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE = 4 * 1024;
 const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 
+// One-time graph-shape transition: System.getProperty stops being linked to every packaged
+// configuration file by RESOURCE_LOOKUP. Only this exact base -> candidate shape, and a persisted-size
+// delta within LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may pass while the workflow
+// selects the pinned shape-transition controls; every other comparison keeps exact shape equality.
+export const LARGE_CORPUS_SHAPE_TRANSITION = Object.freeze({
+    tika: {
+        base: { nodes: 3_897_012, sourceEdges: 4_497_723, persistedEdges: 4_342_382, methods: 312_788, callSites: 1_002_088 },
+        candidate: { nodes: 3_897_012, sourceEdges: 4_405_147, persistedEdges: 4_249_806, methods: 312_788, callSites: 1_002_088 },
+        persistedBytesDelta: -110_585
+    },
+    hive: {
+        base: { nodes: 5_986_673, sourceEdges: 6_378_063, persistedEdges: 6_161_463, methods: 404_016, callSites: 1_437_647 },
+        candidate: { nodes: 5_986_673, sourceEdges: 6_350_854, persistedEdges: 6_134_254, methods: 404_016, callSites: 1_437_647 },
+        persistedBytesDelta: -33_814
+    },
+    "kotlin-compiler": {
+        base: { nodes: 3_268_537, sourceEdges: 3_674_711, persistedEdges: 3_559_500, methods: 249_669, callSites: 900_366 },
+        candidate: { nodes: 3_268_537, sourceEdges: 3_672_821, persistedEdges: 3_557_610, methods: 249_669, callSites: 900_366 },
+        persistedBytesDelta: -2_888
+    }
+});
+
 function finiteNumber(value) {
     if (value === null || value === undefined || value === "") return null;
     const number = Number(value);
@@ -2698,7 +2720,7 @@ export function parseLargeCorpusLog(contents) {
     return { results, errors };
 }
 
-export function compareLargeCorpus(baseLog, candidateLog) {
+export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = null } = {}) {
     const baseParsed = parseLargeCorpusLog(baseLog);
     const candidateParsed = parseLargeCorpusLog(candidateLog);
     const base = baseParsed.results;
@@ -2723,6 +2745,11 @@ export function compareLargeCorpus(baseLog, candidateLog) {
         const baseline = base.get(corpus);
         const current = candidate.get(corpus);
         if (baseline === undefined || current === undefined) continue;
+        const transition = shapeTransition === null ? null : shapeTransition[corpus];
+        if (shapeTransition !== null && transition === undefined) {
+            errors.push(`${corpus}: missing from the graph-shape transition`);
+            continue;
+        }
 
         for (const field of LARGE_CORPUS_SHAPE_FIELDS) {
             const baseValue = finiteNumber(baseline[field]);
@@ -2731,23 +2758,41 @@ export function compareLargeCorpus(baseLog, candidateLog) {
                 baseValue <= 0 || candidateValue <= 0
             ) {
                 errors.push(`${corpus}/${field}: invalid graph-shape measurement`);
-            } else if (baseValue !== candidateValue) {
-                errors.push(`${corpus}/${field}: graph shape changed from ${baseValue} to ${candidateValue}`);
+            } else if (transition === null) {
+                if (baseValue !== candidateValue) {
+                    errors.push(`${corpus}/${field}: graph shape changed from ${baseValue} to ${candidateValue}`);
+                }
+            } else {
+                if (baseValue !== transition.base[field]) {
+                    errors.push(
+                        `${corpus}/${field}: base graph shape ${baseValue} does not match the ` +
+                        `transition base ${transition.base[field]}`
+                    );
+                }
+                if (candidateValue !== transition.candidate[field]) {
+                    errors.push(
+                        `${corpus}/${field}: candidate graph shape ${candidateValue} does not match the ` +
+                        `transition candidate ${transition.candidate[field]}`
+                    );
+                }
             }
         }
 
         const basePersistedBytes = finiteNumber(baseline.persistedBytes);
         const candidatePersistedBytes = finiteNumber(current.persistedBytes);
+        const expectedPersistedDelta = transition === null ? 0 : transition.persistedBytesDelta;
         if (!Number.isSafeInteger(basePersistedBytes) || !Number.isSafeInteger(candidatePersistedBytes) ||
             basePersistedBytes <= 0 || candidatePersistedBytes <= 0
         ) {
             errors.push(`${corpus}/persistedBytes: invalid persisted-size measurement`);
-        } else if (Math.abs(candidatePersistedBytes - basePersistedBytes) >
+        } else if (Math.abs(candidatePersistedBytes - basePersistedBytes - expectedPersistedDelta) >
             LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE
         ) {
             errors.push(
                 `${corpus}/persistedBytes: persisted size changed from ${basePersistedBytes} to ` +
-                `${candidatePersistedBytes}, exceeding the ${LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE}-byte tolerance`
+                `${candidatePersistedBytes}` +
+                (transition === null ? "" : ` (expected delta ${expectedPersistedDelta})`) +
+                `, exceeding the ${LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE}-byte tolerance`
             );
         }
 
@@ -2818,7 +2863,8 @@ export function compareLargeCorpus(baseLog, candidateLog) {
     return {
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
-        rows
+        rows,
+        shapeTransition: shapeTransition !== null
     };
 }
 
@@ -2852,7 +2898,8 @@ export function confirmLargeCorpus(initial, confirmation) {
     return {
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
-        rows
+        rows,
+        shapeTransition: initial.shapeTransition === true && confirmation.shapeTransition === true
     };
 }
 
@@ -2866,7 +2913,10 @@ export function renderLargeCorpusReport(comparison) {
         "### Real-corpus end to end",
         "",
         "Each corpus runs `JAR -> build -> save -> mapped load -> Cypher` in an isolated 4 GiB JVM.",
-        "The exact corpus set and graph-shape counts must match; persisted size may vary by at most 4 KiB.",
+        comparison.shapeTransition === true
+            ? "Graph-shape transition: each revision must match its pinned shape exactly, and persisted size " +
+                "must change by the pinned delta within 4 KiB."
+            : "The exact corpus set and graph-shape counts must match; persisted size may vary by at most 4 KiB.",
         "Mapped load is the median of five loads of the same persisted graph; min/max remain in the audit marker.",
         "Small absolute changes below the noise floor do not block.",
         "Suspected timing regressions must repeat in a reverse-order confirmation run.",
@@ -3088,10 +3138,15 @@ function compareJmhCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function largeCorpusOptions(args) {
+    return { shapeTransition: args["shape-transition"] === true ? LARGE_CORPUS_SHAPE_TRANSITION : null };
+}
+
 function compareLargeCorpusCommand(args) {
     const comparison = compareLargeCorpus(
         fs.readFileSync(requireArg(args, "base"), "utf8"),
-        fs.readFileSync(requireArg(args, "candidate"), "utf8")
+        fs.readFileSync(requireArg(args, "candidate"), "utf8"),
+        largeCorpusOptions(args)
     );
     writeFile(requireArg(args, "report"), renderLargeCorpusReport(comparison));
     writeJson(requireArg(args, "status"), comparison);
@@ -3287,7 +3342,8 @@ function confirmLargeCorpusCommand(args) {
     const initial = readJson(requireArg(args, "initial"));
     const confirmation = compareLargeCorpus(
         fs.readFileSync(requireArg(args, "base"), "utf8"),
-        fs.readFileSync(requireArg(args, "candidate"), "utf8")
+        fs.readFileSync(requireArg(args, "candidate"), "utf8"),
+        largeCorpusOptions(args)
     );
     const comparison = confirmLargeCorpus(initial, confirmation);
     writeFile(requireArg(args, "report"), renderLargeCorpusReport(comparison));

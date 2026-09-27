@@ -48,8 +48,8 @@ private object CorpusBaselines {
         jarBytes = 60_900_523,
         classCount = 33_128,
         nodeCount = 3_897_012,
-        sourceEdgeCount = 4_497_723,
-        persistedEdgeCount = 4_342_382,
+        sourceEdgeCount = 4_405_147,
+        persistedEdgeCount = 4_249_806,
         methodCount = 312_788,
         callSiteCount = 1_002_088,
         maxPipelineMillis = 120_000
@@ -62,8 +62,8 @@ private object CorpusBaselines {
         jarBytes = 84_163_106,
         classCount = 38_999,
         nodeCount = 5_986_673,
-        sourceEdgeCount = 6_378_063,
-        persistedEdgeCount = 6_161_463,
+        sourceEdgeCount = 6_350_854,
+        persistedEdgeCount = 6_134_254,
         methodCount = 404_016,
         callSiteCount = 1_437_647,
         maxPipelineMillis = 180_000
@@ -76,8 +76,8 @@ private object CorpusBaselines {
         jarBytes = 58_272_093,
         classCount = 24_941,
         nodeCount = 3_268_537,
-        sourceEdgeCount = 3_674_711,
-        persistedEdgeCount = 3_559_500,
+        sourceEdgeCount = 3_672_821,
+        persistedEdgeCount = 3_557_610,
         methodCount = 249_669,
         callSiteCount = 900_366,
         maxPipelineMillis = 120_000
