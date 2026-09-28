@@ -772,6 +772,30 @@ guessing multiple endpoints. The default response is a Structurizr workspace
 JSON document. For text rendering, use `format=dsl`, `format=mermaid`, or
 `format=plantuml`.
 
+### Agent skill
+
+[`skills/graphite`](skills/graphite/SKILL.md) is an [Agent Skill](https://code.claude.com/docs/en/skills)
+that teaches an agent how to answer code questions with these tools: identify entry
+points and boundaries, trace control flow, data flow and configuration, find A/B test
+and feature flag touch points, and assess the blast radius of a change. It records
+how the graph is shaped (the call graph is a join on signatures, dataflow stops at
+call sites, branch polarity is JVM-level) so queries return evidence instead of empty
+results. Install it with the [`skills` CLI](https://github.com/vercel-labs/skills),
+which fetches it from this repository:
+
+```bash
+npx skills add johnsonlee/graphite --skill graphite -a claude-code      # this project
+npx skills add johnsonlee/graphite --skill graphite -a claude-code -g   # every project
+```
+
+Omit `-a` to choose among the other supported agents. Without Node.js, copy it from a
+Graphite checkout into every project, or into one project (replace `/path/to/project`):
+
+```bash
+mkdir -p ~/.claude/skills && cp -r skills/graphite ~/.claude/skills/
+mkdir -p /path/to/project/.claude/skills && cp -r skills/graphite /path/to/project/.claude/skills/
+```
+
 ## License
 
 ```

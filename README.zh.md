@@ -574,6 +574,22 @@ GET /api/architecture/c4?level=context|container|component|all&format=plantuml
 
 智能体可通过该端点获取从代码图推导出的 C4 架构视图，无需猜测多个端点。默认响应为 Structurizr workspace JSON 文档。若需文本格式，请使用 `format=dsl`、`format=mermaid` 或 `format=plantuml`。
 
+### Agent Skill
+
+[`skills/graphite`](skills/graphite/SKILL.md) 是一个 [Agent Skill](https://code.claude.com/docs/en/skills)，教智能体用上述工具回答代码问题：识别入口与边界，追踪控制流、数据流和配置，查找已有的 A/B 实验与 feature flag 接入点，以及评估改动影响面。它记录了图的实际形状（调用图是按签名连接调用点、数据流止于调用点、分支极性以 JVM 比较为准），让查询返回证据而不是空结果。用 [`skills` CLI](https://github.com/vercel-labs/skills) 直接从本仓库安装：
+
+```bash
+npx skills add johnsonlee/graphite --skill graphite -a claude-code      # 当前项目
+npx skills add johnsonlee/graphite --skill graphite -a claude-code -g   # 所有项目
+```
+
+省略 `-a` 可在其他受支持的智能体中选择。没有 Node.js 时，也可以在 Graphite 仓库目录下复制安装，装到所有项目或单个项目（替换 `/path/to/project`）：
+
+```bash
+mkdir -p ~/.claude/skills && cp -r skills/graphite ~/.claude/skills/
+mkdir -p /path/to/project/.claude/skills && cp -r skills/graphite /path/to/project/.claude/skills/
+```
+
 ## 许可证
 
 ```
