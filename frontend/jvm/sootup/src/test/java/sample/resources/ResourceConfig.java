@@ -247,4 +247,12 @@ public class ResourceConfig {
     public String providerBundleKeys() {
         return ResourceBundle.getBundle("sample.resources.ProviderMessagesBundle").getKeys().nextElement();
     }
+
+    public String systemFeatureMode() {
+        return System.getProperty("feature.mode");
+    }
+
+    public String systemFeatureModeWithDefault() {
+        return System.getProperty("feature.mode", "off");
+    }
 }

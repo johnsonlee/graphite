@@ -1337,8 +1337,7 @@ class SootUpAdapter(
         private val RESOURCE_LOOKUP_CLASSES = setOf(
             PROPERTIES_CLASS,
             PROPERTY_RESOURCE_BUNDLE_CLASS,
-            RESOURCE_BUNDLE_CLASS,
-            SYSTEM_CLASS
+            RESOURCE_BUNDLE_CLASS
         )
         private val RESOURCE_PATH_METHODS = setOf("getResource", "getResourceAsStream")
         private val RESOURCE_BUNDLE_READ_METHODS = setOf("getString", "getObject", GET_KEYS_METHOD)
@@ -1354,7 +1353,6 @@ class SootUpAdapter(
         private const val RESOURCE_BUNDLE_CONTROL_CLASS = "java.util.ResourceBundle\$Control"
         private const val RESOURCE_BUNDLE_CONTROL_CLASS_ALT = "java.util.ResourceBundle.Control"
         private const val PROPERTIES_CLASS = "java.util.Properties"
-        private const val SYSTEM_CLASS = "java.lang.System"
         private const val CLASS_LOADER_CLASS = "java.lang.ClassLoader"
         private const val CLASS_CLASS = "java.lang.Class"
         private const val GSON_CLASS = "com.google.gson.Gson"
@@ -1381,8 +1379,6 @@ class SootUpAdapter(
                 methodName in RESOURCE_LOOKUP_METHODS || methodName == INIT_METHOD || methodName == GET_KEYS_METHOD
             declaringClass == RESOURCE_BUNDLE_CLASS ->
                 methodName == GET_BUNDLE_METHOD || methodName in RESOURCE_BUNDLE_READ_METHODS
-            declaringClass == SYSTEM_CLASS ->
-                methodName == GET_PROPERTY_METHOD
             declaringClass == CLASS_LOADER_CLASS || declaringClass == CLASS_CLASS ->
                 methodName in RESOURCE_PATH_METHODS
             declaringClass == GSON_CLASS ->

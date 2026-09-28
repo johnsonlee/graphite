@@ -13,6 +13,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -58,6 +59,44 @@ class ResourceConfigLinkingTest {
             assertHasResourceEdge(graph.incomingResourceEdges(lookupReaderCall.id), appProperties.id, ResourceRelation.LOOKUP, "Reader-backed Properties.getProperty should stay linked to application.properties")
             assertHasResourceEdge(graph.incomingResourceEdges(jsonLoadCall.id), appJson.id, ResourceRelation.LOADS, "application.json should link to Gson.fromJson")
             assertHasResourceEdge(graph.incomingResourceEdges(xmlLoadCall.id), configXml.id, ResourceRelation.LOADS, "config.xml should link to DocumentBuilder.parse")
+        } finally {
+            fixtureDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `should not link System getProperty to packaged resource files`() {
+        val fixtureDir = createFixtureDir()
+        try {
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.resources"),
+                    buildCallGraph = false
+                )
+            )
+
+            val graph = loader.load(fixtureDir)
+            listOf("systemFeatureMode", "systemFeatureModeWithDefault").forEach { methodName ->
+                val method = graph.methods(MethodPattern("sample.resources.ResourceConfig", methodName)).single()
+                val systemLookup = requireCallSite(graph, method, "getProperty")
+                assertEquals("java.lang.System", systemLookup.callee.declaringClass.className)
+                assertEquals(
+                    emptyList(),
+                    graph.incomingResourceEdges(systemLookup.id),
+                    "$methodName reads a JVM system property, not a packaged resource"
+                )
+            }
+
+            // Properties.getProperty with the same key stays linked to application.properties.
+            val appProperties = requireResourceFile(graph, "application.properties")
+            val featureMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "featureMode")).single()
+            val propertiesLookup = requireCallSite(graph, featureMethod, "getProperty")
+            assertHasResourceEdge(
+                graph.incomingResourceEdges(propertiesLookup.id),
+                appProperties.id,
+                ResourceRelation.LOOKUP,
+                "application.properties should link to Properties.getProperty"
+            )
         } finally {
             fixtureDir.toFile().deleteRecursively()
         }
