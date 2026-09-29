@@ -470,7 +470,6 @@ class MyExtension : GraphiteExtension {
 ## Kotlin 依赖
 
 JVM 模块以 `io.johnsonlee.graphite` 为 group 发布到 Maven Central，artifact id 不带前缀（`core`、`sootup`、`cypher`、`webgraph`），自 2.x 以来保持不变。
-请固定使用明确的版本：采用这一目录布局的 `3.0.0-alpha*` 预发布版本仍保留在 Maven Central，版本排序高于 `2.5.0`，因此 `+` 等动态版本会解析到这些预发布版本之一，而非当前正式版本。
 
 ```kotlin
 repositories {
@@ -478,12 +477,12 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:core:2.5.0")
-    implementation("io.johnsonlee.graphite:sootup:2.5.0")
+    implementation("io.johnsonlee.graphite:core:2.8.0")
+    implementation("io.johnsonlee.graphite:sootup:2.8.0")
     // Optional: Cypher query support (graph.query("MATCH ..."))
-    implementation("io.johnsonlee.graphite:cypher:2.5.0")
+    implementation("io.johnsonlee.graphite:cypher:2.8.0")
     // Optional: disk persistence (WebGraph format)
-    implementation("io.johnsonlee.graphite:webgraph:2.5.0")
+    implementation("io.johnsonlee.graphite:webgraph:2.8.0")
 }
 ```
 
@@ -527,7 +526,7 @@ claude mcp add --transport http --scope project graphite http://localhost:8080/m
 为 `graphite` 条目选择 stdio 或 HTTP 其中一种方式。其他支持 HTTP 的客户端可通过其 Streamable HTTP 设置连接 `http://localhost:8080/mcp`。
 `/mcp` 会校验 `Origin` 请求头（防止 DNS 重绑定）：接受不带该请求头的请求及来源为回环地址的请求；其他来源默认返回 403，除非通过 `graphite serve --mcp-allowed-origin https://tools.example.com` 显式允许（可重复指定；`*` 表示允许所有来源）。REST API 不受影响。
 
-从 `npx graphite-mcp` 迁移：工具、参数和输出保持不变，npm 包曾协商使用的所有协议版本（从 `2024-11-05` 到 `2025-11-25`）仍受支持。将 `command`/`args` 替换为 `graphite mcp` 及要打开的图，并移除 `GRAPHITE_URL`。唯一的参数变化是 `node`、`outgoing` 和 `incoming` 必须提供 `graph_id`（原 npm 包将其标为可选，但未提供时会返回 404）。从 v2.5.0 起不再发布 npm 包；最后一个版本 2.4.8 仍可与 2.5.0 服务端配合使用，因为它仅调用上述 REST 路由。
+从 `npx graphite-mcp` 迁移：工具、参数和输出保持不变，npm 包曾协商使用的所有协议版本（从 `2024-11-05` 到 `2025-11-25`）仍受支持。将 `command`/`args` 替换为 `graphite mcp` 及要打开的图，并移除 `GRAPHITE_URL`。唯一的参数变化是 `node`、`outgoing` 和 `incoming` 必须提供 `graph_id`（原 npm 包将其标为可选，但未提供时会返回 404）。从 v2.5.0 起不再发布 npm 包；最后一个版本 2.4.8 仍可与 2.5.0 及以后的服务端配合使用，因为它仅调用上述 REST 路由。
 
 使用 HTTP 连接时，先启动 Explorer；stdio 会直接打开图：
 
