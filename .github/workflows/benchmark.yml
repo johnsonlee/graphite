@@ -17,15 +17,19 @@ env:
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: db14578349451d744c777743905fb3a6b5d0419be1f7cdd955e8063369d79293
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
-  LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256: db14578349451d744c777743905fb3a6b5d0419be1f7cdd955e8063369d79293
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
-  BENCHMARK_REPORT_TRANSITION_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
+  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: d278ec383fc2844da46094de4c4e1593ff380b85eb8e3d1a080ffe01dbfbbb43
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ee147168b44a0e053bbfb796bbde2adc2a389cc0573f61e3177b46b3687838be
+  LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256: db14578349451d744c777743905fb3a6b5d0419be1f7cdd955e8063369d79293
+  LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256: d278ec383fc2844da46094de4c4e1593ff380b85eb8e3d1a080ffe01dbfbbb43
+  WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256: 5c2be9550c0f3e0fa408d5d56375efc4b9e3c78d96b95de1c20718f08aa4dd2b
+  WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: 548a5a5cc778b7758afeef8da981693f7d2f451457b2db4f2bdc1168cd21418f
+  WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
+  WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: 8af32ddbd4840b29acd862d039ef3672e550980224ee0d756f92661146478e76
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: ee147168b44a0e053bbfb796bbde2adc2a389cc0573f61e3177b46b3687838be
+  BENCHMARK_REPORT_TRANSITION_SHA256: ee147168b44a0e053bbfb796bbde2adc2a389cc0573f61e3177b46b3687838be
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: a3f35a03dd9cff6272365125283f2143996fc53a73dc497d83e994392a9eb7c6
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: f1a4a82b1b21b13b6c690466fa57ca1be83c716305a65283bd042240869f9f1e
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: ee147168b44a0e053bbfb796bbde2adc2a389cc0573f61e3177b46b3687838be
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: ee147168b44a0e053bbfb796bbde2adc2a389cc0573f61e3177b46b3687838be
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -202,6 +206,21 @@ jobs:
     - name: Install base-owned wrapped-query harnesses
       run: |
         jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        digest() { sha256sum "$(jvm "$1" webgraph)/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/$2" | cut -d ' ' -f 1; }
+        # One-time graph-shape transition: every revision queries the fixture graphs the candidate
+        # built, so the harness pins that graph's node counts and search-target distributions. Only
+        # the exact pre-transition base harnesses and the exact pinned candidate harnesses, which
+        # differ in those expected values alone, select the candidate copies, for every revision.
+        # Once main carries them the base digests no longer match and base ownership resumes.
+        SHAPE_OWNER=gate
+        if [[ "$(digest gate BenchmarkCorpus.kt)" = "${WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256}" && \
+          "$(digest gate AllFixtureWrappedDiscoveryLatencyBenchmark.kt)" = "${WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256}" && \
+          "$(digest controls BenchmarkCorpus.kt)" = "${WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256}" && \
+          "$(digest controls AllFixtureWrappedDiscoveryLatencyBenchmark.kt)" = \
+            "${WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256}" && \
+          "${{ needs.candidate-gate-tests.result }}" = success ]]; then
+          SHAPE_OWNER=controls
+        fi
         for HARNESS in \
           BenchmarkCorpus.kt \
           AllFixtureBenchmarkGraphPreparation.kt \
@@ -209,6 +228,10 @@ jobs:
           WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
           HARNESS_SOURCE="$(jvm gate webgraph)/${SOURCE}"
+          if [ "${HARNESS}" = BenchmarkCorpus.kt ] || [ "${HARNESS}" = AllFixtureWrappedDiscoveryLatencyBenchmark.kt ]; then
+            test ! -L "$(jvm "${SHAPE_OWNER}" webgraph)/${SOURCE}"
+            HARNESS_SOURCE="$(jvm "${SHAPE_OWNER}" webgraph)/${SOURCE}"
+          fi
           if [ "${HARNESS}" = WrappedDiscoveryResourceBenchmark.kt ] && \
             grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${HARNESS_SOURCE}"; then
             test "${{ needs.candidate-gate-tests.result }}" = success
@@ -3155,12 +3178,35 @@ jobs:
         path: fixture-graphs
         key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/frontend/jvm/core/src/main/**', 'candidate/frontend/jvm/sootup/src/main/**', 'candidate/frontend/jvm/webgraph/src/main/**', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
     - name: Compare all five real slow-query families
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
+        set -euo pipefail
         test -f fixture-graphs/.complete
         test -f fixture-graphs/android/graph.metadata
         test -f fixture-graphs/android/graph.nodedata
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        CORPUS='src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt'
+        # One-time graph-shape transition (see build-wrapped-query-jmh): the fixture graph was built
+        # by the candidate, so the pinned candidate BenchmarkCorpus.kt, which differs from the
+        # pinned base one only in expected node counts, stands in for the base copy the script
+        # installs. Every other base-owned control is used unchanged.
+        SLOW_GATE=gate
+        if [[ "$(sha256sum "$(jvm gate webgraph)/${CORPUS}" | cut -d' ' -f1)" = \
+            "${WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256}" && \
+          "$(sha256sum "$(jvm controls webgraph)/${CORPUS}" | cut -d' ' -f1)" = \
+            "${WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256}" && \
+          "${CANDIDATE_GATE_TEST_JOB}" = success ]]; then
+          test ! -L "$(jvm controls webgraph)/${CORPUS}"
+          SLOW_GATE="${RUNNER_TEMP}/slow-shape-gate"
+          rm -rf -- "${SLOW_GATE}"
+          cp -a gate "${SLOW_GATE}"
+          rm -f -- "$(jvm "${SLOW_GATE}" webgraph)/${CORPUS}"
+          install -m 0644 "$(jvm controls webgraph)/${CORPUS}" "$(jvm "${SLOW_GATE}" webgraph)/${CORPUS}"
+          cmp "$(jvm controls webgraph)/${CORPUS}" "$(jvm "${SLOW_GATE}" webgraph)/${CORPUS}"
+        fi
         bash '${{ steps.slow-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.sh' \
-          '${{ steps.slow-controls.outputs.directory }}' gate base candidate \
+          '${{ steps.slow-controls.outputs.directory }}' "${SLOW_GATE}" base candidate \
           fixture-graphs/android benchmark-results/slow-shapes
     - name: Upload slow-query evidence
       if: always()

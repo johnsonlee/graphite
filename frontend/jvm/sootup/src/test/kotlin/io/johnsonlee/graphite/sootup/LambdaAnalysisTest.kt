@@ -370,6 +370,46 @@ class LambdaAnalysisTest {
             "processChain should resolve .filter(StreamChainExample::isValid). Callees: $calleeNames")
     }
 
+    @Test
+    fun `anonymous class passed as a parameter resolves to its override`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        val calleeNames = callSites.filter {
+            it.caller.name == "call" && it.caller.declaringClass.className == "sample.lambda.AnonymousClassExample"
+        }.map { "${it.callee.declaringClass.className}.${it.callee.name}" }.toSet()
+        assertTrue("sample.lambda.AnonymousClassExample\$1.apply" in calleeNames,
+            "AnonymousClassExample.call should resolve fn.apply to the anonymous class. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `anonymous class resolves to the implementation it inherits`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        val calleeNames = callSites.filter {
+            it.caller.name == "call" && it.caller.declaringClass.className == "sample.lambda.AnonymousClassExample"
+        }.map { "${it.callee.declaringClass.className}.${it.callee.name}" }.toSet()
+        assertTrue("sample.lambda.AnonymousClassExample\$BaseFunction.apply" in calleeNames,
+            "AnonymousClassExample.call should resolve fn.apply to BaseFunction.apply. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `method reference to a function value's own method resolves through it`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        val calleeNames = callSites.filter {
+            it.caller.name == "useAdapted" && it.caller.declaringClass.className == "sample.lambda.AnonymousClassExample"
+        }.map { it.callee.name }
+        assertTrue(calleeNames.count { it == "adaptedTarget" } >= 2,
+            "useAdapted should resolve adapted.apply through fn::apply to adaptedTarget. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `resolved dispatch skips methods the lambda does not implement`() {
+        // Function.andThen is a default method: calling it on a lambda does not run the lambda body
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        val sites = callSites.filter { it.caller.name == "composeDefault" }
+        assertTrue(sites.any { it.callee.name == "andThen" }, "composeDefault should call andThen")
+        assertTrue(sites.none { it.callee.name == "transform" && it.receiver != null },
+            "andThen must not resolve to the lambda body. Callees: ${sites.map { it.callee.name }}")
+    }
+
     private fun findTestClassesDir(): Path {
         val projectDir = Path.of(System.getProperty("user.dir"))
         val submodulePath = projectDir.resolve("build/classes/java/test")

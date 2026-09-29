@@ -82,8 +82,10 @@ import sootup.core.jimple.common.constant.Constant as SootConstant
 import sootup.core.jimple.common.constant.MethodHandle
 import sootup.core.jimple.common.expr.AbstractInstanceInvokeExpr
 import sootup.core.jimple.common.expr.AbstractInvokeExpr
+import sootup.core.jimple.common.expr.JCastExpr
 import sootup.core.jimple.common.expr.JDynamicInvokeExpr
 import sootup.core.jimple.common.expr.JNewExpr
+import sootup.core.jimple.common.expr.JSpecialInvokeExpr
 import sootup.core.jimple.common.expr.JStaticInvokeExpr
 import sootup.core.jimple.common.ref.JFieldRef
 import sootup.core.jimple.common.ref.JStaticFieldRef
@@ -102,6 +104,7 @@ import sootup.core.jimple.common.expr.JGeExpr
 import sootup.core.jimple.common.expr.JGtExpr
 import sootup.core.jimple.common.expr.JLeExpr
 import sootup.core.model.SootClass
+import sootup.core.model.ClassModifier
 import sootup.core.model.MethodModifier
 import sootup.core.model.SootMethod
 import sootup.core.signatures.MethodSubSignature
@@ -126,6 +129,8 @@ private const val PROPERTY_RESOURCE_BUNDLE_CLASS = "java.util.PropertyResourceBu
 private const val RESOURCE_BUNDLE_CLASS = "java.util.ResourceBundle"
 private const val LOCALE_CLASS = "java.util.Locale"
 private const val INIT_METHOD = "<init>"
+private const val KOTLIN_INVOKE = "invoke"
+private const val KOTLIN_PROPERTY_GET = "get"
 private const val VALUE_OF_METHOD = "valueOf"
 private const val CLASS_FILE_SUFFIX = ".class"
 private const val PROPERTIES_FILE_SUFFIX = ".properties"
@@ -280,26 +285,23 @@ class SootUpAdapter(
     private val methodReturnNodes = mutableMapOf<MethodDescriptor, ReturnNode>()
     private val allocationNodes = mutableMapOf<LocalKey, LocalVariable>()
 
-    private val dynamicTargets = mutableMapOf<LocalKey, List<MethodDescriptor>>()
-
-    private val returnDynamicTargets = mutableMapOf<MethodDescriptor, List<MethodDescriptor>>()
+    // Per-method: dispatch targets of locals holding a function value (cleared after each method)
+    private val dynamicTargets = mutableMapOf<LocalKey, List<DispatchTarget>>()
 
     // Maps local key to parameter binding for locals assigned from parameters
     private val localToParamIndex = mutableMapOf<LocalKey, ParameterBinding>()
 
-    private val callSiteDynamicArgs = mutableMapOf<MethodDescriptor, MutableList<Pair<Int, List<MethodDescriptor>>>>()
+    private val arrayDynamicTargets = mutableMapOf<LocalKey, MutableList<DispatchTarget>>()
 
-    private val parameterVirtualCalls = mutableMapOf<MethodDescriptor, MutableList<Pair<Int, CallSiteNode>>>()
+    // Cross-method functional dispatch: targets seeded into slots (parameters, returns, fields,
+    // locals), flows between slots, and calls waiting on a slot. resolveFunctionalDispatch()
+    // propagates the targets to a fixpoint once every method has been processed.
+    private val slotTargets = mutableMapOf<DispatchSlot, LinkedHashSet<DispatchTarget>>()
+    private val slotFlows = mutableMapOf<DispatchSlot, MutableSet<DispatchSlot>>()
+    private val slotCalls = mutableMapOf<DispatchSlot, MutableList<PendingDispatch>>()
+    private val functionObjectClasses = mutableMapOf<String, Boolean>()
+    private val mayHoldFunctionByType = mutableMapOf<String, Boolean>()
 
-    private val callResultLocals = mutableMapOf<MethodDescriptor, MutableList<LocalKey>>()
-
-    private val unresolvedLocalVirtualCalls = mutableMapOf<LocalKey, MutableList<CallSiteNode>>()
-
-    // Maps field key (field signature string) to dynamic targets assigned to that field
-    // Enables resolution when a lambda/method reference is stored to a field and later invoked
-    private val fieldDynamicTargets = mutableMapOf<String, MutableList<MethodDescriptor>>()
-
-    private val arrayDynamicTargets = mutableMapOf<LocalKey, MutableList<MethodDescriptor>>()
     private val localeSpecsByLocal = mutableMapOf<LocalKey, String>()
     private val localeBuilderSpecsByLocal = mutableMapOf<LocalKey, LocaleBuilderSpec>()
     private val stringValuesByLocal = mutableMapOf<LocalKey, String>()
@@ -308,8 +310,6 @@ class SootUpAdapter(
     private val propertiesPathsByLocal = mutableMapOf<LocalKey, LinkedHashSet<String>>()
     private val resourceBundlePaths = mutableMapOf<LocalKey, LinkedHashSet<String>>()
     private val bundleControlSpecsByLocal = mutableMapOf<LocalKey, BundleControlSpec>()
-
-    private val fieldLoadLocals = mutableMapOf<String, MutableList<LocalKey>>()
 
     private val resolvedMethodCache = mutableMapOf<MethodSignature, MethodSignature>()
     private val methodDescriptorCache = mutableMapOf<MethodSignature, MethodDescriptor>()
@@ -783,11 +783,14 @@ class SootUpAdapter(
                 localeBuilderSpecsByLocal[localKey(method, leftOp.name)] = LocaleBuilderSpec()
             }
             recordStmtNode(stmt, allocNode.id)
+            trackFunctionObject(method, leftOp, allocType.className, allocNode.id, stmt)
             return
         }
 
         val targetNode = getOrCreateValueNode(leftOp, method)
-        val sourceNode = getOrCreateValueNode(rightOp, method)
+        // A cast passes its operand through unchanged, e.g. the `(String) arg` a bridge method
+        // applies before calling the typed implementation
+        val sourceNode = getOrCreateValueNode((rightOp as? JCastExpr)?.op ?: rightOp, method)
 
         if (targetNode != null) {
             recordStmtNode(stmt, targetNode.id)
@@ -811,56 +814,7 @@ class SootUpAdapter(
             )
         }
 
-        // Track dynamic targets flowing through field stores:
-        // When a local with dynamic targets is stored to a field, remember the mapping
-        if (trackCrossMethodFunctionalDispatch && leftOp is JFieldRef && rightOp is Local) {
-            val localKey = localKey(method, rightOp.name)
-            val targets = dynamicTargets[localKey]
-            if (targets != null) {
-                val fieldKey = leftOp.fieldSignature.toString()
-                fieldDynamicTargets.getOrPut(fieldKey) { mutableListOf() }.addAll(targets)
-            }
-        }
-
-        // Track dynamic targets flowing through array stores (varargs):
-        // When a local with dynamic targets is stored into an array element, remember the mapping
-        if (leftOp is JArrayRef && rightOp is Local) {
-            val base = leftOp.base
-            val rightKey = localKey(method, rightOp.name)
-            val targets = dynamicTargets[rightKey]
-            if (targets != null) {
-                val arrayKey = localKey(method, base.name)
-                arrayDynamicTargets.getOrPut(arrayKey) { mutableListOf() }.addAll(targets)
-            }
-        }
-
-        // Track dynamic targets flowing through array loads:
-        // When an array element is loaded into a local, propagate the array's dynamic targets
-        if (rightOp is JArrayRef && targetNode is LocalVariable) {
-            val base = rightOp.base
-            val arrayKey = localKey(method, base.name)
-            val targets = arrayDynamicTargets[arrayKey]
-            if (targets != null) {
-                val targetKey = localKey(method, targetNode.name)
-                dynamicTargets[targetKey] = mergeTargets(dynamicTargets[targetKey], targets)
-            }
-        }
-
-        // Track dynamic targets flowing through field loads:
-        // When a field with dynamic targets is loaded into a local, propagate the targets.
-        // If the field has no dynamic targets yet (e.g., constructor not processed yet),
-        // record for deferred resolution in resolveFunctionalDispatch.
-        if (trackCrossMethodFunctionalDispatch && rightOp is JFieldRef && targetNode is LocalVariable) {
-            val fieldKey = rightOp.fieldSignature.toString()
-            val targetKey = localKey(method, targetNode.name)
-            val targets = fieldDynamicTargets[fieldKey]
-            if (targets != null) {
-                dynamicTargets[targetKey] = mergeTargets(dynamicTargets[targetKey], targets)
-            } else {
-                // Record for deferred resolution
-                fieldLoadLocals.getOrPut(fieldKey) { mutableListOf() }.add(targetKey)
-            }
-        }
+        trackFunctionValueAssignment(stmt, method, targetNode)
 
         if (leftOp is Local) {
             val targetKey = localKey(method, leftOp.name)
@@ -889,6 +843,55 @@ class SootUpAdapter(
         // Handle method invocations in assignments (e.g., x = foo())
         if (rightOp is AbstractInvokeExpr) {
             processInvokeExpr(rightOp, method, targetNode, stmt)
+        }
+    }
+
+    /** Follow function values through an assignment: field and array stores and loads, copies and casts. */
+    private fun trackFunctionValueAssignment(stmt: JAssignStmt, method: MethodDescriptor, targetNode: ValueNode?) {
+        val leftOp = stmt.leftOp
+        val rightOp = stmt.rightOp
+        // Track function values stored to fields: `this.callback = fn`
+        if (leftOp is JFieldRef && rightOp is Local) {
+            trackFlow(method, rightOp, DispatchSlot.Field(leftOp.fieldSignature.toString()))
+        }
+
+        // Track function values stored into array elements (varargs): `fns[0] = fn`
+        if (leftOp is JArrayRef && rightOp is Local) {
+            val base = leftOp.base
+            val targets = dynamicTargets[localKey(method, rightOp.name)]
+            if (targets != null) {
+                arrayDynamicTargets.getOrPut(localKey(method, base.name)) { mutableListOf() }.addAll(targets)
+            }
+            trackFlow(method, rightOp, slotOf(method, base))
+        }
+
+        if (leftOp is Local && targetNode is LocalVariable) {
+            trackFunctionValueLoad(stmt, method, leftOp, targetNode)
+        }
+    }
+
+    /** Follow function values into a local: array and field loads, `INSTANCE` singletons, copies and casts. */
+    private fun trackFunctionValueLoad(stmt: JAssignStmt, method: MethodDescriptor, leftOp: Local, targetNode: LocalVariable) {
+        when (val rightOp = stmt.rightOp) {
+            // Array element loads: `fn = fns[0]`
+            is JArrayRef -> {
+                val arrayKey = localKey(method, rightOp.base.name)
+                arrayDynamicTargets[arrayKey]?.let { targets -> mergeLocalTargets(method, leftOp, targets) }
+                trackSlotFlow(slotOf(method, rightOp.base), method, leftOp)
+            }
+            // Field loads: `fn = this.callback`, including Kotlin's `Lambda.INSTANCE` singletons
+            is JFieldRef -> {
+                trackSlotFlow(DispatchSlot.Field(rightOp.fieldSignature.toString()), method, leftOp)
+                val fieldClass = rightOp.fieldSignature.declClassType.fullyQualifiedName
+                if (rightOp is JStaticFieldRef && toTypeDescriptor(rightOp.type).className == fieldClass) {
+                    trackFunctionObject(method, leftOp, fieldClass, targetNode.id, stmt)
+                }
+            }
+            // Copies: `a = b`
+            is Local -> copyFunctionValue(method, rightOp, leftOp)
+            // Casts: `fn = (Function1) lambda`, emitted after every Kotlin lambda allocation
+            is JCastExpr -> (rightOp.op as? Local)?.let { copyFunctionValue(method, it, leftOp) }
+            else -> Unit
         }
     }
 
@@ -1013,71 +1016,17 @@ class SootUpAdapter(
             trackResourceAssociations(callSite, calleeSignature, invokeExpr, caller, resultNode)
         }
 
-        // Resolve functional interface dispatch:
-        // If the receiver was assigned from an invokedynamic, connect this
-        // virtual call (e.g., Function.apply) to the actual target method
-        if (receiverNode is LocalVariable && (trackCrossMethodFunctionalDispatch || dynamicTargets.isNotEmpty())) {
-            val key = localKey(caller, receiverNode.name)
-            val targets = dynamicTargets[key]
-
-            // If this local has no direct dynamic targets, record for
-            // cross-method resolution in resolveFunctionalDispatch()
-            if (targets == null) {
-                if (trackCrossMethodFunctionalDispatch) {
-                    val paramInfo = localToParamIndex[key]
-                    if (paramInfo != null) {
-                        parameterVirtualCalls
-                            .getOrPut(paramInfo.method) { mutableListOf() }
-                            .add(paramInfo.index to callSite)
-                    } else {
-                        unresolvedLocalVirtualCalls
-                            .getOrPut(key) { mutableListOf() }
-                            .add(callSite)
-                    }
-                }
-            }
-
-            if (targets != null) {
-                for (target in targets) {
-                    graphBuilder.addEdge(
-                        CallEdge(
-                            from = callSite.id,
-                            to = callSite.id,
-                            isVirtual = false,
-                            isDynamic = true
-                        )
-                    )
-                    // Create an additional call site that records the resolved target
-                    val resolvedCallSite = CallSiteNode(
-                        id = nextNodeId("call"),
-                        caller = caller,
-                        callee = target,
-                        lineNumber = null,
-                        receiver = receiverNode.id,
-                        arguments = argNodeIds
-                    )
-                    graphBuilder.addNode(resolvedCallSite)
-                    // Forward dataflow: arguments flow to resolved target too
-                    argNodeIds.forEach { argNodeId ->
-                        graphBuilder.addEdge(
-                            DataFlowEdge(
-                                from = argNodeId,
-                                to = resolvedCallSite.id,
-                                kind = DataFlowKind.PARAMETER_PASS
-                            )
-                        )
-                    }
-                    // If there's a result, dataflow from resolved call site too
-                    if (resultNode != null) {
-                        graphBuilder.addEdge(
-                            DataFlowEdge(
-                                from = resolvedCallSite.id,
-                                to = resultNode.id,
-                                kind = DataFlowKind.RETURN_VALUE
-                            )
-                        )
-                    }
-                }
+        // Resolve functional interface dispatch: a call on a local holding a function value
+        // (e.g. Function.apply, Function1.invoke) also calls the function value's implementation.
+        // Targets known in this method resolve now; the call also waits on the receiver's slot for
+        // targets that arrive from other methods (parameters, returns, fields).
+        // Constructor and private calls (`invokespecial`) never dispatch.
+        if (receiverLocal is Local && receiverNode is LocalVariable && invokeExpr !is JSpecialInvokeExpr) {
+            val targets = dynamicTargets[localKey(caller, receiverLocal.name)].orEmpty()
+            targets.forEach { emitResolvedDispatch(callSite, it, resultNode?.id) }
+            if (trackCrossMethodFunctionalDispatch && mayHoldFunction(receiverNode.type)) {
+                slotCalls.getOrPut(slotOf(caller, receiverLocal)) { mutableListOf() }
+                    .add(PendingDispatch(callSite, resultNode?.id, targets.toSet()))
             }
         }
 
@@ -1102,19 +1051,9 @@ class SootUpAdapter(
                 )
             )
 
-            // Track dynamic targets flowing through arguments for cross-method dispatch
-            // Check both direct dynamic targets and array dynamic targets (for varargs)
-            if (trackCrossMethodFunctionalDispatch && index < args.size) {
-                val arg = args[index]
-                if (arg is Local) {
-                    val argKey = localKey(caller, arg.name)
-                    val targets = dynamicTargets[argKey] ?: arrayDynamicTargets[argKey]
-                    if (targets != null) {
-                        callSiteDynamicArgs
-                            .getOrPut(callee) { mutableListOf() }
-                            .add(index to targets)
-                    }
-                }
+            // Track function values passed as arguments for cross-method dispatch
+            (args.getOrNull(index) as? Local)?.let { arg ->
+                trackFlow(caller, arg, DispatchSlot.Parameter(callee, index))
             }
         }
 
@@ -1142,10 +1081,8 @@ class SootUpAdapter(
             }
             extractLocaleFactorySpec(calleeSignature, invokeExpr)?.let { localeSpecsByLocal[resultKey] = it }
             extractBundleControlSpec(caller, calleeSignature, invokeExpr)?.let { bundleControlSpecsByLocal[resultKey] = it }
-            if (trackCrossMethodFunctionalDispatch) {
-                callResultLocals
-                    .getOrPut(callee) { mutableListOf() }
-                    .add(resultKey)
+            if (trackCrossMethodFunctionalDispatch && mayHoldFunction(resultNode.type)) {
+                flowSlot(DispatchSlot.Return(callee), DispatchSlot.Local(caller, resultNode.name))
             }
         }
     }
@@ -1168,26 +1105,31 @@ class SootUpAdapter(
         stmt: Stmt?
     ) {
         // Extract actual target method(s) from bootstrap arguments
-        val targetMethods = invokeExpr.bootstrapArgs
+        val handles = invokeExpr.bootstrapArgs
             .filterIsInstance<MethodHandle>()
             .filter { it.isMethodRef }
             .mapNotNull { handle ->
                 val sig = handle.referenceSignature
-                if (sig is MethodSignature) toMethodDescriptor(sig) else null
+                if (sig is MethodSignature) toMethodDescriptor(sig) to handleKind(handle) else null
             }
 
-        // Create argument nodes
-        val argNodeIds = argumentNodeIds(invokeExpr.args, caller)
+        // Create argument nodes: the values the lambda or method reference captures
+        val args = invokeExpr.args
+        val argNodeIds = argumentNodeIds(args, caller)
+        val samName = invokeExpr.methodSignature.name
+        val targets = mutableListOf<DispatchTarget>()
 
         // For each target method, create a call site
-        for (target in targetMethods) {
+        for ((target, kind) in handles) {
+            // An instance handle takes its first captured value as the receiver, so the remaining
+            // captures line up with the implementation's parameters
             val callSite = CallSiteNode(
                 id = nextNodeId("call"),
                 caller = caller,
                 callee = target,
                 lineNumber = null,
-                receiver = null,
-                arguments = argNodeIds
+                receiver = if (kind == HandleKind.INSTANCE) argNodeIds.firstOrNull() else null,
+                arguments = if (kind == HandleKind.INSTANCE) argNodeIds.drop(1) else argNodeIds
             )
             graphBuilder.addNode(callSite)
             if (stmt != null) {
@@ -1225,29 +1167,46 @@ class SootUpAdapter(
                     )
                 )
             }
+
+            // Captured function values flow into the implementation's parameters, e.g. a Kotlin
+            // lambda capturing another lambda compiles to `outer$lambda$1(Function1 inner, ...)`
+            args.forEachIndexed { index, arg ->
+                val paramIndex = if (kind == HandleKind.INSTANCE) index - 1 else index
+                if (arg is Local && paramIndex >= 0) {
+                    trackFlow(caller, arg, DispatchSlot.Parameter(target, paramIndex))
+                }
+            }
+
+            targets += DispatchTarget.Handle(target, kind, samName, argNodeIds)
+
+            // A method reference to a function value's own method (`fn::apply`) dispatches on to
+            // whatever that function value dispatches to
+            val boundReceiver = args.firstOrNull() as? Local
+            if (kind == HandleKind.INSTANCE && boundReceiver != null) {
+                dynamicTargets[localKey(caller, boundReceiver.name)]?.forEach { inner ->
+                    targets += DispatchTarget.Adapted(samName, target, argNodeIds, inner)
+                }
+            }
         }
 
         // Track dynamic targets for functional interface dispatch resolution
         // Merge with existing targets (supports conditional assignment where both branches
         // assign different lambdas/method references to the same local)
-        if (resultNode is LocalVariable && targetMethods.isNotEmpty()) {
-            val leftLocal = (stmt as? JAssignStmt)?.leftOp as? Local
-            val key = if (leftLocal != null) localKey(caller, leftLocal.name) else localKey(caller, resultNode.name)
-            dynamicTargets[key] = mergeTargets(dynamicTargets[key], targetMethods)
+        val leftOp = (stmt as? JAssignStmt)?.leftOp
+        val resultLocal = (leftOp as? Local)?.name ?: (resultNode as? LocalVariable)?.name
+        if (resultLocal != null && targets.isNotEmpty()) {
+            val key = localKey(caller, resultLocal)
+            dynamicTargets[key] = mergeTargets(dynamicTargets[key], targets)
         }
 
         // Track dynamic targets flowing directly to a field store:
         // e.g., this.mapper = invokedynamic(...) where resultNode is a FieldNode
-        if (trackCrossMethodFunctionalDispatch && resultNode is FieldNode && targetMethods.isNotEmpty()) {
-            val leftOp = (stmt as? JAssignStmt)?.leftOp
-            if (leftOp is JFieldRef) {
-                val fieldKey = leftOp.fieldSignature.toString()
-                fieldDynamicTargets.getOrPut(fieldKey) { mutableListOf() }.addAll(targetMethods)
-            }
+        if (trackCrossMethodFunctionalDispatch && leftOp is JFieldRef && targets.isNotEmpty()) {
+            seedSlot(DispatchSlot.Field(leftOp.fieldSignature.toString()), targets)
         }
 
         // If no method handles found, fall back to creating a call site with the synthetic method
-        if (targetMethods.isEmpty()) {
+        if (handles.isEmpty()) {
             val callee = toMethodDescriptor(invokeExpr.methodSignature)
             val callSite = CallSiteNode(
                 id = nextNodeId("call"),
@@ -1409,13 +1368,9 @@ class SootUpAdapter(
                 )
             )
 
-            // Track dynamic targets flowing through return values
-            if (trackCrossMethodFunctionalDispatch && valueNode is LocalVariable) {
-                val key = localKey(method, valueNode.name)
-                val targets = dynamicTargets[key]
-                if (targets != null) {
-                    returnDynamicTargets[method] = mergeTargets(returnDynamicTargets[method], targets)
-                }
+            // Track function values flowing through return values
+            if (returnValue is Local) {
+                trackFlow(method, returnValue, DispatchSlot.Return(method))
             }
         }
     }
@@ -1583,114 +1538,254 @@ class SootUpAdapter(
     /**
      * Post-processing: resolve functional interface dispatch across method boundaries.
      *
-     * When a lambda/method reference is passed as an argument to another method,
-     * and that method calls the functional interface method on the parameter,
-     * this creates resolved CallSiteNodes connecting the virtual call to the actual target.
-     *
-     * Also handles return values: when a method returns a lambda/method reference,
-     * callers that invoke the functional interface on the result get resolved.
+     * Function values move between methods through parameters, return values, fields and
+     * array elements, and a method may be processed before the one that creates the function
+     * value it calls. Every such move was recorded as a flow between [DispatchSlot]s; this
+     * propagates the dispatch targets along those flows to a fixpoint, then resolves every call
+     * that was waiting on a slot, e.g. `callback.apply(x)` inside a method whose `callback`
+     * parameter receives `Foo::transform`, or `this.fn.invoke(x)` whose field a constructor
+     * assigned a Kotlin lambda.
      */
     private fun resolveFunctionalDispatch() {
-        // Phase 1: Propagate return dynamic targets to caller locals
-        for ((methodSig, targets) in returnDynamicTargets) {
-            val resultLocalKeys = callResultLocals[methodSig] ?: continue
-            for (localKey in resultLocalKeys) {
-                if (localKey !in dynamicTargets) {
-                    dynamicTargets[localKey] = targets
+        val worklist = ArrayDeque(slotTargets.keys)
+        while (worklist.isNotEmpty()) {
+            val slot = worklist.removeFirst()
+            val targets = slotTargets[slot] ?: continue
+            for (next in slotFlows[slot].orEmpty()) {
+                if (slotTargets.getOrPut(next) { LinkedHashSet() }.addAll(targets)) {
+                    worklist.addLast(next)
                 }
             }
         }
 
-        // Phase 2: Resolve parameter virtual calls using dynamic args from callers
-        for ((methodSig, virtualCalls) in parameterVirtualCalls) {
-            val dynamicArgs = callSiteDynamicArgs[methodSig] ?: continue
-
-            for ((paramIndex, callSiteNode) in virtualCalls) {
-                val targets = dynamicArgs
-                    .filter { it.first == paramIndex }
-                    .flatMap { it.second }
-
-                for (target in targets) {
-                    val resolvedCallSite = CallSiteNode(
-                        id = nextNodeId("call"),
-                        caller = callSiteNode.caller,
-                        callee = target,
-                        lineNumber = callSiteNode.lineNumber,
-                        receiver = callSiteNode.receiver,
-                        arguments = callSiteNode.arguments
-                    )
-                    graphBuilder.addNode(resolvedCallSite)
-                    graphBuilder.addEdge(
-                        CallEdge(
-                            from = resolvedCallSite.id,
-                            to = resolvedCallSite.id,
-                            isVirtual = false,
-                            isDynamic = true
-                        )
-                    )
-                    // Forward dataflow: arguments flow to resolved target
-                    callSiteNode.arguments.forEach { argNodeId ->
-                        graphBuilder.addEdge(
-                            DataFlowEdge(
-                                from = argNodeId,
-                                to = resolvedCallSite.id,
-                                kind = DataFlowKind.PARAMETER_PASS
-                            )
-                        )
-                    }
-                }
+        for ((slot, calls) in slotCalls) {
+            val targets = slotTargets[slot] ?: continue
+            for (pending in calls) {
+                targets.filter { it !in pending.resolved }
+                    .forEach { emitResolvedDispatch(pending.callSite, it, pending.result) }
             }
         }
+    }
 
-        // Phase 2B: Propagate field dynamic targets to locals that loaded from those fields
-        // This handles the case where the field store (in a constructor or setter) was processed
-        // after the field load (in a different method), so the targets weren't available at load time.
-        for ((fieldKey, localKeys) in fieldLoadLocals) {
-            val targets = fieldDynamicTargets[fieldKey] ?: continue
-            for (localKey in localKeys) {
-                dynamicTargets[localKey] = mergeTargets(dynamicTargets[localKey], targets)
+    /**
+     * Create the call site through which [callSite], a call on a function value, reaches
+     * [target]'s implementation, with the receiver and arguments aligned to that
+     * implementation's parameters. Does nothing when [target] does not implement the call.
+     */
+    private fun emitResolvedDispatch(callSite: CallSiteNode, target: DispatchTarget, result: NodeId?) {
+        val resolved = resolveDispatch(target, callSite.callee, callSite.receiver, callSite.arguments) ?: return
+        val resolvedCallSite = CallSiteNode(
+            id = nextNodeId("call"),
+            caller = callSite.caller,
+            callee = resolved.method,
+            lineNumber = callSite.lineNumber,
+            receiver = resolved.receiver,
+            arguments = resolved.arguments
+        )
+        graphBuilder.addNode(resolvedCallSite)
+        // Both the call on the function value and the resolved call are dynamic dispatch
+        graphBuilder.addEdge(CallEdge(from = callSite.id, to = callSite.id, isVirtual = false, isDynamic = true))
+        graphBuilder.addEdge(CallEdge(from = resolvedCallSite.id, to = resolvedCallSite.id, isVirtual = false, isDynamic = true))
+        // Forward dataflow: arguments (and captured values) flow to the resolved target
+        resolved.arguments.forEach { argNodeId ->
+            graphBuilder.addEdge(DataFlowEdge(from = argNodeId, to = resolvedCallSite.id, kind = DataFlowKind.PARAMETER_PASS))
+        }
+        if (result != null) {
+            graphBuilder.addEdge(DataFlowEdge(from = resolvedCallSite.id, to = result, kind = DataFlowKind.RETURN_VALUE))
+        }
+    }
+
+    private fun resolveDispatch(
+        target: DispatchTarget,
+        invoked: MethodDescriptor,
+        receiver: NodeId?,
+        arguments: List<NodeId>
+    ): ResolvedDispatch? = when (target) {
+        is DispatchTarget.Handle -> if (target.samName != invoked.name) {
+            null
+        } else {
+            val all = target.captures + arguments
+            when (target.kind) {
+                HandleKind.STATIC -> ResolvedDispatch(target.method, receiver, all)
+                HandleKind.INSTANCE -> ResolvedDispatch(target.method, all.firstOrNull(), all.drop(1))
             }
         }
-
-        // Phase 3: Re-resolve virtual calls on locals that gained dynamic targets
-        // from return value propagation (Phase 1) or field propagation (Phase 2B).
-        // These are non-parameter locals
-        // whose dynamicTargets were empty during processInvokeExpr, but now have
-        // targets after return propagation.
-        for ((localKey, unresolvedCalls) in unresolvedLocalVirtualCalls) {
-            val targets = dynamicTargets[localKey] ?: continue
-            for (callSiteNode in unresolvedCalls) {
-                for (target in targets) {
-                    val resolvedCallSite = CallSiteNode(
-                        id = nextNodeId("call"),
-                        caller = callSiteNode.caller,
-                        callee = target,
-                        lineNumber = callSiteNode.lineNumber,
-                        receiver = callSiteNode.receiver,
-                        arguments = callSiteNode.arguments
-                    )
-                    graphBuilder.addNode(resolvedCallSite)
-                    graphBuilder.addEdge(
-                        CallEdge(
-                            from = resolvedCallSite.id,
-                            to = resolvedCallSite.id,
-                            isVirtual = false,
-                            isDynamic = true
-                        )
-                    )
-                    callSiteNode.arguments.forEach { argNodeId ->
-                        graphBuilder.addEdge(
-                            DataFlowEdge(
-                                from = argNodeId,
-                                to = resolvedCallSite.id,
-                                kind = DataFlowKind.PARAMETER_PASS
-                            )
-                        )
-                    }
-                    // If there's a result node for the original call, add return value edge
-                }
-            }
+        is DispatchTarget.FunctionObject -> findFunctionObjectMethod(target.className, invoked)
+            ?.let { ResolvedDispatch(it, receiver, arguments) }
+        is DispatchTarget.Adapted -> if (target.samName != invoked.name) {
+            null
+        } else {
+            val all = target.captures + arguments
+            resolveDispatch(target.inner, target.invokedAs, all.firstOrNull(), all.drop(1))
         }
+    }
+
+    /**
+     * The method of function-object class [className] (or an in-view superclass) that a call
+     * to [invoked] runs: same name and erased parameter types, which the bridge method the
+     * compiler emits for a generic interface always has. Kotlin property references implement
+     * `invoke` in the stdlib by calling `get`, so `get` stands in for `invoke` there.
+     */
+    private fun findFunctionObjectMethod(className: String, invoked: MethodDescriptor): MethodDescriptor? {
+        val start = resolveClassByName(className)
+        val names = if (
+            start != null && invoked.name == KOTLIN_INVOKE && superclassNames(start).any(::isKotlinPropertyReferenceClass)
+        ) {
+            setOf(KOTLIN_INVOKE, KOTLIN_PROPERTY_GET)
+        } else {
+            setOf(invoked.name)
+        }
+        val parameterTypes = invoked.parameterTypes.map { it.className }
+        return generateSequence(start) { current ->
+            current.superclass.orElse(null)?.let { resolveClassByName(it.fullyQualifiedName) }
+        }.firstNotNullOfOrNull { current ->
+            val candidates = methodsInSignatureOrder(current).filter {
+                !it.isStatic && !it.isAbstract && it.name in names && it.parameterTypes.size == parameterTypes.size
+            }
+            candidates.firstOrNull { method ->
+                method.parameterTypes.map { toTypeDescriptor(it).className } == parameterTypes
+            } ?: candidates.firstOrNull { MethodModifier.isBridge(it.modifiers) } ?: candidates.firstOrNull()
+        }?.let(::toMethodDescriptor)
+    }
+
+    /**
+     * [sootClass]'s methods ordered by signature. SootUp's method set has no stable iteration
+     * order across JVM runs, and the order decides which node IDs the call sites get.
+     */
+    private fun methodsInSignatureOrder(sootClass: SootClass): List<SootMethod> =
+        sootClass.methods.sortedBy { it.signature.toString() }
+
+    /** Names of [sootClass]'s superclasses, as far as the view resolves them (plus the first one it does not). */
+    private fun superclassNames(sootClass: SootClass): Sequence<String> =
+        generateSequence(sootClass.superclass.orElse(null)?.fullyQualifiedName) { name ->
+            resolveClassByName(name)?.superclass?.orElse(null)?.fullyQualifiedName
+        }
+
+    /**
+     * Whether instances of [className] are function values whose type pins down the
+     * implementation: Kotlin lambda, suspend lambda and callable reference classes, Kotlin SAM
+     * wrappers, classes implementing a Kotlin function type, anonymous classes, and the
+     * synthetic classes D8/R8 desugar lambdas into (recognized by the synthetic flag too, since
+     * R8 may rename them).
+     */
+    private fun isFunctionObjectClass(className: String): Boolean = functionObjectClasses.getOrPut(className) {
+        val sootClass = resolveClassByName(className)
+        sootClass != null && !sootClass.isInterface && !sootClass.isAbstract && (
+            isGeneratedFunctionClassName(className) ||
+                (ClassModifier.isSynthetic(sootClass.modifiers) && sootClass.interfaces.isNotEmpty()) ||
+                sootClass.interfaces.any { isKotlinFunctionInterface(it.fullyQualifiedName) } ||
+                superclassNames(sootClass).any(::isKotlinFunctionBaseClass)
+            )
+    }
+
+    /**
+     * A function object of class [className] was created (`new Foo$bar$1(...)`) or loaded from
+     * its singleton (`Foo$bar$1.INSTANCE`) into [local]: calls on [local] dispatch to the class's
+     * methods, and, as for an `invokedynamic`, the creating method gets a dynamic call site to
+     * each of the class's own methods, so the lambda body stays reachable when the call that
+     * runs it happens in code outside the graph (`lazy {}`, `Executor.execute`, ...).
+     */
+    private fun trackFunctionObject(
+        method: MethodDescriptor,
+        local: Local,
+        className: String,
+        receiver: NodeId,
+        stmt: Stmt
+    ) {
+        if (!isFunctionObjectClass(className)) return
+        mergeLocalTargets(method, local, listOf(DispatchTarget.FunctionObject(className)))
+        resolveClassByName(className)?.let(::methodsInSignatureOrder)
+            ?.filter { !it.isStatic && !it.isAbstract && it.name != INIT_METHOD && !MethodModifier.isBridge(it.modifiers) }
+            ?.forEach { body ->
+                val callSite = CallSiteNode(
+                    id = nextNodeId("call"),
+                    caller = method,
+                    callee = toMethodDescriptor(body),
+                    lineNumber = null,
+                    receiver = receiver,
+                    arguments = emptyList()
+                )
+                graphBuilder.addNode(callSite)
+                recordStmtNode(stmt, callSite.id)
+                graphBuilder.addEdge(CallEdge(from = callSite.id, to = callSite.id, isVirtual = false, isDynamic = true))
+            }
+    }
+
+    private fun handleKind(handle: MethodHandle): HandleKind = when (handle.kind) {
+        MethodHandle.Kind.REF_INVOKE_STATIC, MethodHandle.Kind.REF_INVOKE_CONSTRUCTOR -> HandleKind.STATIC
+        else -> HandleKind.INSTANCE
+    }
+
+    private fun mergeLocalTargets(method: MethodDescriptor, local: Local, targets: List<DispatchTarget>) {
+        val key = localKey(method, local.name)
+        dynamicTargets[key] = mergeTargets(dynamicTargets[key], targets)
+    }
+
+    /** `target = source` (or a cast of it): [target] holds whatever function value [source] holds. */
+    private fun copyFunctionValue(method: MethodDescriptor, source: Local, target: Local) {
+        val sourceKey = localKey(method, source.name)
+        val targetKey = localKey(method, target.name)
+        dynamicTargets[sourceKey]?.let { mergeLocalTargets(method, target, it) }
+        arrayDynamicTargets[sourceKey]?.let { arrayDynamicTargets.getOrPut(targetKey) { mutableListOf() }.addAll(it) }
+        if (trackCrossMethodFunctionalDispatch) {
+            localToParamIndex[sourceKey]?.let { localToParamIndex[targetKey] = it }
+            trackSlotFlow(slotOf(method, source), method, target)
+        }
+    }
+
+    /** The slot the value of [local] lives in across methods: its parameter, or the local itself. */
+    private fun slotOf(method: MethodDescriptor, local: Local): DispatchSlot {
+        val parameter = localToParamIndex[localKey(method, local.name)]
+        return if (parameter != null) {
+            DispatchSlot.Parameter(parameter.method, parameter.index)
+        } else {
+            DispatchSlot.Local(method, local.name)
+        }
+    }
+
+    /**
+     * The function value in [local] flows to [sink]: its targets known in this method seed
+     * [sink] now, and targets that reach [local]'s slot later follow it there.
+     */
+    private fun trackFlow(method: MethodDescriptor, local: Local, sink: DispatchSlot) {
+        if (!trackCrossMethodFunctionalDispatch) return
+        val key = localKey(method, local.name)
+        (dynamicTargets[key] ?: arrayDynamicTargets[key])?.let { seedSlot(sink, it) }
+        if (mayHoldFunction(toTypeDescriptor(local.type))) {
+            flowSlot(slotOf(method, local), sink)
+        }
+    }
+
+    /** Whatever function value reaches [source] also reaches [target]. */
+    private fun trackSlotFlow(source: DispatchSlot, method: MethodDescriptor, target: Local) {
+        if (trackCrossMethodFunctionalDispatch && mayHoldFunction(toTypeDescriptor(target.type))) {
+            flowSlot(source, DispatchSlot.Local(method, target.name))
+        }
+    }
+
+    private fun seedSlot(slot: DispatchSlot, targets: Collection<DispatchTarget>) {
+        if (targets.isNotEmpty()) {
+            slotTargets.getOrPut(slot) { LinkedHashSet() }.addAll(targets)
+        }
+    }
+
+    private fun flowSlot(from: DispatchSlot, to: DispatchSlot) {
+        if (from != to) {
+            slotFlows.getOrPut(from) { mutableSetOf() }.add(to)
+        }
+    }
+
+    /**
+     * Whether a value of [type] can hold a function value, which bounds what cross-method
+     * dispatch tracking records: an interface, an abstract class, `Object` (erased generics), a
+     * function-object class, an array of those, or a type outside the view (the JDK, the Kotlin
+     * stdlib), but not a primitive, a common concrete JDK type or a concrete class in the view.
+     */
+    private fun mayHoldFunction(type: TypeDescriptor): Boolean = mayHoldFunctionByType.getOrPut(type.className) {
+        val className = type.className.substringBefore('[')
+        if (isNonFunctionType(className)) return@getOrPut false
+        val sootClass = resolveClassByName(className) ?: return@getOrPut true
+        sootClass.isInterface || sootClass.isAbstract || isFunctionObjectClass(className)
     }
 
     private fun processCallGraph() {
@@ -3096,9 +3191,9 @@ class SootUpAdapter(
     }
 
     private fun mergeTargets(
-        existing: List<MethodDescriptor>?,
-        newTargets: Iterable<MethodDescriptor>
-    ): List<MethodDescriptor> {
+        existing: List<DispatchTarget>?,
+        newTargets: Iterable<DispatchTarget>
+    ): List<DispatchTarget> {
         if (existing == null) return newTargets.toList()
         val merged = LinkedHashSet(existing)
         merged.addAll(newTargets)

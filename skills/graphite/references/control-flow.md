@@ -77,10 +77,11 @@ RETURN DISTINCT cs.caller_signature
 
 Keep a visited set, record the edge that discovered each method (to reconstruct
 the path), and drop JDK/library callers unless they matter. Stop expanding at
-entry points (see `entrypoints-and-boundaries.md`). When a frontier method has no
-callers and belongs to a synthetic class (`Outer$method$1`), don't stop there:
-re-attach it to its enclosing method first (see "Lambda and coroutine bodies"
-below).
+entry points (see `entrypoints-and-boundaries.md`). Lambda and anonymous-class
+bodies have callers like any other method (see "Lambdas and function values"
+below); in a graph built by Graphite 2.8.0, a frontier method in a synthetic class
+(`Outer$method$1`) with no callers needs re-attaching to its enclosing method
+first (see "Lambda and coroutine bodies" below).
 
 ## Branches: what does a condition guard?
 
@@ -113,11 +114,24 @@ edges. Other frontends may also emit `SEQUENTIAL`, `SWITCH_CASE`,
 (`BranchReachabilityAnalysis`, which kills the branches that a constant assumption
 makes dead; see `more-recipes.md`).
 
-## Lambdas and method references
+## Lambdas and function values
 
-A lambda or method reference resolved by Graphite appears as an extra call site
-in the enclosing method whose `callee_signature` is the target, marked by a
-`CALL` self-loop with `dynamic = true`:
+Every way the JVM compilers produce a function value is linked: Java lambdas and
+method references, Kotlin lambdas (`invokedynamic` or one class per lambda), `suspend`
+lambdas, callable and property references (`::f`, `obj::f`, `C::prop`), `fun
+interface` and Java SAM conversions, anonymous classes, `object :` expressions, and
+lambdas desugared by D8/R8 (`Outer$$ExternalSyntheticLambda0`). Each adds call sites
+marked by a `CALL` self-loop with `dynamic = true`:
+
+- **Creation**: the method that creates the function value gets a call site whose
+  `callee_signature` is the body (`Outer.method$lambda$0`, `Outer$method$1.invoke`,
+  `invokeSuspend`, `run`, …). The body stays reachable even when it runs inside a
+  library (`lazy { }`, `launch { }`, `executor.execute { }`).
+- **Dispatch**: a call through the function value (`fn.apply(x)`, Kotlin `fn(x)`,
+  i.e. `Function1.invoke`) gets a sibling call site whose `callee_signature` is the
+  implementation it resolves to, with the same caller. This follows the value across
+  methods: through parameters (including forwarded ones), return values, fields
+  (including constructor injection), arrays, captures and casts.
 
 ```cypher
 MATCH (cs:CallSiteNode)-[r:CALL]->(cs)
@@ -126,18 +140,36 @@ RETURN cs.caller_signature, cs.callee_signature
 ```
 
 These rows are part of the call graph above, so chains pass through callbacks
-(`list.forEach(this::deliver)` links the caller to `deliver`).
+(`list.forEach(this::deliver)` links the caller to `deliver`) and through lambda
+bodies in both directions. [verified: Kotlin compiler. `ContainerUtilsKt$bfs$1`
+(a `sequence { }` coroutine) has `ContainerUtilsKt.bfs(…)` as a caller;
+`JvmCompilerPipelineKt$convertToIrAndActualizeForJvm$1.invoke` has both
+`convertToIrAndActualizeForJvm(…)`, which creates it, and
+`Fir2IrPipeline.runFir2IrConversion(…)`, which calls it through the function value. In the
+CLI packages 4 of 63 synthetic `invoke` methods have no caller, all erased bridges
+(`invoke(Object)`) whose typed sibling has one.]
+
+- Arguments of a dispatch call site line up with the implementation's parameters:
+  a capturing lambda's captured values come first, and an unbound method reference
+  (`String::toUpperCase`) takes its first argument as the receiver.
+- A creation call site proves that the method *creates* the function value, not
+  that the body runs; whether and when it runs depends on who receives it
+  (`forEach`, `launch`, a listener registration). Report it that way.
+- A function value stored in a collection and read back (`listOf(fn)[0](x)`) is not
+  followed; the creation call site still links the body to its creator.
 
 ## Lambda and coroutine bodies: re-attach to the enclosing method
 
-Kotlin lambdas, `suspend` lambdas (`launch { }`, `sequence { }`, `flow { }`) and Java
-anonymous classes compile to synthetic classes such as `Outer$method$1` or
-`Outer$method$inner$1`. Their bodies live in `invoke`, `invokeSuspend`, `run`,
-`call`, `apply`, and similar methods that are invoked through `Function1.invoke`
-or the framework, not by a call site naming them. Upward chains therefore stop
-there: in the Kotlin compiler graph, 5,043 call sites sit in synthetic `invoke`
-bodies and 390 in `invokeSuspend` bodies, and 31 of 63 synthetic `invoke` methods
-sampled in the CLI packages have no caller.
+This applies to graphs built by Graphite 2.8.0, before
+[#162](https://github.com/johnsonlee/graphite/pull/162). There, only
+`invokedynamic` lambdas were linked. Kotlin lambdas, `suspend` lambdas
+(`launch { }`, `sequence { }`, `flow { }`) and Java anonymous classes compile to
+synthetic classes such as `Outer$method$1` or `Outer$method$inner$1`. Their
+bodies live in `invoke`, `invokeSuspend`, `run`, `call`, `apply`, and similar
+methods that are invoked through `Function1.invoke` or the framework, and no call
+site named them. Upward chains therefore stopped there: in the Kotlin compiler
+graph, 31 of 63 synthetic `invoke` methods sampled in the CLI packages had no
+caller.
 
 When a chain reaches a `caller_class` containing `$` and the caller is such a
 body, hop to the method that creates the synthetic class instead:
@@ -156,8 +188,8 @@ WHERE e.kind = 'FIELD_LOAD' AND v.method <> '' AND NOT v.method STARTS WITH f.cl
 RETURN DISTINCT v.method AS enclosing, 'singleton' AS via
 ```
 
-[verified: Kotlin compiler. Examples: `ContainerUtilsKt$bfs$1` (a `sequence { }`
-coroutine) → `ContainerUtilsKt.bfs(…)`, constructed;
+[verified: Kotlin compiler, Graphite 2.8.0. Examples: `ContainerUtilsKt$bfs$1` →
+`ContainerUtilsKt.bfs(…)`, constructed;
 `JvmCompilerPipelineKt$convertToIrAndActualizeForJvm$1` →
 `convertToIrAndActualizeForJvm(…)`, singleton;
 `FirMetadataSerializer$analyze$outputs$1$firFiles$1` → `FirMetadataSerializer.analyze()`.]
@@ -167,9 +199,6 @@ coroutine) → `ContainerUtilsKt.bfs(…)`, constructed;
   Continuation)`, and singletons construct themselves in `<clinit>`.
 - If the enclosing method is itself a synthetic body (nested lambdas), repeat the
   hop, then continue the normal caller join from the first non-synthetic method.
-- The hop proves that the enclosing method *creates* the lambda. Whether and when
-  the body runs depends on who receives it (`forEach`, `launch`, a listener
-  registration); report it that way.
 - A `suspend fun`'s own continuation class (`Outer$foo$1`) is constructed by
   `Outer.foo(…, Continuation)` itself, so the same hop lands back on `foo`.
 - The `INSTANCE` path also matches Kotlin `object` singletons that aren't lambdas.

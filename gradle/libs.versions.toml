@@ -15,6 +15,7 @@ android-all = "14-robolectric-10818077"
 tika = "2.9.2"
 hive = "4.0.0"
 kotlin-compiler-fixture = "2.0.21"
+r8 = "8.5.35"
 javalin = "6.4.0"
 micrometer = "1.13.4"
 jmh = "1.37"
@@ -42,6 +43,7 @@ android-all = { module = "org.robolectric:android-all", version.ref = "android-a
 tika-app = { module = "org.apache.tika:tika-app", version.ref = "tika" }
 hive-exec = { module = "org.apache.hive:hive-exec", version.ref = "hive" }
 kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin-compiler-fixture" }
+r8 = { module = "com.android.tools:r8", version.ref = "r8" }
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
 javalin-micrometer = { module = "io.javalin:javalin-micrometer", version.ref = "javalin" }
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }

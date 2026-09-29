@@ -296,6 +296,32 @@ if (isSpecialCase && config.enableSpecialHandling) {
 - Bug only surfaced in production use, not in tests
 - **Rule**: Test coverage should mirror real-world usage patterns
 
+### Function Values: Every Lambda Shape Must Dispatch
+
+A call on a function value (`fn.apply(x)`, `fn(x)` → `Function1.invoke`) only reaches the lambda
+body if `SootUpAdapter` knows what `fn` holds. The shapes differ by compiler and version, and
+Kotlin 2.x's `invokedynamic` default does **not** cover all of them:
+
+| Shape | Bytecode | Dispatch target |
+|-------|----------|-----------------|
+| Java lambda / method ref, Kotlin 2.x lambda / SAM conversion | `invokedynamic` (LambdaMetafactory) | `DispatchTarget.Handle` |
+| Kotlin 1.x lambda, `@JvmSerializableLambda`, `-Xlambdas=class` | `new Foo$bar$1(captures)` / `getstatic INSTANCE` | `DispatchTarget.FunctionObject` |
+| Kotlin callable / property references, suspend lambdas (even in 2.x) | `FunctionReferenceImpl` / `PropertyReference1Impl` / `SuspendLambda` subclass | `FunctionObject` (property refs map `invoke` → `get`) |
+| Anonymous classes, Kotlin `object :`, `$sam$` wrappers | `new Outer$1` | `FunctionObject` |
+| D8/R8 desugared lambdas (Android, `minSdk < 26`), retrolambda | `new Outer$$ExternalSyntheticLambda0(captures)`, `-$$Lambda$Outer$<hash>`, `Outer$$Lambda$1`; synthetic flag when R8 renames | `FunctionObject` |
+| `fn::apply` (reference to a function value's own method) | `invokedynamic` with an instance handle | `DispatchTarget.Adapted` |
+
+Lessons:
+- A handle's resolved call must line up with the implementation's parameters: static handles take
+  `captures ++ args`; instance handles take the first of those as the receiver.
+- Function values cross methods through parameters, returns, fields, arrays and captures, in any
+  processing order. They are recorded as flows between `DispatchSlot`s and resolved to a fixpoint
+  in `resolveFunctionalDispatch()`, not by per-phase special cases.
+- Kotlin fixtures in `frontend/jvm/sootup/src/kotlinLambdaFixtures` compile twice (`indy` and
+  `class`), and D8 desugars the `indy` output (`desugarKotlinLambdaFixtures`);
+  `KotlinLambdaDispatchTest` runs every shape against all three outputs. Desugaring adds a
+  `$r8$lambda$` trampoline per lambda, so reachability checks need a deeper hop budget.
+
 ### Why `buildGraph()` Is Not Parallelized
 
 After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.
