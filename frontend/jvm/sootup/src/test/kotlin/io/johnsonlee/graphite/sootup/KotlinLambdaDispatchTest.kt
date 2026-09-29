@@ -92,6 +92,18 @@ abstract class KotlinLambdaDispatchTest(private val mode: String) {
     fun `lambda with receiver dispatches to its body`() = assertDispatch("ReceiverLambda", "call", 1, "withReceiver")
 
     @Test
+    fun `lambda passed through an interface dispatches inside the implementation`() =
+        assertDispatch("InvokerImpl", "invoke", 1, "throughInterface")
+
+    @Test
+    fun `lambda returned through an interface dispatches at the caller`() =
+        assertDispatch("FactoryLambda", "use", 1, "returnedThroughInterface")
+
+    @Test
+    fun `reference to a parameter's own invoke dispatches to what the caller passed`() =
+        assertDispatch("AdaptedLambda", "use", 0, "adapted")
+
+    @Test
     fun `inline lambda body is part of the caller`() {
         assertTrue(reaches(callSitesOf("InlineLambda", "use"), "inlined"), "InlineLambda.use should call Sink.inlined")
     }

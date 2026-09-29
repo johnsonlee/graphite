@@ -131,7 +131,11 @@ marked by a `CALL` self-loop with `dynamic = true`:
   i.e. `Function1.invoke`) gets a sibling call site whose `callee_signature` is the
   implementation it resolves to, with the same caller. This follows the value across
   methods: through parameters (including forwarded ones), return values, fields
-  (including constructor injection), arrays, captures and casts.
+  (including constructor injection), arrays, captures and casts, and across interface
+  and override boundaries (a value passed to `Invoker.invoke` resolves inside every
+  implementation). Resolution is context-insensitive: a helper called with several
+  function values dispatches to all of them, so a dispatch call site in a shared
+  helper is the union of what its callers pass.
 
 ```cypher
 MATCH (cs:CallSiteNode)-[r:CALL]->(cs)
@@ -150,8 +154,11 @@ CLI packages 4 of 63 synthetic `invoke` methods have no caller, all erased bridg
 (`invoke(Object)`) whose typed sibling has one.]
 
 - Arguments of a dispatch call site line up with the implementation's parameters:
-  a capturing lambda's captured values come first, and an unbound method reference
-  (`String::toUpperCase`) takes its first argument as the receiver.
+  a capturing lambda's captured values come first, an unbound method reference
+  (`String::toUpperCase`) takes its first argument as the receiver, and a static
+  method or constructor reference has no receiver.
+- A creation call site exists for each method the class implements for a supertype
+  (`run`, `invoke`, `toString`), not for helpers the class adds on its own.
 - A creation call site proves that the method *creates* the function value, not
   that the body runs; whether and when it runs depends on who receives it
   (`forEach`, `launch`, a listener registration). Report it that way.

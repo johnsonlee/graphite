@@ -131,6 +131,9 @@ private const val LOCALE_CLASS = "java.util.Locale"
 private const val INIT_METHOD = "<init>"
 private const val KOTLIN_INVOKE = "invoke"
 private const val KOTLIN_PROPERTY_GET = "get"
+private const val JAVA_LANG_OBJECT = "java.lang.Object"
+private const val CALLABLE_REFERENCE_RECEIVER_FIELD = "receiver"
+private val OBJECT_METHOD_ARITIES = mapOf("toString" to 0, "hashCode" to 0, "equals" to 1, "clone" to 0, "finalize" to 0)
 private const val VALUE_OF_METHOD = "valueOf"
 private const val CLASS_FILE_SUFFIX = ".class"
 private const val PROPERTIES_FILE_SUFFIX = ".properties"
@@ -285,7 +288,8 @@ class SootUpAdapter(
     private val methodReturnNodes = mutableMapOf<MethodDescriptor, ReturnNode>()
     private val allocationNodes = mutableMapOf<LocalKey, LocalVariable>()
 
-    // Per-method: dispatch targets of locals holding a function value (cleared after each method)
+    // Dispatch targets of locals holding a function value; keyed per method, and each method's
+    // entries are removed by clearMethodState()
     private val dynamicTargets = mutableMapOf<LocalKey, List<DispatchTarget>>()
 
     // Maps local key to parameter binding for locals assigned from parameters
@@ -298,9 +302,18 @@ class SootUpAdapter(
     // propagates the targets to a fixpoint once every method has been processed.
     private val slotTargets = mutableMapOf<DispatchSlot, LinkedHashSet<DispatchTarget>>()
     private val slotFlows = mutableMapOf<DispatchSlot, MutableSet<DispatchSlot>>()
+    private val slotAdapters = mutableMapOf<DispatchSlot, MutableList<SlotAdapter>>()
     private val slotCalls = mutableMapOf<DispatchSlot, MutableList<PendingDispatch>>()
     private val functionObjectClasses = mutableMapOf<String, Boolean>()
     private val mayHoldFunctionByType = mutableMapOf<String, Boolean>()
+    // Type hierarchy of the view, for flows across override boundaries: direct subtypes of every
+    // superclass and interface named by a class in the view (built in pass 1), and lazily
+    // cached transitive closures, method indexes and sorted method lists
+    private val directSubtypes = mutableMapOf<String, MutableList<String>>()
+    private val transitiveSubtypesByClass = mutableMapOf<String, List<String>>()
+    private val supertypesByClass = mutableMapOf<String, List<String>>()
+    private val declaredMethodIndexByClass = mutableMapOf<String, Map<String, SootMethod>>()
+    private val sortedMethodsByClass = mutableMapOf<String, List<SootMethod>>()
 
     private val localeSpecsByLocal = mutableMapOf<LocalKey, String>()
     private val localeBuilderSpecsByLocal = mutableMapOf<LocalKey, LocaleBuilderSpec>()
@@ -613,6 +626,7 @@ class SootUpAdapter(
                 toTypeDescriptor(superType),
                 TypeRelation.EXTENDS
             )
+            recordSubtype(superType.fullyQualifiedName, classType.className)
         }
 
         // Process interfaces
@@ -622,6 +636,13 @@ class SootUpAdapter(
                 toTypeDescriptor(interfaceType),
                 TypeRelation.IMPLEMENTS
             )
+            recordSubtype(interfaceType.fullyQualifiedName, classType.className)
+        }
+    }
+
+    private fun recordSubtype(superName: String, subName: String) {
+        if (trackCrossMethodFunctionalDispatch && superName != JAVA_LANG_OBJECT) {
+            directSubtypes.getOrPut(superName) { mutableListOf() }.add(subName)
         }
     }
 
@@ -1029,6 +1050,9 @@ class SootUpAdapter(
                     .add(PendingDispatch(callSite, resultNode?.id, targets.toSet()))
             }
         }
+        if (invokeExpr is JSpecialInvokeExpr && callee.name == INIT_METHOD && caller.name == INIT_METHOD) {
+            trackCallableReferenceReceiver(caller, callee, args)
+        }
 
         // Add dataflow edge from receiver to call site (for backward tracing)
         if (receiverNode != null) {
@@ -1118,6 +1142,13 @@ class SootUpAdapter(
         val argNodeIds = argumentNodeIds(args, caller)
         val samName = invokeExpr.methodSignature.name
         val targets = mutableListOf<DispatchTarget>()
+        val leftOp = (stmt as? JAssignStmt)?.leftOp
+        val resultLocal = (leftOp as? Local)?.name ?: (resultNode as? LocalVariable)?.name
+        val resultSlot = when {
+            leftOp is JFieldRef -> DispatchSlot.Field(leftOp.fieldSignature.toString())
+            resultLocal != null -> DispatchSlot.Local(caller, resultLocal)
+            else -> null
+        }
 
         // For each target method, create a call site
         for ((target, kind) in handles) {
@@ -1180,11 +1211,16 @@ class SootUpAdapter(
             targets += DispatchTarget.Handle(target, kind, samName, argNodeIds)
 
             // A method reference to a function value's own method (`fn::apply`) dispatches on to
-            // whatever that function value dispatches to
+            // whatever that function value dispatches to: what is known in this method now, and
+            // what reaches the receiver from other methods (a parameter, a field) in the fixpoint
             val boundReceiver = args.firstOrNull() as? Local
             if (kind == HandleKind.INSTANCE && boundReceiver != null) {
                 dynamicTargets[localKey(caller, boundReceiver.name)]?.forEach { inner ->
                     targets += DispatchTarget.Adapted(samName, target, argNodeIds, inner)
+                }
+                if (trackCrossMethodFunctionalDispatch && resultSlot != null && mayHoldFunction(toTypeDescriptor(boundReceiver.type))) {
+                    slotAdapters.getOrPut(slotOf(caller, boundReceiver)) { mutableListOf() }
+                        .add(SlotAdapter(resultSlot, samName, target, argNodeIds))
                 }
             }
         }
@@ -1192,8 +1228,6 @@ class SootUpAdapter(
         // Track dynamic targets for functional interface dispatch resolution
         // Merge with existing targets (supports conditional assignment where both branches
         // assign different lambdas/method references to the same local)
-        val leftOp = (stmt as? JAssignStmt)?.leftOp
-        val resultLocal = (leftOp as? Local)?.name ?: (resultNode as? LocalVariable)?.name
         if (resultLocal != null && targets.isNotEmpty()) {
             val key = localKey(caller, resultLocal)
             dynamicTargets[key] = mergeTargets(dynamicTargets[key], targets)
@@ -1548,12 +1582,23 @@ class SootUpAdapter(
      */
     private fun resolveFunctionalDispatch() {
         val worklist = ArrayDeque(slotTargets.keys)
+        val expanded = mutableSetOf<DispatchSlot>()
         while (worklist.isNotEmpty()) {
             val slot = worklist.removeFirst()
-            val targets = slotTargets[slot] ?: continue
+            // Snapshot: a flow or adapter may lead back into this slot (`fn = fn::apply`)
+            val targets = slotTargets[slot]?.toList() ?: continue
+            if (expanded.add(slot)) {
+                overrideFlows(slot).forEach { flowSlot(slot, it) }
+            }
             for (next in slotFlows[slot].orEmpty()) {
                 if (slotTargets.getOrPut(next) { LinkedHashSet() }.addAll(targets)) {
                     worklist.addLast(next)
+                }
+            }
+            for (adapter in slotAdapters[slot].orEmpty()) {
+                val adapted = targets.mapNotNull(adapter::adapt)
+                if (adapted.isNotEmpty() && slotTargets.getOrPut(adapter.sink) { LinkedHashSet() }.addAll(adapted)) {
+                    worklist.addLast(adapter.sink)
                 }
             }
         }
@@ -1604,9 +1649,11 @@ class SootUpAdapter(
         is DispatchTarget.Handle -> if (target.samName != invoked.name) {
             null
         } else {
+            // The function value's own receiver is not the implementation's: a static method or
+            // constructor has none, and an instance method takes the first capture or argument
             val all = target.captures + arguments
             when (target.kind) {
-                HandleKind.STATIC -> ResolvedDispatch(target.method, receiver, all)
+                HandleKind.STATIC -> ResolvedDispatch(target.method, null, all)
                 HandleKind.INSTANCE -> ResolvedDispatch(target.method, all.firstOrNull(), all.drop(1))
             }
         }
@@ -1644,7 +1691,7 @@ class SootUpAdapter(
             }
             candidates.firstOrNull { method ->
                 method.parameterTypes.map { toTypeDescriptor(it).className } == parameterTypes
-            } ?: candidates.firstOrNull { MethodModifier.isBridge(it.modifiers) } ?: candidates.firstOrNull()
+            } ?: candidates.firstOrNull { MethodModifier.isBridge(it.modifiers) }
         }?.let(::toMethodDescriptor)
     }
 
@@ -1653,7 +1700,99 @@ class SootUpAdapter(
      * order across JVM runs, and the order decides which node IDs the call sites get.
      */
     private fun methodsInSignatureOrder(sootClass: SootClass): List<SootMethod> =
-        sootClass.methods.sortedBy { it.signature.toString() }
+        sortedMethodsByClass.getOrPut(sootClass.type.fullyQualifiedName) {
+            sootClass.methods.sortedBy { it.signature.toString() }
+        }
+
+    /**
+     * Flows a call graph edge implies but no statement records: a function value passed to a
+     * method's parameter reaches that parameter in every override (`invoker.invoke(fn)` calls
+     * `Impl.invoke`), and one returned by an override is what a call on the overridden method
+     * returns. Derived lazily, for slots that hold a target.
+     */
+    private fun overrideFlows(slot: DispatchSlot): List<DispatchSlot> = when (slot) {
+        is DispatchSlot.Parameter -> overridesOf(slot.method).map { DispatchSlot.Parameter(it, slot.index) }
+        is DispatchSlot.Return -> overriddenBy(slot.method).map { DispatchSlot.Return(it) }
+        else -> emptyList()
+    }
+
+    /** The concrete methods in the view that override [method], in every subtype of its declaring class. */
+    private fun overridesOf(method: MethodDescriptor): List<MethodDescriptor> {
+        if (!isOverridable(method)) return emptyList()
+        return transitiveSubtypes(method.declaringClass.className).mapNotNull { subtype ->
+            declaredMethod(subtype, method)?.takeIf { !it.isStatic && !it.isAbstract }?.let(::toMethodDescriptor)
+        }
+    }
+
+    /**
+     * The methods [method] overrides, in every supertype of its declaring class. A supertype
+     * outside the view (a JDK or Kotlin stdlib interface) has no [SootMethod] to inspect, so the
+     * overridden method is assumed to share [method]'s sub-signature.
+     */
+    private fun overriddenBy(method: MethodDescriptor): List<MethodDescriptor> {
+        val declared = declaredMethod(method.declaringClass.className, method)
+            ?.takeIf { isOverridable(method) }
+            ?: return emptyList()
+        return supertypes(method.declaringClass.className).mapNotNull { supertype ->
+            when (resolveClassByName(supertype)) {
+                null -> toMethodDescriptor(MethodSignature(view.identifierFactory.getClassType(supertype), declared.subSignature))
+                else -> declaredMethod(supertype, method)?.takeIf { !it.isStatic }?.let(::toMethodDescriptor)
+            }
+        }
+    }
+
+    private fun isOverridable(method: MethodDescriptor): Boolean {
+        if (method.name == INIT_METHOD || method.declaringClass.className == JAVA_LANG_OBJECT) return false
+        val declared = declaredMethod(method.declaringClass.className, method)
+        return declared == null || (!declared.isStatic && !MethodModifier.isPrivate(declared.modifiers))
+    }
+
+    /**
+     * The method [className] declares with [descriptor]'s erased sub-signature, if any. The
+     * return type is part of it, so an overridden generic method finds the override's bridge,
+     * whose body flows on to the typed implementation.
+     */
+    private fun declaredMethod(className: String, descriptor: MethodDescriptor): SootMethod? =
+        declaredMethodIndexByClass.getOrPut(className) {
+            resolveClassByName(className)?.let(::methodsInSignatureOrder).orEmpty().associateBy { method ->
+                methodKey(
+                    method.name,
+                    method.parameterTypes.map { toTypeDescriptor(it).className },
+                    toTypeDescriptor(method.returnType).className
+                )
+            }
+        }[methodKey(descriptor.name, descriptor.parameterTypes.map { it.className }, descriptor.returnType.className)]
+
+    private fun methodKey(name: String, parameterTypes: List<String>, returnType: String): String =
+        "$name(${parameterTypes.joinToString(",")})$returnType"
+
+    /** Every class in the view that extends or implements [className], directly or not. */
+    private fun transitiveSubtypes(className: String): List<String> = transitiveSubtypesByClass.getOrPut(className) {
+        val visited = linkedSetOf<String>()
+        val queue = ArrayDeque(directSubtypes[className].orEmpty())
+        while (queue.isNotEmpty()) {
+            val next = queue.removeFirst()
+            if (visited.add(next)) queue.addAll(directSubtypes[next].orEmpty())
+        }
+        visited.toList()
+    }
+
+    /** Every superclass and interface of [className], directly or not, as far as the view resolves them. */
+    private fun supertypes(className: String): List<String> = supertypesByClass.getOrPut(className) {
+        val visited = linkedSetOf<String>()
+        val queue = ArrayDeque(directSupertypes(className))
+        while (queue.isNotEmpty()) {
+            val next = queue.removeFirst()
+            if (visited.add(next)) queue.addAll(directSupertypes(next))
+        }
+        visited.toList()
+    }
+
+    private fun directSupertypes(className: String): List<String> {
+        val sootClass = resolveClassByName(className) ?: return emptyList()
+        return listOfNotNull(sootClass.superclass.orElse(null)?.fullyQualifiedName) +
+            sootClass.interfaces.map { it.fullyQualifiedName }
+    }
 
     /** Names of [sootClass]'s superclasses, as far as the view resolves them (plus the first one it does not). */
     private fun superclassNames(sootClass: SootClass): Sequence<String> =
@@ -1662,16 +1801,17 @@ class SootUpAdapter(
         }
 
     /**
-     * Whether instances of [className] are function values whose type pins down the
-     * implementation: Kotlin lambda, suspend lambda and callable reference classes, Kotlin SAM
-     * wrappers, classes implementing a Kotlin function type, anonymous classes, and the
-     * synthetic classes D8/R8 desugar lambdas into (recognized by the synthetic flag too, since
-     * R8 may rename them).
+     * Whether instances of [className] are function values whose class pins down the
+     * implementation: a class without a source name, which only exists to be handed around as
+     * a value (an anonymous class, `object :`, a Kotlin lambda, callable reference or SAM
+     * wrapper class, or a synthetic class implementing an interface, which is how D8/R8
+     * desugar lambdas, even after R8 renames them), or a class implementing a Kotlin function
+     * type or extending a Kotlin function base class.
      */
     private fun isFunctionObjectClass(className: String): Boolean = functionObjectClasses.getOrPut(className) {
         val sootClass = resolveClassByName(className)
         sootClass != null && !sootClass.isInterface && !sootClass.isAbstract && (
-            isGeneratedFunctionClassName(className) ||
+            isAnonymousClassName(className) ||
                 (ClassModifier.isSynthetic(sootClass.modifiers) && sootClass.interfaces.isNotEmpty()) ||
                 sootClass.interfaces.any { isKotlinFunctionInterface(it.fullyQualifiedName) } ||
                 superclassNames(sootClass).any(::isKotlinFunctionBaseClass)
@@ -1682,8 +1822,10 @@ class SootUpAdapter(
      * A function object of class [className] was created (`new Foo$bar$1(...)`) or loaded from
      * its singleton (`Foo$bar$1.INSTANCE`) into [local]: calls on [local] dispatch to the class's
      * methods, and, as for an `invokedynamic`, the creating method gets a dynamic call site to
-     * each of the class's own methods, so the lambda body stays reachable when the call that
-     * runs it happens in code outside the graph (`lazy {}`, `Executor.execute`, ...).
+     * each method the class implements for a supertype, so the lambda body stays reachable when
+     * the call that runs it happens in code outside the graph (`lazy {}`, `Executor.execute`,
+     * ...). Methods the class adds on its own (`new Object() { void helper() {} }`) are only
+     * reachable through calls the graph already records.
      */
     private fun trackFunctionObject(
         method: MethodDescriptor,
@@ -1694,9 +1836,11 @@ class SootUpAdapter(
     ) {
         if (!isFunctionObjectClass(className)) return
         mergeLocalTargets(method, local, listOf(DispatchTarget.FunctionObject(className)))
-        resolveClassByName(className)?.let(::methodsInSignatureOrder)
-            ?.filter { !it.isStatic && !it.isAbstract && it.name != INIT_METHOD && !MethodModifier.isBridge(it.modifiers) }
-            ?.forEach { body ->
+        val sootClass = resolveClassByName(className) ?: return
+        methodsInSignatureOrder(sootClass)
+            .filter { !it.isStatic && !it.isAbstract && it.name != INIT_METHOD && !MethodModifier.isBridge(it.modifiers) }
+            .filter { implementsSupertypeMethod(sootClass, it) }
+            .forEach { body ->
                 val callSite = CallSiteNode(
                     id = nextNodeId("call"),
                     caller = method,
@@ -1709,6 +1853,44 @@ class SootUpAdapter(
                 recordStmtNode(stmt, callSite.id)
                 graphBuilder.addEdge(CallEdge(from = callSite.id, to = callSite.id, isVirtual = false, isDynamic = true))
             }
+    }
+
+    /**
+     * Whether [method] implements or overrides a method of one of [sootClass]'s supertypes, by
+     * name and arity, so that the erased bridge is skipped but the typed implementation kept.
+     * A supertype outside the view (`kotlin.jvm.functions.Function1`, `java.lang.Runnable`)
+     * cannot be inspected, so any non-private method may implement one of its methods;
+     * `java.lang.Object`'s methods are known.
+     */
+    private fun implementsSupertypeMethod(sootClass: SootClass, method: SootMethod): Boolean {
+        if (MethodModifier.isPrivate(method.modifiers)) return false
+        val arity = method.parameterTypes.size
+        return supertypes(sootClass.type.fullyQualifiedName).any { supertype ->
+            when (supertype) {
+                JAVA_LANG_OBJECT -> OBJECT_METHOD_ARITIES[method.name] == arity
+                else -> resolveClassByName(supertype)?.let { superClass ->
+                    methodsInSignatureOrder(superClass).any { it.name == method.name && it.parameterTypes.size == arity }
+                } ?: true
+            }
+        }
+    }
+
+    /**
+     * A Kotlin bound callable reference class (`fn::invoke`, `obj::method`) hands its receiver
+     * to the stdlib base constructor (`FunctionReferenceImpl(arity, receiver, owner, name,
+     * signature, flags)`), which stores it in `CallableReference.receiver`; the reference's
+     * `invoke` reads it back through the subclass's own field reference. The stdlib is outside
+     * the view, so the store is recorded here: every argument that may hold a function value
+     * flows to the subclass's `receiver` field.
+     */
+    private fun trackCallableReferenceReceiver(caller: MethodDescriptor, superInit: MethodDescriptor, args: List<Value>) {
+        if (!trackCrossMethodFunctionalDispatch || !isKotlinCallableReferenceBaseClass(superInit.declaringClass.className)) return
+        val receiverField = view.identifierFactory.getFieldSignature(
+            CALLABLE_REFERENCE_RECEIVER_FIELD,
+            view.identifierFactory.getClassType(caller.declaringClass.className),
+            JAVA_LANG_OBJECT
+        ).toString()
+        args.filterIsInstance<Local>().forEach { trackFlow(caller, it, DispatchSlot.Field(receiverField)) }
     }
 
     private fun handleKind(handle: MethodHandle): HandleKind = when (handle.kind) {

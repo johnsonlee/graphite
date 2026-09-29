@@ -591,7 +591,7 @@ server's mapping stays bound to the old inode until the last in-flight query fin
 | Constant tracking | Direct, local variable, field, cross-class, enum |
 | Auto-boxing | `Integer.valueOf()` transparent handling |
 | Lambda / method ref | Java and Kotlin lambdas, method and callable references, `suspend` lambdas, anonymous classes, SAM conversions and D8/R8 desugared lambdas → actual target |
-| Functional dispatch | Callbacks (also forwarded), return values, fields, constructor injection, captures, varargs, conditionals |
+| Functional dispatch | Callbacks (also forwarded), return values, fields, constructor injection, captures, varargs, conditionals, interface and override boundaries |
 | Controller inheritance | Endpoint discovery follows class hierarchy |
 | Generic type analysis | `ApiResponse<PageData<User>>` nested structure |
 | Branch reachability | Dead code via condition constant analysis |

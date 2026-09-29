@@ -444,7 +444,7 @@ graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (
 | 常量追踪 | 直接使用、局部变量、字段、跨类、枚举 |
 | 自动装箱 | 透明处理 `Integer.valueOf()` |
 | Lambda / 方法引用 | Java 与 Kotlin lambda、方法与可调用引用、`suspend` lambda、匿名类、SAM 转换以及 D8/R8 脱糖后的 lambda → 实际目标 |
-| 函数式分派 | 回调（含多层转发）、返回值、字段、构造器注入、捕获、可变参数、条件表达式 |
+| 函数式分派 | 回调（含多层转发）、返回值、字段、构造器注入、捕获、可变参数、条件表达式、接口与重写边界 |
 | Controller 继承 | 沿类继承层次发现端点 |
 | 泛型类型分析 | `ApiResponse<PageData<User>>` 嵌套结构 |
 | 分支可达性 | 通过条件常量分析识别死代码 |

@@ -16,6 +16,10 @@ import io.johnsonlee.graphite.core.NodeId
  *   `SuspendLambda`, callable/property reference classes, `$sam$` wrappers, anonymous classes and
  *   `object :` expressions), where the implementation is whatever that class declares for the
  *   invoked method.
+ *
+ * Resolution is context-insensitive: every function value passed to a method's parameter, or
+ * returned from it, lands in the same [DispatchSlot], so a call inside a shared helper
+ * resolves to the union of what all its callers pass.
  */
 internal sealed interface DispatchTarget {
 
@@ -89,6 +93,10 @@ internal fun isKotlinFunctionBaseClass(className: String): Boolean =
         (className.startsWith(KOTLIN_JVM_INTERNAL) &&
             (className.endsWith("Lambda") || className.contains("Reference")))
 
+/** Base classes of Kotlin callable references (`::f`, `obj::f`, `C::prop`), which store the bound receiver. */
+internal fun isKotlinCallableReferenceBaseClass(className: String): Boolean =
+    className.startsWith(KOTLIN_JVM_INTERNAL) && className.contains("Reference")
+
 /** Interfaces that make any implementing class a Kotlin function value. */
 internal fun isKotlinFunctionInterface(className: String): Boolean =
     className.startsWith(KOTLIN_FUNCTIONS) || className == KOTLIN_FUNCTION_BASE
@@ -98,18 +106,36 @@ internal fun isKotlinPropertyReferenceClass(className: String): Boolean =
     className.startsWith(KOTLIN_JVM_INTERNAL) && className.contains("PropertyReference")
 
 /**
- * Class names compilers and desugaring tools give to function objects:
- * - anonymous classes (`new Runnable() {...}`, Kotlin `object : ...`, Kotlin lambda classes), and
- *   retrolambda / Bazel desugar lambdas (`Outer$$Lambda$1`): `Outer$<digits>`;
- * - Kotlin SAM wrappers: `Outer$sam$<interface>$<digits>`;
- * - D8/R8 desugared lambdas: `Outer$$ExternalSyntheticLambda<n>`, and `-$$Lambda$Outer$<hash>`
- *   from older D8 versions.
+ * A function value re-bound through a method reference to its own method (`fn::apply`): every
+ * target that reaches the slot this adapter is registered on also reaches [sink], wrapped in a
+ * [DispatchTarget.Adapted] that dispatches through [invokedAs] on the captured receiver
+ * ([captures] leads with it).
  */
-internal fun isGeneratedFunctionClassName(className: String): Boolean {
-    val simpleName = className.substringAfterLast('.')
-    val suffix = simpleName.substringAfterLast('$', missingDelimiterValue = "")
-    return (suffix.isNotEmpty() && suffix.all(Char::isDigit)) ||
-        GENERATED_FUNCTION_CLASS_MARKERS.any(simpleName::contains)
+internal data class SlotAdapter(
+    val sink: DispatchSlot,
+    val samName: String,
+    val invokedAs: MethodDescriptor,
+    val captures: List<NodeId>
+) {
+    fun adapt(target: DispatchTarget): DispatchTarget? =
+        if (target.adaptedDepth() >= MAX_ADAPTED_DEPTH) null else DispatchTarget.Adapted(samName, invokedAs, captures, target)
+}
+
+/** How many `fn::apply` re-bindings this target is wrapped in; bounds the fixpoint on `fn = fn::apply` loops. */
+internal fun DispatchTarget.adaptedDepth(): Int = generateSequence(this) { (it as? DispatchTarget.Adapted)?.inner }.count() - 1
+
+private const val MAX_ADAPTED_DEPTH = 4
+
+/**
+ * Whether [className] is the binary name of an anonymous class (JLS 13.1: `Outer$<digits>`),
+ * which is also the shape of Kotlin lambda classes (`Outer$fn$1`), Kotlin SAM wrappers
+ * (`Outer$sam$<interface>$0`) and retrolambda / Bazel desugar lambdas (`Outer$$Lambda$1`).
+ * D8/R8 lambda classes (`Outer$$ExternalSyntheticLambda<n>`) are recognized by their synthetic
+ * flag instead, since R8 may rename them.
+ */
+internal fun isAnonymousClassName(className: String): Boolean {
+    val suffix = className.substringAfterLast('.').substringAfterLast('$', missingDelimiterValue = "")
+    return suffix.isNotEmpty() && suffix.all(Char::isDigit)
 }
 
 /** Types whose values are never function values: primitives and common final or concrete JDK types. */
@@ -129,4 +155,3 @@ private const val KOTLIN_FUNCTIONS = "kotlin.jvm.functions.Function"
 private const val KOTLIN_FUNCTION_BASE = "kotlin.jvm.internal.FunctionBase"
 private const val KOTLIN_SUSPEND_LAMBDA = "kotlin.coroutines.jvm.internal.SuspendLambda"
 private const val KOTLIN_RESTRICTED_SUSPEND_LAMBDA = "kotlin.coroutines.jvm.internal.RestrictedSuspendLambda"
-private val GENERATED_FUNCTION_CLASS_MARKERS = listOf("\$sam\$", "\$\$ExternalSyntheticLambda", "-\$\$Lambda\$")

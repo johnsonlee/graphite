@@ -308,7 +308,7 @@ Kotlin 2.x's `invokedynamic` default does **not** cover all of them:
 | Kotlin 1.x lambda, `@JvmSerializableLambda`, `-Xlambdas=class` | `new Foo$bar$1(captures)` / `getstatic INSTANCE` | `DispatchTarget.FunctionObject` |
 | Kotlin callable / property references, suspend lambdas (even in 2.x) | `FunctionReferenceImpl` / `PropertyReference1Impl` / `SuspendLambda` subclass | `FunctionObject` (property refs map `invoke` → `get`) |
 | Anonymous classes, Kotlin `object :`, `$sam$` wrappers | `new Outer$1` | `FunctionObject` |
-| D8/R8 desugared lambdas (Android, `minSdk < 26`), retrolambda | `new Outer$$ExternalSyntheticLambda0(captures)`, `-$$Lambda$Outer$<hash>`, `Outer$$Lambda$1`; synthetic flag when R8 renames | `FunctionObject` |
+| D8/R8 desugared lambdas (Android, `minSdk < 26`), retrolambda | `new Outer$$ExternalSyntheticLambda0(captures)` (synthetic flag, so R8 renaming does not matter), `Outer$$Lambda$1` | `FunctionObject` |
 | `fn::apply` (reference to a function value's own method) | `invokedynamic` with an instance handle | `DispatchTarget.Adapted` |
 
 Lessons:
@@ -316,7 +316,16 @@ Lessons:
   `captures ++ args`; instance handles take the first of those as the receiver.
 - Function values cross methods through parameters, returns, fields, arrays and captures, in any
   processing order. They are recorded as flows between `DispatchSlot`s and resolved to a fixpoint
-  in `resolveFunctionalDispatch()`, not by per-phase special cases.
+  in `resolveFunctionalDispatch()`, not by per-phase special cases. Override boundaries are flows
+  too, derived lazily from the view's type hierarchy: a value passed to `Invoker.invoke` reaches
+  the parameter of every implementation, and a value returned by an implementation is what a call
+  on the interface returns. `fn::apply` on a parameter is a `SlotAdapter`, applied in the fixpoint.
+- Resolution is context-insensitive: a helper called with several function values dispatches to
+  all of them.
+- A function-object class is recognized by JVM-level facts (anonymous binary name `Outer$<digits>`,
+  synthetic flag, Kotlin function interfaces and base classes), not by tool-specific name markers.
+  Allocating one creates a call site only to the methods it implements for a supertype, so the
+  helper methods of `new Object() { ... }` get no phantom caller.
 - Kotlin fixtures in `frontend/jvm/sootup/src/kotlinLambdaFixtures` compile twice (`indy` and
   `class`), and D8 desugars the `indy` output (`desugarKotlinLambdaFixtures`);
   `KotlinLambdaDispatchTest` runs every shape against all three outputs. Desugaring adds a

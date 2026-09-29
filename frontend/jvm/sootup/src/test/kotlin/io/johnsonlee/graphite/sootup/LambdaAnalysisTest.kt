@@ -401,6 +401,59 @@ class LambdaAnalysisTest {
     }
 
     @Test
+    fun `method reference to a parameter's own method resolves to what callers pass`() {
+        val calleeNames = callSitesOf("useDeferredAdapted").map { it.callee.name }
+        assertTrue("deferredAdaptedTarget" in calleeNames,
+            "useDeferredAdapted should resolve adapt(...).apply through fn::apply to deferredAdaptedTarget. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value passed through an interface resolves inside the implementation`() {
+        val calleeNames = callSitesOf("invoke", "sample.lambda.AnonymousClassExample\$Impl").map { it.callee.name }
+        assertTrue("overrideTarget" in calleeNames,
+            "Impl.invoke should resolve fn.apply to what useThroughInterface passes Invoker.invoke. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value returned through an interface resolves at the caller`() {
+        val calleeNames = callSitesOf("useFactory").map { it.callee.name }
+        assertTrue("factoryTarget" in calleeNames,
+            "useFactory should resolve factory.make().apply to what FactoryImpl.make returns. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `allocating an anonymous class only calls the methods it implements for a supertype`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        assertTrue(callSites.none { it.callee.name == "neverCalled" },
+            "plainAnonymous must not call neverCalled, which overrides nothing. " +
+                "Callees: ${callSitesOf("plainAnonymous").map { it.callee.name }}")
+        assertTrue(callSitesOf("plainAnonymous").any { it.callee.name == "toString" },
+            "plainAnonymous should still reach the toString override it hands out")
+    }
+
+    @Test
+    fun `resolved static and constructor targets take no receiver`() {
+        // the creation call site (no arguments) and the dispatch call sites (the call's argument)
+        val adapted = callSitesOf("useAdapted").filter { it.callee.name == "adaptedTarget" }
+        assertTrue(adapted.any { it.arguments.size == 1 } && adapted.all { it.receiver == null },
+            "a static method reference takes the call's argument and no receiver: ${adapted.map { "${it.receiver} ${it.arguments}" }}")
+        val constructed = callSitesOf("create", "sample.lambda.ConstructorRefExample").filter { it.callee.name == "<init>" }
+        assertTrue(constructed.isNotEmpty() && constructed.all { it.receiver == null && it.arguments.isEmpty() },
+            "a constructor reference resolves to <init> with no receiver: ${constructed.map { "${it.receiver} ${it.arguments}" }}")
+    }
+
+    @Test
+    fun `resolved instance target takes the first argument as its receiver`() {
+        val upper = callSitesOf("useHigherOrder", "sample.lambda.HigherOrderExample")
+            .filter { it.callee.name == "toUpperCase" && it.callee.declaringClass.className == "java.lang.String" }
+        assertTrue(upper.isNotEmpty() && upper.all { it.receiver != null && it.arguments.isEmpty() },
+            "String::toUpperCase takes the call's argument as its receiver: ${upper.map { "${it.receiver} ${it.arguments}" }}")
+    }
+
+    private fun callSitesOf(methodName: String, className: String = "sample.lambda.AnonymousClassExample") =
+        graph.nodes<CallSiteNode>().filter { it.caller.name == methodName && it.caller.declaringClass.className == className }.toList()
+
+    @Test
     fun `resolved dispatch skips methods the lambda does not implement`() {
         // Function.andThen is a default method: calling it on a lambda does not run the lambda body
         val callSites = graph.nodes<CallSiteNode>().toList()

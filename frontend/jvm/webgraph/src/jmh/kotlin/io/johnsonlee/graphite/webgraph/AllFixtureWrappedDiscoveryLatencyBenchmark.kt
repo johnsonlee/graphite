@@ -272,7 +272,7 @@ internal object AllFixtureBenchmarkDistributionCalibration {
     }
 }
 
-private const val EXPECTED_ALL_FIXTURE_NODES = 19_141_209L
+private const val EXPECTED_ALL_FIXTURE_NODES = 19_140_083L
 
 internal const val ZERO_HIT_QUERY = """
 MATCH (n)
@@ -365,10 +365,10 @@ LIMIT 250
 """
 
 private val EXPECTED_DISTRIBUTIONS = mapOf(
-    BenchmarkCorpusKind.ANDROID to longArrayOf(383_164, 1_099_670, 0, 0, 541_692, 1_100_852),
-    BenchmarkCorpusKind.TIKA to longArrayOf(308_620, 0, 43_082, 0, 308_626, 875),
-    BenchmarkCorpusKind.HIVE to longArrayOf(382_164, 0, 792_557, 0, 444_906, 605),
-    BenchmarkCorpusKind.KOTLIN_COMPILER to longArrayOf(272_222, 0, 0, 914_386, 208_763, 1_529)
+    BenchmarkCorpusKind.ANDROID to longArrayOf(383_116, 1_099_283, 0, 0, 541_692, 1_100_465),
+    BenchmarkCorpusKind.TIKA to longArrayOf(308_609, 0, 43_081, 0, 308_626, 875),
+    BenchmarkCorpusKind.HIVE to longArrayOf(382_145, 0, 792_534, 0, 444_906, 605),
+    BenchmarkCorpusKind.KOTLIN_COMPILER to longArrayOf(272_135, 0, 0, 914_088, 208_763, 1_529)
 )
 
 private data class BenchmarkFixtureQueryCase(

@@ -30,6 +30,9 @@ object Sink {
     @JvmStatic fun inlined(s: String): String = s
     @JvmStatic fun deferred(s: String): String = s
     @JvmStatic fun dataFlow(prefix: String, s: String): String = prefix + s
+    @JvmStatic fun throughInterface(s: String): String = s
+    @JvmStatic fun returnedThroughInterface(s: String): String = s
+    @JvmStatic fun adapted(s: String): String = s
 }
 
 class NonCapturingLambda {
@@ -167,6 +170,39 @@ class InlineLambda {
 
 class DeferredLambda {
     fun use(input: String): Lazy<String> = lazy { Sink.deferred(input) }
+}
+
+/** The caller sees an interface; the call on the function value is in the implementation. */
+interface Invoker {
+    fun invoke(fn: (String) -> String, input: String): String
+}
+
+class InvokerImpl : Invoker {
+    override fun invoke(fn: (String) -> String, input: String): String = fn(input)
+}
+
+class InterfaceLambda {
+    fun use(invoker: Invoker, input: String): String = invoker.invoke({ Sink.throughInterface(it) }, input)
+}
+
+/** The function value is returned by an implementation the caller only sees through an interface. */
+interface Factory {
+    fun make(): (String) -> String
+}
+
+class FactoryImpl : Factory {
+    override fun make(): (String) -> String = { Sink.returnedThroughInterface(it) }
+}
+
+class FactoryLambda {
+    fun use(factory: Factory, input: String): String = factory.make()(input)
+}
+
+/** A reference to a function value's own `invoke`, re-binding a value the method did not create. */
+class AdaptedLambda {
+    fun adapt(fn: (String) -> String): (String) -> String = fn::invoke
+
+    fun use(input: String): String = adapt { Sink.adapted(it) }(input)
 }
 
 class DataFlowLambda {
