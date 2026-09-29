@@ -19,6 +19,7 @@ graph-dir/
 ├── graph.resources    Persisted text resources, including an explicit empty store
 ├── graph.callsite-string-index Optional CallSite CSR/trigram query index
 ├── graph.callsite-string-content.identity SHA-256 identity binding CallSite fields to node offsets
+├── graph.branchdefs   Optional branch-side local definitions, bound to graph.metadata by its trailer
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
@@ -59,7 +60,7 @@ transpose construction during load.
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.metadata | `GRM` | `0x47524D03` |
+| graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`) |
 | graph.nodedata | `GRN` | `0x47524E03` |
 | graph.nodeindex | `GRI` | `0x47524903` |
 | graph.nodeoffsets | `GRL` | `0x47524C03` |
@@ -68,6 +69,7 @@ transpose construction during load.
 | graph.comparisons | `GRC` | `0x47524303` |
 | graph.resources | `GRR` | `0x47525201` |
 | graph.callsite-string-index | `GRCS` | `0x47524353` |
+| graph.branchdefs | `GRD` | `0x47524401` |
 
 Current node and metadata writers emit version `3`. Their readers accept legacy version `1` and transitional
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current
@@ -76,6 +78,41 @@ Current builds always write `graph.resources`, including a valid zero-entry stor
 exist. Its absence therefore identifies a graph produced without resource persistence (for example by a legacy CLI),
 not an empty resource set. Other graph APIs remain available, while resource HTTP endpoints return `409` with an
 instruction to rebuild the graph using the current CLI.
+
+`graph.branchdefs` is an independent version `1` sidecar written after `graph.metadata`. Its preamble is the
+header, the payload length and the payload's SHA-256; `graph.metadata` ends with a trailer (`GRX` magic, version
+`1`, the same SHA-256) that binds the two files. The payload lists, for every branch scope in metadata order, the
+writes on each side to locals that have a constant definition on some branch side (a side's writes are those
+reached only through that side: a write both sides reach, such as one after the merge point, at a loop exit or
+at the shared target of a branch with an empty `then`, belongs to neither), as
+`[stmtOrdinal, localNodeId, constantNodeId]` triples with `-1` for a write whose value is not a constant
+(`int32 scopeCount`, then per scope `int32 trueCount`, the true triples, `int32 falseCount`, the false triples),
+followed by a table of every write of each such local (`int32 localCount`, then per local `int32 localNodeId`,
+`int32 count`, the triples). Node ids are raw ints, not string table indices. The table exists because
+persistence collapses repeated arcs between the same nodes, so a local's definition multiset can no longer be
+read off its ASSIGN edges after a save, and because a surviving non-constant write must be visible to block
+folding.
+
+The trailer is what makes a stale sidecar detectable: the graph files encode neither statement ordinals nor
+side attribution, so two graphs can persist byte-identically while the sidecar differs. A writer that predates
+the sidecar re-saves `graph.metadata` without the trailer, and a current writer re-saves it with a new digest;
+either way the old `graph.branchdefs` no longer matches and is never attached. Readers that predate the trailer
+stop after the last metadata section and never see it; the Rust reader does the same. The sidecar is read lazily
+on the first branch-scope access: the preamble is validated (header, budget, exact payload length, digest equal
+to the trailer's) before the payload is read, and every count in the payload is checked against the remaining
+bytes before an array is allocated. The decoded content is then checked against the persisted nodes and the
+writer's invariants: the local table may not have more entries than `graph.nodedata` counts nodes, every table
+key must be a persisted `LocalVariable` node, every constant id must be `-1` or a persisted constant node (the
+eager loader looks the tag up in its node map, the mapped loader reads the tag byte through the node offset
+index; one lookup per table key and per distinct constant, not per triple), every ordinal must be non-negative
+and strictly increasing within a side and within a table, no statement may appear on both sides of one scope,
+every entry of a local's table must name that local, every side definition must appear in the table of its
+local, and every table must belong to a local some side defines.
+A loaded graph therefore never exposes a definition that points outside it, and `localDefinitionsFor` never
+disagrees with the side definitions a consumer subtracts from it. The file is derived data: when it is missing, has a wrong magic or version,
+does not match the trailer, or is corrupt in any of these ways, the loader logs one warning and returns every
+branch scope with empty definition lists. `graph.metadata` keeps format version `3`, so the Rust backend
+ignores both the trailer and the sidecar.
 
 ### Edge Label Encoding (8-bit)
 
@@ -116,7 +153,7 @@ graph TD
     D2 --> E["4. BVGraph.store(forward)"]
     E --> F[5. Write labels + label prefix + comparisons]
     F --> G["6. Write nodedata + nodeindex + mmap node indexes"]
-    G --> H[7. Write metadata]
+    G --> H[7. Write metadata + trailer, branchdefs sidecar]
     H --> I[8. Write class overview + resource store]
 ```
 
@@ -138,7 +175,7 @@ graph TD
     B2 --> E[Read nodes]
     E -->|Eager| E1[Deserialize all to heap]
     E -->|Mapped| E2[mmap nodedata file]
-    B2 --> F[Read metadata]
+    B2 --> F[Read metadata; branchdefs on first branch-scope access]
 C & D & B3 & B4 & E & F --> G[Construct Graph]
 ```
 

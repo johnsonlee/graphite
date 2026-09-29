@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.Edge
@@ -12,7 +13,6 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceAccessor
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.webgraph.ImmutableGraph
 
 /**
@@ -34,7 +34,8 @@ internal class WebGraphBackedGraph(
     private val comparisonLookup: BranchComparisonLookup,
     private val metadata: GraphMetadata,
     private val classOverviewProvider: (Int) -> ClassOverview?,
-    override val resources: ResourceAccessor
+    override val resources: ResourceAccessor,
+    private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY }
 ) : Graph {
 
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
@@ -42,16 +43,16 @@ internal class WebGraphBackedGraph(
 
     // Lazy branch scope materialization
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
-        metadata.branchScopes.map { raw ->
-            BranchScope(
-                conditionNodeId = NodeId(raw.conditionNodeId),
-                method = raw.method,
-                comparison = raw.comparison,
-                trueBranchNodeIds = IntOpenHashSet(raw.trueBranchNodeIds),
-                falseBranchNodeIds = IntOpenHashSet(raw.falseBranchNodeIds)
-            )
-        }.groupBy { it.conditionNodeId.value }
+        val sidecar = branchDefinitions.value.scopes
+        metadata.branchScopes.mapIndexed { index, raw -> raw.toBranchScope(sidecar.getOrNull(index)) }
+            .groupBy { it.conditionNodeId.value }
     }
+
+    private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
+        BranchScope.unpackDefinitionTable(branchDefinitions.value.locals)
+    }
+
+    override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
 
     override fun node(id: NodeId): Node? = nodesById[id.value]
 

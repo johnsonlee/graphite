@@ -3,6 +3,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.Edge
@@ -159,7 +160,8 @@ internal class MappedWebGraphBackedGraph(
     private val comparisonLookup: BranchComparisonLookup,
     private val metadata: Lazy<GraphMetadata>,
     private val classOverviewProvider: (Int) -> ClassOverview?,
-    private val resourceAccessor: Lazy<ResourceAccessor>
+    private val resourceAccessor: Lazy<ResourceAccessor>,
+    private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY }
 ) : Graph,
     NodePropertyTextCandidates,
     NodeIdCandidateLookup,
@@ -181,16 +183,16 @@ internal class MappedWebGraphBackedGraph(
         get() = resourceAccessor.value
 
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
-        metadata.value.branchScopes.map { raw ->
-            BranchScope(
-                conditionNodeId = NodeId(raw.conditionNodeId),
-                method = raw.method,
-                comparison = raw.comparison,
-                trueBranchNodeIds = IntOpenHashSet(raw.trueBranchNodeIds),
-                falseBranchNodeIds = IntOpenHashSet(raw.falseBranchNodeIds)
-            )
-        }.groupBy { it.conditionNodeId.value }
+        val sidecar = branchDefinitions.value.scopes
+        metadata.value.branchScopes.mapIndexed { index, raw -> raw.toBranchScope(sidecar.getOrNull(index)) }
+            .groupBy { it.conditionNodeId.value }
     }
+
+    private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
+        BranchScope.unpackDefinitionTable(branchDefinitions.value.locals)
+    }
+
+    override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
 
     /** Method records begin at the metadata header; mmap avoids retaining an open stream on lazy early exit. */
     private val mappedMethodMetadata: MappedByteBuffer by lazy {
