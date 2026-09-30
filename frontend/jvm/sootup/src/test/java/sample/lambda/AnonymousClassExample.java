@@ -264,6 +264,20 @@ public class AnonymousClassExample {
         };
     }
 
+    /** An overload of the implemented method: the bridge delegates to `apply(String)`, never to it. */
+    public static Function<String, String> overloadedFunction() {
+        return new Function<String, String>() {
+            @Override
+            public String apply(String s) {
+                return anonymousTarget(s);
+            }
+
+            public String apply(Integer n) {
+                return "helper";
+            }
+        };
+    }
+
     /** A helper that shares a name and arity with `Object.equals` but not its parameter type. */
     public static Runnable runnableWithOverload() {
         return new Runnable() {

@@ -470,6 +470,11 @@ class LambdaAnalysisTest {
             "runnableWithOverload must not call equals(String), which overrides nothing. Callees: ${describe("runnableWithOverload")}")
         assertTrue(callSitesOf("runnableWithOverload").any { it.callee.name == "run" },
             "runnableWithOverload should still reach its run override")
+        val overloads = callSitesOf("overloadedFunction").filter { it.callee.name == "apply" }
+        assertTrue(overloads.any { it.callee.parameterTypes.map { p -> p.className } == listOf("java.lang.String") },
+            "overloadedFunction should reach apply(String), which its bridge delegates to")
+        assertTrue(overloads.none { it.callee.parameterTypes.map { p -> p.className } == listOf("java.lang.Integer") },
+            "overloadedFunction must not call apply(Integer): the bridge never invokes it. Callees: ${describe("overloadedFunction")}")
     }
 
     @Test

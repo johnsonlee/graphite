@@ -315,6 +315,7 @@ class SootUpAdapter(
     private val declaredMethodIndexByClass = mutableMapOf<String, Map<String, SootMethod>>()
     private val sortedMethodsByClass = mutableMapOf<String, List<SootMethod>>()
     private val supertypeContractsByClass = mutableMapOf<String, Set<String>?>()
+    private val bridgesInvokingByClass = mutableMapOf<String, Map<String, List<String>>>()
     private val implementedByFunctionValue = mutableMapOf<MethodDescriptor, Boolean>()
     // Slots whose targets or flows changed while resolveFunctionalDispatch() runs, and calls
     // that resolving another call produced (`Function::apply` on a function value), waiting
@@ -1948,13 +1949,37 @@ class SootUpAdapter(
         // The erased signatures under which this method can be called through a supertype:
         // its own, and that of a bridge the compiler emitted for it (`apply(Object)` for
         // `apply(String)`), which javac and kotlinc only generate for overriding methods
-        val signatures = listOf(erasedSignature(method)) + methodsInSignatureOrder(sootClass)
-            .filter { MethodModifier.isBridge(it.modifiers) && it.name == method.name && it.parameterTypes.size == method.parameterTypes.size }
-            .map(::erasedSignature)
+        val signatures = listOf(erasedSignature(method)) + bridgesInvoking(sootClass)[method.subSignature.toString()].orEmpty()
         return supertypes(sootClass.type.fullyQualifiedName).any { supertype ->
             supertypeContracts(supertype)?.any(signatures::contains) ?: true
         }
     }
+
+    /**
+     * For each method of [sootClass] that a bridge delegates to, keyed by sub-signature, the
+     * erased signatures of those bridges. A bridge's body is a cast and one call to its
+     * target, so the call names it; an overload sharing the name and arity (`apply(Integer)`
+     * next to `apply(String)`) is not the bridge's target and gets nothing.
+     */
+    private fun bridgesInvoking(sootClass: SootClass): Map<String, List<String>> =
+        bridgesInvokingByClass.getOrPut(sootClass.type.fullyQualifiedName) {
+            methodsInSignatureOrder(sootClass)
+                .filter { MethodModifier.isBridge(it.modifiers) && it.hasBody() }
+                .flatMap { bridge ->
+                    bridge.body.stmtGraph.stmts.asSequence()
+                        .mapNotNull { stmt ->
+                            when (stmt) {
+                                is JInvokeStmt -> stmt.invokeExpr.orElse(null)
+                                is JAssignStmt -> stmt.rightOp as? AbstractInvokeExpr
+                                else -> null
+                            }?.methodSignature
+                        }
+                        .filter { it.declClassType == sootClass.type && it.name == bridge.name }
+                        .map { it.subSignature.toString() to erasedSignature(bridge) }
+                        .toList()
+                }
+                .groupBy({ it.first }, { it.second })
+        }
 
     private fun erasedSignature(method: SootMethod): String =
         methodKey(method.name, method.parameterTypes.map { toTypeDescriptor(it).className })
