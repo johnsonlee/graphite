@@ -43,6 +43,8 @@ import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import java.nio.file.Files
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.util.BitSet
 import java.util.IdentityHashMap
 import java.util.Locale
@@ -328,6 +330,20 @@ class SootUpAdapter(
     // Per-method: tracks which NodeIds were created from each statement
     // Reset per method in processMethod()
     private var stmtNodeIds = identityMutableMap<Stmt, IntArrayBuilder>()
+
+    /**
+     * Per-method writes to locals, keyed by statement and holding
+     * `[localNodeId, constantNodeId | NO_CONSTANT]`. Filled in pass one alongside the
+     * edges, consumed in pass two to attach [io.johnsonlee.graphite.core.LocalDefinition]s
+     * to each branch side and to the per-local tables. Same lifecycle as [stmtNodeIds].
+     */
+    private var stmtLocalWrites = identityMutableMap<Stmt, IntArray>()
+
+    /**
+     * Identity statements (`r := @this`, `$e := @caughtexception`) that write a local whose
+     * node may only be created by a later statement; resolved by name in pass two.
+     */
+    private var stmtIdentityWrites = identityMutableMap<Stmt, String>()
     private var activeMethod: MethodDescriptor? = null
     private var activeMethodLocals = mutableListOf<LocalKey>()
     private var activeLocalKeysByName = mutableMapOf<String, LocalKey>()
@@ -710,6 +726,8 @@ class SootUpAdapter(
 
         // Reset per-method stmt tracking
         stmtNodeIds = identityMutableMap()
+        stmtLocalWrites = identityMutableMap()
+        stmtIdentityWrites = identityMutableMap()
 
         // Process parameters
         processParameters(method, methodDescriptor)
@@ -744,6 +762,15 @@ class SootUpAdapter(
      */
     private fun recordStmtNode(stmt: Stmt, nodeId: NodeId) {
         stmtNodeIds.getOrPut(stmt) { IntArrayBuilder(1) }.add(nodeId.value)
+    }
+
+    /**
+     * Record that [stmt] writes the local [localId]; [constantId] is the constant node
+     * when the value is a constant (recorded at the same point as its ASSIGN edge, so
+     * the two stay one-to-one) and [BranchScope.NO_CONSTANT] otherwise.
+     */
+    private fun recordLocalWrite(stmt: Stmt, localId: NodeId, constantId: Int) {
+        stmtLocalWrites[stmt] = intArrayOf(localId.value, constantId)
     }
 
     private fun processParameters(method: SootMethod, methodDescriptor: MethodDescriptor) {
@@ -783,6 +810,7 @@ class SootUpAdapter(
                 localeBuilderSpecsByLocal[localKey(method, leftOp.name)] = LocaleBuilderSpec()
             }
             recordStmtNode(stmt, allocNode.id)
+            recordLocalWrite(stmt, allocNode.id, BranchScope.NO_CONSTANT)
             return
         }
 
@@ -791,6 +819,10 @@ class SootUpAdapter(
 
         if (targetNode != null) {
             recordStmtNode(stmt, targetNode.id)
+            if (leftOp is Local) {
+                val constantId = if (sourceNode is ConstantNode) sourceNode.id.value else BranchScope.NO_CONSTANT
+                recordLocalWrite(stmt, targetNode.id, constantId)
+            }
         }
 
         if (targetNode != null && sourceNode != null) {
@@ -895,12 +927,18 @@ class SootUpAdapter(
     private fun processIdentity(stmt: JIdentityStmt, method: MethodDescriptor) {
         val leftOp = stmt.leftOp
         val rightOp = stmt.rightOp
+        if (rightOp !is JParameterRef && leftOp is Local) {
+            stmtIdentityWrites[stmt] = leftOp.name
+        }
 
         if (rightOp is JParameterRef) {
             val paramIndex = rightOp.index
             val paramKey = parameterBinding(method, paramIndex)
             val paramNode = parameterNodes[paramKey]
             val localNode = getOrCreateValueNode(leftOp, method)
+            if (localNode != null) {
+                recordLocalWrite(stmt, localNode.id, BranchScope.NO_CONSTANT)
+            }
 
             if (paramNode != null && localNode != null) {
                 graphBuilder.addEdge(
@@ -948,6 +986,9 @@ class SootUpAdapter(
                     kind = DataFlowKind.ASSIGN
                 )
             )
+            if (stmt != null && resultNode is LocalVariable && isPrimitiveBoxingCall(calleeSignature, args)) {
+                recordLocalWrite(stmt, resultNode.id, argNodeIds[0].value)
+            }
             return
         }
 
@@ -1304,6 +1345,17 @@ class SootUpAdapter(
     }
 
     /**
+     * True only for the primitive boxing overload, `Wrapper.valueOf(<primitive>)`, called with a constant.
+     * Parsing overloads such as `Integer.valueOf(String)` share the name but compute (and may throw), so
+     * their String argument is never a constant definition of the result.
+     */
+    private fun isPrimitiveBoxingCall(signature: MethodSignature, args: List<Value>): Boolean {
+        val primitive = BOXED_PRIMITIVES[signature.declClassType.fullyQualifiedName]
+        return args.singleOrNull() is SootConstant &&
+            signature.parameterTypes.singleOrNull()?.toString() == primitive
+    }
+
+    /**
      * Check if this is an unboxing method like Integer.intValue()
      */
     private fun isUnboxingMethod(signature: MethodSignature): Boolean {
@@ -1313,16 +1365,18 @@ class SootUpAdapter(
     }
 
     companion object {
-        private val WRAPPER_CLASSES = setOf(
-            "java.lang.Integer",
-            "java.lang.Long",
-            "java.lang.Short",
-            "java.lang.Byte",
-            "java.lang.Float",
-            "java.lang.Double",
-            "java.lang.Boolean",
-            "java.lang.Character"
+        /** The primitive each wrapper's boxing overload takes: `Integer.valueOf(int)`, `Boolean.valueOf(boolean)`, ... */
+        private val BOXED_PRIMITIVES = mapOf(
+            "java.lang.Integer" to "int",
+            "java.lang.Long" to "long",
+            "java.lang.Short" to "short",
+            "java.lang.Byte" to "byte",
+            "java.lang.Float" to "float",
+            "java.lang.Double" to "double",
+            "java.lang.Boolean" to "boolean",
+            "java.lang.Character" to "char"
         )
+        private val WRAPPER_CLASSES: Set<String> = BOXED_PRIMITIVES.keys
         private val UNBOXING_METHODS = setOf(
             "intValue",
             "longValue",
@@ -1438,6 +1492,7 @@ class SootUpAdapter(
     ) {
         val controlFlowIndex = ControlFlowIndex(stmtGraph, statements)
         val reachableCache = HashMap<Int, BitSet>()
+        val pending = ArrayList<PendingBranchScope>(branchStatements.size)
         for (stmt in branchStatements) {
             val condition = stmt.condition
 
@@ -1469,41 +1524,156 @@ class SootUpAdapter(
             val trueSuccessor = successors[1]   // goto target
 
             // Walk each branch collecting all reachable node ids until merge point.
-            val trueIds = branchNodeIds(trueSuccessor, falseSuccessor, controlFlowIndex, reachableCache)
-            val falseIds = branchNodeIds(falseSuccessor, trueSuccessor, controlFlowIndex, reachableCache)
+            val trueStatements = branchStatements(trueSuccessor, falseSuccessor, controlFlowIndex, reachableCache)
+            val falseStatements = branchStatements(falseSuccessor, trueSuccessor, controlFlowIndex, reachableCache)
+            val trueIds = nodeIdsFor(trueStatements, controlFlowIndex)
+            val falseIds = nodeIdsFor(falseStatements, controlFlowIndex)
 
-            // Create ControlFlowEdges from condition to first node in each branch
-            if (trueIds.isNotEmpty()) {
-                graphBuilder.addEdge(
-                    ControlFlowEdge(
-                        from = conditionNodeId,
-                        to = NodeId(trueIds[0]),
-                        kind = ControlFlowKind.BRANCH_TRUE,
-                        comparison = comparison
-                    )
-                )
-            }
-            if (falseIds.isNotEmpty()) {
-                graphBuilder.addEdge(
-                    ControlFlowEdge(
-                        from = conditionNodeId,
-                        to = NodeId(falseIds[0]),
-                        kind = ControlFlowKind.BRANCH_FALSE,
-                        comparison = comparison
-                    )
-                )
-            }
+            addControlFlowEdges(conditionNodeId, comparison, trueIds, falseIds)
 
             // Record branch data (BranchScope is materialised lazily by DefaultGraph)
             if (trueIds.isNotEmpty() || falseIds.isNotEmpty()) {
-                graphBuilder.addBranchScope(
-                    conditionNodeId = conditionNodeId,
-                    method = method,
-                    comparison = comparison,
-                    trueBranchNodeIds = trueIds,
-                    falseBranchNodeIds = falseIds
+                pending += PendingBranchScope(
+                    conditionNodeId,
+                    comparison,
+                    trueIds,
+                    falseIds,
+                    definitionStatements(trueStatements, trueSuccessor, reachableCache.getValue(falseSuccessor)),
+                    definitionStatements(falseStatements, falseSuccessor, reachableCache.getValue(trueSuccessor))
                 )
             }
+        }
+        if (pending.isEmpty()) return
+        val writes = resolveLocalWrites(controlFlowIndex)
+        val trackedLocals = trackedLocals(pending, writes)
+        for (scope in pending) {
+            graphBuilder.addBranchScope(
+                conditionNodeId = scope.conditionNodeId,
+                method = method,
+                comparison = scope.comparison,
+                trueBranchNodeIds = scope.trueIds,
+                falseBranchNodeIds = scope.falseIds,
+                trueDefinitions = definitionsFor(scope.trueOnlyStatements, writes, trackedLocals),
+                falseDefinitions = definitionsFor(scope.falseOnlyStatements, writes, trackedLocals)
+            )
+        }
+        recordLocalDefinitionTables(writes, trackedLocals)
+    }
+
+    /** A branch whose scope is emitted once the method's tracked locals are known. */
+    private class PendingBranchScope(
+        val conditionNodeId: NodeId,
+        val comparison: BranchComparison,
+        val trueIds: IntArray,
+        val falseIds: IntArray,
+        /** The statements whose writes are this side's definitions: reached only through this side. */
+        val trueOnlyStatements: BitSet,
+        val falseOnlyStatements: BitSet
+    )
+
+    /**
+     * The statements whose writes belong to one side, derived from raw reachability: those the side's
+     * successor reaches and the other successor does not. [branchStatements] forces a side's own
+     * successor into its set even when the other side reaches it (a merge point, a loop exit, or the
+     * shared target of a branch with an empty `then`); that keeps the node sets and control-flow edges
+     * as they are, but a write there executes whichever way the branch goes, so it is a definition of
+     * neither side. Subtracting it with a killed side would drop a write the other side still makes.
+     */
+    private fun definitionStatements(sideStatements: BitSet, successorId: Int, otherReachable: BitSet): BitSet =
+        if (otherReachable.get(successorId)) (sideStatements.clone() as BitSet).also { it.clear(successorId) } else sideStatements
+
+    /**
+     * The method's local writes by statement ordinal: `[localNodeId, constantNodeId | NO_CONSTANT]`.
+     * Identity writes are resolved to the local's node here, without creating one.
+     */
+    private fun resolveLocalWrites(controlFlowIndex: ControlFlowIndex): Int2ObjectOpenHashMap<IntArray> {
+        val writes = Int2ObjectOpenHashMap<IntArray>(stmtLocalWrites.size + stmtIdentityWrites.size)
+        for ((stmt, write) in stmtLocalWrites) {
+            writes.put(controlFlowIndex.idOf(stmt), write)
+        }
+        val method = activeMethod ?: return writes
+        for ((stmt, localName) in stmtIdentityWrites) {
+            val key = localKey(method, localName)
+            val node = allocationNodes[key] ?: localNodes[key] ?: continue
+            writes.put(controlFlowIndex.idOf(stmt), intArrayOf(node.id.value, BranchScope.NO_CONSTANT))
+        }
+        return writes
+    }
+
+    /** Locals with a constant write on some branch side: the only ones a consumer can fold. */
+    private fun trackedLocals(pending: List<PendingBranchScope>, writes: Int2ObjectOpenHashMap<IntArray>): IntOpenHashSet {
+        val tracked = IntOpenHashSet()
+        for (scope in pending) {
+            collectConstantlyWrittenLocals(scope.trueOnlyStatements, writes, tracked)
+            collectConstantlyWrittenLocals(scope.falseOnlyStatements, writes, tracked)
+        }
+        return tracked
+    }
+
+    private fun collectConstantlyWrittenLocals(statements: BitSet, writes: Int2ObjectOpenHashMap<IntArray>, into: IntOpenHashSet) {
+        var statementId = statements.nextSetBit(0)
+        while (statementId >= 0) {
+            val write = writes.get(statementId)
+            if (write != null && write[1] != BranchScope.NO_CONSTANT) into.add(write[0])
+            statementId = statements.nextSetBit(statementId + 1)
+        }
+    }
+
+    /**
+     * The writes to tracked locals made by [statements], packed as
+     * `[stmtOrdinal, localNodeId, constantNodeId | NO_CONSTANT]*` in ascending statement order.
+     * The ordinal is the [ControlFlowIndex] id, which equals the statement's index in the
+     * first-pass body traversal.
+     */
+    private fun definitionsFor(
+        statements: BitSet,
+        writes: Int2ObjectOpenHashMap<IntArray>,
+        trackedLocals: IntOpenHashSet
+    ): IntArray {
+        if (trackedLocals.isEmpty()) return BranchScope.EMPTY_DEFINITIONS
+        var packed: IntArrayBuilder? = null
+        var statementId = statements.nextSetBit(0)
+        while (statementId >= 0) {
+            val write = writes.get(statementId)
+            if (write != null && write[0] in trackedLocals) {
+                val builder = packed ?: IntArrayBuilder(BranchScope.DEFINITION_STRIDE).also { packed = it }
+                builder.add(statementId)
+                builder.add(write[0])
+                builder.add(write[1])
+            }
+            statementId = statements.nextSetBit(statementId + 1)
+        }
+        return packed?.toIntArray() ?: BranchScope.EMPTY_DEFINITIONS
+    }
+
+    /**
+     * Record every write of each tracked local, so consumers can subtract killed branch-side
+     * writes from a complete, persistence-safe list instead of from the local's ASSIGN edges
+     * (persisted graphs collapse repeated arcs), and see any surviving non-constant write.
+     */
+    private fun recordLocalDefinitionTables(writes: Int2ObjectOpenHashMap<IntArray>, trackedLocals: IntOpenHashSet) {
+        if (trackedLocals.isEmpty()) return
+        val ordered = ArrayList<IntArray>()
+        for (entry in writes.int2ObjectEntrySet()) {
+            val write = entry.value
+            if (write[0] in trackedLocals) ordered += intArrayOf(entry.intKey, write[0], write[1])
+        }
+        ordered.sortWith(compareBy({ it[1] }, { it[0] }))
+        var start = 0
+        while (start < ordered.size) {
+            val localId = ordered[start][1]
+            var end = start
+            while (end < ordered.size && ordered[end][1] == localId) end++
+            val packed = IntArray((end - start) * BranchScope.DEFINITION_STRIDE)
+            for (position in start until end) {
+                val base = (position - start) * BranchScope.DEFINITION_STRIDE
+                val triple = ordered[position]
+                packed[base] = triple[0]
+                packed[base + 1] = triple[1]
+                packed[base + 2] = triple[2]
+            }
+            graphBuilder.addLocalDefinitions(NodeId(localId), packed)
+            start = end
         }
     }
 
@@ -1528,12 +1698,12 @@ class SootUpAdapter(
      * Uses forward dominance: only includes statements that are reachable from [start]
      * but not directly reachable from [otherBranchStart] without going through the merge point.
      */
-    private fun branchNodeIds(
+    private fun branchStatements(
         startId: Int,
         otherStartId: Int,
         controlFlowIndex: ControlFlowIndex,
         reachableCache: MutableMap<Int, BitSet>
-    ): IntArray {
+    ): BitSet {
         val startReachable = reachableCache.getOrPut(startId) {
             collectReachable(startId, controlFlowIndex)
         }
@@ -1544,8 +1714,36 @@ class SootUpAdapter(
         val branchStatements = startReachable.clone() as BitSet
         branchStatements.andNot(otherReachable)
         branchStatements.set(startId)
+        return branchStatements
+    }
 
-        return nodeIdsFor(branchStatements, controlFlowIndex)
+    /** Create ControlFlowEdges from the condition to the first node in each branch. */
+    private fun addControlFlowEdges(
+        conditionNodeId: NodeId,
+        comparison: BranchComparison,
+        trueIds: IntArray,
+        falseIds: IntArray
+    ) {
+        if (trueIds.isNotEmpty()) {
+            graphBuilder.addEdge(
+                ControlFlowEdge(
+                    from = conditionNodeId,
+                    to = NodeId(trueIds[0]),
+                    kind = ControlFlowKind.BRANCH_TRUE,
+                    comparison = comparison
+                )
+            )
+        }
+        if (falseIds.isNotEmpty()) {
+            graphBuilder.addEdge(
+                ControlFlowEdge(
+                    from = conditionNodeId,
+                    to = NodeId(falseIds[0]),
+                    kind = ControlFlowKind.BRANCH_FALSE,
+                    comparison = comparison
+                )
+            )
+        }
     }
 
     private fun nodeIdsFor(statements: BitSet, controlFlowIndex: ControlFlowIndex): IntArray {
@@ -3124,6 +3322,8 @@ class SootUpAdapter(
         activeMethodParameters.forEach { parameterNodes.remove(it) }
         methodReturnNodes.remove(method)
         stmtNodeIds.clear()
+        stmtLocalWrites.clear()
+        stmtIdentityWrites.clear()
         activeMethod = null
         activeMethodLocals = mutableListOf()
         activeLocalKeysByName = mutableMapOf()

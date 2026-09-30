@@ -64,6 +64,18 @@ The table above is the 2026-08-27 recording; the gate asserts the current counts
 
 Node, method and call-site counts are unchanged.
 
+Persisted-size changes since then, with every count unchanged:
+
+| Change | Tika | Hive | Kotlin compiler |
+| --- | ---: | ---: | ---: |
+| Every save writes the `graph.branchdefs` sidecar (branch-side local definitions and per-local definition tables) and the 36-byte `graph.metadata` trailer that binds it, both counted in the persisted size | +6,079,344 B | +10,505,164 B | +9,344,528 B |
+
+The gate also decodes the sidecar against the trailer in `graph.metadata`, compares the mapped graph's
+branch scopes and definition tables with the source graph's, records the sidecar size as
+`branchDefinitionBytes` and the first mapped branch-definition access as `branchDefinitionsMs` (outside the
+pipeline sum; the candidate must report it, held to a 5,000 ms absolute budget while the base harness does not
+report it and to 30% plus 100 ms afterwards) in the audit marker.
+
 The source graph can contain multiple outgoing edges to the same target. `GraphStore` is a simple
 graph and preserves the last such edge, so the gate records both the source's logical edge count
 and the unique `(from, to)` count expected after persistence. It then compares mapped node, method,

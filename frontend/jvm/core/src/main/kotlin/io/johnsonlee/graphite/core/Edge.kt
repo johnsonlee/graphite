@@ -129,15 +129,101 @@ enum class ComparisonOp {
 }
 
 /**
+ * A statement that writes a local: `local = <constant>` when [constantNodeId] is
+ * set, any other write (a copy, a call result, an arithmetic result, a parameter
+ * binding, ...) when it is `null`.
+ *
+ * In the source graph every constant definition corresponds to exactly one
+ * `ASSIGN` [DataFlowEdge] from [constantNodeId] to [localNodeId]. Persisted
+ * graphs collapse repeated arcs between the same nodes, so consumers must not
+ * recover a local's definition multiset from its edges:
+ * [io.johnsonlee.graphite.graph.Graph.localDefinitionsFor] lists every write of a
+ * local that has at least one constant definition on a branch side. Subtracting
+ * the definitions on killed sides from that list (by [stmtOrdinal]) leaves the
+ * live writes; the local folds only when every live write is the same constant.
+ */
+data class LocalDefinition(
+    /** Position of the statement in the method body, matching the first-pass statement order. */
+    val stmtOrdinal: Int,
+    /** The [LocalVariable] node being written. */
+    val localNodeId: NodeId,
+    /** The [ConstantNode] on the right-hand side, or `null` for a write whose value is not a constant. */
+    val constantNodeId: NodeId?
+) {
+    val isConstant: Boolean get() = constantNodeId != null
+}
+
+/**
  * Records which nodes belong to each branch of a condition.
  *
  * This provides efficient O(1) lookup for BranchReachabilityAnalysis
  * to determine which CallSiteNodes become dead when a branch is killed.
+ *
+ * [trueDefinitions] and [falseDefinitions] list the writes made on each side to
+ * locals that have a constant definition on some branch side, ordered by
+ * [LocalDefinition.stmtOrdinal]. A side's writes are those reached only through
+ * that side: a write both sides reach (after the merge point, at a loop exit)
+ * executes whichever way the branch goes and belongs to neither, so subtracting
+ * a killed side never removes a write the other side still makes. A definition
+ * inside a nested branch appears in both the inner scope and the matching side
+ * of every enclosing scope.
  */
 data class BranchScope(
     val conditionNodeId: NodeId,
     val method: MethodDescriptor,
     val comparison: BranchComparison,
     val trueBranchNodeIds: IntOpenHashSet,
-    val falseBranchNodeIds: IntOpenHashSet
-)
+    val falseBranchNodeIds: IntOpenHashSet,
+    val trueDefinitions: List<LocalDefinition> = emptyList(),
+    val falseDefinitions: List<LocalDefinition> = emptyList()
+) {
+    companion object {
+        /** Number of ints per definition in the packed form used by graph builders. */
+        const val DEFINITION_STRIDE = 3
+
+        /** The packed constant id of a write whose value is not a constant. */
+        const val NO_CONSTANT = -1
+
+        /** Shared empty packed-definition array. */
+        val EMPTY_DEFINITIONS = IntArray(0)
+
+        /** Expand a packed `[stmtOrdinal, localNodeId, constantNodeId]*` array. */
+        fun unpackDefinitions(packed: IntArray): List<LocalDefinition> {
+            if (packed.isEmpty()) return emptyList()
+            require(packed.size % DEFINITION_STRIDE == 0) {
+                "Packed definitions length ${packed.size} is not a multiple of $DEFINITION_STRIDE"
+            }
+            return List(packed.size / DEFINITION_STRIDE) { index ->
+                val base = index * DEFINITION_STRIDE
+                LocalDefinition(
+                    stmtOrdinal = packed[base],
+                    localNodeId = NodeId(packed[base + 1]),
+                    constantNodeId = packed[base + 2].takeIf { it != NO_CONSTANT }?.let(::NodeId)
+                )
+            }
+        }
+
+        /** Expand a per-local table of packed definitions, keyed by local node id. */
+        fun unpackDefinitionTable(packed: Map<Int, IntArray>): Map<NodeId, List<LocalDefinition>> {
+            if (packed.isEmpty()) return emptyMap()
+            val table = HashMap<NodeId, List<LocalDefinition>>(packed.size)
+            for ((localId, definitions) in packed) {
+                table[NodeId(localId)] = unpackDefinitions(definitions)
+            }
+            return table
+        }
+
+        /** Pack definitions into the `[stmtOrdinal, localNodeId, constantNodeId]*` form. */
+        fun packDefinitions(definitions: List<LocalDefinition>): IntArray {
+            if (definitions.isEmpty()) return EMPTY_DEFINITIONS
+            val packed = IntArray(definitions.size * DEFINITION_STRIDE)
+            definitions.forEachIndexed { index, definition ->
+                val base = index * DEFINITION_STRIDE
+                packed[base] = definition.stmtOrdinal
+                packed[base + 1] = definition.localNodeId.value
+                packed[base + 2] = definition.constantNodeId?.value ?: NO_CONSTANT
+            }
+            return packed
+        }
+    }
+}

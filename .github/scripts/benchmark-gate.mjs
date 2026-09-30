@@ -183,6 +183,13 @@ const LARGE_CORPUS_METRICS = [
     { key: "mappedLoadMs", label: "mapped load", threshold: 30, minimum: 50, unit: "ms" },
     { key: "queryMs", label: "query", threshold: 25, minimum: 250, unit: "ms" },
     { key: "pipelineMs", label: "pipeline", threshold: 20, minimum: 1_000, unit: "ms" },
+    // First branch-definition access on the mapped graph (sidecar read, verification, materialisation);
+    // reported outside the pipeline sum. The candidate must measure it; while the base harness does
+    // not, the candidate is held to the absolute transition budget, afterwards to the relative limit.
+    {
+        key: "branchDefinitionsMs", label: "branch definitions", threshold: 30, minimum: 100, unit: "ms",
+        transitionBudget: 5_000
+    },
     { key: "peakHeapBytes", label: "peak heap", unit: "bytes", advisory: true }
 ];
 export const LARGE_CORPUS_EXPECTED_CORPORA = ["tika", "hive", "kotlin-compiler"];
@@ -190,25 +197,28 @@ const LARGE_CORPUS_SHAPE_FIELDS = ["nodes", "sourceEdges", "persistedEdges", "me
 const LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE = 4 * 1024;
 const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 
-// One-time graph-shape transition: System.getProperty stops being linked to every packaged
-// configuration file by RESOURCE_LOOKUP. Only this exact base -> candidate shape, and a persisted-size
-// delta within LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may pass while the workflow
-// selects the pinned shape-transition controls; every other comparison keeps exact shape equality.
+// One-time graph-shape transition: every save now writes the optional `graph.branchdefs` sidecar
+// (branch-side local definitions and the per-local definition tables) and a 36-byte trailer on
+// graph.metadata, so the persisted size grows by the sidecar plus the trailer while the node, edge,
+// method and call-site counts stay identical. Only this exact base -> candidate shape, and a
+// persisted-size delta within LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may pass
+// while the workflow selects the pinned shape-transition controls; every other comparison keeps
+// exact shape equality.
 export const LARGE_CORPUS_SHAPE_TRANSITION = Object.freeze({
     tika: {
-        base: { nodes: 3_897_012, sourceEdges: 4_497_723, persistedEdges: 4_342_382, methods: 312_788, callSites: 1_002_088 },
+        base: { nodes: 3_897_012, sourceEdges: 4_405_147, persistedEdges: 4_249_806, methods: 312_788, callSites: 1_002_088 },
         candidate: { nodes: 3_897_012, sourceEdges: 4_405_147, persistedEdges: 4_249_806, methods: 312_788, callSites: 1_002_088 },
-        persistedBytesDelta: -110_585
+        persistedBytesDelta: 6_079_344
     },
     hive: {
-        base: { nodes: 5_986_673, sourceEdges: 6_378_063, persistedEdges: 6_161_463, methods: 404_016, callSites: 1_437_647 },
+        base: { nodes: 5_986_673, sourceEdges: 6_350_854, persistedEdges: 6_134_254, methods: 404_016, callSites: 1_437_647 },
         candidate: { nodes: 5_986_673, sourceEdges: 6_350_854, persistedEdges: 6_134_254, methods: 404_016, callSites: 1_437_647 },
-        persistedBytesDelta: -33_814
+        persistedBytesDelta: 10_505_164
     },
     "kotlin-compiler": {
-        base: { nodes: 3_268_537, sourceEdges: 3_674_711, persistedEdges: 3_559_500, methods: 249_669, callSites: 900_366 },
+        base: { nodes: 3_268_537, sourceEdges: 3_672_821, persistedEdges: 3_557_610, methods: 249_669, callSites: 900_366 },
         candidate: { nodes: 3_268_537, sourceEdges: 3_672_821, persistedEdges: 3_557_610, methods: 249_669, callSites: 900_366 },
-        persistedBytesDelta: -2_888
+        persistedBytesDelta: 9_344_528
     }
 });
 
@@ -2835,6 +2845,28 @@ export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = nu
         for (const metric of LARGE_CORPUS_METRICS) {
             const baseValue = finiteNumber(baseline[metric.key]);
             const candidateValue = finiteNumber(current[metric.key]);
+            if (metric.transitionBudget !== undefined && baseValue === null) {
+                if (candidateValue === null || candidateValue <= 0) {
+                    errors.push(`${corpus}/${metric.label}: invalid measurement`);
+                    continue;
+                }
+                const blocked = candidateValue > metric.transitionBudget;
+                rows.push({
+                    corpus,
+                    metric: metric.label,
+                    baseValue: null,
+                    candidateValue,
+                    unit: metric.unit,
+                    delta: null,
+                    threshold: null,
+                    minimum: null,
+                    transitionBudget: metric.transitionBudget,
+                    advisory: false,
+                    aboveThreshold: blocked,
+                    blocked
+                });
+                continue;
+            }
             if (baseValue === null || candidateValue === null || baseValue <= 0 || candidateValue <= 0) {
                 errors.push(`${corpus}/${metric.label}: invalid measurement`);
                 continue;
@@ -2931,11 +2963,15 @@ export function renderLargeCorpusReport(comparison) {
             : `${formatMeasurement(row.confirmation.baseValue, row.unit)} -> ` +
                 `${formatMeasurement(row.confirmation.candidateValue, row.unit)} ` +
                 `(${formatDelta(row.confirmation.delta)})`;
+        const limit = row.advisory
+            ? "4 GiB cap"
+            : row.transitionBudget !== undefined
+                ? `${formatMeasurement(row.transitionBudget, row.unit)} transition budget`
+                : `${row.threshold.toFixed(0)}% + ${formatMeasurement(row.minimum, row.unit)}`;
         lines.push(
-            `| ${row.corpus} | ${row.metric} | ${formatMeasurement(row.baseValue, row.unit)} | ` +
+            `| ${row.corpus} | ${row.metric} | ${row.baseValue === null ? "n/a" : formatMeasurement(row.baseValue, row.unit)} | ` +
             `${formatMeasurement(row.candidateValue, row.unit)} | ${formatDelta(row.delta)} | ` +
-            `${confirmation} | ${row.advisory ? "4 GiB cap" :
-                `${row.threshold.toFixed(0)}% + ${formatMeasurement(row.minimum, row.unit)}`} | ` +
+            `${confirmation} | ${limit} | ` +
             `**${statusLabel(row)}** |`
         );
     }

@@ -117,8 +117,10 @@ counts exactly, and persisted size must change by the pinned per-corpus delta wi
 tolerance. Timing, heap, and CallSite-index lifecycle checks are unchanged. Any other combination
 falls through to the base-owned or legacy controls. The base pin names the pre-transition harness, so
 once the transition merges the base digest no longer matches and the branch is never selected again.
-The current transition removes the `RESOURCE_LOOKUP` edges from `System.getProperty` to packaged
-files (Tika −92,576, Hive −27,209, Kotlin compiler −1,890 edges).
+The current transition adds the `graph.branchdefs` sidecar (branch-side local definitions) to
+every save, plus the 36-byte trailer on `graph.metadata` that binds it: node, edge, method and call-site
+counts are identical, and the persisted size grows by the sidecar and trailer (Tika +6,079,344,
+Hive +10,505,164, Kotlin compiler +9,344,528 bytes).
 
 The coverage-taxonomy rollout changes presentation only. The base-owned aggregator always writes
 the authoritative verdict and is the only status enforced by the required check. If that exact base

@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.MethodDescriptor
@@ -456,6 +457,19 @@ interface Graph {
      * Get branch scopes where the given node is the condition operand.
      */
     fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope>
+
+    /**
+     * Every write, in statement order, of each local that has at least one constant
+     * definition on a branch side (see [BranchScope.trueDefinitions]); non-constant
+     * writes are included so a consumer can tell when a surviving write blocks folding.
+     * Locals with no constant definition on any side have nothing to fold and are absent.
+     * The lists survive persistence unchanged, unlike repeated ASSIGN edges.
+     */
+    fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = emptyMap()
+
+    /** The recorded definitions of [localNodeId], or an empty list when it is not tracked. */
+    fun localDefinitionsFor(localNodeId: NodeId): List<LocalDefinition> =
+        localDefinitions()[localNodeId] ?: emptyList()
 
     /**
      * Get all type names that have type hierarchy information (supertypes or subtypes).

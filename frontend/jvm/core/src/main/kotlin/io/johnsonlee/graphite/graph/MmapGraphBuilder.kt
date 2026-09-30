@@ -73,6 +73,7 @@ import java.util.IdentityHashMap
  *   temp directory.  The directory is NOT deleted after [build] because
  *   [MmapGraph] continues to read from it.
  */
+@Suppress("TooManyFunctions")
 class MmapGraphBuilder(
     internal val workDir: Path = Files.createTempDirectory("graphite-mmap")
 ) : FullGraphBuilder {
@@ -95,6 +96,7 @@ class MmapGraphBuilder(
     private val artifactDependencies = mutableMapOf<String, MutableMap<String, Int>>()
     private val memberAnnotations = mutableMapOf<String, MutableMap<String, Map<String, Any?>>>()
     private val branchScopes = mutableListOf<DefaultGraph.RawBranchScope>()
+    private val localDefinitions = HashMap<Int, IntArray>()
     private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
 
     private val nodeDos = DataOutputStream(nodeStream)
@@ -158,7 +160,9 @@ class MmapGraphBuilder(
         method: MethodDescriptor,
         comparison: BranchComparison,
         trueBranchNodeIds: IntArray,
-        falseBranchNodeIds: IntArray
+        falseBranchNodeIds: IntArray,
+        trueDefinitions: IntArray,
+        falseDefinitions: IntArray
     ): FullGraphBuilder {
         branchScopes.add(
             DefaultGraph.RawBranchScope(
@@ -166,9 +170,16 @@ class MmapGraphBuilder(
                 method = method,
                 comparison = comparison,
                 trueBranchNodeIds = trueBranchNodeIds,
-                falseBranchNodeIds = falseBranchNodeIds
+                falseBranchNodeIds = falseBranchNodeIds,
+                trueDefinitions = trueDefinitions,
+                falseDefinitions = falseDefinitions
             )
         )
+        return this
+    }
+
+    override fun addLocalDefinitions(localNodeId: NodeId, definitions: IntArray): FullGraphBuilder {
+        localDefinitions[localNodeId.value] = definitions
         return this
     }
 
@@ -245,6 +256,7 @@ class MmapGraphBuilder(
             artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
             memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
             branchScopeData = branchScopes.toList(),
+            localDefinitionData = localDefinitions.toMap(),
             incomingIndex = null,
             resources = resourceAccessor
         )
