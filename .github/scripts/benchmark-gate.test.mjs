@@ -2536,6 +2536,7 @@ function corpusLine(corpus, overrides = {}) {
         mappedLoadMaxMs: 220,
         queryMs: 1_000,
         pipelineMs: 13_200,
+        branchDefinitionsMs: 1_500,
         peakHeapBytes: 2_000 * 1024 * 1024,
         ...overrides
     };
@@ -2824,7 +2825,7 @@ test("workflow selects the pinned shape transition fail-closed and only before t
     // main the base digest no longer matches and the transition can never be selected again.
     assert.equal(
         pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"),
-        "db14578349451d744c777743905fb3a6b5d0419be1f7cdd955e8063369d79293"
+        "bd92e1756ec0af739e556e5d7640859ea70017e3bab4df851189540443c73287"
     );
     assert.notEqual(pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"), sha256(harness));
 
@@ -2946,6 +2947,32 @@ test("pinned large-corpus shape transition matches the harness baselines", () =>
         }
         assert.ok(transition.persistedBytesDelta > 0, corpus);
     }
+});
+
+test("large-corpus branch-definition access is gated relatively, or by the transition budget without a base", () => {
+    const relative = compareLargeCorpus(baseCorpusLog, corpusLog({ hive: { branchDefinitionsMs: 2_100 } }));
+    const relativeRow = relative.rows.find((row) => row.corpus === "hive" && row.metric === "branch definitions");
+    assert.equal(relativeRow.aboveThreshold, true);
+    assert.equal(relativeRow.blocked, true);
+    assert.equal(relative.passed, false);
+
+    const withoutBase = baseCorpusLog.replaceAll("\tbranchDefinitionsMs=1500", "");
+    const budgeted = compareLargeCorpus(withoutBase, corpusLog({ hive: { branchDefinitionsMs: 4_900 } }));
+    assert.deepEqual(budgeted.errors, []);
+    const budgetRow = budgeted.rows.find((row) => row.corpus === "hive" && row.metric === "branch definitions");
+    assert.equal(budgetRow.baseValue, null);
+    assert.equal(budgetRow.candidateValue, 4_900);
+    assert.equal(budgetRow.transitionBudget, 5_000);
+    assert.equal(budgetRow.blocked, false);
+    assert.match(renderLargeCorpusReport(budgeted), /\| hive \| branch definitions \| n\/a \| 4,900 ms \| n\/a \| - \| 5,000 ms transition budget \|/);
+
+    const overBudget = compareLargeCorpus(withoutBase, corpusLog({ hive: { branchDefinitionsMs: 5_001 } }));
+    assert.equal(overBudget.rows.find((row) => row.corpus === "hive" && row.metric === "branch definitions").blocked, true);
+    assert.equal(overBudget.passed, false);
+
+    const missingCandidate = compareLargeCorpus(withoutBase, withoutBase);
+    assert.equal(missingCandidate.passed, false);
+    assert.match(missingCandidate.errors.join("\n"), /hive\/branch definitions: invalid measurement/);
 });
 
 test("large-corpus comparison validates required measurements", () => {

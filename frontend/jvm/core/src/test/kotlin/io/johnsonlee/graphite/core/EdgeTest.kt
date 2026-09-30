@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -158,5 +159,60 @@ class EdgeTest {
         assertEquals(condId, scope.conditionNodeId)
         assertEquals(3, scope.trueBranchNodeIds.size)
         assertEquals(2, scope.falseBranchNodeIds.size)
+        assertEquals(emptyList(), scope.trueDefinitions)
+        assertEquals(emptyList(), scope.falseDefinitions)
+    }
+
+    // ========================================================================
+    // LocalDefinition packing
+    // ========================================================================
+
+    @Test
+    fun `packDefinitions and unpackDefinitions round-trip`() {
+        val definitions = listOf(
+            LocalDefinition(stmtOrdinal = 4, localNodeId = NodeId(10), constantNodeId = NodeId(20)),
+            LocalDefinition(stmtOrdinal = 7, localNodeId = NodeId(10), constantNodeId = null),
+            LocalDefinition(stmtOrdinal = 9, localNodeId = NodeId(10), constantNodeId = NodeId(21))
+        )
+        val packed = BranchScope.packDefinitions(definitions)
+        assertTrue(packed.contentEquals(intArrayOf(4, 10, 20, 7, 10, BranchScope.NO_CONSTANT, 9, 10, 21)))
+        assertEquals(definitions, BranchScope.unpackDefinitions(packed))
+        assertTrue(definitions[0].isConstant)
+        assertFalse(definitions[1].isConstant)
+    }
+
+    @Test
+    fun `empty definitions pack to the shared empty array`() {
+        assertTrue(BranchScope.packDefinitions(emptyList()) === BranchScope.EMPTY_DEFINITIONS)
+        assertEquals(emptyList(), BranchScope.unpackDefinitions(BranchScope.EMPTY_DEFINITIONS))
+    }
+
+    @Test
+    fun `unpackDefinitionTable expands per-local packed tables`() {
+        assertEquals(emptyMap(), BranchScope.unpackDefinitionTable(emptyMap()))
+        val table = BranchScope.unpackDefinitionTable(mapOf(10 to intArrayOf(4, 10, 20), 11 to BranchScope.EMPTY_DEFINITIONS))
+        assertEquals(listOf(LocalDefinition(4, NodeId(10), NodeId(20))), table[NodeId(10)])
+        assertEquals(emptyList(), table[NodeId(11)])
+    }
+
+    @Test
+    fun `unpackDefinitions rejects a length that is not a multiple of the stride`() {
+        assertFailsWith<IllegalArgumentException> { BranchScope.unpackDefinitions(intArrayOf(1, 2)) }
+    }
+
+    @Test
+    fun `BranchScope carries definitions per side`() {
+        val md = MethodDescriptor(TypeDescriptor("com.example.Foo"), "check", emptyList(), TypeDescriptor("boolean"))
+        val definition = LocalDefinition(1, NodeId(2), NodeId(3))
+        val scope = BranchScope(
+            NodeId(0), md, BranchComparison(ComparisonOp.EQ, NodeId(3)),
+            IntOpenHashSet(), IntOpenHashSet(),
+            trueDefinitions = listOf(definition)
+        )
+        assertEquals(listOf(definition), scope.trueDefinitions)
+        assertEquals(emptyList(), scope.falseDefinitions)
+        assertEquals(1, definition.stmtOrdinal)
+        assertEquals(NodeId(2), definition.localNodeId)
+        assertEquals(NodeId(3), definition.constantNodeId)
     }
 }

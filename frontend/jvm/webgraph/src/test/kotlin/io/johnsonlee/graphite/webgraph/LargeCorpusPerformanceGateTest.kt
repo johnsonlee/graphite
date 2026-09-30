@@ -1,13 +1,19 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.LocalDefinition
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
+import java.io.RandomAccessFile
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -17,12 +23,61 @@ import java.util.jar.JarFile
 import org.junit.Test
 import kotlin.io.path.fileSize
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 private const val FOUR_GIB_BYTES = 4L * 1024L * 1024L * 1024L
 private const val RECORD_PROPERTY = "large.corpus.record"
 private const val MAPPED_LOAD_SAMPLE_COUNT = 5
 private const val CALL_SITE_INDEX_FILE = "graph.callsite-string-index"
+private const val BRANCH_DEFINITIONS_FILE = "graph.branchdefs"
+private const val METADATA_FILE = "graph.metadata"
+
+private class DefinitionFingerprint(
+    val scopes: Long,
+    val sideDefinitions: Long,
+    val scopeDigest: ByteArray,
+    val tables: Long,
+    val tableDefinitions: Long,
+    val tableDigest: ByteArray
+) {
+    override fun equals(other: Any?): Boolean = other is DefinitionFingerprint &&
+        scopes == other.scopes && sideDefinitions == other.sideDefinitions && scopeDigest.contentEquals(other.scopeDigest) &&
+        tables == other.tables && tableDefinitions == other.tableDefinitions && tableDigest.contentEquals(other.tableDigest)
+
+    override fun hashCode(): Int = scopeDigest.contentHashCode() * 31 + tableDigest.contentHashCode()
+
+    override fun toString(): String =
+        "DefinitionFingerprint(scopes=$scopes, sideDefinitions=$sideDefinitions, scopeDigest=${hex(scopeDigest)}, " +
+            "tables=$tables, tableDefinitions=$tableDefinitions, tableDigest=${hex(tableDigest)})"
+
+    private fun hex(bytes: ByteArray): String = bytes.joinToString("") { "%02x".format(it) }
+}
+
+/** Growable list of 64-bit hashes whose sorted content is digested with SHA-256. */
+private class LongArrayBuilder {
+    private var values = LongArray(1024)
+    var size = 0
+        private set
+
+    fun add(value: Long) {
+        if (size == values.size) values = values.copyOf(size * 2)
+        values[size++] = value
+    }
+
+    fun canonicalDigest(): ByteArray {
+        val sorted = values.copyOf(size)
+        sorted.sort()
+        val digest = MessageDigest.getInstance("SHA-256")
+        val buffer = java.nio.ByteBuffer.allocate(Long.SIZE_BYTES)
+        for (value in sorted) {
+            buffer.clear()
+            buffer.putLong(value)
+            digest.update(buffer.array())
+        }
+        return digest.digest()
+    }
+}
 
 data class CorpusBaseline(
     val id: String,
@@ -92,6 +147,8 @@ private data class GateMeasurement(
     val callSites: Long,
     val persistedBytes: Long,
     val callSiteIndexBytes: Long,
+    val branchDefinitionBytes: Long,
+    val branchDefinitionsMillis: Long,
     val productionIndexPrepared: Boolean,
     val buildMillis: Long,
     val saveMillis: Long,
@@ -179,6 +236,10 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             val expectedIndexedRows = sourceGraph.query(CALL_SITE_INDEX_QUERY).rows
             assertTrue(expectedPropertyRows.isNotEmpty(), "Property query must cover ${baseline.id}")
             assertTrue(expectedRelationshipRows.isNotEmpty(), "Relationship query must cover ${baseline.id}")
+            val expectedDefinitions = definitionFingerprint(sourceGraph)
+            val expectedPositions = positionalDefinitionDigest(
+                sourceGraph.branchScopes().map { scope -> scope.trueDefinitions to scope.falseDefinitions }
+            )
             closeQuietly(sourceGraph)
             sourceGraph = null
 
@@ -219,6 +280,14 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 mappedEdges,
                 "Mapped graph must preserve the source graph's persistable edge count for ${baseline.id}"
             )
+            // First branch-definition access on the mapped graph: reads and verifies the sidecar, materialises
+            // every scope and table. Timed and reported separately; it is not part of the pipeline sum.
+            val branchDefinitionsStart = System.nanoTime()
+            val mappedDefinitions = definitionFingerprint(queryGraph)
+            val branchDefinitionsMillis = elapsedMillis(branchDefinitionsStart)
+            assertEquals(expectedDefinitions, mappedDefinitions, "Mapped graph must restore the source graph's definitions")
+            val branchDefinitionBytes =
+                verifyBranchDefinitions(output, queryGraph, mappedDefinitions, expectedPositions, nodes.toInt())
 
             val persistedBytes = Files.walk(output).use { entries ->
                 entries.filter { path ->
@@ -234,6 +303,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 callSites = callSites,
                 persistedBytes = persistedBytes,
                 callSiteIndexBytes = callSiteIndexBytes,
+                branchDefinitionBytes = branchDefinitionBytes,
+                branchDefinitionsMillis = branchDefinitionsMillis,
                 productionIndexPrepared = productionIndexPrepared,
                 buildMillis = buildMillis,
                 saveMillis = saveMillis,
@@ -250,6 +321,169 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             closeQuietly(sourceGraph)
             output.toFile().deleteRecursively()
         }
+    }
+
+    /**
+     * Canonical digest of a graph's branch scopes and per-local definition tables: every scope
+     * (method, condition, comparison, the true and false branch node sets, ordered true-side writes,
+     * ordered false-side writes) and every table (local, ordered writes) is hashed to 64 bits, the
+     * hashes are sorted, and SHA-256 is taken over the sorted sequence. Independent of materialisation
+     * order, sensitive to a write moved to another scope, side or position, and computable without
+     * holding the source and mapped graphs at once. The branch node sets discriminate scopes that test
+     * the same local against the same constant in the same method and guard different code; they are
+     * hashed order-independently (no sort per scope). Two scopes can still share every key (two
+     * sequential `if (p) { x = a } else { x = b }` blocks reuse the same nodes), and the sorted multiset
+     * cannot see their side payloads swapped; [positionalDefinitionDigest] covers that case.
+     */
+    private fun definitionFingerprint(graph: Graph): DefinitionFingerprint {
+        val scopeHashes = LongArrayBuilder()
+        var sideDefinitions = 0L
+        graph.branchScopes().forEach { scope ->
+            sideDefinitions += scope.trueDefinitions.size + scope.falseDefinitions.size
+            scopeHashes.add(
+                mix(
+                    methodHash(scope.method),
+                    scope.conditionNodeId.value.toLong(),
+                    scope.comparison.operator.ordinal.toLong(),
+                    scope.comparison.comparandNodeId.value.toLong(),
+                    nodeSetHash(scope.trueBranchNodeIds),
+                    nodeSetHash(scope.falseBranchNodeIds),
+                    definitionsHash(scope.trueDefinitions),
+                    definitionsHash(scope.falseDefinitions)
+                )
+            )
+        }
+        val tableHashes = LongArrayBuilder()
+        var tableDefinitions = 0L
+        for ((localId, definitions) in graph.localDefinitions()) {
+            tableDefinitions += definitions.size
+            tableHashes.add(mix(localId.value.toLong(), definitionsHash(definitions)))
+        }
+        return DefinitionFingerprint(
+            scopes = scopeHashes.size.toLong(),
+            sideDefinitions = sideDefinitions,
+            scopeDigest = scopeHashes.canonicalDigest(),
+            tables = tableHashes.size.toLong(),
+            tableDefinitions = tableDefinitions,
+            tableDigest = tableHashes.canonicalDigest()
+        )
+    }
+
+    /**
+     * SHA-256 over the side-definition hashes of every branch scope in the order given, mixed with the
+     * position. `graph.metadata` is written in the source graph's [Graph.branchScopes] order and the
+     * sidecar's scope records are aligned with it by position, so the digest of the source enumeration
+     * must equal the digest of the decoded sidecar records: a payload moved between two scopes changes
+     * it even when the scopes share every other key, which the sorted multiset in
+     * [definitionFingerprint] cannot detect.
+     */
+    private fun positionalDefinitionDigest(sides: Sequence<Pair<List<LocalDefinition>, List<LocalDefinition>>>): ByteArray {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val buffer = java.nio.ByteBuffer.allocate(Long.SIZE_BYTES)
+        var position = 0L
+        for ((trueSide, falseSide) in sides) {
+            buffer.clear()
+            buffer.putLong(mix(position++, definitionsHash(trueSide), definitionsHash(falseSide)))
+            digest.update(buffer.array())
+        }
+        return digest.digest()
+    }
+
+    private fun methodHash(method: MethodDescriptor): Long =
+        mix(method.signature.hashCode().toLong(), method.returnType.className.hashCode().toLong())
+
+    /** Order-independent hash of a node id set: the size and the sum of the mixed ids. */
+    private fun nodeSetHash(ids: IntOpenHashSet): Long {
+        var sum = 0L
+        val iterator = ids.iterator()
+        while (iterator.hasNext()) sum += mix(iterator.nextInt().toLong())
+        return mix(ids.size.toLong(), sum)
+    }
+
+    private fun definitionsHash(definitions: List<LocalDefinition>): Long {
+        var hash = 17L
+        for (definition in definitions) {
+            val constant = (definition.constantNodeId?.value ?: BranchScope.NO_CONSTANT).toLong()
+            hash = mix(hash, definition.stmtOrdinal.toLong(), definition.localNodeId.value.toLong(), constant)
+        }
+        return hash
+    }
+
+    private fun mix(vararg values: Long): Long {
+        var hash = 0x9E3779B97F4A7C15uL.toLong()
+        for (value in values) {
+            hash = (hash xor value) * 0xC2B2AE3D27D4EB4FuL.toLong()
+            hash = hash xor (hash ushr 29)
+        }
+        return hash
+    }
+
+    /**
+     * The sidecar must be written by every save, decode against the trailer `graph.metadata` carries
+     * with the exact metadata scope count, hold the source graph's side definitions at the source
+     * graph's positions ([expectedPositions]), and be what the mapped graph restored (compared through
+     * [fingerprint], already checked against the source graph). It is counted inside the persisted size.
+     */
+    private fun verifyBranchDefinitions(
+        output: Path,
+        mapped: Graph,
+        fingerprint: DefinitionFingerprint,
+        expectedPositions: ByteArray,
+        nodeCount: Int
+    ): Long {
+        val sidecar = output.resolve(BRANCH_DEFINITIONS_FILE)
+        assertTrue(Files.isRegularFile(sidecar), "Save must persist the branch-definition sidecar for ${baseline.id}")
+        assertTrue(fingerprint.sideDefinitions > 0, "${baseline.id} must persist branch-side definitions")
+        assertTrue(fingerprint.tables > 0, "${baseline.id} must persist per-local definition tables")
+
+        val trailerDigest = RandomAccessFile(output.resolve(METADATA_FILE).toFile(), "r").use { metadata ->
+            metadata.seek(metadata.length() - NodeSerializer.METADATA_TRAILER_BYTES)
+            NodeSerializer.readMetadataTrailer(metadata)
+        }
+        assertNotNull(trailerDigest, "graph.metadata must carry the branch-definition trailer for ${baseline.id}")
+        val bytes = Files.readAllBytes(sidecar)
+        val preamble = NodeSerializer.decodeBranchDefinitionPreamble(
+            bytes.copyOf(NodeSerializer.BRANCH_DEFINITIONS_PREAMBLE_BYTES),
+            (bytes.size - NodeSerializer.BRANCH_DEFINITIONS_PREAMBLE_BYTES).toLong(),
+            trailerDigest
+        )
+        val payloadDigest = checkNotNull(preamble.payloadDigest) {
+            "Branch-definition sidecar must match graph.metadata for ${baseline.id}: ${preamble.rejection}"
+        }
+        val decoded = NodeSerializer.decodeBranchDefinitionPayload(
+            bytes.copyOfRange(NodeSerializer.BRANCH_DEFINITIONS_PREAMBLE_BYTES, bytes.size),
+            fingerprint.scopes.toInt(),
+            payloadDigest,
+            nodeCount,
+            NodeSerializer.NodeTagLookup { nodeId -> mapped.node(NodeId(nodeId))?.let(NodeSerializer::tagOf) ?: NodeSerializer.NO_NODE }
+        )
+        val definitions = checkNotNull(decoded.definitions) {
+            "Branch-definition sidecar must decode for ${baseline.id}: ${decoded.rejection}"
+        }
+        assertEquals(fingerprint.scopes, definitions.scopes.size.toLong(), "Sidecar scope count for ${baseline.id}")
+        val persistedSideDefinitions = definitions.scopes.sumOf { (trueSide, falseSide) ->
+            (trueSide.size + falseSide.size) / BranchScope.DEFINITION_STRIDE
+        }.toLong()
+        assertEquals(fingerprint.sideDefinitions, persistedSideDefinitions, "Sidecar side definitions for ${baseline.id}")
+        val persistedPositions = positionalDefinitionDigest(
+            definitions.scopes.asSequence().map { (trueSide, falseSide) ->
+                BranchScope.unpackDefinitions(trueSide) to BranchScope.unpackDefinitions(falseSide)
+            }
+        )
+        assertTrue(
+            expectedPositions.contentEquals(persistedPositions),
+            "Sidecar must hold each scope's side definitions at the source graph's position for ${baseline.id}"
+        )
+        assertEquals(fingerprint.tables, definitions.locals.size.toLong(), "Sidecar definition tables for ${baseline.id}")
+        val mappedTables = mapped.localDefinitions()
+        definitions.locals.forEach { (localId, packed) ->
+            assertEquals(
+                BranchScope.unpackDefinitions(packed),
+                mappedTables[NodeId(localId)],
+                "Mapped definition table of local $localId for ${baseline.id}"
+            )
+        }
+        return Files.size(sidecar)
     }
 
     /** Uses the shipped production overload when present while remaining source-compatible with main. */
@@ -277,6 +511,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         "callSites=$callSites",
         "persistedBytes=$persistedBytes",
         "callSiteIndexBytes=$callSiteIndexBytes",
+        "branchDefinitionBytes=$branchDefinitionBytes",
+        "branchDefinitionsMs=$branchDefinitionsMillis",
         "productionIndexPrepared=${if (productionIndexPrepared) 1 else 0}",
         "buildMs=$buildMillis",
         "saveMs=$saveMillis",

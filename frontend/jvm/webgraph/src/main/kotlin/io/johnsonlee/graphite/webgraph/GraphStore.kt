@@ -39,6 +39,7 @@ import java.io.Closeable
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
@@ -542,6 +543,7 @@ internal data class NodeIndexData(
  * - `graph.resources`          -- persisted text resources, including an explicit empty store when none exist
  * - `graph.callsite-string-content.identity` -- CallSite fields + node offsets identity for index ownership
  * - `graph.callsite-string-index` -- optional persisted CSR/trigram search index for mapped CallSites
+ * - `graph.branchdefs`         -- optional branch-side local definitions, aligned with and bound to the metadata branch scopes
  */
 @Suppress("LargeClass", "TooManyFunctions")
 object GraphStore {
@@ -558,6 +560,7 @@ object GraphStore {
     private const val NODE_DATA_FILE = "graph.nodedata"
     private const val METADATA_FILE = "graph.metadata"
     internal const val CALL_SITE_STRING_INDEX_FILE = "graph.callsite-string-index"
+    internal const val BRANCH_DEFINITIONS_FILE = "graph.branchdefs"
     private const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
     internal const val MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY =
         "graphite.webgraph.prepareCallSiteStringIndexOnLoad"
@@ -597,6 +600,7 @@ object GraphStore {
     ) {
         Files.createDirectories(dir)
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
+        Files.deleteIfExists(dir.resolve(BRANCH_DEFINITIONS_FILE))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
@@ -676,10 +680,13 @@ object GraphStore {
             callSiteIndexInput
         )
 
-        // 7. Save metadata
+        // 7. Save metadata with the trailer that binds it to the branch-definition sidecar, then the sidecar.
+        val branchDefinitions = NodeSerializer.encodeBranchDefinitions(metadata.branchScopes, metadata.localDefinitions)
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.saveMetadata(metadata, dos, stringTable)
+            NodeSerializer.writeMetadataTrailer(dos, branchDefinitions.payloadDigest)
         }
+        Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
 
         // 8. Save class-level overview summary for explorer routes
         ClassOverviewStore.save(
@@ -842,7 +849,7 @@ object GraphStore {
      * Load all nodes eagerly into JVM heap. Best for graphs < 1M nodes.
      */
     private fun loadEager(dir: Path): Graph {
-        val (nodeDataVersion, _) = readNodeDataHeader(dir)
+        val (nodeDataVersion, nodeCount) = readNodeDataHeader(dir)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
         val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
@@ -869,9 +876,7 @@ object GraphStore {
             }
         }
 
-        val metadata = DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.loadMetadata(dis, stringTable)
-        }
+        val metadata = loadMetadataWithTrailer(dir, stringTable)
         val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
 
         return WebGraphBackedGraph(
@@ -884,7 +889,8 @@ object GraphStore {
             comparisonLookup,
             metadata,
             classOverview,
-            PersistedResourceStore.load(dir)
+            PersistedResourceStore.load(dir),
+            lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) }
         )
     }
 
@@ -916,7 +922,7 @@ object GraphStore {
     ): Graph {
         require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
 
-        val (nodeDataVersion, _) = readNodeDataHeader(dir)
+        val (nodeDataVersion, nodeCount) = readNodeDataHeader(dir)
         val metadataFile = dir.resolve(METADATA_FILE)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
         val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
@@ -940,10 +946,9 @@ object GraphStore {
         val comparisonLookup = joinLoad(comparisonFuture)
         val backward = lazy { loadBackward(dir, forward) }
         val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
-        val metadata = lazy {
-            DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
-                NodeSerializer.loadMetadata(dis, stringTable)
-            }
+        val metadata = lazy { loadMetadataWithTrailer(dir, stringTable) }
+        val branchDefinitions = lazy {
+            loadBranchDefinitions(dir, metadata.value, nodeCount, mappedNodeTagLookup(nodeIndex.nodeOffsets, mappedBuffer))
         }
         val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
 
@@ -965,7 +970,8 @@ object GraphStore {
             comparisonLookup = comparisonLookup,
             metadata = metadata,
             classOverviewProvider = classOverview,
-            resourceAccessor = lazy { PersistedResourceStore.load(dir) }
+            resourceAccessor = lazy { PersistedResourceStore.load(dir) },
+            branchDefinitions = branchDefinitions
         )
         if (prepareCallSiteStringIndex) {
             try {
@@ -977,6 +983,83 @@ object GraphStore {
         }
         return graph
     }
+
+    /** Parse `graph.metadata` and the trailer that binds it to its branch-definition sidecar, when present. */
+    private fun loadMetadataWithTrailer(dir: Path, stringTable: StringTable): GraphMetadata =
+        DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
+            val metadata = NodeSerializer.loadMetadata(dis, stringTable)
+            metadata.copy(branchDefinitionDigest = NodeSerializer.readMetadataTrailer(dis))
+        }
+
+    /**
+     * Read the optional `graph.branchdefs` sidecar for the graph in [dir], or [PersistedBranchDefinitions.EMPTY]
+     * with one warning when it is missing, is not the one `graph.metadata` was written with (for example
+     * left behind when an older writer re-saved this directory, whose metadata then carries no trailer),
+     * or is corrupt. The preamble is validated before the payload is read, and the payload is read only
+     * up to its validated length, its local table may not exceed [nodeCount] entries, and its content is
+     * checked against the persisted nodes through [nodeTags] (see [NodeSerializer.decodeBranchDefinitionPayload]).
+     * The sidecar is derived data: rebuilding the graph restores it. Called lazily on the first
+     * branch-scope access.
+     */
+    internal fun loadBranchDefinitions(
+        dir: Path,
+        metadata: GraphMetadata,
+        nodeCount: Int,
+        nodeTags: NodeSerializer.NodeTagLookup
+    ): PersistedBranchDefinitions {
+        if (metadata.branchScopes.isEmpty()) return PersistedBranchDefinitions.EMPTY
+        val file = dir.resolve(BRANCH_DEFINITIONS_FILE)
+        val decoded = when {
+            !Files.isRegularFile(file) -> DecodedBranchDefinitions.rejected("is missing")
+            else -> try {
+                readBranchDefinitions(file, metadata, nodeCount, nodeTags)
+            } catch (e: IOException) {
+                DecodedBranchDefinitions.rejected("could not be read (${e.message})")
+            }
+        }
+        if (decoded.definitions == null) {
+            System.err.println("Warning: $file ${decoded.rejection}; branch scopes are loaded without local definitions")
+        }
+        return decoded.definitions ?: PersistedBranchDefinitions.EMPTY
+    }
+
+    private fun eagerNodeTagLookup(nodesById: Map<Int, Node>) = NodeSerializer.NodeTagLookup { nodeId ->
+        nodesById[nodeId]?.let(NodeSerializer::tagOf) ?: NodeSerializer.NO_NODE
+    }
+
+    /** Reads the tag byte that follows the id in a mapped node record, without deserialising the node. */
+    private fun mappedNodeTagLookup(offsets: NodeOffsetIndex, nodeData: ByteBuffer) = NodeSerializer.NodeTagLookup { nodeId ->
+        if (nodeId < 0 || nodeId >= offsets.size) {
+            NodeSerializer.NO_NODE
+        } else {
+            val offset = offsets.offset(nodeId)
+            if (offset < 0) NodeSerializer.NO_NODE else nodeData.get((offset + Int.SIZE_BYTES).toInt()).toInt()
+        }
+    }
+
+    private fun readBranchDefinitions(
+        file: Path,
+        metadata: GraphMetadata,
+        nodeCount: Int,
+        nodeTags: NodeSerializer.NodeTagLookup
+    ): DecodedBranchDefinitions =
+        DataInputStream(BufferedInputStream(file.toFile().inputStream())).use { dis ->
+            val preambleBytes = ByteArray(NodeSerializer.BRANCH_DEFINITIONS_PREAMBLE_BYTES)
+            val read = dis.readNBytes(preambleBytes, 0, preambleBytes.size)
+            val preamble = NodeSerializer.decodeBranchDefinitionPreamble(
+                preambleBytes.copyOf(read),
+                Files.size(file) - read,
+                metadata.branchDefinitionDigest
+            )
+            val digest = preamble.payloadDigest
+            if (digest == null) {
+                DecodedBranchDefinitions.rejected(checkNotNull(preamble.rejection))
+            } else {
+                val payload = ByteArray(preamble.payloadLength)
+                dis.readFully(payload)
+                NodeSerializer.decodeBranchDefinitionPayload(payload, metadata.branchScopes.size, digest, nodeCount, nodeTags)
+            }
+        }
 
     /**
      * Build forward adjacency, labels, and comparisons in 2 sequential passes.
@@ -1319,9 +1402,15 @@ object GraphStore {
                 method = bs.method,
                 comparison = bs.comparison,
                 trueBranchNodeIds = bs.trueBranchNodeIds.toIntArray(),
-                falseBranchNodeIds = bs.falseBranchNodeIds.toIntArray()
+                falseBranchNodeIds = bs.falseBranchNodeIds.toIntArray(),
+                trueDefinitions = BranchScope.packDefinitions(bs.trueDefinitions),
+                falseDefinitions = BranchScope.packDefinitions(bs.falseDefinitions)
             )
         }.toList()
+
+        val localDefinitions = graph.localDefinitions().entries.associate { (localId, definitions) ->
+            localId.value to BranchScope.packDefinitions(definitions)
+        }
 
         return GraphMetadata(
             methods = methods,
@@ -1331,7 +1420,8 @@ object GraphStore {
             classOrigins = graph.classOrigins(),
             artifactDependencies = graph.artifactDependencies(),
             memberAnnotations = memberAnnotations,
-            branchScopes = branchScopes
+            branchScopes = branchScopes,
+            localDefinitions = localDefinitions
         )
     }
 

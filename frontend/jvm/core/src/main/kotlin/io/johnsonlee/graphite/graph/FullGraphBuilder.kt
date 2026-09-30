@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.BranchComparison
+import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
@@ -29,13 +30,26 @@ interface FullGraphBuilder : GraphBuilder {
         annotationFqn: String,
         values: Map<String, Any?> = emptyMap()
     ): FullGraphBuilder
+    /**
+     * Record a branch scope. [trueDefinitions] and [falseDefinitions] are packed
+     * `[stmtOrdinal, localNodeId, constantNodeId]*` arrays, see
+     * [BranchScope.packDefinitions].
+     */
     fun addBranchScope(
         conditionNodeId: NodeId,
         method: MethodDescriptor,
         comparison: BranchComparison,
         trueBranchNodeIds: IntArray,
-        falseBranchNodeIds: IntArray
+        falseBranchNodeIds: IntArray,
+        trueDefinitions: IntArray = BranchScope.EMPTY_DEFINITIONS,
+        falseDefinitions: IntArray = BranchScope.EMPTY_DEFINITIONS
     ): FullGraphBuilder
+    /**
+     * Record every write of [localNodeId] as a packed
+     * `[stmtOrdinal, localNodeId, constantNodeId | NO_CONSTANT]*` array in statement
+     * order, see [io.johnsonlee.graphite.graph.Graph.localDefinitions].
+     */
+    fun addLocalDefinitions(localNodeId: NodeId, definitions: IntArray): FullGraphBuilder
     fun addClassOrigin(className: String, source: String): FullGraphBuilder
     fun addArtifactDependency(fromArtifact: String, toArtifact: String, weight: Int = 1): FullGraphBuilder
     fun setResources(resources: ResourceAccessor): FullGraphBuilder

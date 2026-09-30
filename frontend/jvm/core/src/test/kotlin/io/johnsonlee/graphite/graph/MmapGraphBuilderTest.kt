@@ -7,6 +7,7 @@ import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ComparisonOp
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -547,6 +548,48 @@ class MmapGraphBuilderTest {
         assertTrue(scopes[0].trueBranchNodeIds.contains(20))
         assertTrue(scopes[0].falseBranchNodeIds.contains(30))
         assertTrue(scopes[0].falseBranchNodeIds.contains(40))
+    }
+
+    @Test
+    fun `addBranchScope keeps packed constant definitions per side`() {
+        val condId = NodeId.next()
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId.next())
+        val m = makeMethod("com.example.Foo", "check")
+        val graph = MmapGraphBuilder()
+            .addBranchScope(
+                condId, m, comp, intArrayOf(1), intArrayOf(2),
+                trueDefinitions = intArrayOf(3, 1, 7),
+                falseDefinitions = intArrayOf(5, 2, 8, 6, 2, 9)
+            )
+            .addBranchScope(NodeId.next(), m, comp, intArrayOf(4), intArrayOf(5))
+            .build()
+
+        val scopes = graph.branchScopes().toList()
+        assertEquals(2, scopes.size)
+        val withDefinitions = graph.branchScopesFor(condId).single()
+        assertEquals(listOf(LocalDefinition(3, NodeId(1), NodeId(7))), withDefinitions.trueDefinitions)
+        assertEquals(
+            listOf(LocalDefinition(5, NodeId(2), NodeId(8)), LocalDefinition(6, NodeId(2), NodeId(9))),
+            withDefinitions.falseDefinitions
+        )
+        val without = scopes.single { it.conditionNodeId != condId }
+        assertEquals(emptyList(), without.trueDefinitions)
+        assertEquals(emptyList(), without.falseDefinitions)
+    }
+
+    @Test
+    fun `addLocalDefinitions records every definition of a tracked local`() {
+        val local = NodeId.next()
+        val graph = MmapGraphBuilder()
+            .addLocalDefinitions(local, intArrayOf(2, local.value, 7, 9, local.value, 8))
+            .build()
+        assertEquals(
+            listOf(LocalDefinition(2, local, NodeId(7)), LocalDefinition(9, local, NodeId(8))),
+            graph.localDefinitionsFor(local)
+        )
+        assertEquals(emptyList(), graph.localDefinitionsFor(NodeId(999)))
+        assertEquals(setOf(local), graph.localDefinitions().keys)
+        assertEquals(emptyMap(), MmapGraphBuilder().build().localDefinitions())
     }
 
     @Test

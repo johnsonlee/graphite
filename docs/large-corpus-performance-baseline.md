@@ -63,14 +63,29 @@ The table above is the 2026-08-27 recording; the gate asserts the current counts
 | `System.getProperty` is no longer linked to every packaged configuration file by `RESOURCE_LOOKUP` | 4,405,147 / 4,249,806 (−92,576) | 6,350,854 / 6,134,254 (−27,209) | 3,672,821 / 3,557,610 (−1,890) |
 | Calls on function values resolve to every lambda shape, creating methods get a call site to the methods a function object implements for a supertype, and casts carry dataflow | 4,510,016 / 4,353,588 (+104,869 / +103,782) | 6,597,267 / 6,376,682 (+246,413 / +242,428) | 3,906,617 / 3,785,858 (+233,796 / +228,248) |
 
-The `System.getProperty` change left node, method and call-site counts unchanged. The lambda change
-leaves method counts unchanged and adds nodes and call sites:
+The `System.getProperty` change left node, method and call-site counts unchanged.
+
+Persisted-size changes since then, with every count unchanged:
+
+| Change | Tika | Hive | Kotlin compiler |
+| --- | ---: | ---: | ---: |
+| Every save writes the `graph.branchdefs` sidecar (branch-side local definitions and per-local definition tables) and the 36-byte `graph.metadata` trailer that binds it, both counted in the persisted size | +6,079,344 B | +10,505,164 B | +9,344,528 B |
+
+The lambda change leaves method counts unchanged and adds nodes and call sites, on top of a base that
+already writes the sidecar (the sidecar itself grows with the new locals: Tika +4,516 B, Hive +6,920 B,
+Kotlin compiler +18,544 B, included in the persisted-size delta):
 
 | Corpus | Nodes | Call sites | Persisted bytes |
 | --- | ---: | ---: | ---: |
-| Tika | 3,901,103 (+4,091) | 1,006,172 (+4,084) | +561,747 |
-| Hive | 5,992,914 (+6,241) | 1,443,886 (+6,239) | +1,138,190 |
-| Kotlin compiler | 3,292,214 (+23,677) | 922,876 (+22,510) | +2,632,391 |
+| Tika | 3,901,103 (+4,091) | 1,006,172 (+4,084) | +566,248 |
+| Hive | 5,992,914 (+6,241) | 1,443,886 (+6,239) | +1,145,094 |
+| Kotlin compiler | 3,292,214 (+23,677) | 922,876 (+22,510) | +2,650,922 |
+
+The gate also decodes the sidecar against the trailer in `graph.metadata`, compares the mapped graph's
+branch scopes and definition tables with the source graph's, records the sidecar size as
+`branchDefinitionBytes` and the first mapped branch-definition access as `branchDefinitionsMs` (outside the
+pipeline sum; the candidate must report it, held to a 5,000 ms absolute budget while the base harness does not
+report it and to 30% plus 100 ms afterwards) in the audit marker.
 
 The source graph can contain multiple outgoing edges to the same target. `GraphStore` is a simple
 graph and preserves the last such edge, so the gate records both the source's logical edge count

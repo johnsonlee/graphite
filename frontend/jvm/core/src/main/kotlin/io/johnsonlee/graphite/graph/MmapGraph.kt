@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
@@ -19,7 +20,6 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.input.ResourceAccessor
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
 import java.io.DataInput
 import java.io.DataInputStream
@@ -64,6 +64,7 @@ class MmapGraph internal constructor(
     private val artifactDependenciesMap: Map<String, Map<String, Int>>,
     private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
     private val branchScopeData: List<DefaultGraph.RawBranchScope>,
+    private val localDefinitionData: Map<Int, IntArray>,
     incomingIndex: EdgeOffsetIndex?,
     override val resources: ResourceAccessor
 ) : Graph, Closeable {
@@ -79,15 +80,7 @@ class MmapGraph internal constructor(
     }
 
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
-        branchScopeData.map { raw ->
-            BranchScope(
-                conditionNodeId = NodeId(raw.conditionNodeId),
-                method = raw.method,
-                comparison = raw.comparison,
-                trueBranchNodeIds = IntOpenHashSet(raw.trueBranchNodeIds),
-                falseBranchNodeIds = IntOpenHashSet(raw.falseBranchNodeIds)
-            )
-        }.groupBy { it.conditionNodeId.value }
+        branchScopeData.map { it.toBranchScope() }.groupBy { it.conditionNodeId.value }
     }
 
     internal data class EdgeOffsetIndex(
@@ -207,6 +200,12 @@ class MmapGraph internal constructor(
 
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
         branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
+
+    private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
+        BranchScope.unpackDefinitionTable(localDefinitionData)
+    }
+
+    override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
 
     override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()
 

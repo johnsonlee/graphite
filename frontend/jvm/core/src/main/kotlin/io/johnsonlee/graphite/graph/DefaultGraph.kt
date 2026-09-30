@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.LocalDefinition
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.MethodDescriptor
@@ -38,6 +39,8 @@ class DefaultGraph private constructor(
     // for current scale. Consider two-level map if profiling shows GC pressure.
     private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
     private val rawBranchScopes: Array<RawBranchScope>,
+    /** Packed `[stmtOrdinal, localNodeId, constantNodeId]*` per tracked local, see [localDefinitions]. */
+    private val rawLocalDefinitions: Int2ObjectOpenHashMap<IntArray>,
     override val resources: ResourceAccessor,
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
     private val nodesByType: Map<Class<out Node>, List<Node>>,
@@ -58,20 +61,25 @@ class DefaultGraph private constructor(
         val method: MethodDescriptor,
         val comparison: BranchComparison,
         val trueBranchNodeIds: IntArray,
-        val falseBranchNodeIds: IntArray
-    )
+        val falseBranchNodeIds: IntArray,
+        /** Packed `[stmtOrdinal, localNodeId, constantNodeId]*`, see [BranchScope.packDefinitions]. */
+        val trueDefinitions: IntArray = BranchScope.EMPTY_DEFINITIONS,
+        val falseDefinitions: IntArray = BranchScope.EMPTY_DEFINITIONS
+    ) {
+        fun toBranchScope(): BranchScope = BranchScope(
+            conditionNodeId = NodeId(conditionNodeId),
+            method = method,
+            comparison = comparison,
+            trueBranchNodeIds = IntOpenHashSet(trueBranchNodeIds),
+            falseBranchNodeIds = IntOpenHashSet(falseBranchNodeIds),
+            trueDefinitions = BranchScope.unpackDefinitions(trueDefinitions),
+            falseDefinitions = BranchScope.unpackDefinitions(falseDefinitions)
+        )
+    }
 
     /** Materialised on first access from [rawBranchScopes]. */
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
-        rawBranchScopes.map { raw ->
-            BranchScope(
-                conditionNodeId = NodeId(raw.conditionNodeId),
-                method = raw.method,
-                comparison = raw.comparison,
-                trueBranchNodeIds = IntOpenHashSet(raw.trueBranchNodeIds),
-                falseBranchNodeIds = IntOpenHashSet(raw.falseBranchNodeIds)
-            )
-        }.groupBy { it.conditionNodeId.value }
+        rawBranchScopes.map { it.toBranchScope() }.groupBy { it.conditionNodeId.value }
     }
 
     override fun node(id: NodeId): Node? = nodesById.get(id.value)
@@ -150,6 +158,12 @@ class DefaultGraph private constructor(
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
         branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
 
+    private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
+        BranchScope.unpackDefinitionTable(rawLocalDefinitions)
+    }
+
+    override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
+
     override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()
 
     /**
@@ -170,6 +184,7 @@ class DefaultGraph private constructor(
         // See CLAUDE.md "Why buildGraph() Is Not Parallelized" for rationale.
         private val memberAnnotations = mutableMapOf<String, MutableMap<String, Map<String, Any?>>>()
         private val branchScopes = ObjectArrayList<RawBranchScope>()
+        private val localDefinitions = Int2ObjectOpenHashMap<IntArray>()
         private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
 
         override fun addNode(node: Node): FullGraphBuilder {
@@ -203,6 +218,11 @@ class DefaultGraph private constructor(
             return this
         }
 
+        override fun addLocalDefinitions(localNodeId: NodeId, definitions: IntArray): FullGraphBuilder {
+            localDefinitions.put(localNodeId.value, definitions)
+            return this
+        }
+
         override fun addClassOrigin(className: String, source: String): FullGraphBuilder {
             classOrigins.putIfAbsent(className, source)
             return this
@@ -221,14 +241,18 @@ class DefaultGraph private constructor(
             method: MethodDescriptor,
             comparison: BranchComparison,
             trueBranchNodeIds: IntArray,
-            falseBranchNodeIds: IntArray
+            falseBranchNodeIds: IntArray,
+            trueDefinitions: IntArray,
+            falseDefinitions: IntArray
         ): FullGraphBuilder {
             branchScopes.add(RawBranchScope(
                 conditionNodeId = conditionNodeId.value,
                 method = method,
                 comparison = comparison,
                 trueBranchNodeIds = trueBranchNodeIds,
-                falseBranchNodeIds = falseBranchNodeIds
+                falseBranchNodeIds = falseBranchNodeIds,
+                trueDefinitions = trueDefinitions,
+                falseDefinitions = falseDefinitions
             ))
             return this
         }
@@ -270,6 +294,7 @@ class DefaultGraph private constructor(
                 artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
                 memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
                 rawBranchScopes = branchScopes.toTypedArray(),
+                rawLocalDefinitions = localDefinitions,
                 resources = resourceAccessor,
                 nodesByType = nodesByType,
                 edgeCount = edgeCount

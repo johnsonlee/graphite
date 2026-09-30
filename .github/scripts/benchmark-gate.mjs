@@ -183,6 +183,13 @@ const LARGE_CORPUS_METRICS = [
     { key: "mappedLoadMs", label: "mapped load", threshold: 30, minimum: 50, unit: "ms" },
     { key: "queryMs", label: "query", threshold: 25, minimum: 250, unit: "ms" },
     { key: "pipelineMs", label: "pipeline", threshold: 20, minimum: 1_000, unit: "ms" },
+    // First branch-definition access on the mapped graph (sidecar read, verification, materialisation);
+    // reported outside the pipeline sum. The candidate must measure it; while the base harness does
+    // not, the candidate is held to the absolute transition budget, afterwards to the relative limit.
+    {
+        key: "branchDefinitionsMs", label: "branch definitions", threshold: 30, minimum: 100, unit: "ms",
+        transitionBudget: 5_000
+    },
     { key: "peakHeapBytes", label: "peak heap", unit: "bytes", advisory: true }
 ];
 export const LARGE_CORPUS_EXPECTED_CORPORA = ["tika", "hive", "kotlin-compiler"];
@@ -192,25 +199,26 @@ const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 
 // One-time graph-shape transition: calls on function values resolve to every lambda shape (class-based
 // Kotlin lambdas, callable references, anonymous classes, desugared lambdas), creating methods get a
-// call site to the function object's body, and casts carry dataflow. Only this exact base -> candidate
-// shape, and a persisted-size delta within LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may
-// pass while the workflow selects the pinned shape-transition controls; every other comparison keeps
+// call site to the function object's body, and casts carry dataflow, on top of a base that already
+// writes the `graph.branchdefs` sidecar. Only this exact base -> candidate shape, and a persisted-size
+// delta within LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may pass while the workflow
+// selects the pinned shape-transition controls; every other comparison keeps
 // exact shape equality.
 export const LARGE_CORPUS_SHAPE_TRANSITION = Object.freeze({
     tika: {
         base: { nodes: 3_897_012, sourceEdges: 4_405_147, persistedEdges: 4_249_806, methods: 312_788, callSites: 1_002_088 },
         candidate: { nodes: 3_901_103, sourceEdges: 4_510_016, persistedEdges: 4_353_588, methods: 312_788, callSites: 1_006_172 },
-        persistedBytesDelta: 561_747
+        persistedBytesDelta: 566_248
     },
     hive: {
         base: { nodes: 5_986_673, sourceEdges: 6_350_854, persistedEdges: 6_134_254, methods: 404_016, callSites: 1_437_647 },
         candidate: { nodes: 5_992_914, sourceEdges: 6_597_267, persistedEdges: 6_376_682, methods: 404_016, callSites: 1_443_886 },
-        persistedBytesDelta: 1_138_190
+        persistedBytesDelta: 1_145_094
     },
     "kotlin-compiler": {
         base: { nodes: 3_268_537, sourceEdges: 3_672_821, persistedEdges: 3_557_610, methods: 249_669, callSites: 900_366 },
         candidate: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
-        persistedBytesDelta: 2_632_391
+        persistedBytesDelta: 2_650_922
     }
 });
 
@@ -2837,6 +2845,28 @@ export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = nu
         for (const metric of LARGE_CORPUS_METRICS) {
             const baseValue = finiteNumber(baseline[metric.key]);
             const candidateValue = finiteNumber(current[metric.key]);
+            if (metric.transitionBudget !== undefined && baseValue === null) {
+                if (candidateValue === null || candidateValue <= 0) {
+                    errors.push(`${corpus}/${metric.label}: invalid measurement`);
+                    continue;
+                }
+                const blocked = candidateValue > metric.transitionBudget;
+                rows.push({
+                    corpus,
+                    metric: metric.label,
+                    baseValue: null,
+                    candidateValue,
+                    unit: metric.unit,
+                    delta: null,
+                    threshold: null,
+                    minimum: null,
+                    transitionBudget: metric.transitionBudget,
+                    advisory: false,
+                    aboveThreshold: blocked,
+                    blocked
+                });
+                continue;
+            }
             if (baseValue === null || candidateValue === null || baseValue <= 0 || candidateValue <= 0) {
                 errors.push(`${corpus}/${metric.label}: invalid measurement`);
                 continue;
@@ -2933,11 +2963,15 @@ export function renderLargeCorpusReport(comparison) {
             : `${formatMeasurement(row.confirmation.baseValue, row.unit)} -> ` +
                 `${formatMeasurement(row.confirmation.candidateValue, row.unit)} ` +
                 `(${formatDelta(row.confirmation.delta)})`;
+        const limit = row.advisory
+            ? "4 GiB cap"
+            : row.transitionBudget !== undefined
+                ? `${formatMeasurement(row.transitionBudget, row.unit)} transition budget`
+                : `${row.threshold.toFixed(0)}% + ${formatMeasurement(row.minimum, row.unit)}`;
         lines.push(
-            `| ${row.corpus} | ${row.metric} | ${formatMeasurement(row.baseValue, row.unit)} | ` +
+            `| ${row.corpus} | ${row.metric} | ${row.baseValue === null ? "n/a" : formatMeasurement(row.baseValue, row.unit)} | ` +
             `${formatMeasurement(row.candidateValue, row.unit)} | ${formatDelta(row.delta)} | ` +
-            `${confirmation} | ${row.advisory ? "4 GiB cap" :
-                `${row.threshold.toFixed(0)}% + ${formatMeasurement(row.minimum, row.unit)}`} | ` +
+            `${confirmation} | ${limit} | ` +
             `**${statusLabel(row)}** |`
         );
     }

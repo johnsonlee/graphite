@@ -119,8 +119,9 @@ falls through to the base-owned or legacy controls. The base pin names the pre-t
 once the transition merges the base digest no longer matches and the branch is never selected again.
 The current transition resolves calls on function values to every lambda shape (class-based Kotlin
 lambdas, callable references, anonymous classes, D8/R8 desugared lambdas) and lets casts carry
-dataflow, which adds nodes, call sites and edges (Tika +4,174, Hive +6,340, Kotlin compiler +22,920
-call sites); `docs/large-corpus-performance-baseline.md` lists the exact counts.
+dataflow, which adds nodes, call sites and edges (Tika +4,084, Hive +6,239, Kotlin compiler +22,510
+call sites) on top of a base that already writes the `graph.branchdefs` sidecar;
+`docs/large-corpus-performance-baseline.md` lists the exact counts.
 
 The same change moves the wrapped-query fixture graphs, which only the candidate builds and every
 revision (reference, base, candidate) then queries. Their base-owned harnesses pin that graph's node
