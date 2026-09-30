@@ -554,9 +554,13 @@ class SootUpAdapterInternalCoverageTest {
             localResult,
             null
         )
-        val dynamicTargets = readField<MutableMap<Any, List<MethodDescriptor>>>(adapter, "dynamicTargets")
+        val dynamicTargets = readField<MutableMap<Any, List<DispatchTarget>>>(adapter, "dynamicTargets")
         val resultKey = invokePrivate<Any>(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), caller, "fn")
-        assertEquals(listOf(invokePrivate<MethodDescriptor>(adapter, "toMethodDescriptor", arrayOf(MethodSignature::class.java), targetSig)), dynamicTargets[resultKey])
+        val handle = dynamicTargets[resultKey].orEmpty().single() as DispatchTarget.Handle
+        assertEquals(invokePrivate<MethodDescriptor>(adapter, "toMethodDescriptor", arrayOf(MethodSignature::class.java), targetSig), handle.method)
+        assertEquals(HandleKind.STATIC, handle.kind)
+        assertEquals("apply", handle.samName)
+        assertEquals(1, handle.captures.size)
 
         val fieldSig = identifierFactory.getFieldSignature("callback", identifierFactory.getClassType("sample.lambda.FieldCallbackExample"), identifierFactory.getType("java.lang.Object"))
         val fieldNode = FieldNode(NodeId.next(), FieldDescriptor(TypeDescriptor("sample.lambda.FieldCallbackExample"), "callback", TypeDescriptor("java.lang.Object")), true)
@@ -569,8 +573,8 @@ class SootUpAdapterInternalCoverageTest {
             fieldNode,
             JAssignStmt(JStaticFieldRef(fieldSig), JDynamicInvokeExpr(bootstrapSig, listOf(methodHandle), applySig, listOf(argLocal)), StmtPositionInfo.getNoStmtPositionInfo())
         )
-        val fieldTargets = readField<MutableMap<String, MutableList<MethodDescriptor>>>(adapter, "fieldDynamicTargets")
-        assertTrue(fieldTargets[fieldSig.toString()].orEmpty().isNotEmpty())
+        val slotTargets = readField<MutableMap<DispatchSlot, Set<DispatchTarget>>>(adapter, "slotTargets")
+        assertTrue(slotTargets[DispatchSlot.Field(fieldSig.toString())].orEmpty().isNotEmpty())
 
         invokePrivate<Unit>(
             adapter,
@@ -596,26 +600,53 @@ class SootUpAdapterInternalCoverageTest {
         val caller = MethodDescriptor(TypeDescriptor("sample.lambda.CallbackExample"), "useCallback", emptyList(), TypeDescriptor("java.lang.String"))
         val callee = MethodDescriptor(TypeDescriptor("sample.lambda.CallbackExample"), "processWithCallback", emptyList(), TypeDescriptor("java.lang.String"))
         val target = MethodDescriptor(TypeDescriptor("sample.lambda.CallbackExample"), "transform", listOf(TypeDescriptor("java.lang.String")), TypeDescriptor("java.lang.String"))
-        val resultKey = invokePrivate<Any>(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), caller, "result")
-        val fieldLocalKey = invokePrivate<Any>(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), caller, "fieldLocal")
-        val callSite = io.johnsonlee.graphite.core.CallSiteNode(NodeId.next(), caller, callee, 10, null, listOf(NodeId.next()))
-        val unresolved = io.johnsonlee.graphite.core.CallSiteNode(NodeId.next(), caller, callee, 11, null, emptyList())
+        val apply = MethodDescriptor(TypeDescriptor("java.util.function.Function"), "apply", listOf(TypeDescriptor("java.lang.Object")), TypeDescriptor("java.lang.Object"))
+        val handle = DispatchTarget.Handle(target, HandleKind.STATIC, "apply", emptyList())
+        val otherSam = DispatchTarget.Handle(target, HandleKind.STATIC, "get", emptyList())
+        val anonymous = DispatchTarget.FunctionObject("sample.lambda.AnonymousClassExample\$1")
+        val adapted = DispatchTarget.Adapted("apply", apply, listOf(NodeId.next()), handle)
+        val otherAdapted = DispatchTarget.Adapted("get", apply, emptyList(), handle)
+        val applyCharSequence = apply.copy(parameterTypes = listOf(TypeDescriptor("java.lang.CharSequence")))
+        val bridgeCall = io.johnsonlee.graphite.core.CallSiteNode(NodeId.next(), caller, applyCharSequence, 12, NodeId.next(), listOf(NodeId.next()))
+        val parameterCall = io.johnsonlee.graphite.core.CallSiteNode(NodeId.next(), callee, apply, 10, NodeId.next(), listOf(NodeId.next()))
+        val fieldLocalCall = io.johnsonlee.graphite.core.CallSiteNode(NodeId.next(), caller, apply, 11, NodeId.next(), listOf(NodeId.next()))
+        val parameter = DispatchSlot.Parameter(callee, 0)
+        val result = DispatchSlot.Local(caller, "result")
+        val field = DispatchSlot.Field("sample.lambda.CallbackExample.callback")
+        val fieldLocal = DispatchSlot.Local(caller, "fieldLocal")
 
-        readField<MutableMap<MethodDescriptor, List<MethodDescriptor>>>(adapter, "returnDynamicTargets")[callee] = listOf(target)
-        readField<MutableMap<MethodDescriptor, MutableList<Any>>>(adapter, "callResultLocals")[callee] = mutableListOf(resultKey)
-        readField<MutableMap<MethodDescriptor, MutableList<Pair<Int, io.johnsonlee.graphite.core.CallSiteNode>>>>(adapter, "parameterVirtualCalls")[callee] = mutableListOf(0 to callSite)
-        readField<MutableMap<MethodDescriptor, MutableList<Pair<Int, List<MethodDescriptor>>>>>(adapter, "callSiteDynamicArgs")[callee] = mutableListOf(0 to listOf(target))
-        readField<MutableMap<String, MutableList<MethodDescriptor>>>(adapter, "fieldDynamicTargets")["sample.lambda.CallbackExample.callback"] = mutableListOf(target)
-        readField<MutableMap<String, MutableList<Any>>>(adapter, "fieldLoadLocals")["sample.lambda.CallbackExample.callback"] = mutableListOf(fieldLocalKey)
-        readField<MutableMap<Any, MutableList<io.johnsonlee.graphite.core.CallSiteNode>>>(adapter, "unresolvedLocalVirtualCalls")[fieldLocalKey] = mutableListOf(unresolved)
+        val slotTargets = readField<MutableMap<DispatchSlot, LinkedHashSet<DispatchTarget>>>(adapter, "slotTargets")
+        val slotFlows = readField<MutableMap<DispatchSlot, MutableSet<DispatchSlot>>>(adapter, "slotFlows")
+        val slotCalls = readField<MutableMap<DispatchSlot, MutableList<PendingDispatch>>>(adapter, "slotCalls")
+        slotTargets[DispatchSlot.Return(callee)] = linkedSetOf(handle)
+        slotFlows[DispatchSlot.Return(callee)] = mutableSetOf(result)
+        slotTargets[parameter] = linkedSetOf(handle, otherSam, anonymous)
+        slotCalls[parameter] = mutableListOf(PendingDispatch(parameterCall, NodeId.next(), listOf(null), null, mutableSetOf()))
+        slotFlows[field] = mutableSetOf(fieldLocal)
+        slotTargets[field] = linkedSetOf(handle, adapted, otherAdapted)
+        slotCalls[fieldLocal] = mutableListOf(PendingDispatch(fieldLocalCall, null, listOf(null), null, mutableSetOf(handle)))
+        // no method with the invoked erasure: the bridge with the same name and arity stands in
+        val bridgeSlot = DispatchSlot.Local(caller, "bridged")
+        slotTargets[bridgeSlot] = linkedSetOf(anonymous)
+        slotCalls[bridgeSlot] = mutableListOf(PendingDispatch(bridgeCall, null, listOf(null), null, mutableSetOf()))
 
         invokePrivate<Unit>(adapter, "resolveFunctionalDispatch", emptyArray())
 
-        val dynamicTargets = readField<MutableMap<Any, List<MethodDescriptor>>>(adapter, "dynamicTargets")
-        assertEquals(listOf(target), dynamicTargets[resultKey])
-        assertEquals(listOf(target), dynamicTargets[fieldLocalKey])
-        val builtGraph = readField<DefaultGraph.Builder>(adapter, "graphBuilder").build()
-        assertTrue(builtGraph.nodes(io.johnsonlee.graphite.core.CallSiteNode::class.java).count() >= 2)
+        assertEquals<Set<DispatchTarget>?>(setOf(handle), slotTargets[result])
+        assertEquals<Set<DispatchTarget>?>(setOf(handle, adapted, otherAdapted), slotTargets[fieldLocal])
+        val resolved = readField<DefaultGraph.Builder>(adapter, "graphBuilder").build()
+            .nodes(io.johnsonlee.graphite.core.CallSiteNode::class.java).toList()
+        // parameter: the handle and the anonymous class's apply bridge resolve, the `get` handle does not
+        assertEquals(
+            setOf("sample.lambda.CallbackExample.transform", "sample.lambda.AnonymousClassExample\$1.apply"),
+            resolved.filter { it.caller == callee }.map { "${it.callee.declaringClass.className}.${it.callee.name}" }.toSet()
+        )
+        // field local: the handle was already resolved in-method, only the adapted target is new;
+        // the bridged call reaches the anonymous class's erased apply(Object)
+        assertEquals(
+            setOf("sample.lambda.CallbackExample.transform(java.lang.String)", "sample.lambda.AnonymousClassExample\$1.apply(java.lang.Object)"),
+            resolved.filter { it.caller == caller }.map { it.callee.signature }.toSet()
+        )
     }
 
     @Test

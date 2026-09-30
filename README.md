@@ -66,7 +66,7 @@ containing 19.4 million nodes.
 | Which constants reach this argument? | Dataflow through assignments, fields, and calls | Constant nodes and dataflow relationships |
 | Where is this method called? | Method identities and call targets | Call sites with caller and callee descriptors |
 | Which types implement this interface? | Resolved type relationships | Indexed class and interface hierarchy |
-| What does this method reference target? | Compiler-generated linkage | Targets extracted from supported bootstrap method handles |
+| What does this lambda or method reference run? | Compiler-generated linkage | Implementations resolved from method handles and compiler-generated lambda classes |
 | Where is this configuration key read? | Connections between code and packaged resources | Resource values and supported lookup relationships |
 
 The graph is a static analysis of the supplied artifacts. Coverage depends on the
@@ -590,8 +590,8 @@ server's mapping stays bound to the old inode until the last in-flight query fin
 |-----------|-------------|
 | Constant tracking | Direct, local variable, field, cross-class, enum |
 | Auto-boxing | `Integer.valueOf()` transparent handling |
-| Lambda / method ref | `invokedynamic` → actual target resolution |
-| Functional dispatch | Callbacks, return values, fields, varargs, conditionals |
+| Lambda / method ref | Java and Kotlin lambdas, method and callable references, `suspend` lambdas, anonymous classes, SAM conversions and D8/R8 desugared lambdas → actual target |
+| Functional dispatch | Callbacks (also forwarded), return values, fields, constructor injection, captures, varargs, conditionals, interface and override boundaries |
 | Controller inheritance | Endpoint discovery follows class hierarchy |
 | Generic type analysis | `ApiResponse<PageData<User>>` nested structure |
 | Branch reachability | Dead code via condition constant analysis |

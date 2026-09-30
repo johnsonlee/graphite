@@ -1,0 +1,83 @@
+package io.johnsonlee.graphite.sootup
+
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.TypeDescriptor
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class FunctionalDispatchTest {
+
+    @Test
+    fun `Kotlin lambda, suspend lambda and reference base classes are function bases`() {
+        listOf(
+            "kotlin.jvm.internal.Lambda",
+            "kotlin.jvm.internal.FunctionReferenceImpl",
+            "kotlin.jvm.internal.PropertyReference1Impl",
+            "kotlin.coroutines.jvm.internal.SuspendLambda",
+            "kotlin.coroutines.jvm.internal.RestrictedSuspendLambda"
+        ).forEach { assertTrue(isKotlinFunctionBaseClass(it), it) }
+        listOf("java.lang.Object", "kotlin.jvm.internal.Intrinsics", "kotlin.coroutines.jvm.internal.ContinuationImpl")
+            .forEach { assertFalse(isKotlinFunctionBaseClass(it), it) }
+    }
+
+    @Test
+    fun `Kotlin function interfaces and property references are recognized`() {
+        assertTrue(isKotlinFunctionInterface("kotlin.jvm.functions.Function1"))
+        assertTrue(isKotlinFunctionInterface("kotlin.jvm.internal.FunctionBase"))
+        assertFalse(isKotlinFunctionInterface("java.util.function.Function"))
+        assertTrue(isKotlinPropertyReferenceClass("kotlin.jvm.internal.MutablePropertyReference0Impl"))
+        assertFalse(isKotlinPropertyReferenceClass("kotlin.jvm.internal.FunctionReferenceImpl"))
+        assertTrue(isKotlinCallableReferenceBaseClass("kotlin.jvm.internal.FunctionReferenceImpl"))
+        assertTrue(isKotlinCallableReferenceBaseClass("kotlin.jvm.internal.PropertyReference1Impl"))
+        assertFalse(isKotlinCallableReferenceBaseClass("kotlin.jvm.internal.Lambda"))
+        assertFalse(isKotlinCallableReferenceBaseClass("kotlin.coroutines.jvm.internal.SuspendLambda"))
+    }
+
+    @Test
+    fun `anonymous classes are recognized by their binary name`() {
+        listOf(
+            "com.example.Foo\$1",
+            "com.example.Foo\$bar\$fn\$1",
+            "com.example.Foo\$sam\$java_lang_Runnable\$0",
+            "com.example.Foo\$\$Lambda\$1"
+        ).forEach { assertTrue(isAnonymousClassName(it), it) }
+        listOf(
+            "com.example.Foo",
+            "com.example.Foo\$Inner",
+            "com.example.Foo\$",
+            "com.example.Foo\$-CC",
+            "com.example.Foo\$\$ExternalSyntheticLambda0",
+            "com.example.-\$\$Lambda\$Foo\$eFOXuxnqz1kRVdEJ-a2Axi8PgVU"
+        ).forEach { assertFalse(isAnonymousClassName(it), it) }
+    }
+
+    @Test
+    fun `a site adapts a target once, and distinct sites nest`() {
+        val obj = TypeDescriptor("java.lang.Object")
+        val apply = MethodDescriptor(TypeDescriptor("java.util.function.Function"), "apply", listOf(obj), obj)
+        val leaf: DispatchTarget = DispatchTarget.FunctionObject("com.example.Foo\$1")
+        assertEquals(emptyList(), leaf.adaptedChain())
+
+        // `fn = fn::apply` in a loop: the same site re-binding its own result adds nothing
+        val loop = SlotAdapter(DispatchSlot.Field("f"), "apply", apply, emptyList())
+        val once = loop.adapt(leaf)
+        assertTrue(once is DispatchTarget.Adapted && once.inner == leaf)
+        assertEquals(null, loop.adapt(once!!))
+
+        // a1(a2(...a6(fn))): six distinct sites, told apart by their captures, all nest
+        val sites = (1..6).map { SlotAdapter(DispatchSlot.Field("f$it"), "apply", apply, listOf(NodeId.next())) }
+        val nested = sites.fold(leaf) { target, site -> checkNotNull(site.adapt(target)) }
+        assertEquals(6, nested.adaptedChain().size)
+    }
+
+    @Test
+    fun `primitives and concrete JDK types never hold a function value`() {
+        assertTrue(isNonFunctionType("int"))
+        assertTrue(isNonFunctionType("java.lang.String"))
+        assertFalse(isNonFunctionType("java.lang.Object"))
+        assertFalse(isNonFunctionType("java.util.function.Function"))
+    }
+}

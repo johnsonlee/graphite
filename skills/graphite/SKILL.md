@@ -122,13 +122,21 @@ JVM frontend specifics (javac/kotlinc output):
 - **Kotlin `object` and companion receivers** are static fields named `INSTANCE`
   or `Companion`; they reach call sites as receivers and are not keys.
 - **Synthetic call sites**: `sootup.dummy.InvokeDynamic.makeConcatWithConstants`
-  is string concatenation. A lambda/method reference target appears as an extra
-  call site (in the enclosing method) with a `CALL` self-loop where `dynamic = true`.
-- **Lambda, coroutine and anonymous-class bodies break upward chains.** They
-  compile to synthetic classes (`Outer$method$1.invoke` / `invokeSuspend`) that
-  no call site names. Hop to the enclosing method through the class's `<init>`
-  call site, or its `INSTANCE` field read for non-capturing lambdas
-  (`references/control-flow.md`, "Lambda and coroutine bodies").
+  is string concatenation. Lambdas, method references, anonymous classes,
+  Kotlin lambda and `suspend` lambda classes, callable references and D8/R8
+  desugared lambdas all show up as extra call sites with a `CALL` self-loop
+  where `dynamic = true`: one in the method that creates the function value,
+  pointing at its body, and one at each call through it (`fn.apply(x)`,
+  `fn(x)`), pointing at the implementation it resolves to.
+- **Lambda bodies have callers, except in older graphs.** Upward chains pass
+  through lambda, coroutine and anonymous-class bodies (`Outer$method$1.invoke`
+  / `invokeSuspend`) like any other method. In graphs built by Graphite 2.8.0,
+  before [#162](https://github.com/johnsonlee/graphite/pull/162), only
+  `invokedynamic` lambdas were linked, so class-based bodies had no callers;
+  there, hop to the enclosing method through the class's `<init>` call
+  site or `INSTANCE` field read (`references/control-flow.md`, "Lambda and
+  coroutine bodies"). Erased bridge methods (`invoke(Object)`) may still have no
+  caller; their typed sibling does.
 
 ## 4. Query hygiene
 

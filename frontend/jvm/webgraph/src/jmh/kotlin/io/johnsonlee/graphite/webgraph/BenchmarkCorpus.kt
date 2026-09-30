@@ -24,28 +24,28 @@ internal enum class BenchmarkCorpusKind(
         id = "android",
         jarPathProperty = "android.jar.path",
         graphPathProperty = "android.graph.path",
-        expectedNodeCount = 5_938_826,
+        expectedNodeCount = 5_953_640,
         matcher = { it.startsWith("android-all-") && it.endsWith(".jar") }
     ),
     TIKA(
         id = "tika",
         jarPathProperty = "tika.jar.path",
         graphPathProperty = "tika.graph.path",
-        expectedNodeCount = 3_897_012,
+        expectedNodeCount = 3_901_103,
         matcher = { it == "tika-app-2.9.2.jar" }
     ),
     HIVE(
         id = "hive",
         jarPathProperty = "hive.jar.path",
         graphPathProperty = "hive.graph.path",
-        expectedNodeCount = 5_986_673,
+        expectedNodeCount = 5_992_914,
         matcher = { it == "hive-exec-4.0.0.jar" }
     ),
     KOTLIN_COMPILER(
         id = "kotlin-compiler",
         jarPathProperty = "kotlin.compiler.jar.path",
         graphPathProperty = "kotlin.compiler.graph.path",
-        expectedNodeCount = 3_268_537,
+        expectedNodeCount = 3_292_214,
         matcher = { it == "kotlin-compiler-embeddable-2.0.21.jar" }
     );
 

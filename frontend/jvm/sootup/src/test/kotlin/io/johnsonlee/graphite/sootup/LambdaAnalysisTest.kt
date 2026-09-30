@@ -370,6 +370,189 @@ class LambdaAnalysisTest {
             "processChain should resolve .filter(StreamChainExample::isValid). Callees: $calleeNames")
     }
 
+    @Test
+    fun `anonymous class passed as a parameter resolves to its override`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        val calleeNames = callSites.filter {
+            it.caller.name == "call" && it.caller.declaringClass.className == "sample.lambda.AnonymousClassExample"
+        }.map { "${it.callee.declaringClass.className}.${it.callee.name}" }.toSet()
+        assertTrue("sample.lambda.AnonymousClassExample\$1.apply" in calleeNames,
+            "AnonymousClassExample.call should resolve fn.apply to the anonymous class. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `anonymous class resolves to the implementation it inherits`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        val calleeNames = callSites.filter {
+            it.caller.name == "call" && it.caller.declaringClass.className == "sample.lambda.AnonymousClassExample"
+        }.map { "${it.callee.declaringClass.className}.${it.callee.name}" }.toSet()
+        assertTrue("sample.lambda.AnonymousClassExample\$BaseFunction.apply" in calleeNames,
+            "AnonymousClassExample.call should resolve fn.apply to BaseFunction.apply. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `method reference to a function value's own method resolves through it`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        val calleeNames = callSites.filter {
+            it.caller.name == "useAdapted" && it.caller.declaringClass.className == "sample.lambda.AnonymousClassExample"
+        }.map { it.callee.name }
+        assertTrue(calleeNames.count { it == "adaptedTarget" } >= 2,
+            "useAdapted should resolve adapted.apply through fn::apply to adaptedTarget. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `method reference to a parameter's own method resolves to what callers pass`() {
+        // the creation call site has no arguments; the dispatch call site passes `input`
+        val resolved = callSitesOf("useDeferredAdapted").filter { it.callee.name == "deferredAdaptedTarget" && it.arguments.size == 1 }
+        assertTrue(resolved.isNotEmpty(),
+            "useDeferredAdapted should resolve adapt(...).apply through fn::apply to deferredAdaptedTarget(input). " +
+                "Callees: ${callSitesOf("useDeferredAdapted").map { "${it.callee.name}${it.arguments}" }}")
+    }
+
+    @Test
+    fun `five distinct re-bindings still resolve, and a re-binding loop terminates`() {
+        assertTrue(callSitesOf("useChain").any { it.callee.name == "chainTarget" && it.arguments.size == 1 },
+            "useChain should resolve a5(a4(a3(a2(a1(fn))))).apply to chainTarget(input). Callees: ${describe("useChain")}")
+        assertTrue(callSitesOf("useLoop").any { it.callee.name == "chainTarget" && it.arguments.size == 1 },
+            "useLoop should resolve fn.apply to chainTarget(input). Callees: ${describe("useLoop")}")
+    }
+
+    @Test
+    fun `function value passed through an interface reaches an inherited implementation`() {
+        val calleeNames = callSitesOf("invoke", "sample.lambda.AnonymousClassExample\$Base").map { it.callee.name }
+        assertTrue("inheritedInvokeTarget" in calleeNames,
+            "Base.invoke, inherited by Child implements Invoker, should resolve fn.apply. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value returned by an inherited implementation resolves at the interface caller`() {
+        val calleeNames = callSitesOf("useInheritedFactory").map { it.callee.name }
+        assertTrue("inheritedFactoryTarget" in calleeNames,
+            "useInheritedFactory should resolve factory.make().apply to what FactoryBase.make returns. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value passed to a resolved method reference reaches its parameter`() {
+        val calleeNames = callSitesOf("run").map { it.callee.name }
+        assertTrue("feedbackTarget" in calleeNames,
+            "run, resolved from invoker.apply(seedFeedback()), should resolve fn.apply to feedbackTarget. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value returned by a resolved method reference resolves at the caller`() {
+        assertTrue(callSitesOf("useMakerHandle").any { it.callee.name == "feedbackTarget" && it.arguments.size == 1 },
+            "useMakerHandle should resolve maker.get().apply to feedbackTarget(input). Callees: ${describe("useMakerHandle")}")
+    }
+
+    @Test
+    fun `unbound reference to the function type's method dispatches on its receiver argument`() {
+        assertTrue(callSitesOf("useUnboundApply").any { it.callee.name == "feedbackTarget" && it.arguments.size == 1 },
+            "useUnboundApply should resolve invoke.apply(seedFeedback(), input) to feedbackTarget(input). " +
+                "Callees: ${describe("useUnboundApply")}")
+    }
+
+    @Test
+    fun `instance helper named like a static interface method is not a callback`() {
+        assertTrue(callSitesOf("plainFunction").none { it.callee.name == "identity" },
+            "plainFunction must not call identity(), which does not override the static Function.identity. " +
+                "Callees: ${describe("plainFunction")}")
+        assertTrue(callSitesOf("plainFunction").any { it.callee.name == "apply" },
+            "plainFunction should still reach the apply override it hands out")
+    }
+
+    @Test
+    fun `helpers are matched against contracts by erased signature, in and outside the view`() {
+        assertTrue(callSitesOf("localFunction").none { it.callee.name == "identity" },
+            "localFunction must not call the identity() helper: LocalFunction.identity is static. Callees: ${describe("localFunction")}")
+        assertTrue(callSitesOf("localFunction").any { it.callee.name == "apply" },
+            "localFunction should still reach its apply override")
+        assertTrue(callSitesOf("runnableWithOverload").none { it.callee.name == "equals" },
+            "runnableWithOverload must not call equals(String), which overrides nothing. Callees: ${describe("runnableWithOverload")}")
+        assertTrue(callSitesOf("runnableWithOverload").any { it.callee.name == "run" },
+            "runnableWithOverload should still reach its run override")
+        val overloads = callSitesOf("overloadedFunction").filter { it.callee.name == "apply" }
+        assertTrue(overloads.any { it.callee.parameterTypes.map { p -> p.className } == listOf("java.lang.String") },
+            "overloadedFunction should reach apply(String), which its bridge delegates to")
+        assertTrue(overloads.none { it.callee.parameterTypes.map { p -> p.className } == listOf("java.lang.Integer") },
+            "overloadedFunction must not call apply(Integer): the bridge never invokes it. Callees: ${describe("overloadedFunction")}")
+    }
+
+    @Test
+    fun `reference to a default overload of the SAM never resolves to the lambda body`() {
+        val sites = callSitesOf("useExtraApply")
+        assertTrue(sites.any { it.callee.name == "apply" && it.callee.declaringClass.className.endsWith("Extra") },
+            "useExtraApply should resolve Extra::apply to the default Extra.apply(Integer). Callees: ${describe("useExtraApply")}")
+        assertTrue(sites.none { it.callee.name == "extraTarget" },
+            "Extra.apply(Integer) is a default method: it must not dispatch to extraTarget. Callees: ${describe("useExtraApply")}")
+    }
+
+    @Test
+    fun `anonymous class of an external interface only calls its callback methods`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        assertTrue(callSites.none { it.callee.name == "neverCalledHelper" },
+            "plainRunnable must not call neverCalledHelper, which Runnable does not declare. Callees: ${describe("plainRunnable")}")
+        assertTrue(callSitesOf("plainRunnable").any { it.callee.name == "run" },
+            "plainRunnable should still reach the run override it hands out")
+    }
+
+    private fun describe(methodName: String) = callSitesOf(methodName).map { "${it.callee.name}${it.arguments}" }
+
+    @Test
+    fun `function value passed through an interface resolves inside the implementation`() {
+        val calleeNames = callSitesOf("invoke", "sample.lambda.AnonymousClassExample\$Impl").map { it.callee.name }
+        assertTrue("overrideTarget" in calleeNames,
+            "Impl.invoke should resolve fn.apply to what useThroughInterface passes Invoker.invoke. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value returned through an interface resolves at the caller`() {
+        val calleeNames = callSitesOf("useFactory").map { it.callee.name }
+        assertTrue("factoryTarget" in calleeNames,
+            "useFactory should resolve factory.make().apply to what FactoryImpl.make returns. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `allocating an anonymous class only calls the methods it implements for a supertype`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        assertTrue(callSites.none { it.callee.name == "neverCalled" },
+            "plainAnonymous must not call neverCalled, which overrides nothing. " +
+                "Callees: ${callSitesOf("plainAnonymous").map { it.callee.name }}")
+        assertTrue(callSitesOf("plainAnonymous").any { it.callee.name == "toString" },
+            "plainAnonymous should still reach the toString override it hands out")
+    }
+
+    @Test
+    fun `resolved static and constructor targets take no receiver`() {
+        // the creation call site (no arguments) and the dispatch call sites (the call's argument)
+        val adapted = callSitesOf("useAdapted").filter { it.callee.name == "adaptedTarget" }
+        assertTrue(adapted.any { it.arguments.size == 1 } && adapted.all { it.receiver == null },
+            "a static method reference takes the call's argument and no receiver: ${adapted.map { "${it.receiver} ${it.arguments}" }}")
+        val constructed = callSitesOf("create", "sample.lambda.ConstructorRefExample").filter { it.callee.name == "<init>" }
+        assertTrue(constructed.isNotEmpty() && constructed.all { it.receiver == null && it.arguments.isEmpty() },
+            "a constructor reference resolves to <init> with no receiver: ${constructed.map { "${it.receiver} ${it.arguments}" }}")
+    }
+
+    @Test
+    fun `resolved instance target takes the first argument as its receiver`() {
+        val upper = callSitesOf("useHigherOrder", "sample.lambda.HigherOrderExample")
+            .filter { it.callee.name == "toUpperCase" && it.callee.declaringClass.className == "java.lang.String" }
+        assertTrue(upper.isNotEmpty() && upper.all { it.receiver != null && it.arguments.isEmpty() },
+            "String::toUpperCase takes the call's argument as its receiver: ${upper.map { "${it.receiver} ${it.arguments}" }}")
+    }
+
+    private fun callSitesOf(methodName: String, className: String = "sample.lambda.AnonymousClassExample") =
+        graph.nodes<CallSiteNode>().filter { it.caller.name == methodName && it.caller.declaringClass.className == className }.toList()
+
+    @Test
+    fun `resolved dispatch skips methods the lambda does not implement`() {
+        // Function.andThen is a default method: calling it on a lambda does not run the lambda body
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        val sites = callSites.filter { it.caller.name == "composeDefault" }
+        assertTrue(sites.any { it.callee.name == "andThen" }, "composeDefault should call andThen")
+        assertTrue(sites.none { it.callee.name == "transform" && it.receiver != null },
+            "andThen must not resolve to the lambda body. Callees: ${sites.map { it.callee.name }}")
+    }
+
     private fun findTestClassesDir(): Path {
         val projectDir = Path.of(System.getProperty("user.dir"))
         val submodulePath = projectDir.resolve("build/classes/java/test")

@@ -2825,7 +2825,7 @@ test("workflow selects the pinned shape transition fail-closed and only before t
     // main the base digest no longer matches and the transition can never be selected again.
     assert.equal(
         pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"),
-        "db14578349451d744c777743905fb3a6b5d0419be1f7cdd955e8063369d79293"
+        "bd92e1756ec0af739e556e5d7640859ea70017e3bab4df851189540443c73287"
     );
     assert.notEqual(pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"), sha256(harness));
 
@@ -2859,6 +2859,65 @@ test("workflow selects the pinned shape transition fail-closed and only before t
     );
 });
 
+test("wrapped-query shape transition selects the pinned candidate harnesses fail-closed", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const harness = (name) => fs.readFileSync(new URL(
+        `../../frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${name}`,
+        import.meta.url
+    ));
+    const sha256 = (contents) => crypto.createHash("sha256").update(contents).digest("hex");
+    const pin = (name) => workflow.match(new RegExp(`\\n  ${name}: ([0-9a-f]{64})\\n`))?.[1];
+
+    assert.equal(pin("WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256"), sha256(harness("BenchmarkCorpus.kt")));
+    assert.equal(
+        pin("WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256"),
+        sha256(harness("AllFixtureWrappedDiscoveryLatencyBenchmark.kt"))
+    );
+    // The base pins are the pre-transition harnesses; once the candidate copies reach main the base
+    // digests no longer match and the candidate copies can never be selected again.
+    assert.equal(
+        pin("WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256"),
+        "5c2be9550c0f3e0fa408d5d56375efc4b9e3c78d96b95de1c20718f08aa4dd2b"
+    );
+    assert.equal(
+        pin("WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256"),
+        "78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492"
+    );
+    assert.notEqual(pin("WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256"), sha256(harness("BenchmarkCorpus.kt")));
+    assert.notEqual(
+        pin("WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256"),
+        sha256(harness("AllFixtureWrappedDiscoveryLatencyBenchmark.kt"))
+    );
+
+    const install = workflow.slice(
+        workflow.indexOf("- name: Install base-owned wrapped-query harnesses"),
+        workflow.indexOf("- name: Select trusted JMH isolation controls")
+    );
+    const select = install.slice(install.indexOf("SHAPE_OWNER=gate"), install.indexOf("for HARNESS in"));
+    for (const name of [
+        "WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256", "WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256",
+        "WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256", "WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256"
+    ]) {
+        assert.match(select, new RegExp(`\\$\\{${name}\\}`), name);
+    }
+    assert.match(select, /\$\(digest gate BenchmarkCorpus\.kt\)/);
+    assert.match(select, /\$\(digest controls BenchmarkCorpus\.kt\)/);
+    assert.match(select, /needs\.candidate-gate-tests\.result \}\}" = success/);
+    assert.match(select, /SHAPE_OWNER=controls/);
+    // Only the two harnesses that carry the graph's expected values follow the transition owner.
+    assert.match(
+        install,
+        /\[ "\$\{HARNESS\}" = BenchmarkCorpus\.kt \] \|\| \[ "\$\{HARNESS\}" = AllFixtureWrappedDiscoveryLatencyBenchmark\.kt \]/
+    );
+
+    const slow = workflow.slice(workflow.indexOf("- name: Compare all five real slow-query families"));
+    const slowSelect = slow.slice(slow.indexOf("SLOW_GATE=gate"), slow.indexOf("bash '"));
+    assert.match(slowSelect, /\$\{WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256\}/);
+    assert.match(slowSelect, /\$\{WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256\}/);
+    assert.match(slowSelect, /"\$\{CANDIDATE_GATE_TEST_JOB\}" = success/);
+    assert.match(slow, /'\$\{\{ steps\.slow-controls\.outputs\.directory \}\}' "\$\{SLOW_GATE\}" base candidate/);
+});
+
 test("pinned large-corpus shape transition matches the harness baselines", () => {
     const harness = fs.readFileSync(
         new URL(
@@ -2880,9 +2939,11 @@ test("pinned large-corpus shape transition matches the harness baselines", () =>
             const value = count(block[0].match(new RegExp(`${key} = ([\\d_]+)`))[1]);
             assert.equal(transition.candidate[field], value, `${corpus}/${field}`);
         }
-        // The branch-definition sidecar changes no graph shape; it only grows the persisted size.
-        for (const field of ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"]) {
-            assert.equal(transition.base[field], transition.candidate[field], `${corpus}/${field}`);
+        // Resolving every lambda shape adds call sites, nodes and dataflow edges and never adds or drops
+        // methods.
+        assert.equal(transition.base.methods, transition.candidate.methods, `${corpus}/methods`);
+        for (const field of ["nodes", "sourceEdges", "persistedEdges", "callSites"]) {
+            assert.ok(transition.candidate[field] > transition.base[field], `${corpus}/${field}`);
         }
         assert.ok(transition.persistedBytesDelta > 0, corpus);
     }

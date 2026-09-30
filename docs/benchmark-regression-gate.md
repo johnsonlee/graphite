@@ -117,10 +117,24 @@ counts exactly, and persisted size must change by the pinned per-corpus delta wi
 tolerance. Timing, heap, and CallSite-index lifecycle checks are unchanged. Any other combination
 falls through to the base-owned or legacy controls. The base pin names the pre-transition harness, so
 once the transition merges the base digest no longer matches and the branch is never selected again.
-The current transition adds the `graph.branchdefs` sidecar (branch-side local definitions) to
-every save, plus the 36-byte trailer on `graph.metadata` that binds it: node, edge, method and call-site
-counts are identical, and the persisted size grows by the sidecar and trailer (Tika +6,079,344,
-Hive +10,505,164, Kotlin compiler +9,344,528 bytes).
+The current transition resolves calls on function values to every lambda shape (class-based Kotlin
+lambdas, callable references, anonymous classes, D8/R8 desugared lambdas) and lets casts carry
+dataflow, which adds nodes, call sites and edges (Tika +4,084, Hive +6,239, Kotlin compiler +22,510
+call sites) on top of a base that already writes the `graph.branchdefs` sidecar;
+`docs/large-corpus-performance-baseline.md` lists the exact counts.
+
+The same change moves the wrapped-query fixture graphs, which only the candidate builds and every
+revision (reference, base, candidate) then queries. Their base-owned harnesses pin that graph's node
+counts (`BenchmarkCorpus.kt`) and search-target distributions and total node count
+(`AllFixtureWrappedDiscoveryLatencyBenchmark.kt`), so they would reject the candidate's graph. For
+this one transition the wrapped-query JMH builds install the candidate copies of those two files, for
+every revision alike, and the slow-query job hands its base-owned script a copy of the base controls
+with only the candidate `BenchmarkCorpus.kt` swapped in. Either happens only when both base files and
+both candidate files match their pinned `WRAPPED_QUERY_SHAPE_*_SHA256` values and
+`candidate-gate-tests` passes; the candidate copies differ from the base ones in those expected
+values alone, so every revision still runs the same queries against the same graphs. All other
+harnesses stay base-owned, and once the candidate copies reach `main` the base digests no longer
+match and base ownership resumes.
 
 The coverage-taxonomy rollout changes presentation only. The base-owned aggregator always writes
 the authoritative verdict and is the only status enforced by the required check. If that exact base

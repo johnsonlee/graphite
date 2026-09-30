@@ -296,6 +296,49 @@ if (isSpecialCase && config.enableSpecialHandling) {
 - Bug only surfaced in production use, not in tests
 - **Rule**: Test coverage should mirror real-world usage patterns
 
+### Function Values: Every Lambda Shape Must Dispatch
+
+A call on a function value (`fn.apply(x)`, `fn(x)` → `Function1.invoke`) only reaches the lambda
+body if `SootUpAdapter` knows what `fn` holds. The shapes differ by compiler and version, and
+Kotlin 2.x's `invokedynamic` default does **not** cover all of them:
+
+| Shape | Bytecode | Dispatch target |
+|-------|----------|-----------------|
+| Java lambda / method ref, Kotlin 2.x lambda / SAM conversion | `invokedynamic` (LambdaMetafactory) | `DispatchTarget.Handle` |
+| Kotlin 1.x lambda, `@JvmSerializableLambda`, `-Xlambdas=class` | `new Foo$bar$1(captures)` / `getstatic INSTANCE` | `DispatchTarget.FunctionObject` |
+| Kotlin callable / property references, suspend lambdas (even in 2.x) | `FunctionReferenceImpl` / `PropertyReference1Impl` / `SuspendLambda` subclass | `FunctionObject` (property refs map `invoke` → `get`) |
+| Anonymous classes, Kotlin `object :`, `$sam$` wrappers | `new Outer$1` | `FunctionObject` |
+| D8/R8 desugared lambdas (Android, `minSdk < 26`), retrolambda | `new Outer$$ExternalSyntheticLambda0(captures)` (synthetic flag, so R8 renaming does not matter), `Outer$$Lambda$1` | `FunctionObject` |
+| `fn::apply` (reference to a function value's own method) | `invokedynamic` with an instance handle | `DispatchTarget.Adapted` |
+
+Lessons:
+- A handle's resolved call must line up with the implementation's parameters: static handles take
+  `captures ++ args`; instance handles take the first of those as the receiver.
+- Function values cross methods through parameters, returns, fields, arrays and captures, in any
+  processing order. They are recorded as flows between `DispatchSlot`s and resolved to a fixpoint
+  in `resolveFunctionalDispatch()`, not by per-phase special cases. Override boundaries are flows
+  too, derived lazily from the view's type hierarchy: a value passed to `Invoker.invoke` reaches
+  the parameter of every implementation, including one inherited from a superclass that does not
+  itself implement the interface, and a value returned by an implementation is what a call on the
+  interface returns. `fn::apply` on a parameter is a `SlotAdapter`, applied in the fixpoint; a
+  site never re-binds its own result twice, which keeps `fn = fn::apply` loops finite while
+  distinct sites nest freely.
+- Resolving a call is itself a flow: once `invoker.apply(seed())` resolves to `run(fn)`, the
+  argument reaches `Parameter(run, 0)` and `Return(run)` reaches the result, so propagation and
+  resolution alternate until nothing new resolves.
+- Resolution is context-insensitive: a helper called with several function values dispatches to
+  all of them.
+- A function-object class is recognized by JVM-level facts (anonymous binary name `Outer$<digits>`,
+  synthetic flag, Kotlin function interfaces and base classes), not by tool-specific name markers.
+  Allocating one creates a call site only to the methods it implements for a supertype, so the
+  helper methods of `new Object() { ... }` or `new Runnable() { ... }` get no phantom caller. A
+  supertype outside the view (JDK, Kotlin stdlib) is inspected through the analysis JVM's own copy
+  of the class, loaded without initialization.
+- Kotlin fixtures in `frontend/jvm/sootup/src/kotlinLambdaFixtures` compile twice (`indy` and
+  `class`), and D8 desugars the `indy` output (`desugarKotlinLambdaFixtures`);
+  `KotlinLambdaDispatchTest` runs every shape against all three outputs. Desugaring adds a
+  `$r8$lambda$` trampoline per lambda, so reachability checks need a deeper hop budget.
+
 ### Why `buildGraph()` Is Not Parallelized
 
 After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.
