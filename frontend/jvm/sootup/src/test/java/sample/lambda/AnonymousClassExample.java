@@ -1,5 +1,6 @@
 package sample.lambda;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -168,6 +169,26 @@ public class AnonymousClassExample {
     public static String useMakerHandle(String input) {
         Supplier<Function<String, String>> maker = AnonymousClassExample::seedFeedback;
         return maker.get().apply(input);
+    }
+
+    /** An unbound reference to the function type's own method: the first argument is the receiver. */
+    public static String useUnboundApply(String input) {
+        BiFunction<Function<String, String>, String, String> invoke = Function::apply;
+        return invoke.apply(seedFeedback(), input);
+    }
+
+    /** An instance helper named like a static interface method implements nothing. */
+    public static Function<String, String> plainFunction() {
+        return new Function<String, String>() {
+            @Override
+            public String apply(String s) {
+                return anonymousTarget(s);
+            }
+
+            public Function<String, String> identity() {
+                return seedFeedback();
+            }
+        };
     }
 
     /** Five distinct re-bindings of one function value, none of them a cycle. */

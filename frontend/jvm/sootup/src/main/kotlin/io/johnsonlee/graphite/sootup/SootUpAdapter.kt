@@ -104,6 +104,7 @@ import sootup.core.jimple.common.expr.JGeExpr
 import sootup.core.jimple.common.expr.JGtExpr
 import sootup.core.jimple.common.expr.JLeExpr
 import sootup.core.model.SootClass
+import java.lang.reflect.Modifier
 import sootup.core.model.ClassModifier
 import sootup.core.model.MethodModifier
 import sootup.core.model.SootMethod
@@ -314,8 +315,11 @@ class SootUpAdapter(
     private val declaredMethodIndexByClass = mutableMapOf<String, Map<String, SootMethod>>()
     private val sortedMethodsByClass = mutableMapOf<String, List<SootMethod>>()
     private val externalMethodAritiesByClass = mutableMapOf<String, Set<Pair<String, Int>>?>()
-    // Slots whose targets or flows changed while resolveFunctionalDispatch() runs
+    // Slots whose targets or flows changed while resolveFunctionalDispatch() runs, and calls
+    // that resolving another call produced (`Function::apply` on a function value), waiting
+    // to join slotCalls between rounds
     private val propagationWorklist = ArrayDeque<DispatchSlot>()
+    private val nestedDispatches = mutableListOf<Pair<DispatchSlot, PendingDispatch>>()
 
     private val localeSpecsByLocal = mutableMapOf<LocalKey, String>()
     private val localeBuilderSpecsByLocal = mutableMapOf<LocalKey, LocaleBuilderSpec>()
@@ -1622,18 +1626,24 @@ class SootUpAdapter(
         }
     }
 
-    /** Resolve every waiting call against the targets its slot now holds; true if any call was newly resolved. */
+    /**
+     * Resolve every waiting call against the targets its slot now holds, then register the
+     * calls that resolution itself produced; true if anything changed.
+     */
     private fun emitPendingDispatches(): Boolean {
         var emitted = false
         for ((slot, calls) in slotCalls) {
             val targets = slotTargets[slot]?.toList() ?: continue
-            for (pending in calls) {
+            for (pending in calls.toList()) {
                 val fresh = targets.filter(pending.resolved::add)
                 fresh.forEach { emitResolvedDispatch(pending, it) }
                 emitted = emitted || fresh.isNotEmpty()
             }
         }
-        return emitted
+        val nested = nestedDispatches.toList()
+        nestedDispatches.clear()
+        nested.forEach { (slot, pending) -> slotCalls.getOrPut(slot) { mutableListOf() }.add(pending) }
+        return emitted || nested.isNotEmpty()
     }
 
     /**
@@ -1672,6 +1682,17 @@ class SootUpAdapter(
             }
             pending.resultSlot?.let { flowSlotNow(DispatchSlot.Return(resolved.method), it) }
         }
+        // An unbound reference to a function value's own method (`Function::apply`) resolves
+        // to a call whose receiver is itself a function value: that call dispatches in turn
+        resolved.receiverSlot?.let { receiverSlot ->
+            val nested = PendingDispatch(resolvedCallSite, result, resolved.argumentSlots, pending.resultSlot, mutableSetOf())
+            val known = (receiverSlot as? DispatchSlot.Local)?.takeIf { it.method == callSite.caller }
+                ?.let { dynamicTargets[localKey(it.method, it.name)] }.orEmpty()
+            known.filter(nested.resolved::add).forEach { emitResolvedDispatch(nested, it) }
+            if (trackCrossMethodFunctionalDispatch) {
+                nestedDispatches += receiverSlot to nested
+            }
+        }
     }
 
     private fun resolveDispatch(
@@ -1690,12 +1711,14 @@ class SootUpAdapter(
             val all = target.captures + arguments
             val slots = List<DispatchSlot?>(target.captures.size) { null } + argumentSlots
             when (target.kind) {
-                HandleKind.STATIC -> ResolvedDispatch(target.method, null, all, slots)
-                HandleKind.INSTANCE -> ResolvedDispatch(target.method, all.firstOrNull(), all.drop(1), slots.drop(1))
+                HandleKind.STATIC -> ResolvedDispatch(target.method, null, null, all, slots)
+                HandleKind.INSTANCE ->
+                    ResolvedDispatch(target.method, all.firstOrNull(), slots.firstOrNull(), all.drop(1), slots.drop(1))
             }
         }
+        // The function object is the receiver, and it dispatched here: no further dispatch on it
         is DispatchTarget.FunctionObject -> findFunctionObjectMethod(target.className, invoked)
-            ?.let { ResolvedDispatch(it, receiver, arguments, argumentSlots) }
+            ?.let { ResolvedDispatch(it, receiver, null, arguments, argumentSlots) }
         is DispatchTarget.Adapted -> if (target.samName != invoked.name) {
             null
         } else {
@@ -1930,9 +1953,11 @@ class SootUpAdapter(
     }
 
     /**
-     * Name and arity of every method an instance of external class [className] can be asked
-     * for (public ones, inherited included, plus its own non-public ones), or null when the
-     * analysis JVM has no such class to inspect. Loaded without initialization.
+     * Name and arity of every method a subclass of external class [className] can implement or
+     * override: instance methods that are neither private, static nor final, public ones
+     * inherited included (`Function.identity()` is static, so an instance `identity()` helper
+     * implements nothing). Null when the analysis JVM has no such class to inspect. Loaded
+     * without initialization.
      */
     private fun externalMethodArities(className: String): Set<Pair<String, Int>>? =
         externalMethodAritiesByClass.getOrPut(className) {
@@ -1940,10 +1965,14 @@ class SootUpAdapter(
                 .getOrNull()
                 ?.let { clazz ->
                     (clazz.methods.asSequence() + clazz.declaredMethods.asSequence())
+                        .filter { isOverridable(it.modifiers) }
                         .map { it.name to it.parameterCount }
                         .toSet()
                 }
         }
+
+    private fun isOverridable(modifiers: Int): Boolean =
+        !Modifier.isStatic(modifiers) && !Modifier.isPrivate(modifiers) && !Modifier.isFinal(modifiers)
 
     /**
      * A Kotlin bound callable reference class (`fn::invoke`, `obj::method`) hands its receiver

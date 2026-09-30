@@ -445,6 +445,23 @@ class LambdaAnalysisTest {
     }
 
     @Test
+    fun `unbound reference to the function type's method dispatches on its receiver argument`() {
+        assertTrue(callSitesOf("useUnboundApply").any { it.callee.name == "feedbackTarget" && it.arguments.size == 1 },
+            "useUnboundApply should resolve invoke.apply(seedFeedback(), input) to feedbackTarget(input). " +
+                "Callees: ${describe("useUnboundApply")}")
+    }
+
+    @Test
+    fun `instance helper named like a static interface method is not a callback`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        assertTrue(callSites.none { it.callee.name == "identity" },
+            "plainFunction must not call identity(), which does not override the static Function.identity. " +
+                "Callees: ${describe("plainFunction")}")
+        assertTrue(callSitesOf("plainFunction").any { it.callee.name == "apply" },
+            "plainFunction should still reach the apply override it hands out")
+    }
+
+    @Test
     fun `anonymous class of an external interface only calls its callback methods`() {
         val callSites = graph.nodes<CallSiteNode>().toList()
         assertTrue(callSites.none { it.callee.name == "neverCalledHelper" },

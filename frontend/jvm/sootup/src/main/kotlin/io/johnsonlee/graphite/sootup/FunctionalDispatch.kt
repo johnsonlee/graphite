@@ -69,6 +69,7 @@ internal enum class HandleKind {
 internal data class ResolvedDispatch(
     val method: MethodDescriptor,
     val receiver: NodeId?,
+    val receiverSlot: DispatchSlot?,
     val arguments: List<NodeId>,
     val argumentSlots: List<DispatchSlot?>
 )

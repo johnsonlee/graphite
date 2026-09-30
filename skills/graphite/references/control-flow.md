@@ -137,7 +137,8 @@ marked by a `CALL` self-loop with `dynamic = true`:
   on: `invoker.apply(seed())` resolved to `run(fn)` resolves `fn.apply` inside `run`.
   Resolution is context-insensitive: a helper called with several function values
   dispatches to all of them, so a dispatch call site in a shared helper is the union
-  of what its callers pass.
+  of what its callers pass. A function value re-bound through more than 32 distinct
+  `fn::apply` sites is not followed further.
 
 ```cypher
 MATCH (cs:CallSiteNode)-[r:CALL]->(cs)
