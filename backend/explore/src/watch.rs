@@ -20,6 +20,32 @@
 //! Ids given explicitly (`--graph`, the positional graph) are never touched: a file that
 //! appears under such an id is reported once and ignored, as startup rejects the same
 //! collision.
+//!
+//! # Why the directory is polled rather than watched with inotify/kqueue/FSEvents
+//!
+//! - The settle rule above needs a time window anyway. A copy in progress raises a burst
+//!   of modify events, and an event watcher still has to wait and re-stat before it can
+//!   tell a finished file from one still being written. Two consecutive identical scans
+//!   are that window, with no second mechanism.
+//! - Graphs arrive over NFS or SMB mounts, Docker bind mounts and Kubernetes volumes as
+//!   often as over a local disk, and none of those deliver native change events
+//!   reliably (`notify` itself falls back to a poll watcher there). Polling is the one
+//!   path that behaves the same everywhere.
+//! - Event watchers drop events (queue overflow, a watcher restarted, files placed
+//!   before the watch was set up) and so need a periodic full rescan to stay correct.
+//!   [`Watcher::tick`] *is* that rescan: each tick makes the served set equal to the
+//!   directory, so a missed change is picked up on the next one.
+//! - `tick` is a function of the directory's state, which keeps the unit tests free of
+//!   timing and of real file-system events.
+//! - Latency is bounded by the reload itself: verifying a container against its digest
+//!   and rebuilding the topology takes seconds, so a scan interval of a few seconds
+//!   (`--watch-interval`) adds little. A scan is one directory listing plus a stat and
+//!   a small sidecar read per file, negligible for the tens of files a data directory
+//!   holds.
+//!
+//! If a data directory ever holds thousands of files or needs sub-second pickup, add
+//! native events as a signal that wakes an early tick and keep the periodic scan as the
+//! source of truth; do not replace the scan.
 
 use crate::registry::GraphRegistry;
 use crate::routes::AppState;
