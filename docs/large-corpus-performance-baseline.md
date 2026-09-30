@@ -61,16 +61,16 @@ The table above is the 2026-08-27 recording; the gate asserts the current counts
 | Change | Tika edges (source / persisted) | Hive edges | Kotlin compiler edges |
 | --- | ---: | ---: | ---: |
 | `System.getProperty` is no longer linked to every packaged configuration file by `RESOURCE_LOOKUP` | 4,405,147 / 4,249,806 (−92,576) | 6,350,854 / 6,134,254 (−27,209) | 3,672,821 / 3,557,610 (−1,890) |
-| Calls on function values resolve to every lambda shape, creating methods get a call site to the methods a function object implements for a supertype, and casts carry dataflow | 4,510,020 / 4,353,592 (+104,873 / +103,786) | 6,597,290 / 6,376,705 (+246,436 / +242,451) | 3,906,728 / 3,785,969 (+233,907 / +228,359) |
+| Calls on function values resolve to every lambda shape, creating methods get a call site to the methods a function object implements for a supertype, and casts carry dataflow | 4,510,017 / 4,353,589 (+104,870 / +103,783) | 6,597,288 / 6,376,703 (+246,434 / +242,449) | 3,906,617 / 3,785,858 (+233,796 / +228,248) |
 
 The `System.getProperty` change left node, method and call-site counts unchanged. The lambda change
 leaves method counts unchanged and adds nodes and call sites:
 
 | Corpus | Nodes | Call sites | Persisted bytes |
 | --- | ---: | ---: | ---: |
-| Tika | 3,901,107 (+4,095) | 1,006,176 (+4,088) | +562,089 |
-| Hive | 5,992,937 (+6,264) | 1,443,909 (+6,262) | +1,140,220 |
-| Kotlin compiler | 3,292,325 (+23,788) | 922,987 (+22,621) | +2,643,244 |
+| Tika | 3,901,104 (+4,092) | 1,006,173 (+4,085) | +561,832 |
+| Hive | 5,992,935 (+6,262) | 1,443,907 (+6,260) | +1,140,056 |
+| Kotlin compiler | 3,292,214 (+23,677) | 922,876 (+22,510) | +2,632,391 |
 
 The source graph can contain multiple outgoing edges to the same target. `GraphStore` is a simple
 graph and preserves the last such edge, so the gate records both the source's logical edge count

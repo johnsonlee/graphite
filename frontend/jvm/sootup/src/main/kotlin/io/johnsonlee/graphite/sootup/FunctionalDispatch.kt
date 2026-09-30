@@ -61,18 +61,30 @@ internal enum class HandleKind {
     INSTANCE
 }
 
-/** The call site a [DispatchTarget] resolves a call to. */
+/**
+ * The call site a [DispatchTarget] resolves a call to. [argumentSlots] is aligned with
+ * [arguments]: the slot each argument's function value lives in, or null for a value that
+ * cannot hold one (or a capture, whose flow was recorded at creation).
+ */
 internal data class ResolvedDispatch(
     val method: MethodDescriptor,
     val receiver: NodeId?,
-    val arguments: List<NodeId>
+    val arguments: List<NodeId>,
+    val argumentSlots: List<DispatchSlot?>
 )
 
-/** A call on a function value whose targets are only known after every method is processed. */
-internal data class PendingDispatch(
+/**
+ * A call on a function value whose targets may only be known after every method is
+ * processed. [resolved] collects the targets already emitted for it, [argumentSlots] and
+ * [resultSlot] are where its arguments and result live, so a resolved implementation's
+ * parameter and return slots can be connected to them.
+ */
+internal class PendingDispatch(
     val callSite: CallSiteNode,
     val result: NodeId?,
-    val resolved: Set<DispatchTarget>
+    val argumentSlots: List<DispatchSlot?>,
+    val resultSlot: DispatchSlot?,
+    val resolved: MutableSet<DispatchTarget>
 )
 
 /**
@@ -117,14 +129,24 @@ internal data class SlotAdapter(
     val invokedAs: MethodDescriptor,
     val captures: List<NodeId>
 ) {
-    fun adapt(target: DispatchTarget): DispatchTarget? =
-        if (target.adaptedDepth() >= MAX_ADAPTED_DEPTH) null else DispatchTarget.Adapted(samName, invokedAs, captures, target)
+    /**
+     * [target] re-bound through this site, or null when the chain already passes through this
+     * site (`fn = fn::apply` in a loop): the repeated layer resolves to the same call as the
+     * first, so dropping it loses nothing and keeps the fixpoint finite. Distinct sites nest
+     * freely, up to [MAX_ADAPTED_DEPTH] as a safety bound.
+     */
+    fun adapt(target: DispatchTarget): DispatchTarget? {
+        val chain = target.adaptedChain()
+        val repeated = chain.any { it.samName == samName && it.invokedAs == invokedAs && it.captures == captures }
+        return if (repeated || chain.size >= MAX_ADAPTED_DEPTH) null else DispatchTarget.Adapted(samName, invokedAs, captures, target)
+    }
 }
 
-/** How many `fn::apply` re-bindings this target is wrapped in; bounds the fixpoint on `fn = fn::apply` loops. */
-internal fun DispatchTarget.adaptedDepth(): Int = generateSequence(this) { (it as? DispatchTarget.Adapted)?.inner }.count() - 1
+/** The `fn::apply` re-bindings this target is wrapped in, outermost first. */
+internal fun DispatchTarget.adaptedChain(): List<DispatchTarget.Adapted> =
+    generateSequence(this as? DispatchTarget.Adapted) { it.inner as? DispatchTarget.Adapted }.toList()
 
-private const val MAX_ADAPTED_DEPTH = 4
+private const val MAX_ADAPTED_DEPTH = 32
 
 /**
  * Whether [className] is the binary name of an anonymous class (JLS 13.1: `Outer$<digits>`),

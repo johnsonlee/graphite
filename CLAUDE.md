@@ -318,14 +318,22 @@ Lessons:
   processing order. They are recorded as flows between `DispatchSlot`s and resolved to a fixpoint
   in `resolveFunctionalDispatch()`, not by per-phase special cases. Override boundaries are flows
   too, derived lazily from the view's type hierarchy: a value passed to `Invoker.invoke` reaches
-  the parameter of every implementation, and a value returned by an implementation is what a call
-  on the interface returns. `fn::apply` on a parameter is a `SlotAdapter`, applied in the fixpoint.
+  the parameter of every implementation, including one inherited from a superclass that does not
+  itself implement the interface, and a value returned by an implementation is what a call on the
+  interface returns. `fn::apply` on a parameter is a `SlotAdapter`, applied in the fixpoint; a
+  site never re-binds its own result twice, which keeps `fn = fn::apply` loops finite while
+  distinct sites nest freely.
+- Resolving a call is itself a flow: once `invoker.apply(seed())` resolves to `run(fn)`, the
+  argument reaches `Parameter(run, 0)` and `Return(run)` reaches the result, so propagation and
+  resolution alternate until nothing new resolves.
 - Resolution is context-insensitive: a helper called with several function values dispatches to
   all of them.
 - A function-object class is recognized by JVM-level facts (anonymous binary name `Outer$<digits>`,
   synthetic flag, Kotlin function interfaces and base classes), not by tool-specific name markers.
   Allocating one creates a call site only to the methods it implements for a supertype, so the
-  helper methods of `new Object() { ... }` get no phantom caller.
+  helper methods of `new Object() { ... }` or `new Runnable() { ... }` get no phantom caller. A
+  supertype outside the view (JDK, Kotlin stdlib) is inspected through the analysis JVM's own copy
+  of the class, loaded without initialization.
 - Kotlin fixtures in `frontend/jvm/sootup/src/kotlinLambdaFixtures` compile twice (`indy` and
   `class`), and D8 desugars the `indy` output (`desugarKotlinLambdaFixtures`);
   `KotlinLambdaDispatchTest` runs every shape against all three outputs. Desugaring adds a

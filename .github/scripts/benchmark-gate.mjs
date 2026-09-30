@@ -199,18 +199,18 @@ const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 export const LARGE_CORPUS_SHAPE_TRANSITION = Object.freeze({
     tika: {
         base: { nodes: 3_897_012, sourceEdges: 4_405_147, persistedEdges: 4_249_806, methods: 312_788, callSites: 1_002_088 },
-        candidate: { nodes: 3_901_107, sourceEdges: 4_510_020, persistedEdges: 4_353_592, methods: 312_788, callSites: 1_006_176 },
-        persistedBytesDelta: 562_089
+        candidate: { nodes: 3_901_104, sourceEdges: 4_510_017, persistedEdges: 4_353_589, methods: 312_788, callSites: 1_006_173 },
+        persistedBytesDelta: 561_832
     },
     hive: {
         base: { nodes: 5_986_673, sourceEdges: 6_350_854, persistedEdges: 6_134_254, methods: 404_016, callSites: 1_437_647 },
-        candidate: { nodes: 5_992_937, sourceEdges: 6_597_290, persistedEdges: 6_376_705, methods: 404_016, callSites: 1_443_909 },
-        persistedBytesDelta: 1_140_220
+        candidate: { nodes: 5_992_935, sourceEdges: 6_597_288, persistedEdges: 6_376_703, methods: 404_016, callSites: 1_443_907 },
+        persistedBytesDelta: 1_140_056
     },
     "kotlin-compiler": {
         base: { nodes: 3_268_537, sourceEdges: 3_672_821, persistedEdges: 3_557_610, methods: 249_669, callSites: 900_366 },
-        candidate: { nodes: 3_292_325, sourceEdges: 3_906_728, persistedEdges: 3_785_969, methods: 249_669, callSites: 922_987 },
-        persistedBytesDelta: 2_643_244
+        candidate: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
+        persistedBytesDelta: 2_632_391
     }
 });
 

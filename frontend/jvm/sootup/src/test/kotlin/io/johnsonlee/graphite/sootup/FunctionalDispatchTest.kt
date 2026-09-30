@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -54,15 +55,22 @@ class FunctionalDispatchTest {
     }
 
     @Test
-    fun `adapting a target wraps it until the depth bound`() {
+    fun `a site adapts a target once, and distinct sites nest`() {
         val obj = TypeDescriptor("java.lang.Object")
         val apply = MethodDescriptor(TypeDescriptor("java.util.function.Function"), "apply", listOf(obj), obj)
-        val adapter = SlotAdapter(DispatchSlot.Field("f"), "apply", apply, emptyList())
         val leaf: DispatchTarget = DispatchTarget.FunctionObject("com.example.Foo\$1")
-        assertEquals(0, leaf.adaptedDepth())
-        val chain = generateSequence(leaf) { adapter.adapt(it) }.toList()
-        assertEquals(5, chain.size, "a target is adapted four times, then no further")
-        assertEquals(4, chain.last().adaptedDepth())
+        assertEquals(emptyList(), leaf.adaptedChain())
+
+        // `fn = fn::apply` in a loop: the same site re-binding its own result adds nothing
+        val loop = SlotAdapter(DispatchSlot.Field("f"), "apply", apply, emptyList())
+        val once = loop.adapt(leaf)
+        assertTrue(once is DispatchTarget.Adapted && once.inner == leaf)
+        assertEquals(null, loop.adapt(once!!))
+
+        // a1(a2(...a6(fn))): six distinct sites, told apart by their captures, all nest
+        val sites = (1..6).map { SlotAdapter(DispatchSlot.Field("f$it"), "apply", apply, listOf(NodeId.next())) }
+        val nested = sites.fold(leaf) { target, site -> checkNotNull(site.adapt(target)) }
+        assertEquals(6, nested.adaptedChain().size)
     }
 
     @Test

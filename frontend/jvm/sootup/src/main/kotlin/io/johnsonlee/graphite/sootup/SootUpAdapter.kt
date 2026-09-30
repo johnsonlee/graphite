@@ -133,7 +133,6 @@ private const val KOTLIN_INVOKE = "invoke"
 private const val KOTLIN_PROPERTY_GET = "get"
 private const val JAVA_LANG_OBJECT = "java.lang.Object"
 private const val CALLABLE_REFERENCE_RECEIVER_FIELD = "receiver"
-private val OBJECT_METHOD_ARITIES = mapOf("toString" to 0, "hashCode" to 0, "equals" to 1, "clone" to 0, "finalize" to 0)
 private const val VALUE_OF_METHOD = "valueOf"
 private const val CLASS_FILE_SUFFIX = ".class"
 private const val PROPERTIES_FILE_SUFFIX = ".properties"
@@ -314,6 +313,9 @@ class SootUpAdapter(
     private val supertypesByClass = mutableMapOf<String, List<String>>()
     private val declaredMethodIndexByClass = mutableMapOf<String, Map<String, SootMethod>>()
     private val sortedMethodsByClass = mutableMapOf<String, List<SootMethod>>()
+    private val externalMethodAritiesByClass = mutableMapOf<String, Set<Pair<String, Int>>?>()
+    // Slots whose targets or flows changed while resolveFunctionalDispatch() runs
+    private val propagationWorklist = ArrayDeque<DispatchSlot>()
 
     private val localeSpecsByLocal = mutableMapOf<LocalKey, String>()
     private val localeBuilderSpecsByLocal = mutableMapOf<LocalKey, LocaleBuilderSpec>()
@@ -1043,11 +1045,18 @@ class SootUpAdapter(
         // targets that arrive from other methods (parameters, returns, fields).
         // Constructor and private calls (`invokespecial`) never dispatch.
         if (receiverLocal is Local && receiverNode is LocalVariable && invokeExpr !is JSpecialInvokeExpr) {
-            val targets = dynamicTargets[localKey(caller, receiverLocal.name)].orEmpty()
-            targets.forEach { emitResolvedDispatch(callSite, it, resultNode?.id) }
+            val pending = PendingDispatch(
+                callSite = callSite,
+                result = resultNode?.id,
+                argumentSlots = args.map { arg -> (arg as? Local)?.let { functionSlotOf(caller, it) } },
+                resultSlot = (resultNode as? LocalVariable)?.let { DispatchSlot.Local(caller, it.name) },
+                resolved = mutableSetOf()
+            )
+            dynamicTargets[localKey(caller, receiverLocal.name)].orEmpty()
+                .filter(pending.resolved::add)
+                .forEach { emitResolvedDispatch(pending, it) }
             if (trackCrossMethodFunctionalDispatch && mayHoldFunction(receiverNode.type)) {
-                slotCalls.getOrPut(slotOf(caller, receiverLocal)) { mutableListOf() }
-                    .add(PendingDispatch(callSite, resultNode?.id, targets.toSet()))
+                slotCalls.getOrPut(slotOf(caller, receiverLocal)) { mutableListOf() }.add(pending)
             }
         }
         if (invokeExpr is JSpecialInvokeExpr && callee.name == INIT_METHOD && caller.name == INIT_METHOD) {
@@ -1581,10 +1590,19 @@ class SootUpAdapter(
      * assigned a Kotlin lambda.
      */
     private fun resolveFunctionalDispatch() {
-        val worklist = ArrayDeque(slotTargets.keys)
+        propagationWorklist.addAll(slotTargets.keys)
         val expanded = mutableSetOf<DispatchSlot>()
-        while (worklist.isNotEmpty()) {
-            val slot = worklist.removeFirst()
+        // Resolving a call connects its arguments and result to the implementation's parameter
+        // and return slots, which may carry further function values: alternate until nothing
+        // new is resolved
+        do {
+            propagateSlotTargets(expanded)
+        } while (emitPendingDispatches())
+    }
+
+    private fun propagateSlotTargets(expanded: MutableSet<DispatchSlot>) {
+        while (propagationWorklist.isNotEmpty()) {
+            val slot = propagationWorklist.removeFirst()
             // Snapshot: a flow or adapter may lead back into this slot (`fn = fn::apply`)
             val targets = slotTargets[slot]?.toList() ?: continue
             if (expanded.add(slot)) {
@@ -1592,24 +1610,30 @@ class SootUpAdapter(
             }
             for (next in slotFlows[slot].orEmpty()) {
                 if (slotTargets.getOrPut(next) { LinkedHashSet() }.addAll(targets)) {
-                    worklist.addLast(next)
+                    propagationWorklist.addLast(next)
                 }
             }
             for (adapter in slotAdapters[slot].orEmpty()) {
                 val adapted = targets.mapNotNull(adapter::adapt)
                 if (adapted.isNotEmpty() && slotTargets.getOrPut(adapter.sink) { LinkedHashSet() }.addAll(adapted)) {
-                    worklist.addLast(adapter.sink)
+                    propagationWorklist.addLast(adapter.sink)
                 }
             }
         }
+    }
 
+    /** Resolve every waiting call against the targets its slot now holds; true if any call was newly resolved. */
+    private fun emitPendingDispatches(): Boolean {
+        var emitted = false
         for ((slot, calls) in slotCalls) {
-            val targets = slotTargets[slot] ?: continue
+            val targets = slotTargets[slot]?.toList() ?: continue
             for (pending in calls) {
-                targets.filter { it !in pending.resolved }
-                    .forEach { emitResolvedDispatch(pending.callSite, it, pending.result) }
+                val fresh = targets.filter(pending.resolved::add)
+                fresh.forEach { emitResolvedDispatch(pending, it) }
+                emitted = emitted || fresh.isNotEmpty()
             }
         }
+        return emitted
     }
 
     /**
@@ -1617,8 +1641,10 @@ class SootUpAdapter(
      * [target]'s implementation, with the receiver and arguments aligned to that
      * implementation's parameters. Does nothing when [target] does not implement the call.
      */
-    private fun emitResolvedDispatch(callSite: CallSiteNode, target: DispatchTarget, result: NodeId?) {
-        val resolved = resolveDispatch(target, callSite.callee, callSite.receiver, callSite.arguments) ?: return
+    private fun emitResolvedDispatch(pending: PendingDispatch, target: DispatchTarget) {
+        val callSite = pending.callSite
+        val result = pending.result
+        val resolved = resolveDispatch(target, callSite.callee, callSite.receiver, callSite.arguments, pending.argumentSlots) ?: return
         val resolvedCallSite = CallSiteNode(
             id = nextNodeId("call"),
             caller = callSite.caller,
@@ -1638,32 +1664,44 @@ class SootUpAdapter(
         if (result != null) {
             graphBuilder.addEdge(DataFlowEdge(from = resolvedCallSite.id, to = result, kind = DataFlowKind.RETURN_VALUE))
         }
+        // The call now has a callee: function values among its arguments reach the
+        // implementation's parameters, and what the implementation returns reaches the result
+        if (trackCrossMethodFunctionalDispatch) {
+            resolved.argumentSlots.forEachIndexed { index, slot ->
+                if (slot != null) flowSlotNow(slot, DispatchSlot.Parameter(resolved.method, index))
+            }
+            pending.resultSlot?.let { flowSlotNow(DispatchSlot.Return(resolved.method), it) }
+        }
     }
 
     private fun resolveDispatch(
         target: DispatchTarget,
         invoked: MethodDescriptor,
         receiver: NodeId?,
-        arguments: List<NodeId>
+        arguments: List<NodeId>,
+        argumentSlots: List<DispatchSlot?>
     ): ResolvedDispatch? = when (target) {
         is DispatchTarget.Handle -> if (target.samName != invoked.name) {
             null
         } else {
             // The function value's own receiver is not the implementation's: a static method or
-            // constructor has none, and an instance method takes the first capture or argument
+            // constructor has none, and an instance method takes the first capture or argument.
+            // Captured values already flowed to the implementation's parameters at creation.
             val all = target.captures + arguments
+            val slots = List<DispatchSlot?>(target.captures.size) { null } + argumentSlots
             when (target.kind) {
-                HandleKind.STATIC -> ResolvedDispatch(target.method, null, all)
-                HandleKind.INSTANCE -> ResolvedDispatch(target.method, all.firstOrNull(), all.drop(1))
+                HandleKind.STATIC -> ResolvedDispatch(target.method, null, all, slots)
+                HandleKind.INSTANCE -> ResolvedDispatch(target.method, all.firstOrNull(), all.drop(1), slots.drop(1))
             }
         }
         is DispatchTarget.FunctionObject -> findFunctionObjectMethod(target.className, invoked)
-            ?.let { ResolvedDispatch(it, receiver, arguments) }
+            ?.let { ResolvedDispatch(it, receiver, arguments, argumentSlots) }
         is DispatchTarget.Adapted -> if (target.samName != invoked.name) {
             null
         } else {
             val all = target.captures + arguments
-            resolveDispatch(target.inner, target.invokedAs, all.firstOrNull(), all.drop(1))
+            val slots = List<DispatchSlot?>(target.captures.size) { null } + argumentSlots
+            resolveDispatch(target.inner, target.invokedAs, all.firstOrNull(), all.drop(1), slots.drop(1))
         }
     }
 
@@ -1716,30 +1754,46 @@ class SootUpAdapter(
         else -> emptyList()
     }
 
-    /** The concrete methods in the view that override [method], in every subtype of its declaring class. */
+    /**
+     * The concrete implementations of [method] in every subtype of its declaring class: the
+     * one a subtype declares, or the one it inherits from a superclass that is not itself a
+     * subtype of the declaring type (`class Child extends Base implements Invoker {}` runs
+     * `Base.invoke` for `Invoker.invoke`).
+     */
     private fun overridesOf(method: MethodDescriptor): List<MethodDescriptor> {
         if (!isOverridable(method)) return emptyList()
-        return transitiveSubtypes(method.declaringClass.className).mapNotNull { subtype ->
-            declaredMethod(subtype, method)?.takeIf { !it.isStatic && !it.isAbstract }?.let(::toMethodDescriptor)
-        }
+        val own = method.declaringClass.className
+        return transitiveSubtypes(own).mapNotNull { subtype ->
+            effectiveMethod(subtype, method)?.takeIf { it.declaringClassType.fullyQualifiedName != own }?.let(::toMethodDescriptor)
+        }.distinct()
     }
 
     /**
-     * The methods [method] overrides, in every supertype of its declaring class. A supertype
-     * outside the view (a JDK or Kotlin stdlib interface) has no [SootMethod] to inspect, so the
-     * overridden method is assumed to share [method]'s sub-signature.
+     * The methods [method] implements or overrides: those declared by a supertype of its
+     * declaring class, and those declared by a supertype of any subclass that inherits it
+     * (`class FactoryChild extends FactoryBase implements Factory {}` makes `FactoryBase.make`
+     * the implementation of `Factory.make`). A supertype outside the view (a JDK or Kotlin
+     * stdlib interface) has no [SootMethod] to inspect, so its method is assumed to share
+     * [method]'s sub-signature.
      */
     private fun overriddenBy(method: MethodDescriptor): List<MethodDescriptor> {
-        val declared = declaredMethod(method.declaringClass.className, method)
-            ?.takeIf { isOverridable(method) }
-            ?: return emptyList()
-        return supertypes(method.declaringClass.className).mapNotNull { supertype ->
+        val own = method.declaringClass.className
+        val declared = declaredMethod(own, method)?.takeIf { isOverridable(method) } ?: return emptyList()
+        val implementors = listOf(own) + transitiveSubtypes(own).filter { effectiveMethod(it, method) === declared }
+        return implementors.flatMap(::supertypes).distinct().filter { it != own }.mapNotNull { supertype ->
             when (resolveClassByName(supertype)) {
                 null -> toMethodDescriptor(MethodSignature(view.identifierFactory.getClassType(supertype), declared.subSignature))
                 else -> declaredMethod(supertype, method)?.takeIf { !it.isStatic }?.let(::toMethodDescriptor)
             }
-        }
+        }.distinct()
     }
+
+    /** The concrete method a call to [descriptor] on an instance of [className] runs: declared by it or inherited. */
+    private fun effectiveMethod(className: String, descriptor: MethodDescriptor): SootMethod? =
+        generateSequence(className) { resolveClassByName(it)?.superclass?.orElse(null)?.fullyQualifiedName }
+            .mapNotNull { declaredMethod(it, descriptor) }
+            .firstOrNull()
+            ?.takeIf { !it.isStatic && !it.isAbstract }
 
     private fun isOverridable(method: MethodDescriptor): Boolean {
         if (method.name == INIT_METHOD || method.declaringClass.className == JAVA_LANG_OBJECT) return false
@@ -1858,22 +1912,38 @@ class SootUpAdapter(
     /**
      * Whether [method] implements or overrides a method of one of [sootClass]'s supertypes, by
      * name and arity, so that the erased bridge is skipped but the typed implementation kept.
-     * A supertype outside the view (`kotlin.jvm.functions.Function1`, `java.lang.Runnable`)
-     * cannot be inspected, so any non-private method may implement one of its methods;
-     * `java.lang.Object`'s methods are known.
+     * A supertype outside the view (`java.lang.Runnable`, `kotlin.jvm.functions.Function1`) is
+     * inspected through the analysis JVM's own copy of it when it has one; only a supertype
+     * that cannot be inspected at all lets any non-private method count.
      */
     private fun implementsSupertypeMethod(sootClass: SootClass, method: SootMethod): Boolean {
         if (MethodModifier.isPrivate(method.modifiers)) return false
         val arity = method.parameterTypes.size
         return supertypes(sootClass.type.fullyQualifiedName).any { supertype ->
-            when (supertype) {
-                JAVA_LANG_OBJECT -> OBJECT_METHOD_ARITIES[method.name] == arity
-                else -> resolveClassByName(supertype)?.let { superClass ->
-                    methodsInSignatureOrder(superClass).any { it.name == method.name && it.parameterTypes.size == arity }
-                } ?: true
+            val superClass = resolveClassByName(supertype)
+            if (superClass != null) {
+                methodsInSignatureOrder(superClass).any { it.name == method.name && it.parameterTypes.size == arity }
+            } else {
+                externalMethodArities(supertype)?.contains(method.name to arity) ?: true
             }
         }
     }
+
+    /**
+     * Name and arity of every method an instance of external class [className] can be asked
+     * for (public ones, inherited included, plus its own non-public ones), or null when the
+     * analysis JVM has no such class to inspect. Loaded without initialization.
+     */
+    private fun externalMethodArities(className: String): Set<Pair<String, Int>>? =
+        externalMethodAritiesByClass.getOrPut(className) {
+            runCatching { Class.forName(className, false, SootUpAdapter::class.java.classLoader) }
+                .getOrNull()
+                ?.let { clazz ->
+                    (clazz.methods.asSequence() + clazz.declaredMethods.asSequence())
+                        .map { it.name to it.parameterCount }
+                        .toSet()
+                }
+        }
 
     /**
      * A Kotlin bound callable reference class (`fn::invoke`, `obj::method`) hands its receiver
@@ -1956,6 +2026,16 @@ class SootUpAdapter(
             slotFlows.getOrPut(from) { mutableSetOf() }.add(to)
         }
     }
+
+    /** [flowSlot], and have the fixpoint revisit [from] so targets it already holds follow the new flow. */
+    private fun flowSlotNow(from: DispatchSlot, to: DispatchSlot) {
+        flowSlot(from, to)
+        propagationWorklist.addLast(from)
+    }
+
+    /** The slot [local]'s function value lives in, or null when its type cannot hold one. */
+    private fun functionSlotOf(method: MethodDescriptor, local: Local): DispatchSlot? =
+        if (trackCrossMethodFunctionalDispatch && mayHoldFunction(toTypeDescriptor(local.type))) slotOf(method, local) else null
 
     /**
      * Whether a value of [type] can hold a function value, which bounds what cross-method

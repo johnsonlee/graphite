@@ -133,9 +133,11 @@ marked by a `CALL` self-loop with `dynamic = true`:
   methods: through parameters (including forwarded ones), return values, fields
   (including constructor injection), arrays, captures and casts, and across interface
   and override boundaries (a value passed to `Invoker.invoke` resolves inside every
-  implementation). Resolution is context-insensitive: a helper called with several
-  function values dispatches to all of them, so a dispatch call site in a shared
-  helper is the union of what its callers pass.
+  implementation, inherited ones included). A resolved call carries function values
+  on: `invoker.apply(seed())` resolved to `run(fn)` resolves `fn.apply` inside `run`.
+  Resolution is context-insensitive: a helper called with several function values
+  dispatches to all of them, so a dispatch call site in a shared helper is the union
+  of what its callers pass.
 
 ```cypher
 MATCH (cs:CallSiteNode)-[r:CALL]->(cs)

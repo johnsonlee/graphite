@@ -402,10 +402,58 @@ class LambdaAnalysisTest {
 
     @Test
     fun `method reference to a parameter's own method resolves to what callers pass`() {
-        val calleeNames = callSitesOf("useDeferredAdapted").map { it.callee.name }
-        assertTrue("deferredAdaptedTarget" in calleeNames,
-            "useDeferredAdapted should resolve adapt(...).apply through fn::apply to deferredAdaptedTarget. Callees: $calleeNames")
+        // the creation call site has no arguments; the dispatch call site passes `input`
+        val resolved = callSitesOf("useDeferredAdapted").filter { it.callee.name == "deferredAdaptedTarget" && it.arguments.size == 1 }
+        assertTrue(resolved.isNotEmpty(),
+            "useDeferredAdapted should resolve adapt(...).apply through fn::apply to deferredAdaptedTarget(input). " +
+                "Callees: ${callSitesOf("useDeferredAdapted").map { "${it.callee.name}${it.arguments}" }}")
     }
+
+    @Test
+    fun `five distinct re-bindings still resolve, and a re-binding loop terminates`() {
+        assertTrue(callSitesOf("useChain").any { it.callee.name == "chainTarget" && it.arguments.size == 1 },
+            "useChain should resolve a5(a4(a3(a2(a1(fn))))).apply to chainTarget(input). Callees: ${describe("useChain")}")
+        assertTrue(callSitesOf("useLoop").any { it.callee.name == "chainTarget" && it.arguments.size == 1 },
+            "useLoop should resolve fn.apply to chainTarget(input). Callees: ${describe("useLoop")}")
+    }
+
+    @Test
+    fun `function value passed through an interface reaches an inherited implementation`() {
+        val calleeNames = callSitesOf("invoke", "sample.lambda.AnonymousClassExample\$Base").map { it.callee.name }
+        assertTrue("inheritedInvokeTarget" in calleeNames,
+            "Base.invoke, inherited by Child implements Invoker, should resolve fn.apply. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value returned by an inherited implementation resolves at the interface caller`() {
+        val calleeNames = callSitesOf("useInheritedFactory").map { it.callee.name }
+        assertTrue("inheritedFactoryTarget" in calleeNames,
+            "useInheritedFactory should resolve factory.make().apply to what FactoryBase.make returns. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value passed to a resolved method reference reaches its parameter`() {
+        val calleeNames = callSitesOf("run").map { it.callee.name }
+        assertTrue("feedbackTarget" in calleeNames,
+            "run, resolved from invoker.apply(seedFeedback()), should resolve fn.apply to feedbackTarget. Callees: $calleeNames")
+    }
+
+    @Test
+    fun `function value returned by a resolved method reference resolves at the caller`() {
+        assertTrue(callSitesOf("useMakerHandle").any { it.callee.name == "feedbackTarget" && it.arguments.size == 1 },
+            "useMakerHandle should resolve maker.get().apply to feedbackTarget(input). Callees: ${describe("useMakerHandle")}")
+    }
+
+    @Test
+    fun `anonymous class of an external interface only calls its callback methods`() {
+        val callSites = graph.nodes<CallSiteNode>().toList()
+        assertTrue(callSites.none { it.callee.name == "neverCalledHelper" },
+            "plainRunnable must not call neverCalledHelper, which Runnable does not declare. Callees: ${describe("plainRunnable")}")
+        assertTrue(callSitesOf("plainRunnable").any { it.callee.name == "run" },
+            "plainRunnable should still reach the run override it hands out")
+    }
+
+    private fun describe(methodName: String) = callSitesOf(methodName).map { "${it.callee.name}${it.arguments}" }
 
     @Test
     fun `function value passed through an interface resolves inside the implementation`() {

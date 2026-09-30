@@ -621,14 +621,14 @@ class SootUpAdapterInternalCoverageTest {
         slotTargets[DispatchSlot.Return(callee)] = linkedSetOf(handle)
         slotFlows[DispatchSlot.Return(callee)] = mutableSetOf(result)
         slotTargets[parameter] = linkedSetOf(handle, otherSam, anonymous)
-        slotCalls[parameter] = mutableListOf(PendingDispatch(parameterCall, NodeId.next(), emptySet()))
+        slotCalls[parameter] = mutableListOf(PendingDispatch(parameterCall, NodeId.next(), listOf(null), null, mutableSetOf()))
         slotFlows[field] = mutableSetOf(fieldLocal)
         slotTargets[field] = linkedSetOf(handle, adapted, otherAdapted)
-        slotCalls[fieldLocal] = mutableListOf(PendingDispatch(fieldLocalCall, null, setOf(handle)))
+        slotCalls[fieldLocal] = mutableListOf(PendingDispatch(fieldLocalCall, null, listOf(null), null, mutableSetOf(handle)))
         // no method with the invoked erasure: the bridge with the same name and arity stands in
         val bridgeSlot = DispatchSlot.Local(caller, "bridged")
         slotTargets[bridgeSlot] = linkedSetOf(anonymous)
-        slotCalls[bridgeSlot] = mutableListOf(PendingDispatch(bridgeCall, null, emptySet()))
+        slotCalls[bridgeSlot] = mutableListOf(PendingDispatch(bridgeCall, null, listOf(null), null, mutableSetOf()))
 
         invokePrivate<Unit>(adapter, "resolveFunctionalDispatch", emptyArray())
 
