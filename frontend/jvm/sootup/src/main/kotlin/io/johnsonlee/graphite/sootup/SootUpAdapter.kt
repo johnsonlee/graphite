@@ -314,7 +314,8 @@ class SootUpAdapter(
     private val supertypesByClass = mutableMapOf<String, List<String>>()
     private val declaredMethodIndexByClass = mutableMapOf<String, Map<String, SootMethod>>()
     private val sortedMethodsByClass = mutableMapOf<String, List<SootMethod>>()
-    private val externalMethodAritiesByClass = mutableMapOf<String, Set<Pair<String, Int>>?>()
+    private val supertypeContractsByClass = mutableMapOf<String, Set<String>?>()
+    private val implementedByFunctionValue = mutableMapOf<MethodDescriptor, Boolean>()
     // Slots whose targets or flows changed while resolveFunctionalDispatch() runs, and calls
     // that resolving another call produced (`Function::apply` on a function value), waiting
     // to join slotCalls between rounds
@@ -1702,7 +1703,7 @@ class SootUpAdapter(
         arguments: List<NodeId>,
         argumentSlots: List<DispatchSlot?>
     ): ResolvedDispatch? = when (target) {
-        is DispatchTarget.Handle -> if (target.samName != invoked.name) {
+        is DispatchTarget.Handle -> if (target.samName != invoked.name || !isImplementedByFunctionValue(invoked)) {
             null
         } else {
             // The function value's own receiver is not the implementation's: a static method or
@@ -1719,7 +1720,7 @@ class SootUpAdapter(
         // The function object is the receiver, and it dispatched here: no further dispatch on it
         is DispatchTarget.FunctionObject -> findFunctionObjectMethod(target.className, invoked)
             ?.let { ResolvedDispatch(it, receiver, null, arguments, argumentSlots) }
-        is DispatchTarget.Adapted -> if (target.samName != invoked.name) {
+        is DispatchTarget.Adapted -> if (target.samName != invoked.name || !isImplementedByFunctionValue(invoked)) {
             null
         } else {
             val all = target.captures + arguments
@@ -1750,9 +1751,12 @@ class SootUpAdapter(
             val candidates = methodsInSignatureOrder(current).filter {
                 !it.isStatic && !it.isAbstract && it.name in names && it.parameterTypes.size == parameterTypes.size
             }
+            // An exact override runs for any call; the erased bridge stands in only for an
+            // abstract method with another erasure, never for a default method the class
+            // does not override
             candidates.firstOrNull { method ->
                 method.parameterTypes.map { toTypeDescriptor(it).className } == parameterTypes
-            } ?: candidates.firstOrNull { MethodModifier.isBridge(it.modifiers) }
+            } ?: candidates.firstOrNull { MethodModifier.isBridge(it.modifiers) && isImplementedByFunctionValue(invoked) }
         }?.let(::toMethodDescriptor)
     }
 
@@ -1840,7 +1844,7 @@ class SootUpAdapter(
             }
         }[methodKey(descriptor.name, descriptor.parameterTypes.map { it.className }, descriptor.returnType.className)]
 
-    private fun methodKey(name: String, parameterTypes: List<String>, returnType: String): String =
+    private fun methodKey(name: String, parameterTypes: List<String>, returnType: String = ""): String =
         "$name(${parameterTypes.joinToString(",")})$returnType"
 
     /** Every class in the view that extends or implements [className], directly or not. */
@@ -1941,38 +1945,61 @@ class SootUpAdapter(
      */
     private fun implementsSupertypeMethod(sootClass: SootClass, method: SootMethod): Boolean {
         if (MethodModifier.isPrivate(method.modifiers)) return false
-        val arity = method.parameterTypes.size
+        // The erased signatures under which this method can be called through a supertype:
+        // its own, and that of a bridge the compiler emitted for it (`apply(Object)` for
+        // `apply(String)`), which javac and kotlinc only generate for overriding methods
+        val signatures = listOf(erasedSignature(method)) + methodsInSignatureOrder(sootClass)
+            .filter { MethodModifier.isBridge(it.modifiers) && it.name == method.name && it.parameterTypes.size == method.parameterTypes.size }
+            .map(::erasedSignature)
         return supertypes(sootClass.type.fullyQualifiedName).any { supertype ->
-            val superClass = resolveClassByName(supertype)
-            if (superClass != null) {
-                methodsInSignatureOrder(superClass).any { it.name == method.name && it.parameterTypes.size == arity }
-            } else {
-                externalMethodArities(supertype)?.contains(method.name to arity) ?: true
-            }
+            supertypeContracts(supertype)?.any(signatures::contains) ?: true
         }
     }
 
+    private fun erasedSignature(method: SootMethod): String =
+        methodKey(method.name, method.parameterTypes.map { toTypeDescriptor(it).className })
+
     /**
-     * Name and arity of every method a subclass of external class [className] can implement or
-     * override: instance methods that are neither private, static nor final, public ones
-     * inherited included (`Function.identity()` is static, so an instance `identity()` helper
-     * implements nothing). Null when the analysis JVM has no such class to inspect. Loaded
-     * without initialization.
+     * The erased signatures a subclass of [className] can implement or override: instance
+     * methods that are neither private, static nor final (`Function.identity()` is static, so
+     * an instance `identity()` helper implements nothing). A class in the view is read from it;
+     * one outside it (JDK, Kotlin stdlib) through the analysis JVM's own copy, loaded without
+     * initialization, public methods inherited included. Null when neither has the class.
      */
-    private fun externalMethodArities(className: String): Set<Pair<String, Int>>? =
-        externalMethodAritiesByClass.getOrPut(className) {
-            runCatching { Class.forName(className, false, SootUpAdapter::class.java.classLoader) }
-                .getOrNull()
-                ?.let { clazz ->
-                    (clazz.methods.asSequence() + clazz.declaredMethods.asSequence())
-                        .filter { isOverridable(it.modifiers) }
-                        .map { it.name to it.parameterCount }
-                        .toSet()
-                }
+    private fun supertypeContracts(className: String): Set<String>? = supertypeContractsByClass.getOrPut(className) {
+        resolveClassByName(className)?.let { sootClass ->
+            methodsInSignatureOrder(sootClass)
+                .filter { !it.isStatic && !MethodModifier.isPrivate(it.modifiers) && !MethodModifier.isFinal(it.modifiers) }
+                .map(::erasedSignature)
+                .toSet()
+        } ?: runCatching { Class.forName(className, false, SootUpAdapter::class.java.classLoader) }.getOrNull()?.let { clazz ->
+            (clazz.methods.asSequence() + clazz.declaredMethods.asSequence())
+                .filter { isOverridable(it.modifiers) }
+                .map { methodKey(it.name, it.parameterTypes.map { type -> type.typeName }) }
+                .toSet()
         }
+    }
 
     private fun isOverridable(modifiers: Int): Boolean =
         !Modifier.isStatic(modifiers) && !Modifier.isPrivate(modifiers) && !Modifier.isFinal(modifiers)
+
+    /**
+     * Whether [invoked] is a method a function value implements, so that a call to it runs the
+     * implementation: an abstract method of its declaring type. A default method with the same
+     * name (`Extra.apply(Integer)` next to `Function.apply(Object)`, `Function.andThen`) runs
+     * its own body. A method that neither the view nor the analysis JVM can inspect is assumed
+     * abstract.
+     */
+    private fun isImplementedByFunctionValue(invoked: MethodDescriptor): Boolean = implementedByFunctionValue.getOrPut(invoked) {
+        val className = invoked.declaringClass.className
+        resolveClassByName(className)?.let { declaredMethod(className, invoked)?.isAbstract ?: true }
+            ?: runCatching { Class.forName(className, false, SootUpAdapter::class.java.classLoader) }.getOrNull()?.let { clazz ->
+                val signature = methodKey(invoked.name, invoked.parameterTypes.map { it.className })
+                (clazz.methods.asSequence() + clazz.declaredMethods.asSequence())
+                    .firstOrNull { methodKey(it.name, it.parameterTypes.map { type -> type.typeName }) == signature }
+                    ?.let { Modifier.isAbstract(it.modifiers) } ?: true
+            } ?: true
+    }
 
     /**
      * A Kotlin bound callable reference class (`fn::invoke`, `obj::method`) hands its receiver

@@ -31,14 +31,14 @@ internal enum class BenchmarkCorpusKind(
         id = "tika",
         jarPathProperty = "tika.jar.path",
         graphPathProperty = "tika.graph.path",
-        expectedNodeCount = 3_901_104,
+        expectedNodeCount = 3_901_103,
         matcher = { it == "tika-app-2.9.2.jar" }
     ),
     HIVE(
         id = "hive",
         jarPathProperty = "hive.jar.path",
         graphPathProperty = "hive.graph.path",
-        expectedNodeCount = 5_992_935,
+        expectedNodeCount = 5_992_914,
         matcher = { it == "hive-exec-4.0.0.jar" }
     ),
     KOTLIN_COMPILER(

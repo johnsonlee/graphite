@@ -242,6 +242,61 @@ public class AnonymousClassExample {
         };
     }
 
+    /** A functional interface inside the view with a static factory of the same name as a helper. */
+    public interface LocalFunction {
+        String apply(String s);
+
+        static LocalFunction identity() {
+            return s -> s;
+        }
+    }
+
+    public static LocalFunction localFunction() {
+        return new LocalFunction() {
+            @Override
+            public String apply(String s) {
+                return anonymousTarget(s);
+            }
+
+            public LocalFunction identity() {
+                return LocalFunction.identity();
+            }
+        };
+    }
+
+    /** A helper that shares a name and arity with `Object.equals` but not its parameter type. */
+    public static Runnable runnableWithOverload() {
+        return new Runnable() {
+            @Override
+            public void run() {
+            }
+
+            public boolean equals(String s) {
+                return false;
+            }
+        };
+    }
+
+    /** A default overload of the SAM: a reference to it never runs the lambda body. */
+    public interface Extra extends Function<String, String> {
+        default String apply(Integer n) {
+            return "integer";
+        }
+    }
+
+    public static String extraTarget(String s) {
+        return s.strip();
+    }
+
+    public static Extra extraSeed() {
+        return AnonymousClassExample::extraTarget;
+    }
+
+    public static String useExtraApply() {
+        BiFunction<Extra, Integer, String> invoke = Extra::apply;
+        return invoke.apply(extraSeed(), 1);
+    }
+
     /** An anonymous class that is not a function value: allocating it runs none of its own methods. */
     public static Object plainAnonymous() {
         return new Object() {

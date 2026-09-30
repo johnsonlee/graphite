@@ -453,12 +453,32 @@ class LambdaAnalysisTest {
 
     @Test
     fun `instance helper named like a static interface method is not a callback`() {
-        val callSites = graph.nodes<CallSiteNode>().toList()
-        assertTrue(callSites.none { it.callee.name == "identity" },
+        assertTrue(callSitesOf("plainFunction").none { it.callee.name == "identity" },
             "plainFunction must not call identity(), which does not override the static Function.identity. " +
                 "Callees: ${describe("plainFunction")}")
         assertTrue(callSitesOf("plainFunction").any { it.callee.name == "apply" },
             "plainFunction should still reach the apply override it hands out")
+    }
+
+    @Test
+    fun `helpers are matched against contracts by erased signature, in and outside the view`() {
+        assertTrue(callSitesOf("localFunction").none { it.callee.name == "identity" },
+            "localFunction must not call the identity() helper: LocalFunction.identity is static. Callees: ${describe("localFunction")}")
+        assertTrue(callSitesOf("localFunction").any { it.callee.name == "apply" },
+            "localFunction should still reach its apply override")
+        assertTrue(callSitesOf("runnableWithOverload").none { it.callee.name == "equals" },
+            "runnableWithOverload must not call equals(String), which overrides nothing. Callees: ${describe("runnableWithOverload")}")
+        assertTrue(callSitesOf("runnableWithOverload").any { it.callee.name == "run" },
+            "runnableWithOverload should still reach its run override")
+    }
+
+    @Test
+    fun `reference to a default overload of the SAM never resolves to the lambda body`() {
+        val sites = callSitesOf("useExtraApply")
+        assertTrue(sites.any { it.callee.name == "apply" && it.callee.declaringClass.className.endsWith("Extra") },
+            "useExtraApply should resolve Extra::apply to the default Extra.apply(Integer). Callees: ${describe("useExtraApply")}")
+        assertTrue(sites.none { it.callee.name == "extraTarget" },
+            "Extra.apply(Integer) is a default method: it must not dispatch to extraTarget. Callees: ${describe("useExtraApply")}")
     }
 
     @Test

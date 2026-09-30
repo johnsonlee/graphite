@@ -47,11 +47,11 @@ private object CorpusBaselines {
         sha256 = "87e06f88c801fcb2beae5f15e707241edb14da468a154ad78be4e31ff982c3da",
         jarBytes = 60_900_523,
         classCount = 33_128,
-        nodeCount = 3_901_104,
-        sourceEdgeCount = 4_510_017,
-        persistedEdgeCount = 4_353_589,
+        nodeCount = 3_901_103,
+        sourceEdgeCount = 4_510_016,
+        persistedEdgeCount = 4_353_588,
         methodCount = 312_788,
-        callSiteCount = 1_006_173,
+        callSiteCount = 1_006_172,
         maxPipelineMillis = 120_000
     )
     val hive = CorpusBaseline(
@@ -61,11 +61,11 @@ private object CorpusBaselines {
         sha256 = "232d67c5d2ff54806944bb5b7402eaf1ebb81f11dbe4fd51bc5604a8e0c0bdad",
         jarBytes = 84_163_106,
         classCount = 38_999,
-        nodeCount = 5_992_935,
-        sourceEdgeCount = 6_597_288,
-        persistedEdgeCount = 6_376_703,
+        nodeCount = 5_992_914,
+        sourceEdgeCount = 6_597_267,
+        persistedEdgeCount = 6_376_682,
         methodCount = 404_016,
-        callSiteCount = 1_443_907,
+        callSiteCount = 1_443_886,
         maxPipelineMillis = 180_000
     )
     val kotlinCompiler = CorpusBaseline(
