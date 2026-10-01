@@ -61,6 +61,7 @@ class MmapGraph internal constructor(
     private val typeHierarchy: TypeHierarchy,
     private val enumValuesMap: Map<String, List<Any?>>,
     private val classOriginsMap: Map<String, String>,
+    private val syntheticIdentitiesMap: Map<String, String>,
     private val artifactDependenciesMap: Map<String, Map<String, Int>>,
     private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
     private val branchScopeData: List<DefaultGraph.RawBranchScope>,
@@ -192,6 +193,10 @@ class MmapGraph internal constructor(
     override fun classOrigin(className: String): String? = classOriginsMap[className]
 
     override fun classOrigins(): Map<String, String> = classOriginsMap
+
+    override fun syntheticIdentity(member: String): String? = syntheticIdentitiesMap[member]
+
+    override fun syntheticIdentities(): Map<String, String> = syntheticIdentitiesMap
 
     override fun artifactDependencies(): Map<String, Map<String, Int>> = artifactDependenciesMap
 

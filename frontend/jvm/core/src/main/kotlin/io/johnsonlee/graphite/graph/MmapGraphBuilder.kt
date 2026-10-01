@@ -93,6 +93,7 @@ class MmapGraphBuilder(
     private val typeHierarchyBuilder = TypeHierarchy.Builder()
     private val enumValues = mutableMapOf<String, List<Any?>>()
     private val classOrigins = mutableMapOf<String, String>()
+    private val syntheticIdentities = mutableMapOf<String, String>()
     private val artifactDependencies = mutableMapOf<String, MutableMap<String, Int>>()
     private val memberAnnotations = mutableMapOf<String, MutableMap<String, Map<String, Any?>>>()
     private val branchScopes = mutableListOf<DefaultGraph.RawBranchScope>()
@@ -144,6 +145,11 @@ class MmapGraphBuilder(
 
     override fun addClassOrigin(className: String, source: String): FullGraphBuilder {
         classOrigins.putIfAbsent(className, source)
+        return this
+    }
+
+    override fun addSyntheticIdentity(member: String, fingerprint: String): FullGraphBuilder {
+        syntheticIdentities[member] = fingerprint
         return this
     }
 
@@ -253,6 +259,7 @@ class MmapGraphBuilder(
             typeHierarchy = typeHierarchyBuilder.build(),
             enumValuesMap = enumValues.toMap(),
             classOriginsMap = classOrigins.toMap(),
+            syntheticIdentitiesMap = syntheticIdentities.toMap(),
             artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
             memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
             branchScopeData = branchScopes.toList(),

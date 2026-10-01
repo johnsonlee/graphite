@@ -51,6 +51,8 @@ interface FullGraphBuilder : GraphBuilder {
      */
     fun addLocalDefinitions(localNodeId: NodeId, definitions: IntArray): FullGraphBuilder
     fun addClassOrigin(className: String, source: String): FullGraphBuilder
+    /** Record the stable identity of a synthetic member, see [Graph.syntheticIdentity]. */
+    fun addSyntheticIdentity(member: String, fingerprint: String): FullGraphBuilder
     fun addArtifactDependency(fromArtifact: String, toArtifact: String, weight: Int = 1): FullGraphBuilder
     fun setResources(resources: ResourceAccessor): FullGraphBuilder
 }

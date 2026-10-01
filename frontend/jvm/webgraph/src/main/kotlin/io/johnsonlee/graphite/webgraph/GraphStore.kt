@@ -685,6 +685,7 @@ object GraphStore {
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.saveMetadata(metadata, dos, stringTable)
             NodeSerializer.writeMetadataTrailer(dos, branchDefinitions.payloadDigest)
+            NodeSerializer.writeSyntheticIdentities(metadata, dos, stringTable)
         }
         Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
 
@@ -984,11 +985,14 @@ object GraphStore {
         return graph
     }
 
-    /** Parse `graph.metadata` and the trailer that binds it to its branch-definition sidecar, when present. */
+    /**
+     * Parse `graph.metadata` with its optional sections: the trailer that binds it to its
+     * branch-definition sidecar and the synthetic identities, when present.
+     */
     private fun loadMetadataWithTrailer(dir: Path, stringTable: StringTable): GraphMetadata =
         DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
             val metadata = NodeSerializer.loadMetadata(dis, stringTable)
-            metadata.copy(branchDefinitionDigest = NodeSerializer.readMetadataTrailer(dis))
+            NodeSerializer.readMetadataOptionalSections(dis, stringTable, metadata)
         }
 
     /**
@@ -1421,7 +1425,8 @@ object GraphStore {
             artifactDependencies = graph.artifactDependencies(),
             memberAnnotations = memberAnnotations,
             branchScopes = branchScopes,
-            localDefinitions = localDefinitions
+            localDefinitions = localDefinitions,
+            syntheticIdentities = graph.syntheticIdentities()
         )
     }
 

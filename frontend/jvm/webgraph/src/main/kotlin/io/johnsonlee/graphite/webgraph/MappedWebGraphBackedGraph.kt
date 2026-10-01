@@ -2017,6 +2017,10 @@ internal class MappedWebGraphBackedGraph(
 
     override fun classOrigins(): Map<String, String> = metadata.value.classOrigins
 
+    override fun syntheticIdentity(member: String): String? = metadata.value.syntheticIdentities[member]
+
+    override fun syntheticIdentities(): Map<String, String> = metadata.value.syntheticIdentities
+
     override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.value.artifactDependencies
 
     override fun classOverview(limit: Int): ClassOverview? = classOverviewProvider(limit)

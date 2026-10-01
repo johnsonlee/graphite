@@ -755,4 +755,18 @@ class MmapGraphTest {
         constructor.isAccessible = true
         return constructor.newInstance(buffer, 0) as DataInput
     }
+
+    @Test
+    fun `synthetic identities are recorded and looked up by member key`() {
+        val graph = MmapGraphBuilder()
+            .addSyntheticIdentity("com.example.App\$1", "0123456789abcdef0123456789abcdef")
+            .addSyntheticIdentity("com.example.App.lambda\$run\$0()", "fedcba9876543210fedcba9876543210")
+            .addSyntheticIdentity("com.example.App\$1", "00000000000000000000000000000000")
+            .build()
+
+        assertEquals("00000000000000000000000000000000", graph.syntheticIdentity("com.example.App\$1"))
+        assertEquals("fedcba9876543210fedcba9876543210", graph.syntheticIdentity("com.example.App.lambda\$run\$0()"))
+        assertNull(graph.syntheticIdentity("com.example.App"))
+        assertEquals(2, graph.syntheticIdentities().size)
+    }
 }

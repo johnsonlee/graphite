@@ -147,6 +147,10 @@ internal class WebGraphBackedGraph(
 
     override fun classOrigins(): Map<String, String> = metadata.classOrigins
 
+    override fun syntheticIdentity(member: String): String? = metadata.syntheticIdentities[member]
+
+    override fun syntheticIdentities(): Map<String, String> = metadata.syntheticIdentities
+
     override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.artifactDependencies
 
     override fun classOverview(limit: Int): ClassOverview? = classOverviewProvider(limit)

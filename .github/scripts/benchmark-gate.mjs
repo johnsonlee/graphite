@@ -197,28 +197,29 @@ const LARGE_CORPUS_SHAPE_FIELDS = ["nodes", "sourceEdges", "persistedEdges", "me
 const LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE = 4 * 1024;
 const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 
-// One-time graph-shape transition: calls on function values resolve to every lambda shape (class-based
-// Kotlin lambdas, callable references, anonymous classes, desugared lambdas), creating methods get a
-// call site to the function object's body, and casts carry dataflow, on top of a base that already
-// writes the `graph.branchdefs` sidecar. Only this exact base -> candidate shape, and a persisted-size
-// delta within LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may pass while the workflow
-// selects the pinned shape-transition controls; every other comparison keeps
-// exact shape equality.
+// One-time graph-shape transition: graph.metadata now ends with the optional synthetic identity
+// section (a 128-bit fingerprint per compiler-numbered synthetic member, keyed by the member's
+// class name or method signature, which also adds the method keys to the string table), so the
+// persisted size grows by that section and those strings while the node, edge, method and
+// call-site counts stay identical. Only this exact base -> candidate shape, and a persisted-size
+// delta within LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may pass while the
+// workflow selects the pinned shape-transition controls; every other comparison keeps exact
+// shape equality.
 export const LARGE_CORPUS_SHAPE_TRANSITION = Object.freeze({
     tika: {
-        base: { nodes: 3_897_012, sourceEdges: 4_405_147, persistedEdges: 4_249_806, methods: 312_788, callSites: 1_002_088 },
+        base: { nodes: 3_901_103, sourceEdges: 4_510_016, persistedEdges: 4_353_588, methods: 312_788, callSites: 1_006_172 },
         candidate: { nodes: 3_901_103, sourceEdges: 4_510_016, persistedEdges: 4_353_588, methods: 312_788, callSites: 1_006_172 },
-        persistedBytesDelta: 566_248
+        persistedBytesDelta: 1_818_775
     },
     hive: {
-        base: { nodes: 5_986_673, sourceEdges: 6_350_854, persistedEdges: 6_134_254, methods: 404_016, callSites: 1_437_647 },
+        base: { nodes: 5_992_914, sourceEdges: 6_597_267, persistedEdges: 6_376_682, methods: 404_016, callSites: 1_443_886 },
         candidate: { nodes: 5_992_914, sourceEdges: 6_597_267, persistedEdges: 6_376_682, methods: 404_016, callSites: 1_443_886 },
-        persistedBytesDelta: 1_145_094
+        persistedBytesDelta: 10_577_222
     },
     "kotlin-compiler": {
-        base: { nodes: 3_268_537, sourceEdges: 3_672_821, persistedEdges: 3_557_610, methods: 249_669, callSites: 900_366 },
+        base: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
         candidate: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
-        persistedBytesDelta: 2_650_922
+        persistedBytesDelta: 9_958_925
     }
 });
 
