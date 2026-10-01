@@ -16,6 +16,8 @@ kover {
                 classes("*Benchmark*")
                 // Kotlin lambda fixtures are loaded as bytecode by tests, never executed
                 classes("sample.kotlinlambda.*")
+                // Frontend correctness fixtures are analyzed as external applications, never executed
+                classes("fixture.frontend.*")
             }
         }
     }
@@ -24,6 +26,19 @@ kover {
 val integrationFixtures: Configuration by configurations.creating
 integrationFixtures.isTransitive = false
 val asmVersion = libs.versions.asm.get()
+
+// Small, deliberately controlled programs used by FrontendCorrectnessGateTest. They are kept
+// outside the test runtime classpath so the only way the test can observe them is through the
+// frontend under test. Their expected semantics live in a separate, hand-authored manifest.
+val frontendCorrectnessJavaFixtures = sourceSets.create("frontendCorrectnessJavaFixtures")
+val frontendCorrectnessAndroidFixtures = sourceSets.create("frontendCorrectnessAndroidFixtures")
+val frontendCorrectnessKotlinFixtures = sourceSets.create("frontendCorrectnessKotlinFixtures") {
+    java.setSrcDirs(emptyList<String>())
+    resources.setSrcDirs(emptyList<String>())
+}
+extensions.getByType(KotlinJvmProjectExtension::class.java).sourceSets
+    .getByName(frontendCorrectnessKotlinFixtures.name)
+    .kotlin.setSrcDirs(listOf("src/frontendCorrectnessKotlinFixtures/kotlin"))
 
 dependencies {
     api(project(":core"))
@@ -59,6 +74,7 @@ dependencies {
     add(integrationFixtures.name, libs.tika.app)
     add(integrationFixtures.name, libs.hive.exec)
     add(integrationFixtures.name, libs.kotlin.compiler.embeddable)
+    add(frontendCorrectnessKotlinFixtures.implementationConfigurationName, "org.jetbrains.kotlin:kotlin-stdlib:$embeddedKotlinVersion")
 }
 
 configurations.matching { it.name.startsWith("jmh", ignoreCase = true) }.configureEach {
@@ -122,6 +138,44 @@ val kotlinLambdaFixtureSets = kotlinLambdaFixtureModes.map { (mode, flags) ->
 // every `invokedynamic` lambda becomes a synthetic `Outer$$ExternalSyntheticLambda<n>` class.
 val d8: Configuration by configurations.creating { isTransitive = false }
 dependencies { d8(libs.r8) }
+
+// Produce a real DEX-bearing APK for the Android frontend. The fixture intentionally uses only
+// java.lang and primitive arrays, so the correctness test can supply a deterministic empty
+// platform JAR instead of depending on a developer machine's Android SDK.
+val androidCorrectnessDexDir = layout.buildDirectory.dir("frontend-correctness/android-dex")
+val buildFrontendCorrectnessAndroidDex by tasks.registering(JavaExec::class) {
+    dependsOn(frontendCorrectnessAndroidFixtures.classesTaskName)
+    val classes = frontendCorrectnessAndroidFixtures.output.classesDirs
+    inputs.files(classes).withPropertyName("androidCorrectnessClasses")
+    outputs.dir(androidCorrectnessDexDir)
+    classpath = d8
+    mainClass.set("com.android.tools.r8.D8")
+    argumentProviders += CommandLineArgumentProvider {
+        val output = androidCorrectnessDexDir.get().asFile
+        listOf("--min-api", "21", "--output", output.absolutePath, "--lib", System.getProperty("java.home")) +
+            classes.asFileTree.matching { include("**/*.class") }.files.map { it.absolutePath }
+    }
+    doFirst { androidCorrectnessDexDir.get().asFile.run { deleteRecursively(); mkdirs() } }
+}
+
+val packageFrontendCorrectnessAndroidApp by tasks.registering(Zip::class) {
+    dependsOn(buildFrontendCorrectnessAndroidDex)
+    from(androidCorrectnessDexDir)
+    destinationDirectory.set(layout.buildDirectory.dir("frontend-correctness"))
+    archiveFileName.set("frontend-correctness.apk")
+}
+val packageFrontendCorrectnessJavaApp by tasks.registering(Jar::class) {
+    dependsOn(frontendCorrectnessJavaFixtures.classesTaskName)
+    from(frontendCorrectnessJavaFixtures.output)
+    destinationDirectory.set(layout.buildDirectory.dir("frontend-correctness"))
+    archiveFileName.set("frontend-correctness-java.jar")
+}
+val packageFrontendCorrectnessKotlinApp by tasks.registering(Jar::class) {
+    dependsOn(frontendCorrectnessKotlinFixtures.classesTaskName)
+    from(frontendCorrectnessKotlinFixtures.output)
+    destinationDirectory.set(layout.buildDirectory.dir("frontend-correctness"))
+    archiveFileName.set("frontend-correctness-kotlin.jar")
+}
 val (_, indyFixtureSet, indyFixtureCompile) = kotlinLambdaFixtureSets.single { it.first == "Indy" }
 val desugarKotlinLambdaFixtures by tasks.registering(JavaExec::class) {
     val input = indyFixtureCompile.flatMap { it.destinationDirectory }
@@ -142,6 +196,22 @@ val desugarKotlinLambdaFixtures by tasks.registering(JavaExec::class) {
 }
 
 tasks.test {
+    val javaApp = packageFrontendCorrectnessJavaApp.flatMap { it.archiveFile }
+    val kotlinApp = packageFrontendCorrectnessKotlinApp.flatMap { it.archiveFile }
+    val androidApk = packageFrontendCorrectnessAndroidApp.flatMap { it.archiveFile }
+    dependsOn(packageFrontendCorrectnessJavaApp)
+    dependsOn(packageFrontendCorrectnessKotlinApp)
+    dependsOn(packageFrontendCorrectnessAndroidApp)
+    inputs.file(javaApp).withPropertyName("frontendCorrectnessJavaFixtures")
+    inputs.file(kotlinApp).withPropertyName("frontendCorrectnessKotlinFixtures")
+    inputs.file(androidApk).withPropertyName("frontendCorrectnessAndroidFixture")
+    jvmArgumentProviders += CommandLineArgumentProvider {
+        listOf(
+            "-Dfrontend.correctness.java=${javaApp.get().asFile.absolutePath}",
+            "-Dfrontend.correctness.kotlin=${kotlinApp.get().asFile.absolutePath}",
+            "-Dfrontend.correctness.android=${androidApk.get().asFile.absolutePath}"
+        )
+    }
     kotlinLambdaFixtureSets.forEach { (mode, _, compile) ->
         val classesDir = compile.flatMap { it.destinationDirectory }
         inputs.files(classesDir).withPropertyName("kotlinLambda${mode}Fixtures")
