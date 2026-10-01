@@ -11,3 +11,4 @@ pub mod registry;
 pub mod routes;
 pub mod serve;
 pub mod topology;
+pub mod watch;
