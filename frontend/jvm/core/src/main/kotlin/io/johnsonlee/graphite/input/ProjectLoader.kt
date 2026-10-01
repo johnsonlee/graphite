@@ -75,6 +75,12 @@ data class LoaderConfig(
     val androidSdk: Path? = null,
 
     /**
+     * Calls folded to constants while the graph is built, see [FoldPlan] and [FoldRule]. `null`
+     * leaves every body exactly as the frontend's default interceptors do.
+     */
+    val folding: FoldPlan? = null,
+
+    /**
      * Verbose logging callback
      */
     val verbose: ((String) -> Unit)? = null

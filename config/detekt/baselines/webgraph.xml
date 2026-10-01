@@ -3,7 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:GraphStore.kt$GraphStore$internal fun collectMetadata(graph: Graph): GraphMetadata</ID>
-    <ID>CyclomaticComplexMethod:NodeSerializer.kt$NodeSerializer$fun readNode(dis: DataInput, strings: StringTable, formatVersion: Int = FORMAT_VERSION): Node</ID>
+    <ID>CyclomaticComplexMethod:NodeSerializer.kt$NodeSerializer$fun readNode( dis: DataInput, strings: StringTable, formatVersion: Int = FORMAT_VERSION, ordinals: CallSiteOrdinals = CallSiteOrdinals.EMPTY ): Node</ID>
     <ID>CyclomaticComplexMethod:NodeSerializer.kt$NodeSerializer$fun writeNode(dos: DataOutputStream, node: Node, strings: StringTable): Int</ID>
     <ID>LargeClass:GraphStoreTest.kt$GraphStoreTest</ID>
     <ID>LargeClass:NodeSerializer.kt$NodeSerializer</ID>

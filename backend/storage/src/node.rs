@@ -2,6 +2,7 @@
 
 use crate::io::{Cursor, Truncated};
 use crate::strings::StringTable;
+use sha2::{Digest, Sha256};
 
 /// Index into the graph string table.
 pub type StrId = u32;
@@ -23,6 +24,7 @@ pub const TAG_CALL_SITE_NODE: u8 = 12;
 pub const TAG_ANNOTATION_NODE: u8 = 13;
 pub const TAG_RESOURCE_VALUE_NODE: u8 = 14;
 pub const TAG_RESOURCE_FILE_NODE: u8 = 15;
+
 pub const TAG_COUNT: usize = 16;
 
 /// Node record header: int32 id + tag byte.
@@ -169,6 +171,11 @@ pub enum NodeKind {
         line: Option<i32>,
         receiver: Option<NodeId>,
         arguments: Vec<NodeId>,
+        /// Which call of `callee` in `caller` this is, counted in statement order from
+        /// `0`; a call the frontend derived rather than read from the bytecode counts
+        /// from `-1` downwards. Not part of the record: `Graph::node` fills it from the
+        /// `graph.callsite-ordinals` sidecar, and it is `None` for a graph without one.
+        ordinal: Option<i32>,
     },
     Annotation {
         name: StrId,
@@ -335,6 +342,7 @@ impl Node {
                         Some(receiver as u32)
                     },
                     arguments,
+                    ordinal: None,
                 }
             }
             TAG_ANNOTATION_NODE => {
@@ -420,5 +428,153 @@ pub fn read_call_site_strings(data: &[u8], record_pos: usize) -> CallSiteStrings
         caller_name,
         callee_class,
         callee_name,
+    }
+}
+
+/// The `graph.callsite-ordinals` sidecar: the ordinal of every call site that has one, by
+/// node id. Layout: `int32 header = "GRQ" | 2`, `int32 count`, the 32-byte SHA-256 of the
+/// entries, then `count` pairs of `int32 nodeId, int32 ordinal`, ascending by node id. A file
+/// of its own so that a reader which predates it reads the graph exactly as before; the digest
+/// is also the last section of `graph.metadata`, which binds the sidecar to the graph it
+/// describes: a writer that does not know the sidecar rewrites the metadata without it.
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct CallSiteOrdinals {
+    ids: Vec<u32>,
+    ordinals: Vec<i32>,
+}
+
+pub const MAGIC_CALL_SITE_ORDINALS: i32 = 0x47525100;
+pub const CALL_SITE_ORDINALS_VERSION: u8 = 2;
+pub const CALL_SITE_ORDINALS_HEADER_BYTES: usize = 8 + 32;
+
+impl CallSiteOrdinals {
+    pub fn empty() -> CallSiteOrdinals {
+        CallSiteOrdinals::default()
+    }
+
+    /// Parse the sidecar bound by `binding`, the digest `graph.metadata` ends with; `None`
+    /// when there is no binding or the bytes are not that sidecar (wrong header, cut short,
+    /// longer than its count, another digest), in which case the graph is read without
+    /// ordinals, as a reader without the sidecar does.
+    pub fn parse(data: &[u8], binding: Option<&[u8; 32]>) -> Option<CallSiteOrdinals> {
+        let binding = binding?;
+        let mut c = Cursor::new(data);
+        let header = c.i32().ok()?;
+        if header & !0xFF != MAGIC_CALL_SITE_ORDINALS
+            || (header & 0xFF) as u8 != CALL_SITE_ORDINALS_VERSION
+        {
+            return None;
+        }
+        let count = usize::try_from(c.i32().ok()?).ok()?;
+        if c.bytes(32).ok()? != binding {
+            return None;
+        }
+        if data.len() != CALL_SITE_ORDINALS_HEADER_BYTES + count.checked_mul(8)? {
+            return None;
+        }
+        // The entries are what the binding covers: the digest copied into the header says
+        // nothing about bytes behind it, so they are hashed before any ordinal is exposed.
+        if Sha256::digest(&data[CALL_SITE_ORDINALS_HEADER_BYTES..])[..] != binding[..] {
+            return None;
+        }
+        let mut ids = Vec::with_capacity(count);
+        let mut ordinals = Vec::with_capacity(count);
+        for _ in 0..count {
+            ids.push(c.u32().ok()?);
+            ordinals.push(c.i32().ok()?);
+        }
+        Some(CallSiteOrdinals { ids, ordinals })
+    }
+
+    pub fn len(&self) -> usize {
+        self.ids.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.ids.is_empty()
+    }
+
+    /// The ordinal of node `id`, `None` when the sidecar has none for it.
+    pub fn get(&self, id: NodeId) -> Option<i32> {
+        self.ids.binary_search(&id).ok().map(|i| self.ordinals[i])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A CallSite record as the Kotlin writer lays it out: id, tag, caller and callee
+    /// descriptors (class, name, parameter count, parameters, return type), line,
+    /// receiver, argument count, arguments.
+    fn call_site_record() -> Vec<u8> {
+        let mut out = Vec::new();
+        let i32 = |out: &mut Vec<u8>, v: i32| out.extend_from_slice(&v.to_be_bytes());
+        i32(&mut out, 7);
+        out.push(TAG_CALL_SITE_NODE);
+        for desc in [[0, 1], [2, 3]] {
+            for v in [desc[0], desc[1], 1, 4, 5] {
+                i32(&mut out, v);
+            }
+        }
+        for v in [-1, -1, 2, 11, 12] {
+            i32(&mut out, v);
+        }
+        out
+    }
+
+    #[test]
+    fn a_call_site_record_carries_no_ordinal_of_its_own() {
+        let node = Node::read(&call_site_record(), 0, 3).unwrap();
+        assert_eq!(node.id, 7);
+        match &node.kind {
+            NodeKind::CallSite {
+                arguments, ordinal, ..
+            } => {
+                assert_eq!(arguments, &vec![11, 12]);
+                assert_eq!(*ordinal, None);
+            }
+            other => panic!("not a call site: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn the_ordinal_sidecar_parses_and_answers_by_node_id() {
+        let mut bytes = Vec::new();
+        let i32 = |out: &mut Vec<u8>, v: i32| out.extend_from_slice(&v.to_be_bytes());
+        let mut entries = Vec::new();
+        for (id, ordinal) in [(4, 0), (9, -1), (12, 2)] {
+            i32(&mut entries, id);
+            i32(&mut entries, ordinal);
+        }
+        let digest: [u8; 32] = Sha256::digest(&entries).into();
+        i32(&mut bytes, MAGIC_CALL_SITE_ORDINALS | 2);
+        i32(&mut bytes, 3);
+        bytes.extend_from_slice(&digest);
+        bytes.extend_from_slice(&entries);
+        let sidecar = CallSiteOrdinals::parse(&bytes, Some(&digest)).unwrap();
+        assert_eq!(sidecar.len(), 3);
+        assert_eq!(sidecar.get(4), Some(0));
+        assert_eq!(sidecar.get(9), Some(-1));
+        assert_eq!(sidecar.get(12), Some(2));
+        assert_eq!(sidecar.get(5), None);
+        // No binding, another graph's binding: the sidecar describes another graph.
+        assert!(CallSiteOrdinals::parse(&bytes, None).is_none());
+        assert!(CallSiteOrdinals::parse(&bytes, Some(&[0u8; 32])).is_none());
+        // Cut short, trailing bytes, wrong header, wrong version: not a sidecar.
+        assert!(CallSiteOrdinals::parse(&bytes[..bytes.len() - 2], Some(&digest)).is_none());
+        let mut longer = bytes.clone();
+        longer.push(0);
+        assert!(CallSiteOrdinals::parse(&longer, Some(&digest)).is_none());
+        assert!(CallSiteOrdinals::parse(&[1, 2, 3, 4, 0, 0, 0, 0], Some(&digest)).is_none());
+        let mut wrong = bytes.clone();
+        wrong[3] = 1;
+        assert!(CallSiteOrdinals::parse(&wrong, Some(&digest)).is_none());
+        // An entry flipped behind an intact header: the entries are hashed, not the header's copy.
+        let mut tampered = bytes.clone();
+        let last = tampered.len() - 1;
+        tampered[last] ^= 1;
+        assert!(CallSiteOrdinals::parse(&tampered, Some(&digest)).is_none());
+        assert!(CallSiteOrdinals::empty().is_empty());
     }
 }

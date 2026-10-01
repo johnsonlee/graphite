@@ -6050,6 +6050,83 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `round-trip preserves call-site ordinals, derived and unknown ones included`() {
+        val returnType = TypeDescriptor("void")
+        val caller = MethodDescriptor(TypeDescriptor("example.Caller"), "run", emptyList(), returnType)
+        val callee = MethodDescriptor(TypeDescriptor("example.Flags"), "enabled", emptyList(), returnType)
+        val graph = DefaultGraph.Builder().apply {
+            addNode(CallSiteNode(NodeId(0), caller, callee, null, null, emptyList(), ordinal = 0))
+            addNode(CallSiteNode(NodeId(1), caller, callee, null, null, emptyList(), ordinal = 1))
+            addNode(CallSiteNode(NodeId(2), caller, callee, null, null, emptyList(), ordinal = -1))
+            addNode(CallSiteNode(NodeId(3), caller, callee, null, null, emptyList(), ordinal = null))
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-ordinal")
+        try {
+            GraphStore.save(graph, dir)
+            val expected: List<Int?> = listOf(0, 1, -1, null)
+            fun Graph.ordinals(): List<Int?> = nodes(CallSiteNode::class.java).sortedBy { it.id.value }.map { it.ordinal }.toList()
+            assertEquals(expected, GraphStore.load(dir).ordinals())
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { mapped -> assertEquals(expected, mapped.ordinals()) }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `ordinals live in a sidecar that older readers never open`() {
+        val returnType = TypeDescriptor("void")
+        val caller = MethodDescriptor(TypeDescriptor("example.Caller"), "run", emptyList(), returnType)
+        val callee = MethodDescriptor(TypeDescriptor("example.Flags"), "enabled", emptyList(), returnType)
+        val graph = DefaultGraph.Builder().apply {
+            addNode(CallSiteNode(NodeId(0), caller, callee, null, null, emptyList(), ordinal = 0))
+            addNode(CallSiteNode(NodeId(1), caller, callee, null, null, emptyList(), ordinal = 1))
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-ordinal-sidecar")
+        try {
+            GraphStore.save(graph, dir)
+            val sidecar = dir.resolve(GraphStore.CALL_SITE_ORDINALS_FILE)
+            assertTrue(Files.exists(sidecar))
+            assertEquals(NodeSerializer.FORMAT_VERSION, DataInputStream(Files.newInputStream(dir.resolve("graph.nodedata"))).use {
+                NodeSerializer.readHeader(it, NodeSerializer.MAGIC_NODEDATA)
+            }, "the record format does not change")
+            val metadataFile = dir.resolve("graph.metadata")
+            val binding = NodeSerializer.readCallSiteOrdinalBinding(metadataFile)
+            assertNotNull(binding, "graph.metadata ends with the sidecar's binding")
+            val loaded = CallSiteOrdinals.load(sidecar, binding)
+            assertEquals(2, loaded.size)
+            assertEquals(1, loaded[1])
+            assertEquals(null, loaded[7])
+            assertEquals(0, CallSiteOrdinals.load(sidecar, null).size, "no binding: no ordinals")
+            assertEquals(0, CallSiteOrdinals.load(sidecar, ByteArray(32)).size, "another graph's binding: no ordinals")
+            // A writer that predates the sidecar re-saves graph.metadata without the binding and leaves
+            // the sidecar behind: the ordinals it holds belong to another graph and must not attach.
+            val metadataBytes = Files.readAllBytes(metadataFile)
+            Files.write(metadataFile, metadataBytes.copyOf(metadataBytes.size - NodeSerializer.CALL_SITE_ORDINALS_BINDING_BYTES))
+            assertEquals(null, NodeSerializer.readCallSiteOrdinalBinding(metadataFile))
+            fun Graph.ordinals(): List<Int?> = nodes(CallSiteNode::class.java).sortedBy { it.id.value }.map { it.ordinal }.toList()
+            assertEquals(listOf(null, null), GraphStore.load(dir).ordinals(), "a stale sidecar is not attached")
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { mapped -> assertEquals(listOf(null, null), mapped.ordinals()) }
+            Files.write(metadataFile, metadataBytes)
+            // Without the sidecar the same graph reads with no ordinals, as a reader that predates it does.
+            Files.delete(sidecar)
+            assertEquals(listOf(null, null), GraphStore.load(dir).ordinals())
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { mapped -> assertEquals(listOf(null, null), mapped.ordinals()) }
+            // A sidecar that is not one is ignored, and a save without ordinals removes a stale one.
+            Files.write(sidecar, byteArrayOf(1, 2, 3))
+            assertEquals(0, CallSiteOrdinals.load(sidecar, binding).size)
+            Files.write(sidecar, ByteArray(0))
+            assertEquals(0, CallSiteOrdinals.load(sidecar, binding).size)
+            val plain = DefaultGraph.Builder().apply {
+                addNode(CallSiteNode(NodeId(0), caller, callee, null, null, emptyList()))
+            }.build()
+            GraphStore.save(plain, dir)
+            assertFalse(Files.exists(sidecar))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `load from nonexistent directory throws`() {
         try {
             GraphStore.load(Files.createTempFile("not", "dir"))

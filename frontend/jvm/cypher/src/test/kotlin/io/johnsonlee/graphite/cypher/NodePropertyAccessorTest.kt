@@ -136,12 +136,15 @@ class NodePropertyAccessorTest {
     @Test
     fun `CallSiteNode properties`() {
         val callee = MethodDescriptor(TypeDescriptor("com.example.Repo"), "save", listOf(stringType), TypeDescriptor("void"))
-        val node = CallSiteNode(NodeId.next(), method, callee, 42, null, emptyList())
+        val node = CallSiteNode(NodeId.next(), method, callee, 42, null, emptyList(), ordinal = 3)
         assertEquals("com.example.Repo", NodePropertyAccessor.getProperty(node, "callee_class"))
         assertEquals("save", NodePropertyAccessor.getProperty(node, "callee_name"))
         assertEquals("com.example.Service", NodePropertyAccessor.getProperty(node, "caller_class"))
         assertEquals("process", NodePropertyAccessor.getProperty(node, "caller_name"))
         assertEquals(42, NodePropertyAccessor.getProperty(node, "line"))
+        assertEquals(3, NodePropertyAccessor.getProperty(node, "ordinal"))
+        assertNull(NodePropertyAccessor.getProperty(node.copy(ordinal = null), "ordinal"))
+        assertEquals(3, NodePropertyAccessor.getAllProperties(node)["ordinal"])
         assertNull(NodePropertyAccessor.getProperty(node, "unknown"))
     }
 

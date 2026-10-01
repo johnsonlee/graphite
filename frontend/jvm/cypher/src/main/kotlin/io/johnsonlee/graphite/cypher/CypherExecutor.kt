@@ -409,6 +409,7 @@ class CypherExecutor internal constructor(
                 map["caller_class"] = node.caller.declaringClass.className
                 map["caller_name"] = node.caller.name
                 map["line"] = node.lineNumber
+                map["ordinal"] = node.ordinal
             }
             is IntConstant -> map[PROPERTY_VALUE] = node.value
             is StringConstant -> map[PROPERTY_VALUE] = node.value

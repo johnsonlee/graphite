@@ -352,6 +352,143 @@ Lessons:
   `KotlinLambdaDispatchTest` runs every shape against all three outputs. Desugaring adds a
   `$r8$lambda$` trampoline per lambda, so reachability checks need a deeper hop budget.
 
+### Constant Folding Runs on Jimple, Not on the Graph
+
+`--fold` (`LoaderConfig.folding`) replaces gate calls by constants in a body interceptor
+and removes the side they rule out before any node exists (`docs/constant-folding.md`).
+Lessons from building it:
+
+- A gated block made only of `return`, constants and field accesses has no node of its own, so
+  no post-hoc view of branch sides can remove it; the body is the only place to fold.
+- SootUp validates the statement graph after every interceptor: a pass that makes statements
+  unreachable must remove them itself or the next validation fails.
+- SootUp's `ConditionalBranchFolder` is not usable for this: 2.0.0 kept the side a constant
+  `if` rules out, and 3.0.1, which fixed the sign, still prunes the join point behind the
+  dropped side (`if (gate) work(); tail();` loses `tail()`), and its
+  `ConstantPropagatorAndFolder` does not substitute a folded local into the `if`.
+  `ConstantFolding.FoldBranches` does its own propagation, evaluation and rewiring;
+  `ConditionalBranchFolderTest` pins the SootUp behaviour so an upgrade that fixes it is noticed.
+- Extra passes run only on bodies in which a rule matched, so every other method goes through
+  exactly the chain it would without rules and the parity baseline holds. That chain is empty
+  for a jar or a class directory: `PathBasedAnalysisInputLocation.create(path, type)` passes
+  `Collections.emptyList()` (2.0.0 and 3.0.1 alike), while `JavaClassPathAnalysisInputLocation`
+  defaults to `BytecodeBodyInterceptors.Default`. Building the fold chain on `Default` added
+  `LocalSplitter` and friends to every method and changed graphs no rule named (six `#l` locals
+  on the acme fixture); the fold passes go on whatever the location runs without them.
+- Passing an extra parameter into the archive loaders tripped detekt's `NestedBlockDepth`; the
+  fold chain travels in a loader field instead.
+- A rule is a node pattern in the graph's own vocabulary (`CallSite` properties, constant
+  labels for the arguments and the value), not a symbol grammar of its own: users already know
+  the names from queries, every frontend reuses its node schema, and the report can hand back
+  the Cypher that previews a rule. Argument matching is what makes keyed gates
+  (`Flags.isEnabled("x")`) foldable at all.
+- YAML 1.1 reads bare `on`/`off`/`yes`/`no` as booleans: a test fixture named `on` must be quoted.
+- Constant comparisons must follow the JVM, not Kotlin: `lcmp` compares longs exactly (a
+  `Double` detour loses bits above 2^53), `fcmpl`/`dcmpl` yield `-1` and `fcmpg`/`dcmpg` `1` on
+  `NaN`, and `-0.0 == 0.0`, which `Double.compareTo` denies. Rule arguments compare the same
+  way: integers exactly, floating point as IEEE 754, a `FloatConstant` at `float` precision.
+- An `if` whose two sides are the same statement (`if (gate) { }`) has one successor; resolving
+  it must keep that statement for either value.
+- The callee a rule names is the declaring class, as the graph's `CallSite` has it, not the
+  receiver class the bytecode spells; the fold pass resolves it the way the adapter does.
+- A static field typed as its own class is not an enum constant unless the class is an enum
+  (`static final Flags SELF`); ask the view, or the analysis JVM for a class outside it.
+- The interceptor chain runs on every resolution of a body, and a body is resolved more than
+  once per build (detached streaming copies, the enum initialiser read again, the view's own
+  copy under a call-graph algorithm). Accounting is kept per calling method and replaced per
+  resolution, never summed, or the report counts calls twice.
+- A report file describes one build: a build without rules deletes the `graph.folds.json` an
+  earlier build left in the same output directory.
+- A call site's stable key is `(caller_signature, callee_signature, ordinal)`, where `ordinal`
+  ranks the call among the caller's invokes of that callee in statement order, over the
+  unfiltered body: the adapter turns an assigned boxing call into a dataflow edge and emits no
+  call site for it, so a pass that counted only the call sites it could see numbered the
+  invokes differently from a pass over the Jimple and a `select` key folded the wrong call.
+  One function (`callOrdinals`) numbers the body for the adapter and the fold pass alike;
+  an identity is computed once and consumed, never reconstructed from a filtered view. No other node
+  needs an identity of its own: constants are keyed by value, fields, parameters and returns by
+  their owner and name or index, and a synthetic owner contributes its fingerprint. A bytecode
+  offset would be unique too, but it moves with every unrelated edit and SootUp does not keep
+  it. The adapter numbers the sites it creates per method, derived sites (resolved dispatch,
+  lambda bodies, function-object methods) from `-1` downwards so the bytecode's own calls keep
+  the ranks a pass over the body computes, and the fold pass numbers the invokes of
+  `builder.stmts` (linearised; `controlFlowGraph.nodes` is a set in no particular order).
+  A folded body is numbered as it was before the fold (`ordinalsBeforeFolding`, keyed by the
+  surviving statements): numbering the reduced body again renumbered the survivors, so the
+  report's `selected #1` named a removed call while the folded graph's `#1` named a different
+  one, and a key read back off the folded graph folded the wrong site.
+  The ordinal is persisted in its own sidecar (`graph.callsite-ordinals`), not as a field of the
+  `CallSite` record: the benchmark gates query the candidate's graphs with the base revision's
+  code, so a record-format version the base does not know fails every comparison at once
+  (`Unsupported GraphStore format version 4` across a dozen jobs), while a file the base never
+  opens costs nothing, which is also how the synthetic identities and the branch definitions
+  travel. The sidecar is mapped, not read: pulling a million entries through a
+  `DataInputStream` cost about a tenth of a second per fresh mapping, and the cold rows of the
+  slow-query-shapes gate (a fresh private mapping per query) charged it to every query that
+  decodes a call site, a 30% regression on three of them. A file a hot path opens lazily must
+  cost nothing to open. A sidecar is bound to the graph it describes: its digest is the last
+  section of `graph.metadata` (read from the file's tail, not by parsing it), because a writer
+  that does not know the sidecar rewrites the metadata and leaves the sidecar behind, and
+  ordinals attached to the reused node ids of another graph would fold the wrong call. The
+  readers hash the entries against the binding; the digest copied into the sidecar's own
+  header proves nothing about the bytes behind it, and a path, size and modification time are
+  no content identity either: every fresh mapping hashes the entries.
+- A fold file's numbers are read exactly or refused: an integer outside a `long` is an error,
+  not a value wrapped modulo 2^64, a decimal or exponent literal is a `double` in JSON as in
+  YAML, and `.inf`/`.nan` are errors, applied per rule once the rule is known to be this
+  frontend's (a shared file's Swift rule may carry a `UInt64`); a `float` value or argument must stay finite at `float`
+  precision, and a `byte`, `short` or `char` keeps its own range although Jimple carries all
+  three as an `int`. A key named twice, after alias resolution or spelled the same (SnakeYAML
+  and Gson's tree parser both keep the last one silently; read the JSON token by token and set
+  `allowDuplicateKeys = false`), is an error, not
+  "the last one wins". The report `graph.folds.json` must read back as a fold file, so the
+  loader drops the diagnostic keys beside a rule.
+- A `select` rule is a Cypher query, because a pattern on one call cannot say "the calls
+  that the constant 1234 reaches through two helpers" and the graph's query language can.
+  The frontend cannot query the graph it is building, so the Rust CLI builds twice: once
+  without rules, runs the queries there, and once with the selected keys (`cli/src/fold.rs`).
+  The frontend keeps the one schema validator (`graphite.jar fold plan` prints the rules as
+  JSON for the CLI), so the CLI needs no YAML parser and every error reads the same. The
+  Kotlin API takes a `FoldPlan` of sealed `FoldRule`s (`ConstantFold`, `FoldSites`), so a new
+  rule kind is a new subclass, not a new `LoaderConfig` field.
+- **Check upstream before working around a library bug.** `ConditionalBranchFolder`'s inverted
+  side selection was already fixed in SootUp 3.0.1 (released before this work) while the
+  project still pinned 2.0.0; the first move on a suspected library bug is to diff the latest
+  release's source for that class, then upgrade or at least record "removable after upgrade",
+  and only then write a replacement. Here the upgrade showed a second bug the replacement
+  also covers, which is the kind of thing only the diff plus a test tells you.
+
+### SootUp 3.x: What the Upgrade From 2.0.0 Changed
+
+- API renames, all mechanical: `StmtGraph`/`MutableStmtGraph` are `ControlFlowGraph`/
+  `MutableControlFlowGraph` (`builder.controlFlowGraph`), `Local`/`Value`/`Immediate` live in
+  `sootup.core.jimple.common`, `BodyInterceptor` in `sootup.core.interceptor`, `Stmt.getUses()`
+  returns a `List`, `AsmUtil.asmIdToSignatures` is plural, and `ApkAnalysisInputLocation`
+  takes an `AndroidVersionInfo`. `SootMethod`, `SootClass` and `SootClassSource` are interfaces;
+  test fakes extend `JavaSootMethod`, `JavaSootClass` and `JavaSootClassSource`.
+- The bytecode frontend no longer hands out an `AsmClassSource` with a `ClassNode`: it converts
+  each class into an `OverridingJavaClassSource` that already holds one `JavaSootMethod` per
+  method (its ASM `MethodNode` is the body source) and releases the `ClassNode`. The adapter's
+  streaming path reads those methods instead of reflecting on `classNode`; without that it
+  silently fell back to `sootClass.methods`.
+- `JavaSootMethod` memoizes its body. Resolving graphs through the methods the view holds keeps
+  every body of the corpus alive and ran the Android SDK out of a 4 GB heap; the adapter
+  processes a detached copy of each method (same body source, own cache) and drops it.
+  `AsmMethodSource` keeps per-instruction scratch maps after resolving a body; the adapter
+  nulls them after every path that resolves one (the method pass, the enum initialiser, bridge
+  bodies, and the view's own methods once a call-graph algorithm has run), not only in the
+  streaming sequence, whose `finally` runs before a `toList()` consumer resolves anything and
+  never runs for an abandoned `firstOrNull`.
+- `AsmClassSource.resolveMethods()` collects into a `HashSet` keyed by identity, so the order
+  changes from load to load; the adapter sorts by signature. Unsorted, synthetic fingerprints
+  were non-deterministic across two loads of the same classes.
+- The type assigner gives every local a type: the parity baseline moved 7904 `type=unknown`
+  facts to concrete types, nothing else changed. The richer `type` values also exposed a
+  Kotlin engine bug the Rust parity harness had never hit: `RETURN n.type, count(*) ORDER BY
+  n.type` was not sorted, because the grouped path never evaluated the sort key on the
+  group's source row the way the Rust engine (and the non-grouped Kotlin path) does.
+
+
 ### Why `buildGraph()` Is Not Parallelized
 
 After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.

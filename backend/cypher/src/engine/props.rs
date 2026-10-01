@@ -67,6 +67,7 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             caller,
             callee,
             line,
+            ordinal,
             ..
         } => match key {
             "callee_class" => s(g, callee.declaring_class),
@@ -76,6 +77,7 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             "caller_name" => s(g, caller.name),
             "caller_signature" => sig(g, caller),
             "line" => line.map(|l| Value::Int(l as i64)).unwrap_or(Value::Null),
+            "ordinal" => ordinal.map(|o| Value::Int(o as i64)).unwrap_or(Value::Null),
             _ => Value::Null,
         },
         NodeKind::IntConstant(v) => match key {
@@ -235,6 +237,7 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
             caller,
             callee,
             line,
+            ordinal,
             ..
         } => {
             put("callee_class", s(g, callee.declaring_class));
@@ -246,6 +249,10 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
             put(
                 "line",
                 line.map(|l| Value::Int(l as i64)).unwrap_or(Value::Null),
+            );
+            put(
+                "ordinal",
+                ordinal.map(|o| Value::Int(o as i64)).unwrap_or(Value::Null),
             );
         }
         NodeKind::IntConstant(v) => put("value", Value::Int(*v as i64)),

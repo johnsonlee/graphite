@@ -193,7 +193,17 @@ data class ResourceValueNode(
 ) : ValueNode, ConstantNode
 
 /**
- * A call site - where a method is invoked
+ * A call site - where a method is invoked.
+ *
+ * [ordinal] tells call sites of the same [caller] and [callee] apart, which no other property
+ * does: it counts, in statement order, the invokes of that callee in that method's bytecode,
+ * from `0`, every invoke, including the boxing and unboxing calls the graph shows as dataflow
+ * rather than as call sites, so `(caller_signature, callee_signature, ordinal)` names one call
+ * site and keeps naming it while the method's other statements change. A call the frontend derived rather than read from the
+ * bytecode (a function value's dispatch resolved to its body, a lambda body reached through
+ * `invokedynamic`, the methods a function object implements) counts apart, from `-1` downwards,
+ * so the ordinals of the calls the bytecode spells are the ones a pass over the method body
+ * reproduces. `null` in a graph persisted before the property existed.
  */
 data class CallSiteNode(
     override val id: NodeId,
@@ -201,7 +211,8 @@ data class CallSiteNode(
     val callee: MethodDescriptor,
     val lineNumber: Int?,
     val receiver: NodeId?,  // Receiver object for instance method calls (null for static calls)
-    val arguments: List<NodeId> // References to argument value nodes
+    val arguments: List<NodeId>, // References to argument value nodes
+    val ordinal: Int? = null
 ) : Node
 
 /**

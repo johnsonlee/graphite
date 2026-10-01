@@ -140,6 +140,7 @@ object NodePropertyAccessor {
         "caller_name" -> node.caller.name
         "caller_signature" -> node.caller.signature
         "line" -> node.lineNumber
+        "ordinal" -> node.ordinal
         else -> null
     }
 
@@ -245,7 +246,8 @@ object NodePropertyAccessor {
             "caller_class" to node.caller.declaringClass.className,
             "caller_name" to node.caller.name,
             "caller_signature" to node.caller.signature,
-            "line" to node.lineNumber
+            "line" to node.lineNumber,
+            "ordinal" to node.ordinal
         )
         is IntConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
         is StringConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)

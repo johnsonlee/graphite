@@ -71,6 +71,8 @@ Persisted-size changes since then, with every count unchanged:
 | --- | ---: | ---: | ---: |
 | Every save writes the `graph.branchdefs` sidecar (branch-side local definitions and per-local definition tables) and the 36-byte `graph.metadata` trailer that binds it, both counted in the persisted size | +6,079,344 B | +10,505,164 B | +9,344,528 B |
 | `graph.metadata` ends with the synthetic identity section (a 128-bit fingerprint per compiler-numbered synthetic member, keyed by class name or method signature) and the string table carries the method keys | +1,818,775 B | +10,577,222 B | +9,958,925 B |
+| SootUp 3.0.1 types every local (2.0.0 left `unknown`), so the string table carries more type names | +28,840 B | +36,401 B | +25,413 B |
+| The `graph.callsite-ordinals` sidecar: node id and ordinal per call site, plus its 40-byte header and the 36-byte binding at the end of `graph.metadata` | +8,049,384 B | +11,551,096 B | +7,383,016 B |
 
 The lambda change leaves method counts unchanged and adds nodes and call sites, on top of a base that
 already writes the sidecar (the sidecar itself grows with the new locals: Tika +4,516 B, Hive +6,920 B,
