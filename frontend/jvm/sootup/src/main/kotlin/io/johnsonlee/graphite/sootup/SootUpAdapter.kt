@@ -347,6 +347,9 @@ class SootUpAdapter(
     private val runtimeIndexedBundles = mutableSetOf<String>()
     private val bundleControlSpecsByClass = mutableMapOf<String, BundleControlSpec?>()
     private var classesByNameCache: Map<String, SootClass>? = null
+    private val syntheticIdentities = SyntheticIdentity.Collector()
+    /** Whether the class whose methods pass two is processing is a synthetic class, see [SyntheticIdentity]. */
+    private var activeSyntheticClass = false
 
     // Per-method: tracks which NodeIds were created from each statement
     // Reset per method in processMethod()
@@ -440,6 +443,10 @@ class SootUpAdapter(
                     }
                 }
 
+                activeSyntheticClass = SyntheticIdentity.isSyntheticClass(sootClass)
+                if (activeSyntheticClass) {
+                    syntheticIdentities.addClass(sootClass)
+                }
                 forEachMethod(sootClass) { method ->
                     processMethod(method)
                     if (extractAnnotationsEnabled && sootClass is JavaSootClass && method is JavaSootMethod) {
@@ -450,6 +457,13 @@ class SootUpAdapter(
                 visitFieldsForClass(sootClass)
                 extensions.forEach { it.visit(sootClass, extensionContext) }
             }
+
+        syntheticIdentities.resolve().forEach { (member, fingerprint) ->
+            graphBuilder.addSyntheticIdentity(member, fingerprint)
+        }
+        if (syntheticIdentities.skipped > 0) {
+            log { "Skipped ${syntheticIdentities.skipped} synthetic member(s) whose identity could not be rendered" }
+        }
 
         // Pass 2B: Resolve cross-method functional interface dispatch
         if (trackCrossMethodFunctionalDispatch) {
@@ -737,6 +751,12 @@ class SootUpAdapter(
             // Process method body if available
             if (method.hasBody()) {
                 processMethodBody(method, methodDescriptor)
+            }
+            // Rendered here, while the body is materialised, rather than in a pass of its own:
+            // streamed methods are rebuilt on every enumeration.
+            val syntheticMethod = SyntheticIdentity.isSyntheticMethod(method)
+            if (activeSyntheticClass || syntheticMethod) {
+                syntheticIdentities.addMethod(method, methodDescriptor.signature, syntheticMethod)
             }
         } catch (oom: OutOfMemoryError) {
             // Android/large corpus can contain a few pathological methods whose CFG

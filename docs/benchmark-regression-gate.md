@@ -117,13 +117,13 @@ counts exactly, and persisted size must change by the pinned per-corpus delta wi
 tolerance. Timing, heap, and CallSite-index lifecycle checks are unchanged. Any other combination
 falls through to the base-owned or legacy controls. The base pin names the pre-transition harness, so
 once the transition merges the base digest no longer matches and the branch is never selected again.
-The current transition resolves calls on function values to every lambda shape (class-based Kotlin
-lambdas, callable references, anonymous classes, D8/R8 desugared lambdas) and lets casts carry
-dataflow, which adds nodes, call sites and edges (Tika +4,084, Hive +6,239, Kotlin compiler +22,510
-call sites) on top of a base that already writes the `graph.branchdefs` sidecar;
-`docs/large-corpus-performance-baseline.md` lists the exact counts.
+The current transition appends the synthetic identity section to `graph.metadata` (a 128-bit
+fingerprint per compiler-numbered synthetic member, keyed by class name or method signature, which also
+adds the method keys to the string table): node, edge, method and call-site counts are identical, and
+the persisted size grows by the section and those strings (Tika +1,818,775, Hive +10,577,222, Kotlin
+compiler +9,958,925 bytes).
 
-The same change moves the wrapped-query fixture graphs, which only the candidate builds and every
+The lambda-shape transition before it moved the wrapped-query fixture graphs, which only the candidate builds and every
 revision (reference, base, candidate) then queries. Their base-owned harnesses pin that graph's node
 counts (`BenchmarkCorpus.kt`) and search-target distributions and total node count
 (`AllFixtureWrappedDiscoveryLatencyBenchmark.kt`), so they would reject the candidate's graph. For

@@ -13,7 +13,8 @@ import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
-import java.io.RandomAccessFile
+import java.io.BufferedInputStream
+import java.io.DataInputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -149,6 +150,8 @@ private data class GateMeasurement(
     val callSiteIndexBytes: Long,
     val branchDefinitionBytes: Long,
     val branchDefinitionsMillis: Long,
+    /** Synthetic members with a stable identity (the `GRS` section of `graph.metadata`), restored by the mapped graph. */
+    val syntheticIdentities: Long,
     val productionIndexPrepared: Boolean,
     val buildMillis: Long,
     val saveMillis: Long,
@@ -228,6 +231,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             }
 
             val nodes = sourceGraph.nodes(Node::class.java).count().toLong()
+            val expectedIdentities = sourceGraph.syntheticIdentities()
+            assertTrue(expectedIdentities.isNotEmpty(), "A large corpus has synthetic members for ${baseline.id}")
             val edgeCounts = sourceEdgeCounts(sourceGraph)
             val methods = sourceGraph.methodCount() ?: sourceGraph.methods(MethodPattern()).count().toLong()
             val callSites = sourceGraph.nodes(CallSiteNode::class.java).count().toLong()
@@ -288,6 +293,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             assertEquals(expectedDefinitions, mappedDefinitions, "Mapped graph must restore the source graph's definitions")
             val branchDefinitionBytes =
                 verifyBranchDefinitions(output, queryGraph, mappedDefinitions, expectedPositions, nodes.toInt())
+            assertEquals(expectedIdentities, queryGraph.syntheticIdentities(), "Mapped graph must restore synthetic identities")
 
             val persistedBytes = Files.walk(output).use { entries ->
                 entries.filter { path ->
@@ -305,6 +311,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 callSiteIndexBytes = callSiteIndexBytes,
                 branchDefinitionBytes = branchDefinitionBytes,
                 branchDefinitionsMillis = branchDefinitionsMillis,
+                syntheticIdentities = expectedIdentities.size.toLong(),
                 productionIndexPrepared = productionIndexPrepared,
                 buildMillis = buildMillis,
                 saveMillis = saveMillis,
@@ -436,9 +443,12 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         assertTrue(fingerprint.sideDefinitions > 0, "${baseline.id} must persist branch-side definitions")
         assertTrue(fingerprint.tables > 0, "${baseline.id} must persist per-local definition tables")
 
-        val trailerDigest = RandomAccessFile(output.resolve(METADATA_FILE).toFile(), "r").use { metadata ->
-            metadata.seek(metadata.length() - NodeSerializer.METADATA_TRAILER_BYTES)
-            NodeSerializer.readMetadataTrailer(metadata)
+        // The trailer follows the fixed sections and precedes the synthetic identity section, so it is
+        // read the way the loader reads it rather than from the end of the file.
+        val trailerDigest = DataInputStream(BufferedInputStream(Files.newInputStream(output.resolve(METADATA_FILE)))).use { metadata ->
+            val strings = StringTable.load(output)
+            NodeSerializer.readMetadataOptionalSections(metadata, strings, NodeSerializer.loadMetadata(metadata, strings))
+                .branchDefinitionDigest
         }
         assertNotNull(trailerDigest, "graph.metadata must carry the branch-definition trailer for ${baseline.id}")
         val bytes = Files.readAllBytes(sidecar)
@@ -513,6 +523,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         "callSiteIndexBytes=$callSiteIndexBytes",
         "branchDefinitionBytes=$branchDefinitionBytes",
         "branchDefinitionsMs=$branchDefinitionsMillis",
+        "syntheticIdentities=$syntheticIdentities",
         "productionIndexPrepared=${if (productionIndexPrepared) 1 else 0}",
         "buildMs=$buildMillis",
         "saveMs=$saveMillis",

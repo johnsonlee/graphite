@@ -492,6 +492,24 @@ interface Graph {
     fun classOrigins(): Map<String, String> = emptyMap()
 
     /**
+     * Stable identity of a compiler-numbered synthetic member, or `null` when [member] has none.
+     *
+     * [member] is a fully qualified class name (`sample.Foo$1`) or a method signature as
+     * [io.johnsonlee.graphite.core.MethodDescriptor.signature] renders it
+     * (`sample.Foo.lambda$run$0(int)`). Only members whose names carry a compiler-assigned
+     * ordinal (javac and Kotlin lambdas, anonymous classes, accessors, D8 outlines) or the
+     * `ACC_SYNTHETIC` flag have one; the identity is a 128-bit hash of the member's structure
+     * that does not move when a sibling is added or removed, see
+     * `io.johnsonlee.graphite.sootup.SyntheticIdentity`.
+     */
+    fun syntheticIdentity(member: String): String? = null
+
+    /**
+     * All synthetic identities keyed as in [syntheticIdentity].
+     */
+    fun syntheticIdentities(): Map<String, String> = emptyMap()
+
+    /**
      * Get artifact-level dependency weights keyed by source artifact, then target artifact.
      *
      * Example:

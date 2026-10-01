@@ -86,6 +86,15 @@ internal object NodeSerializer {
     internal const val MAGIC_TYPEINDEX   = 0x47525400  // "GRT"
     internal const val MAGIC_BRANCHDEFS  = 0x47524400  // "GRD"
     internal const val MAGIC_METADATA_TRAILER = 0x47525800  // "GRX", appended to graph.metadata
+    internal const val MAGIC_SYNTHETIC_IDENTITIES = 0x47525300  // "GRS", appended to graph.metadata
+
+    /** Format version of the synthetic identity section, independent of [FORMAT_VERSION]. */
+    internal const val SYNTHETIC_IDENTITIES_VERSION: Int = 1
+
+    /** Bytes of one persisted fingerprint: 128 bits, see [io.johnsonlee.graphite.graph.Graph.syntheticIdentity]. */
+    internal const val FINGERPRINT_BYTES: Int = 16
+    private const val HEX_RADIX = 16
+    private const val HEX_DIGIT_BITS = 4
 
     /** Format version of the optional `graph.branchdefs` sidecar, independent of [FORMAT_VERSION]. */
     internal const val BRANCH_DEFINITIONS_VERSION: Int = 1
@@ -371,6 +380,11 @@ internal object NodeSerializer {
         // Branch scopes
         for (bs in metadata.branchScopes) {
             collectMethodDescriptorStrings(bs.method, dest)
+        }
+
+        // Synthetic identities: keys only, fingerprints are raw bytes
+        for ((member, _) in metadata.syntheticIdentities) {
+            dest.add(member)
         }
     }
 
@@ -661,6 +675,117 @@ internal object NodeSerializer {
             for (id in bs.trueBranchNodeIds) dos.writeInt(id)
             dos.writeInt(bs.falseBranchNodeIds.size)
             for (id in bs.falseBranchNodeIds) dos.writeInt(id)
+        }
+    }
+
+    /**
+     * Append the synthetic identity section to `graph.metadata`, after the trailer: readers that
+     * predate it stop at the trailer and never see it, the Rust reader ignores everything after the
+     * last fixed section. Nothing is written when there is no identity to record, so a graph
+     * without synthetic members persists byte-identically to one saved before the section existed.
+     *
+     * Layout: `int32 header = MAGIC_SYNTHETIC_IDENTITIES | SYNTHETIC_IDENTITIES_VERSION`,
+     * `int32 count`, then per entry `int32 memberStringIndex` and [FINGERPRINT_BYTES] raw bytes.
+     */
+    fun writeSyntheticIdentities(metadata: GraphMetadata, dos: DataOutputStream, strings: StringTable) {
+        if (metadata.syntheticIdentities.isEmpty()) return
+        dos.writeInt(MAGIC_SYNTHETIC_IDENTITIES or SYNTHETIC_IDENTITIES_VERSION)
+        dos.writeInt(metadata.syntheticIdentities.size)
+        // Sorted so the file does not depend on the builder's map order.
+        for ((member, fingerprint) in metadata.syntheticIdentities.toSortedMap()) {
+            dos.writeInt(strings.indexOf(member))
+            dos.write(decodeFingerprint(fingerprint))
+        }
+    }
+
+    /**
+     * Read the optional sections that follow the fixed metadata sections in any order: the
+     * trailer that binds `graph.metadata` to its sidecar and the synthetic identities. Reading
+     * stops at end of file or at the first header that is neither.
+     */
+    fun readMetadataOptionalSections(dis: DataInput, strings: StringTable, metadata: GraphMetadata): GraphMetadata {
+        var digest: ByteArray? = null
+        var identities: Map<String, String> = emptyMap()
+        var header = readOptionalHeader(dis)
+        while (header != null) {
+            val magic = header and HEADER_MAGIC_MASK
+            val version = header and BYTE_MASK
+            // A section cut short by a truncated file is dropped as if it were absent: the fixed
+            // sections and the node data are intact, so the graph stays readable without it.
+            header = when {
+                magic == MAGIC_METADATA_TRAILER && version == BRANCH_DEFINITIONS_VERSION -> {
+                    digest = readTrailerDigest(dis)
+                    if (digest == null) null else readOptionalHeader(dis)
+                }
+                magic == MAGIC_SYNTHETIC_IDENTITIES && version == SYNTHETIC_IDENTITIES_VERSION -> {
+                    val loaded = readSyntheticIdentities(dis, strings)
+                    if (loaded == null) null else {
+                        identities = loaded
+                        readOptionalHeader(dis)
+                    }
+                }
+                else -> null
+            }
+        }
+        return metadata.copy(branchDefinitionDigest = digest, syntheticIdentities = identities)
+    }
+
+    private fun readTrailerDigest(dis: DataInput): ByteArray? = try {
+        ByteArray(DIGEST_BYTES).also(dis::readFully)
+    } catch (_: EOFException) {
+        null
+    }
+
+    private fun readOptionalHeader(dis: DataInput): Int? = try {
+        dis.readInt()
+    } catch (_: EOFException) {
+        null
+    }
+
+    /**
+     * The section's entries, or `null` when the file ends inside it or its count is not a count. The
+     * entries are read in one block and decoded on first use: the metadata is loaded on the first
+     * branch-scope access of a mapped graph, which a large corpus holds to a time budget, and a
+     * corpus has tens of thousands of entries whose strings nothing may ever look up.
+     */
+    private fun readSyntheticIdentities(dis: DataInput, strings: StringTable): Map<String, String>? = try {
+        val count = dis.readInt()
+        if (count < 0 || count > MAX_SYNTHETIC_IDENTITIES) {
+            null
+        } else {
+            LazySyntheticIdentities(count, ByteArray(count * SYNTHETIC_IDENTITY_ENTRY_BYTES).also(dis::readFully), strings)
+        }
+    } catch (_: EOFException) {
+        null
+    }
+
+    /** One persisted entry: the member's string table index and the raw fingerprint. */
+    private const val SYNTHETIC_IDENTITY_ENTRY_BYTES = Int.SIZE_BYTES + FINGERPRINT_BYTES
+
+    /** More entries than any corpus has; a count above it is a corrupt section, not an allocation. */
+    private const val MAX_SYNTHETIC_IDENTITIES = 1 shl 24
+
+    private const val HEX_DIGITS = "0123456789abcdef"
+    private const val NIBBLE_BITS = 4
+    private const val NIBBLE_MASK = 0xF
+
+    internal fun encodeFingerprint(bytes: ByteArray): String {
+        val chars = CharArray(bytes.size * 2)
+        for (index in bytes.indices) {
+            val value = bytes[index].toInt() and BYTE_MASK
+            chars[index * 2] = HEX_DIGITS[value ushr NIBBLE_BITS]
+            chars[index * 2 + 1] = HEX_DIGITS[value and NIBBLE_MASK]
+        }
+        return String(chars)
+    }
+
+    internal fun decodeFingerprint(hex: String): ByteArray {
+        require(hex.length == FINGERPRINT_BYTES * 2) { "Expected ${FINGERPRINT_BYTES * 2} hex digits, got '$hex'" }
+        return ByteArray(FINGERPRINT_BYTES) { index ->
+            val high = Character.digit(hex[index * 2], HEX_RADIX)
+            val low = Character.digit(hex[index * 2 + 1], HEX_RADIX)
+            require(high >= 0 && low >= 0) { "Not a hex fingerprint: '$hex'" }
+            ((high shl HEX_DIGIT_BITS) or low).toByte()
         }
     }
 
@@ -1179,8 +1304,37 @@ data class GraphMetadata(
     /** Packed definitions per tracked local (see [io.johnsonlee.graphite.graph.Graph.localDefinitions]); save side only. */
     val localDefinitions: Map<Int, IntArray> = emptyMap(),
     /** SHA-256 of the `graph.branchdefs` payload this metadata was written with, from its trailer; load side only. */
-    val branchDefinitionDigest: ByteArray? = null
+    val branchDefinitionDigest: ByteArray? = null,
+    /** Stable identities of synthetic members, see [io.johnsonlee.graphite.graph.Graph.syntheticIdentities]. */
+    val syntheticIdentities: Map<String, String> = emptyMap()
 )
+
+/**
+ * The synthetic identity section as read: [records] holds `count` records of a string table index and a raw
+ * fingerprint, decoded into a map on first use (see [NodeSerializer.readMetadataOptionalSections]).
+ */
+internal class LazySyntheticIdentities(
+    private val count: Int,
+    private val records: ByteArray,
+    private val strings: StringTable
+) : AbstractMap<String, String>() {
+    private val decoded: Map<String, String> by lazy {
+        val buffer = ByteBuffer.wrap(records)
+        val fingerprint = ByteArray(NodeSerializer.FINGERPRINT_BYTES)
+        val map = LinkedHashMap<String, String>(count * 2)
+        repeat(count) {
+            val member = strings.get(buffer.getInt())
+            buffer.get(fingerprint)
+            map[member] = NodeSerializer.encodeFingerprint(fingerprint)
+        }
+        map
+    }
+
+    override val entries: Set<Map.Entry<String, String>> get() = decoded.entries
+    override val size: Int get() = count
+    override fun get(key: String): String? = decoded[key]
+    override fun containsKey(key: String): Boolean = decoded.containsKey(key)
+}
 
 /** A sidecar as [NodeSerializer.encodeBranchDefinitions] produces it, with the digest `graph.metadata` binds to. */
 class EncodedBranchDefinitions(val bytes: ByteArray, val payloadDigest: ByteArray)

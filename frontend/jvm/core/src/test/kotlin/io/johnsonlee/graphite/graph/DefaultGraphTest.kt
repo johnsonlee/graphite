@@ -455,6 +455,8 @@ class DefaultGraphTest {
         assertNull(graph.methodSlice(MethodPattern(), 10))
         assertNull(graph.classOrigin("com.example.App"))
         assertTrue(graph.classOrigins().isEmpty())
+        assertNull(graph.syntheticIdentity("com.example.App\$1"))
+        assertTrue(graph.syntheticIdentities().isEmpty())
         assertTrue(graph.artifactDependencies().isEmpty())
         assertNull(graph.classOverview(10))
     }
@@ -685,5 +687,19 @@ class DefaultGraphTest {
 
         val edges = graph.incoming<DataFlowEdge>(to).toList()
         assertEquals(1, edges.size)
+    }
+
+    @Test
+    fun `synthetic identities are recorded and looked up by member key`() {
+        val graph = DefaultGraph.Builder()
+            .addSyntheticIdentity("com.example.App\$1", "0123456789abcdef0123456789abcdef")
+            .addSyntheticIdentity("com.example.App.lambda\$run\$0()", "fedcba9876543210fedcba9876543210")
+            .addSyntheticIdentity("com.example.App\$1", "00000000000000000000000000000000")
+            .build()
+
+        assertEquals("00000000000000000000000000000000", graph.syntheticIdentity("com.example.App\$1"))
+        assertEquals("fedcba9876543210fedcba9876543210", graph.syntheticIdentity("com.example.App.lambda\$run\$0()"))
+        assertNull(graph.syntheticIdentity("com.example.App"))
+        assertEquals(2, graph.syntheticIdentities().size)
     }
 }

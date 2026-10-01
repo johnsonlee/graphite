@@ -60,7 +60,7 @@ transpose construction during load.
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`) |
+| graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`, synthetic identities `GRS` `0x47525301`) |
 | graph.nodedata | `GRN` | `0x47524E03` |
 | graph.nodeindex | `GRI` | `0x47524903` |
 | graph.nodeoffsets | `GRL` | `0x47524C03` |
@@ -114,6 +114,25 @@ does not match the trailer, or is corrupt in any of these ways, the loader logs 
 branch scope with empty definition lists. `graph.metadata` keeps format version `3`, so the Rust backend
 ignores both the trailer and the sidecar.
 
+`graph.metadata` may end with one more optional section after the trailer: the synthetic identities (`GRS`
+magic, version `1`). It records, for every compiler-numbered synthetic member of the loaded packages (a class or
+method with `ACC_SYNTHETIC`, or whose name carries a purely numeric ordinal: `Foo$1`, `Foo$bar$1`,
+`lambda$run$0`, `run$lambda$0`, `access$000`, `Foo$$ExternalSyntheticLambda0`), a 128-bit fingerprint that does
+not move when a sibling is inserted or removed: `int32 count`, then per entry the member key as a string table
+index (the class name, or the method signature as `MethodDescriptor.signature` renders it) and 16 raw bytes.
+The fingerprint hashes the member's kind, its name with the ordinals removed, its descriptor and modifiers, a
+class's supertypes and fields, and a canonical rendering of every statement in its body (locals renumbered by
+first appearance, no line numbers, branch and exception targets as statement indices) in which references to
+other numbered members are replaced by their fingerprints; members that reference each other use each other's
+stripped names, and members whose fingerprints still coincide are told apart by their order of appearance. The
+section is written only when there is an identity to record, so a graph without synthetic members persists
+byte-identically to one saved before the section existed. The loader reads the trailer and this section in
+either order and stops at end of file or at the first header that is neither, so a file without the section
+loads with an empty identity map; readers that predate the section stop at the trailer and never see it, and
+the Rust reader ignores it like the trailer. Members with stable names have no entry: a consumer that needs a
+build-independent key for a method of a synthetic class combines the class's fingerprint with the method's
+own name.
+
 ### Edge Label Encoding (8-bit)
 
 ```
@@ -153,7 +172,7 @@ graph TD
     D2 --> E["4. BVGraph.store(forward)"]
     E --> F[5. Write labels + label prefix + comparisons]
     F --> G["6. Write nodedata + nodeindex + mmap node indexes"]
-    G --> H[7. Write metadata + trailer, branchdefs sidecar]
+    G --> H[7. Write metadata + trailer + synthetic identities, branchdefs sidecar]
     H --> I[8. Write class overview + resource store]
 ```
 

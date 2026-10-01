@@ -70,6 +70,7 @@ Persisted-size changes since then, with every count unchanged:
 | Change | Tika | Hive | Kotlin compiler |
 | --- | ---: | ---: | ---: |
 | Every save writes the `graph.branchdefs` sidecar (branch-side local definitions and per-local definition tables) and the 36-byte `graph.metadata` trailer that binds it, both counted in the persisted size | +6,079,344 B | +10,505,164 B | +9,344,528 B |
+| `graph.metadata` ends with the synthetic identity section (a 128-bit fingerprint per compiler-numbered synthetic member, keyed by class name or method signature) and the string table carries the method keys | +1,818,775 B | +10,577,222 B | +9,958,925 B |
 
 The lambda change leaves method counts unchanged and adds nodes and call sites, on top of a base that
 already writes the sidecar (the sidecar itself grows with the new locals: Tika +4,516 B, Hive +6,920 B,

@@ -34,6 +34,7 @@ class DefaultGraph private constructor(
     private val typeHierarchy: TypeHierarchy,
     private val enumValues: Map<String, List<Any?>>,
     private val classOriginsMap: Map<String, String>,
+    private val syntheticIdentitiesMap: Map<String, String>,
     private val artifactDependenciesMap: Map<String, Map<String, Int>>,
     // Key format: "$className#$memberName" — simple concatenation is sufficient
     // for current scale. Consider two-level map if profiling shows GC pressure.
@@ -150,6 +151,10 @@ class DefaultGraph private constructor(
 
     override fun classOrigins(): Map<String, String> = classOriginsMap
 
+    override fun syntheticIdentity(member: String): String? = syntheticIdentitiesMap[member]
+
+    override fun syntheticIdentities(): Map<String, String> = syntheticIdentitiesMap
+
     override fun artifactDependencies(): Map<String, Map<String, Int>> = artifactDependenciesMap
 
     override fun branchScopes(): Sequence<BranchScope> =
@@ -178,6 +183,7 @@ class DefaultGraph private constructor(
         private val typeHierarchyBuilder = TypeHierarchy.Builder()
         private val enumValues = ConcurrentHashMap<String, List<Any?>>()
         private val classOrigins = ConcurrentHashMap<String, String>()
+        private val syntheticIdentities = ConcurrentHashMap<String, String>()
         private val artifactDependencies = ConcurrentHashMap<String, ConcurrentHashMap<String, Int>>()
         // Extension processing is single-threaded (sequential forEach in buildGraph),
         // so these collections don't need to be thread-safe.
@@ -225,6 +231,11 @@ class DefaultGraph private constructor(
 
         override fun addClassOrigin(className: String, source: String): FullGraphBuilder {
             classOrigins.putIfAbsent(className, source)
+            return this
+        }
+
+        override fun addSyntheticIdentity(member: String, fingerprint: String): FullGraphBuilder {
+            syntheticIdentities[member] = fingerprint
             return this
         }
 
@@ -291,6 +302,7 @@ class DefaultGraph private constructor(
                 typeHierarchy = typeHierarchyBuilder.build(),
                 enumValues = enumValues.toMap(),
                 classOriginsMap = classOrigins.toMap(),
+                syntheticIdentitiesMap = syntheticIdentities.toMap(),
                 artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
                 memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
                 rawBranchScopes = branchScopes.toTypedArray(),
