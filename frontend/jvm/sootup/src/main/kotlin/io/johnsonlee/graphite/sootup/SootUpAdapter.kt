@@ -43,8 +43,11 @@ import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import java.nio.file.Files
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import java.util.BitSet
 import java.util.IdentityHashMap
 import java.util.Locale
@@ -150,6 +153,20 @@ private const val OPEN_STREAM_METHOD = "openStream"
 private const val NEW_READER_METHOD = "newReader"
 private const val PASS1_PROGRESS_INTERVAL = 500
 private const val PASS2_PROGRESS_INTERVAL = 100
+
+/**
+ * The most function values a local or a [DispatchSlot] is tracked as holding. Resolution is
+ * flow- and context-insensitive, so a value that many function values reach (an `Object`
+ * parameter of a shared helper, a register a dex body reuses for hundreds of lambdas) holds
+ * the union of all of them, and a call on it would resolve to every one: thousands of call
+ * sites that mean nothing, and on a large Android app a fixpoint that outgrows the heap.
+ * Past this many the holder is [SATURATED_TARGETS]: it resolves nothing and adds nothing to
+ * what it flows to, which keeps the precise targets other paths bring there.
+ */
+private const val MAX_TARGETS = 64
+
+/** The targets of a holder past [MAX_TARGETS]: empty, told apart from any other set by identity. */
+private val SATURATED_TARGETS: Set<DispatchTarget> = java.util.Collections.unmodifiableSet(LinkedHashSet())
 private val SET_DECLARING_CLASS_METHOD = AsmMethodSource::class.java
     .getDeclaredMethod("setDeclaringClass", ClassType::class.java)
     .apply { isAccessible = true }
@@ -291,21 +308,31 @@ class SootUpAdapter(
     private val allocationNodes = mutableMapOf<LocalKey, LocalVariable>()
 
     // Dispatch targets of locals holding a function value; keyed per method, and each method's
-    // entries are removed by clearMethodState()
-    private val dynamicTargets = mutableMapOf<LocalKey, List<DispatchTarget>>()
+    // entries are removed by clearMethodState(). Every target set below is immutable once
+    // stored and shared between the locals and slots that hold the same targets, see
+    // mergeTargets() and addTargets(): a dex body keeps the compiler's registers as locals,
+    // each reused for many values, and a copy between two such registers must neither append
+    // every target again nor allocate.
+    private val dynamicTargets = mutableMapOf<LocalKey, Set<DispatchTarget>>()
 
     // Maps local key to parameter binding for locals assigned from parameters
     private val localToParamIndex = mutableMapOf<LocalKey, ParameterBinding>()
 
-    private val arrayDynamicTargets = mutableMapOf<LocalKey, MutableList<DispatchTarget>>()
+    private val arrayDynamicTargets = mutableMapOf<LocalKey, Set<DispatchTarget>>()
 
-    // Cross-method functional dispatch: targets seeded into slots (parameters, returns, fields,
-    // locals), flows between slots, and calls waiting on a slot. resolveFunctionalDispatch()
-    // propagates the targets to a fixpoint once every method has been processed.
-    private val slotTargets = mutableMapOf<DispatchSlot, LinkedHashSet<DispatchTarget>>()
-    private val slotFlows = mutableMapOf<DispatchSlot, MutableSet<DispatchSlot>>()
-    private val slotAdapters = mutableMapOf<DispatchSlot, MutableList<SlotAdapter>>()
-    private val slotCalls = mutableMapOf<DispatchSlot, MutableList<PendingDispatch>>()
+    // Cross-method functional dispatch, over slots (parameters, returns, fields, locals)
+    // numbered on first use by slotId(): the targets seeded into each slot, the flows between
+    // slots as parallel edge lists, the adapters and the calls waiting on a slot.
+    // resolveFunctionalDispatch() propagates the targets to a fixpoint once every method has
+    // been processed; the numbering makes that sweeps over arrays, where a map keyed by slot
+    // cost a structural hash of a method descriptor per step.
+    private val slotIds = Object2IntOpenHashMap<DispatchSlot>().apply { defaultReturnValue(-1) }
+    private val slots = ArrayList<DispatchSlot>()
+    private val slotTargets = ArrayList<Set<DispatchTarget>?>()
+    private val flowFrom = IntArrayList()
+    private val flowTo = IntArrayList()
+    private val slotAdapters = Int2ObjectOpenHashMap<MutableList<SlotAdapter>>()
+    private val slotCalls = Int2ObjectLinkedOpenHashMap<MutableList<PendingDispatch>>()
     private val functionObjectClasses = mutableMapOf<String, Boolean>()
     private val mayHoldFunctionByType = mutableMapOf<String, Boolean>()
     // Type hierarchy of the view, for flows across override boundaries: direct subtypes of every
@@ -319,10 +346,10 @@ class SootUpAdapter(
     private val supertypeContractsByClass = mutableMapOf<String, Set<String>?>()
     private val bridgesInvokingByClass = mutableMapOf<String, Map<String, List<String>>>()
     private val implementedByFunctionValue = mutableMapOf<MethodDescriptor, Boolean>()
-    // Slots whose targets or flows changed while resolveFunctionalDispatch() runs, and calls
+    // The flow graph while resolveFunctionalDispatch() runs (null before and after), and calls
     // that resolving another call produced (`Function::apply` on a function value), waiting
     // to join slotCalls between rounds
-    private val propagationWorklist = ArrayDeque<DispatchSlot>()
+    private var propagation: SlotPropagation? = null
     private val nestedDispatches = mutableListOf<Pair<DispatchSlot, PendingDispatch>>()
 
     private val localeSpecsByLocal = mutableMapOf<LocalKey, String>()
@@ -939,9 +966,9 @@ class SootUpAdapter(
         // Track function values stored into array elements (varargs): `fns[0] = fn`
         if (leftOp is JArrayRef && rightOp is Local) {
             val base = leftOp.base
-            val targets = dynamicTargets[localKey(method, rightOp.name)]
-            if (targets != null) {
-                arrayDynamicTargets.getOrPut(localKey(method, base.name)) { mutableListOf() }.addAll(targets)
+            dynamicTargets[localKey(method, rightOp.name)]?.let { targets ->
+                val arrayKey = localKey(method, base.name)
+                arrayDynamicTargets[arrayKey] = mergeTargets(arrayDynamicTargets[arrayKey], targets)
             }
             trackFlow(method, rightOp, slotOf(method, base))
         }
@@ -1123,7 +1150,7 @@ class SootUpAdapter(
                 .filter(pending.resolved::add)
                 .forEach { emitResolvedDispatch(pending, it) }
             if (trackCrossMethodFunctionalDispatch && mayHoldFunction(receiverNode.type)) {
-                slotCalls.getOrPut(slotOf(caller, receiverLocal)) { mutableListOf() }.add(pending)
+                callsOn(slotId(slotOf(caller, receiverLocal))).add(pending)
             }
         }
         if (invokeExpr is JSpecialInvokeExpr && callee.name == INIT_METHOD && caller.name == INIT_METHOD) {
@@ -1295,7 +1322,8 @@ class SootUpAdapter(
                     targets += DispatchTarget.Adapted(samName, target, argNodeIds, inner)
                 }
                 if (trackCrossMethodFunctionalDispatch && resultSlot != null && mayHoldFunction(toTypeDescriptor(boundReceiver.type))) {
-                    slotAdapters.getOrPut(slotOf(caller, boundReceiver)) { mutableListOf() }
+                    val receiverId = slotId(slotOf(caller, boundReceiver))
+                    (slotAdapters.get(receiverId) ?: mutableListOf<SlotAdapter>().also { slotAdapters.put(receiverId, it) })
                         .add(SlotAdapter(resultSlot, samName, target, argNodeIds))
                 }
             }
@@ -1814,36 +1842,74 @@ class SootUpAdapter(
      * assigned a Kotlin lambda.
      */
     private fun resolveFunctionalDispatch() {
-        propagationWorklist.addAll(slotTargets.keys)
-        val expanded = mutableSetOf<DispatchSlot>()
+        val propagation = SlotPropagation(slots.size, flowFrom, flowTo)
+        flowFrom.clear()
+        flowTo.clear()
+        this.propagation = propagation
+        for (id in slotTargets.indices) {
+            if (slotTargets[id] != null) propagation.pending.set(id)
+        }
         // Resolving a call connects its arguments and result to the implementation's parameter
         // and return slots, which may carry further function values: alternate until nothing
         // new is resolved
         do {
-            propagateSlotTargets(expanded)
+            propagateSlotTargets(propagation)
         } while (emitPendingDispatches())
+        this.propagation = null
     }
 
-    private fun propagateSlotTargets(expanded: MutableSet<DispatchSlot>) {
-        while (propagationWorklist.isNotEmpty()) {
-            val slot = propagationWorklist.removeFirst()
-            // Snapshot: a flow or adapter may lead back into this slot (`fn = fn::apply`)
-            val targets = slotTargets[slot]?.toList() ?: continue
-            if (expanded.add(slot)) {
-                overrideFlows(slot).forEach { flowSlot(slot, it) }
+    /**
+     * Sweep the slots in flow order, pushing the targets of each pending one along its flows,
+     * until a sweep leaves nothing pending behind it: a flow to a slot swept earlier (a cycle,
+     * a flow found during the sweep) is picked up by the next sweep.
+     */
+    private fun propagateSlotTargets(propagation: SlotPropagation) {
+        var again = true
+        while (again) {
+            again = sweepSlots(propagation)
+        }
+    }
+
+    /** One sweep; true when a slot already passed changed and the next sweep is needed. */
+    private fun sweepSlots(propagation: SlotPropagation): Boolean {
+        var backward = false
+        var index = 0
+        // Slots numbered during the sweep (override flows, adapter sinks) are swept at its end
+        while (index < slots.size) {
+            val id = propagation.slotAt(index)
+            if (propagation.pending.get(id)) {
+                propagation.pending.clear(id)
+                if (propagateSlot(id, propagation)) backward = true
             }
-            for (next in slotFlows[slot].orEmpty()) {
-                if (slotTargets.getOrPut(next) { LinkedHashSet() }.addAll(targets)) {
-                    propagationWorklist.addLast(next)
-                }
-            }
-            for (adapter in slotAdapters[slot].orEmpty()) {
-                val adapted = targets.mapNotNull(adapter::adapt)
-                if (adapted.isNotEmpty() && slotTargets.getOrPut(adapter.sink) { LinkedHashSet() }.addAll(adapted)) {
-                    propagationWorklist.addLast(adapter.sink)
-                }
+            index++
+        }
+        return backward
+    }
+
+    /**
+     * Push [id]'s targets along its flows and adapters; true when that changed a slot the
+     * current sweep has passed (or [id] itself, `fn = fn::apply`), which the next sweep handles.
+     * A saturated slot (see [SATURATED_TARGETS]) passes nothing on.
+     */
+    private fun propagateSlot(id: Int, propagation: SlotPropagation): Boolean {
+        val targets = slotTargets[id]?.takeIf { it.isNotEmpty() } ?: return false
+        if (!propagation.expanded.get(id)) {
+            propagation.expanded.set(id)
+            overrideFlows(slots[id]).forEach { propagation.addFlow(id, slotId(it)) }
+        }
+        var backward = false
+        fun deliver(next: Int, incoming: Set<DispatchTarget>) {
+            if (addTargets(next, incoming)) {
+                propagation.pending.set(next)
+                if (propagation.position(next) <= propagation.position(id)) backward = true
             }
         }
+        propagation.forEachFlow(id) { next -> deliver(next, targets) }
+        slotAdapters.get(id)?.forEach { adapter ->
+            val adapted = targets.mapNotNullTo(LinkedHashSet(), adapter::adapt)
+            if (adapted.isNotEmpty()) deliver(slotId(adapter.sink), adapted)
+        }
+        return backward
     }
 
     /**
@@ -1852,9 +1918,9 @@ class SootUpAdapter(
      */
     private fun emitPendingDispatches(): Boolean {
         var emitted = false
-        for ((slot, calls) in slotCalls) {
-            val targets = slotTargets[slot]?.toList() ?: continue
-            for (pending in calls.toList()) {
+        for (entry in slotCalls.int2ObjectEntrySet()) {
+            val targets = slotTargets[entry.intKey] ?: continue
+            for (pending in entry.value.toList()) {
                 val fresh = targets.filter(pending.resolved::add)
                 fresh.forEach { emitResolvedDispatch(pending, it) }
                 emitted = emitted || fresh.isNotEmpty()
@@ -1862,8 +1928,22 @@ class SootUpAdapter(
         }
         val nested = nestedDispatches.toList()
         nestedDispatches.clear()
-        nested.forEach { (slot, pending) -> slotCalls.getOrPut(slot) { mutableListOf() }.add(pending) }
+        nested.forEach { (slot, pending) -> callsOn(slotId(slot)).add(pending) }
         return emitted || nested.isNotEmpty()
+    }
+
+    private fun callsOn(id: Int): MutableList<PendingDispatch> =
+        slotCalls.get(id) ?: mutableListOf<PendingDispatch>().also { slotCalls.put(id, it) }
+
+    /** The number of [slot], assigned on first use; numbers index [slots] and [slotTargets]. */
+    private fun slotId(slot: DispatchSlot): Int {
+        val known = slotIds.getInt(slot)
+        if (known >= 0) return known
+        val id = slots.size
+        slotIds.put(slot, id)
+        slots.add(slot)
+        slotTargets.add(null)
+        return id
     }
 
     /**
@@ -2267,7 +2347,7 @@ class SootUpAdapter(
         else -> HandleKind.INSTANCE
     }
 
-    private fun mergeLocalTargets(method: MethodDescriptor, local: Local, targets: List<DispatchTarget>) {
+    private fun mergeLocalTargets(method: MethodDescriptor, local: Local, targets: Collection<DispatchTarget>) {
         val key = localKey(method, local.name)
         dynamicTargets[key] = mergeTargets(dynamicTargets[key], targets)
     }
@@ -2277,7 +2357,7 @@ class SootUpAdapter(
         val sourceKey = localKey(method, source.name)
         val targetKey = localKey(method, target.name)
         dynamicTargets[sourceKey]?.let { mergeLocalTargets(method, target, it) }
-        arrayDynamicTargets[sourceKey]?.let { arrayDynamicTargets.getOrPut(targetKey) { mutableListOf() }.addAll(it) }
+        arrayDynamicTargets[sourceKey]?.let { arrayDynamicTargets[targetKey] = mergeTargets(arrayDynamicTargets[targetKey], it) }
         if (trackCrossMethodFunctionalDispatch) {
             localToParamIndex[sourceKey]?.let { localToParamIndex[targetKey] = it }
             trackSlotFlow(slotOf(method, source), method, target)
@@ -2316,20 +2396,44 @@ class SootUpAdapter(
 
     private fun seedSlot(slot: DispatchSlot, targets: Collection<DispatchTarget>) {
         if (targets.isNotEmpty()) {
-            slotTargets.getOrPut(slot) { LinkedHashSet() }.addAll(targets)
+            addTargets(slotId(slot), targets as? Set<DispatchTarget> ?: LinkedHashSet(targets))
         }
     }
 
+    /**
+     * Slot [id] holds [incoming] as well; true when that added a target. A slot with nothing
+     * of its own takes [incoming] itself, and so does one whose targets [incoming] already
+     * includes, so a slot that fans out to many others (an interface method's parameter
+     * reaching the same parameter of every implementation, a result local reached by every
+     * call on the interface) shares one set with them rather than filling a copy per slot;
+     * only a slot where distinct sets meet gets a set of its own. Sets are never mutated.
+     * A slot past [MAX_TARGETS] saturates, see [SATURATED_TARGETS], and nothing changes it after.
+     */
+    private fun addTargets(id: Int, incoming: Set<DispatchTarget>): Boolean {
+        val current = slotTargets[id]
+        val merged = mergeTargets(current, incoming)
+        if (merged === current) return false
+        slotTargets[id] = merged
+        return true
+    }
+
     private fun flowSlot(from: DispatchSlot, to: DispatchSlot) {
-        if (from != to) {
-            slotFlows.getOrPut(from) { mutableSetOf() }.add(to)
+        if (from == to) return
+        val fromId = slotId(from)
+        val toId = slotId(to)
+        val propagation = propagation
+        if (propagation == null) {
+            flowFrom.add(fromId)
+            flowTo.add(toId)
+        } else {
+            propagation.addFlow(fromId, toId)
         }
     }
 
     /** [flowSlot], and have the fixpoint revisit [from] so targets it already holds follow the new flow. */
     private fun flowSlotNow(from: DispatchSlot, to: DispatchSlot) {
         flowSlot(from, to)
-        propagationWorklist.addLast(from)
+        propagation?.pending?.set(slotId(from))
     }
 
     /** The slot [local]'s function value lives in, or null when its type cannot hold one. */
@@ -3751,14 +3855,25 @@ class SootUpAdapter(
         return ParameterBinding(method, index)
     }
 
+    /**
+     * [existing] with [newTargets] appended: [existing] itself when it already holds them all
+     * (or is saturated), [newTargets] itself when there is nothing yet or it holds everything
+     * in [existing], so a copy between locals or slots that hold the same function values
+     * (every copy in a dex body, whose registers are reused; an interface method's parameter
+     * reaching every implementation's) allocates nothing. A union past [MAX_TARGETS] is
+     * [SATURATED_TARGETS], which nothing changes after; a saturated (so empty) [newTargets]
+     * adds nothing. The result is never mutated.
+     */
     private fun mergeTargets(
-        existing: List<DispatchTarget>?,
-        newTargets: Iterable<DispatchTarget>
-    ): List<DispatchTarget> {
-        if (existing == null) return newTargets.toList()
-        val merged = LinkedHashSet(existing)
-        merged.addAll(newTargets)
-        return merged.toList()
+        existing: Set<DispatchTarget>?,
+        newTargets: Collection<DispatchTarget>
+    ): Set<DispatchTarget> = when {
+        existing === SATURATED_TARGETS || newTargets.isEmpty() -> existing ?: emptySet()
+        existing === newTargets || (existing != null && existing.size >= newTargets.size && existing.containsAll(newTargets)) -> existing
+        newTargets.size > MAX_TARGETS -> SATURATED_TARGETS
+        existing == null || (newTargets is Set<DispatchTarget> && newTargets.containsAll(existing)) ->
+            newTargets as? Set<DispatchTarget> ?: LinkedHashSet(newTargets)
+        else -> LinkedHashSet(existing).apply { addAll(newTargets) }.takeIf { it.size <= MAX_TARGETS } ?: SATURATED_TARGETS
     }
 
     private fun clearMethodState(method: MethodDescriptor) {
@@ -3899,5 +4014,110 @@ class SootUpAdapter(
 
             sig
         }
+    }
+}
+
+/**
+ * The slot flow graph in the form the fixpoint sweeps: the flows recorded while methods were
+ * processed, each once, in compressed rows; the flows added during resolution (override flows,
+ * found when a slot first holds targets, and those a resolved call creates); the sweep order,
+ * a reverse postorder of the recorded flows so that most slots are swept after what flows into
+ * them; and which slots changed since they were last swept. Slots numbered after construction
+ * come last in sweep order.
+ */
+private class SlotPropagation(private val count: Int, from: IntArrayList, to: IntArrayList) {
+    private val rowStart = IntArray(count + 1)
+    private val rowFlows: IntArray
+    private val order = IntArray(count)
+    private val positions = IntArray(count)
+    private val added = Int2ObjectOpenHashMap<IntArrayList>()
+    val pending = BitSet(count)
+    val expanded = BitSet(count)
+
+    init {
+        val edges = from.size
+        for (edge in 0 until edges) rowStart[from.getInt(edge) + 1]++
+        for (id in 0 until count) rowStart[id + 1] += rowStart[id]
+        val flows = IntArray(edges)
+        val fill = rowStart.copyOf()
+        for (edge in 0 until edges) flows[fill[from.getInt(edge)]++] = to.getInt(edge)
+        // Sort each row and drop the repeats; a row is compacted below where it was read from
+        var written = 0
+        for (id in 0 until count) {
+            val start = rowStart[id]
+            val end = rowStart[id + 1]
+            java.util.Arrays.sort(flows, start, end)
+            rowStart[id] = written
+            var previous = -1
+            for (index in start until end) {
+                val flow = flows[index]
+                if (flow != previous) {
+                    flows[written++] = flow
+                    previous = flow
+                }
+            }
+        }
+        rowStart[count] = written
+        rowFlows = flows.copyOf(written)
+        computeOrder()
+    }
+
+    /** Reverse postorder of an iterative depth-first search over the recorded flows. */
+    private fun computeOrder() {
+        val search = DepthFirstSearch()
+        for (root in 0 until count) {
+            if (search.enter(root)) search.run()
+        }
+        for (index in 0 until count) positions[order[index]] = index
+    }
+
+    /** Explicit-stack depth-first search filling [order] from the back as slots are left. */
+    private inner class DepthFirstSearch {
+        private val visited = BitSet(count)
+        private val stack = IntArrayList()
+        private val cursor = IntArrayList()
+        private var next = count
+
+        /** Push [id] unless it was visited; true when pushed. */
+        fun enter(id: Int): Boolean {
+            if (visited.get(id)) return false
+            visited.set(id)
+            stack.push(id)
+            cursor.push(rowStart[id])
+            return true
+        }
+
+        fun run() {
+            while (!stack.isEmpty) {
+                val id = stack.topInt()
+                val index = cursor.topInt()
+                if (index < rowStart[id + 1]) {
+                    cursor.set(cursor.size - 1, index + 1)
+                    enter(rowFlows[index])
+                } else {
+                    stack.popInt()
+                    cursor.popInt()
+                    order[--next] = id
+                }
+            }
+        }
+    }
+
+    /** The slot swept at [index]; slots numbered after construction follow in number order. */
+    fun slotAt(index: Int): Int = if (index < count) order[index] else index
+
+    /** Where slot [id] comes in sweep order. */
+    fun position(id: Int): Int = if (id < count) positions[id] else id
+
+    fun addFlow(from: Int, to: Int) {
+        val flows = added.get(from) ?: IntArrayList().also { added.put(from, it) }
+        if (!flows.contains(to)) flows.add(to)
+    }
+
+    inline fun forEachFlow(id: Int, action: (Int) -> Unit) {
+        if (id < rowStart.size - 1) {
+            for (index in rowStart[id] until rowStart[id + 1]) action(rowFlows[index])
+        }
+        added.get(id)?.let { flows -> for (index in 0 until flows.size) action(flows.getInt(index)) }
     }
 }

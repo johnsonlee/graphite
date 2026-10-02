@@ -27,6 +27,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
@@ -40,6 +41,8 @@ import sootup.core.frontend.BodySource
 import sootup.core.frontend.SootClassSource
 import sootup.core.jimple.basic.NoPositionInformation
 import sootup.core.jimple.basic.StmtPositionInfo
+import sootup.core.jimple.basic.Local
+import sootup.core.jimple.common.constant.IntConstant
 import sootup.core.jimple.common.constant.MethodHandle
 import sootup.core.jimple.common.constant.StringConstant as SootStringConstant
 import sootup.core.jimple.common.expr.JDynamicInvokeExpr
@@ -47,6 +50,7 @@ import sootup.core.jimple.common.expr.JNewExpr
 import sootup.core.jimple.common.expr.JSpecialInvokeExpr
 import sootup.core.jimple.common.expr.JStaticInvokeExpr
 import sootup.core.jimple.common.expr.JVirtualInvokeExpr
+import sootup.core.jimple.common.ref.JArrayRef
 import sootup.core.jimple.common.ref.JStaticFieldRef
 import sootup.core.jimple.common.stmt.JAssignStmt
 import sootup.core.inputlocation.AnalysisInputLocation
@@ -554,7 +558,7 @@ class SootUpAdapterInternalCoverageTest {
             localResult,
             null
         )
-        val dynamicTargets = readField<MutableMap<Any, List<DispatchTarget>>>(adapter, "dynamicTargets")
+        val dynamicTargets = readField<MutableMap<Any, Set<DispatchTarget>>>(adapter, "dynamicTargets")
         val resultKey = invokePrivate<Any>(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), caller, "fn")
         val handle = dynamicTargets[resultKey].orEmpty().single() as DispatchTarget.Handle
         assertEquals(invokePrivate<MethodDescriptor>(adapter, "toMethodDescriptor", arrayOf(MethodSignature::class.java), targetSig), handle.method)
@@ -573,8 +577,7 @@ class SootUpAdapterInternalCoverageTest {
             fieldNode,
             JAssignStmt(JStaticFieldRef(fieldSig), JDynamicInvokeExpr(bootstrapSig, listOf(methodHandle), applySig, listOf(argLocal)), StmtPositionInfo.getNoStmtPositionInfo())
         )
-        val slotTargets = readField<MutableMap<DispatchSlot, Set<DispatchTarget>>>(adapter, "slotTargets")
-        assertTrue(slotTargets[DispatchSlot.Field(fieldSig.toString())].orEmpty().isNotEmpty())
+        assertTrue(targetsOf(adapter, DispatchSlot.Field(fieldSig.toString())).orEmpty().isNotEmpty())
 
         invokePrivate<Unit>(
             adapter,
@@ -615,25 +618,22 @@ class SootUpAdapterInternalCoverageTest {
         val field = DispatchSlot.Field("sample.lambda.CallbackExample.callback")
         val fieldLocal = DispatchSlot.Local(caller, "fieldLocal")
 
-        val slotTargets = readField<MutableMap<DispatchSlot, LinkedHashSet<DispatchTarget>>>(adapter, "slotTargets")
-        val slotFlows = readField<MutableMap<DispatchSlot, MutableSet<DispatchSlot>>>(adapter, "slotFlows")
-        val slotCalls = readField<MutableMap<DispatchSlot, MutableList<PendingDispatch>>>(adapter, "slotCalls")
-        slotTargets[DispatchSlot.Return(callee)] = linkedSetOf(handle)
-        slotFlows[DispatchSlot.Return(callee)] = mutableSetOf(result)
-        slotTargets[parameter] = linkedSetOf(handle, otherSam, anonymous)
-        slotCalls[parameter] = mutableListOf(PendingDispatch(parameterCall, NodeId.next(), listOf(null), null, mutableSetOf()))
-        slotFlows[field] = mutableSetOf(fieldLocal)
-        slotTargets[field] = linkedSetOf(handle, adapted, otherAdapted)
-        slotCalls[fieldLocal] = mutableListOf(PendingDispatch(fieldLocalCall, null, listOf(null), null, mutableSetOf(handle)))
+        setTargets(adapter, DispatchSlot.Return(callee), linkedSetOf(handle))
+        flow(adapter, DispatchSlot.Return(callee), result)
+        setTargets(adapter, parameter, linkedSetOf(handle, otherSam, anonymous))
+        waitOn(adapter, parameter, PendingDispatch(parameterCall, NodeId.next(), listOf(null), null, mutableSetOf()))
+        flow(adapter, field, fieldLocal)
+        setTargets(adapter, field, linkedSetOf(handle, adapted, otherAdapted))
+        waitOn(adapter, fieldLocal, PendingDispatch(fieldLocalCall, null, listOf(null), null, mutableSetOf(handle)))
         // no method with the invoked erasure: the bridge with the same name and arity stands in
         val bridgeSlot = DispatchSlot.Local(caller, "bridged")
-        slotTargets[bridgeSlot] = linkedSetOf(anonymous)
-        slotCalls[bridgeSlot] = mutableListOf(PendingDispatch(bridgeCall, null, listOf(null), null, mutableSetOf()))
+        setTargets(adapter, bridgeSlot, linkedSetOf(anonymous))
+        waitOn(adapter, bridgeSlot, PendingDispatch(bridgeCall, null, listOf(null), null, mutableSetOf()))
 
         invokePrivate<Unit>(adapter, "resolveFunctionalDispatch", emptyArray())
 
-        assertEquals<Set<DispatchTarget>?>(setOf(handle), slotTargets[result])
-        assertEquals<Set<DispatchTarget>?>(setOf(handle, adapted, otherAdapted), slotTargets[fieldLocal])
+        assertEquals<Set<DispatchTarget>?>(setOf(handle), targetsOf(adapter, result))
+        assertEquals<Set<DispatchTarget>?>(setOf(handle, adapted, otherAdapted), targetsOf(adapter, fieldLocal))
         val resolved = readField<DefaultGraph.Builder>(adapter, "graphBuilder").build()
             .nodes(io.johnsonlee.graphite.core.CallSiteNode::class.java).toList()
         // parameter: the handle and the anonymous class's apply bridge resolve, the `get` handle does not
@@ -647,6 +647,140 @@ class SootUpAdapterInternalCoverageTest {
             setOf("sample.lambda.CallbackExample.transform(java.lang.String)", "sample.lambda.AnonymousClassExample\$1.apply(java.lang.Object)"),
             resolved.filter { it.caller == caller }.map { it.callee.signature }.toSet()
         )
+    }
+
+    /**
+     * A dex body keeps the compiler's registers as locals, each reused for many values: one
+     * register receives function object after function object, and the body copies it into
+     * an array and other registers between every two. The targets a local holds must stay a
+     * set through all of that, or the array targets double on every round trip between two
+     * registers and one large method exhausts the heap (a 6,250-statement Android method did).
+     */
+    @Test
+    fun `copies between reused locals keep dispatch targets de-duplicated`() {
+        val adapter = createAdapter(listOf("sample.lambda"))
+        val method = MethodDescriptor(TypeDescriptor("sample.lambda.AnonymousClassExample"), "reuse", emptyList(), TypeDescriptor("void"))
+        val objectType = identifierFactory.getType("java.lang.Object")
+        val register = JavaLocal("\$u0", objectType, emptyList())
+        val other = JavaLocal("\$u1", objectType, emptyList())
+        val array = JavaLocal("\$stack", identifierFactory.getArrayType(objectType, 1), emptyList())
+        val targets = (1..8).map { DispatchTarget.FunctionObject("sample.lambda.AnonymousClassExample\$$it") }
+        val dynamicTargets = readField<MutableMap<Any, Set<DispatchTarget>>>(adapter, "dynamicTargets")
+        val arrayDynamicTargets = readField<MutableMap<Any, Set<DispatchTarget>>>(adapter, "arrayDynamicTargets")
+        fun keyOf(local: Local): Any =
+            invokePrivate(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), method, local.name)
+        fun copy(source: Local, target: Local) =
+            invokePrivate<Unit>(adapter, "copyFunctionValue", arrayOf(MethodDescriptor::class.java, Local::class.java, Local::class.java), method, source, target)
+
+        targets.forEach { target ->
+            invokePrivate<Unit>(adapter, "mergeLocalTargets", arrayOf(MethodDescriptor::class.java, Local::class.java, Collection::class.java), method, register, listOf(target))
+            val store = JAssignStmt(JArrayRef(array, IntConstant.getInstance(0)), register, StmtPositionInfo.getNoStmtPositionInfo())
+            invokePrivate<Unit>(adapter, "trackFunctionValueAssignment", arrayOf(JAssignStmt::class.java, MethodDescriptor::class.java, io.johnsonlee.graphite.core.ValueNode::class.java), store, method, null)
+            repeat(4) {
+                copy(register, other)
+                copy(other, register)
+                copy(array, other)
+                copy(other, array)
+            }
+        }
+
+        assertEquals(targets.toSet(), dynamicTargets[keyOf(register)])
+        assertEquals(targets.toSet(), dynamicTargets[keyOf(other)])
+        assertEquals(targets.toSet(), arrayDynamicTargets[keyOf(array)])
+        assertEquals(targets.toSet(), arrayDynamicTargets[keyOf(other)])
+        // a copy that brings nothing new keeps the set the target already holds
+        val held = dynamicTargets[keyOf(other)]
+        copy(register, other)
+        assertSame(held, dynamicTargets[keyOf(other)])
+    }
+
+    /**
+     * Propagation shares one set between a slot and the slots it fans out to: an interface
+     * method's parameter reaches the same parameter of thousands of lambda classes, and a copy
+     * per slot of a large set exhausted the heap on an Android build. Only a slot where
+     * distinct sets meet gets a set of its own.
+     */
+    @Test
+    fun `propagation shares target sets along flows and copies only where sets merge`() {
+        val method = MethodDescriptor(TypeDescriptor("sample.lambda.AnonymousClassExample"), "share", emptyList(), TypeDescriptor("void"))
+        val targets = (1..3).map { DispatchTarget.FunctionObject("sample.lambda.AnonymousClassExample\$$it") }
+        val source = DispatchSlot.Local(method, "source")
+        val empty = DispatchSlot.Local(method, "empty")
+        val subset = DispatchSlot.Local(method, "subset")
+        val superset = DispatchSlot.Local(method, "superset")
+        val disjoint = DispatchSlot.Local(method, "disjoint")
+        fun resolved(cycle: Boolean): Pair<SootUpAdapter, Set<DispatchTarget>> {
+            val adapter = createAdapter(listOf("sample.lambda"))
+            val shared = linkedSetOf(targets[0], targets[1])
+            setTargets(adapter, source, shared)
+            setTargets(adapter, subset, linkedSetOf(targets[0]))
+            setTargets(adapter, superset, linkedSetOf(targets[0], targets[1], targets[2]))
+            setTargets(adapter, disjoint, linkedSetOf(targets[2]))
+            listOf(empty, subset, superset, disjoint).forEach { flow(adapter, source, it) }
+            // a flow recorded twice is swept once
+            flow(adapter, source, empty)
+            if (cycle) flow(adapter, disjoint, source)
+            invokePrivate<Unit>(adapter, "resolveFunctionalDispatch", emptyArray())
+            assertEquals(setOf(targets[0], targets[1]), shared, "never mutated")
+            assertEquals(setOf(targets[0], targets[1], targets[2]), targetsOf(adapter, superset))
+            assertEquals(listOf(targets[2], targets[0], targets[1]), targetsOf(adapter, disjoint)?.toList())
+            return adapter to shared
+        }
+
+        val (acyclic, shared) = resolved(cycle = false)
+        assertSame(shared, targetsOf(acyclic, empty))
+        assertSame(shared, targetsOf(acyclic, subset))
+
+        // a flow back into the source closes a cycle: the next sweep carries the merged set
+        // round, and every slot on the way shares that one set
+        val (cyclic, _) = resolved(cycle = true)
+        val merged = targetsOf(cyclic, disjoint)
+        assertSame(merged, targetsOf(cyclic, source))
+        assertSame(merged, targetsOf(cyclic, empty))
+        assertSame(merged, targetsOf(cyclic, subset))
+    }
+
+    /**
+     * A holder that more than 64 function values reach is saturated: it resolves nothing,
+     * passes nothing on, and keeps nothing that arrives later, while what other paths bring
+     * to the slots it flows to stays. Without the cap a context-insensitive fixpoint over a
+     * large Android app resolves every call on a shared `Object` parameter to thousands of
+     * lambdas and outgrows the heap.
+     */
+    @Test
+    fun `a holder past the target cap saturates and passes nothing on`() {
+        val adapter = createAdapter(listOf("sample.lambda"))
+        val method = MethodDescriptor(TypeDescriptor("sample.lambda.AnonymousClassExample"), "saturate", emptyList(), TypeDescriptor("void"))
+        val many = (1..65).map { DispatchTarget.FunctionObject("sample.lambda.AnonymousClassExample\$$it") }
+        val precise = DispatchTarget.FunctionObject("sample.lambda.AnonymousClassExample\$precise")
+        val hub = DispatchSlot.Local(method, "hub")
+        val sink = DispatchSlot.Local(method, "sink")
+        setTargets(adapter, sink, linkedSetOf(precise))
+        flow(adapter, hub, sink)
+        fun add(slot: DispatchSlot, targets: Collection<DispatchTarget>): Boolean =
+            invokePrivate(adapter, "addTargets", arrayOf(Int::class.javaPrimitiveType!!, Set::class.java), slotId(adapter, slot), LinkedHashSet(targets))
+
+        assertTrue(add(hub, many.take(64)))
+        assertEquals(64, targetsOf(adapter, hub)?.size)
+        assertTrue(add(hub, many.takeLast(1)))
+        assertTrue(targetsOf(adapter, hub)!!.isEmpty(), "saturated")
+        assertFalse(add(hub, listOf(precise)), "nothing changes a saturated holder")
+        assertTrue(targetsOf(adapter, hub)!!.isEmpty())
+        assertFalse(add(sink, targetsOf(adapter, hub)!!), "a saturated input adds nothing")
+
+        invokePrivate<Unit>(adapter, "resolveFunctionalDispatch", emptyArray())
+        assertEquals(setOf(precise), targetsOf(adapter, sink))
+
+        // the same cap holds the function values a local is tracked as holding within a method
+        val register = JavaLocal("\$u0", identifierFactory.getType("java.lang.Object"), emptyList())
+        val dynamicTargets = readField<MutableMap<Any, Set<DispatchTarget>>>(adapter, "dynamicTargets")
+        val key = invokePrivate<Any>(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), method, register.name)
+        many.forEach { target ->
+            invokePrivate<Unit>(adapter, "mergeLocalTargets", arrayOf(MethodDescriptor::class.java, Local::class.java, Collection::class.java), method, register, listOf(target))
+        }
+        assertTrue(dynamicTargets[key]!!.isEmpty(), "saturated")
+        invokePrivate<Unit>(adapter, "mergeLocalTargets", arrayOf(MethodDescriptor::class.java, Local::class.java, Collection::class.java), method, register, listOf(precise))
+        assertTrue(dynamicTargets[key]!!.isEmpty(), "nothing changes a saturated local")
     }
 
     @Test
@@ -1047,6 +1181,22 @@ class SootUpAdapterInternalCoverageTest {
         method.isAccessible = true
         return method.invoke(target, *args) as T
     }
+
+    private fun slotId(adapter: SootUpAdapter, slot: DispatchSlot): Int =
+        invokePrivate(adapter, "slotId", arrayOf(DispatchSlot::class.java), slot)
+
+    private fun targetsOf(adapter: SootUpAdapter, slot: DispatchSlot): Set<DispatchTarget>? =
+        readField<MutableList<Set<DispatchTarget>?>>(adapter, "slotTargets")[slotId(adapter, slot)]
+
+    private fun setTargets(adapter: SootUpAdapter, slot: DispatchSlot, targets: Set<DispatchTarget>) {
+        readField<MutableList<Set<DispatchTarget>?>>(adapter, "slotTargets")[slotId(adapter, slot)] = targets
+    }
+
+    private fun flow(adapter: SootUpAdapter, from: DispatchSlot, to: DispatchSlot) =
+        invokePrivate<Unit>(adapter, "flowSlot", arrayOf(DispatchSlot::class.java, DispatchSlot::class.java), from, to)
+
+    private fun waitOn(adapter: SootUpAdapter, slot: DispatchSlot, pending: PendingDispatch) =
+        invokePrivate<MutableList<PendingDispatch>>(adapter, "callsOn", arrayOf(Int::class.javaPrimitiveType!!), slotId(adapter, slot)).add(pending)
 
     private fun findTestClassesDir(): Path {
         val projectDir = Path.of(System.getProperty("user.dir"))
