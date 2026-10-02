@@ -3630,3 +3630,51 @@ loader tests passed.
 field lookup, the top-level cached-field path made the Android build-only score
 worse. Since build-only regressed, no end-to-end benchmark was run. The
 candidate was reverted and no product code from this attempt is retained.
+
+### 2026-10-03 — Attempt 093: Keep lambda dispatch bounded on dex bodies
+
+**Question:** why does 2.10.0 run out of a 16 GB heap building a 185 MB Android
+APK (132,500 classes in pass 2) that 2.8.0 built in 85 s and 8.9 GB, and what
+bounds the cross-method lambda dispatch of #162 on inputs it cannot be precise
+about?
+
+**Fixture:** `coupang-9-3-9.apk` (185,686,651 bytes), Android platforms from
+`~/Library/Android/sdk/platforms`. Base revision `v2.10.0` (`019f0024`);
+candidates are the three steps of this change on top of it. Apple M3 Max,
+64 GiB, OpenJDK 17.0.20.1, `-Xmx16g -XX:+UseParallelGC`, `graphite.jar build
+<apk> -o <dir> -v`; max live heap read from `-Xlog:gc`, phases from `jcmd
+Thread.print` samples, hot frames from JFR (`settings=profile`).
+
+**Diagnosis:** every 2.10.0 run died at the same class, on
+`ProductDetailFragment.V()`: 6,250 statements, 325 function objects, 1,624
+copies between the 22 untyped registers a dex body keeps as locals (no
+`LocalSplitter`). `arrayDynamicTargets` was a `MutableList` appended on every
+copy, so `$u1 = $stack; $stack = $u1` doubled it each round trip (live heap
+5.5 GB → 16 GB inside one method). With that fixed, the fixpoint copied a
+27k-target set into millions of slots (304 M `LinkedHashMap$Entry`, 32 GB at
+200 s, not converged at 40 GB). With sets shared and capped, the fixpoint
+still took ~200 s: JFR put half the samples under `HashMap.getNode` /
+`String.hashCode` / `TreeNode.getTreeNode` from `slotTargets[slot]`, a data
+class hash of a `MethodDescriptor` per step.
+
+**Results:**
+
+| Revision | Outcome | Wall | Max live heap | Nodes |
+|----------|---------|-----:|--------------:|------:|
+| `v2.8.0` | built | 85 s | 8,878 MB | 8,155,058 |
+| `v2.10.0` | `OutOfMemoryError` at class 52,000 of pass 2 | ~90 s | >16 GB (40 GB not converged) | — |
+| + immutable, de-duplicated per-local sets | OOM in the fixpoint | — | >16 GB | — |
+| + sets shared between slots, `MAX_TARGETS` = 64 | built | 288 s | 11,539 MB | 9,081,858 |
+| + slots numbered, CSR flow graph, reverse-postorder sweeps | built | 101 s | 10,817 MB | 9,091,765 |
+
+`./gradlew check` passes; the Tika, Hive and Kotlin compiler gate counts are
+unchanged (jar bodies are split by `LocalSplitter`, so no holder there reaches
+the cap). The node count differs from the FIFO variant by 9,907 because which
+64 targets a holder keeps before saturating depends on arrival order; both are
+deterministic.
+
+**Conclusion:** kept. The cap changes results only where a call would have
+resolved to more than 64 implementations, which the previous output expressed
+as thousands of call sites per call. The remaining 16 s over 2.8.0 is the
+resolution itself (930k resolved dispatch call sites that 2.8.0 did not have,
+since D8 lambda classes were not function values before #162).

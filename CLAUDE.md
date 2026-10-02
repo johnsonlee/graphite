@@ -334,6 +334,19 @@ Lessons:
   helper methods of `new Object() { ... }` or `new Runnable() { ... }` get no phantom caller. A
   supertype outside the view (JDK, Kotlin stdlib) is inspected through the analysis JVM's own copy
   of the class, loaded without initialization.
+- Resolution must stay bounded on inputs it cannot be precise about. A dex body (APK input) keeps
+  the compiler's registers as untyped locals, each reused for hundreds of values, with no
+  `LocalSplitter`; the per-local target sets are therefore shared, immutable and merged by subset
+  test (a copy that brings nothing allocates nothing), the fixpoint shares one set between a slot
+  and everything it fans out to (an interface parameter reaching every lambda's), and a holder
+  that more than `MAX_TARGETS` (64) function values reach saturates: it resolves nothing and
+  passes nothing on. Slots are numbered on first use and the fixpoint sweeps a compressed int
+  flow graph in reverse postorder (`SlotPropagation`), not a map keyed by `DispatchSlot`: a data
+  class hash of a `MethodDescriptor` per step was half the build. Before this, one
+  6,250-statement Android method doubled its array targets on every register round trip, and
+  the fixpoint copied a 27k-target set into millions of slots; 2.10.0 needed more than 40 GB for
+  an APK that 2.8.0 built in 9 GB and 85 s (now 11 GB and ~100 s, with 930k resolved dispatch
+  call sites more).
 - Kotlin fixtures in `frontend/jvm/sootup/src/kotlinLambdaFixtures` compile twice (`indy` and
   `class`), and D8 desugars the `indy` output (`desugarKotlinLambdaFixtures`);
   `KotlinLambdaDispatchTest` runs every shape against all three outputs. Desugaring adds a
