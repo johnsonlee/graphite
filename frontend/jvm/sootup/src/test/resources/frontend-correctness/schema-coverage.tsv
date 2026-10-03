@@ -1,0 +1,43 @@
+# Complete Graphite node/edge schema inventory. Columns: element, covered|gap, fixture:case references, evidence.
+node:IntConstant	covered	java:switch-returns	The case requires the exact schema-node marker and distinct integer return values
+node:StringConstant	covered	java:branch-direction	The case requires the exact schema-node marker and distinct strings on opposite branches
+node:EnumConstant	gap	-	SootUpAdapter records enumValues metadata but never creates EnumConstant nodes
+node:LongConstant	covered	java:constant-nodes	The case requires the exact schema-node marker and a controlled long literal
+node:FloatConstant	covered	java:constant-nodes	The case requires the exact schema-node marker and a controlled float literal
+node:DoubleConstant	covered	java:constant-nodes	The case requires the exact schema-node marker and a controlled double literal
+node:BooleanConstant	gap	-	JVM and DEX booleans currently materialize as IntConstant and the adapter never creates BooleanConstant
+node:NullConstant	covered	java:null-return	The case requires the exact schema-node marker and null-to-return flow
+node:LocalVariable	covered	java:parameter-return	The case requires the exact schema-node marker and parameter-to-return reachability
+node:FieldNode	covered	java:field-store	The case requires the exact schema-node marker and correct store direction
+node:ParameterNode	covered	java:parameter-return	The case requires the exact schema-node marker and parameter-to-return reachability
+node:ReturnNode	covered	java:switch-returns	The case requires the exact schema-node marker and independent return values
+node:ResourceFileNode	covered	java:resource-relations	The case requires the exact schema-node marker plus path and format
+node:ResourceValueNode	gap	-	SootUpAdapter does not create ResourceValueNode; resource values remain accessor metadata
+node:CallSiteNode	covered	java:static-call	The case requires the exact schema-node marker, callee identity, and argument position
+node:AnnotationNode	covered	java:annotation-node	Class field and method annotation ownership and values are asserted
+edge:DataFlowEdge:ASSIGN	covered	java:parameter-return	The case requires the exact edge-kind marker and parameter-to-return reachability
+edge:DataFlowEdge:PARAMETER_PASS	covered	java:static-call	The case requires the exact edge-kind marker and literal argument flow
+edge:DataFlowEdge:RETURN_VALUE	covered	java:switch-returns	The case requires the exact edge-kind marker and source-to-return flow
+edge:DataFlowEdge:FIELD_STORE	covered	java:field-store	The case requires the exact edge-kind marker, correct direction, and forbidden inverse
+edge:DataFlowEdge:FIELD_LOAD	covered	java:instance-field	The case requires the exact edge-kind marker and field-to-local flow
+edge:DataFlowEdge:ARRAY_STORE	covered	java:array-store	The case requires the exact edge-kind marker, correct direction, and forbidden inverse
+edge:DataFlowEdge:ARRAY_LOAD	covered	java:array-load	The case requires the exact edge-kind marker and array-to-local flow
+edge:DataFlowEdge:CAST	gap	-	SootUpAdapter intentionally flattens JCastExpr to ASSIGN and never emits CAST
+edge:DataFlowEdge:PHI	gap	-	The frontend does not build SSA form and never emits PHI
+edge:ResourceEdge:OPENS	covered	java:resource-relations	Class.getResourceAsStream is tied to the packaged resource
+edge:ResourceEdge:LOADS	covered	java:resource-relations	Properties.load and ResourceBundle loading are tied to candidate files
+edge:ResourceEdge:BUNDLE_CANDIDATE	covered	java:resource-relations	ResourceBundle locale candidate resolution is asserted
+edge:ResourceEdge:LOOKUP	covered	java:resource-relations	Properties and bundle key lookup is tied to its resource file
+edge:ResourceEdge:ENUMERATES	covered	java:resource-relations	Properties key enumeration is tied to its resource file
+edge:CallEdge:STATIC	gap	-	Ordinary static CallSiteNode creation does not emit CallEdge
+edge:CallEdge:VIRTUAL	gap	-	Ordinary virtual CallSiteNode creation does not emit CallEdge
+edge:CallEdge:DYNAMIC	covered	java:lambda-target	The case requires the exact edge-kind marker and resolved invokedynamic target
+edge:TypeEdge:EXTENDS	gap	-	Type relations are stored only in TypeHierarchy metadata rather than as TypeEdge
+edge:TypeEdge:IMPLEMENTS	gap	-	Type relations are stored only in TypeHierarchy metadata rather than as TypeEdge
+edge:ControlFlowEdge:SEQUENTIAL	gap	-	The adapter emits branch membership only and never emits SEQUENTIAL
+edge:ControlFlowEdge:BRANCH_TRUE	covered	java:branch-direction	The case requires the exact edge-kind marker and true-side call membership
+edge:ControlFlowEdge:BRANCH_FALSE	covered	java:branch-direction	The case requires the exact edge-kind marker and false-side call membership
+edge:ControlFlowEdge:SWITCH_CASE	gap	-	Switch semantics are observable through return flow but SWITCH_CASE edges are not emitted
+edge:ControlFlowEdge:SWITCH_DEFAULT	gap	-	Switch semantics are observable through return flow but SWITCH_DEFAULT edges are not emitted
+edge:ControlFlowEdge:EXCEPTION	gap	-	Catch calls are discovered but EXCEPTION edges are not emitted
+edge:ControlFlowEdge:RETURN	gap	-	Return dataflow exists but RETURN control-flow edges are not emitted

@@ -1,0 +1,62 @@
+# Audited coverage catalogue. Columns: fixture, semantic family, case, risk addressed.
+# Every row must have both require and forbid rules in expectations.tsv.
+java	control-flow	branch-direction	conditional branch polarity and true/false membership
+java	control-flow	switch-returns	tableswitch/lookupswitch lowering and return values
+java	control-flow	sparse-switch	lookupswitch lowering with negative and distant keys
+java	data-flow	parameter-return	parameter binding and transitive flow into the return node
+java	data-flow	null-return	null constant identity and return flow
+java	data-flow	constant-nodes	long float and double constant node materialization
+java	data-flow	field-store	field store direction must not be reported as a load
+java	data-flow	array-store	array store direction must not be reported as a load
+java	data-flow	array-load	array load direction and result identity
+java	data-flow	instance-field	instance field store and load direction
+java	invocation	static-call	static callee identity and argument position
+java	invocation	virtual-call	virtual receiver callee and argument identity
+java	invocation	interface-call	invokeinterface receiver callee and argument identity
+java	invocation	constructor-call	constructor receiver and argument identity
+java	invocation	recursive-call	self-call identity and parameter flow
+java	invocation	lambda-target	invokedynamic lambda body target recovery
+java	invocation	capturing-lambda	captured values and lambda body target recovery
+java	exceptional-flow	exception-path	try/catch lowering must retain calls on exceptional paths
+java	metadata	annotation-node	class field and method annotations with independent values
+java	resource	resource-relations	packaged resource identity open load lookup enumeration and bundle candidates
+kotlin	control-flow	branch-direction	Kotlin if-expression polarity and branch membership
+kotlin	control-flow	when-returns	Kotlin when lowering and return values
+kotlin	control-flow	string-when	Kotlin string when hash/equality lowering and return values
+kotlin	data-flow	parameter-return	parameter binding and transitive flow into the return node
+kotlin	data-flow	null-return	null constant identity and return flow
+kotlin	data-flow	nullable-elvis	nullable parameter and fallback value reach the return
+kotlin	data-flow	safe-call	safe-call target and null fallback lowering
+kotlin	data-flow	constant-nodes	long float and double constant node materialization
+kotlin	data-flow	field-store	Kotlin companion/object field store direction
+kotlin	data-flow	array-store	Kotlin primitive-array store direction
+kotlin	data-flow	array-load	Kotlin primitive-array load direction
+kotlin	data-flow	instance-field	JvmField instance store and load direction
+kotlin	invocation	static-call	JvmStatic callee identity and argument position
+kotlin	invocation	virtual-call	Kotlin concrete receiver callee and argument identity
+kotlin	invocation	interface-call	Kotlin interface receiver callee and argument identity
+kotlin	invocation	constructor-call	Kotlin constructor receiver and argument identity
+kotlin	invocation	lambda-target	Kotlin invokedynamic lambda body target recovery
+kotlin	invocation	capturing-lambda	Kotlin captured values and lambda body target recovery
+kotlin	compiler-generated	extension-call	member extension static lowering and receiver parameter
+kotlin	compiler-generated	suspend-lowering	Continuation parameter ABI and body target retention
+kotlin	exceptional-flow	exception-path	Kotlin try/catch lowering retains both calls
+kotlin	compiler-generated	default-argument	Kotlin synthetic default-argument bridge target
+android	invocation	static-arguments	DEX static invoke arguments must not be dropped or shifted
+android	control-flow	branch-direction	DEX conditional branch polarity and true/false membership
+android	control-flow	relational-branch	DEX relational comparison and side membership
+android	control-flow	dense-switch	DEX packed-switch values reaching return
+android	control-flow	sparse-switch	DEX sparse-switch values reaching return
+android	data-flow	parameter-return	DEX parameter binding and transitive return flow
+android	data-flow	null-return	DEX null constant identity and return flow
+android	data-flow	constant-nodes	DEX long float and double constant materialization
+android	data-flow	field-store	DEX sput direction must not be reported as a field load
+android	data-flow	field-load	DEX sget direction, field identity and return flow
+android	data-flow	array-store	DEX aput direction must not be reported as an array load
+android	data-flow	array-load	DEX aget direction and result identity
+android	data-flow	instance-field	DEX iput and iget direction
+android	invocation	virtual-call	DEX invoke-virtual receiver and argument recovery
+android	invocation	interface-call	DEX invoke-interface receiver and argument recovery
+android	invocation	constructor-call	DEX invoke-direct constructor receiver and argument recovery
+android	invocation	recursive-call	DEX self-call identity and argument recovery
+android	invocation	wide-arguments	DEX wide-register long and double argument positions

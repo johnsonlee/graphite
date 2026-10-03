@@ -1,0 +1,14 @@
+# Verified current defects only. Columns: fixture, case, verdict, fact, evidence.
+# The gate fails if one of these starts passing, forcing the allowlist entry to be reviewed and removed.
+android	static-arguments	require	call-arg|fixture.frontend.android.AndroidCases.staticArguments()|fixture.frontend.android.AndroidCases.sink(java.lang.String,int)|0|string:android	SootUp 2.0.0 DEX Jimple emits the static invoke with an empty argument list
+android	static-arguments	require	call-arg|fixture.frontend.android.AndroidCases.staticArguments()|fixture.frontend.android.AndroidCases.sink(java.lang.String,int)|1|int:7	SootUp 2.0.0 DEX Jimple emits the static invoke with an empty argument list
+android	field-store	require	flow|fixture.frontend.android.AndroidCases.fieldStore(int)|FIELD_STORE|local:int|field:fixture.frontend.android.AndroidCases.stored:int	SootUp 2.0.0 DEX Jimple converts sput into a static field load
+android	field-store	forbid	flow|fixture.frontend.android.AndroidCases.fieldStore(int)|FIELD_LOAD|field:fixture.frontend.android.AndroidCases.stored:int|local:unknown	SootUp 2.0.0 DEX Jimple exposes the erroneous sput-as-load edge that source semantics forbid
+android	array-store	require	flow|fixture.frontend.android.AndroidCases.arrayStore(int[],int)|ARRAY_STORE|local:int|local:int[]	SootUp 2.0.0 DEX Jimple converts aput into an array load
+android	array-store	forbid	flow|fixture.frontend.android.AndroidCases.arrayStore(int[],int)|ARRAY_LOAD|local:unknown|local:unknown	SootUp 2.0.0 DEX Jimple exposes the erroneous aput-as-load edge that source semantics forbid
+android	null-return	require	return-constant|fixture.frontend.android.AndroidCases.nullReturn()|null	SootUp 2.0.0 DEX Jimple materializes const-null as IntConstant zero
+android	constant-nodes	require	node|float:2.25	SootUp 2.0.0 DEX Jimple exposes the float literal as its raw int bit pattern
+android	constant-nodes	require	node|double:5.5	SootUp 2.0.0 DEX Jimple exposes the double literal as its raw long bit pattern
+android	instance-field	require	flow|fixture.frontend.android.AndroidCases.instanceField(int)|FIELD_STORE|local:unknown|field:fixture.frontend.android.AndroidCases$Box.value:int	SootUp 2.0.0 DEX Jimple drops iput and retains only the later iget
+android	wide-arguments	require	call-arg|fixture.frontend.android.AndroidCases.wideArguments()|fixture.frontend.android.AndroidCases.wideSink(long,double)|0|long:7	SootUp 2.0.0 DEX Jimple emits the static invoke with an empty wide argument list
+android	wide-arguments	require	call-arg|fixture.frontend.android.AndroidCases.wideArguments()|fixture.frontend.android.AndroidCases.wideSink(long,double)|1|double:3.5	SootUp 2.0.0 DEX Jimple emits the static invoke with an empty wide argument list
