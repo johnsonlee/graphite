@@ -51,7 +51,7 @@ const CALL_SITE_PROPS: [&str; 4] = ["caller_class", "caller_name", "callee_class
 
 /// Every property name the scan can read raw off some record: CallSite's four through
 /// the CallSite index, the rest through a per-type string column.
-const PUSHABLE_PROPS: [&str; 25] = [
+const PUSHABLE_PROPS: [&str; 26] = [
     "caller_class",
     "caller_name",
     "callee_class",
@@ -71,6 +71,7 @@ const PUSHABLE_PROPS: [&str; 25] = [
     "callee_signature",
     "caller_signature",
     "line",
+    "ordinal",
     "static",
     "index",
     "method",
@@ -87,8 +88,8 @@ const PUSHABLE_PROPS: [&str; 25] = [
 /// `any(k IN keys(n) WHERE ...)` ranges over. `id` is on every node; an annotation's
 /// value pairs add keys of their own, which is why the Annotation type is always
 /// decoded for that shape.
-const ALL_KEYS: [&str; 26] = {
-    let mut keys = ["id"; 26];
+const ALL_KEYS: [&str; 27] = {
+    let mut keys = ["id"; 27];
     let mut i = 0;
     while i < PUSHABLE_PROPS.len() {
         keys[i + 1] = PUSHABLE_PROPS[i];
@@ -1530,6 +1531,8 @@ enum RawLeaf {
     Signature { callee: bool, memo: usize },
     /// The line number as text, or against a number.
     Line(Option<f64>),
+    /// The call-site ordinal as text, or against a number.
+    Ordinal(Option<f64>),
     /// The node id as text, or against a number.
     NodeId(Option<f64>),
     /// A synthetic key tested per node: the graph's prefix, then the id.
@@ -1663,6 +1666,7 @@ impl RawTree {
                         }
                     }
                     "line" => RawLeaf::Line(number()),
+                    "ordinal" => RawLeaf::Ordinal(number()),
                     "id" => RawLeaf::NodeId(number()),
                     prop => {
                         let field = CALL_SITE_PROPS
@@ -1709,6 +1713,12 @@ impl RawTree {
                 }
                 number_or_text(*number, r.line as u32, p)
             }
+            // The ordinal comes from the sidecar, not the record; a graph without one reads
+            // it as null.
+            RawTree::Leaf(RawLeaf::Ordinal(number), p) => match graph.call_site_ordinal(r.id) {
+                None => false,
+                Some(ordinal) => number_or_text_i64(*number, ordinal as i64, p),
+            },
             RawTree::Leaf(RawLeaf::NodeId(number), p) => number_or_text(*number, r.id, p),
             RawTree::Leaf(RawLeaf::Synthetic { prefix, with_id }, p) => {
                 st.text.clear();
@@ -2890,7 +2900,7 @@ fn record_field(tag: u8, property: &str, shape: LeafShape) -> Option<RecordField
 fn is_raw_call_site_prop(property: &str) -> bool {
     matches!(
         property,
-        "callee_signature" | "caller_signature" | "line" | "id"
+        "callee_signature" | "caller_signature" | "line" | "ordinal" | "id"
     )
 }
 
@@ -2912,7 +2922,7 @@ fn leaf_exposure(tag: u8, p: &StringPredicate) -> Exposure {
             TAG_INT_CONSTANT | TAG_LONG_CONSTANT | TAG_FLOAT_CONSTANT | TAG_DOUBLE_CONSTANT,
             "value"
         ) | (TAG_PARAMETER_NODE, "index")
-            | (TAG_CALL_SITE_NODE, "line")
+            | (TAG_CALL_SITE_NODE, "line" | "ordinal")
     );
     // An enum's value is its first constructor argument and a resource value is
     // whatever the file held: either can be a number or a list.
@@ -3003,7 +3013,7 @@ fn exposure_of(
         TAG_BOOLEAN_CONSTANT => (property == "value").then_some(true),
         TAG_FIELD_NODE => (property == "static").then_some(true),
         TAG_PARAMETER_NODE => (property == "index").then_some(false),
-        TAG_CALL_SITE_NODE => (property == "line").then_some(false),
+        TAG_CALL_SITE_NODE => matches!(property, "line" | "ordinal").then_some(false),
         _ => None,
     };
     if let Some(boolean) = non_string {
@@ -4927,6 +4937,14 @@ mod tests {
         let p = plans(r#"MATCH (n) WHERE toString(n.line) STARTS WITH "12" RETURN n"#);
         assert_eq!(p[TAG_CALL_SITE_NODE as usize], "callsite");
         let p = plans(r#"MATCH (n) WHERE toString(n.line) STARTS WITH "ab" RETURN n"#);
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "skip");
+        // The ordinal is swept raw the same way, and only CallSites have one.
+        let p = plans(r#"MATCH (n) WHERE n.ordinal = 2 AND n.callee_name = "enabled" RETURN n"#);
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "callsite");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
+        let p = plans(r#"MATCH (n) WHERE toString(n.ordinal) STARTS WITH "-" RETURN n"#);
+        assert_eq!(p[TAG_CALL_SITE_NODE as usize], "callsite");
+        let p = plans(r#"MATCH (n) WHERE toString(n.ordinal) STARTS WITH "ab" RETURN n"#);
         assert_eq!(p[TAG_CALL_SITE_NODE as usize], "skip");
         // The digit search over every key, once the synthetic keys are folded for a
         // graph: CallSites raw, columns test the id, the numeric constants decode.

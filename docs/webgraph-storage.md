@@ -60,7 +60,7 @@ transpose construction during load.
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`, synthetic identities `GRS` `0x47525301`) |
+| graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`, synthetic identities `GRS` `0x47525301`, ordinal binding `GRB` `0x47524201`, last) |
 | graph.nodedata | `GRN` | `0x47524E03` |
 | graph.nodeindex | `GRI` | `0x47524903` |
 | graph.nodeoffsets | `GRL` | `0x47524C03` |
@@ -70,10 +70,36 @@ transpose construction during load.
 | graph.resources | `GRR` | `0x47525201` |
 | graph.callsite-string-index | `GRCS` | `0x47524353` |
 | graph.branchdefs | `GRD` | `0x47524401` |
+| graph.callsite-ordinals | `GRQ` | `0x47525102` |
 
 Current node and metadata writers emit version `3`. Their readers accept legacy version `1` and transitional
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current
 build is upgraded to version `3`. The independent `graph.resources` format remains at version `1`.
+
+`graph.callsite-ordinals` is an independent version `2` sidecar: `int32 header`, `int32 count`, the 32-byte
+SHA-256 of the entries, then per call site `int32 nodeId, int32 ordinal`, ascending by node id. The ordinal is
+the rank of the call among the invokes of the same callee in the same calling method's bytecode, in statement
+order from `0`, every invoke, including the boxing and unboxing calls the graph shows as dataflow rather than
+as call sites, so `(caller_signature, callee_signature, ordinal)` names one call site and keeps naming it
+while the method's other statements change; a call the frontend derived rather than read from the bytecode (a function value's dispatch resolved
+to its body, a lambda body reached through `invokedynamic`, the methods a function object implements) counts
+apart, from `-1` downwards. It is a file of its own rather than a field of the `CallSite` record because the
+record format is what every reader shares: the benchmark gates query the candidate's graphs with the base
+revision's code, and a format version it does not know fails the whole comparison, while a file it never
+opens costs nothing. Both loaders map the sidecar and give the `CallSite` node its ordinal as they decode it (a search over the
+mapped entries, eight bytes per call site, nothing read up front: a cold query must not pay for a sidecar it
+may never need), the Rust reader does the same, and a graph without the sidecar, or with one that is not a sidecar (wrong header, cut short), reads every ordinal as
+`null`. The sidecar is bound to the graph it describes the way `graph.branchdefs` is: the same digest is the
+last section of `graph.metadata` (`GRB`, 36 bytes, written after the trailer and the synthetic identities, so
+a reader finds it by looking at the file's tail without parsing the metadata, and a reader that predates it
+stops at its header). A writer that does not know the sidecar rewrites `graph.metadata` without that section,
+and the sidecar it leaves behind, whose ordinals would attach to the reused node ids of another graph, no
+longer binds and is ignored with one warning; a current save removes the old sidecar before it writes
+anything and writes the sidecar and the binding only when some call site has an ordinal. Both readers hash
+the entries and compare that to the binding, not the copy of the digest in the sidecar's header: the entries
+are what a `select` folds by, and a header is no proof of the bytes behind it. Every fresh mapping is hashed:
+a path, a size and a modification time are no content identity (a file replaced by other bytes of the same
+length can keep both), so nothing short of the hash admits the entries.
 Current builds always write `graph.resources`, including a valid zero-entry store when no supported text resources
 exist. Its absence therefore identifies a graph produced without resource persistence (for example by a legacy CLI),
 not an empty resource set. Other graph APIs remain available, while resource HTTP endpoints return `409` with an
@@ -111,8 +137,8 @@ local, and every table must belong to a local some side defines.
 A loaded graph therefore never exposes a definition that points outside it, and `localDefinitionsFor` never
 disagrees with the side definitions a consumer subtracts from it. The file is derived data: when it is missing, has a wrong magic or version,
 does not match the trailer, or is corrupt in any of these ways, the loader logs one warning and returns every
-branch scope with empty definition lists. `graph.metadata` keeps format version `3`, so the Rust backend
-ignores both the trailer and the sidecar.
+branch scope with empty definition lists. The trailer and the sidecar are not part of the format version, so
+the Rust backend ignores both.
 
 `graph.metadata` may end with one more optional section after the trailer: the synthetic identities (`GRS`
 magic, version `1`). It records, for every compiler-numbered synthetic member of the loaded packages (a class or
@@ -172,7 +198,7 @@ graph TD
     D2 --> E["4. BVGraph.store(forward)"]
     E --> F[5. Write labels + label prefix + comparisons]
     F --> G["6. Write nodedata + nodeindex + mmap node indexes"]
-    G --> H[7. Write metadata + trailer + synthetic identities, branchdefs sidecar]
+    G --> H[7. Write metadata + trailer + synthetic identities + ordinal binding, branchdefs and ordinal sidecars]
     H --> I[8. Write class overview + resource store]
 ```
 

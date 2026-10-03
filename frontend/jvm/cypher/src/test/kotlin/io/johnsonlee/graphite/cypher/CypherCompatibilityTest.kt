@@ -656,6 +656,26 @@ class CypherCompatibilityTest {
     }
 
     @Test
+    fun `ORDER BY a grouping key written as the projected expression`() {
+        // `n` is gone after the aggregation; the sort key is the column named by its text.
+        val result = executor.execute("MATCH (n) RETURN n.type, count(*) ORDER BY n.type")
+        val types = result.rows.map { it["n.type"] as String }
+        assertTrue(types.size > 2, types.toString())
+        assertEquals(types.sorted(), types)
+        val descending = executor.execute("MATCH (n) RETURN n.type, count(*) ORDER BY n.type DESC")
+        assertEquals(types.reversed(), descending.rows.map { it["n.type"] })
+    }
+
+    @Test
+    fun `ORDER BY an aggregate written as the projected expression is rejected`() {
+        // An aggregate in the sort key is evaluated outside RETURN, which both engines reject.
+        val failure = assertFailsWith<RuntimeException> {
+            executor.execute("MATCH (n) RETURN n.type, count(*) ORDER BY count(*) DESC")
+        }
+        assertEquals("Aggregation function 'count' must be used in RETURN or WITH clause", failure.message)
+    }
+
+    @Test
     fun `WITH - aggregation, ORDER BY, and LIMIT`() {
         val result = executor.execute(
             "MATCH (n:CallSiteNode) WITH n.callee_class AS cls, count(*) AS cnt ORDER BY cnt DESC LIMIT 3 RETURN cls, cnt"

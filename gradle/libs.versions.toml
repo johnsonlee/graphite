@@ -1,5 +1,5 @@
 [versions]
-sootup = "2.0.0"
+sootup = "3.0.1"
 ff4j = "1.8.1"
 spring = "6.1.0"
 picocli = "4.7.6"

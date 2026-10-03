@@ -161,7 +161,8 @@ internal class MappedWebGraphBackedGraph(
     private val metadata: Lazy<GraphMetadata>,
     private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>,
-    private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY }
+    private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY },
+    private val callSiteOrdinals: Lazy<CallSiteOrdinals> = lazy { CallSiteOrdinals.EMPTY }
 ) : Graph,
     NodePropertyTextCandidates,
     NodeIdCandidateLookup,
@@ -2589,7 +2590,7 @@ internal class MappedWebGraphBackedGraph(
 
     private fun readNodeAt(offset: Long): Node {
         val input = ByteBufferDataInput(mappedNodeData, offset.toInt())
-        return NodeSerializer.readNode(input, stringTable, nodeDataVersion)
+        return NodeSerializer.readNode(input, stringTable, nodeDataVersion, callSiteOrdinals.value)
     }
 }
 

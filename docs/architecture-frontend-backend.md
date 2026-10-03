@@ -134,7 +134,7 @@ language-neutral names.
 | `Module` | Compilation/distribution unit | `name`, `path` | jar, apk, dex, source set | package, entry bundle, workspace project | module, framework, target |
 | `Type` | Named type | `name`, `qualified_name`, `module`, `kind` (`class`/`interface`/`enum`/`struct`/`protocol`/`function-type`) | class, interface, enum, annotation type | class, interface, type alias, enum | class, struct, enum, protocol, actor |
 | `Member` | Callable or stored member | `owner`, `name`, `signature`, `kind` (`method`/`ctor`/`field`/`property`/`function`) | method, constructor, field | function, method, property, arrow member | func, init, property, subscript |
-| `CallSite` | A call expression | `caller`, `callee` (symbol refs), `line`, `receiver`, `arguments` | invoke*, `<init>` | call, new, tagged template, JSX element | call, message send, init |
+| `CallSite` | A call expression | `caller`, `callee` (symbol refs), `ordinal` (rank among the caller's calls of that callee, in statement order), `line`, `receiver`, `arguments` | invoke*, `<init>` | call, new, tagged template, JSX element | call, message send, init |
 | `Constant` | A literal | `value` (typed), `constant_type` | Int/Long/Float/Double/Boolean/String/Null/Enum | number/bigint/string/boolean/null/enum member | Int/Double/String/Bool/nil/enum case |
 | `Local`, `Parameter`, `Return` | Data-flow endpoints inside a member | `owner`, `name`/`index`, `type`, `actual_type` | as today | as today | as today |
 | `Annotation` | Metadata attached to a symbol | `name`, `owner`, `member`, `values` (open map) | annotation | decorator | attribute (`@objc`, `@available`, property wrapper) |

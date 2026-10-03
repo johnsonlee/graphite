@@ -343,7 +343,7 @@ internal object SyntheticIdentity {
 
         private fun renderBody(method: SootMethod, text: StringBuilder) {
             val body = method.body
-            val graph = body.stmtGraph
+            val graph = body.controlFlowGraph
             val statements = body.stmts
             val indices = java.util.IdentityHashMap<Stmt, Int>(statements.size)
             statements.forEachIndexed { index, stmt -> indices[stmt] = index }

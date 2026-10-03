@@ -106,6 +106,47 @@ jobs:
         java -jar frontend/jvm/query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-graph-direct" --include com.acme
         diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-graph-direct"
+        # A fold file with a `select` rule: the shell builds once without rules, runs the
+        # query on that graph, and builds again with the selected call sites folded. The
+        # gate `inventory.reserve(sku, quantity)` guards a throw in OrderService.place().
+        cat > "${RUNNER_TEMP}/folds.yml" <<'EOF'
+        version: 1
+        folds:
+          - select: >
+              MATCH (cs:CallSite {callee_class: 'com.acme.shop.inventory.InventoryService', callee_name: 'reserve'})
+              RETURN cs
+            value: true
+        EOF
+        ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
+          -o "${RUNNER_TEMP}/acme-folded" --include com.acme --fold "${RUNNER_TEMP}/folds.yml" --fold-strict \
+          2> "${RUNNER_TEMP}/fold.log"
+        cat "${RUNNER_TEMP}/fold.log"
+        grep -F 'select rule 0: 1 call site(s) selected' "${RUNNER_TEMP}/fold.log"
+        test ! -e "${RUNNER_TEMP}"/acme-folded.unfolded-*
+        python3 - "${RUNNER_TEMP}/acme-folded/graph.folds.json" <<'EOF'
+        import json, sys
+        report = json.load(open(sys.argv[1]))
+        fold = report["folds"][0]
+        assert report["version"] == 1 and fold["matched"] == 1, report
+        key = fold["selected"][0]
+        assert key["caller_signature"] == "com.acme.shop.orders.OrderService.place(java.lang.String,int,long)", key
+        assert key["callee_signature"] == "com.acme.shop.inventory.InventoryService.reserve(java.lang.String,int)", key
+        assert key["ordinal"] == 0, key
+        EOF
+        test "$(./target/release/graphite query "${RUNNER_TEMP}/acme-folded" \
+          "MATCH (cs:CallSite {callee_name: 'reserve'}) RETURN count(cs) AS c" -f csv | tail -1)" = "0"
+        test "$(./target/release/graphite query "${RUNNER_TEMP}/acme-graph" \
+          "MATCH (cs:CallSite {callee_name: 'reserve'}) RETURN cs.ordinal AS o" -f csv | tail -1)" = "0"
+        # A query that returns a property instead of the node is refused with the row.
+        sed -i 's/RETURN cs$/RETURN cs.ordinal/' "${RUNNER_TEMP}/folds.yml"
+        set +e
+        ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
+          -o "${RUNNER_TEMP}/acme-refused" --include com.acme --fold "${RUNNER_TEMP}/folds.yml" 2> "${RUNNER_TEMP}/refused.log"
+        STATUS=$?
+        set -e
+        test "${STATUS}" -eq 1
+        grep -F "select rule 0: row 0 of 'cs.ordinal' is not a node" "${RUNNER_TEMP}/refused.log"
+        test ! -e "${RUNNER_TEMP}/acme-refused"
         # The single-file form: packed by the shell when -o names a .graphite file,
         # readable by standard zip tools, and the same graph as the directory.
         ./target/release/graphite build "${RUNNER_TEMP}/acme.jar" \
@@ -161,6 +202,7 @@ jobs:
         cargo test --release --locked -p graphite-cypher a_relaxed_plan_still_applies_the_dropped_conjunct -- --nocapture
         cargo test --release --locked -p graphite-cypher probed_execution_returns_the_same_rows_and_knows_when_more_exist -- --nocapture
         cargo test --release --locked -p graphite-cypher a_fused_with_prefix_answers_as_the_generic_pipeline_does -- --nocapture
+        cargo test --release --locked -p graphite-cli select_sites_reads_call_site_keys_off_a_real_graph -- --nocapture
         cargo test --release --locked -p graphite-cypher partition::tests -- --nocapture
         cargo test --release --locked -p graphite-explore schema_describes_a_loaded_graph -- --nocapture
         # The C4 build bound, warm-up and cache against a real graph, and the retained footprint.
