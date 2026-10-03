@@ -208,6 +208,60 @@ jobs:
         path: release-assets/*
         if-no-files-found: error
 
+  # ---- The Apple frontend ----
+  # graphite-frontend-apple is a Swift binary (frontend/apple). It is built natively per
+  # target: the two macOS architectures on their own runners, Linux x86_64 in the
+  # swift:6.1 image with the Swift standard library linked statically so the binary runs
+  # wherever the Swift toolchain it drives is installed. `graphite frontend install apple`
+  # downloads the tarball for its host, verifies the .sha256 next to it and unpacks the
+  # one executable.
+  apple-frontend:
+    needs: validate
+    permissions:
+      contents: read
+    runs-on: ${{ matrix.os }}
+    if: github.repository_owner == 'johnsonlee'
+    container: ${{ matrix.container }}
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            container: swift:6.1
+            static: --static-swift-stdlib
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
+    - name: Install what the swift image lacks
+      if: matrix.container != ''
+      run: apt-get update -q && apt-get install -y -q --no-install-recommends ca-certificates
+    - name: Build the frontend
+      run: frontend/apple/swift.sh build -c release ${{ matrix.static }}
+    - name: Package
+      shell: bash
+      run: |
+        ASSET="graphite-frontend-apple-${RELEASE_VERSION}-${{ matrix.target }}.tar.gz"
+        BIN="frontend/apple/.build/release/graphite-frontend-apple"
+        "${BIN}" version
+        "${BIN}" describe | grep -F '"ir_schema": [1]'
+        mkdir -p release-assets
+        tar -czf "release-assets/${ASSET}" -C "$(dirname "${BIN}")" graphite-frontend-apple
+        (cd release-assets && shasum -a 256 "${ASSET}" > "${ASSET}.sha256")
+        cat "release-assets/${ASSET}.sha256"
+    - uses: actions/upload-artifact@v7
+      with:
+        name: apple-frontend-${{ matrix.target }}
+        path: release-assets/*
+        if-no-files-found: error
+
   # ---- GitHub Release ----
   # Everything this job does before the last step is preparation that can be repeated:
   # build the jar, collect the binaries, verify the checksums, render the formula, keep
@@ -221,7 +275,7 @@ jobs:
   # ever being asked to modify an immutable release. (v3.0.0-alpha2 was left without
   # assets by creating the release published first and uploading afterwards.)
   release:
-    needs: [validate, binaries]
+    needs: [validate, binaries, apple-frontend]
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -245,10 +299,10 @@ jobs:
         mkdir -p release-assets
         cp frontend/jvm/query/build/libs/graphite.jar release-assets/graphite.jar
         (cd release-assets && sha256sum graphite.jar > graphite.jar.sha256)
-    - name: Collect the Rust binaries
+    - name: Collect the Rust binaries and the Apple frontend
       uses: actions/download-artifact@v8
       with:
-        pattern: binaries-*
+        pattern: '{binaries,apple-frontend}-*'
         path: release-assets
         merge-multiple: true
     - name: Verify release assets
@@ -258,6 +312,10 @@ jobs:
         for TARGET in x86_64-unknown-linux-musl aarch64-unknown-linux-musl x86_64-apple-darwin aarch64-apple-darwin; do
           test -f "graphite-${RELEASE_VERSION}-${TARGET}.tar.gz"
           sha256sum -c "graphite-${RELEASE_VERSION}-${TARGET}.tar.gz.sha256"
+        done
+        for TARGET in aarch64-apple-darwin x86_64-apple-darwin x86_64-unknown-linux-gnu; do
+          test -f "graphite-frontend-apple-${RELEASE_VERSION}-${TARGET}.tar.gz"
+          sha256sum -c "graphite-frontend-apple-${RELEASE_VERSION}-${TARGET}.tar.gz.sha256"
         done
         sha256sum -c graphite.jar.sha256
     # The formula is rendered and syntax-checked before anything is published, on every
@@ -270,6 +328,10 @@ jobs:
         SHA_MAC_X86=$(asset_sha x86_64-apple-darwin)
         SHA_LINUX_ARM=$(asset_sha aarch64-unknown-linux-musl)
         SHA_LINUX_X86=$(asset_sha x86_64-unknown-linux-musl)
+        apple_sha() { awk '{print $1}' "release-assets/graphite-frontend-apple-${RELEASE_VERSION}-$1.tar.gz.sha256"; }
+        SHA_APPLE_MAC_ARM=$(apple_sha aarch64-apple-darwin)
+        SHA_APPLE_MAC_X86=$(apple_sha x86_64-apple-darwin)
+        SHA_APPLE_LINUX_X86=$(apple_sha x86_64-unknown-linux-gnu)
         BASE="https://github.com/johnsonlee/graphite/releases/download/v${RELEASE_VERSION}"
 
         mkdir -p formula/Formula
@@ -313,11 +375,34 @@ jobs:
             sha256 "${QUERY_SHA}"
           end
 
+          # The Apple frontend: \`graphite build\` runs it on a Swift package. It drives
+          # the Swift toolchain on the machine (Xcode, or swift.org's on Linux); the
+          # formula does not depend on one.
+          resource "frontend-apple" do
+            on_macos do
+              on_arm do
+                url "${BASE}/graphite-frontend-apple-${RELEASE_VERSION}-aarch64-apple-darwin.tar.gz"
+                sha256 "${SHA_APPLE_MAC_ARM}"
+              end
+              on_intel do
+                url "${BASE}/graphite-frontend-apple-${RELEASE_VERSION}-x86_64-apple-darwin.tar.gz"
+                sha256 "${SHA_APPLE_MAC_X86}"
+              end
+            end
+            on_linux do
+              url "${BASE}/graphite-frontend-apple-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+              sha256 "${SHA_APPLE_LINUX_X86}"
+            end
+          end
+
           depends_on "openjdk@17"
 
           def install
             libexec.install "graphite"
             resource("frontend-jvm").stage { libexec.install "graphite.jar" }
+            if OS.mac? || Hardware::CPU.intel?
+              resource("frontend-apple").stage { libexec.install "graphite-frontend-apple" }
+            end
             (bin/"graphite").write_env_script libexec/"graphite",
               GRAPHITE_JAVA:         "#{Formula["openjdk@17"].opt_bin}/java",
               GRAPHITE_FRONTEND_JVM: "#{libexec}/graphite.jar"
@@ -326,6 +411,7 @@ jobs:
           test do
             assert_match "Usage", shell_output("#{bin}/graphite --help")
             assert_match "jvm", shell_output("#{bin}/graphite frontend list")
+            assert_match "apple", shell_output("#{bin}/graphite frontend list")
           end
         end
         RUBY
@@ -421,6 +507,7 @@ jobs:
         graphite --version | grep -F "${RELEASE_VERSION}"
         graphite frontend list
         graphite frontend describe jvm
+        graphite frontend describe apple | grep -F '"writes": "ir"'
         brew test graphite
 
   # ---- Docker image ----

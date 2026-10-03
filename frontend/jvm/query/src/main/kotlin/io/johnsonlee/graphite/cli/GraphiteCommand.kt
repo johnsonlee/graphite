@@ -11,6 +11,7 @@ import java.util.concurrent.Callable
     versionProvider = GraphiteVersionProvider::class,
     subcommands = [
         BuildCommand::class,
+        ImportCommand::class,
         QueryCommand::class,
         ServeCommand::class
     ]

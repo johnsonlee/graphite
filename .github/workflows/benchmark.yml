@@ -18,18 +18,18 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 9c8c2e5dd79b1bbaa1fa0c7fc67b1deb41ae2149907941dffbc7afbc7872e86c
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: f40d07ecd635df602c745e50463e6ebe1aa13adb77e98a3ebf3d58359639a260
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 88716cef949573d668512d6d7712c49fa07fc6e702ea2509e2df421fefc0b31b
   LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256: d32a6cb1a2f5c4981f96e9f85d5bfe91348d2c1e4c324b7c4d84ba8070f4531a
   LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256: 9c8c2e5dd79b1bbaa1fa0c7fc67b1deb41ae2149907941dffbc7afbc7872e86c
   WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256: 5c2be9550c0f3e0fa408d5d56375efc4b9e3c78d96b95de1c20718f08aa4dd2b
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: f40d07ecd635df602c745e50463e6ebe1aa13adb77e98a3ebf3d58359639a260
-  BENCHMARK_REPORT_TRANSITION_SHA256: f40d07ecd635df602c745e50463e6ebe1aa13adb77e98a3ebf3d58359639a260
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 88716cef949573d668512d6d7712c49fa07fc6e702ea2509e2df421fefc0b31b
+  BENCHMARK_REPORT_TRANSITION_SHA256: 88716cef949573d668512d6d7712c49fa07fc6e702ea2509e2df421fefc0b31b
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: a3f35a03dd9cff6272365125283f2143996fc53a73dc497d83e994392a9eb7c6
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: f40d07ecd635df602c745e50463e6ebe1aa13adb77e98a3ebf3d58359639a260
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: f40d07ecd635df602c745e50463e6ebe1aa13adb77e98a3ebf3d58359639a260
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 88716cef949573d668512d6d7712c49fa07fc6e702ea2509e2df421fefc0b31b
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 88716cef949573d668512d6d7712c49fa07fc6e702ea2509e2df421fefc0b31b
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -38,6 +38,12 @@ env:
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
   SLOW_QUERY_SHAPES_CONTROLS_SHA256: 65e0ea91022cdb9a667a98589251dcca761565f74044cceeffac4a0e6c43e446
+  APPLE_FRONTEND_TRANSITION_HARNESS_SHA256: 53c548630e56869c7c5199de24af9d8d2a17c658477a7bebd0640d299e3dd039
+  APPLE_FRONTEND_TRANSITION_CORPUS_SHA256: cbc80b8a7c5ff9212442e07f72a3add4e990b3f886ee115123b64857f701acfe
+  APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256: 88716cef949573d668512d6d7712c49fa07fc6e702ea2509e2df421fefc0b31b
+  APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256: 271cc58d6d1bd76888077cc8d8d7368f576b9172f2f5fcbe8c2543997875ffc4
+  APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256: 5d6c5405f4a249d12bd9471b975b88524a39c0615a2cfd2fac86b817c8a210d9
+  APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256: 3c96ed934415b8c46bd2f49e1bedaa3ae57b5e216ae9e18f1ae83a7867d141e2
 
 jobs:
   candidate-gate-tests:
@@ -3112,6 +3118,554 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
+  build-graphite-jar:
+    name: build-graphite-jar
+    runs-on: ubuntu-latest
+    # The production reader for the Apple frontend gates: `graphite.jar import`, built from the
+    # revision under test, imports the last measured IR of every revision so a sample the
+    # harness's framing walk accepts but the reader would refuse never counts.
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        persist-credentials: false
+
+    - name: Set up Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Build graphite.jar
+      run: ./gradlew :query:shadowJar --no-daemon
+
+    - name: Upload graphite.jar
+      uses: actions/upload-artifact@v7
+      with:
+        name: graphite-jar-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: frontend/jvm/query/build/libs/graphite.jar
+        if-no-files-found: error
+        retention-days: 1
+
+  apple-frontend:
+    name: apple-frontend-gate (${{ matrix.corpus.component }})
+    needs: [candidate-gate-tests, build-graphite-jar]
+    runs-on: ubuntu-latest
+    # Two release builds of the Swift frontend, the pinned corpus built once (cached by commit
+    # or generator and toolchain), then each frontend indexes it without building; a regression
+    # candidate repeats both in reverse order. One leg per SwiftPM corpus: the 181-file
+    # SwiftFormat package as a fast smoke, and the generated 2500-file package at iOS-app scale
+    # (`apple-frontend-xcode` below measures the same sources as an .xcodeproj on macOS).
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    container:
+      image: swift:6.1
+    strategy:
+      fail-fast: false
+      matrix:
+        corpus:
+          - component: apple-frontend
+            manifest: apple-frontend-corpus.json
+            pin: APPLE_FRONTEND_TRANSITION_CORPUS_SHA256
+            repetitions: 5
+          - component: apple-frontend-large
+            manifest: apple-frontend-corpus-large.json
+            pin: APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256
+            repetitions: 3
+
+    steps:
+    # The swift image has the toolchain and little else: the checkout action needs git and
+    # curl, the corpus clone git, the manifest jq, the harness and the generator python3, the
+    # production reader (graphite.jar) a Java runtime.
+    - name: Install git, curl, jq, python3 and a Java runtime
+      run: apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates jq python3 openjdk-17-jre-headless
+
+    # The comparator is a Node script; the container has none.
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+        persist-credentials: false
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Cache SwiftPM
+      uses: actions/cache@v4
+      with:
+        path: |
+          base/frontend/apple/.build
+          candidate/frontend/apple/.build
+        key: apple-frontend-gate-swiftpm-6.1-${{ hashFiles('candidate/frontend/apple/Package.resolved', 'base/frontend/apple/Package.resolved') }}
+        restore-keys: apple-frontend-gate-swiftpm-6.1-
+
+    # The frontends under test are the executables a release ships, one per revision; a base
+    # revision from before the frontend landed has none, and the candidate is then measured
+    # against the corpus ceilings alone.
+    - name: Build the base and candidate frontends
+      shell: bash
+      run: |
+        set -euo pipefail
+        candidate/frontend/apple/swift.sh build -c release
+        candidate/frontend/apple/.build/release/graphite-frontend-apple version
+        if [[ -f base/frontend/apple/Package.swift ]]; then
+          base/frontend/apple/swift.sh build -c release
+          base/frontend/apple/.build/release/graphite-frontend-apple version
+        else
+          echo "::notice::The base revision carries no Apple frontend; measuring against the corpus ceilings"
+        fi
+
+    # The production reader, built from the candidate revision by build-graphite-jar.
+    - name: Download graphite.jar
+      uses: actions/download-artifact@v8
+      with:
+        name: graphite-jar-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: jar
+
+    - name: Check the production reader runs
+      shell: bash
+      run: |
+        set -euo pipefail
+        java -version
+        test -s jar/graphite.jar
+        java -jar jar/graphite.jar --help 2>&1 | grep -qi import
+
+    # The harness, the corpus pin, the generator and the comparator are base-owned; until main
+    # carries them the candidate copies stand in, pinned to the reviewed hashes and only after
+    # the candidate's own tests passed.
+    - name: Select the base-owned harness, corpus pin, generator and comparator
+      id: controls
+      shell: bash
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+        MANIFEST: ${{ matrix.corpus.manifest }}
+        CORPUS_PIN: ${{ matrix.corpus.pin }}
+      run: |
+        set -euo pipefail
+        HARNESS=base/backend/bench/apple-frontend.py
+        if [[ ! -f "${HARNESS}" ]]; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/backend/bench/apple-frontend.py | cut -d' ' -f1)" = \
+            "${APPLE_FRONTEND_TRANSITION_HARNESS_SHA256}"
+          HARNESS=candidate/backend/bench/apple-frontend.py
+        fi
+        CORPUS="base/backend/bench/${MANIFEST}"
+        if [[ ! -f "${CORPUS}" ]]; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum "candidate/backend/bench/${MANIFEST}" | cut -d' ' -f1)" = \
+            "${!CORPUS_PIN}"
+          CORPUS="candidate/backend/bench/${MANIFEST}"
+        fi
+        COMPARATOR=base/.github/scripts/benchmark-gate.mjs
+        if ! grep -q 'compare-apple-frontend' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            "${APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256}"
+          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
+        fi
+        jq -e '.schema == "graphite-apple-frontend-corpus-v1" and (.input // "package") == "package"' "${CORPUS}" >/dev/null
+        if jq -e '.generator' "${CORPUS}" >/dev/null; then
+          GENERATOR=base/backend/bench/generate-apple-corpus.py
+          if [[ ! -f "${GENERATOR}" ]]; then
+            test "${CANDIDATE_GATE_TEST_JOB}" = success
+            test "$(sha256sum candidate/backend/bench/generate-apple-corpus.py | cut -d' ' -f1)" = \
+              "${APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256}"
+            GENERATOR=candidate/backend/bench/generate-apple-corpus.py
+          fi
+          jq -e '.generator.script == "generate-apple-corpus.py" and (.generator.seed | type) == "number"' "${CORPUS}" >/dev/null
+          echo "kind=generated" >> "${GITHUB_OUTPUT}"
+          echo "generator=${GENERATOR}" >> "${GITHUB_OUTPUT}"
+          echo "cache-key=apple-frontend-gate-corpus-v1-swift6.1-generated-$(cat "${GENERATOR}" "${CORPUS}" | sha256sum | cut -c1-16)" >> "${GITHUB_OUTPUT}"
+        else
+          jq -e '(.commit | length) >= 8' "${CORPUS}" >/dev/null
+          echo "kind=git" >> "${GITHUB_OUTPUT}"
+          echo "commit=$(jq -r .commit "${CORPUS}")" >> "${GITHUB_OUTPUT}"
+          echo "repository=$(jq -r .repository "${CORPUS}")" >> "${GITHUB_OUTPUT}"
+          echo "cache-key=apple-frontend-gate-corpus-v1-swift6.1-$(jq -r .commit "${CORPUS}")" >> "${GITHUB_OUTPUT}"
+        fi
+        echo "harness=${HARNESS}" >> "${GITHUB_OUTPUT}"
+        echo "corpus=${CORPUS}" >> "${GITHUB_OUTPUT}"
+        echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
+
+    - name: Restore the built corpus
+      id: corpus-cache
+      uses: actions/cache@v4
+      with:
+        path: corpus
+        key: ${{ steps.controls.outputs.cache-key }}
+
+    # The corpus at its pinned commit, built once so the index store exists: the measured
+    # runs skip the build.
+    - name: Clone and build the corpus
+      if: steps.corpus-cache.outputs.cache-hit != 'true' && steps.controls.outputs.kind == 'git'
+      shell: bash
+      env:
+        REPOSITORY: ${{ steps.controls.outputs.repository }}
+        COMMIT: ${{ steps.controls.outputs.commit }}
+      run: |
+        set -euo pipefail
+        rm -rf corpus
+        git clone --quiet --no-checkout "${REPOSITORY}" corpus
+        git -C corpus checkout --quiet "${COMMIT}"
+        (cd corpus && swift build -c debug)
+        test -d corpus/.build/debug/index/store
+
+    # The generated corpus from the manifest's generator block, built once the same way.
+    - name: Generate and build the corpus
+      if: steps.corpus-cache.outputs.cache-hit != 'true' && steps.controls.outputs.kind == 'generated'
+      shell: bash
+      env:
+        GENERATOR: ${{ steps.controls.outputs.generator }}
+        CORPUS: ${{ steps.controls.outputs.corpus }}
+      run: |
+        set -euo pipefail
+        rm -rf corpus
+        python3 "${GENERATOR}" --manifest "${CORPUS}" --out corpus
+        (cd corpus && swift build -c debug 2>&1 | tail -20)
+        test -d corpus/.build/debug/index/store
+
+    # A cached corpus is trusted only when it is the pinned one: the git checkout must be at
+    # the pinned commit, and a generated corpus must equal what the generator writes now.
+    - name: Verify the corpus pin
+      shell: bash
+      env:
+        KIND: ${{ steps.controls.outputs.kind }}
+        COMMIT: ${{ steps.controls.outputs.commit }}
+        GENERATOR: ${{ steps.controls.outputs.generator }}
+        CORPUS: ${{ steps.controls.outputs.corpus }}
+      run: |
+        set -euo pipefail
+        if [[ "${KIND}" = git ]]; then
+          HEAD=$(git -C corpus rev-parse HEAD)
+          case "${HEAD}" in "${COMMIT}"*) ;; *) echo "corpus is at ${HEAD}, not ${COMMIT}"; exit 1;; esac
+          echo "corpus ${HEAD}"
+        else
+          rm -rf corpus-expected
+          python3 "${GENERATOR}" --manifest "${CORPUS}" --out corpus-expected
+          diff -r --exclude=.build corpus-expected corpus
+          test "$(find corpus -name '*.swift' -not -path '*/.build/*' -not -name Package.swift | wc -l)" = "$(jq -r .files "${CORPUS}")"
+          echo "corpus matches the generator"
+        fi
+        test -d corpus/.build/debug/index/store
+
+    - name: Measure base then PR
+      shell: bash
+      env:
+        HARNESS: ${{ steps.controls.outputs.harness }}
+        CORPUS: ${{ steps.controls.outputs.corpus }}
+        COMPONENT: ${{ matrix.corpus.component }}
+        REPETITIONS: ${{ matrix.corpus.repetitions }}
+      run: |
+        set -euo pipefail
+        mkdir -p benchmark-results
+        for REVISION in base candidate; do
+          FRONTEND="${REVISION}/frontend/apple/.build/release/graphite-frontend-apple"
+          [[ -x "${FRONTEND}" ]] || continue
+          python3 "${HARNESS}" \
+            --frontend "${FRONTEND}" --package corpus --corpus "${CORPUS}" \
+            --repetitions "${REPETITIONS}" --warmup 1 \
+            --verify 'java -jar jar/graphite.jar import {ir} -o {out}' \
+            --log "benchmark-results/${REVISION}-${COMPONENT}.log" \
+            --out "benchmark-results/${REVISION}-${COMPONENT}.json"
+        done
+
+    - name: Compare Apple frontend time and memory
+      shell: bash
+      env:
+        HARNESS: ${{ steps.controls.outputs.harness }}
+        CORPUS: ${{ steps.controls.outputs.corpus }}
+        COMPARATOR: ${{ steps.controls.outputs.comparator }}
+        COMPONENT: ${{ matrix.corpus.component }}
+        REPETITIONS: ${{ matrix.corpus.repetitions }}
+      run: |
+        set -euo pipefail
+        BASE=()
+        [[ -f "benchmark-results/base-${COMPONENT}.json" ]] && BASE=(--base "benchmark-results/base-${COMPONENT}.json")
+        if node "${COMPARATOR}" compare-apple-frontend "${BASE[@]}" \
+          --candidate "benchmark-results/candidate-${COMPONENT}.json" \
+          --corpus "${CORPUS}" --threshold 15 --minimum-ms 100 --minimum-mib 8 \
+          --report "benchmark-results/initial-${COMPONENT}-report.md" \
+          --status "benchmark-results/initial-${COMPONENT}-status.json"; then
+          mv "benchmark-results/initial-${COMPONENT}-report.md" "benchmark-results/${COMPONENT}-report.md"
+          mv "benchmark-results/initial-${COMPONENT}-status.json" "benchmark-results/${COMPONENT}-status.json"
+        else
+          for REVISION in candidate base; do
+            FRONTEND="${REVISION}/frontend/apple/.build/release/graphite-frontend-apple"
+            [[ -x "${FRONTEND}" ]] || continue
+            python3 "${HARNESS}" \
+              --frontend "${FRONTEND}" --package corpus --corpus "${CORPUS}" \
+              --repetitions "${REPETITIONS}" --warmup 1 \
+              --verify 'java -jar jar/graphite.jar import {ir} -o {out}' \
+              --log "benchmark-results/${REVISION}-${COMPONENT}-confirmation.log" \
+              --out "benchmark-results/${REVISION}-${COMPONENT}-confirmation.json"
+          done
+          BASE=()
+          [[ -f "benchmark-results/base-${COMPONENT}-confirmation.json" ]] && BASE=(--base "benchmark-results/base-${COMPONENT}-confirmation.json")
+          node "${COMPARATOR}" confirm-apple-frontend "${BASE[@]}" \
+            --initial "benchmark-results/initial-${COMPONENT}-status.json" \
+            --candidate "benchmark-results/candidate-${COMPONENT}-confirmation.json" \
+            --corpus "${CORPUS}" --threshold 15 --minimum-ms 100 --minimum-mib 8 \
+            --report "benchmark-results/${COMPONENT}-report.md" \
+            --status "benchmark-results/${COMPONENT}-status.json"
+        fi
+        cat "benchmark-results/${COMPONENT}-report.md"
+
+    - name: Upload Apple frontend results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-${{ matrix.corpus.component }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
+  apple-frontend-xcode:
+    name: apple-frontend-xcode-gate
+    needs: [candidate-gate-tests, build-graphite-jar]
+    runs-on: macos-latest
+    # The iOS path of `graphite build`: the generated 2500-file application as an .xcodeproj,
+    # built once with xcodebuild for the simulator (cached by Xcode version and generator),
+    # then each frontend reads its derived data without building.
+    timeout-minutes: 120
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+        persist-credentials: false
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Cache SwiftPM
+      uses: actions/cache@v4
+      with:
+        path: |
+          base/frontend/apple/.build
+          candidate/frontend/apple/.build
+        key: apple-frontend-gate-swiftpm-${{ runner.os }}-${{ hashFiles('candidate/frontend/apple/Package.resolved', 'base/frontend/apple/Package.resolved') }}
+        restore-keys: apple-frontend-gate-swiftpm-${{ runner.os }}-
+
+    - name: Build the base and candidate frontends
+      shell: bash
+      run: |
+        set -euo pipefail
+        xcodebuild -version
+        candidate/frontend/apple/swift.sh build -c release
+        candidate/frontend/apple/.build/release/graphite-frontend-apple version
+        if [[ -f base/frontend/apple/Package.swift ]]; then
+          base/frontend/apple/swift.sh build -c release
+          base/frontend/apple/.build/release/graphite-frontend-apple version
+        else
+          echo "::notice::The base revision carries no Apple frontend; measuring against the corpus ceilings"
+        fi
+
+    # The production reader, built from the candidate revision by build-graphite-jar.
+    - name: Download graphite.jar
+      uses: actions/download-artifact@v8
+      with:
+        name: graphite-jar-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: jar
+
+    - name: Check the production reader runs
+      shell: bash
+      run: |
+        set -euo pipefail
+        java -version
+        test -s jar/graphite.jar
+        java -jar jar/graphite.jar --help 2>&1 | grep -qi import
+
+    - name: Select the base-owned harness, corpus pin, generator and comparator
+      id: controls
+      shell: bash
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+        MANIFEST: apple-frontend-corpus-xcode.json
+      run: |
+        set -euo pipefail
+        sha256() { shasum -a 256 "$@" | cut -d' ' -f1; }
+        HARNESS=base/backend/bench/apple-frontend.py
+        if [[ ! -f "${HARNESS}" ]] || ! grep -q -- '--derived-data' "${HARNESS}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256 candidate/backend/bench/apple-frontend.py)" = "${APPLE_FRONTEND_TRANSITION_HARNESS_SHA256}"
+          HARNESS=candidate/backend/bench/apple-frontend.py
+        fi
+        CORPUS="base/backend/bench/${MANIFEST}"
+        if [[ ! -f "${CORPUS}" ]]; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256 "candidate/backend/bench/${MANIFEST}")" = "${APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256}"
+          CORPUS="candidate/backend/bench/${MANIFEST}"
+        fi
+        GENERATOR=base/backend/bench/generate-apple-corpus.py
+        if [[ ! -f "${GENERATOR}" ]]; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256 candidate/backend/bench/generate-apple-corpus.py)" = "${APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256}"
+          GENERATOR=candidate/backend/bench/generate-apple-corpus.py
+        fi
+        COMPARATOR=base/.github/scripts/benchmark-gate.mjs
+        if ! grep -q 'compare-apple-frontend' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256 candidate/.github/scripts/benchmark-gate.mjs)" = "${APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256}"
+          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
+        fi
+        jq -e '.schema == "graphite-apple-frontend-corpus-v1" and .input == "xcodeproj" and .generator.layout == "xcodeproj" and .generator.script == "generate-apple-corpus.py"' "${CORPUS}" >/dev/null
+        XCODE=$(xcodebuild -version | tr '\n' ' ' | tr -c 'A-Za-z0-9.' '-')
+        echo "harness=${HARNESS}" >> "${GITHUB_OUTPUT}"
+        echo "corpus=${CORPUS}" >> "${GITHUB_OUTPUT}"
+        echo "generator=${GENERATOR}" >> "${GITHUB_OUTPUT}"
+        echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
+        echo "name=$(jq -r .generator.name "${CORPUS}")" >> "${GITHUB_OUTPUT}"
+        echo "cache-key=apple-frontend-gate-xcode-v1-${XCODE}-$(cat "${GENERATOR}" "${CORPUS}" | sha256 | cut -c1-16)" >> "${GITHUB_OUTPUT}"
+
+    # The sources and the index store of their build are cached together: the store keys its
+    # units by the source paths, which are the same on every hosted runner.
+    - name: Restore the built corpus
+      id: corpus-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          corpus
+          derived-data/Index.noindex
+        key: ${{ steps.controls.outputs.cache-key }}
+
+    # The same xcodebuild the frontend runs when it builds itself: one scheme, Debug, the
+    # simulator destination, the index store forced on and code signing off.
+    - name: Generate and build the corpus
+      if: steps.corpus-cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        GENERATOR: ${{ steps.controls.outputs.generator }}
+        CORPUS: ${{ steps.controls.outputs.corpus }}
+        NAME: ${{ steps.controls.outputs.name }}
+      run: |
+        set -euo pipefail
+        rm -rf corpus derived-data
+        python3 "${GENERATOR}" --manifest "${CORPUS}" --out corpus
+        if ! xcodebuild -project "corpus/${NAME}.xcodeproj" -scheme "${NAME}" -configuration Debug \
+          -derivedDataPath derived-data -destination 'generic/platform=iOS Simulator' build \
+          COMPILER_INDEX_STORE_ENABLE=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
+          > xcodebuild.log 2>&1; then
+          grep -E 'error:|\*\* BUILD' xcodebuild.log | head -50
+          tail -30 xcodebuild.log
+          exit 1
+        fi
+        tail -3 xcodebuild.log
+        test -d derived-data/Index.noindex/DataStore
+
+    - name: Verify the corpus pin
+      shell: bash
+      env:
+        GENERATOR: ${{ steps.controls.outputs.generator }}
+        CORPUS: ${{ steps.controls.outputs.corpus }}
+      run: |
+        set -euo pipefail
+        rm -rf corpus-expected
+        python3 "${GENERATOR}" --manifest "${CORPUS}" --out corpus-expected
+        diff -r --exclude=project.xcworkspace --exclude=xcuserdata corpus-expected corpus
+        echo "corpus matches the generator"
+        test -d derived-data/Index.noindex/DataStore
+        test "$(find corpus -name '*.swift' | wc -l | tr -d ' ')" = "$(jq -r .files "${CORPUS}")"
+
+    - name: Measure base then PR
+      shell: bash
+      env:
+        HARNESS: ${{ steps.controls.outputs.harness }}
+        CORPUS: ${{ steps.controls.outputs.corpus }}
+        NAME: ${{ steps.controls.outputs.name }}
+      run: |
+        set -euo pipefail
+        mkdir -p benchmark-results
+        for REVISION in base candidate; do
+          FRONTEND="${REVISION}/frontend/apple/.build/release/graphite-frontend-apple"
+          [[ -x "${FRONTEND}" ]] || continue
+          python3 "${HARNESS}" \
+            --frontend "${FRONTEND}" --project "corpus/${NAME}.xcodeproj" --derived-data derived-data --corpus "${CORPUS}" \
+            --repetitions 3 --warmup 1 \
+            --verify 'java -jar jar/graphite.jar import {ir} -o {out}' \
+            --log "benchmark-results/${REVISION}-apple-frontend-xcode.log" \
+            --out "benchmark-results/${REVISION}-apple-frontend-xcode.json"
+        done
+
+    - name: Compare Apple frontend time and memory
+      shell: bash
+      env:
+        HARNESS: ${{ steps.controls.outputs.harness }}
+        CORPUS: ${{ steps.controls.outputs.corpus }}
+        COMPARATOR: ${{ steps.controls.outputs.comparator }}
+        NAME: ${{ steps.controls.outputs.name }}
+      run: |
+        set -euo pipefail
+        # Bash 3.2 (macOS's /bin/bash) treats an empty array expansion as unbound under set -u,
+        # hence the ${BASE[@]+"${BASE[@]}"} spelling.
+        BASE=()
+        [[ -f benchmark-results/base-apple-frontend-xcode.json ]] && BASE=(--base benchmark-results/base-apple-frontend-xcode.json)
+        if node "${COMPARATOR}" compare-apple-frontend ${BASE[@]+"${BASE[@]}"} \
+          --candidate benchmark-results/candidate-apple-frontend-xcode.json \
+          --corpus "${CORPUS}" --threshold 15 --minimum-ms 100 --minimum-mib 8 \
+          --report benchmark-results/initial-apple-frontend-xcode-report.md \
+          --status benchmark-results/initial-apple-frontend-xcode-status.json; then
+          mv benchmark-results/initial-apple-frontend-xcode-report.md benchmark-results/apple-frontend-xcode-report.md
+          mv benchmark-results/initial-apple-frontend-xcode-status.json benchmark-results/apple-frontend-xcode-status.json
+        else
+          for REVISION in candidate base; do
+            FRONTEND="${REVISION}/frontend/apple/.build/release/graphite-frontend-apple"
+            [[ -x "${FRONTEND}" ]] || continue
+            python3 "${HARNESS}" \
+              --frontend "${FRONTEND}" --project "corpus/${NAME}.xcodeproj" --derived-data derived-data --corpus "${CORPUS}" \
+              --repetitions 3 --warmup 1 \
+              --verify 'java -jar jar/graphite.jar import {ir} -o {out}' \
+              --log "benchmark-results/${REVISION}-apple-frontend-xcode-confirmation.log" \
+              --out "benchmark-results/${REVISION}-apple-frontend-xcode-confirmation.json"
+          done
+          BASE=()
+          [[ -f benchmark-results/base-apple-frontend-xcode-confirmation.json ]] && BASE=(--base benchmark-results/base-apple-frontend-xcode-confirmation.json)
+          node "${COMPARATOR}" confirm-apple-frontend ${BASE[@]+"${BASE[@]}"} \
+            --initial benchmark-results/initial-apple-frontend-xcode-status.json \
+            --candidate benchmark-results/candidate-apple-frontend-xcode-confirmation.json \
+            --corpus "${CORPUS}" --threshold 15 --minimum-ms 100 --minimum-mib 8 \
+            --report benchmark-results/apple-frontend-xcode-report.md \
+            --status benchmark-results/apple-frontend-xcode-status.json
+        fi
+        cat benchmark-results/apple-frontend-xcode-report.md
+
+    - name: Upload Apple frontend results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-apple-frontend-xcode-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
   slow-query-shapes:
     name: slow-query-shapes
     needs: [candidate-gate-tests, prepare-latency-fixtures]
@@ -3226,7 +3780,7 @@ jobs:
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, rust-latency, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting, slow-query-shapes]
+    needs: [candidate-gate-tests, rust-latency, apple-frontend, apple-frontend-xcode, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence, validate-cpu-accounting, slow-query-shapes]
     runs-on: ubuntu-latest
 
     steps:
@@ -3304,6 +3858,14 @@ jobs:
           COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
           grep -q '"rust-latency"' "${COMPARATOR}"
         fi
+        # Until main carries the Apple frontend gate, the reviewed candidate reporter aggregates it.
+        if ! grep -q '"apple-frontend"' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            "${APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256}"
+          COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
+          grep -q '"apple-frontend"' "${COMPARATOR}"
+        fi
         node '${{ steps.slow-report-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.mjs' aggregate \
           --base-comparator "${COMPARATOR}" \
           --directory benchmark-results \
@@ -3359,6 +3921,8 @@ jobs:
       env:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
         RUST_LATENCY_JOB: ${{ needs.rust-latency.result }}
+        APPLE_FRONTEND_JOB: ${{ needs.apple-frontend.result }}
+        APPLE_FRONTEND_XCODE_JOB: ${{ needs.apple-frontend-xcode.result }}
         METHOD_JOB: ${{ needs.method-level.result }}
         EXPLORER_JOB: ${{ needs.explorer.result }}
         METHOD_COMPATIBILITY_JOB: ${{ needs.method-compatibility.result }}
@@ -3384,6 +3948,8 @@ jobs:
         done
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
           [ "${RUST_LATENCY_JOB}" != success ] || \
+          [ "${APPLE_FRONTEND_JOB}" != success ] || \
+          [ "${APPLE_FRONTEND_XCODE_JOB}" != success ] || \
           [ "${METHOD_JOB}" != success ] || \
           [ "${LARGE_CORPUS_JOB}" != success ] || \
           [ "${LATENCY_RESOURCES_JOB}" != success ] || \
