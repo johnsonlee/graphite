@@ -4991,3 +4991,173 @@ These candidate-only artifact checks do not replace paired comparisons. All
 fields remain in `/tmp/graphite-sootup-recovery.6wpE4s/trial101-proof-gates.json`.
 Final Android JMH/coverage, quiet full-feature shape/metadata, typed enum
 rechecks and the required PR benchmark gate remain in progress.
+
+### 2026-10-07 — Attempt 102: Reuse eligible typed sub-signatures within a parsed view
+
+**Status:** RETAIN as the next recovery candidate; required CI and full pre-upgrade recovery remain unproven. Parent is `ca8df9a589863d0b8f8c90b5ec4b550d8c1d20a3` (Attempt 101). Its 473 local tests, three corpus gates, main-versus-final semantic checks and required PR #171 benchmark gate passed; the final gate comment is https://github.com/johnsonlee/graphite/pull/171#issuecomment-6025051872. This does not erase the remaining pre-upgrade resource gap.
+
+**Hypothesis:** sharing repeated immutable method/field sub-signatures through the existing per-view identifier factory may avoid SootUp 3's new per-sub-signature hash memoizers while preserving fresh outer signatures and each caller-supplied type object. No global factory replacement, upstream patch, feature suppression, heap-limit change or forced GC belongs in production.
+
+**Evidence motivating this separate attempt:** fresh unprofiled reduced Android JAR comparison at the parent had method wall -0.17%, allocation -3.41%, whole-command CPU +5.47% and RSS +9.32% versus pre-upgrade `6f498705`. CPU/RSS include the harness and both cold forks. A separate JFR/NMT diagnostic reversed RSS ordering and therefore did not attribute that peak. A subsequent intrusive full-GC histogram at the identical pre-finalization callback found 3,451,711,664 live shallow bytes at the parent versus 3,211,121,040 before upgrade: +240,590,624 bytes (+7.49%). Both correctness-only builds completed with zero OOM skips and 408,510 methods. These histograms are not performance measurements or an exact explanation of peak RSS.
+
+SootUp 3 adds a memoized hash supplier to SootClassMemberSubSignature and another to MethodSubSignature. Both resolved Guava versions already allocate a lock per nonserializable memoizing supplier. Source fields and histogram populations reconcile the entire supplier-count delta: 2 * 1,443,943 method subs + 843,818 field subs - 3 * 45,186 fewer preexisting textual suppliers + 48,226 new per-class method indexes + 298 body suppliers = 3,644,670 additional suppliers. Supplier, Object and boxed Integer shallow-byte changes total 205,255,456 bytes; the Object count differs from the supplier count by only five. This is a concrete retention mechanism, not evidence that a local cache will save the same amount.
+
+**Proposed boundary:** override only typed outer method/field signature construction in GraphiteIdentifierFactory. Keep string, parser, explicit-sub-signature and direct sub-signature overloads unchanged. Fresh stock outer objects retain their given declaring owner; shared subs use name value equality and ordered type reference identity. Permit exact ordinary JavaClassType with exact PackageName, primitive singletons and Void; bypass arrays, unknown/null/custom types and invalid inputs through the existing superclass path. Snapshot stored method-key parameters using the stock sub-signature's immutable list only on a miss. Instance-local concurrent maps add strong O(unique eligible sub-signatures) retention until the view dies; this tradeoff must be measured.
+
+**Coverage limits:** AsmMethodSource uses the view factory for own signatures, invokes and field references. Stock field declarations and fallback method wrappers use the global factory and will not benefit. Static pinned Android bytecode contains 92.3% nonarray method declarations and about 94.3%/94.4% nonarray method/field constant-pool references, with substantial repeated name/descriptor pairs. These are opportunity counts, not dynamic hit rates, type-identity duplication counts or measured savings.
+
+**Pinned workload and protocol:** Robolectric Android 14 JAR SHA-256 `6be2218c6a53fe3c57bc22ebdc723edcb7270a8a6f187545708aa5c0ed813977`, Apple M3 Max 16 CPU/64 GiB, macOS 14.3 arm64, OpenJDK 17.0.20.1, shared host, serial heavy JVM execution. Exact baseline and proposed pilot commands are in `/tmp/sootup-recovery-sources/attempt102-pilot-plan.json`. The primary pilot uses the unchanged harness, `GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig`, 8g, zero warmup, one single-shot measurement and two cold forks with the GC profiler, parent then candidate. Any follow-up forced-GC histogram is separately labeled intrusive correctness/retention evidence.
+
+**Evidence paths:** `/tmp/graphite-android-retained-heap/interpretation.md`, `results/pre-build-comparison.json`; `/tmp/graphite-sootup-recovery.6wpE4s/trial101-android-reverse-primary-comparison.json`; `/tmp/sootup-static-review/android-subsignature-static-inventory.json`; `/tmp/sootup-recovery-sources/attempt102-proposal.txt`.
+
+**Validation so far:** independent static review found no blocking semantic issue. Ten focused tests cover stock values/hashes/ordering, supplied type identity, separate overloads, null/custom fallback, mutable ArrayList/LinkedList ownership and concurrent publication. The first two build attempts stopped at detekt before tests: ComplexCondition/EqualsWithHashCode, then ReturnCount. Equivalent control-flow factoring and identity equals on the mutable test helper addressed those findings without suppressions or threshold changes. Failure logs remain `attempt102-test.log` and `attempt102-retry1.log`; any prior XML copied during these early failures is explicitly stale and not Attempt102 evidence. Retry2 passed the complete module build: 483 tests, zero failures/errors/skips, detekt, JMH JAR and runtime classpath. Root independently counted the 43 fresh XML reports. Frozen production JAR SHA-256 is `7bdd4c17d68a6956cd37a4f56a46917ba163afa7fd68bb15ca51e43f2b2f0f35`; JMH JAR is `6a49bddc48499737d8ae9b7a44097f2e64faabf6ab78da6c1b6aa3098927ce0c`. Production bytecode differs only in GraphiteIdentifierFactory and its three new nested classes. Readiness/source/classpath pins are in `attempt102-subsignature-intern-snapshot/readiness.json`. All five temporarily altered publishing-plugin build files were restored byte-for-byte after each completed attempt.
+
+**Initial Android reduced pilot:** fresh parent101 then candidate102, two cold forks each. Method wall 18,737.283 -> 18,737.468 ms/op (+0.001%, overlapping fork ranges); allocation 33,998,327,000 -> 32,467,187,612 B/op (-4.50%, both candidate forks lower); whole-command CPU 131.81 -> 129.62 s (-1.66%); max RSS 8,757,428,224 -> 7,542,800,384 bytes (-13.87%). Outer wall 38.76 -> 38.82 s. This small ordered pilot establishes neither a stable RSS percentage nor universal performance recovery. All raw forks and host snapshots remain in `/tmp/graphite-sootup-recovery.6wpE4s/attempt102-android-reduced-pilot.json` and referenced directories.
+
+**Candidate intrusive retention check:** same helper/source, heap and pre-finalization phase as the parent/old histogram, with one confirmed full GC and zero OOM skips. Candidate live shallow bytes 2,982,851,768: -468,859,896 (-13.58%) versus parent101 and -228,269,272 (-7.11%) versus pre-upgrade. MethodSubSignature objects fall 1,443,943 -> 269,156, FieldSubSignature 843,818 -> 367,455. Supplier reduction is exactly `4 * 1,174,787 + 3 * 476,363 = 6,128,237`; boxed Integer reduction exactly `2 * 1,174,787 + 476,363 = 2,825,937`. Added method/field keys and net CHM nodes/tables cost about 17.264 MB and are already included in the net live-heap result. This supports the proposed retention mechanism but is not a replacement for unprofiled peak RSS. `/tmp/graphite-android-retained-heap/attempt102-interpretation.md` and `results/attempt102-pre-build-comparison.json` contain every class row and limits.
+
+**Initial semantic proof:** corrected AndroidBuildVerifier, unchanged pinned helper and 8g Mmap builder, passes standard and reduced configurations against both main and parent101: all 29/28 respective report keys match, including duplicate-sensitive payload fingerprints; OOM skips zero. Helper coverage limits from Attempt100/101 remain. Evidence index `/tmp/graphite-sootup-recovery.6wpE4s/attempt102-bounded-validation.json`.
+
+**Expanded unprofiled corpus gates:** all nine gates passed, which verifies their configured assertions, not recovery of every timing/resource metric. The reduced gate configuration disables call graph, annotations and cross-method functional dispatch, then builds, saves with the production call-site index, loads mapped storage and runs its query checks. Each JVM uses 4g. Run order was Tika old -> candidate102 -> main; Hive main -> old -> candidate102; Kotlin candidate102 -> main -> old. Full aggregation: `/tmp/graphite-sootup-recovery.6wpE4s/attempt102-expanded-gates.json`. Phase times below are milliseconds; outer wall/CPU are whole-process seconds, and memory/storage columns are exact bytes. Mapped-load median is from five samples, with min/max retained.
+
+| Corpus / revision | Build ms | Save ms | Load min/median/max ms | Query ms | Pipeline ms | Outer wall s | Outer CPU s | Max RSS B | Peak heap B |
+|---|---|---|---|---|---|---|---|---|---|
+| tika / old 6f498705 | 12886 | 4816 | 89/93/136 | 1247 | 19042 | 22.42 | 77.44 | 5,204,180,992 | 3,848,689,688 |
+| tika / candidate102 | 13569 | 5699 | 103/138/169 | 1517 | 20923 | 25.24 | 78.46 | 4,876,926,976 | 3,406,381,128 |
+| tika / main c84d7811 | 16210 | 4432 | 91/93/166 | 1195 | 21930 | 25.60 | 81.77 | 5,012,832,256 | 3,850,272,768 |
+| hive / main c84d7811 | 23733 | 6205 | 130/135/188 | 1561 | 31634 | 36.37 | 126.36 | 5,274,927,104 | 4,141,335,672 |
+| hive / old 6f498705 | 22848 | 6291 | 129/136/211 | 1491 | 30766 | 35.45 | 103.22 | 5,168,267,264 | 3,868,285,952 |
+| hive / candidate102 | 21090 | 6429 | 131/135/184 | 1538 | 29192 | 34.28 | 101.47 | 5,294,227,456 | 3,855,534,592 |
+| kotlin / candidate102 | 12241 | 4496 | 76/77/130 | 1131 | 17945 | 21.23 | 66.22 | 4,920,705,024 | 3,676,421,120 |
+| kotlin / main c84d7811 | 12490 | 4229 | 75/76/118 | 1057 | 17852 | 21.21 | 78.23 | 5,101,240,320 | 3,881,242,136 |
+| kotlin / old 6f498705 | 12282 | 4243 | 71/75/120 | 1190 | 17790 | 21.03 | 65.63 | 5,193,121,792 | 3,652,663,200 |
+
+The three revisions have these equal reduced-gate counts within each corpus; equality of these totals is not complete payload equality. `productionIndexPrepared=1` and `mappedLoadSamples=5` for all nine.
+
+| Corpus | Nodes | Source edges | Persisted edges | Methods | Call sites | Synthetic identities | Branch-definition B |
+|---|---|---|---|---|---|---|---|
+| tika | 3,901,103 | 4,510,016 | 4,353,588 | 312,788 | 1,006,172 | 16,936 | 6,083,824 |
+| hive | 5,992,914 | 6,597,267 | 6,376,682 | 404,016 | 1,443,886 | 77,832 | 10,512,048 |
+| kotlin | 3,292,214 | 3,906,617 | 3,785,858 | 249,669 | 922,876 | 55,047 | 9,363,036 |
+
+Storage sizes differ slightly; do not label the persisted files byte-identical. `branchDefinitionsMs` measures the first mapped branch-definition access after the timed queries; it is reported separately and excluded from the pipeline sum.
+
+| Corpus / revision | Persisted B | Call-site index B | Mapped branch definitions ms |
+|---|---|---|---|
+| tika / old 6f498705 | 336,794,906 | 38,738,100 | 646 |
+| tika / candidate102 | 336,801,071 | 38,740,564 | 746 |
+| tika / main c84d7811 | 336,801,072 | 38,740,564 | 614 |
+| hive / main c84d7811 | 528,533,024 | 52,387,660 | 944 |
+| hive / old 6f498705 | 528,529,159 | 52,386,900 | 957 |
+| hive / candidate102 | 528,533,027 | 52,387,660 | 939 |
+| kotlin / candidate102 | 311,075,230 | 38,354,892 | 695 |
+| kotlin / main c84d7811 | 311,075,227 | 38,354,892 | 775 |
+| kotlin / old 6f498705 | 311,064,525 | 38,353,252 | 630 |
+
+Candidate percentage changes below retain both baselines; positive means more/slower.
+
+| Comparison | Build | Save | Load median | Query | Pipeline | Outer CPU | RSS |
+|---|---|---|---|---|---|---|---|
+| tika vs old 6f498705 | +5.30% | +18.33% | +48.39% | +21.65% | +9.88% | +1.32% | -6.29% |
+| tika vs main c84d7811 | -16.29% | +28.59% | +48.39% | +26.95% | -4.59% | -4.05% | -2.71% |
+| hive vs old 6f498705 | -7.69% | +2.19% | -0.74% | +3.15% | -5.12% | -1.70% | +2.44% |
+| hive vs main c84d7811 | -11.14% | +3.61% | +0.00% | -1.47% | -7.72% | -19.70% | +0.37% |
+| kotlin vs old 6f498705 | -0.33% | +5.96% | +2.67% | -4.96% | +0.87% | +0.90% | -5.25% |
+| kotlin vs main c84d7811 | -1.99% | +6.31% | +1.32% | +7.00% | +0.52% | -15.35% | -3.54% |
+
+In particular, Tika pipeline is **+9.88% versus old** (save/load/query all worse in this run), and Hive RSS is **+2.44% versus old** despite lower build/pipeline/CPU. Kotlin pipeline is slightly higher than both baselines; its CPU remains slightly higher than old. One ordered run per corpus/revision cannot establish stable attribution, and earlier favorable/unfavorable results remain evidence.
+
+**Expanded Android JMH:** same fixture, unchanged benchmark methods, 8g, `-bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true -prof gc`. Standard `buildAndroidSdkGraph` disables only the call graph; annotations and functional dispatch remain enabled. `buildAndroidSdkGraphEndToEndConfig` disables all three, but is still build-only JMH (it does not save/load/query). Standard order main -> candidate102 -> old, followed by reduced old -> candidate102. There is no fresh main reduced-config run in this expansion; do not invent a three-way reduced comparison or substitute a historical main result as fresh. Aggregate: `/tmp/graphite-sootup-recovery.6wpE4s/attempt102-expanded-jmh.json`.
+
+| Config / revision | Mean ms/op | Fork1 ms | Fork2 ms | Mean B/op | Fork1 B/op | Fork2 B/op |
+|---|---|---|---|---|---|---|
+| android / main c84d7811 | 23408.298771 | 23660.974417 | 23155.623125 | 41,069,658,812 | 41,078,325,608 | 41,060,992,016 |
+| android / candidate102 | 23547.679417 | 23346.520208 | 23748.838625 | 36,605,269,156 | 36,561,921,128 | 36,648,617,184 |
+| android / old 6f498705 | 28466.312667 | 28917.697334 | 28014.928000 | 44,456,840,084 | 44,504,026,792 | 44,409,653,376 |
+| android-e2e / old 6f498705 | 18925.928354 | 19010.502833 | 18841.353875 | 34,923,579,768 | 34,946,147,416 | 34,901,012,120 |
+| android-e2e / candidate102 | 18542.042292 | 18649.203250 | 18434.881333 | 32,517,716,212 | 32,492,306,544 | 32,543,125,880 |
+
+Outer measurements include the JMH harness and both cold forks, not per-operation CPU or RSS.
+
+| Config / revision | Outer wall s | Outer user s | Outer system s | Outer CPU s | Max RSS B |
+|---|---|---|---|---|---|
+| android / main c84d7811 | 47.43 | 167.58 | 5.92 | 173.50 | 9,271,279,616 |
+| android / candidate102 | 47.70 | 137.28 | 4.73 | 142.01 | 7,866,499,072 |
+| android / old 6f498705 | 58.32 | 168.04 | 5.07 | 173.11 | 9,217,081,344 |
+| android-e2e / old 6f498705 | 39.00 | 120.43 | 4.32 | 124.75 | 7,550,648,320 |
+| android-e2e / candidate102 | 37.69 | 114.83 | 4.23 | 119.06 | 7,673,315,328 |
+
+| Comparison | Method wall | Allocation | Outer CPU | RSS |
+|---|---|---|---|---|
+| android vs main c84d7811 | +0.60% | -10.87% | -18.15% | -15.15% |
+| android vs old 6f498705 | -17.28% | -17.66% | -17.97% | -14.65% |
+| android-e2e vs old 6f498705 | -2.03% | -6.89% | -4.56% | +1.62% |
+
+The fresh reduced pair retains **RSS +1.62% versus old** (7,673,315,328 versus 7,550,648,320 bytes), despite lower wall/allocation/CPU. Standard candidate method wall is slightly higher than main. The initial parent101 -> candidate102 pilot and its -13.87% RSS point remain above; that parent comparison cannot stand in for this fresh old comparison. Neither PASS nor lower diagnostic retained heap proves all resource metrics recovered.
+
+**Raw expanded run directories:** each gate contains `command.json`, `stdout.log` and `stderr-time.log`; each JMH directory additionally contains `jmh.json`. These files carry exact command/classpath/fixture pins, timestamps, fork records and exit status. Listed in execution order within each group:
+
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/preupgrade-gate-tika-subsignature1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/attempt102-subsignature-intern-gate-tika-subsignature1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/main-gate-tika-subsignature1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/main-gate-hive-subsignature1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/preupgrade-gate-hive-subsignature1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/attempt102-subsignature-intern-gate-hive-subsignature1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/attempt102-subsignature-intern-gate-kotlin-subsignature1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/main-gate-kotlin-subsignature1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/preupgrade-gate-kotlin-subsignature1`
+
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/main-jmh-android-coldsubsignature-expanded1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/attempt102-subsignature-intern-jmh-android-coldsubsignature-expanded1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/preupgrade-jmh-android-coldsubsignature-expanded1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/preupgrade-jmh-android-e2e-coldsubsignature-expanded1`
+- `/tmp/graphite-sootup-recovery.6wpE4s/results/attempt102-subsignature-intern-jmh-android-e2e-coldsubsignature-expanded1`
+
+**Quiet full-feature Kotlin status at this update:** `/tmp/graphite-sootup-recovery.6wpE4s/attempt102-expanded-quiet.json` currently contains 2 completed record(s). This independent unchanged quiet helper enables default call graph, annotations and functional dispatch, prepares the production save index and scans the mapped graph; it is not the reduced gate configuration. Its source SHA-256 is `1317041bdc5875e0d8cee1c72386837752a96af69a72f5093cd0184a50dfe799`. Do not mix its phase results with verbose callback runs.
+
+Completed main c84d7811: `/tmp/graphite-jar-quiet-recovery/results/main-kotlin-quiet-subsignature1`; nodes 4744132, calls 2251811, pipeline wall 35633.395125 ms / process CPU 111025.988 ms; outer wall 35.78 s / CPU 111.15 s / max RSS 9,654,419,456 B.
+
+| Phase | Wall ms | CPU ms | Heap start B | Heap end B | Sum pool peaks B | GC count | GC ms |
+|---|---|---|---|---|---|---|---|
+| build | 28466.757 | 92676.401 | 0 | 4734056960 | 7326136832 | 42 | 1055 |
+| cliNodeCount | 374.852 | 1760.980 | 4734056960 | 5530974720 | 5556140544 | 0 | 0 |
+| savePrepared | 6587.055 | 16145.446 | 5530974720 | 3938812928 | 7501853184 | 4 | 137 |
+| closeSource | 0.048 | 0.051 | 3938812928 | 3938812928 | 3938812928 | 0 | 0 |
+| loadMapped | 160.303 | 276.618 | 3938812928 | 4052059136 | 4052059136 | 0 | 0 |
+| queryAllNodeCount | 35.035 | 117.180 | 4052059136 | 4064642048 | 4064642048 | 0 | 0 |
+| queryCallSiteCount | 0.785 | 1.340 | 4064642048 | 4064642048 | 4064642048 | 0 | 0 |
+
+Completed candidate102: `/tmp/graphite-jar-quiet-recovery/results/attempt102-kotlin-quiet-subsignature1`; nodes 4744132, calls 2251811, pipeline wall 35875.007542 ms / process CPU 97734.494 ms; outer wall 36.03 s / CPU 97.84 s / max RSS 9,604,923,392 B.
+
+| Phase | Wall ms | CPU ms | Heap start B | Heap end B | Sum pool peaks B | GC count | GC ms |
+|---|---|---|---|---|---|---|---|
+| build | 28494.965 | 79234.840 | 0 | 4102519808 | 6954646528 | 42 | 1010 |
+| cliNodeCount | 395.321 | 1916.627 | 4102519808 | 4924603392 | 4924603392 | 0 | 0 |
+| savePrepared | 6791.195 | 16158.145 | 4924603392 | 6740148224 | 7159578624 | 2 | 65 |
+| closeSource | 0.040 | 0.043 | 6740148224 | 6740148224 | 6740148224 | 0 | 0 |
+| loadMapped | 148.943 | 270.238 | 6740148224 | 6853394432 | 6853394432 | 0 | 0 |
+| queryAllNodeCount | 34.414 | 83.621 | 6853394432 | 6865977344 | 6865977344 | 0 | 0 |
+| queryCallSiteCount | 0.777 | 1.450 | 6865977344 | 6865977344 | 6865977344 | 0 | 0 |
+
+Quiet run order was main -> candidate102. Candidate versus main: pipeline **+0.68%** (35.6334 -> 35.8750 s), save **+3.10%**, build +0.10%, whole-process CPU **-11.98%** (111.15 -> 97.84 s) and RSS **-0.51%** (9,654,419,456 -> 9,604,923,392 B). Preserve the slower wall/save observations alongside the CPU reduction. Phase `sumPoolPeaksBytes` is the sum of pool peaks, not a simultaneous live-heap measurement; end-of-phase heap depends on collection timing and cannot replace RSS. Equal node/call totals alone are not semantic proof; the separate completed bounded shape/metadata/enum checks are described below. No fresh old full-feature quiet run belongs to this pair; earlier old/full-feature semantic and performance limitations remain.
+
+**Completed expanded correctness (separate from timing):** `/tmp/graphite-jar-quiet-recovery/verification-subsignature1/complete.json` reports all eight commands passed. Candidate `attempt102-kotlin-quiet-subsignature1` matches all 22 shape properties and 13 supplementary metadata properties against pinned, previously verified `main-kotlin-quiet-typecache2`. The freshly timed main graph lacks these fingerprints; this is not a fresh-main payload comparison. All 14,243 in-memory typed enum queries (Kotlin 4,557 + Tika 9,686) have no differing values or report properties against main; the two `enum-*-compare.log` files retain the exact results. These are bounded graph/API fingerprints and fixed enum-query inventories, not exhaustive graph equivalence. Persisted enum metadata limitations remain, hence the separate in-memory checks. The enum helper has no OOM-skip counter: do not transfer the Android helper's zero-OOM assertion to enum runs. Verification timings are excluded from performance evidence.
+
+**Bounded Tika follow-up (diagnostic only):** the slower unprofiled Tika save/query result triggered a fixed parent101 -> candidate102 -> candidate102 -> parent101 sequence, using the unchanged 4g gate with identical startup JFR and GC logging. All four correctness gates passed. The original unprofiled results are retained and these profiled samples are excluded from primary performance summaries. No extra run was added after seeing the results.
+
+| Order / variant | Build ms | Save ms | Query ms | Pipeline ms | Outer CPU s | Max RSS bytes |
+|---|---:|---:|---:|---:|---:|---:|
+| 0 / parent101 | 12745 | 4533 | 1397 | 18765 | 71.62 | 5,069,029,376 |
+| 1 / candidate102 | 12930 | 4706 | 1311 | 19036 | 74.77 | 4,893,605,888 |
+| 2 / candidate102 | 12906 | 4323 | 1348 | 18665 | 71.55 | 4,899,782,656 |
+| 3 / parent101 | 12748 | 4759 | 1328 | 18924 | 71.53 | 5,227,266,048 |
+
+The candidate and parent save ranges overlap and the original 5,699 ms save / 1,517 ms query did not recur. This does not explain or invalidate that unprofiled sample. Candidate build is about 1.35% slower than the parent mean in these diagnostics; overall CPU point estimates are also slightly higher. No diagnostic latency or CPU gain is claimed.
+
+The first JSON exports displayed only five stack frames, preventing phase attribution. All four existing recordings were re-exported with `jfr print --stack-depth 256`; original exports and their SHA records remain. No profile was rerun. The offline parser identifies actual JUnit timeout-thread stacks and the frozen gate source call sites, excludes source prequeries and later branch checks, and bounds phases using first/last execution samples plus the reported duration. Interior events and uncertain boundary events remain separate; missing stacks are not zero work. Compiler elapsed duration is not CPU time.
+
+In the definite save interiors, parent GC CPU was 1.44/1.32 s and pause wall 116.12/110.97 ms, versus candidate 0.78/0.78 s and 63.93/65.18 ms. Query GC CPU was 0.13/0.13 s versus 0.14/0.12 s. Candidate save boundary-uncertain GC CPU is at most another 0.01 s and does not change the direction; query has no such unassigned boundary CPU. Compiler elapsed values do not show a large candidate-only save/query burden. The independent interpretation and aggregate are `interpretation.txt` and `phase-comparison-depth256.json` in that diagnostic directory. Thus this fixed diagnostic set does not support the hypothesis that the cache moved additional GC work into save/query. It neither establishes the cause of the original slowdown nor proves identical persisted content: the gate deletes its temporary graph, and equal counts/near-equal sizes are not byte-level parity. Raw source pins, recordings, exports and phase intervals remain in `/tmp/graphite-sootup-recovery.6wpE4s/profiles/attempt102-tika-abba/`; parser and coverage rules are in `/tmp/sootup-static-review/attempt102/PHASE-ANALYZER-README.txt`.
+
+**Results and decision:** RETAIN the bounded per-view sub-signature reuse as the next recovery candidate. Ten direct behavioral tests and the broader real-input comparisons pass; the Android pilot reduces allocation by 1.531 GB/op versus parent101, the independently measured live-heap reduction is 468.86 MB after including added cache costs, and expanded Android/default-feature Kotlin CPU improves versus upgraded main. The fixed Tika follow-up does not demonstrate a repeatable save/query penalty or additional GC in those phases. This decision does not erase slower wall samples, higher RSS samples, diagnostic CPU/build costs, or remaining uncertainty. It is not a claim that the user's complete pre-upgrade performance objective has been achieved.
+
+**Remaining verification within the JAR scope:** obtain and inspect the required same-runner benchmark-regression gate for the new commit, and continue resolving the remaining pre-upgrade latency/RSS evidence. Parent101 CI is historical and cannot certify102. APK remains deferred. The complete local evidence index is `/tmp/graphite-sootup-recovery.6wpE4s/attempt102-total-evidence-index.json`.
