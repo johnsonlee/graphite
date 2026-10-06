@@ -596,118 +596,106 @@ class SootUpAdapter(
         } finally {
             releaseConversionState(clinit)
         }
-        val stmtGraph = body.controlFlowGraph
+        extractEnumValues(className, body.controlFlowGraph)
+    }
+
+    private fun extractEnumValues(className: String, statements: Iterable<Stmt>) {
+        val constructors = indexEnumConstructors(statements)
 
         // Track local variable assignments: localName -> value (for constants)
         val localValues = mutableMapOf<String, Any?>()
         // Track local variable aliases: localName -> original localName (for tracking new objects)
         val localAliases = mutableMapOf<String, String>()
 
-        for (stmt in stmtGraph) {
-            when (stmt) {
-                is JAssignStmt -> {
-                    val left = stmt.leftOp
-                    val right = stmt.rightOp
+        for (stmt in statements) {
+            if (stmt !is JAssignStmt) continue
+            val left = stmt.leftOp
+            val right = stmt.rightOp
 
-                    // Track constant assignments to locals
-                    if (left is Local && right is SootConstant) {
-                        localValues[left.name] = extractConstantValue(right)
-                    }
+            if (left is Local) trackEnumLocalValue(left, right, localValues)
 
-                    // Track boxing method calls: Integer.valueOf(int), Long.valueOf(long), etc.
-                    // Pattern: $stackN = staticinvoke Integer.valueOf(1234)
-                    if (left is Local && right is JStaticInvokeExpr) {
-                        val boxedValue = extractBoxedValue(right)
-                        if (boxedValue != null) {
-                            localValues[left.name] = boxedValue
-                        }
-                    }
+            // Track local-to-local assignments (aliases)
+            if (left is Local && right is Local) {
+                // left = right, so left is an alias for right
+                // Follow the chain to find the original
+                val original = localAliases[right.name] ?: right.name
+                localAliases[left.name] = original
+            }
 
-                    // Track static field reads (enum constant references from other enums)
-                    // Pattern: $stackN = <sample.ab.Priority: Priority HIGH>
-                    // This handles the case where one enum's constructor takes another enum as argument
-                    if (left is Local && right is JFieldRef) {
-                        val fieldSig = right.fieldSignature
-                        val fieldDeclClass = fieldSig.declClassType.fullyQualifiedName
-                        val fieldType = fieldSig.type
-                        // Check if the field type matches the declaring class (enum constant pattern)
-                        if (fieldType is ClassType && fieldType.fullyQualifiedName == fieldDeclClass) {
-                            localValues[left.name] = EnumValueReference(fieldDeclClass, fieldSig.name)
-                            log { "  Tracked enum reference: ${left.name} = $fieldDeclClass.${fieldSig.name}" }
-                        }
-                    }
-
-                    // Track local-to-local assignments (aliases)
-                    if (left is Local && right is Local) {
-                        // left = right, so left is an alias for right
-                        // Follow the chain to find the original
-                        val original = localAliases[right.name] ?: right.name
-                        localAliases[left.name] = original
-                    }
-
-                    // Look for: EnumField = new EnumClass(...)
-                    if (left is JFieldRef && left.fieldSignature.declClassType.fullyQualifiedName == className) {
-                        val fieldName = left.fieldSignature.name
-
-                        // The right side should be a local that was assigned from new + <init>
-                        // We need to find the <init> call to get the constructor arguments
-                        if (right is Local) {
-                            // Resolve alias to find the original local that was used with new/init
-                            val originalLocal = localAliases[right.name] ?: right.name
-                            log { "  Found field assignment: $fieldName = ${right.name} (resolved to $originalLocal)" }
-                            val initValues = findEnumInitValues(originalLocal, stmtGraph, localValues)
-                            if (initValues.isNotEmpty()) {
-                                graphBuilder.addEnumValues(className, fieldName, initValues)
-                                log { "  Extracted enum value: $className.$fieldName = $initValues" }
-                            }
-                        }
-                    }
+            // Look for a field assigned from the local used by new + <init>.
+            if (left is JFieldRef && left.fieldSignature.declClassType.fullyQualifiedName == className && right is Local) {
+                val fieldName = left.fieldSignature.name
+                val originalLocal = localAliases[right.name] ?: right.name
+                log { "  Found field assignment: $fieldName = ${right.name} (resolved to $originalLocal)" }
+                val initValues = findEnumInitValues(originalLocal, constructors, localValues)
+                if (initValues.isNotEmpty()) {
+                    graphBuilder.addEnumValues(className, fieldName, initValues)
+                    log { "  Extracted enum value: $className.$fieldName = $initValues" }
                 }
             }
         }
     }
 
-    /**
-     * Find the values passed to enum constructor for a given local variable.
-     * Looks for the pattern: local.<init>("NAME", ordinal, value1, value2, ...)
-     *
-     * @return list of user-defined constructor arguments (excluding name and ordinal)
-     */
-    private fun findEnumInitValues(localName: String, stmtGraph: ControlFlowGraph<*>, localValues: Map<String, Any?>): List<Any?> {
-        for (stmt in stmtGraph) {
-            if (stmt !is JInvokeStmt) continue
+    private fun trackEnumLocalValue(left: Local, right: Value, localValues: MutableMap<String, Any?>) {
+        // Track constant assignments to locals
+        if (right is SootConstant) {
+            localValues[left.name] = extractConstantValue(right)
+        }
 
-            val invokeExpr = stmt.invokeExpr.orElse(null) ?: continue
-            log { "    Checking invoke: ${invokeExpr.javaClass.simpleName} - ${invokeExpr.methodSignature}" }
-
-            if (invokeExpr !is AbstractInstanceInvokeExpr) {
-                log { "    Skipping: not AbstractInstanceInvokeExpr" }
-                continue
-            }
-            if (invokeExpr.methodSignature.name != INIT_METHOD) {
-                log { "    Skipping: method name is '${invokeExpr.methodSignature.name}', not '<init>'" }
-                continue
-            }
-
-            val base = invokeExpr.base
-            log { "    Base: ${base.javaClass.simpleName} - $base (looking for $localName)" }
-            if (base.name != localName) continue
-
-            // Found the <init> call
-            // Args: [name, ordinal, ...user args...]
-            val args = invokeExpr.args
-            log { "    Found <init> for $localName with ${args.size} args: ${args.map { it.toString() }}" }
-            if (args.size > 2) {
-                // Get all user-defined arguments (starting from index 2)
-                return args.drop(2).map { arg ->
-                    extractValueFromArg(arg, localValues)
-                }
-            } else {
-                log { "    Only ${args.size} args (need > 2 for user-defined values)" }
+        // Track boxing method calls: Integer.valueOf(int), Long.valueOf(long), etc.
+        // Pattern: $stackN = staticinvoke Integer.valueOf(1234)
+        if (right is JStaticInvokeExpr) {
+            val boxedValue = extractBoxedValue(right)
+            if (boxedValue != null) {
+                localValues[left.name] = boxedValue
             }
         }
-        log { "    No <init> call found for local $localName" }
-        return emptyList()
+
+        // Track static field reads (enum constant references from other enums)
+        // Pattern: $stackN = <sample.ab.Priority: Priority HIGH>
+        // This handles the case where one enum's constructor takes another enum as argument
+        if (right is JFieldRef) {
+            val fieldSig = right.fieldSignature
+            val fieldDeclClass = fieldSig.declClassType.fullyQualifiedName
+            val fieldType = fieldSig.type
+            // Check if the field type matches the declaring class (enum constant pattern)
+            if (fieldType is ClassType && fieldType.fullyQualifiedName == fieldDeclClass) {
+                localValues[left.name] = EnumValueReference(fieldDeclClass, fieldSig.name)
+                log { "  Tracked enum reference: ${left.name} = $fieldDeclClass.${fieldSig.name}" }
+            }
+        }
+    }
+
+    /**
+     * Keep the first eligible constructor in the same order as the old full-CFG search.
+     * Only index expressions: argument locals must be read at each field assignment, not here.
+     */
+    private fun indexEnumConstructors(statements: Iterable<Stmt>): Map<String, AbstractInstanceInvokeExpr> {
+        val constructors = mutableMapOf<String, AbstractInstanceInvokeExpr>()
+        for (stmt in statements) {
+            if (stmt !is JInvokeStmt) continue
+            val invoke = stmt.invokeExpr.orElse(null) ?: continue
+            log { "    Checking invoke: ${invoke.javaClass.simpleName} - ${invoke.methodSignature}" }
+            if (invoke is AbstractInstanceInvokeExpr && invoke.methodSignature.name == INIT_METHOD && invoke.args.size > 2) {
+                constructors.putIfAbsent(invoke.base.name, invoke)
+            }
+        }
+        return constructors
+    }
+
+    private fun findEnumInitValues(
+        localName: String,
+        constructors: Map<String, AbstractInstanceInvokeExpr>,
+        localValues: Map<String, Any?>
+    ): List<Any?> {
+        val invoke = constructors[localName]
+        if (invoke == null) {
+            log { "    No <init> call found for local $localName" }
+            return emptyList()
+        }
+        val args = invoke.args
+        log { "    Found <init> for $localName with ${args.size} args: ${args.map { it.toString() }}" }
+        return args.drop(2).map { extractValueFromArg(it, localValues) }
     }
 
     /**

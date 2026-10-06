@@ -4618,3 +4618,128 @@ Local Apple M3 Max machine is not dedicated; background activity and cold-fork/J
 **Final-source provenance:** the final integration source includes Attempt 097's later directory-path preservation: `fileSystem == null` keeps `Files.readAllBytes`, while archive entries use the exact input-stream read. This scope refinement occurred after this trial's frozen artifact and measurements. The hash-pinned results above still describe that original frozen source, not a validated or measured new artifact. No directory performance improvement is claimed; new-artifact full-suite/lint passed with 471 tests under recovery-final; the remaining real-corpus/Android checks and CI are pending (see Attempt 097 validation proof). See Attempt 097 and `/tmp/sootup-static-review/attempt097-directory-read-note.txt`.
 
 **Conclusion:** RETAINED in the aggregate recovery chain. The later 099 correctness checks and broader real-data results support continuing with that chain; all original 098 build/latency/CPU/RSS costs and slow-save samples above remain part of the decision. Overall recovery is not yet fully achieved.
+
+### 2026-10-07 — Attempt 099: Index enum constructor expressions once per class
+
+**Status:** RETAINED as a component of the aggregate recovery chain and as the parent candidate for independent Attempt 100. The overall recovery objective is not yet fully achieved. Final retry2 passed all 464 tests (460 existing + 4 new), detekt, JMH artifact build and recovery classpath preparation. The first two build rounds failed only lint; equivalent extraction of trackEnumLocalValue and a combined field short-circuit condition resolved those findings without changing baseline thresholds or enum matching/value semantics. Candidate whole-enum in-memory parity, the first quiet full-feature Kotlin round and two-fork Kotlin JMH have completed as detailed below. Final nine real-corpus gates, Android JAR JMH and complete Kotlin mapped shape/metadata comparisons have now completed; results and remaining performance costs are retained below.
+
+**Hypothesis:** extractEnumValues repeatedly scans the same complete <clinit> CFG for each field. With N enum fields and O(N) initialization statements, this causes O(N²) statement visits. Build a temporary base.name -> first eligible constructor-expression index in one pass, then retain the original assignment/value pass. Lookup avoids rescanning; argument conversion still happens at each field assignment. This is an independent enum extraction change layered on the frozen input/parsing chain, with no changes to 095 wrappers or loader feature flags.
+
+**Compatibility:** retain only JInvokeStmt containing AbstractInstanceInvokeExpr named <init> with more than two arguments. Keep the first match in full CFG iteration order, even when it occurs after a field assignment. Key by base.name, with no new owner, invocation-kind, field-name or enum-constant filters. Resolve raw argument expressions using each field's then-current localValues and existing flattened aliases. Preserve unknown/null values, all-null nonempty lists, short-constructor absence, boxing representations and enum references. Verbose configuration is unchanged; scan diagnostics naturally occur once per indexing pass instead of per field rescan.
+
+**Tests passed in the final retry2:** four controlled-IR correctness tests cover first eligible/duplicate/short constructors, ignored statement forms versus accepted virtual/foreign-owner constructors, same-name different-type locals, later CFG matches, per-field argument snapshots, copied aliases and rebinding, unknown/all-null values, unfiltered $VALUES, boxing and enum references. A two-iterator assertion is a structural source-access guard only, not performance evidence. Seven adjacent compiled-fixture tests now assert complete lists for every enum constant, including JVM Int representations of boolean/char and explicit numeric wrapper types.
+
+**Real-input evidence:** pinned Kotlin compiler embeddable 2.0.21 contains InfoCmp$Capability with 464 enum fields and only (String,int) constructor parameters. The retained main verbose Kotlin log contains 215,760 scans for this class (464 invokes x 465 lookups, including $VALUES), among 340,362 Checking invoke lines / 704,690 total lines. Tika app 2.9.2 contains ShapeType with 246 enum fields and (String,int,int,int,String) constructor parameters. These are actual class-byte/log observations, not a measured speedup. Evidence: /tmp/graphite-apk-recovery/results/main-kotlin-default-streaming1/stderr-time.log and verification query sidecars below.
+
+**Supplementary correctness scope:** EnumValuesVerifier independently enumerates every root ACC_ENUM field in each pinned jar: Kotlin 582 enum classes / 4,557 keys; Tika 1,240 / 9,686. It compares complete typed rows, preserving absent/null versus empty, null elements, parameter order, wrapper types, raw floating bits, UTF-16 strings and enum reference identity; unknown types fail. Concrete bytecode-derived oracles require all 464 Capability results null and all 246 in-memory ShapeType results present, with exact sample values (NOT_PRIMITIVE, LINE, LINE_INV, RECT). Both full-feature in-memory and persisted APIs must be compared across revisions. GraphStore persists enumValues only for EnumConstant node keys, so matching persisted reports cannot prove equality for values omitted from both graphs. The inventory covers real enum field keys, not arbitrary static fields or synthetic $VALUES entries; unit tests cover those extraction boundaries. This is separate correctness work, excluded from timing.
+
+**Completed in-memory enum parity:** main full-feature in-memory Kotlin queried 4,557 keys, with 2,386 present values; Tika queried 9,686 keys, with 6,577 present values. Both passed their concrete class-byte-derived assertions, including all 246 ShapeType values. The baseline persisted Kotlin graph returned absent for all 4,557 keys; this demonstrates the persistence coverage limitation and cannot establish candidate correctness. Candidate 099 then matched main for all 14,243 queried keys across Kotlin and Tika: every typed payload and every report property is identical, with ENUM_VALUES_PARITY_OK for both comparisons. Concrete oracles passed on both sides. This proves the stated in-memory enum API coverage, not whole-graph equivalence; persisted absence is not substituted for this evidence.
+
+**Snapshot scope:** compared with frozen 098, enum implementation and SootUpAdapter-generated classes changed. Three additional inline-containing classes (ControlFlowIndex, SlotPropagation, SlotPropagation$DepthFirstSearch) had byte differences from line/debug metadata changes; independent javap -p -c comparisons report identical executable code for all three. This evidence is stored in additional-class-code-verification.json and adjacent code diffs, not inferred from source alone.
+
+**New quiet full-feature protocol:** /tmp/graphite-jar-quiet-recovery/ProductionPipeline.java changes only the verbose callback to null. CHA call graph, annotations, cross-method dispatch, phase instrumentation, save options and existing verification remain unchanged. /tmp/graphite-jar-quiet-recovery/protocol.json pins parent SHA-256 6552cb9c4afbb2d28c1d47f64e090eb1044764486816a727fab744df52cb18dc and quiet SHA-256 1317041bdc5875e0d8cee1c72386837752a96af69a72f5093cd0184a50dfe799. Main, preupgrade, frozen 098 and candidate 099 completed one round using this identical quiet protocol. Historical verbose samples stay separately labeled and must not be mixed into quiet timing comparisons. All phase wall/CPU, heap/GC and process RSS results are retained, including slow-save tails; no best-sample selection. Candidate frozen as streaming-input-exact-serial-enum; runtime sootup jar SHA-256 ff0bffaf3342f963c2373bf4add378e21495d39479dfb6562b3821c2c6b03264. Exact launched commands are retained in each results directory command.json; complete quiet and JMH observations follow. Local Apple M3 Max / JDK 17 environment is shared, not a dedicated performance runner.
+
+Quiet full-feature Kotlin observations (one run each, Xmx8g; order pre-upgrade -> 099 -> main -> 098). These are separate from every historical verbose table. The protocol file's prepared-state compiled/measured booleans remain false; successful command exit codes, logged source hashes and result artifacts establish actual execution.
+
+| Phase | Pre-upgrade wall / CPU ms | Main wall / CPU ms | 098 wall / CPU ms | 099 wall / CPU ms |
+|---|---:|---:|---:|---:|
+| build | 106,909.469 / 181,726.719 | 28,814.205 / 93,715.345 | 30,064.691 / 82,445.437 | 29,130.671 / 84,063.038 |
+| cliNodeCount | 335.503 / 1,088.376 | 381.806 / 1,827.214 | 341.397 / 1,242.253 | 350.445 / 1,382.082 |
+| savePrepared | 6,736.092 / 17,534.410 | 6,497.599 / 15,750.560 | 11,265.188 / 22,882.178 | 6,464.720 / 18,215.415 |
+| closeSource | 0.046 / 0.050 | 0.040 / 0.046 | 0.041 / 0.044 | 0.074 / 0.077 |
+| loadMapped | 155.898 / 281.851 | 162.007 / 269.211 | 160.267 / 276.747 | 158.307 / 280.095 |
+| queryAllNodeCount | 39.909 / 131.254 | 36.366 / 115.956 | 35.206 / 76.567 | 35.250 / 77.054 |
+| queryCallSiteCount | 1.016 / 2.655 | 0.813 / 3.822 | 0.877 / 1.540 | 0.829 / 1.811 |
+| Timed pipeline | 114,186.684 / 200,800.421 | 35,902.414 / 111,740.130 | 41,876.315 / 106,956.622 | 36,149.129 / 104,043.426 |
+
+| Metric | Pre-upgrade | Main | 098 | 099 |
+|---|---:|---:|---:|---:|
+| /usr/bin/time wall seconds | 114.32 | 36.05 | 42.03 | 36.30 |
+| /usr/bin/time CPU seconds | 200.90 | 111.87 | 107.09 | 104.20 |
+| Max RSS bytes | 8,622,342,144 | 9,398,026,240 | 9,159,147,520 | 9,090,891,776 |
+| Build sum of heap-pool peaks bytes | 7,408,448,000 | 7,572,717,568 | 7,721,615,360 | 7,704,838,144 |
+| Build GC count / milliseconds | 98 / 2089 | 42 / 1061 | 44 / 1063 | 44 / 1033 |
+| Nodes / callsites | 4657648 / 2173010 | 4744132 / 2251811 | 4744132 / 2251811 | 4744132 / 2251811 |
+
+**Interpretation:** relative to main, 099 build wall is slightly slower (29.131 vs 28.814 s), while build CPU and whole-process CPU/RSS are lower in this observation. Relative to 098, 099 build wall is lower but build CPU is higher (84.063 vs 82.445 s); this is not uniform enum-index improvement. The 098 11.265 s save tail is retained and cannot be credited as an enum-index speedup, because main and other variants have also exhibited slow saves. Pre-upgrade has different graph counts, so its much longer full-feature build is not a like-for-like semantics/performance comparison; 099 RSS is still above its observation. Full phase heap/GC metrics remain in trial099-quiet-results.json.
+
+Two-cold-fork method-level JMH, GraphBuildBenchmark.buildKotlinCompilerGraphEndToEndConfig: -bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true -jvmArgs '-Xmx8g' -prof gc. This EndToEndConfig disables call graph, annotations and cross-method dispatch; it is not the quiet full-feature pipeline. Old/main rows are retained coldstreaming1 observations; 097 is coldexact1; 098/099 are coldenum1. They were not all run contemporaneously.
+
+| Snapshot | Fork 1 ms/op | Fork 2 ms/op | Mean ms/op | Fork 1 allocation B/op | Fork 2 allocation B/op | Mean allocation B/op |
+|---|---:|---:|---:|---:|---:|---:|
+| Pre-upgrade | 12,370.715 | 12,492.235 | 12,431.475 | 23,127,877,248 | 23,127,135,840 | 23,127,506,544 |
+| Main | 12,207.976 | 12,115.024 | 12,161.500 | 23,884,889,712 | 23,885,959,184 | 23,885,424,448 |
+| 097 exact | 11,585.382 | 11,611.037 | 11,598.210 | 23,063,362,968 | 23,071,057,928 | 23,067,210,448 |
+| 098 | 12,223.136 | 12,397.824 | 12,310.480 | 23,021,083,832 | 23,045,759,424 | 23,033,421,628 |
+| 099 | 12,609.881 | 12,302.463 | 12,456.172 | 22,979,474,736 | 22,968,526,640 | 22,974,000,688 |
+
+099 is +0.20% time and -0.664% allocation versus pre-upgrade, near that old reduced-config baseline; versus main it is +2.42% time and -3.82% allocation. The observed 099 fork interval overlaps old and 098, but does NOT overlap the saved main fork interval. The main latency point estimate is worse; two cold forks collected at different times are insufficient to establish a stable regression or its absence. Relative to 098, allocation falls by 59,420,940 B/op (0.258%) while time rises 1.18%; both outcomes are retained. Real end-to-end gates and CI comparisons must complement this narrow sample.
+
+**Reproduction/evidence:**
+
+- Quiet wrapper: python3 /tmp/graphite-jar-quiet-recovery/run.py run LABEL KOTLIN_JAR LABEL-kotlin-quiet-enum1 --heap 8g --sdk - (labels in recorded order above, pinned Kotlin fixture from each manifest).
+- New JMH: python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py jmh LABEL --run coldenum1 --forks 2 --corpus kotlin (098 and 099 labels).
+- /tmp/graphite-sootup-recovery.6wpE4s/trial099-quiet-results.json and trial099-kotlin-jmh-comparison.json contain all observations and per-fork sources.
+- /tmp/graphite-jar-quiet-recovery/results/*-kotlin-quiet-enum1/command.json pins the full JVM command, fixture hash, runtime manifest, environment and source hash; no extra JVM flags. stderr-time.log and phases.csv retain raw measurements.
+- Publishing-plugin workaround remains recorded in immutable historical snapshot source states; the five build-script plugin declarations have since been restored in the working tree. They are not part of the proposed production optimization.
+
+**Evidence and verifier commands:**
+
+- /tmp/sootup-recovery-sources/streaming-input-exact-serial-enum-test{,-retry1,-retry2}.log (initial lint failures retained; final retry2 success).
+- /tmp/sootup-recovery-sources/streaming-input-exact-serial-enum-snapshot/{artifact-diff.json,additional-class-code-verification.json,source-state.json,build.log} and /tmp/graphite-sootup-recovery.6wpE4s/streaming-input-exact-serial-enum.json.
+- /tmp/graphite-apk-recovery/verification/reports/099-{kotlin,tika}-memory-enum1-compare.log (empty typed-value/property differences; both parity markers present).
+- /tmp/graphite-apk-recovery/verification/reports/main-{kotlin-memory,tika-memory,kotlin-persisted}-baseline1.{command.json,log,properties,values.tsv}.
+- Source/test: frontend/jvm/sootup/src/{main,test}/kotlin/io/johnsonlee/graphite/sootup/{SootUpAdapter.kt,SootUpAdapterTest.kt,EnumConstructorIndexTest.kt} (respective source sets).
+- /tmp/graphite-apk-recovery/verification/ENUM-VALUES-README.md, EnumValuesVerifier.java, run-enum-values.py, enum_values_queries.py and {kotlin,tika}-enum-queries.tsv{,.json}.
+- /tmp/sootup-recovery-sources/attempt099-enum-parity-plan.txt (initial focused plan; whole-inventory verifier supersedes its narrower query scope).
+- python3 /tmp/graphite-apk-recovery/verification/run-enum-values.py run "$MANIFEST" kotlin memory "$REPORT_PREFIX" --execute (repeat tika, base/candidate; coordinator only).
+- python3 /tmp/graphite-apk-recovery/verification/run-enum-values.py run "$MANIFEST" kotlin persisted "$REPORT_PREFIX" --graph "$GRAPH" --execute (repeat tika/base/candidate; compare matching modes).
+- python3 /tmp/graphite-apk-recovery/verification/run-enum-values.py compare "$BASE_REPORT_PREFIX" "$CANDIDATE_REPORT_PREFIX".
+
+Final real-corpus reduced gates: all nine passed, retaining graph/query/branch-definition assertions with large.corpus.record=true (timing ceilings disabled). Call graph, annotations and cross-method functional dispatch are disabled; these are separate from the quiet full-feature results. Each is a fresh Xmx4g JVM. Whole-process wall/CPU/RSS includes verification and cleanup. All runs are listed, not selected best samples; execution commands and timestamps are in each result directory.
+
+| Corpus / variant | Build ms | Save ms | Mapped load median ms | Query ms | Pipeline ms | Process wall s | Process CPU s | Peak heap bytes | Max RSS bytes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| tika / Pre-upgrade | 12,560 | 4,493 | 90 | 1,236 | 18,379 | 21.60 | 65.99 | 3,555,663,424 | 5,182,259,200 |
+| tika / Main | 12,867 | 4,388 | 91 | 1,283 | 18,629 | 22.09 | 78.87 | 3,827,204,096 | 5,038,784,512 |
+| tika / 099 | 13,012 | 4,421 | 88 | 1,129 | 18,650 | 22.02 | 72.82 | 3,764,289,592 | 5,024,890,880 |
+| hive / Pre-upgrade | 21,729 | 6,023 | 133 | 1,453 | 29,338 | 33.91 | 97.87 | 3,916,306,432 | 5,248,352,256 |
+| hive / Main | 23,614 | 7,051 | 135 | 1,549 | 32,349 | 37.15 | 127.45 | 4,072,237,080 | 5,220,466,688 |
+| hive / 099 | 23,643 | 6,066 | 136 | 1,697 | 31,542 | 36.49 | 111.83 | 3,889,565,184 | 5,412,978,688 |
+| kotlin / Pre-upgrade | 12,492 | 7,734 | 83 | 1,228 | 21,537 | 24.75 | 70.83 | 3,671,084,608 | 5,009,014,784 |
+| kotlin / Main | 12,519 | 4,251 | 76 | 1,123 | 17,969 | 21.18 | 75.98 | 3,861,575,568 | 4,962,549,760 |
+| kotlin / 099 | 12,721 | 4,242 | 76 | 1,097 | 18,136 | 21.36 | 69.16 | 3,965,430,272 | 5,144,313,856 |
+
+Against main, 099 build is slower on all three (Tika +145 ms, Hive +29 ms, Kotlin +202 ms), total CPU is lower on all three, and RSS is higher on Hive/Kotlin but slightly lower on Tika. Against pre-upgrade, build is slower on all three; Tika/Hive CPU is still higher and Hive/Kotlin RSS is higher. The old Kotlin 7,734 ms save is another retained tail, not an enum-index speedup. The 099 Hive query is 1,697 ms versus main 1,549 and old 1,453; neither it nor the 099 Tika/Kotlin pipeline costs versus main are concealed by CPU improvements.
+
+Android JAR method-level JMH (not APK): pinned Robolectric android-all 14-robolectric-10818077, Xmx8g, -bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true -prof gc, same fixture properties as the other JMH runs. buildAndroidSdkGraph disables call graph but retains annotations and cross-method dispatch; buildAndroidSdkGraphEndToEndConfig disables all three. Neither method measures save/mapped-load/query. Keep these configurations separate.
+
+| Benchmark / variant | Fork 1 ms/op | Fork 2 ms/op | Mean ms/op | Fork 1 allocation B/op | Fork 2 allocation B/op | Mean allocation B/op | GC count / ms |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| android / Pre-upgrade | 28,629.642 | 28,640.517 | 28,635.079 | 44,475,183,456 | 44,491,852,464 | 44,483,517,960 | 92 / 2035 |
+| android / Main | 23,535.993 | 23,903.208 | 23,719.600 | 41,016,551,000 | 41,099,011,784 | 41,057,781,392 | 84 / 1971 |
+| android / 099 | 24,193.905 | 24,128.117 | 24,161.011 | 40,361,858,960 | 40,327,963,176 | 40,344,911,068 | 86 / 1930 |
+| android-e2e / Pre-upgrade | 19,204.356 | 18,840.371 | 19,022.364 | 35,020,249,072 | 35,098,401,576 | 35,059,325,324 | 80 / 1574 |
+| android-e2e / Main | 19,446.630 | 19,253.428 | 19,350.029 | 36,895,777,744 | 36,842,948,272 | 36,869,363,008 | 78 / 1764 |
+| android-e2e / 099 | 19,501.166 | 19,460.138 | 19,480.652 | 35,947,038,872 | 35,944,017,848 | 35,945,528,360 | 80 / 1711 |
+
+Android comparisons (099 point estimates; two cold forks):
+
+- android versus Pre-upgrade: time -15.62%, allocation -9.30%.
+- android versus Main: time +1.86%, allocation -1.74%.
+- android-e2e versus Pre-upgrade: time +2.41%, allocation +2.53%.
+- android-e2e versus Main: time +0.68%, allocation -2.51%.
+
+Both Android methods are slower than main in this sample despite lower allocation. In reduced Android EndToEndConfig, 099 remains slower and allocates more than pre-upgrade; in annotations/dispatch-enabled Android it beats pre-upgrade on both. These different baselines/configurations must not be collapsed into one recovery percentage.
+
+Complete Kotlin mapped verification: main and 099 quiet full-feature graphs have identical values across all 22 structural fingerprint properties and all 13 supplementary metadata properties (methods/annotations, synthetic identity, origins/dependencies and comparand-node connectivity). The shape comparison differences and metadata-differences.json are both empty. Evidence: /tmp/graphite-jar-quiet-recovery/verification-enum1/{shape-compare.log,metadata-differences.json} plus the four successful per-variant verifier logs and command.json records. This complements the separate 14,243-key in-memory enum check; it does not prove every untested resource/query API or old/new full-feature equivalence.
+
+**Final commands/evidence:**
+
+- python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py gate LABEL --run enum1 --corpus CORPUS (labels old/main/099 and all Tika/Hive/Kotlin corpora; actual preupgrade and frozen candidate labels in each command.json).
+- python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py jmh LABEL --run coldenum1 --forks 2 --corpus android (repeat android-e2e; each of preupgrade/main/streaming-input-exact-serial-enum).
+- trial099-nine-gates.json and trial099-android-jmh-comparison.json under /tmp/graphite-sootup-recovery.6wpE4s preserve every result and per-fork source path; results/*-gate-*-enum1 and *-jmh-android*-coldenum1 contain exact launched commands, environment and raw output.
+
+**Final-source provenance:** the final integration source includes Attempt 097's later directory-path preservation: `fileSystem == null` keeps `Files.readAllBytes`, while archive entries use the exact input-stream read. This scope refinement occurred after this trial's frozen artifact and measurements. The hash-pinned results above still describe that original frozen source, not a validated or measured new artifact. No directory performance improvement is claimed; new-artifact full-suite/lint passed with 471 tests under recovery-final; the remaining real-corpus/Android checks and CI are pending (see Attempt 097 validation proof). See Attempt 097 and `/tmp/sootup-static-review/attempt097-directory-read-note.txt`.
+
+**Decision:** RETAINED with 095, corrected 097 and 098 as the aggregate recovery chain and Attempt 100's parent candidate; this is not standalone proof that the overall recovery goal is achieved. The chain lowers allocation and some CPU observations but does not uniformly restore latency, CPU or RSS relative to main or pre-upgrade. All final local checks above completed; shared-host samples and this API coverage do not establish universal no-regression. APK remains paused/deprioritized.

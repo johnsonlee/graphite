@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumValueReference
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
@@ -17,6 +18,7 @@ import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -275,10 +277,10 @@ class SootUpAdapterTest {
         val alphaValues = graph.enumValues("sample.enums.ComplexEnum", "ALPHA")
         println("ComplexEnum.ALPHA values: $alphaValues")
 
-        assertNotNull(alphaValues, "Should extract ALPHA enum values")
-        assertTrue(alphaValues.isNotEmpty(), "ALPHA should have constructor values")
-        assertEquals(100, alphaValues[0], "ALPHA code should be 100")
-        assertEquals("alpha-label", alphaValues[1], "ALPHA label should be alpha-label")
+        // Boolean bytecode constants retain the adapter's existing Int representation.
+        assertEquals(listOf(100, "alpha-label", 1, 1.5), alphaValues)
+        assertEquals(listOf(200, "beta-label", 0, 2.5), graph.enumValues("sample.enums.ComplexEnum", "BETA"))
+        assertEquals(listOf(300, "gamma-label", 1, 3.5), graph.enumValues("sample.enums.ComplexEnum", "GAMMA"))
     }
 
     @Test
@@ -294,13 +296,13 @@ class SootUpAdapterTest {
 
         val graph = loader.load(testClassesDir)
 
-        // EmptyEnum has no custom constructor args, so values should be empty or null
+        // Name and ordinal alone do not create an enum-values entry.
         val firstValues = graph.enumValues("sample.enums.EmptyEnum", "FIRST")
         println("EmptyEnum.FIRST values: $firstValues")
 
-        // EmptyEnum constants have only name and ordinal (no user args), so should be empty
-        assertTrue(firstValues == null || firstValues.isEmpty(),
-            "EmptyEnum should have no user-defined constructor values")
+        assertNull(firstValues)
+        assertNull(graph.enumValues("sample.enums.EmptyEnum", "SECOND"))
+        assertNull(graph.enumValues("sample.enums.EmptyEnum", "THIRD"))
     }
 
     @Test
@@ -320,10 +322,8 @@ class SootUpAdapterTest {
         val itemAValues = graph.enumValues("sample.enums.BoxedArgEnum", "ITEM_A")
         println("BoxedArgEnum.ITEM_A values: $itemAValues")
 
-        assertNotNull(itemAValues, "Should extract ITEM_A enum values")
-        assertTrue(itemAValues.isNotEmpty(), "ITEM_A should have constructor values")
-        // The boxed values should be extracted through extractBoxedValue
-        assertEquals(1001, itemAValues[0], "ITEM_A intCode should be 1001")
+        assertEquals(listOf<Any?>(1001, 5000L), itemAValues)
+        assertEquals(listOf<Any?>(2002, 6000L), graph.enumValues("sample.enums.BoxedArgEnum", "ITEM_B"))
     }
 
     // ========== Jackson WRITE_ONLY ==========
@@ -467,8 +467,9 @@ class SootUpAdapterTest {
         val itemXValues = graph.enumValues("sample.enums.MoreBoxedEnum", "ITEM_X")
         println("MoreBoxedEnum.ITEM_X values: $itemXValues")
 
-        assertNotNull(itemXValues, "Should extract ITEM_X enum values")
-        assertTrue(itemXValues.isNotEmpty(), "ITEM_X should have constructor values")
+        // Short, Byte, Boolean and Character boxing arguments are JVM Int constants.
+        assertEquals(listOf<Any?>(10, 1, 1.5f, 2.5, 1, 65), itemXValues)
+        assertEquals(listOf<Any?>(20, 2, 3.5f, 4.5, 0, 66), graph.enumValues("sample.enums.MoreBoxedEnum", "ITEM_Y"))
     }
 
     // ========== Enum with enum reference ==========
@@ -490,15 +491,16 @@ class SootUpAdapterTest {
         val lowAlphaValues = graph.enumValues("sample.enums.EnumWithEnumRef", "LOW_ALPHA")
         println("EnumWithEnumRef.LOW_ALPHA values: $lowAlphaValues")
 
-        assertNotNull(lowAlphaValues, "Should extract LOW_ALPHA enum values")
-        assertTrue(lowAlphaValues.isNotEmpty(), "LOW_ALPHA should have constructor values")
-        // First arg should be an enum reference to Priority.LOW
-        println("  First arg type: ${lowAlphaValues[0]?.javaClass}")
-        println("  First arg: ${lowAlphaValues[0]}")
-        // Second arg should be "alpha-config"
-        if (lowAlphaValues.size > 1) {
-            assertEquals("alpha-config", lowAlphaValues[1], "Second arg should be config string")
-        }
+        val priorityClass = "sample.enums.EnumWithEnumRef\$Priority"
+        assertEquals(listOf(EnumValueReference(priorityClass, "LOW"), "alpha-config"), lowAlphaValues)
+        assertEquals(
+            listOf(EnumValueReference(priorityClass, "HIGH"), "beta-config"),
+            graph.enumValues("sample.enums.EnumWithEnumRef", "HIGH_BETA")
+        )
+        assertEquals(
+            listOf(EnumValueReference(priorityClass, "MEDIUM"), "gamma-config"),
+            graph.enumValues("sample.enums.EnumWithEnumRef", "MED_GAMMA")
+        )
     }
 
     // ========== Default call graph algorithm ==========
@@ -647,10 +649,8 @@ class SootUpAdapterTest {
         val firstValues = graph.enumValues("sample.enums.EnumWithStaticBlock", "FIRST")
         println("EnumWithStaticBlock.FIRST values: $firstValues")
 
-        assertNotNull(firstValues, "Should extract FIRST enum values")
-        assertTrue(firstValues.isNotEmpty(), "FIRST should have constructor values")
-        assertEquals(1, firstValues[0], "FIRST code should be 1")
-        assertEquals("first-item", firstValues[1], "FIRST label should be first-item")
+        assertEquals(listOf(1, "first-item"), firstValues)
+        assertEquals(listOf(2, "second-item"), graph.enumValues("sample.enums.EnumWithStaticBlock", "SECOND"))
     }
 
     // ========== Enum with DirectFieldRefEnum ==========
@@ -671,8 +671,8 @@ class SootUpAdapterTest {
         val item1Values = graph.enumValues("sample.enums.DirectFieldRefEnum", "ITEM_1")
         println("DirectFieldRefEnum.ITEM_1 values: $item1Values")
 
-        assertNotNull(item1Values, "Should extract ITEM_1 enum values")
-        assertTrue(item1Values.isNotEmpty(), "ITEM_1 should have constructor values")
+        assertEquals(listOf(10, "item-1"), item1Values)
+        assertEquals(listOf(20, "item-2"), graph.enumValues("sample.enums.DirectFieldRefEnum", "ITEM_2"))
     }
 
     private fun findTestClassesDir(): Path {
