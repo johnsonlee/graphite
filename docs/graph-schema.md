@@ -2,10 +2,11 @@
 
 English | [简体中文](graph-schema.zh.md)
 
-Status: architecture proposal with an implemented structural foundation. Date: October 6, 2026.
+Status: architecture proposal with an implemented structural foundation and indexed mmap reader. Date: October 7, 2026.
 
 The [schema contract and Rust codec](schema-wire.md) implement generic values,
-definitions, references, validation, remapping, merging, and binary round trips.
+definitions, references, validation, remapping, merging, binary round trips, and
+indexed, on-demand mapped access to records and strings.
 Production graph storage/query integration, JVM extraction, and corpus migration
 remain pending; the implementation does not change the legacy graph format.
 
@@ -196,7 +197,7 @@ Memory-mapped production reads are an existing Graphite convention and a hard re
 
 Persisted table/group/column directories and variable-length offset arrays must support direct, bounds-checked access. The reader may retain bounded schema metadata, caches, and decoding buffers; compressed adjacency and dictionary values may require decoding. Unknown layouts must use the same mapped access contract, rather than falling back to full Document deserialization. Byte order and field encodings are explicit; mapped bytes are not native Rust structs.
 
-Production storage acceptance requires correctness tests showing that selected-record access does not decode unrelated records, plus real-corpus load RSS and query measurements. The current GSCHEMA interchange codec does not meet this production-reader requirement and must not become the default persisted read path as-is. Its existing tests prove the logical interchange contract only.
+Production storage acceptance requires correctness tests showing that selected-record access does not decode unrelated records, plus real-corpus load RSS and query measurements. The implemented `GSCHEMA/2` reader retains bulk records and strings in its backing mapping, validates persisted directories on open, and checks and decodes selected payloads on demand. Unknown layouts follow the same path; `verify_all` is an explicit full check. The `GSCHEMA/1` full-Document decoder remains an interchange API. Production writer/loader/query integration and real-corpus measurements remain pending; a library reader is not evidence that the production graph path has switched.
 
 ### Table Directory and Layout-Driven Encoding
 

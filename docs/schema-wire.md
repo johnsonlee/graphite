@@ -2,8 +2,10 @@
 
 English | [简体中文](schema-wire.zh.md)
 
-Status: implemented foundation, wire version 1. This contract implements the value,
-registry, reference, and interchange portions of the [schema proposal](graph-schema.md).
+Status: implemented structural foundation, `GSCHEMA/1` interchange codec, and
+`GSCHEMA/2` indexed mapped reader. This contract implements the value, registry,
+reference, interchange, and mapped record access portions of the
+[schema proposal](graph-schema.md).
 The implementation is the independent [`graphite-schema`](../backend/schema/README.md)
 Rust crate. It does not change v1–v3 graph storage, allocate a graph v4, or connect the
 new records to the production indexer, Cypher engine, or JVM frontend.
@@ -15,16 +17,16 @@ whose names and language profiles were unknown when it was compiled. A new langu
 adds definitions and records, never descriptor tags or language branches. Unknown
 physical tags or wire versions are rejected; unknown semantic names are preserved.
 
-The interchange container below carries a complete logical document. It is not the
-final mmap/columnar graph format. Production graph indexing, compressed adjacency,
-large-corpus streaming, JVM IR emission, and legacy import remain later work. The
-in-memory implementation has explicit budgets and makes no 100M-node performance
-claim. Its wire version is independent of the legacy graph version.
+Wire version 1 carries a complete logical document for in-memory exchange. Wire
+version 2 stores the same model with persisted directories for mapped, on-demand
+record and string access. Neither is a new production graph version. Production
+graph indexing, compressed adjacency integration, large-corpus streaming, JVM IR
+emission, and legacy import remain later work; no 100M-node performance claim is made.
 
 Production graph readers must retain Graphite's existing mmap access convention.
-The full-Document decode API here does not satisfy that requirement, even when its
-input slice comes from an mmap. Production integration requires mapped, on-demand
-record access and its own acceptance evidence; it cannot adopt this decoder as-is.
+Use the indexed reader for mapped records: mapping the input to the version-1
+full-Document decoder does not avoid heap materialization. Production loader/query
+integration and real-corpus acceptance remain required beyond this library.
 
 ## Logical document
 
@@ -108,7 +110,7 @@ freezes the structural contract; it does not declare language mappings or infere
 rules complete. Concrete JVM/Swift/TS profile revisions must be reviewed with their
 frontends, without changing this wire format.
 
-## Binary envelope
+## Version 1: interchange envelope
 
 All integers are little-endian. UTF-8 is strict. `text` means a u64 byte length followed
 by those bytes. `name` means two texts (namespace, local name). Counts use u32. No
@@ -118,7 +120,7 @@ is present. The complete file has these fields in order:
 | Offset | Width | Content |
 | --- | --- | --- |
 | 0 | 8 | ASCII `GSCHEMA` followed by a zero byte |
-| 8 | 4 | Wire version, currently 1 |
+| 8 | 4 | Wire version, 1 |
 | 12 | 8 | Payload byte length |
 | 20 | 32 | SHA-256 of the entire payload |
 | 52 | payload length | Directory followed by section bodies |
@@ -184,7 +186,80 @@ references, conflicting identities, unsupported tags, malformed bitmaps, and ext
 bytes are errors. No malformed record is silently dropped or replaced with an empty
 object. Language additions change dictionary/definition/table contents only.
 
-## Public operations and resource limits
+## Version 2: indexed mapped envelope
+
+`encode_mapped(&Document, &Limits)` validates the complete input document and writes
+this indexed format. `MappedDocument<B: AsRef<[u8]>>::from_bytes(B, MappedLimits)`
+retains the backing bytes without copying them. `unsafe MappedDocument::open` uses
+`memmap2` for standalone files; the caller must guarantee that the file remains
+unmodified and untruncated for the mapping's lifetime. Existing mapped directory-file
+or ZIP-entry ranges can use `from_bytes`, without a dependency on the storage crate.
+
+The 80-byte header is followed by metadata, the string directory, the row directory,
+all string payloads, then all record payloads. Integers are little-endian. Ranges are
+contiguous, nonoverlapping, and consume the file exactly; reserved fields must be zero.
+Directories remain in the backing bytes and are searched by binary search.
+
+| Offset | Width | Content |
+| --- | --- | --- |
+| 0 | 8 | `GSCHEMA` followed by a zero byte |
+| 8 | 4 | Wire version, 2 |
+| 12 | 4 | Reserved, zero |
+| 16 | 8 | Total file length |
+| 24 | 8 | Metadata byte length |
+| 32 | 8 | String count |
+| 40 | 8 | Row count across all tables |
+| 48 | 32 | Index SHA-256 |
+
+Metadata is a version-1 envelope containing definitions, profiles, and named tables
+with empty row maps and an empty string dictionary. `metadata()` exposes that bounded
+`Document`; its empty data maps do not mean that the mapped file has no data.
+
+Each 56-byte string-directory entry contains `(u32 StringId, u32 reserved, u64 offset,
+u64 length, [u8; 32] SHA-256)`, in strictly increasing StringId order. The payload is
+raw UTF-8 without a length prefix. Each 64-byte row-directory entry contains
+`(u32 TableId, u32 RowId, u32 LayoutId, u32 reserved, u64 offset, u64 length,
+[u8; 32] SHA-256)`, in strictly increasing `(TableId, RowId)` order. Offsets are
+absolute from the start of this envelope. Record payloads use the version-1 record
+body encoding above, with the layout supplied by their directory entry.
+
+The index SHA-256 covers header bytes `0..48`, followed by metadata and both
+directories (`80..payload_start`). It excludes the digest field and all string/row
+bodies. It binds lookup IDs, layout IDs, ranges, and per-payload digests without
+reading those payloads.
+
+Opening validates the header, index hash and schema, and scans directories to
+check ordering, layouts, table identities, and ranges. This is O(directory entries)
+work with bounded heap use, not a claim of constant-time opening. Opening does not
+checksum or decode string and record payloads and does not create a heap row index.
+
+`record(Reference)` returns `Result<Option<Record>>`, decoding and checksumming only
+the selected record under an independent per-record budget. Field structure and all
+nested string/row references are validated against the persisted directories;
+checking a reference does not read or decode its target. `string(StringId)` returns
+`Result<Option<&str>>`, checking only that string's checksum and UTF-8 and borrowing
+its bytes. Absent IDs return `None`; corrupt selected data returns an error. Unknown
+layouts use the same schema-driven path, with no whole-document fallback.
+
+`verify_all()` explicitly accesses every string and record, one at a time. An open
+file has validated metadata and directory structure, not proof that every payload
+is intact; untouched corruption is deferred until access or `verify_all`. Checksums
+are integrity checks, not authentication. Production container integrity remains an
+additional enclosing check.
+
+`MappedLimits` has independent metadata and single-record `Limits`, plus total file,
+string-count, and row-count limits. Default metadata and record byte budgets are
+16 MiB and 64 MiB respectively, with no separate 64 MiB aggregate ceiling on mapped
+payloads. The writer still takes a complete in-memory document, returns a byte vector,
+and applies its `Limits.max_bytes` to the entire output (64 MiB by default). Streaming
+output and production index construction are not implemented by this API.
+
+The persisted directories cost 56 bytes per string and 64 bytes per row, before
+payloads and metadata. For example, 100M rows require 6.4 GB of row-directory bytes
+alone (decimal units); this is arithmetic, not a capacity benchmark. This indexed
+library format does not implement the proposal's grouped/columnar production layout.
+
+## In-memory operations and resource limits
 
 `encode(&Document, &Limits)` validates before returning bytes. `decode(&[u8], &Limits)`
 checks the envelope, section integrity, structure, and all references before returning

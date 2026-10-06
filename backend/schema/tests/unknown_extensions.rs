@@ -325,6 +325,33 @@ fn unfamiliar_language_round_trips_without_kind_or_predicate_tag_limits() {
 }
 
 #[test]
+fn indexed_reader_preserves_all_unfamiliar_kinds_predicates_and_bindings() {
+    let original = fixture("mapped");
+    let bytes = encode_mapped(&original, &Limits::default()).unwrap();
+    let mapped = MappedDocument::from_bytes(bytes, MappedLimits::default()).unwrap();
+    assert_eq!(mapped.metadata().definitions, original.definitions);
+    assert_eq!(mapped.metadata().profiles, original.profiles);
+    let mut restored = mapped.metadata().clone();
+    for id in mapped.string_ids() {
+        restored
+            .strings
+            .insert(id, mapped.string(id).unwrap().unwrap().into());
+    }
+    for (reference, layout) in mapped.records() {
+        let record = mapped.record(reference).unwrap().unwrap();
+        assert_eq!(record.layout, layout);
+        restored
+            .tables
+            .get_mut(&reference.table)
+            .unwrap()
+            .rows
+            .insert(reference.row, record);
+    }
+    assert_eq!(restored, original, "all 17 node kinds, 257 predicates, scoped identities and nested references survive indexed access");
+    mapped.verify_all().unwrap();
+}
+
+#[test]
 fn remapping_visits_nested_records_lists_descriptors_and_cycles() {
     let doc = fixture("remap");
     let limits = Limits::default();

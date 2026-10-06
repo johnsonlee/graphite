@@ -240,6 +240,32 @@ fn invalid(message: &str) -> Error {
     Error::Invalid(message.into())
 }
 
+pub(crate) fn encode_record(
+    record: &Record,
+    document: &Document,
+    limits: &Limits,
+) -> Result<Vec<u8>> {
+    let mut sink = Sink::new(limits);
+    sink.fields(record, document)?;
+    Ok(sink.data)
+}
+
+pub(crate) fn decode_record(
+    bytes: &[u8],
+    layout: LayoutId,
+    metadata: &Document,
+    limits: &Limits,
+) -> Result<Record> {
+    if bytes.len() > limits.max_bytes {
+        return Err(Error::Limit("record bytes"));
+    }
+    let mut input = Input::new(bytes);
+    let mut budget = Budget { items: 0, limits };
+    let record = input.record(layout, metadata, &mut budget, 0)?;
+    input.end()?;
+    Ok(record)
+}
+
 fn insert_unique<K: Ord, V>(map: &mut BTreeMap<K, V>, key: K, value: V, what: &str) -> Result<()> {
     if map.insert(key, value).is_some() {
         return Err(invalid(&format!("duplicate {what}")));
@@ -497,6 +523,12 @@ impl<'a> Input<'a> {
             let mask = 1 << (index % 8);
             let is_present = present[index / 8] & mask != 0;
             let is_null = nulls[index / 8] & mask != 0;
+            if !is_present && field.required {
+                return Err(invalid("required field absent"));
+            }
+            if is_null && !field.nullable {
+                return Err(invalid("null in nonnullable field"));
+            }
             if is_null && !is_present {
                 return Err(invalid("null bit without presence"));
             }

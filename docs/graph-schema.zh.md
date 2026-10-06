@@ -2,7 +2,7 @@
 
 [English](graph-schema.md) | 简体中文
 
-状态：整体架构仍为设计方案；[结构契约与二进制编解码器基础](schema-wire.zh.md)已实现。生产图格式、索引器、查询接入和 JVM／corpus 迁移尚未实现。日期：2026 年 10 月 6 日。
+状态：整体架构仍为设计方案；[结构契约、二进制 codec 及带索引的 mmap reader](schema-wire.zh.md)已实现。生产图格式、索引器、查询接入和 JVM／corpus 迁移尚未实现。日期：2026 年 10 月 7 日。
 
 目标是建立一个稳定的通用图 schema，使新增语言、节点类别、类型构造和约束关系通过数据定义接入，不需要修改持久化格式或通用编解码器。泛型是这个 schema 的一个应用，JVM、Swift 和 TypeScript 是映射示例。
 
@@ -191,7 +191,7 @@ JVM erasure 和 descriptor 是 profile 字段，既有查询可通过 JVM 兼容
 
 持久化的表／group／列目录和变长字段 offset 数组必须支持直接定位及边界校验。读取器可以保留受限的 schema 元数据、缓存和解码缓冲区；压缩邻接及字典值可能需要解码。未知 layout 也必须遵循相同的映射访问契约，不能回退为全量 Document 反序列化。字节序和字段编码必须明确，不能把映射字节直接视作 Rust 原生结构体。
 
-生产存储验收必须包含“访问指定记录不会解码无关记录”的正确性测试，以及真实 corpus 的加载 RSS 和查询测量。当前 GSCHEMA 交换 codec 尚不满足这一生产 reader 要求，不能原样作为默认持久化读取路径；其现有测试只证明逻辑交换契约。
+生产存储验收必须包含“访问指定记录不会解码无关记录”的正确性测试，以及真实 corpus 的加载 RSS 和查询测量。已实现的 `GSCHEMA/2` reader 将大体量记录和字符串保留在 backing 映射中，打开时校验持久化目录，按需校验和解码选中的 payload。未知 layout 走相同路径；`verify_all` 是显式的全量校验。`GSCHEMA/1` 全量 Document 解码器仍作为交换 API。生产 writer／loader／query 接入和真实 corpus 测量尚未完成；库的 reader 已实现不代表生产图路径已经切换。
 
 ### 表目录与 layout 驱动编码
 

@@ -456,6 +456,8 @@ dependencies = [
 name = "graphite-schema"
 version = "2.5.0"
 dependencies = [
+ "libc",
+ "memmap2",
  "sha2",
  "thiserror",
 ]
@@ -465,6 +467,7 @@ name = "graphite-storage"
 version = "2.5.0"
 dependencies = [
  "crc32fast",
+ "graphite-schema",
  "memmap2",
  "parking_lot",
  "rayon",

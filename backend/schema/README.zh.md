@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-`graphite-schema` 是 Graphite 的 Rust 库，用来**描述和交换图记录，而不把某种编程语言的节点或类型系统写死在编解码器中**。它提供共享数据模型、结构校验和二进制编码／解码。
+`graphite-schema` 是 Graphite 的 Rust 库，用来**描述和交换图记录，而不把某种编程语言的节点或类型系统写死在编解码器中**。它提供共享数据模型、结构校验、二进制编码／解码，以及按索引访问 schema 记录的 mmap reader。
 
 前端可以在输出的数据中描述新的节点类别或类型运算。即使读取器编译时还没有这些定义，它仍能检查字段、跟随引用、与其他文档合并，并重新保存，保留其中尚不认识的信息。这是新增语言时无需逐一修改通用 codec 的基础。
 
@@ -16,7 +16,7 @@
              graphite-schema
 ```
 
-本 crate 实现 schema 记录及其独立交换格式的 codec。前端输出和生产索引器接入仍待实现；当前 JVM 构图、v1–v3 图读取器和 Cypher 引擎尚未使用此库。
+本 crate 实现 schema 记录、独立交换 codec，以及支持 mmap 按需读取的索引格式。前端输出和生产索引器接入仍待实现；当前 JVM 构图、v1–v3 图读取器和 Cypher 引擎尚未使用此库。
 
 例如，JVM 的 `List<User>` 和 Swift 的 `Array<User>` 都可以表示为类型应用，并显式引用各自的声明和实参。未来语言可以通过注册另一个定义增加不同的运算。codec 负责保留结构；判断两个类型是否兼容的规则由语言前端或分析器提供。
 
@@ -27,7 +27,12 @@
 | `Document`、`Definition`、`Field`、`Descriptor` | 定义具名 layout、字段、表、profile 和字符串字典 |
 | `Record`、`Value`、`Reference` | 表示值和显式引用，支持嵌套记录及通过引用形成的环 |
 | `Document::validate` | 校验 layout、字段类型、必填／null 规则、引用目标和资源限制 |
-| `encode` / `decode` | 写入／读取确定性编码、带校验和的 `GSCHEMA` wire-version-1 容器 |
+| `encode` / `decode` | 用 `GSCHEMA/1` 写入／读取完整内存文档 |
+| `encode_mapped` | 从已校验的文档写出带索引的 `GSCHEMA/2` 字节 |
+| `MappedDocument::from_bytes` / `open` | 读取索引字节或 mmap 文件，不全量解码记录和字符串 |
+| `MappedDocument::record` / `string` | 按 ID 解码单条记录或借用单个字符串，访问时校验 |
+| `MappedDocument::string_ids` / `records` | 直接从映射的目录枚举 ID 和 layout |
+| `MappedDocument::verify_all` | 显式逐个校验全部 payload |
 | `Document::record`、`field`、`records_of` | 按结构检查记录，即使不认识其语义名称 |
 | `Document::remap` | 改写所有本地 ID，包括嵌套列表和记录中的引用 |
 | `Document::merge` | 合并 ID 重叠的文档，保留独立行并拒绝冲突定义 |
@@ -45,7 +50,7 @@ codec 区分字段缺失与显式 null，保留浮点数的精确位模式、列
 graphite-schema = { path = "../schema" }
 ```
 
-下面的完整示例创建一个此前未知的类型运算，编码后再解码，然后在不安装语言插件的情况下读取字段。schema 定义和字符串字典随记录一起传递。
+下面的完整示例创建一个此前未知的类型运算，编码后通过索引读取器访问字段，无需安装语言插件。schema 定义和字符串字典随记录一起传递。
 
 ```rust
 use graphite_schema::*;
@@ -78,14 +83,16 @@ fn main() -> Result<()> {
     };
 
     let limits = Limits::default();
-    let bytes = encode(&document, &limits)?;
-    let restored = decode(&bytes, &limits)?;
-    let record = restored.record(Reference { table: 3, row: 42 }).unwrap();
-    let Some(Value::String(id)) = restored.field(record, &name("mode")) else {
+    let bytes = encode_mapped(&document, &limits)?;
+    let mapped = MappedDocument::from_bytes(bytes, MappedLimits::default())?;
+    let record = mapped.record(Reference { table: 3, row: 42 })?.unwrap();
+    let Some(Value::String(id)) = mapped.metadata().field(&record, &name("mode")) else {
         panic!("mode must reference the string dictionary");
     };
-    assert_eq!(restored.strings[id], "region-local");
-    assert_eq!(restored, document);
+    assert_eq!(mapped.string(*id)?, Some("region-local"));
+    assert!(mapped.metadata().strings.is_empty());
+    assert!(mapped.metadata().tables[&3].rows.is_empty());
+    mapped.verify_all()?;
     Ok(())
 }
 ```
@@ -108,12 +115,21 @@ cargo doc -p graphite-schema --no-deps --open
 - [Wire 校验](tests/wire_validation.rs)：独立组装的二进制样例、精确值编码、带正确校验和的非法数据、截断和资源限制。
 - [模型测试](src/model.rs)：schema 冲突、非法引用、映射错误、稀疏 ID 分配和一致的编码／解码预算边界。
 
-## 当前边界
+- [映射访问](tests/mapped_access.rs)：独立 wire fixture、未知 layout、稀疏 ID、按需校验，以及使用不可访问内存页证明打开和指定读取不访问无关 payload 的 Unix 子进程测试。
+- [存储接入](../storage/tests/schema_mapped_source.rs)：目录与 STORED ZIP 条目直接使用现有共享 mmap，无复制或解包。
 
-这是内存中的逻辑文档 codec，不是图数据库、语言解析器、类型求解器、Cypher 引擎或最终的 mmap／列式图存储格式。`GSCHEMA` wire version 1 与持久化图版本独立；它输出的字节不能交给现有图读取器。其他语言可以按相同契约实现，但目前尚未加入跨语言互操作测试。
+## mmap 访问及当前边界
 
-生产 reader 必须遵守 Graphite 既有的 mmap convention。本 crate 的全量 Document 解码器并非该生产 reader：将输入映射到内存并不能避免堆上物化。生产 reader 必须按需访问映射中的记录，包括未知 layout，而不解码整个文档。详见[存储硬约束](../../docs/graph-schema.zh.md#必须满足的-mmap-读取约束)。
+`MappedDocument<B>` 持有任意 `B: AsRef<[u8]>` backing。`from_bytes` 可以接收借用切片或已有的映射区间，包括 Graphite storage 层提供的目录文件或未压缩 `.graphite` ZIP entry 区间；它不复制 backing 字节。示例传入 `Vec<u8>`，使用相同的索引访问 API，但这一步本身不会建立 OS 内存映射。
 
-默认限制为 64 MiB 编码字节、1,000,000 个累计 item 和 64 层内联深度；深度硬上限为 256。允许引用环，不会递归展开。字节预算不意味着总 RSS 被限制为同样的数值。合成测试证明正确性，不能证明吞吐或 100M 节点容量。生产规模测量需要后续前端／索引器接入，并使用真实 corpus。
+`unsafe MappedDocument::open(path, limits)` 使用 `memmap2` 映射独立文件。调用者必须保证整个映射存活期间文件不会被修改或截断，包括其他进程的操作。这是文件 mmap 的安全契约，schema 校验无法强制保证。
+
+打开时只解码预算内的 schema 元数据，并扫描持久化目录，检查 ID 排序、layout 和范围；不解码或计算字符串／记录 payload 的校验和，也不构造随行数增长的堆上索引。`record` 对持久化目录做二分查找，只在独立预算内解码选中的记录；`string` 检查选中的 UTF-8 payload 并返回借用的 `&str`。引用通过目录检查目标是否存在，不解码目标。未知 layout 走相同路径。未访问 payload 的损坏在访问时或显式执行 `verify_all` 时发现，不一定在打开时发现。
+
+`metadata()` 包含定义、profile 和具名表，表的行映射和字符串字典均为空；数据通过 mapped accessor 访问。writer 仍接收完整内存 `Document`，用 `Limits.max_bytes` 限制整个输出（默认 64 MiB），尚不是流式 corpus 索引器。
+
+`MappedLimits` 将元数据预算、单条记录预算与总文件字节数、字符串数、行数限制分开。默认 `Limits` 的 64 MiB 字节预算不会作为 mapped 图全部 payload 的总上限。限制约束工作量和分配，不等于进程总 RSS 上限。引用环不会触发递归展开。
+
+此 crate 不是图数据库、语言解析器、类型求解器或 Cypher 引擎。两个 wire 版本都独立于持久化图版本，不能直接交给现有图读取器。生产 writer／loader／query 接入和旧 corpus 迁移仍待完成。跨语言互操作测试、真实 corpus 的加载 RSS／查询测量也尚未完成；正确性 fixture 不能证明吞吐或 100M 节点容量。详见[存储硬约束](../../docs/graph-schema.zh.md#必须满足的-mmap-读取约束)。
 
 精确的编码、校验和版本规则见[二进制契约](../../docs/schema-wire.zh.md)，整体架构见[通用 schema 方案](../../docs/graph-schema.zh.md)，后续前端及 corpus 工作见 [JVM 迁移计划](../../docs/jvm-generic-types.zh.md)。

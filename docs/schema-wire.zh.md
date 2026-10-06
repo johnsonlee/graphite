@@ -2,7 +2,7 @@
 
 [English](schema-wire.md) | 简体中文
 
-状态：基础部分已实现，wire version 为 1。本契约实现了 [schema 方案](graph-schema.zh.md)中的值、注册表、引用和交换格式部分。
+状态：结构基础、`GSCHEMA/1` 交换 codec 及 `GSCHEMA/2` 带索引的 mmap reader 已实现。本契约实现了 [schema 方案](graph-schema.zh.md)中的值、注册表、引用、交换格式及映射记录访问。
 实现位于独立的 Rust crate [`graphite-schema`](../backend/schema/README.zh.md)。
 它不改变 v1–v3 图存储，不分配 graph v4 版本，也尚未将新记录接入生产索引器、Cypher 引擎或 JVM 前端。
 
@@ -11,11 +11,9 @@
 对于编译时尚未认识其名称和语言 profile 的记录，同一个编解码器必须能够解码、校验、检查、重映射、合并并重新编码。
 新增语言通过添加定义和记录接入，不添加描述器 tag 或语言分支。未知的物理 tag 或 wire version 会被拒绝；未知的语义名称会被保留。
 
-下述交换容器承载完整的逻辑文档，并非最终的 mmap／列式图格式。
-生产图索引、压缩邻接结构、大规模 corpus 流式处理、JVM IR 输出及旧格式导入留待后续实现。
-当前内存实现具有明确的资源预算，不对 100M 节点的性能作出承诺。其 wire version 与旧图版本相互独立。
+Wire version 1 承载用于内存交换的完整逻辑文档；version 2 为同一模型增加持久化目录，支持映射上的按需记录和字符串访问。两者都不是新的生产图版本。生产图索引、压缩邻接接入、大规模 corpus 流式处理、JVM IR 输出及旧格式导入留待后续实现；不对 100M 节点的性能作出承诺。
 
-生产图 reader 必须遵守 Graphite 既有的 mmap 访问约束。这里的全量 Document 解码 API 并不满足该要求，即使输入切片来自 mmap 也一样。生产接入必须提供基于映射的按需记录访问及相应验收证据，不能原样采用此解码器。
+生产图 reader 必须遵守 Graphite 既有的 mmap 访问约束。映射记录应使用带索引的 reader；将 version-1 全量 Document 解码器的输入映射到内存不会避免堆上物化。此库之外仍需完成生产 loader／query 接入和真实 corpus 验收。
 
 ## 逻辑文档
 
@@ -85,7 +83,7 @@ profile 为其输出的记录发布具体的、带修订版本的 layout、字�
 本次发布固定结构契约，不宣称语言映射或推断规则已经完备。
 具体的 JVM／Swift／TS profile 修订版本必须与对应前端一同审查，无需为此修改 wire format。
 
-## 二进制封装
+## Version 1：交换封装
 
 所有整数均采用小端序。UTF-8 必须严格有效。
 `text` 表示 u64 字节长度及其后的对应字节；`name` 表示两个 text（命名空间、本地名称）。
@@ -95,7 +93,7 @@ profile 为其输出的记录发布具体的、带修订版本的 layout、字�
 | 偏移 | 宽度 | 内容 |
 | --- | --- | --- |
 | 0 | 8 | ASCII `GSCHEMA`，后接一个零字节 |
-| 8 | 4 | Wire version，当前为 1 |
+| 8 | 4 | Wire version，为 1 |
 | 12 | 8 | payload 字节长度 |
 | 20 | 32 | 整个 payload 的 SHA-256 |
 | 52 | payload 长度 | 目录及随后各 section 的内容 |
@@ -160,7 +158,40 @@ profile 顺序以及所有字段和列表的顺序均被保留。
 不会静默丢弃任何格式错误的记录，也不会将其替换为空对象。
 新增语言只改变字典、定义和表的内容。
 
-## 公共操作与资源限制
+## Version 2：带索引的映射封装
+
+`encode_mapped(&Document, &Limits)` 校验完整输入文档并写出此索引格式。`MappedDocument<B: AsRef<[u8]>>::from_bytes(B, MappedLimits)` 保留 backing 字节而不复制。`unsafe MappedDocument::open` 使用 `memmap2` 映射独立文件；调用者必须保证映射存活期间文件不会被修改或截断。已有的目录文件或 ZIP entry 映射区间可以使用 `from_bytes`，无需依赖 storage crate。
+
+80 字节头部之后依次是元数据、字符串目录、行目录、全部字符串 payload 和全部记录 payload。整数采用小端序。区间连续、不重叠、恰好占满文件；保留字段必须为零。目录保留在 backing 字节中，使用二分查找。
+
+| 偏移 | 宽度 | 内容 |
+| --- | --- | --- |
+| 0 | 8 | `GSCHEMA`，后接一个零字节 |
+| 8 | 4 | Wire version，为 2 |
+| 12 | 4 | 保留字段，零 |
+| 16 | 8 | 文件总长度 |
+| 24 | 8 | 元数据字节长度 |
+| 32 | 8 | 字符串数量 |
+| 40 | 8 | 所有表的总行数 |
+| 48 | 32 | 索引 SHA-256 |
+
+元数据是一个 version-1 封装，包含定义、profile 和具名表；表的行映射及字符串字典为空。`metadata()` 返回这个受预算限制的 `Document`，空数据映射不表示映射文件没有数据。
+
+每个 56 字节字符串目录项为 `(u32 StringId, u32 reserved, u64 offset, u64 length, [u8; 32] SHA-256)`，按 StringId 严格递增排列。payload 是不带长度前缀的原始 UTF-8。每个 64 字节行目录项为 `(u32 TableId, u32 RowId, u32 LayoutId, u32 reserved, u64 offset, u64 length, [u8; 32] SHA-256)`，按 `(TableId, RowId)` 严格递增排列。offset 从此封装起点计算。记录 payload 使用上述 version-1 record body 编码，layout 由目录项提供。
+
+索引 SHA-256 覆盖头部字节 `0..48`，随后是元数据及两个目录（`80..payload_start`）；不包含 digest 字段及字符串／行 body。因此无需读取 payload，就能绑定查找 ID、layout ID、范围及各 payload 的 digest。
+
+打开时校验头部、索引哈希和 schema，并扫描目录检查排序、layout、表身份和范围。工作量为 O(目录项数)，堆使用受限；不承诺常数时间打开。打开不计算字符串／记录 payload 的校验和或解码它们，也不建立堆上行索引。
+
+`record(Reference)` 返回 `Result<Option<Record>>`，在独立的单记录预算内解码并校验选中的记录。字段结构及嵌套字符串／行引用通过持久化目录校验；检查引用不读取或解码目标。`string(StringId)` 返回 `Result<Option<&str>>`，只检查该字符串的校验和与 UTF-8 并借用其字节。ID 不存在返回 `None`，选中数据损坏返回错误。未知 layout 使用相同的 schema 驱动路径，不回退到全量文档解码。
+
+`verify_all()` 显式逐个访问全部字符串和记录。成功打开只证明元数据和目录结构已校验，不保证所有 payload 完好；未访问数据的损坏推迟到访问或 `verify_all` 时发现。校验和用于完整性检查，不是身份认证；生产容器的完整性检查仍是外层的额外校验。
+
+`MappedLimits` 为元数据和单条记录分别提供 `Limits`，另有总文件大小、字符串数和行数限制。默认元数据和记录字节预算分别为 16 MiB 和 64 MiB，不对 mapped payload 额外施加累计 64 MiB 上限。writer 仍接收完整内存文档并返回字节向量，且用其 `Limits.max_bytes` 限制整个输出（默认 64 MiB）；此 API 尚未实现流式输出或生产索引构建。
+
+持久化目录占每个字符串 56 字节、每行 64 字节，另加 payload 和元数据。例如 100M 行仅行目录就占 6.4 GB（十进制单位）；这是算术结果，不是容量基准。此库的索引格式尚未实现方案中的按 group／列组织的生产布局。
+
+## 内存操作与资源限制
 
 `encode(&Document, &Limits)` 在返回字节之前进行校验。
 `decode(&[u8], &Limits)` 在返回文档之前检查封装、section 完整性、结构和所有引用。
