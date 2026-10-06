@@ -2,8 +2,9 @@
 
 The proposed extensible replacement is described in
 [Graphite Universal Graph Schema Proposal](graph-schema.md), with a separate
-[JVM migration profile](jvm-generic-types.md). Both are design drafts; the
-format documented below remains the current implementation.
+[JVM migration profile](jvm-generic-types.md). The standalone
+[schema codec](schema-wire.md) implements the structural foundation; production
+storage migration remains a proposal. The format below remains the current implementation.
 
 ## File Layout
 

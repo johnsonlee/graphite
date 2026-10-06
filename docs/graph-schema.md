@@ -2,11 +2,16 @@
 
 English | [简体中文](graph-schema.zh.md)
 
-Status: design draft; not yet implemented. Date: October 6, 2026.
+Status: architecture proposal with an implemented structural foundation. Date: October 6, 2026.
+
+The [schema contract and Rust codec](schema-wire.md) implement generic values,
+definitions, references, validation, remapping, merging, and binary round trips.
+Production graph storage/query integration, JVM extraction, and corpus migration
+remain pending; the implementation does not change the legacy graph format.
 
 The goal is a stable, universal graph schema in which new languages, node categories, type constructs, and constraints are introduced through data definitions, without changing the persistent format or the generic codec. Generics are one application of this schema; JVM, Swift, and TypeScript provide mapping examples.
 
-This proposal supersedes the extension design centered on JVM type fields. The [JVM integration guide](jvm-generic-types.md) covers only migration of existing graphs and APIs. Node enums, type expressions, and IR field layouts in the [frontend/backend architecture proposal](architecture-frontend-backend.md) must follow the extensibility contract defined here. This documentation work does not implement the new storage format.
+This proposal supersedes the extension design centered on JVM type fields. The [JVM integration guide](jvm-generic-types.md) covers only migration of existing graphs and APIs. Node enums, type expressions, and IR field layouts in the [frontend/backend architecture proposal](architecture-frontend-backend.md) must follow the extensibility contract defined here. The structural codec is separate from the future production storage format.
 
 ## Required Contracts
 

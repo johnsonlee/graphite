@@ -2,11 +2,11 @@
 
 [English](graph-schema.md) | 简体中文
 
-状态：设计草案，尚未实现。日期：2026 年 10 月 6 日。
+状态：整体架构仍为设计方案；[结构契约与二进制编解码器基础](schema-wire.zh.md)已实现。生产图格式、索引器、查询接入和 JVM／corpus 迁移尚未实现。日期：2026 年 10 月 6 日。
 
 目标是建立一个稳定的通用图 schema，使新增语言、节点类别、类型构造和约束关系通过数据定义接入，不需要修改持久化格式或通用编解码器。泛型是这个 schema 的一个应用，JVM、Swift 和 TypeScript 是映射示例。
 
-本方案取代以 JVM 类型字段为中心的扩展设计。[JVM 接入说明](jvm-generic-types.zh.md)只负责现有图和 API 的迁移。[前后端架构提案](architecture-frontend-backend.md)中的节点枚举、类型表达式和 IR 字段布局需以这里的可扩展契约为准；不在本次文档工作中实现新存储格式。
+本方案取代以 JVM 类型字段为中心的扩展设计。[JVM 接入说明](jvm-generic-types.zh.md)只负责现有图和 API 的迁移。[前后端架构提案](architecture-frontend-backend.md)中的节点枚举、类型表达式和 IR 字段布局需以这里的可扩展契约为准；已实现的结构基础不构成新的生产图存储格式。
 
 ## 必须成立的契约
 

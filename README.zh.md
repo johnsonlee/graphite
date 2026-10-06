@@ -404,6 +404,7 @@ graphite/
 │       ├── query/          # `graphite.jar`: the build frontend, plus legacy query/serve
 │       └── explore/        # Legacy Kotlin Explorer server
 ├── backend/                # Rust backend
+│   ├── schema/             # 通用 schema 契约与独立二进制 codec
 │   ├── storage/            # mmap reader of the persisted graph, indexes, columns
 │   ├── cypher/             # Cypher parser, planner, executor
 │   ├── explore/            # HTTP server, UI, C4, topology
