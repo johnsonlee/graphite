@@ -3975,3 +3975,178 @@ JAR/APK measurements.
 Raw commands, fixture/runtime hashes and logs remain in
 `/tmp/graphite-sootup-recovery.6wpE4s`; the immutable trial source patch and JMH
 artifact are in `/tmp/sootup-recovery-sources/candidate-final-snapshot`.
+
+### 2026-10-07 — Attempt 095: Stream method wrappers from the existing ASM sources
+
+**Question:** can SootUp 3.0.1 avoid eagerly retaining every `JavaSootMethod`
+wrapper and repeatedly parsing its descriptor while preserving method bodies,
+annotations, dispatch, and the normal view used by call-graph construction?
+
+**Revisions and fixtures:** pre-upgrade `6f498705009689551c92c6d1ca92f67252ef77c4`
+(SootUp 2.0.0), main `c84d7811b52bd11832f97686c15876bbd7f0c244`
+(SootUp 3.0.1), and the `streaming` working-tree snapshot on
+`7c56de32bbe3e69ea000960637af4b440861fcbb` (main plus the rejected-attempt
+record, then this uncommitted production patch). The immutable source state,
+including untracked sources, is recorded in
+`/tmp/sootup-recovery-sources/streaming-snapshot/source-state.json`.
+
+| Snapshot | JMH JAR SHA-256 |
+|----------|----------------|
+| Pre-upgrade | `70cb0af6a19f7e0966832a2fd82b936d82da4d572487ae1715d168ca515a3543` |
+| Main | `3bfc2c3ec8f269959f42b1559ee9ed173a99a937e66683931d3100de666c5039` |
+| Streaming | `ec055333aabfc6645bf004ecd8b0b64d3871ce621cce2e165cd21d55c290d0fe` |
+
+The streaming runtime SootUp adapter JAR SHA-256 is
+`d803d814234411472ecd311106cdbb3bfa7479bb7d3718e576d693237c755523`.
+The real Tika app 2.9.2, Hive exec 4.0.0 and Kotlin compiler embeddable 2.0.21
+fixtures, their exact paths/checksums and all runtime artifact hashes are in
+`/tmp/graphite-sootup-recovery.6wpE4s/{preupgrade,main,streaming}.json`.
+
+The candidate exposes `AsmMethodSource`s only from Graphite's own lazy class
+source. It sorts by ASM method name/descriptor, creates fresh wrappers when a
+method is visited, and reuses the source's signature cache. Declaration and
+return-type annotations, exceptions, modifiers and position follow stock
+SootUp. Annotation classes, overriding sources and DEX keep their existing
+paths. The source scratch maps are still released after conversion and after
+call-graph construction. No feature, interceptor, cap, query check or semantic baseline
+was disabled to obtain the measurements.
+
+**Validation and environment:** Apple M3 Max, 16 CPUs, 64 GiB, macOS 14.3
+arm64, Homebrew OpenJDK 17.0.20.1. This is the same shared development host as
+Attempt 094; measurements were serialized, not obtained on a dedicated runner.
+The local publishing-plugin workaround remains identical across snapshots.
+`:sootup:test :sootup:detekt` passed: 459 tests, zero failures/errors/skips.
+Tests compare stock versus streamed signatures, metadata, statement/local/CFG
+shape, wrapper body-cache independence, repeated rich annotation conversion,
+and avoidance of the persistent method set. Test XML is under
+`frontend/jvm/sootup/build/test-results/test`; build logs are
+`/tmp/sootup-recovery-sources/streaming-test.log` and
+`/tmp/sootup-recovery-sources/streaming-scoped-test.log`.
+
+```sh
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 \
+  ./gradlew :sootup:test :sootup:detekt --console=plain
+bash /tmp/graphite-sootup-recovery.6wpE4s/run-streaming-stage1.sh
+for label in preupgrade main streaming; do
+  python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py jmh "$label" \
+    --run coldstreaming1 --forks 2 --corpus kotlin
+done
+```
+
+The stage-one script runs one rotated three-revision round per corpus
+(Tika old/main/streaming; Kotlin main/streaming/old; Hive streaming/old/main).
+All nine `LargeCorpusPerformanceGateTest` runs passed. Each uses a fresh
+`java -Xmx4g`, `-Dlarge.corpus.record=true`, the pinned fixture properties and
+`JUnitCore` with `{Tika,Hive,KotlinCompiler}CorpusPerformanceGateTest`.
+The record flag removes timing ceilings, not graph/query/branch-definition
+correctness assertions. These gates and the JMH `EndToEndConfig` method disable
+call-graph construction, annotation extraction and cross-method functional
+dispatch. They are reduced-configuration evidence, not CLI-default results.
+Whole-process CPU/RSS below includes gate verification and cleanup.
+
+**Results (one gate run per revision/corpus):**
+
+| Corpus / metric | Pre-upgrade | Main 3.0.1 | Streaming |
+|-----------------|------------:|-----------:|----------:|
+| Tika build, ms | 12,555 | 12,728 | 12,474 |
+| Tika pipeline, ms | 18,734 | 18,936 | 18,292 |
+| Tika total CPU, s | 68.80 | 75.78 | 79.30 |
+| Tika max RSS, bytes | 5,077,041,152 | 5,030,445,056 | 5,188,091,904 |
+| Hive build, ms | 23,099 | 23,246 | 22,515 |
+| Hive pipeline, ms | 31,903 | 31,561 | 30,748 |
+| Hive total CPU, s | 108.48 | 122.08 | 117.40 |
+| Hive max RSS, bytes | 5,413,896,192 | 5,287,100,416 | 5,256,544,256 |
+| Kotlin build, ms | 11,997 | 12,435 | 11,921 |
+| Kotlin pipeline, ms | 17,457 | 17,780 | 17,361 |
+| Kotlin total CPU, s | 66.07 | 76.60 | 76.46 |
+| Kotlin max RSS, bytes | 5,124,407,296 | 5,022,580,736 | 5,187,813,376 |
+
+JMH ran
+`GraphBuildBenchmark.buildKotlinCompilerGraphEndToEndConfig` with
+`-bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true -jvmArgs '-Xmx8g' -prof gc`,
+the same pinned fixture properties and the Java 17 executable above. These are
+two cold forks, not a stable-throughput estimate; Android JMH was not completed.
+
+| Kotlin JMH metric | Pre-upgrade | Main 3.0.1 | Streaming |
+|-------------------|------------:|-----------:|----------:|
+| Build, ms/op | 12,431.475 | 12,161.500 | 11,653.318 |
+| Allocation, bytes/op | 23,127,506,544 | 23,885,424,448 | 23,217,131,304 |
+
+**Full-default JAR check:** Kotlin was also run separately with CHA call-graph
+construction, annotations and cross-method functional dispatch enabled;
+`GraphStore.save(..., compressionThreads=2, prepareCallSiteStringIndex=true)`;
+the CLI node scan; mapped load; and node/callsite count queries. Every revision
+used `-Xmx8g`. The full structural verification ran in separate JVMs so its
+CPU/RSS did not enter this pipeline measurement.
+
+```sh
+for label in main preupgrade streaming; do
+  python3 /tmp/graphite-apk-recovery/run.py run "$label" \
+    /Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-compiler-embeddable/2.0.21/79346ed53db48b18312a472602eb5c057070c54d/kotlin-compiler-embeddable-2.0.21.jar \
+    "$label-kotlin-default-streaming1" --heap 8g --sdk -
+done
+# Main/streaming use the same run command with --verify for separate verification.
+python3 /tmp/graphite-apk-recovery/run.py compare \
+  main-kotlin-default-streaming1 streaming-kotlin-default-streaming1
+python3 /tmp/graphite-apk-recovery/verification/run-both.py
+```
+
+| Kotlin full-default metric (one run) | Pre-upgrade | Main 3.0.1 | Streaming |
+|-------------------------------------|------------:|-----------:|----------:|
+| Pipeline, ms | 113,003.132 | 38,216.017 | 37,931.140 |
+| Pipeline process CPU, ms | 188,452.537 | 119,933.034 | 114,541.638 |
+| Whole-process max RSS, bytes | 7,682,211,840 | 9,623,306,240 | 9,601,695,744 |
+| Nodes | 4,657,648 | 4,744,132 | 4,744,132 |
+| Callsites | 2,173,010 | 2,251,811 | 2,251,811 |
+
+Main and streaming have identical complete mapped node/edge/connected-callsite
+shape signatures. Supplementary metadata signatures and API checks also match:
+249,669 method descriptors and annotation lookups, 102,495 annotated members,
+122,983 annotation nodes, synthetic identities, origins, artifact dependencies,
+64 exact method queries, and 353,541 control-flow comparisons with their
+comparand-node connectivity. These signatures use normalized node IDs and do
+not constitute proof for untested APIs such as all resource contents or all
+query paths. The full-default pre-upgrade graph has different node/callsite
+counts; its timing is not a like-for-like claim that all old/new semantics are
+equivalent. The reduced configuration and full defaults must not be combined
+into one recovery percentage.
+
+**Within-trial refinements:** the final streamed-method tests were strengthened, including concrete body/metadata and repeat-conversion checks, and GraphiteClassNode KDoc was corrected to describe deferred member resolution rather than an inaccurate double-read claim. These belong to this trial's final implementation, not a new performance hypothesis. The stronger tests also passed complete module/lint runs in later frozen builds (464 tests in 099; 471 in 100); this supplements the original 459-test evidence without pretending those later builds remeasure the original 095 artifact.
+
+**APK boundary:** TVBox showed run-to-run variation in the existing DEX method
+set order and capped functional-dispatch output. A correctness-only Java agent
+sorted the exact same fallback method objects by signature on both main and
+streaming, leaving the cap and features intact; their complete mapped shape
+signatures then matched. That agent's timings are excluded from performance
+evidence. The diagnostic and comparison are retained under
+`/tmp/graphite-apk-recovery/diagnostic` and
+`/tmp/graphite-sootup-recovery.6wpE4s/tvbox-deterministic-differences.json`.
+The user subsequently deprioritized APK. Only the pre-upgrade Coupang run
+completed; the corresponding main/streaming runs and verification were paused.
+There is no complete Coupang comparison and no performance conclusion for it.
+
+**Conclusion:** RETAINED as a component of the aggregate recovery chain, not standalone proof that the recovery goal is fully met. The method-level point estimate and all three reduced
+pipeline times improve over main in this round. Allocation approaches, but
+remains above, pre-upgrade. CPU/RSS have not uniformly recovered: Tika CPU/RSS
+are above main and old; reduced Kotlin CPU remains above old; full-default
+Kotlin RSS remains above old. One round does not establish absence of regression
+or complete achievement of the recovery objective.
+
+Separate diagnostic JFR runs found substantially more sampled ForkJoin worker
+CPU in streaming than pre-upgrade. This is a next independent hypothesis about
+parallel class parsing/worker contention; the CPU difference is not attributed
+to wrapper streaming without further controls and does not justify changing
+global concurrency in this attempt. Profiles use bounded sampled
+thread loads, not exact per-thread CPU counters; their timings are excluded
+from the tables. Commands and JFR/GC summaries are in
+`/tmp/graphite-sootup-recovery.6wpE4s/profile-kotlin.sh` and `profiles/`.
+
+Exact launched JVM commands and fixture/runtime hashes are retained in each
+`command.json`; raw gate/JMH evidence is under
+`/tmp/graphite-sootup-recovery.6wpE4s/results/*-streaming1` and
+`*-coldstreaming1`. Full-default phase/resource logs and both fingerprint files
+are under `/tmp/graphite-apk-recovery/results/*-kotlin-default-streaming1`;
+supplementary comparison is
+`/tmp/graphite-apk-recovery/verification/differences.json` (empty).
+
+Protocol clarification (recorded when Attempt 099 introduced a separate quiet harness): every ProductionPipeline full-default table in this attempt used the original verbose callback. Here "full-default" means full graph features (CHA, annotations and cross-method dispatch), not literally every LoaderConfig field or silent execution. Quiet full-feature results are recorded separately in Attempt 099 and cannot be mixed with these historical timings. The publishing-plugin workaround was identical in frozen snapshots; the five publishing-plugin declarations were later restored in the working tree.

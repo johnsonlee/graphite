@@ -117,6 +117,10 @@ import sootup.core.signatures.MethodSignature
 import sootup.core.util.Modifiers
 import sootup.java.core.JavaSootClass
 import sootup.java.bytecode.frontend.conversion.isBytecodeClassSource
+import sootup.java.bytecode.frontend.conversion.AsmMethodSource
+import sootup.java.bytecode.frontend.conversion.asStreamingMethod
+import sootup.java.bytecode.frontend.conversion.signatureFor
+import sootup.java.bytecode.frontend.conversion.streamingMethodSources
 import sootup.java.core.JavaSootMethod
 import sootup.core.types.ClassType
 import sootup.core.types.ArrayType
@@ -511,6 +515,7 @@ class SootUpAdapter(
                 visitFieldsForClass(sootClass)
                 extensions.forEach { it.visit(sootClass, extensionContext) }
                 bytecodeMethodsCache.remove(sootClass)
+                streamingSourcesCache.remove(sootClass)
             }
 
         syntheticIdentities.resolve().forEach { (member, fingerprint) ->
@@ -2509,10 +2514,15 @@ class SootUpAdapter(
             // The algorithm resolves bodies through the methods the view holds, which memoize
             // them; their conversion scratch state is released here, as the adapter's own
             // detached copies release theirs after each method.
-            view.classes.forEach { sootClass ->
-                if (sootClass is JavaSootClass) bytecodeMethods(sootClass)?.forEach(::releaseConversionState)
-            }
+            view.classes.forEach(::releaseClassConversionState)
         }
+    }
+
+    private fun releaseClassConversionState(sootClass: SootClass) {
+        if (sootClass !is JavaSootClass) return
+        val sources = streamingSources(sootClass)
+        if (sources != null) sources.forEach { releaseConversionState(it) }
+        else bytecodeMethods(sootClass)?.forEach(::releaseConversionState)
     }
 
     private fun bridgeBody(bridge: SootMethod): Body = try {
@@ -2562,6 +2572,7 @@ class SootUpAdapter(
 
     private fun streamMethodsOrNull(sootClass: SootClass): Sequence<SootMethod>? {
         if (sootClass !is JavaSootClass) return null
+        streamingSources(sootClass)?.let { return streamMethods(sootClass, it) }
         val methods = bytecodeMethods(sootClass) ?: return null
         return sequence {
             for (method in methods) {
@@ -2575,6 +2586,26 @@ class SootUpAdapter(
                 } finally {
                     releaseConversionState(method.bodySource)
                 }
+            }
+        }
+    }
+
+    private val streamingSourcesCache = IdentityHashMap<JavaSootClass, List<AsmMethodSource>?>()
+
+    private fun streamingSources(sootClass: JavaSootClass): List<AsmMethodSource>? =
+        streamingSourcesCache.getOrPut(sootClass) { sootClass.classSource.streamingMethodSources() }
+
+    private fun streamMethods(sootClass: JavaSootClass, sources: List<AsmMethodSource>): Sequence<SootMethod> = sequence {
+        for (source in sources) {
+            try {
+                yield(source.asStreamingMethod(sootClass.type))
+            } catch (oom: OutOfMemoryError) {
+                log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
+                System.gc()
+            } catch (e: Exception) {
+                log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${e.message}" }
+            } finally {
+                releaseConversionState(source)
             }
         }
     }
@@ -2666,7 +2697,7 @@ class SootUpAdapter(
     )
 
     private fun getAsmMethodNodes(sootClass: JavaSootClass): List<MethodNode>? =
-        bytecodeMethods(sootClass)?.mapNotNull { it.bodySource as? MethodNode }
+        streamingSources(sootClass) ?: bytecodeMethods(sootClass)?.mapNotNull { it.bodySource as? MethodNode }
 
     private fun loadMethodNodesFromResource(sootClass: JavaSootClass): List<MethodNode>? {
         return try {
@@ -3060,7 +3091,8 @@ class SootUpAdapter(
     private fun collectDeclaredMethodSubSignatures(className: String): Set<String> {
         val sootClass = resolveClassByName(className) ?: return emptySet()
         val asmSubSignatures = if (sootClass is JavaSootClass) {
-            bytecodeMethods(sootClass)?.mapTo(HashSet()) { it.signature.subSignature.toString() }
+            streamingSources(sootClass)?.mapTo(HashSet()) { it.signatureFor(sootClass.type).subSignature.toString() }
+                ?: bytecodeMethods(sootClass)?.mapTo(HashSet()) { it.signature.subSignature.toString() }
         } else {
             null
         }

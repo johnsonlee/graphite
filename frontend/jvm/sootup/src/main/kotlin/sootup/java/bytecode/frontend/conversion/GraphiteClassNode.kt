@@ -12,10 +12,10 @@ import sootup.java.core.JavaSootClassSource
 import sootup.java.core.OverridingJavaClassSource
 
 /**
- * A class node whose methods are SootUp's own body sources ([AsmMethodSource]), as the node
- * `AsmJavaClassProvider` builds for itself, so a class parsed once by this frontend can be handed
- * to [AsmJavaClassProvider.createClassSource] with the node and parsed by nobody else. It lives
- * in SootUp's package because the body source's constructor is package-private.
+ * A class node whose method nodes are SootUp's [AsmMethodSource] body sources,
+ * matching the node built by [AsmJavaClassProvider]. The parsed node is retained
+ * behind a lazy class source. This class lives in SootUp's package to access the
+ * body source's package-private constructor.
  */
 internal class GraphiteClassNode(
     private val view: View,
@@ -40,7 +40,7 @@ internal class GraphiteClassNode(
  */
 internal fun lazyClassSource(location: AnalysisInputLocation, path: Path, type: ClassType, node: ClassNode): JavaSootClassSource =
     if (node.access and Opcodes.ACC_ANNOTATION != 0) AsmAnnotationClassSource(location, path, type, node)
-    else AsmClassSource(location, path, type, node)
+    else GraphiteAsmClassSource(location, path, type, node)
 
 /** Whether [source] came from the bytecode frontend, with an ASM method node behind each method. */
 internal fun SootClassSource.isBytecodeClassSource(): Boolean = this is AsmClassSource || this is OverridingJavaClassSource
