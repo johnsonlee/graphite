@@ -84,7 +84,13 @@ internal class ParsedClassLocation(
             // members when the view asks; the provider's own path reads the file to check its
             // name, reads it again, and resolves every member of every class here and now.
             val node = GraphiteClassNode(view, this)
-            ClassReader(Files.readAllBytes(file)).accept(node, ClassReader.SKIP_FRAMES)
+            // Size local-file buffers directly; avoid ZipFS's intermediate byte-channel copy.
+            val bytes = if (fileSystem == null) {
+                Files.readAllBytes(file)
+            } else {
+                Files.newInputStream(file).use { it.readAllBytes() }
+            }
+            ClassReader(bytes).accept(node, ClassReader.SKIP_FRAMES)
             if (node.name.replace('/', '.') != name) return null
             node.fields.filter { it.signature != null }.associate { it.name to it.signature }
                 .takeIf { it.isNotEmpty() }?.let { fieldSignatures[name] = it }

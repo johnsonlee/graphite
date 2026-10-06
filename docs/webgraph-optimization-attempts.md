@@ -4351,3 +4351,212 @@ profiled timing is not included in the tables. The source snapshot and build
 log are in `/tmp/sootup-recovery-sources/streaming-serial-snapshot`.
 
 Protocol clarification (recorded when Attempt 099 introduced a separate quiet harness): every ProductionPipeline full-default table in this attempt used the original verbose callback. Here "full-default" means full graph features (CHA, annotations and cross-method dispatch), not literally every LoaderConfig field or silent execution. Quiet full-feature results are recorded separately in Attempt 099 and cannot be mixed with these historical timings. The publishing-plugin workaround was identical in frozen snapshots; the five publishing-plugin declarations were later restored in the working tree.
+
+### 2026-10-07 — Attempt 097: Read exact class bytes through an input stream
+
+**Question:** can class input avoid the generic `Files.readAllBytes(Path)`
+channel-reading path while retaining parallel parsing, the streamed wrappers
+from Attempt 095, and exactly the same acceptance of valid and malformed
+class files?
+
+**Revisions and hypothesis:** the retained starting implementation is Attempt
+095 (`streaming`), not the rejected serial parser from Attempt 096. Both trial
+snapshots below were frozen on checkout revision
+`7c56de32bbe3e69ea000960637af4b440861fcbb`, with their distinct working-tree
+patches recorded in their manifests/source states. Pre-upgrade and main remain
+`6f498705009689551c92c6d1ca92f67252ef77c4` and
+`c84d7811b52bd11832f97686c15876bbd7f0c244`.
+
+The hypothesis is that opening the class input directly may avoid channel-path
+allocation/work without changing parsing concurrency or functionality. It is
+not a hypothesis that SootUp reads each class twice: the earlier double-read
+comment was found inaccurate, and deferred member resolution is the relevant
+frontend distinction.
+
+| Frozen trial | Runtime adapter JAR SHA-256 | Status |
+|--------------|---------------------------|--------|
+| `streaming-input` | `51498cba1656bb770841fa919e98f21c46f5e83ce86d8637d5e847506b46bfc6` | Defective; ineligible for selection |
+| `streaming-input-exact` | `20aded41b6de3c6d250358efb66347efbe60c3d7c997c3e94ae9a66bdf9e36fe` | Corrected trial; retained in aggregate chain |
+
+The corresponding JMH JAR SHA-256 values are
+`3c061cd669b82dddbfd66d4a6a1a5f59e6ab6818833b7b03b60f326501daa5bf`
+(defective trial) and
+`0cbe3dd14f1fb41d4b1554e59597de7de76922f7b1bec6421f01925f7cf616f1`
+(exact-input trial). Full immutable runtime/fixture hashes are in
+`/tmp/graphite-sootup-recovery.6wpE4s/{streaming-input,streaming-input-exact}.json`;
+source states/build logs are under the matching
+`/tmp/sootup-recovery-sources/*-snapshot` directories.
+
+**Correctness finding:** the first trial passed the stream directly to
+`ClassReader(InputStream)`. ASM's stream-reading path can retain a minimum
+256-byte buffer with zero padding for a smaller input. A short class whose
+trailing `attributes_count` bytes are missing can therefore appear to have a
+zero count instead of being rejected, unlike exact-length byte-array parsing.
+This changes malformed-input behavior; performance measurements of that trial
+cannot establish a safe optimization.
+
+The frozen repaired trial applied this replacement to both directory and archive inputs, keeping explicit stream closure and exact input length:
+
+```kotlin
+Files.newInputStream(file).use { input ->
+    ClassReader(input.readAllBytes()).accept(node, ClassReader.SKIP_FRAMES)
+}
+```
+
+It retains the existing parallel class stream, parsing flags, class-name
+validation, lazy sources, annotations, interceptors, functional dispatch and
+call-graph configuration. Exact-input performance must be measured afresh:
+using `readAllBytes()` can change allocation and work relative to ASM's padded
+stream reader. The old trial's apparent allocation savings are not attributed
+to this corrected code.
+
+**Validation:** the new test creates a valid class smaller than 256 bytes,
+asserts that its final two bytes are `attributes_count`, removes those bytes,
+and provides a complete control class returning integer `7`. For both a JAR
+and a directory, the corrected frontend must skip the truncated class in
+enumeration and direct lookup while preserving the complete class and its
+concrete return statement/value.
+
+The exact same test source was run against the frozen defective runtime. It
+failed for the intended reason on the JAR input: enumeration returned
+`[p.q.Truncated, p.q.Complete]` instead of `[p.q.Complete]`. The other four tests
+in that class passed; this was an assertion failure, not an incidental build
+or classpath error. With the corrected runtime, all five tests in that class
+passed, and the complete suite plus detekt passed: 460 tests, zero
+failures/errors/skips.
+
+```sh
+JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
+  ./gradlew :sootup:test :sootup:detekt --no-daemon
+```
+
+The red/green evidence is preserved in
+`/tmp/graphite-sootup-recovery.6wpE4s/trial097-exact-red-green/`:
+`red-command.json` contains the exact old-runtime JUnit command; `red.log`
+contains the single expected failure; `green.xml` contains the passing five-test
+suite; `evidence.json` records the complete 460-test result and test-source
+SHA-256 `1a4fa058207f7255f87c65a84e5cee0692beb350e49e0f72e9e781bcace5bfba`.
+The successful full build log is
+`/tmp/sootup-recovery-sources/streaming-input-exact-test.log`.
+
+**Performance evidence boundary:** the real Kotlin/Tika gates and Kotlin JMH
+already run under `streaming-input` remain preserved as measurements of a
+known-defective implementation, not selection evidence for `streaming-input-exact`.
+Their commands and results are under
+`/tmp/graphite-sootup-recovery.6wpE4s/results/streaming-input-*`; eligibility is
+explicitly revoked in `trial097-inputstream-correctness-status.json`. No old
+number is copied into an exact-input result table or used to claim its benefit.
+
+**Corrected-input method-level result:** the frozen exact-input artifact has
+now completed two cold forks of
+`GraphBuildBenchmark.buildKotlinCompilerGraphEndToEndConfig`, using
+`-bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true -jvmArgs '-Xmx8g' -prof gc`
+and the same fixture properties as Attempt 095.
+
+```sh
+python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py jmh streaming-input-exact \
+  --run coldexact1 --forks 2 --corpus kotlin
+```
+
+| Kotlin JMH metric | Pre-upgrade | Main | Attempt 095 | Exact input |
+|-------------------|------------:|-----:|------------:|------------:|
+| Build, ms/op | 12,431.475 | 12,161.500 | 11,653.318 | 11,598.210 |
+| Allocation, bytes/op | 23,127,506,544 | 23,885,424,448 | 23,217,131,304 | 23,067,210,448 |
+
+Exact input's allocation point estimate is 149,920,856 bytes/op below Attempt
+095 (0.646%), 3.426% below main and 0.261% below pre-upgrade. The small
+old/exact difference is not treated as a significant win on two cold forks.
+The previous baseline rows are the saved Attempt 095 JMH observations, not
+fresh contemporaneous reruns. The corrected and defective input variants are
+not combined. Exact commands, per-fork values and the successful result are in
+`results/streaming-input-exact-jmh-kotlin-coldexact1/` and
+`trial097-exact-kotlin-jmh-comparison.json` under the harness root.
+
+**Corrected-input paired follow-up:** exact-input and unchanged main each ran
+one Tika reduced gate and one full-default Kotlin pipeline. The full-default
+execution order was exact-input then main. Both Tika gates passed with matching
+node/edge/method/callsite and branch-definition counts; all measured phase and
+resource outcomes are retained rather than selecting the faster stage.
+
+| Tika reduced gate metric | Main | Exact input |
+|--------------------------|-----:|------------:|
+| Build, ms | 12,939 | 12,410 |
+| Save, ms | 4,477 | 4,842 |
+| Mapped load median, ms | 87 | 89 |
+| Query, ms | 1,177 | 1,196 |
+| Pipeline, ms | 18,680 | 18,537 |
+| Whole-process wall, s | 22.09 | 21.92 |
+| Whole-process CPU, s | 83.55 | 77.29 |
+| Max RSS, bytes | 5,214,617,600 | 5,038,473,216 |
+| Sampled peak heap, bytes | 3,802,953,216 | 3,879,632,896 |
+
+The Tika build/CPU/RSS observations improve, while its save, load and query
+observations are slightly slower and sampled peak heap is higher. This is one
+paired observation, not proof of uniform recovery.
+
+| Kotlin full-default phase | Main wall, ms | Exact wall, ms | Main CPU, ms | Exact CPU, ms |
+|---------------------------|--------------:|---------------:|-------------:|--------------:|
+| Build | 30,043.259 | 30,656.223 | 93,970.659 | 98,205.022 |
+| CLI node count | 327.117 | 341.491 | 631.430 | 650.073 |
+| Prepared save | 11,467.024 | 6,390.335 | 23,220.831 | 17,974.915 |
+| Close source | 0.046 | 0.035 | 0.165 | 0.068 |
+| Mapped load | 157.507 | 165.635 | 274.897 | 304.428 |
+| All-node count query | 36.817 | 38.486 | 119.387 | 170.306 |
+| Callsite count query | 0.941 | 0.892 | 4.859 | 6.138 |
+| Complete timed pipeline | 42,041.290 | 37,602.559 | 118,260.443 | 117,365.438 |
+
+| Kotlin whole-process metric | Main | Exact input |
+|-----------------------------|-----:|------------:|
+| Wall, s | 42.19 | 37.75 |
+| CPU, s | 118.42 | 117.50 |
+| Max RSS, bytes | 9,653,256,192 | 9,629,810,688 |
+| Nodes | 4,744,132 | 4,744,132 |
+| Callsites | 2,251,811 | 2,251,811 |
+
+The unchanged main artifact itself entered the approximately 11 s save state
+previously observed on Attempt 096's serial candidate. Long save is therefore
+not serial-specific, and the prior two slow-serial/fast-main observations did
+not demonstrate a causal serial regression. Conversely, main's long save
+cannot be counted as an exact-input speedup: in this paired run exact-input
+build was slower and consumed more CPU, and main has already demonstrated
+approximately 6 s saves in earlier runs. Pipeline totals mix these unresolved
+save states. Equal node/callsite counts alone do not establish complete
+semantic equivalence; the standalone exact-input artifact was not given complete fingerprint verification. The later combined 099 chain passed complete mapped shape/metadata and typed enum comparisons; that is aggregate evidence, not retrospective standalone verification or a no-regression conclusion for this paired sample.
+
+The exact launched commands and phase/resource logs are in
+`results/{main,streaming-input-exact}-gate-tika-exact1` under
+`/tmp/graphite-sootup-recovery.6wpE4s`, and
+`/tmp/graphite-apk-recovery/results/{main,streaming-input-exact}-kotlin-default-exact1`.
+The combined observed evidence is
+`/tmp/graphite-sootup-recovery.6wpE4s/trial097-exact-paired-results.json`.
+Gate/JMH configurations still disable call graph, annotations and cross-method
+dispatch; the Kotlin pipeline above enables all defaults and prepared saving.
+The shared-host environment is unchanged: Apple M3 Max, 16 CPUs, 64 GiB,
+macOS 14.3 arm64, Homebrew OpenJDK 17.0.20.1. APK remains paused/deprioritized.
+
+**Late integration scope correction:** static review of the installed JDK 17 source found that directory files and archive entries use different allocation paths. The frozen `streaming-input-exact` implementation also changed the ordinary directory path, where a stream read introduces extra chunk allocation/copying. On the default macOS provider, `newInputStream` wraps a file channel in `ChannelInputStream`, whose inherited `InputStream.readAllBytes` allocates 8 KiB chunks and copies a partial result (a stable 1,000-byte file allocates an 8,192-byte buffer and then a 1,000-byte result). `Files.readAllBytes` instead uses the known file size to fill the result array directly. ZipFS differs: its byte-channel path first materializes the entry, while direct entry input avoids that intermediate materialization. This is source-backed allocation-path analysis, not a measured directory latency/CPU/RSS improvement.
+
+The final production source therefore keeps the existing directory reader and limits the exact stream read to the archive filesystem owned by `ParsedClassLocation`:
+
+```kotlin
+val bytes = if (fileSystem == null) {
+    Files.readAllBytes(file)
+} else {
+    Files.newInputStream(file).use { it.readAllBytes() }
+}
+ClassReader(bytes).accept(node, ClassReader.SKIP_FRAMES)
+```
+
+Both branches supply exact-length bytes and retain malformed-input rejection. Existing real directory/JAR parity tests and the truncated-class/control-class test exercise both branches; their existence alone was not proof for the scoped artifact; the actual rerun evidence is recorded below. Final full-suite/lint validation is now complete as recorded below; additional real-corpus/Android checks and CI remain pending. All defective/repaired trial hashes, commands and numerical observations above remain unchanged: they measured their own frozen sources, including repaired stream reads for both directory and archive inputs, and must not be presented as measurements of this late scoped source. The real JAR reading branch remains the same; no directory performance result is inferred. Static evidence and exact JDK source references: `/tmp/sootup-static-review/attempt097-directory-read-note.txt` and `/tmp/sootup-static-review/jdk17-read-path/`.
+
+**Late scope validation:** The directory-scoped integration artifact has now passed the complete 471-test suite (zero failures/errors/skips), detekt, JMH artifact build and recovery-classpath preparation. Frozen label `recovery-final` has runtime adapter JAR SHA-256 `666f2ff520b69fd96335e2a968651104555d898220a3c4a04f9fced25009f410`. `/tmp/sootup-recovery-sources/recovery-final-snapshot/test-proof.json` pins the aggregate result and individual test XML hashes; `test-results/` preserves the XML, including the existing directory/JAR parity and truncated-class tests, and `/tmp/sootup-recovery-sources/recovery-final-test.log` records the successful full build. `artifact-diff.json` confirms only ParsedClassLocation and its companion differ from frozen 100, with no added/removed classes. These are new-artifact validation results; no historical timing or hash is relabeled. Final three real-corpus gates and a separate Android correctness helper checking for OOM/skipped analysis remain pending, as does CI.
+
+**Conclusion:** RETAIN the exact-input optimization with the archive-only integration scope described above as a component of the aggregate recovery chain, not standalone proof that the goal is fully met. The direct-to-ASM
+`streaming-input` variant is rejected on correctness. The exact-input fix
+restores the regression test's required behavior but is not, by itself,
+evidence of performance recovery without other regressions. The corrected artifact has method-level and paired pipeline measurements,
+but CPU/RSS recovery and absence of other regressions are not established.
+Attempt 098 independently tests local serial parsing on this exact-input
+base; its later results must not be attributed to this implementation alone.
+
+Protocol clarification (recorded when Attempt 099 introduced a separate quiet harness): every ProductionPipeline full-default table in this attempt used the original verbose callback. Here "full-default" means full graph features (CHA, annotations and cross-method dispatch), not literally every LoaderConfig field or silent execution. Quiet full-feature results are recorded separately in Attempt 099 and cannot be mixed with these historical timings. The publishing-plugin workaround was identical in frozen snapshots; the five publishing-plugin declarations were later restored in the working tree.
