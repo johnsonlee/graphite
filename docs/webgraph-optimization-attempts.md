@@ -3679,6 +3679,8 @@ as thousands of call sites per call. The remaining 16 s over 2.8.0 is the
 resolution itself (930k resolved dispatch call sites that 2.8.0 did not have,
 since D8 lambda classes were not function values before #162).
 
+
+The next two entries were recorded independently in PR #173; their original attempt numbers are retained alongside the SootUp recovery series.
 ### 2026-10-07 — Attempt 094: Split dex registers before functional dispatch
 
 **Question:** can APK calls resolve each function value independently instead of
@@ -3880,3 +3882,96 @@ essentially unchanged; these single-shot results are not a stable-speedup claim.
 The APK still pays the correctness cost of splitting locals relative to unsplit
 `main` in Attempt 094. CI's current-base method-level and end-to-end conclusions
 remain separate and are reported in the PR benchmark comment.
+
+The SootUp recovery series continues below with its original attempt numbering.
+
+### 2026-10-07 — Attempt 094: Reject replacing SootUp's instruction-index map
+
+**Question:** can SootUp 3.0.1's per-method `HashMap<AbstractInsnNode, Integer>`
+be replaced with ASM's existing instruction-index array without losing local
+scope names, type annotations, or increasing retained memory?
+
+**Revisions and fixture:** pre-upgrade `6f498705009689551c92c6d1ca92f67252ef77c4`
+(SootUp 2.0.0), current main `c84d7811b52bd11832f97686c15876bbd7f0c244`
+(SootUp 3.0.1), and that main plus the trial patch SHA-256
+`8e70ff603ce429562d2778d185793e24fe5777db7e60b88198605d9673880fc7`.
+The candidate SootUp JAR SHA-256 was
+`b5e98aced04d1f85317012aee06641434698374c741d4e93ef9a6b48db77dbe0`.
+Inputs were the real Tika app 2.9.2, Hive exec 4.0.0 and Kotlin compiler
+embeddable 2.0.21 JARs pinned by `LargeCorpusPerformanceGateTest`, with its
+fixture checksums and full persisted-graph correctness checks enabled.
+
+The trial subclassed `AsmMethodSource`, installed a read-only map backed by
+`InsnList.indexOf`, and checked node identity to reject a foreign node with the
+same cached index. It restored the previous ASM array after conversion and
+cleared SootUp's scope caches on both successful and exceptional exits. This
+avoided retaining an extra instruction array per method. No interceptors,
+type inference, annotations, or control-flow work were disabled.
+
+**Validation and environment:** Apple M3 Max, 16 cores, 64 GiB, macOS arm64,
+Homebrew OpenJDK 17.0.20.1. `:sootup:test :sootup:detekt` passed: 458 tests,
+including exact stock-SootUp statement/local/annotation/CFG comparisons, JSR
+inlining, repeated body resolution, foreign-node membership, and cache cleanup
+on success/failure. All 27 large-corpus gate runs passed. Local publishing-plugin
+application was omitted on both revisions because the plugin cannot resolve
+this Git worktree; production sources and runtime artifacts were sealed before
+measurement. This was not a dedicated host: Spotlight consumed approximately
+one CPU core. Results are directional, not narrow-confidence claims.
+
+Each gate ran in a fresh `java -Xmx4g` JVM with
+`-Dlarge.corpus.record=true` and the three fixture path properties, invoking
+`org.junit.runner.JUnitCore io.johnsonlee.graphite.webgraph.{Tika,Hive,KotlinCompiler}CorpusPerformanceGateTest`.
+Three rounds rotated old/main/candidate, main/candidate/old, and candidate/old/main.
+The record property removes timing ceilings only; shape/query/branch-definition
+checks remain enabled. `/usr/bin/time -l` measured complete-process CPU/RSS;
+CPU includes correctness checks and cleanup, not just the timed pipeline.
+The gate configuration disables call-graph construction, annotation extraction,
+and cross-method functional dispatch on **all** revisions; it does not represent
+the full CLI default configuration or APK performance.
+
+**Results (three-run medians):**
+
+| Corpus / metric | Pre-upgrade | Main 3.0.1 | Trial |
+|-----------------|------------:|-----------:|------:|
+| Tika build, ms | 12,848 | 13,046 | 13,121 |
+| Tika pipeline, ms | 19,091 | 19,174 | 19,144 |
+| Tika total CPU, s | 69.77 | 79.99 | 82.19 |
+| Tika max RSS, bytes | 5,128,634,368 | 5,018,271,744 | 5,029,199,872 |
+| Kotlin build, ms | 12,377 | 12,511 | 12,694 |
+| Kotlin pipeline, ms | 18,414 | 18,322 | 18,324 |
+| Kotlin total CPU, s | 70.61 | 76.19 | 77.16 |
+| Kotlin max RSS, bytes | 4,944,674,816 | 5,104,599,040 | 4,983,767,040 |
+| Hive build, ms | 23,800 | 23,690 | 23,772 |
+| Hive pipeline, ms | 32,168 | 31,692 | 31,726 |
+| Hive total CPU, s | 105.18 | 125.69 | 126.14 |
+| Hive max RSS, bytes | 5,179,801,600 | 5,265,408,000 | 5,236,834,304 |
+
+Method-level command, with the same fixture properties supplied to every fork:
+
+```sh
+java -jar <revision-sootup-jmh.jar> \
+  'io.johnsonlee.graphite.sootup.GraphBuildBenchmark.buildKotlinCompilerGraphEndToEndConfig$' \
+  -bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true \
+  -jvmArgs '-Xmx8g' -jvmArgsAppend '<fixture-path-properties>' \
+  -prof gc -rf json -rff <revision-jmh.json>
+```
+
+| Kotlin JMH metric (two cold forks) | Pre-upgrade | Main 3.0.1 | Trial |
+|-----------------------------------|------------:|-----------:|------:|
+| Build, ms/op | 12,544.580 | 12,160.958 | 11,990.444 |
+| Allocation, bytes/op | 23,033,373,160 | 23,853,566,512 | 23,655,538,712 |
+
+**Conclusion:** rejected. The method-level trial reduced allocation by 0.83%
+versus main and its point-estimate build latency by 1.40%, but allocation was
+still 2.70% above the pre-upgrade baseline. End-to-end build medians did not
+improve over main on any of the three corpora, and whole-process CPU medians
+remained above both main and the pre-upgrade baseline. This does not establish
+broad performance recovery and does not justify the additional reflective cache
+lifecycle. The trial production code and its tests are removed; no benchmark
+threshold or semantic baseline is relaxed. Android JMH was not run for this
+rejected candidate. Continue with method-wrapper lifetime and full-default
+JAR/APK measurements.
+
+Raw commands, fixture/runtime hashes and logs remain in
+`/tmp/graphite-sootup-recovery.6wpE4s`; the immutable trial source patch and JMH
+artifact are in `/tmp/sootup-recovery-sources/candidate-final-snapshot`.
