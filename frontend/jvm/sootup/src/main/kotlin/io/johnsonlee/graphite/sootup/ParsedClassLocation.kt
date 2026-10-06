@@ -23,11 +23,10 @@ import sootup.java.core.JavaSootClassSource
  * The classes of a jar or a class directory, parsed by this frontend and handed to SootUp as
  * ready class sources, where `PathBasedAnalysisInputLocation` parses them itself.
  *
- * SootUp 3 parses every class while it enumerates the input (`AsmJavaClassProvider.createClassSource`
- * reads the class to check its name against the path, then reads it again), one class at a time
- * on the calling thread, and wraps each in an `OverridingJavaClassSource` that resolves every
- * member of every class there and then. Here the bytes are read and parsed once per class, on
- * every core, into the node SootUp's provider builds ([GraphiteClassNode]) and handed to the view
+ * SootUp 3 parses each class once while it enumerates the input, checks its name against the
+ * path, and wraps it in an `OverridingJavaClassSource` that resolves every member immediately.
+ * Here the classes are parsed into the node SootUp's provider builds
+ * ([GraphiteClassNode]) and handed to the view
  * behind the lazy `AsmClassSource` SootUp 2 used, so a class's members are resolved when the
  * graph pass reaches it; the generic signatures of its fields are kept from that parse
  * ([fieldSignatures]). The entries are listed in the order `Files.walk` gives them, which is the
@@ -57,8 +56,8 @@ internal class ParsedClassLocation(
             walk.filter { file -> Files.isRegularFile(file) && isClassFile(file.fileName.toString()) }
                 .collect(Collectors.toList())
         }
-        // A parallel map over a list keeps the encounter order on collection.
-        val sources: List<SootClassSource> = files.parallelStream().map { parse(it, view) }.collect(Collectors.toList()).filterNotNull()
+        // Parse in encounter order on the calling thread.
+        val sources: List<SootClassSource> = files.stream().map { parse(it, view) }.collect(Collectors.toList()).filterNotNull()
         return sources.stream()
     }
 
@@ -72,17 +71,15 @@ internal class ParsedClassLocation(
 
     /**
      * The class source of [file], read, checked against the name its path spells and converted by
-     * SootUp's own provider; `null` when it holds another class (a copy under `META-INF/versions/`)
+     * the frontend's lazy class source; `null` when it holds another class (a copy under `META-INF/versions/`)
      * or cannot be read.
      */
     private fun parse(file: Path, view: View): JavaSootClassSource? {
         val name = typeName(file)
         val type = view.identifierFactory.getClassType(name)
         return try {
-            // Read and parsed once, into the node SootUp's provider would build (its method nodes
-            // are SootUp's body sources), and kept behind a source that resolves the class's
-            // members when the view asks; the provider's own path reads the file to check its
-            // name, reads it again, and resolves every member of every class here and now.
+            // Retain SootUp's method body sources, resolving members when the view asks.
+            // Read the exact bytes: ClassReader(InputStream) may pad a short, truncated class.
             val node = GraphiteClassNode(view, this)
             // Size local-file buffers directly; avoid ZipFS's intermediate byte-channel copy.
             val bytes = if (fileSystem == null) {

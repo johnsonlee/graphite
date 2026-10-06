@@ -366,9 +366,9 @@ class JavaProjectLoader(
     }
 
     /**
-     * An input location with the frontend's own (empty) interceptor chain, or with the fold chain
-     * when folding: the classes parsed here, in parallel, rather than by SootUp one at a time
-     * ([ParsedClassLocation]).
+     * An input location whose classes this frontend parses once each and hands to
+     * the view behind SootUp's lazy class source ([ParsedClassLocation]), using the fold chain
+     * when folding and the frontend's empty interceptor chain otherwise.
      */
     private fun inputLocation(path: Path, sourceType: SourceType): AnalysisInputLocation =
         ParsedClassLocation(path, sourceType, foldInterceptors ?: emptyList())

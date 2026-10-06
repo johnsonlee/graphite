@@ -4560,3 +4560,61 @@ Attempt 098 independently tests local serial parsing on this exact-input
 base; its later results must not be attributed to this implementation alone.
 
 Protocol clarification (recorded when Attempt 099 introduced a separate quiet harness): every ProductionPipeline full-default table in this attempt used the original verbose callback. Here "full-default" means full graph features (CHA, annotations and cross-method dispatch), not literally every LoaderConfig field or silent execution. Quiet full-feature results are recorded separately in Attempt 099 and cannot be mixed with these historical timings. The publishing-plugin workaround was identical in frozen snapshots; the five publishing-plugin declarations were later restored in the working tree.
+
+### 2026-10-07 — Attempt 098: Exact-length stream input plus serial class parsing
+
+**Status:** RETAINED as a component of the aggregate recovery chain with 095, corrected 097 and 099. This is not standalone proof that the recovery goal is fully met.
+
+Frozen main produced a slow save (11.467s in exact1), disproving attribution of the earlier Attempt 096 slow-save observations solely to serial parsing. This is a new combination experiment; all prior samples remain retained.
+
+**Change:** relative to streaming-input-exact (097 repaired), only files.parallelStream() -> files.stream() changes runtime behavior. Comments also updated. Exact-length input.readAllBytes() is retained. Snapshot artifact diff contains only ParsedClassLocation.class and ParsedClassLocation$Companion.class; no added/removed classes.
+**Validation:** 460 tests, zero failures/errors/skips; detekt, jmhJar and recoveryClasspath all passed. No source edits by the benchmark agent. The immutable snapshot excludes later Attempt 099 edits.
+
+Full-feature configuration WITH VERBOSE LOGGING: CHA call graph, annotations and cross-method dispatch enabled, prepared callsite index, Xmx8g. This is not every LoaderConfig field literally at default and not silent production. Existing ProductionPipeline.java and logs were unchanged. Any future silent experiment must use the same verbosity on both sides and remain separately identified.
+
+Kotlin full-feature run order: 098 -> exact -> main. Times seconds, RSS decimal GB.
+
+| Variant | Build wall | Build CPU | Save wall | Save CPU | Pipeline wall | Process CPU | RSS |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 098 | 30.927 | 88.976 | 11.194 | 17.736 | 42.662 | 107.92 | 8.377 |
+| exact | 31.061 | 101.584 | 10.906 | 20.049 | 42.545 | 124.04 | 9.652 |
+| main | 29.936 | 92.181 | 6.963 | 19.151 | 37.573 | 113.63 | 9.669 |
+
+All three produced 4,744,132 nodes / 2,251,811 calls. Heavy semantic graph verification was not repeated. Preupgrade full-feature graph has different counts (4,657,648 / 2,173,010); its historical timing/RSS is NOT a like-for-like full-feature comparison.
+
+Reduced 4g real-corpus gates: all nine passed. Orders: Tika old -> 098 -> main; Hive 098 -> main -> old; Kotlin main -> old -> 098. Times seconds, RSS decimal GB.
+
+| Corpus | Variant | Build | Save | Pipeline | Process CPU | RSS |
+|---|---|---:|---:|---:|---:|---:|
+| tika | preupgrade | 12.659 | 4.474 | 18.585 | 69.68 | 5.182 |
+| tika | 098 | 12.794 | 4.387 | 18.541 | 71.84 | 5.182 |
+| tika | main | 12.840 | 4.651 | 18.859 | 77.15 | 5.026 |
+| hive | preupgrade | 23.475 | 7.008 | 32.092 | 104.67 | 5.229 |
+| hive | 098 | 22.978 | 6.280 | 30.941 | 108.27 | 5.233 |
+| hive | main | 23.392 | 7.063 | 32.126 | 123.75 | 5.340 |
+| kotlin | preupgrade | 12.434 | 8.024 | 21.652 | 71.62 | 5.180 |
+| kotlin | 098 | 12.754 | 4.338 | 18.326 | 66.68 | 5.151 |
+| kotlin | main | 12.389 | 4.126 | 17.695 | 78.05 | 5.162 |
+
+**Interpretation:** 098 lowers whole-process CPU versus main in all three reduced gates. Tika/Hive CPU remains about 3% above old; Kotlin build is about 3% slower than main. Full-feature 098 CPU/RSS is lower than paired main, but build is 3.31% slower and total wall includes a retained slow-save tail. No single tail is attributed to code. Retained with the aggregate chain despite these explicit costs; not evidence of uniform standalone improvement.
+
+Slow-save evidence across variants, unprofiled Kotlin full-feature runs: main exact1 11.467s; repaired exact exactserial1 10.906s; 098 exactserial1 11.194s; rejected serial096 serial1/serial2 11.210/11.333s. Every other unprofiled full-feature Kotlin sample is 6.219–6.963s. Main thus has both slow and fast samples. Diagnostic startup-JFR and plain Thread.print runs were fast; Thread.print -l induced 25.778–26.945s save and is excluded from performance conclusions. Late-only diagnostic runs were fast with zero attach. All samples are retained in all-kotlin-default-save-samples.json.
+Reduced Kotlin gates also have slow save: old comparison2 7.922s, serial1 7.887s, serial2 7.898s, exactserial1 8.024s; streaming global-pool diagnostic pool1-1 7.989s. These are separate from full-feature runs; no sample was removed.
+
+At the initial 098 record, method-level JMH allocation/latency had not been measured. Subsequent evidence is recorded without overwriting the verbose table: Attempt 099 includes a separate identical-quiet-protocol run for 098 and two cold GraphBuildBenchmark Kotlin JMH forks (12,223.136209 / 12,397.823583 ms; allocation 23,021,083,832 / 23,045,759,424 B/op). These are actual later measurements, not inferred from the JMH jar build. Android JAR JMH, APK and full graph semantic verification remain unmeasured for this individual 098 snapshot. The final combined chain is evaluated separately.
+
+**Evidence:**
+
+- Snapshot: /tmp/sootup-recovery-sources/streaming-input-exact-serial-snapshot (source-state.json, artifact-diff.json, classpath.txt, build.log). Sootup jar SHA256 c6faf95218c89d6fe352d2b82bcf72084b0cb39999664217c08a9fd49879770c.
+- Build: /tmp/sootup-recovery-sources/streaming-input-exact-serial-test.log.
+- Manifest: /tmp/graphite-sootup-recovery.6wpE4s/streaming-input-exact-serial.json.
+- All phase CPU/heap/GC metrics and RSS: /tmp/graphite-sootup-recovery.6wpE4s/trial098-results.json.
+- Raw gates: /tmp/graphite-sootup-recovery.6wpE4s/results/*-gate-*-exactserial1/.
+- Raw full-feature runs and graphs: /tmp/graphite-apk-recovery/results/*-kotlin-default-exactserial1/.
+- Slow-save indexes: /tmp/graphite-sootup-recovery.6wpE4s/all-kotlin-default-save-samples.json and all-kotlin-gate-slow-save-samples.json.
+
+Local Apple M3 Max machine is not dedicated; background activity and cold-fork/JIT variance remain. Single rounds establish boundaries, not a statistical no-regression guarantee.
+
+**Final-source provenance:** the final integration source includes Attempt 097's later directory-path preservation: `fileSystem == null` keeps `Files.readAllBytes`, while archive entries use the exact input-stream read. This scope refinement occurred after this trial's frozen artifact and measurements. The hash-pinned results above still describe that original frozen source, not a validated or measured new artifact. No directory performance improvement is claimed; new-artifact full-suite/lint passed with 471 tests under recovery-final; the remaining real-corpus/Android checks and CI are pending (see Attempt 097 validation proof). See Attempt 097 and `/tmp/sootup-static-review/attempt097-directory-read-note.txt`.
+
+**Conclusion:** RETAINED in the aggregate recovery chain. The later 099 correctness checks and broader real-data results support continuing with that chain; all original 098 build/latency/CPU/RSS costs and slow-save samples above remain part of the decision. Overall recovery is not yet fully achieved.
