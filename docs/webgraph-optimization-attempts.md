@@ -4743,3 +4743,156 @@ Complete Kotlin mapped verification: main and 099 quiet full-feature graphs have
 **Final-source provenance:** the final integration source includes Attempt 097's later directory-path preservation: `fileSystem == null` keeps `Files.readAllBytes`, while archive entries use the exact input-stream read. This scope refinement occurred after this trial's frozen artifact and measurements. The hash-pinned results above still describe that original frozen source, not a validated or measured new artifact. No directory performance improvement is claimed; new-artifact full-suite/lint passed with 471 tests under recovery-final; the remaining real-corpus/Android checks and CI are pending (see Attempt 097 validation proof). See Attempt 097 and `/tmp/sootup-static-review/attempt097-directory-read-note.txt`.
 
 **Decision:** RETAINED with 095, corrected 097 and 098 as the aggregate recovery chain and Attempt 100's parent candidate; this is not standalone proof that the overall recovery goal is achieved. The chain lowers allocation and some CPU observations but does not uniformly restore latency, CPU or RSS relative to main or pre-upgrade. All final local checks above completed; shared-host samples and this API coverage do not establish universal no-regression. APK remains paused/deprioritized.
+
+### 2026-10-07 — Attempt 100: Cache raw class-name owner lookups per Java view
+
+**Status:** RETAINED as a component of the aggregate recovery chain; the overall user goal is NOT yet fully met. Final retry2 build passed tests, detekt and JMH artifact preparation; test XML totals are 471 tests, zero failures/errors/skips. First paired JMH and all eleven gate observations below have completed. Quiet full-feature measurements below have also completed; the independent semantic comparisons below also passed. Frozen Android JMH and the separate Tika diagnostic pair are complete; the final directory-scoped artifact passed its full build as recorded below; real-corpus/Android follow-ups and CI remain pending. Parent is the frozen Attempt 099 chain (streaming-input-exact-serial-enum, adapter JAR SHA-256 ff0bffaf3342f963c2373bf4add378e21495d39479dfb6562b3821c2c6b03264). Candidate frozen label: streaming-input-exact-serial-enum-typecache; runtime adapter JAR SHA-256 cc0e2531b257fefa6fa74d3362e325973149975068290e31312c86890cf3fbcc. Frozen source and artifact scope are retained in its snapshot directory.
+
+**Hypothesis:** repeated one-argument JavaIdentifierFactory.getClassType(rawName) requests from one parsed-class Java view repeatedly enter SootUp's singleton lookup path. A view-owned ConcurrentHashMap can reuse the exact canonical JavaClassType returned by that singleton for warm raw-name requests, avoiding some repeated owner-name parsing/cache work. This is independent of enum constructor indexing and the earlier input/streaming changes.
+
+**Implementation boundary:** create GraphiteJavaView only when every input location is ParsedClassLocation; otherwise create the original JavaView. APK/DEX and mixed/nonparsed-location inputs retain that fallback. Each optimized view gets its own GraphiteIdentifierFactory. The cache keys the original unnormalized class-name string and uses get followed by delegate lookup plus putIfAbsent on misses. Misses still use the original JavaIdentifierFactory singleton. Racing misses may call the delegate more than once but publish the existing canonical value. No exception is cached; retries delegate again. Null bypasses ConcurrentHashMap and follows the singleton's original behavior. The two-argument getClassType(className, packageName) and getPackageName calls delegate without caching or replacing their corresponding original objects. Default primitive/array/type parsing remains inherited; fresh array instances and invalid descriptor behavior must remain unchanged.
+
+**Coverage limit:** this does not replace static AsmUtil descriptor conversion, singleton getType calls inside that path, or independent annotation parsing. Allocation samples attributed to that broader path cannot all be credited to this owner-name cache; in particular, no claim that it eliminates the whole sampled 3.16 GB is justified. It stores O(U) strong entries for U distinct raw names requested through that view, retained until the view/factory becomes unreachable. Allocation saved on repeated hits must be assessed against added map/key/value retention and synchronization overhead. There is no global cache, eviction policy or normalization change.
+
+Seven new test methods passed, with concrete contracts across these cases:
+
+- Singleton owner/package/nested-name identity, corresponding two-argument identity, and method-signature owner/return/parameter shape.
+- Unusual raw names and null delegate unchanged; successful warm calls avoid redelegation; a failed request retries successfully without cached failure.
+- Malformed descriptor failures retain exception messages; repeated arrays are equal but distinct instances with canonical base type and exact dimension; primitive/null/void behavior remains.
+- Concurrent first lookups all publish the canonical object; warm concurrent reads stop delegating, without assuming only one delegate call during a race.
+- Independent factories keep independent strong lookup maps while still returning canonical singleton values.
+- Separate parsed-class views receive separate factory instances and preserve intended Java view/loading behavior.
+- Nonparsed/mixed inputs use the original JavaView/factory path (APK fallback is preserved by this input-location gate, not claimed as a new APK run).
+
+**Source scope:** frontend/jvm/sootup/src/main/kotlin/sootup/java/core/GraphiteIdentifierFactory.kt, io/johnsonlee/graphite/sootup/GraphiteJavaView.kt and JavaProjectLoader's view construction; test counterparts GraphiteIdentifierFactoryTest.kt and GraphiteJavaViewTest.kt. No feature flags are disabled. APK remains paused/deprioritized.
+
+**Evidence scope:** immutable snapshot under /tmp/sootup-recovery-sources/streaming-input-exact-serial-enum-typecache-snapshot; artifact-diff.json records the three new view/factory classes and JavaProjectLoader changes. Four additional inline-containing classes differ in line/debug metadata; additional-class-code-verification.json records identical javap executable code. Final build log is streaming-input-exact-serial-enum-typecache-test-retry2.log, alongside the preserved earlier failed logs. All measured inputs remain pinned real jars; source-access test assertions are not performance evidence.
+
+**First paired Kotlin JMH:** GraphBuildBenchmark.buildKotlinCompilerGraphEndToEndConfig, two cold forks, -bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true -jvmArgs '-Xmx8g' -prof gc. Candidate 100 ran before the refreshed 099 comparison. Call graph, annotations and cross-method dispatch are disabled by this benchmark configuration. Compare this fresh 099 sample separately from its historical coldenum1 score.
+
+| Variant | Fork 1 ms/op | Fork 2 ms/op | Mean ms/op | Fork 1 allocation B/op | Fork 2 allocation B/op | Mean allocation B/op |
+|---|---:|---:|---:|---:|---:|---:|
+| 099 | 12,378.709 | 12,397.491 | 12,388.100 | 22,962,744,432 | 22,973,792,768 | 22,968,268,600 |
+| 100 | 11,924.991 | 12,232.245 | 12,078.618 | 21,919,356,600 | 21,921,724,376 | 21,920,540,488 |
+
+100 is -2.50% time and -4.56% allocation versus this paired 099 estimate, a reduction of 1,047,728,112 B/op. This observed allocation reduction is about 1.05 GB/op, not the complete 3.16 GB sampled allocation path. Two cold forks remain a limited sample; this result does not establish full-feature or whole-process CPU/RSS recovery.
+
+**Real reduced gates:** all eleven completed runs passed their graph/query/branch-definition assertions. Each uses a fresh Xmx4g JVM and large.corpus.record=true (timing ceilings disabled), with call graph, annotations and cross-method dispatch disabled. CPU/RSS include verification/cleanup. Initial Hive order was 099 -> 100 -> old; reverse Hive was 100 -> 099. Expanded Tika/Kotlin compare main, old and 100; there is no contemporaneous 099 row for those two corpora. Do not substitute historical 099 observations as paired measurements. All samples are retained:
+
+| Round / corpus / variant | Build ms | Save ms | Mapped load median ms | Query ms | Pipeline ms | Process wall s | Process CPU s | Peak heap bytes | Max RSS bytes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| typecache1 / hive / 099 | 23,441 | 7,007 | 135 | 1,710 | 32,293 | 36.95 | 109.30 | 3,897,905,184 | 5,206,638,592 |
+| typecache1 / hive / 100 | 22,568 | 5,957 | 137 | 1,577 | 30,239 | 35.22 | 111.64 | 3,884,437,520 | 5,428,576,256 |
+| typecache1 / hive / old | 23,358 | 6,141 | 134 | 1,585 | 31,218 | 35.81 | 105.26 | 3,866,714,456 | 5,254,709,248 |
+| typecache2 / hive / 100 | 22,630 | 6,301 | 136 | 1,539 | 30,606 | 35.65 | 113.28 | 4,091,143,680 | 5,169,790,976 |
+| typecache2 / hive / 099 | 23,388 | 7,120 | 135 | 1,591 | 32,234 | 37.00 | 109.97 | 3,893,718,560 | 5,202,395,136 |
+| typecache2 / tika / main | 13,006 | 4,611 | 88 | 1,298 | 19,003 | 22.73 | 85.61 | 3,850,892,808 | 5,183,946,752 |
+| typecache2 / tika / old | 12,770 | 4,521 | 87 | 1,223 | 18,601 | 22.02 | 68.05 | 3,654,500,848 | 5,179,801,600 |
+| typecache2 / tika / 100 | 12,737 | 4,620 | 90 | 1,321 | 18,768 | 22.31 | 72.20 | 3,816,718,336 | 5,016,666,112 |
+| typecache2 / kotlin / main | 12,153 | 4,227 | 76 | 1,126 | 17,582 | 20.95 | 73.10 | 3,863,692,312 | 5,119,787,008 |
+| typecache2 / kotlin / old | 12,472 | 4,180 | 74 | 1,136 | 17,862 | 21.17 | 66.77 | 3,641,970,864 | 5,175,984,128 |
+| typecache2 / kotlin / 100 | 12,281 | 4,629 | 76 | 1,099 | 18,085 | 21.42 | 68.20 | 3,822,279,760 | 5,150,539,776 |
+
+Hive tradeoff repeats in both orders: 100 builds/saves faster, but CPU rises from 109.30 to 111.64 s (+2.14%) initially and 109.97 to 113.28 s (+3.01%) in reverse order. Initial RSS rises 5,206,638,592 -> 5,428,576,256 bytes; reverse RSS falls 5,202,395,136 -> 5,169,790,976 bytes. This reversal prevents a stable cache-RSS attribution from either single round. Reverse 100 sampled peak heap is also higher than the initial 100 sample; none is discarded. Initial 100 CPU remains above old 105.26 s despite faster wall/build.
+
+Tika 100 build is slightly faster than both main and old, but total CPU is 72.20 s versus old 68.05 (main 85.61), and save/load/query are slower than old. Kotlin expansion completed while this draft was being updated: 100 build is 12.281 s versus main 12.153 and old 12.472; CPU is 68.20 s versus main 73.10 and old 66.77; its 4.629 s save produces a slower pipeline than both baselines. RSS and sampled heap differ across variants, and no uniform recovery is asserted. Completed Kotlin data is therefore included rather than left as stale PENDING.
+
+**Commands/evidence:**
+
+- python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py jmh LABEL --run coldtypecache1 --forks 2 --corpus kotlin (100 then 099).
+- python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py gate LABEL --run typecache1 --corpus hive (099 -> 100 -> preupgrade).
+- python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py gate LABEL --run typecache2 --corpus CORPUS (reverse Hive and expanded Tika/Kotlin; exact commands/timestamps in results/*-gate-*-typecache2/command.json).
+- /tmp/graphite-sootup-recovery.6wpE4s/trial100-kotlin-jmh-comparison.json, trial100-hive-gates.json and trial100-expanded-gates.json preserve all point/fork/phase results and original run identifiers. Matching results directories retain command.json, stdout.log and stderr-time.log.
+- Shared Apple M3 Max / Homebrew JDK17 host and pinned fixture manifests match the prior trials; no synthetic performance inputs.
+
+**Quiet full-feature Kotlin follow-up:** one fresh Xmx8g run per variant in order 099 -> 100 -> main, using the identical verbose=null ProductionPipeline source. CHA call graph, annotations, cross-method dispatch, prepared-index saving and phase instrumentation remain enabled. This is separate from reduced gates/JMH and historical verbose runs.
+
+| Phase | 099 wall / CPU ms | 100 wall / CPU ms | Main wall / CPU ms |
+|---|---:|---:|---:|
+| build | 30,133.976 / 86,472.302 | 29,128.472 / 89,339.874 | 28,815.264 / 94,436.477 |
+| cliNodeCount | 385.444 / 656.391 | 312.021 / 574.432 | 399.300 / 1,888.180 |
+| savePrepared | 6,840.431 / 19,542.368 | 11,278.463 / 18,367.651 | 6,540.091 / 16,051.281 |
+| closeSource | 0.042 / 0.044 | 0.043 / 0.107 | 0.059 / 0.104 |
+| loadMapped | 158.895 / 297.024 | 161.070 / 283.998 | 160.354 / 296.983 |
+| queryAllNodeCount | 39.179 / 137.488 | 35.985 / 82.232 | 36.186 / 95.652 |
+| queryCallSiteCount | 0.976 / 3.190 | 0.804 / 2.095 | 0.824 / 1.994 |
+| Timed pipeline | 37,567.918 / 107,126.935 | 40,925.061 / 108,672.679 | 35,960.881 / 112,810.068 |
+
+| Metric | 099 | 100 | Main |
+|---|---:|---:|---:|
+| /usr/bin/time wall seconds | 37.74 | 41.08 | 36.10 |
+| /usr/bin/time CPU seconds | 107.23 | 108.79 | 112.92 |
+| Max RSS bytes | 9,597,321,216 | 9,639,919,616 | 9,653,567,488 |
+| Build sum of heap-pool peaks bytes | 7,741,780,480 | 7,863,991,808 | 7,458,150,368 |
+| Build GC count / milliseconds | 44 / 1122 | 45 / 1109 | 42 / 1044 |
+| Prepared-save GC count / milliseconds | 4 / 213 | 2 / 41 | 4 / 121 |
+| Nodes / callsites | 4744132 / 2251811 | 4744132 / 2251811 | 4744132 / 2251811 |
+
+**Interpretation:** versus 099, 100 build wall falls 30.134 -> 29.128 s but build CPU rises 86.472 -> 89.340 s; whole CPU rises 107.23 -> 108.79 s and RSS rises 9,597,321,216 -> 9,639,919,616 bytes. Versus main, 100 build wall remains slower (29.128 vs 28.815 s), while build/whole CPU and RSS are lower. Build heap-pool peaks are highest for 100. Its 11.278 s save tail makes the 40.925 s pipeline slower than both 099 37.568 and main 35.961 s. The tail is retained, not attributed causally to this cache: main and other frozen variants have previously shown the same slow-save state. Conversely, faster build cannot erase the unfavorable total/CPU/heap observations. Equal node/callsite counts are not complete semantic proof.
+
+**Protocol provenance:** /tmp/graphite-jar-quiet-recovery/protocol.json is original preparation metadata; compiled:false and measured:false were never updated. Those stale preparation flags are not evidence of execution failure. Actual per-run command.json, successful exits/pipeline markers and sourceSha256 pin execution to quiet source 1317041bdc5875e0d8cee1c72386837752a96af69a72f5093cd0184a50dfe799 (parent verbose source 6552cb9c4afbb2d28c1d47f64e090eb1044764486816a727fab744df52cb18dc). Raw command/phase/CPU/heap/GC/RSS records are in /tmp/graphite-jar-quiet-recovery/results/{streaming-input-exact-serial-enum,streaming-input-exact-serial-enum-typecache,main}-kotlin-quiet-typecache2/; summary is /tmp/graphite-sootup-recovery.6wpE4s/trial100-quiet-results.json. Command form: python3 /tmp/graphite-jar-quiet-recovery/run.py run LABEL PINNED_KOTLIN_JAR LABEL-kotlin-quiet-typecache2 --heap 8g --sdk -.
+
+**Independent correctness:** candidate 100 now matches main across all 22 Kotlin mapped shape properties and all 13 supplementary metadata properties. /tmp/graphite-jar-quiet-recovery/verification-typecache1/shape-compare.log and metadata-differences.json report empty differences; the per-variant shape/metadata logs and command records preserve successful runs. Separately, all 14,243 in-memory Kotlin/Tika enum API keys match main with identical typed payloads and every report property: /tmp/graphite-apk-recovery/verification/reports/100-{kotlin,tika}-memory-typecache1-compare.log both end ENUM_VALUES_PARITY_OK. These are direct candidate checks, not inherited parent-099 evidence. Existing scope limits still apply: mapped enum omission is not proof of absent in-memory values, and the compared APIs do not cover every resource or possible query.
+
+**Frozen Android JAR JMH:** pinned Robolectric android-all 14-robolectric-10818077, two cold forks per method/variant, -bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true -jvmArgs '-Xmx8g' -prof gc. These are Java classfiles, not APK/DEX. GraphBuildBenchmark.buildAndroidSdkGraph disables call graph but retains annotations and cross-method dispatch; buildAndroidSdkGraphEndToEndConfig disables all three. Save/load/query are outside both build methods. This is fresh coldtypecache1 evidence, separate from 099's earlier coldenum1 rows.
+
+| Benchmark / variant | Fork 1 ms/op | Fork 2 ms/op | Mean ms/op | Fork 1 allocation B/op | Fork 2 allocation B/op | Mean allocation B/op | GC count / ms |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| android / Pre-upgrade | 27,998.724 | 28,424.764 | 28,211.744 | 44,448,338,520 | 44,713,030,488 | 44,580,684,504 | 84 / 1989 |
+| android / Main | 23,791.813 | 23,950.647 | 23,871.230 | 41,043,161,792 | 41,093,465,040 | 41,068,313,416 | 84 / 1993 |
+| android / 100 | 23,552.684 | 23,463.788 | 23,508.236 | 38,410,559,680 | 38,281,178,456 | 38,345,869,068 | 80 / 1853 |
+| android-e2e / Pre-upgrade | 18,713.156 | 19,002.664 | 18,857.910 | 35,002,487,192 | 35,008,823,360 | 35,005,655,276 | 76 / 1539 |
+| android-e2e / Main | 19,149.263 | 19,196.256 | 19,172.760 | 36,878,921,136 | 36,864,366,128 | 36,871,643,632 | 74 / 1744 |
+| android-e2e / 100 | 19,092.382 | 18,998.947 | 19,045.665 | 33,972,678,368 | 33,957,818,960 | 33,965,248,664 | 79 / 1623 |
+
+Outer resource measurements cover the entire JMH command, including its harness and both forks. These are NOT method CPU/op, allocation/op, or per-operation RSS, and must not be divided by a guessed operation count:
+
+| Benchmark / variant | Whole-command wall s | Whole-command CPU s | Whole-command max RSS bytes |
+|---|---:|---:|---:|
+| android / Pre-upgrade | 57.10 | 171.75 | 9,286,418,432 |
+| android / Main | 50.09 | 179.44 | 9,211,379,712 |
+| android / 100 | 48.66 | 153.71 | 9,196,077,056 |
+| android-e2e / Pre-upgrade | 38.32 | 116.98 | 8,255,340,544 |
+| android-e2e / Main | 38.98 | 147.84 | 9,156,820,992 |
+| android-e2e / 100 | 39.29 | 129.95 | 8,920,662,016 |
+
+Method-level comparison (100 point estimates, with both baselines explicit):
+
+- android versus Pre-upgrade: time -16.67%, allocation -13.99%.
+- android versus Main: time -1.52%, allocation -6.63%.
+- android-e2e versus Pre-upgrade: time +1.00%, allocation -2.97%.
+- android-e2e versus Main: time -0.66%, allocation -7.88%.
+
+The chain reduces allocation and whole-command CPU versus upgraded main in both Android configurations. Ordinary Android improves time relative to both baselines. Reduced Android EndToEndConfig is still 1.00% slower than old; its outer CPU is 129.95 vs old 116.98 s (+11.09%) and RSS 8,920,662,016 vs 8,255,340,544 bytes (+8.06%). Its outer wall is also 39.29 vs main 38.98 s despite the slightly better method point estimate. The old CPU/RSS gaps are material and remain part of the conclusion; allocation reductions cannot be equated with full memory/CPU recovery.
+
+Exact results, all forks, method identities and outer resource scope: /tmp/graphite-sootup-recovery.6wpE4s/trial100-android-jmh-comparison.json and results/{preupgrade,main,streaming-input-exact-serial-enum-typecache}-jmh-{android,android-e2e}-coldtypecache1/{command.json,jmh.json,stderr-time.log}. Wrapper command: python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py jmh LABEL --run coldtypecache1 --forks 2 --corpus android (repeat android-e2e). All hashes remain those of their immutable frozen snapshots, not the later directory-scoped source.
+
+**Tika JFR diagnostic boundary:** a separate pre-upgrade -> frozen100 pair used the identical reduced 4g gate with startup recovery.jfc and GC logging, without attach; both correctness gates passed. Both commands are marked profiled=true and excluded from performance summaries/tables. The directory-scope fix was not compiled into either snapshot. Whole diagnostic CPU was 73.38 -> 74.45 s (+1.07 s), with GC-log pause User+Sys sum 9.15 -> 10.03 s (+0.88 s). This is a smaller CPU gap than the unprofiled samples, and pause accounting excludes some concurrent-GC cost; it does not establish the cause of earlier unprofiled Tika CPU increases.
+
+Bounded JFR ThreadCPULoad integrals are approximations, not exact per-thread CPU counters: the sampled JIT and ForkJoin work did not show a surviving large parser-parallel/JIT excess. Execution samples were dispersed across strings/maps, persistence/compression and queries; weighted allocation groups report the first SootUp frame, combining callers, and do not measure this cache's hit/miss behavior. They must neither replace exact JMH B/op nor justify another cache from one profile. No clear, bounded, safe additional optimization is established. Preserve the unfavorable unprofiled CPU/RSS/tail observations. Details and protocol/source pins: /tmp/graphite-sootup-recovery.6wpE4s/profiles/trial100-tika/{interpretation.txt,protocol.json,time-gc-comparison.json,preupgrade-summary.txt,typecache-summary.txt}; profiled timings remain outside all performance tables.
+
+**Final integration validation:** The directory-scoped integration artifact has now passed the complete 471-test suite (zero failures/errors/skips), detekt, JMH artifact build and recovery-classpath preparation. Frozen label `recovery-final` has runtime adapter JAR SHA-256 `666f2ff520b69fd96335e2a968651104555d898220a3c4a04f9fced25009f410`. `/tmp/sootup-recovery-sources/recovery-final-snapshot/test-proof.json` pins the aggregate result and individual test XML hashes; `test-results/` preserves the XML, including the existing directory/JAR parity and truncated-class tests, and `/tmp/sootup-recovery-sources/recovery-final-test.log` records the successful full build. `artifact-diff.json` confirms only ParsedClassLocation and its companion differ from frozen 100, with no added/removed classes. These are new-artifact validation results; no historical timing or hash is relabeled. Final three real-corpus gates and a separate Android correctness helper checking for OOM/skipped analysis remain pending, as does CI. The five publishing-plugin Gradle files were restored to their recorded original SHA values; temporary build preparation changes are not part of the production patch.
+
+**Remaining:** final three real-corpus gates, Android no-OOM/no-skipped-analysis correctness and required CI/benchmark-regression-gate evidence are pending. Completed correctness checks do not settle the observed CPU/RSS and total-latency tradeoffs.
+
+**Final-source provenance:** the final integration source includes Attempt 097's later directory-path preservation: `fileSystem == null` keeps `Files.readAllBytes`, while archive entries use the exact input-stream read. This scope refinement occurred after this trial's frozen artifact and measurements. The hash-pinned results above still describe that original frozen source, not a validated or measured new artifact. No directory performance improvement is claimed; new-artifact full-suite/lint passed with 471 tests under recovery-final; the remaining real-corpus/Android checks and CI are pending (see Attempt 097 validation proof). See Attempt 097 and `/tmp/sootup-static-review/attempt097-directory-read-note.txt`.
+
+**Decision:** RETAINED as an aggregate-chain component for substantial measured allocation reductions and CPU reductions versus upgraded main, with the stated correctness checks on its frozen artifact. This does not make it a universal standalone improvement: both Hive orders cost about 2–3% CPU versus 099, RSS reverses direction, Tika/Kotlin CPU still exceeds old observations, quiet build CPU/RSS exceed 099, and the 11.278 s save tail remains. Reduced Android outer CPU/RSS also remain about 11%/8% above old. The overall user recovery goal is NOT yet fully met. The directory-scoped artifact passed 471 tests/lint/build, while final real-corpus/Android follow-ups and CI are pending; no blanket no-regression claim.
+
+**Final scoped-artifact gates:** after the directory-read correction, `recovery-final`
+(runtime adapter SHA-256 `666f2ff520b69fd96335e2a968651104555d898220a3c4a04f9fced25009f410`)
+passed all three existing 4 GiB real-corpus gates. These additional runs prove the
+integrated artifact still satisfies the gate assertions; they do not replace the
+paired frozen-100 samples or establish a new matched performance comparison.
+
+| Corpus | Build s | Save s | Pipeline s | Whole-process CPU s | Max RSS GB | Peak heap GB |
+|--------|--------:|-------:|-----------:|--------------------:|-----------:|-------------:|
+| Tika | 12.570 | 4.582 | 18.449 | 74.16 | 5.202 | 3.623 |
+| Hive | 22.972 | 7.315 | 31.950 | 112.23 | 5.266 | 4.079 |
+| Kotlin | 12.270 | 4.476 | 17.916 | 70.54 | 5.127 | 3.878 |
+
+Full raw metrics are in `/tmp/graphite-sootup-recovery.6wpE4s/recovery-final-proof-gates.json`.
+The final snapshot preserves the source state, build log, artifact diff, test XML
+and checksums in `/tmp/sootup-recovery-sources/recovery-final-snapshot`; all 471 tests
+passed without failures, errors or skips, and detekt passed. Additional Android
+coverage/no-OOM-skip assertions and the required PR benchmark gate remain pending.

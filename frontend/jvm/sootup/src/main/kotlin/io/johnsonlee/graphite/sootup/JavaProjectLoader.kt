@@ -16,7 +16,6 @@ import sootup.core.interceptor.BodyInterceptor
 import sootup.interceptors.BytecodeBodyInterceptors
 import sootup.interceptors.LocalSplitter
 import sootup.java.bytecode.frontend.inputlocation.JavaClassPathAnalysisInputLocation
-import sootup.java.core.views.JavaView
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -306,7 +305,7 @@ class JavaProjectLoader(
         val folding = config.folding?.let { ConstantFolding(it.rules) }
         foldInterceptors = folding?.bodyInterceptors(emptyList())
         val inputLocations = createInputLocations(path, folding)
-        val view = JavaView(inputLocations.locations)
+        val view = createJavaView(inputLocations.locations)
 
         val resourceAccessor = ArchiveResourceAccessor.create(path)
         val adapter = SootUpAdapter(
