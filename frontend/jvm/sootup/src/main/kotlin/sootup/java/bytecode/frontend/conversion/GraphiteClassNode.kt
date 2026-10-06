@@ -27,6 +27,15 @@ internal class GraphiteClassNode(
         methods.add(source)
         return source
     }
+
+    override fun visitEnd() {
+        // An empty table cannot name locals, but SootUp still indexes every instruction for it.
+        // Normalize after all visits; local type annotations and line information stay intact.
+        methods.forEach { method ->
+            if (method.localVariables?.isEmpty() == true) method.localVariables = null
+        }
+        super.visitEnd()
+    }
 }
 
 /**

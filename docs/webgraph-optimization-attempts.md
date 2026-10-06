@@ -4896,3 +4896,98 @@ The final snapshot preserves the source state, build log, artifact diff, test XM
 and checksums in `/tmp/sootup-recovery-sources/recovery-final-snapshot`; all 471 tests
 passed without failures, errors or skips, and detekt passed. Additional Android
 coverage/no-OOM-skip assertions and the required PR benchmark gate remain pending.
+
+**Late Android JAR correctness proof for final directory-scoped integration:** four independent Xmx8g builds completed successfully: main and `recovery-final` in each of the standard and EndToEndConfig benchmark configurations. All used the same pinned Android all 14-robolectric-10818077 real JAR, MmapGraphBuilder and verifier source SHA-256 `3e704ce69c5a4f0cd163160b6705c724cb41fcc9804d2a9fe323fbaa29624eac`. These are correctness-only runs, not performance replacements. The verified final adapter remains SHA-256 `666f2ff520b69fd96335e2a968651104555d898220a3c4a04f9fced25009f410`; these results do not cover the subsequent 101 `empty-lvt` artifact.
+
+| Configuration / variant | Heap | Exit | Recognized OOM skip messages | Nodes | Methods | Callsites |
+|---|---|---:|---:|---:|---:|---:|
+| Standard / main | 8g | 0 | 0 | 6,849,998 | 408,510 | 2,543,259 |
+| Standard / recovery-final | 8g | 0 | 0 | 6,849,998 | 408,510 | 2,543,259 |
+| End-to-end / main | 8g | 0 | 0 | 5,953,640 | 408,510 | 1,721,578 |
+| End-to-end / recovery-final | 8g | 0 | 0 | 5,953,640 | 408,510 | 1,721,578 |
+
+Both configuration comparisons report empty report differences and `ANDROID_BUILD_COVERAGE_PARITY_OK`. Standard enables annotations and cross-method dispatch; EndToEndConfig disables them; both disable call-graph construction, matching their corresponding JMH methods. No old/new baseline equivalence or APK/DEX result is inferred.
+
+The verifier uses typed, length-delimited encodings, raw floating bits and UTF-16 strings, failing on unknown metadata types. Full method descriptors have count/hash `408510:bae3a09dff97a0a9c588ac65dcc131683076ffae8dcb5a99132744ea305d3040` on both sides. Call payload count/hash is `2543259:9ac3250a1e90206d8d14f9bb83d9ac354642d4583a3b7054dc22f27ad7b0f0b7` in standard and `1721578:1c6e574428cb64f94ca3aa9a9cc68db4a9ec153318af9c5105bb76b5b0d95e34` in end-to-end. Call rows include caller/callee descriptors, line number and argument arity; a separate signature adds virtual/dynamic call-edge flags. Reports also compare node-kind/edge counts, annotation-node values, per-method annotation lookups, member annotations, synthetic identities, class origins and artifact dependencies.
+
+Coverage limits: these are order-independent typed aggregate fingerprints (sum of SHA-256 row hashes modulo 2^256 plus counts), not stored per-row payload comparisons. They do not verify argument/receiver node connectivity, all branch/data-flow structure, every resource/query API or every possible skipped-analysis path. The zero-OOM assertion specifically detects the adapter's known OOM-skip warning forms; it is not proof that arbitrary non-OOM skips cannot occur. Broader normalized Kotlin shape/metadata and typed enum evidence is recorded separately; full final-chain/CI evidence is still required.
+
+The first main standard verifier run failed because an overbroad classifier treated two legitimate enum debug messages containing `OOM_IMPROVEMENT` as OOM skips. That failed attempt remains at `reports/main-android-standard-finalproof1.tsv.{log,command.json,driver.log}`. The corrected classifier matches the actual warning prefixes/suffixes, with positive tests for all three OOM warning forms (including both streamed-method naming forms) and negative tests for the retained enum messages, exception-class names and ordinary non-OOM warnings. No failed run was relabeled a success; all four finalproof2 runs used the corrected pinned helper.
+
+Evidence: `/tmp/graphite-apk-recovery/verification/reports/android-finalproof2-summary.json`, `android-{standard,end-to-end}-finalproof2-compare.log`, and each `{main,recovery-final}-android-{standard,end-to-end}-finalproof2.tsv` plus command/log/driver records. Helper and classifier validation are `/tmp/graphite-apk-recovery/verification/{AndroidBuildVerifier.java,run-android-build.py,check-android-oom-classification.py}`. This late correctness evidence does not alter earlier frozen 100 timing/allocation/CPU/RSS results or erase their unfavorable samples.
+
+### 2026-10-07 — Attempt 101: Skip unused instruction indexing for empty local-variable tables
+
+**Question:** can an empty ASM local-variable list avoid SootUp's instruction-position map without changing any body names, debug information, annotations or control flow?
+
+**Revisions and scope:** parent commit `3c815753`, frozen `recovery-final` runtime adapter JAR SHA-256 `666f2ff520b69fd96335e2a968651104555d898220a3c4a04f9fced25009f410`. Frozen candidate `empty-lvt` runtime adapter JAR SHA-256 `c5aa3362611a96cd6890f4c30a2282a39339b23aa10908d20a77038f82df9923`. The current production change is nine added lines in `GraphiteClassNode.visitEnd`: after all class visits, set only a non-null, empty method `localVariables` list to null. Tests are in `StreamingClassMethodsTest`. ParsedClassLocation's directory/archive scope, nonempty LVT, instruction lists, type-annotation lists, line numbers, loading flags and the existing index implementation remain unchanged. This is independent of rejected Attempt 094: it skips unused empty-LVT work, not a replacement index/map.
+
+**Static mechanism:** ASM 9.10.1 `MethodNode` initializes `localVariables` to an empty ArrayList for every nonabstract method. SootUp 3.0.1 `determineLocalName` checks only for non-null, calls `insnIndex(atInsn)` before iterating that list, and builds a full instruction-position HashMap even when no entry can match. Empty and null both yield `l` + slot index. Parameter naming uses a null instruction and does not create the map. A method must create a new nonparameter local during conversion for this avoidable work to occur.
+
+Local TYPE_USE annotations are independent: their visible/invisible lists and scope lookup still request the same original instruction map when needed. LineNumberNode instructions remain intact. ASM replay emits zero local-variable events for either an empty or null list, while emitting annotations and line information independently. Normalization occurs at parse completion before publication, not during body conversion. Repeated body conversion and the existing scratch-release lifecycle must remain equivalent.
+
+**Source evidence:** exact Maven source archives, extracted files and SHA pins are under `/tmp/sootup-static-review/attempt101/`:
+
+| Source | SHA-256 |
+|---|---|
+| `asm-tree-9.10.1-sources.jar` | `93a9406bb68abff43f491891625e0d3c7edce87b70d2370ec1ea4627c9ead090` |
+| `sootup.java.bytecode.frontend-3.0.1-sources.jar` | `29900b731104a4d4c2d42ea497962b63a5d21df3e7b18d056fa6994869117ab6` |
+
+`MethodNode.java:226–227,473–509,732–770` and `AsmMethodSource.java:320–346,409–446` support the mechanism and metadata separation. `source-sha256.json` also pins the extracted source and inventory script; the inspected SootUp source matches the previously used copy byte for byte. `feasibility.txt` records references, lifecycle reasoning and limits.
+
+**Read-only real-input inventory:** Python parsed the pinned original JAR classfiles, checking fixture SHA-256 against `/tmp/graphite-sootup-recovery.6wpE4s/main.json`. Only root entries whose path matches the class name are included; META-INF variants are excluded consistently with the production input policy. Unknown/truncated structures fail. Encoded Code bytes are a classfile size proxy, not ASM node counts, saved allocation or performance measurements.
+
+| Real fixture | Code methods | No LVT entries | Nonempty LVT | No-LVT Code bytes | No-LVT with maxLocals > 0 |
+|---|---:|---:|---:|---:|---:|
+| Tika app 2.9.2 | 261,274 | 56,699 | 204,575 | 4,581,546 | 44,862 |
+| Kotlin compiler embeddable 2.0.21 | 248,855 | 16,297 | 232,558 | 1,605,677 | 6,253 |
+| Hive exec 4.0.0 | 429,941 | 27,973 | 401,968 | 1,279,821 | 6,614 |
+| Android all 14-robolectric-10818077 | 379,430 | 11,814 | 367,616 | 765,835 | 686 |
+
+Even positive maxLocals counts are upper bounds: this/parameter locals can already exist, unused slots need no name, and not every method is converted. No actual index-construction count or saved bytes/time is inferred. All four fixtures contain zero no-LVT methods with local TYPE_USE annotations; that critical combination therefore requires the new controlled correctness guard. Tika/Kotlin contain 50/86 methods with such annotations and nonempty LVT, which must remain unchanged. Full inventory, paths/checksums and explicit-empty versus missing-table counts are in `inventory.json`.
+
+```sh
+python3 /tmp/sootup-static-review/attempt101/inventory.py \
+  /tmp/graphite-sootup-recovery.6wpE4s/main.json \
+  /tmp/sootup-static-review/attempt101/inventory.json
+```
+
+**Validation prepared:** two new stock-versus-Graphite tests compare exact statements, local names/types/annotation values, normal/exceptional CFG topology and source positions. A no-LVT/no-local-annotation fixture must leave Graphite's instruction index absent while stock creates it; this is a structural assertion, not a synthetic benchmark. A no-LVT TYPE_USE fixture must preserve annotation scopes and index availability. Both repeat fresh body resolution and real adapter scratch cleanup. The adjacent nonempty-LVT test now checks complete names/slots, list identity and existing scoped behavior; line assertions use concrete fixture lines. The first full 473-test run failed three new position comparisons, including the existing nonempty-LVT reuse case; no freeze or benchmark followed. Frozen pre101 recovery-final reproduced that identical nonempty-LVT failure. Static source confirms the oracle compared stock's first cached body with candidate repeated resolutions while SootUp retains currentLineNumber. Tests now use SootUp's own `expected.withSource(expected.bodySource)` per iteration, with independent stock metadata/source and matched conversion counts; all exact position, semantic and cache assertions remain. The corrected oracle then passed the full 473-test suite (zero failures/errors/skips), detekt, JMH build and classpath preparation; `git diff --check` passed. `/tmp/sootup-recovery-sources/empty-lvt-test-retry1.log` and `empty-lvt-snapshot/test-proof.json` preserve the successful rerun. Artifact comparison changes only GraphiteClassNode and its file class; independent javap comparison confirms the latter's executable code is identical. Earlier failure/isolation records remain unchanged. Evidence: `/tmp/sootup-recovery-sources/attempt101-failed-test-proof/`, `attempt101-baseline-isolation/`, and `/tmp/sootup-static-review/attempt101/position-oracle-note.txt`.
+
+**Bounded real Tika evaluation:** the frozen parent and candidate each ran two cold JMH forks of `GraphBuildBenchmark.buildTikaGraphEndToEndConfig`, parent -> 101, using `-bm ss -tu ms -wi 0 -i 1 -f 2 -t 1 -foe true -jvmArgs '-Xmx8g' -prof gc`. The same pinned Tika app 2.9.2 was then used for three fresh Xmx4g gates in order 101 -> parent -> pre-upgrade. All configurations disable call graph, annotations and cross-method dispatch. The gates retain graph/query/branch-definition checks with timing ceilings disabled by record mode. Shared Apple M3 Max / JDK 17 host, not a dedicated runner.
+
+| Tika JMH variant | Fork1 ms/op | Fork2 ms/op | Mean ms/op | Fork1 allocation B/op | Fork2 allocation B/op | Mean allocation B/op | Outer CPU s | Outer max RSS bytes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| recovery-final | 12,394.283 | 12,653.049 | 12,523.666 | 21,499,888,256 | 21,570,098,728 | 21,534,993,492 | 92.98 | 5,374,836,736 |
+| empty-lvt | 12,554.027 | 12,365.532 | 12,459.780 | 21,399,790,952 | 21,423,486,216 | 21,411,638,584 | 94.01 | 5,180,080,128 |
+
+Outer CPU/RSS cover the entire JMH command including its harness and both forks, not method CPU/op or per-operation RSS. Allocation decreases by 123,354,908 B/op (123.35 decimal MB, 0.573%) versus the parent. Time mean is 0.51% lower, but fork ranges overlap; this does not establish a latency gain. Outer CPU rises 92.98 -> 94.01 s while RSS falls; neither is hidden by the allocation result.
+
+| Tika gate variant | Build ms | Save ms | Mapped-load median ms | Query ms | Pipeline ms | Process wall s | Process CPU s | Peak heap bytes | Max RSS bytes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| empty-lvt | 12,428 | 4,468 | 90 | 1,327 | 18,313 | 21.73 | 72.56 | 3,573,771,216 | 5,194,170,368 |
+| recovery-final | 12,460 | 4,529 | 90 | 1,214 | 18,293 | 21.65 | 72.57 | 3,564,011,544 | 5,192,679,424 |
+| preupgrade | 12,811 | 4,365 | 90 | 1,199 | 18,465 | 21.76 | 72.55 | 3,633,746,456 | 5,034,868,736 |
+
+All three gates pass; CPU is essentially flat at 72.56/72.57/72.55 s. Candidate saves/builds slightly faster than parent but query and total pipeline are slower; RSS is slightly above parent and about 159 MB above old. This newest old/parent CPU equality is retained alongside, not selected over, the earlier real samples showing old CPU/RSS gaps in 100. No full-scope CPU recovery or broad no-regression claim follows from a single Tika round.
+
+```sh
+python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py jmh recovery-final --run coldempty1 --forks 2 --corpus tika
+python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py jmh empty-lvt --run coldempty1 --forks 2 --corpus tika
+for label in empty-lvt recovery-final preupgrade; do
+  python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py gate "$label" --run empty1 --corpus tika
+done
+```
+
+**Evidence:** `trial101-tika-jmh-comparison.json`, `trial101-tika-gates.json` and matching `results/*-tika-{coldempty1,empty1}/` under `/tmp/graphite-sootup-recovery.6wpE4s` retain all rows/forks and exact command/fixture/runtime pins. `/tmp/sootup-recovery-sources/empty-lvt-snapshot/{source-state.json,artifact-diff.json,additional-class-code-verification.json,test-proof.json}` seals the candidate and passing tests. No investigator JVM runs were used; the coordinator ran the tests and measurements. APK remains paused.
+
+**Conclusion:** RETAIN the small nine-line removal of unused work: source semantics are bounded, 473 tests/lint pass, allocation has a 123 MB/op signal and gate CPU is flat versus the parent. This is not an established latency gain, full-scope CPU/RSS recovery or proof that the overall user goal is achieved. Broader final-artifact semantic/performance proof and required CI/benchmark-regression-gate remain pending; all previous unfavorable measurements remain valid evidence.
+
+**Additional sealed-candidate gates:** Hive and Kotlin also passed the unchanged
+4 GiB persisted-graph gate. Hive recorded build 22.603 s, pipeline 31.400 s,
+whole-process CPU 111.56 s, max RSS 5.408 GB and peak heap 4.104 GB. Kotlin
+recorded 12.089 s, 17.555 s, 72.16 s, 4.986 GB and 3.724 GB respectively.
+These candidate-only artifact checks do not replace paired comparisons. All
+fields remain in `/tmp/graphite-sootup-recovery.6wpE4s/trial101-proof-gates.json`.
+Final Android JMH/coverage, quiet full-feature shape/metadata, typed enum
+rechecks and the required PR benchmark gate remain in progress.
