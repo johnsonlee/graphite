@@ -225,6 +225,9 @@ pub struct Graph {
     pub resources: Option<Resources>,
     /// Persisted CallSite string accelerator, absent when the graph was built without it.
     call_site_index: Option<crate::callsite_index::CallSiteStringIndex>,
+    /// `CallSite.ordinal` per call site, from the `graph.callsite-ordinals` sidecar; empty
+    /// for a graph written before it existed.
+    call_site_ordinals: crate::node::CallSiteOrdinals,
     /// Whether each CallSite property name is itself a dictionary string, decided once:
     /// the planner asks it for every graph on every query, and the answer is a fact
     /// about the graph, not the query.
@@ -298,6 +301,19 @@ impl Graph {
             content_identity.as_ref(),
         )
         .map_err(|e| GraphError::CallSiteIndex(e.to_string()))?;
+        // The ordinal sidecar is optional, and one that is not the sidecar graph.metadata
+        // binds (left behind by a writer that did not know it) is read as absent: the graph is
+        // complete without it, as it is for a reader that predates it.
+        let call_site_ordinals = src
+            .bytes("graph.callsite-ordinals")
+            .map_err(io)?
+            .and_then(|bytes| {
+                crate::node::CallSiteOrdinals::parse(
+                    &bytes,
+                    metadata.call_site_ordinal_digest.as_ref(),
+                )
+            })
+            .unwrap_or_default();
 
         let mut graph = Graph {
             dir,
@@ -315,6 +331,7 @@ impl Graph {
             class_overview,
             resources,
             call_site_index,
+            call_site_ordinals,
             property_names_in_dictionary: std::sync::OnceLock::new(),
             string_columns: (0..crate::columns::RAW_STRING_FIELDS.len())
                 .map(|_| std::sync::OnceLock::new())
@@ -414,7 +431,31 @@ impl Graph {
 
     pub fn node(&self, id: NodeId) -> Option<Node> {
         let off = self.node_offset(id)?;
-        Node::read(&self.nodedata, off, self.node_version).ok()
+        let mut node = Node::read(&self.nodedata, off, self.node_version).ok()?;
+        if let crate::node::NodeKind::CallSite { ordinal, .. } = &mut node.kind {
+            *ordinal = self.call_site_ordinals.get(id);
+        }
+        Some(node)
+    }
+
+    /// `CallSite.ordinal` of node `id`, from the sidecar; `None` for another node or a graph
+    /// without the sidecar.
+    #[inline]
+    pub fn call_site_ordinal(&self, id: NodeId) -> Option<i32> {
+        self.call_site_ordinals.get(id)
+    }
+
+    /// `CallSite.origin` of node `id`: the call site a derived one was resolved from, from
+    /// the sidecar; `None` for any other node or a graph without the sidecar.
+    #[inline]
+    pub fn call_site_origin(&self, id: NodeId) -> Option<NodeId> {
+        self.call_site_ordinals.origin(id)
+    }
+
+    /// The call sites derived from call site `origin`: the lambda bodies a call on a
+    /// function value was resolved to.
+    pub fn call_sites_derived_from(&self, origin: NodeId) -> impl Iterator<Item = NodeId> + '_ {
+        self.call_site_ordinals.derived_from(origin)
     }
 
     /// Raw nodedata bytes (for zero-copy property probes).

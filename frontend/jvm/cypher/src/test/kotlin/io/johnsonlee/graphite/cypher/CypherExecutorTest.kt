@@ -1503,6 +1503,7 @@ class CypherExecutorTest {
         assertEquals("com.example.Service", nodeMap["caller_class"])
         assertEquals("process", nodeMap["caller_name"])
         assertEquals(10, nodeMap["line"])
+        assertTrue(nodeMap.containsKey("ordinal"), nodeMap.keys.toString())
     }
 
     @Test

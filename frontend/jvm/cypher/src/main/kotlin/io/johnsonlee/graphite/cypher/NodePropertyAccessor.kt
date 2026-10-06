@@ -136,10 +136,13 @@ object NodePropertyAccessor {
         "callee_class" -> node.callee.declaringClass.className
         "callee_name" -> node.callee.name
         "callee_signature" -> node.callee.signature
+        "callee_descriptor" -> node.callee.descriptor
         "caller_class" -> node.caller.declaringClass.className
         "caller_name" -> node.caller.name
         "caller_signature" -> node.caller.signature
+        "caller_descriptor" -> node.caller.descriptor
         "line" -> node.lineNumber
+        "ordinal" -> node.ordinal
         else -> null
     }
 
@@ -242,10 +245,13 @@ object NodePropertyAccessor {
             "callee_class" to node.callee.declaringClass.className,
             "callee_name" to node.callee.name,
             "callee_signature" to node.callee.signature,
+            "callee_descriptor" to node.callee.descriptor,
             "caller_class" to node.caller.declaringClass.className,
             "caller_name" to node.caller.name,
             "caller_signature" to node.caller.signature,
-            "line" to node.lineNumber
+            "caller_descriptor" to node.caller.descriptor,
+            "line" to node.lineNumber,
+            "ordinal" to node.ordinal
         )
         is IntConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
         is StringConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)

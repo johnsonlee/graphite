@@ -193,7 +193,21 @@ data class ResourceValueNode(
 ) : ValueNode, ConstantNode
 
 /**
- * A call site - where a method is invoked
+ * A call site - where a method is invoked.
+ *
+ * [ordinal] tells call sites of the same [caller] and [callee] apart, which no other property
+ * does: it counts, in statement order, the invokes of that callee in that method's bytecode,
+ * from `0`, every invoke, including the boxing and unboxing calls the graph shows as dataflow
+ * rather than as call sites, so `(caller_signature, callee_signature, ordinal)` names one call
+ * site and keeps naming it while the method's other statements change. A call the frontend derived rather than read from the
+ * bytecode (a function value's dispatch resolved to its body, a lambda body reached through
+ * `invokedynamic`, the methods a function object implements) counts apart, from `-1` downwards,
+ * so the ordinals of the calls the bytecode spells are the ones a pass over the method body
+ * reproduces. `null` in a graph persisted before the property existed.
+ *
+ * [origin] is, for a call site the frontend derived from another (a call on a function value
+ * resolved to the body of the lambda it holds), the call site it was resolved from: the
+ * bytecode's own call, the one a fold rule can replace. `null` for every other call site.
  */
 data class CallSiteNode(
     override val id: NodeId,
@@ -201,7 +215,9 @@ data class CallSiteNode(
     val callee: MethodDescriptor,
     val lineNumber: Int?,
     val receiver: NodeId?,  // Receiver object for instance method calls (null for static calls)
-    val arguments: List<NodeId> // References to argument value nodes
+    val arguments: List<NodeId>, // References to argument value nodes
+    val ordinal: Int? = null,
+    val origin: NodeId? = null
 ) : Node
 
 /**
@@ -239,6 +255,41 @@ data class MethodDescriptor(
     val returnType: TypeDescriptor
 ) {
     val signature: String get() = "${declaringClass.className}.$name(${parameterTypes.joinToString(",") { it.className }})"
+
+    /**
+     * The JVM method descriptor, `(Ljava/lang/String;)Z`: the parameter and return types the
+     * bytecode names the method by. [signature] leaves the return type out, so two methods of
+     * one class that differ only in it (a bridge beside its covariant override) share a
+     * signature but never a descriptor.
+     */
+    val descriptor: String get() = jvmMethodDescriptor(parameterTypes.map { it.className }, returnType.className)
+}
+
+/** The JVM descriptor of a method with these parameter and return type names, as the graph spells them. */
+fun jvmMethodDescriptor(parameterTypes: List<String>, returnType: String): String =
+    parameterTypes.joinToString("", "(", ")", transform = ::jvmTypeDescriptor) + jvmTypeDescriptor(returnType)
+
+/** `int` is `I`, `java.lang.String[]` is `[Ljava/lang/String;`: one JVM field descriptor per type name. */
+fun jvmTypeDescriptor(typeName: String): String {
+    var base = typeName
+    val dimensions = StringBuilder()
+    while (base.endsWith("[]")) {
+        base = base.removeSuffix("[]")
+        dimensions.append('[')
+    }
+    val element = when (base) {
+        "boolean" -> "Z"
+        "byte" -> "B"
+        "char" -> "C"
+        "short" -> "S"
+        "int" -> "I"
+        "long" -> "J"
+        "float" -> "F"
+        "double" -> "D"
+        "void" -> "V"
+        else -> "L${base.replace('.', '/')};"
+    }
+    return dimensions.append(element).toString()
 }
 
 data class FieldDescriptor(

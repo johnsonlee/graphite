@@ -213,6 +213,26 @@ class NodeTest {
         assertEquals("com.example.Foo.baz()", md.signature)
     }
 
+    @Test
+    fun `the descriptor keeps the return type the signature leaves out`() {
+        fun method(returnType: String) = MethodDescriptor(
+            declaringClass = TypeDescriptor("com.example.Foo"),
+            name = "same",
+            parameterTypes = listOf(TypeDescriptor("int"), TypeDescriptor("java.lang.String[]"), TypeDescriptor("a.B\$C")),
+            returnType = TypeDescriptor(returnType)
+        )
+        val bridge = method("java.lang.Object")
+        val override = method("java.lang.String")
+        assertEquals(bridge.signature, override.signature)
+        assertEquals("(I[Ljava/lang/String;La/B\$C;)Ljava/lang/Object;", bridge.descriptor)
+        assertEquals("(I[Ljava/lang/String;La/B\$C;)Ljava/lang/String;", override.descriptor)
+        assertEquals(
+            listOf("Z", "B", "C", "S", "I", "J", "F", "D", "V", "[[J"),
+            listOf("boolean", "byte", "char", "short", "int", "long", "float", "double", "void", "long[][]").map(::jvmTypeDescriptor)
+        )
+        assertEquals("()V", jvmMethodDescriptor(emptyList(), "void"))
+    }
+
     // ========================================================================
     // FieldDescriptor
     // ========================================================================

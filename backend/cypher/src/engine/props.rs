@@ -67,15 +67,19 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             caller,
             callee,
             line,
+            ordinal,
             ..
         } => match key {
             "callee_class" => s(g, callee.declaring_class),
             "callee_name" => s(g, callee.name),
             "callee_signature" => sig(g, callee),
+            "callee_descriptor" => Value::str(callee.descriptor(&g.strings)),
             "caller_class" => s(g, caller.declaring_class),
             "caller_name" => s(g, caller.name),
             "caller_signature" => sig(g, caller),
+            "caller_descriptor" => Value::str(caller.descriptor(&g.strings)),
             "line" => line.map(|l| Value::Int(l as i64)).unwrap_or(Value::Null),
+            "ordinal" => ordinal.map(|o| Value::Int(o as i64)).unwrap_or(Value::Null),
             _ => Value::Null,
         },
         NodeKind::IntConstant(v) => match key {
@@ -235,17 +239,30 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
             caller,
             callee,
             line,
+            ordinal,
             ..
         } => {
             put("callee_class", s(g, callee.declaring_class));
             put("callee_name", s(g, callee.name));
             put("callee_signature", sig(g, callee));
+            put(
+                "callee_descriptor",
+                Value::str(callee.descriptor(&g.strings)),
+            );
             put("caller_class", s(g, caller.declaring_class));
             put("caller_name", s(g, caller.name));
             put("caller_signature", sig(g, caller));
             put(
+                "caller_descriptor",
+                Value::str(caller.descriptor(&g.strings)),
+            );
+            put(
                 "line",
                 line.map(|l| Value::Int(l as i64)).unwrap_or(Value::Null),
+            );
+            put(
+                "ordinal",
+                ordinal.map(|o| Value::Int(o as i64)).unwrap_or(Value::Null),
             );
         }
         NodeKind::IntConstant(v) => put("value", Value::Int(*v as i64)),
@@ -353,7 +370,7 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
 }
 
 /// `CypherExecutor.nodeToMap` — the shape a node takes in a query result.
-/// Signature fields are excluded and null values are dropped, as Gson does.
+/// Signature and descriptor fields are excluded and null values are dropped, as Gson does.
 pub fn node_result_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
     let mut m = node_display_properties(g, node);
     m.retain(|_, v| !v.is_null());
@@ -369,6 +386,8 @@ pub fn node_display_properties(g: &Graph, node: &Node) -> IndexMap<String, Value
     let mut m = node_properties(g, node);
     m.shift_remove("caller_signature");
     m.shift_remove("callee_signature");
+    m.shift_remove("caller_descriptor");
+    m.shift_remove("callee_descriptor");
     if matches!(node.kind, NodeKind::LocalVariable { .. }) {
         // The baseline's `RETURN n` map for a local variable is its name and type.
         m.shift_remove("method");

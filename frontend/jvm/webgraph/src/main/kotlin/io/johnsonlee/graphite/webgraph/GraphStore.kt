@@ -561,11 +561,27 @@ object GraphStore {
     private const val METADATA_FILE = "graph.metadata"
     internal const val CALL_SITE_STRING_INDEX_FILE = "graph.callsite-string-index"
     internal const val BRANCH_DEFINITIONS_FILE = "graph.branchdefs"
+    internal const val CALL_SITE_ORDINALS_FILE = "graph.callsite-ordinals"
     private const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
     internal const val MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY =
         "graphite.webgraph.prepareCallSiteStringIndexOnLoad"
 
     private fun notDirectoryMessage(dir: Path): String = "$NOT_A_DIRECTORY_PREFIX $dir"
+
+    /**
+     * The `graph.callsite-ordinals` sidecar for every call site that has an ordinal, ascending by
+     * node id, with the digest `graph.metadata` binds to it; `null` when no call site has one (a
+     * graph built by an older frontend), in which case the save writes no sidecar and no binding,
+     * and the sidecar an earlier save left in the directory was already removed when the save began.
+     */
+    private fun encodeCallSiteOrdinals(graph: Graph): NodeSerializer.EncodedCallSiteOrdinals? {
+        val sites = graph.nodes(CallSiteNode::class.java).filter { it.ordinal != null }.sortedBy { it.id.value }.toList()
+        if (sites.isEmpty()) return null
+        val ids = IntArray(sites.size) { sites[it].id.value }
+        val ordinals = IntArray(sites.size) { sites[it].ordinal!! }
+        val origins = IntArray(sites.size) { sites[it].origin?.value ?: NO_ORIGIN }
+        return NodeSerializer.encodeCallSiteOrdinals(ids, ordinals, origins)
+    }
 
     private fun readMetadataMethodCount(metadataFile: Path): Long =
         DataInputStream(BufferedInputStream(metadataFile.toFile().inputStream())).use { dis ->
@@ -601,6 +617,7 @@ object GraphStore {
         Files.createDirectories(dir)
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
         Files.deleteIfExists(dir.resolve(BRANCH_DEFINITIONS_FILE))
+        Files.deleteIfExists(dir.resolve(CALL_SITE_ORDINALS_FILE))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
@@ -680,14 +697,18 @@ object GraphStore {
             callSiteIndexInput
         )
 
-        // 7. Save metadata with the trailer that binds it to the branch-definition sidecar, then the sidecar.
+        // 7. Save metadata with the trailer that binds it to the branch-definition sidecar and, last,
+        //    the binding of the call-site ordinal sidecar, then the two sidecars.
         val branchDefinitions = NodeSerializer.encodeBranchDefinitions(metadata.branchScopes, metadata.localDefinitions)
+        val callSiteOrdinals = encodeCallSiteOrdinals(graph)
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.saveMetadata(metadata, dos, stringTable)
             NodeSerializer.writeMetadataTrailer(dos, branchDefinitions.payloadDigest)
             NodeSerializer.writeSyntheticIdentities(metadata, dos, stringTable)
+            if (callSiteOrdinals != null) NodeSerializer.writeCallSiteOrdinalBinding(dos, callSiteOrdinals.digest)
         }
         Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
+        if (callSiteOrdinals != null) Files.write(dir.resolve(CALL_SITE_ORDINALS_FILE), callSiteOrdinals.bytes)
 
         // 8. Save class-level overview summary for explorer routes
         ClassOverviewStore.save(
@@ -867,12 +888,13 @@ object GraphStore {
         }
         val comparisonLookup = MapBranchComparisonLookup(comparisonMap)
 
+        val callSiteOrdinals = loadCallSiteOrdinals(dir)
         val nodesById = mutableMapOf<Int, Node>()
         DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA)
             val count = dis.readInt()
             repeat(count) {
-                val node = NodeSerializer.readNode(dis, stringTable, nodeDataVersion)
+                val node = NodeSerializer.readNode(dis, stringTable, nodeDataVersion, callSiteOrdinals)
                 nodesById[node.id.value] = node
             }
         }
@@ -972,7 +994,8 @@ object GraphStore {
             metadata = metadata,
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) },
-            branchDefinitions = branchDefinitions
+            branchDefinitions = branchDefinitions,
+            callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) }
         )
         if (prepareCallSiteStringIndex) {
             try {
@@ -984,6 +1007,14 @@ object GraphStore {
         }
         return graph
     }
+
+    /**
+     * The ordinal sidecar of the graph in [dir], bound by the digest `graph.metadata` ends with:
+     * read from the metadata's tail, not by parsing it, so a mapped graph pays nothing for the
+     * metadata on the first call site it decodes.
+     */
+    private fun loadCallSiteOrdinals(dir: Path): CallSiteOrdinals =
+        CallSiteOrdinals.load(dir.resolve(CALL_SITE_ORDINALS_FILE), NodeSerializer.readCallSiteOrdinalBinding(dir.resolve(METADATA_FILE)))
 
     /**
      * Parse `graph.metadata` with its optional sections: the trailer that binds it to its

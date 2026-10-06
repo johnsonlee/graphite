@@ -75,6 +75,22 @@ data class LoaderConfig(
     val androidSdk: Path? = null,
 
     /**
+     * Calls folded to constants while the graph is built, see [FoldPlan] and [FoldRule]. `null`
+     * leaves every body exactly as the frontend's default interceptors do.
+     */
+    val folding: FoldPlan? = null,
+
+    /**
+     * Whether to link every call to its callee's body: a `DATAFLOW` edge from each argument to
+     * the callee's `ParameterNode` and from the callee's `ReturnNode` to the call's result, for
+     * the declared callee and, on a virtual call, every override the view knows. Off by default,
+     * so a graph is per-method dataflow joined only at call sites; `graphite build` turns it on
+     * for the graph a `select` fold rule runs on, where a query must follow a value through a
+     * helper's parameter and back out of its return.
+     */
+    val interproceduralDataflow: Boolean = false,
+
+    /**
      * Verbose logging callback
      */
     val verbose: ((String) -> Unit)? = null

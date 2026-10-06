@@ -9,7 +9,13 @@
 //! writes a staging directory next to it (the frontend only ever writes directories) and
 //! the shell packs that into the file afterwards, so every frontend produces the single
 //! file without knowing about it.
+//!
+//! A `--fold` file is the shell's to read as well: when it holds `select` rules, the shell
+//! builds once without rules, resolves every query on that graph, and builds again with
+//! the selected call sites (`fold.rs`); a file of `match` rules alone goes straight to
+//! the frontend, one build as before.
 
+use crate::fold;
 use crate::frontend::{self, Env, Frontend, Launch};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -152,7 +158,26 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
         eprintln!("{}", missing_frontend_message());
         return 2;
     };
-    let inv = match invocation(env, &fe, args) {
+    // A fold file with `select` rules needs a graph to run them on: two builds. An output
+    // the frontend would reject anyway (none named) goes straight to it for the message.
+    if let (Some(file), Some(output)) = (fold::fold_file(args), fold::output_of(args)) {
+        let input = fold::input_of(args);
+        let analysis = fold::analysis_options(args);
+        let plan = match fold::plan(env, &fe, &file, input.as_deref(), &analysis) {
+            Ok(plan) => plan,
+            Err(code) => return code,
+        };
+        let selects = fold::selects(&plan);
+        if !selects.is_empty() {
+            return run_with_selects(env, &fe, args, &output, plan, &selects);
+        }
+    }
+    run_frontend(env, &fe, args)
+}
+
+/// One frontend build with `args`, packed when the output is a `.graphite` file.
+fn run_frontend(env: &Env, fe: &Frontend, args: &[OsString]) -> i32 {
+    let inv = match invocation(env, fe, args) {
         Ok(inv) => inv,
         Err(message) => {
             eprintln!("Error: {message}");
@@ -170,6 +195,82 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
         Some(pack) => finish_pack(pack, code),
         None => code,
     }
+}
+
+/// Build without rules into a staging directory, resolve every `select` rule on that
+/// graph, write the resolved plan, and build again with it into `output`. The staging
+/// directory goes either way; the second build's output is the only result.
+fn run_with_selects(
+    env: &Env,
+    fe: &Frontend,
+    args: &[OsString],
+    output: &Path,
+    plan: serde_json::Value,
+    selects: &[(usize, String)],
+) -> i32 {
+    let stage = fold::unfolded_dir_for(output);
+    let code = run_two_passes(env, fe, args, &stage, plan, selects);
+    if stage.exists() {
+        if let Err(e) = std::fs::remove_dir_all(&stage) {
+            eprintln!(
+                "Warning: could not remove the unfolded graph {}: {e}",
+                stage.display()
+            );
+        }
+    }
+    code
+}
+
+fn run_two_passes(
+    env: &Env,
+    fe: &Frontend,
+    args: &[OsString],
+    stage: &Path,
+    plan: serde_json::Value,
+    selects: &[(usize, String)],
+) -> i32 {
+    eprintln!(
+        "Building the graph without rules to resolve {} select rule(s)",
+        selects.len()
+    );
+    let first = run_frontend(env, fe, &fold::staging_args(args, stage));
+    if first != 0 {
+        return first;
+    }
+    let resolved = match resolve(stage, plan, selects) {
+        Ok(resolved) => resolved,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 1;
+        }
+    };
+    let resolved_path = stage.join(fold::RESOLVED_PLAN);
+    if let Err(e) = std::fs::write(&resolved_path, resolved.to_string()) {
+        eprintln!("Error: could not write {}: {e}", resolved_path.display());
+        return 1;
+    }
+    eprintln!("Building the graph with the selected call sites folded");
+    run_frontend(env, fe, &fold::with_fold_file(args, &resolved_path))
+}
+
+/// Run the `select` queries on the graph in `stage` and fill their call sites into the
+/// plan. The graph is dropped before this returns, so the directory can go.
+fn resolve(
+    stage: &Path,
+    plan: serde_json::Value,
+    selects: &[(usize, String)],
+) -> Result<serde_json::Value, String> {
+    let graph = graphite_storage::Graph::load(stage)
+        .map_err(|e| format!("could not load the unfolded graph {}: {e}", stage.display()))?;
+    let executor =
+        graphite_cypher::engine::Executor::single("unfolded", std::sync::Arc::new(graph));
+    let mut selections = Vec::with_capacity(selects.len());
+    for (index, query) in selects {
+        let keys = fold::select_sites(&executor, *index, query)?;
+        eprintln!("select rule {index}: {} call site(s) selected", keys.len());
+        selections.push((*index, keys));
+    }
+    Ok(fold::resolve_plan(plan, &selections))
 }
 
 /// Pack the staging directory into the output once the frontend has succeeded, and

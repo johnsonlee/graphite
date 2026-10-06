@@ -22,6 +22,7 @@ dependencies {
     implementation(project(":webgraph"))
     implementation(libs.picocli)
     implementation(libs.gson)
+    implementation(libs.snakeyaml)
     add(resourceFixture.name, libs.spring.jcl)
 }
 

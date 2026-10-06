@@ -197,9 +197,11 @@ const LARGE_CORPUS_SHAPE_FIELDS = ["nodes", "sourceEdges", "persistedEdges", "me
 const LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE = 4 * 1024;
 const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 
-// One-time graph-shape transition: SootUp 3.0.1's type assigner gives every local a concrete
-// type where 2.0.0 left `unknown`, so the string table carries more type names and the
-// persisted size grows by them while the node, edge, method and call-site counts stay
+// One-time graph-shape transition: the graph.callsite-ordinals sidecar adds eight bytes per
+// call site (node id, ordinal), a 44-byte header, an index of 36 bytes per block of 256 call
+// sites (the block's first node id and the SHA-256 of its entries) and the 36-byte binding at
+// the end of graph.metadata, plus an origin table that is empty without dispatch resolution,
+// so the persisted size grows by that while the node, edge, method and call-site counts stay
 // identical. Only this exact base -> candidate shape, and a persisted-size delta within
 // LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may pass while the workflow
 // selects the pinned shape-transition controls; every other comparison keeps exact shape
@@ -208,17 +210,17 @@ export const LARGE_CORPUS_SHAPE_TRANSITION = Object.freeze({
     tika: {
         base: { nodes: 3_901_103, sourceEdges: 4_510_016, persistedEdges: 4_353_588, methods: 312_788, callSites: 1_006_172 },
         candidate: { nodes: 3_901_103, sourceEdges: 4_510_016, persistedEdges: 4_353_588, methods: 312_788, callSites: 1_006_172 },
-        persistedBytesDelta: 6_166
+        persistedBytesDelta: 8_190_900
     },
     hive: {
         base: { nodes: 5_992_914, sourceEdges: 6_597_267, persistedEdges: 6_376_682, methods: 404_016, callSites: 1_443_886 },
         candidate: { nodes: 5_992_914, sourceEdges: 6_597_267, persistedEdges: 6_376_682, methods: 404_016, callSites: 1_443_886 },
-        persistedBytesDelta: 3_870
+        persistedBytesDelta: 11_754_172
     },
     "kotlin-compiler": {
         base: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
         candidate: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
-        persistedBytesDelta: 10_705
+        persistedBytesDelta: 7_512_796
     }
 });
 
