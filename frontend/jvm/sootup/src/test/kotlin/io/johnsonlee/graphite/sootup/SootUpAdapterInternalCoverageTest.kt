@@ -41,7 +41,7 @@ import sootup.core.frontend.BodySource
 import sootup.core.frontend.SootClassSource
 import sootup.core.jimple.basic.NoPositionInformation
 import sootup.core.jimple.basic.StmtPositionInfo
-import sootup.core.jimple.basic.Local
+import sootup.core.jimple.common.Local
 import sootup.core.jimple.common.constant.IntConstant
 import sootup.core.jimple.common.constant.MethodHandle
 import sootup.core.jimple.common.constant.StringConstant as SootStringConstant
@@ -68,7 +68,11 @@ import sootup.core.types.ClassType
 import sootup.core.types.VoidType
 import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocation
 import sootup.java.core.JavaIdentifierFactory
+import sootup.java.core.AnnotationUsage
 import sootup.java.core.JavaSootClass
+import sootup.java.core.JavaSootClassSource
+import sootup.java.core.JavaSootField
+import sootup.java.core.JavaSootMethod
 import sootup.java.core.jimple.basic.JavaLocal
 import sootup.java.core.views.JavaView
 import sootup.core.views.View
@@ -523,16 +527,16 @@ class SootUpAdapterInternalCoverageTest {
             invokePrivate(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), caller, textLocal.name)
         ] = "hello"
 
-        assertEquals("java.class", invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, controlLocal))
-        assertEquals("java.class", invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, classFormatRef))
-        assertEquals("java.properties", invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, propertiesFormatRef))
-        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, defaultFormatRef))
-        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, wrongOwnerRef))
-        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), null, controlLocal))
+        assertEquals("java.class", invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, controlLocal))
+        assertEquals("java.class", invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, classFormatRef))
+        assertEquals("java.properties", invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, propertiesFormatRef))
+        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, defaultFormatRef))
+        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, wrongOwnerRef))
+        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), null, controlLocal))
 
-        assertEquals("direct", invokePrivate<String?>(adapter, "extractStringValue", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, SootStringConstant("direct", identifierFactory.getType("java.lang.String"))))
-        assertEquals("hello", invokePrivate<String?>(adapter, "extractStringValue", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, textLocal))
-        assertNull(invokePrivate<String?>(adapter, "extractStringValue", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, null))
+        assertEquals("direct", invokePrivate<String?>(adapter, "extractStringValue", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, SootStringConstant("direct", identifierFactory.getType("java.lang.String"))))
+        assertEquals("hello", invokePrivate<String?>(adapter, "extractStringValue", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, textLocal))
+        assertNull(invokePrivate<String?>(adapter, "extractStringValue", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, null))
 
         assertTrue(invokePrivate(adapter, "isResourceBundleControlClass", arrayOf(sootup.core.model.SootClass::class.java), resolveJavaSootClass(adapter, "sample.resources.ClassOnlyControl")))
         assertFalse(invokePrivate(adapter, "isResourceBundleControlClass", arrayOf(sootup.core.model.SootClass::class.java), resolveJavaSootClass(adapter, "sample.resources.MessagesListBundle")))
@@ -802,7 +806,7 @@ class SootUpAdapterInternalCoverageTest {
             invokePrivate<Any?>(
                 adapter,
                 "extractValueFromArg",
-                arrayOf(sootup.core.jimple.basic.Value::class.java, Map::class.java),
+                arrayOf(sootup.core.jimple.common.Value::class.java, Map::class.java),
                 JStaticFieldRef(identifierFactory.getFieldSignature("KOREA", identifierFactory.getClassType("java.util.Locale"), identifierFactory.getType("java.util.Locale"))),
                 emptyMap<String, Any?>()
             )
@@ -957,7 +961,7 @@ class SootUpAdapterInternalCoverageTest {
             invokePrivate<Any?>(
                 adapter,
                 "extractBundleControlSpec",
-                arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java, String::class.java, String::class.java),
+                arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java, String::class.java, String::class.java),
                 caller,
                 JNewExpr(identifierFactory.getClassType("missing.Control")),
                 "sample.resources.MessagesListBundle",
@@ -968,7 +972,7 @@ class SootUpAdapterInternalCoverageTest {
             invokePrivate<Any?>(
                 adapter,
                 "extractBundleControlSpec",
-                arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java, String::class.java, String::class.java),
+                arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java, String::class.java, String::class.java),
                 caller,
                 SootStringConstant("not-control", identifierFactory.getType("java.lang.String")),
                 "sample.resources.MessagesListBundle",
@@ -987,9 +991,9 @@ class SootUpAdapterInternalCoverageTest {
             )
         )
         val unknownFormatRef = JStaticFieldRef(identifierFactory.getFieldSignature("UNKNOWN", identifierFactory.getClassType("java.util.ResourceBundle\$Control"), identifierFactory.getType("java.lang.Object")))
-        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, unknownFormatRef))
-        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, sootup.core.jimple.common.constant.IntConstant.getInstance(1)))
-        assertNull(invokePrivate<String?>(adapter, "extractLocaleSpec", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, SootStringConstant("ko", identifierFactory.getType("java.lang.String"))))
+        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, unknownFormatRef))
+        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, sootup.core.jimple.common.constant.IntConstant.getInstance(1)))
+        assertNull(invokePrivate<String?>(adapter, "extractLocaleSpec", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.common.Value::class.java), caller, SootStringConstant("ko", identifierFactory.getType("java.lang.String"))))
         val plainBundle = SimpleBundle("plain")
         invokePrivate<Unit>(adapter, "indexRuntimeBundle", arrayOf(ResourceBundle::class.java), plainBundle)
         assertEquals("bundle", readField<MutableMap<String, MutableList<ResourceFileNode>>>(adapter, "resourceFilesByPath").getValue(plainBundle.javaClass.name).single().format)
@@ -1229,7 +1233,7 @@ class SootUpAdapterInternalCoverageTest {
     private open class FakeSootMethod(
         signature: MethodSignature,
         modifiers: Iterable<MethodModifier> = emptyList()
-    ) : SootMethod(
+    ) : JavaSootMethod(
         FakeBodySource(signature),
         signature,
         modifiers,
@@ -1251,28 +1255,30 @@ class SootUpAdapterInternalCoverageTest {
         private val methods: Set<SootMethod> = emptySet(),
         private val failure: Throwable? = null,
         private val enumClass: Boolean = false
-    ) : SootClass(FakeClassSource(classType), SourceType.Application) {
-        override fun getMethods(): Set<SootMethod> {
+    ) : JavaSootClass(FakeClassSource(classType), SourceType.Application) {
+        @Suppress("UNCHECKED_CAST")
+        override fun getMethods(): Set<JavaSootMethod> {
             failure?.let { throw it }
-            return methods
+            return methods as Set<JavaSootMethod>
         }
 
         override fun isEnum(): Boolean = enumClass
     }
 
-    private class FakeClassSource(classType: ClassType) : SootClassSource(
+    private class FakeClassSource(classType: ClassType) : JavaSootClassSource(
         PathBasedAnalysisInputLocation.create(Path.of(System.getProperty("java.io.tmpdir")), SourceType.Application),
         classType,
         Path.of("fake.class")
     ) {
-        override fun resolveMethods(): Collection<SootMethod> = emptyList()
-        override fun resolveFields(): Collection<SootField> = emptyList()
+        override fun resolveMethods(): Collection<JavaSootMethod> = emptyList()
+        override fun resolveFields(): Collection<JavaSootField> = emptyList()
         override fun resolveModifiers(): Set<ClassModifier> = emptySet()
         override fun resolveInterfaces(): Set<ClassType> = emptySet()
         override fun resolveSuperclass(): java.util.Optional<ClassType> = java.util.Optional.empty()
         override fun resolveOuterClass(): java.util.Optional<ClassType> = java.util.Optional.empty()
         override fun resolvePosition() = NoPositionInformation.getInstance()
-        override fun buildClass(sourceType: SourceType): SootClass = FakeSootClass(classType)
+        override fun resolveAnnotations(): Iterable<AnnotationUsage> = emptyList()
+        override fun buildClass(sourceType: SourceType): JavaSootClass = FakeSootClass(classType)
     }
 
     private class FakeView(

@@ -95,6 +95,12 @@ data class CorpusBaseline(
     val maxPipelineMillis: Long
 )
 
+/**
+ * Counts measured on SootUp 3.0.1, whose type assigner gives every local a concrete type where 2.0.0
+ * left `unknown`: node, edge, method and call-site counts are identical to the 2.0.0 build, and only
+ * the string table, hence the persisted size, grows (Tika +6,166, Hive +3,870, Kotlin compiler
+ * +10,705 bytes).
+ */
 private object CorpusBaselines {
     val tika = CorpusBaseline(
         id = "tika",

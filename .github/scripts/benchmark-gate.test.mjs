@@ -2825,7 +2825,7 @@ test("workflow selects the pinned shape transition fail-closed and only before t
     // main the base digest no longer matches and the transition can never be selected again.
     assert.equal(
         pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"),
-        "d32a6cb1a2f5c4981f96e9f85d5bfe91348d2c1e4c324b7c4d84ba8070f4531a"
+        "9c8c2e5dd79b1bbaa1fa0c7fc67b1deb41ae2149907941dffbc7afbc7872e86c"
     );
     assert.notEqual(pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"), sha256(harness));
 
@@ -2939,7 +2939,7 @@ test("pinned large-corpus shape transition matches the harness baselines", () =>
             const value = count(block[0].match(new RegExp(`${key} = ([\\d_]+)`))[1]);
             assert.equal(transition.candidate[field], value, `${corpus}/${field}`);
         }
-        // The synthetic identity section changes no graph shape; it only grows the persisted size.
+        // The typed locals change no graph shape; they only grow the string table, hence the persisted size.
         for (const field of ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"]) {
             assert.equal(transition.base[field], transition.candidate[field], `${corpus}/${field}`);
         }

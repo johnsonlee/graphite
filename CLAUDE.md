@@ -352,6 +352,71 @@ Lessons:
   `KotlinLambdaDispatchTest` runs every shape against all three outputs. Desugaring adds a
   `$r8$lambda$` trampoline per lambda, so reachability checks need a deeper hop budget.
 
+### SootUp 3.x: What the Upgrade From 2.0.0 Changed
+
+- API renames, all mechanical: `StmtGraph`/`MutableStmtGraph` are `ControlFlowGraph`/
+  `MutableControlFlowGraph` (`builder.controlFlowGraph`), `Local`/`Value`/`Immediate` live in
+  `sootup.core.jimple.common`, `BodyInterceptor` in `sootup.core.interceptor`, `Stmt.getUses()`
+  returns a `List`, `AsmUtil.asmIdToSignatures` is plural, and `ApkAnalysisInputLocation`
+  takes an `AndroidVersionInfo`. `SootMethod`, `SootClass` and `SootClassSource` are interfaces;
+  test fakes extend `JavaSootMethod`, `JavaSootClass` and `JavaSootClassSource`.
+- The bytecode frontend no longer hands out an `AsmClassSource` with a `ClassNode`: it converts
+  each class into an `OverridingJavaClassSource` that already holds one `JavaSootMethod` per
+  method (its ASM `MethodNode` is the body source) and releases the `ClassNode`. The adapter's
+  streaming path reads those methods instead of reflecting on `classNode`; without that it
+  silently fell back to `sootClass.methods`.
+- `JavaSootMethod` memoizes its body. Resolving graphs through the methods the view holds keeps
+  every body of the corpus alive and ran the Android SDK out of a 4 GB heap; the adapter
+  processes a detached copy of each method (same body source, own cache) and drops it.
+  `AsmMethodSource` keeps per-instruction scratch maps after resolving a body; the adapter
+  nulls them after every path that resolves one (the method pass, the enum initialiser, bridge
+  bodies, and the view's own methods once a call-graph algorithm has run), not only in the
+  streaming sequence, whose `finally` runs before a `toList()` consumer resolves anything and
+  never runs for an abandoned `firstOrNull`.
+- `AsmClassSource.resolveMethods()` collects into a `HashSet` keyed by identity, so the order
+  changes from load to load; the adapter sorts by signature. Unsorted, synthetic fingerprints
+  were non-deterministic across two loads of the same classes.
+- The type assigner gives every local a type: the parity baseline moved 7904 `type=unknown`
+  facts to concrete types, nothing else changed. The richer `type` values also exposed a
+  Kotlin engine bug the Rust parity harness had never hit: `RETURN n.type, count(*) ORDER BY
+  n.type` was not sorted, because the grouped path never evaluated the sort key on the
+  group's source row the way the Rust engine (and the non-grouped Kotlin path) does.
+- The frontend semantic gate (`frontend-correctness/expectations.tsv`) names locals by type, so
+  its oracle must say what the source holds, not what a frontend happened to infer: 2.0.0 left
+  loaded locals `unknown`, which let a `forbid FIELD_LOAD ... local:int` pass in a method that
+  really does read the field back (`return stored + values[0]`). Under 3.0.1 such rules are
+  rewritten to the source types, and a forbid names an edge no source can produce (a
+  reversed field store, an array store into an `int`). DEX registers stay untyped; 3.0.1 fixed `sput`/`aput`/`iput` read back as loads, so
+  those entries left `known-deviations.tsv`.
+- 3.0.1 built a large corpus 10-20% slower than 2.0.0 (kotlin-compiler: +22% on the CI gate,
+  whose limit is 20%; +9.6% on an M3 Max). JFR alone could not say where: the extra wall
+  time was main-thread CPU in the graph pass that the sampler under-reported, and the only
+  measurement that resolved it was per-phase main-thread CPU time
+  (`ThreadMXBean.getCurrentThreadCpuTime()` at each phase log) next to process CPU and GC time.
+  The cause is SootUp 3's eager class source: `AsmJavaClassProvider.createClassSource` reads
+  the file to check its name, reads it again, and wraps it in an `OverridingJavaClassSource`
+  that converts every method's descriptor and annotations and every field of every class as
+  the input is enumerated, before the graph pass, on code the JIT has not compiled, and
+  under the identifier factory's lock (`cache.asMap().computeIfAbsent`, which locks on a hit
+  too) when the enumeration runs in parallel: parsing 25k classes on four cores cost 17 s of
+  CPU for 5.7 s of wall, against 4.5 s serial. It then drops the `ClassNode`, so the field
+  generic signatures the adapter read off the node in 2.0.0 had to be read again from the
+  class file, one zip entry per class (0.45 s on Tika). `ParsedClassLocation` parses each
+  class once into SootUp's own node (`GraphiteClassNode`, in SootUp's package because
+  `AsmMethodSource`'s constructor is package-private) and hands the view the lazy
+  `AsmClassSource` that 2.0.0 handed it, so members are resolved when the graph pass reaches
+  the class, on hot code and one thread; the field signatures are kept from that parse
+  (`fieldSignatures`). The other costs of this frontend's that the phase CPU found, each a
+  few hundred milliseconds: `resolveMethods()` called two or three times per class (each
+  call converts every descriptor again; `bytecodeMethods` reads the class's memoised methods
+  and caches them while the class is processed), the method sort rendering a signature per
+  method (sorted by the method node's name and descriptor), and `getDeclaredField` per
+  method for the scratch-field release (looked up once per class). Resolving bodies ahead on worker threads
+  was measured and rejected: 4 s slower, from the same lock. A shared `AsmJavaClassProvider`
+  across threads produced a `ClassNode` whose methods were plain `MethodNode`s (a
+  `ClassCastException` in `resolveMethods`); one node per class does not.
+
+
 ### Why `buildGraph()` Is Not Parallelized
 
 After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.

@@ -13,7 +13,6 @@ import sootup.apk.frontend.main.AndroidVersionInfo
 import sootup.core.inputlocation.AnalysisInputLocation
 import sootup.core.model.SourceType
 import sootup.java.bytecode.frontend.inputlocation.JavaClassPathAnalysisInputLocation
-import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocation
 import sootup.java.core.views.JavaView
 import java.io.File
 import java.nio.file.Files
@@ -53,7 +52,7 @@ private fun createApkInputLocations(
     val platforms = resolveAndroidPlatformsPath(config)
     val apkLocation = ApkAnalysisInputLocation(
         path,
-        platforms.toString(),
+        AndroidVersionInfo(path, platforms.toString()),
         DexBodyInterceptors.Default.bodyInterceptors()
     )
     val locations = mutableListOf<AnalysisInputLocation>(apkLocation)
@@ -277,7 +276,7 @@ class JavaProjectLoader(
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
             else -> {
-                val location = PathBasedAnalysisInputLocation.create(path, SourceType.Application)
+                val location = inputLocation(path, SourceType.Application)
                 InputLocations(
                     locations = listOf(location),
                     sources = mapOf(location to path.fileName.toString())
@@ -285,6 +284,14 @@ class JavaProjectLoader(
             }
         }
     }
+
+    /**
+     * An input location whose classes this frontend parses once each, in parallel, and hands to
+     * the view behind SootUp's lazy class source ([ParsedClassLocation]), with the frontend's own
+     * (empty) interceptor chain.
+     */
+    private fun inputLocation(path: Path, sourceType: SourceType): AnalysisInputLocation =
+        ParsedClassLocation(path, sourceType, emptyList())
 
     private fun createDirectoryInputLocations(path: Path): InputLocations {
         val locations = mutableListOf<AnalysisInputLocation>()
@@ -501,7 +508,7 @@ class JavaProjectLoader(
         path: Path,
         sourceType: SourceType
     ) {
-        val location = PathBasedAnalysisInputLocation.create(path, sourceType)
+        val location = inputLocation(path, sourceType)
         add(location)
         sources[location] = sourceName
     }
