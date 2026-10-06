@@ -5179,10 +5179,11 @@ class QueryPipeline private constructor(
                             }
                         }
                         copyProvenance(row, groupRows)
+                        attachGroupOrderValues(row, groupRows, orderBy)
                         row
                     }
                 } else {
-                    projectTrackedGroups(expandedItems, columns, groupByIndices, aggIndices, rows)
+                    projectTrackedGroups(expandedItems, columns, groupByIndices, aggIndices, rows, orderBy)
                 }
             }
         } else {
@@ -5210,7 +5211,8 @@ class QueryPipeline private constructor(
         columns: List<String>,
         groupByIndices: List<Int>,
         aggregateIndices: Set<Int>,
-        rows: List<Map<String, Any?>>
+        rows: List<Map<String, Any?>>,
+        orderBy: CypherClause.OrderBy?
     ): List<Map<String, Any?>> {
         val groups = groupRowsByCypherValue(items, groupByIndices, rows, trackWork = true)
         return groups.mapIndexed { index, groupRows ->
@@ -5224,9 +5226,21 @@ class QueryPipeline private constructor(
                 }
             }
             copyProvenance(row, groupRows)
+            attachGroupOrderValues(row, groupRows, orderBy)
             row
         }
     }
+
+    /**
+     * After `RETURN n.type, count(*)` the variable `n` is gone, so `ORDER BY n.type` is
+     * evaluated on the group's first source row, as the Rust engine does; an aggregate in
+     * the sort key is still rejected there.
+     */
+    private fun attachGroupOrderValues(
+        projected: MutableMap<String, Any?>,
+        groupRows: List<Map<String, Any?>>,
+        orderBy: CypherClause.OrderBy?
+    ) = attachOrderValues(projected, groupRows.first(), distinct = false, orderBy)
 
     private fun groupRowsByCypherValue(
         items: List<ReturnItem>,

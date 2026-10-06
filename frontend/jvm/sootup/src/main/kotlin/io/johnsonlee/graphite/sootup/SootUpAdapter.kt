@@ -71,12 +71,10 @@ import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
 import org.objectweb.asm.tree.TypeInsnNode
 import org.objectweb.asm.tree.VarInsnNode
-import sootup.core.frontend.BodySource
-import sootup.core.graph.StmtGraph
+import sootup.core.graph.ControlFlowGraph
 import sootup.core.inputlocation.AnalysisInputLocation
-import sootup.core.jimple.basic.NoPositionInformation
-import sootup.core.jimple.basic.Local
-import sootup.core.jimple.basic.Value
+import sootup.core.jimple.common.Local
+import sootup.core.jimple.common.Value
 import sootup.core.jimple.common.constant.IntConstant as SootIntConstant
 import sootup.core.jimple.common.constant.LongConstant as SootLongConstant
 import sootup.core.jimple.common.constant.FloatConstant as SootFloatConstant
@@ -108,6 +106,7 @@ import sootup.core.jimple.common.expr.JLtExpr
 import sootup.core.jimple.common.expr.JGeExpr
 import sootup.core.jimple.common.expr.JGtExpr
 import sootup.core.jimple.common.expr.JLeExpr
+import sootup.core.model.Body
 import sootup.core.model.SootClass
 import java.lang.reflect.Modifier
 import sootup.core.model.ClassModifier
@@ -117,6 +116,7 @@ import sootup.core.signatures.MethodSubSignature
 import sootup.core.signatures.MethodSignature
 import sootup.core.util.Modifiers
 import sootup.java.core.JavaSootClass
+import sootup.java.bytecode.frontend.conversion.isBytecodeClassSource
 import sootup.java.core.JavaSootMethod
 import sootup.core.types.ClassType
 import sootup.core.types.ArrayType
@@ -126,8 +126,6 @@ import sootup.core.views.View
 import sootup.callgraph.CallGraph
 import sootup.callgraph.ClassHierarchyAnalysisAlgorithm
 import sootup.callgraph.RapidTypeAnalysisAlgorithm
-import sootup.java.bytecode.frontend.conversion.AsmMethodSource
-import sootup.java.bytecode.frontend.conversion.AsmUtil
 
 private const val RESOURCE_BUNDLE_FORMAT_PROPERTIES = "java.properties"
 private const val RESOURCE_BUNDLE_FORMAT_CLASS = "java.class"
@@ -167,9 +165,7 @@ private const val MAX_TARGETS = 64
 
 /** The targets of a holder past [MAX_TARGETS]: empty, told apart from any other set by identity. */
 private val SATURATED_TARGETS: Set<DispatchTarget> = java.util.Collections.unmodifiableSet(LinkedHashSet())
-private val SET_DECLARING_CLASS_METHOD = AsmMethodSource::class.java
-    .getDeclaredMethod("setDeclaringClass", ClassType::class.java)
-    .apply { isAccessible = true }
+private val CONVERSION_SCRATCH_FIELDS = listOf("insnIndexCache", "localVarTypeAnnotationIndex")
 
 private fun <K, V> identityMutableMap(): MutableMap<K, V> = IdentityHashMap()
 
@@ -210,7 +206,7 @@ private class IntQueue(initialCapacity: Int = 16) {
     fun removeFirst(): Int = values[head++]
 }
 
-private class ControlFlowIndex(private val stmtGraph: StmtGraph<*>, statementsInOrder: List<Stmt>) {
+private class ControlFlowIndex(private val stmtGraph: ControlFlowGraph<*>, statementsInOrder: List<Stmt>) {
     private val ids = IdentityHashMap<Stmt, Int>()
     private val statements = ArrayList<Stmt>()
     private val successorIds = ArrayList<IntArray?>()
@@ -483,6 +479,7 @@ class SootUpAdapter(
 
                 visitFieldsForClass(sootClass)
                 extensions.forEach { it.visit(sootClass, extensionContext) }
+                bytecodeMethodsCache.remove(sootClass)
             }
 
         syntheticIdentities.resolve().forEach { (member, fingerprint) ->
@@ -553,8 +550,12 @@ class SootUpAdapter(
             return
         }
 
-        val body = clinit.body
-        val stmtGraph = body.stmtGraph
+        val body = try {
+            clinit.body
+        } finally {
+            releaseConversionState(clinit)
+        }
+        val stmtGraph = body.controlFlowGraph
 
         // Track local variable assignments: localName -> value (for constants)
         val localValues = mutableMapOf<String, Any?>()
@@ -631,7 +632,7 @@ class SootUpAdapter(
      *
      * @return list of user-defined constructor arguments (excluding name and ordinal)
      */
-    private fun findEnumInitValues(localName: String, stmtGraph: StmtGraph<*>, localValues: Map<String, Any?>): List<Any?> {
+    private fun findEnumInitValues(localName: String, stmtGraph: ControlFlowGraph<*>, localValues: Map<String, Any?>): List<Any?> {
         for (stmt in stmtGraph) {
             if (stmt !is JInvokeStmt) continue
 
@@ -793,11 +794,12 @@ class SootUpAdapter(
             System.gc()
         } finally {
             clearMethodState(methodDescriptor)
+            releaseConversionState(method)
         }
     }
 
     private fun processMethodBody(method: SootMethod, methodDescriptor: MethodDescriptor) {
-        val stmtGraph = method.body.stmtGraph
+        val stmtGraph = method.body.controlFlowGraph
         val statements = stmtGraph.stmts
 
         // Reset per-method stmt tracking
@@ -1280,26 +1282,10 @@ class SootUpAdapter(
                 )
             )
 
-            // Dataflow from arguments to call site
-            argNodeIds.forEach { argNodeId ->
-                graphBuilder.addEdge(
-                    DataFlowEdge(
-                        from = argNodeId,
-                        to = callSite.id,
-                        kind = DataFlowKind.PARAMETER_PASS
-                    )
-                )
-            }
-
-            // If there's a result, add dataflow from call to result
+            // Dataflow from arguments to call site, and from the call to its result
+            argNodeIds.forEach { graphBuilder.addEdge(DataFlowEdge(from = it, to = callSite.id, kind = DataFlowKind.PARAMETER_PASS)) }
             if (resultNode != null) {
-                graphBuilder.addEdge(
-                    DataFlowEdge(
-                        from = callSite.id,
-                        to = resultNode.id,
-                        kind = DataFlowKind.RETURN_VALUE
-                    )
-                )
+                graphBuilder.addEdge(DataFlowEdge(from = callSite.id, to = resultNode.id, kind = DataFlowKind.RETURN_VALUE))
             }
 
             // Captured function values flow into the implementation's parameters, e.g. a Kotlin
@@ -1538,7 +1524,7 @@ class SootUpAdapter(
      */
     private fun processControlFlow(
         branchStatements: List<JIfStmt>,
-        stmtGraph: StmtGraph<*>,
+        stmtGraph: ControlFlowGraph<*>,
         statements: List<Stmt>,
         method: MethodDescriptor
     ) {
@@ -2065,7 +2051,7 @@ class SootUpAdapter(
      */
     private fun methodsInSignatureOrder(sootClass: SootClass): List<SootMethod> =
         sortedMethodsByClass.getOrPut(sootClass.type.fullyQualifiedName) {
-            sootClass.methods.sortedBy { it.signature.toString() }
+            (streamMethodsOrNull(sootClass)?.toList() ?: resolveMethodsOrEmpty(sootClass)).sortedBy { it.signature.toString() }
         }
 
     /**
@@ -2221,10 +2207,11 @@ class SootUpAdapter(
             .filter { !it.isStatic && !it.isAbstract && it.name != INIT_METHOD && !MethodModifier.isBridge(it.modifiers) }
             .filter { implementsSupertypeMethod(sootClass, it) }
             .forEach { body ->
+                val callee = toMethodDescriptor(body)
                 val callSite = CallSiteNode(
                     id = nextNodeId("call"),
                     caller = method,
-                    callee = toMethodDescriptor(body),
+                    callee = callee,
                     lineNumber = null,
                     receiver = receiver,
                     arguments = emptyList()
@@ -2264,7 +2251,7 @@ class SootUpAdapter(
             methodsInSignatureOrder(sootClass)
                 .filter { MethodModifier.isBridge(it.modifiers) && it.hasBody() }
                 .flatMap { bridge ->
-                    bridge.body.stmtGraph.stmts.asSequence()
+                    bridgeBody(bridge).controlFlowGraph.stmts.asSequence()
                         .mapNotNull { stmt ->
                             when (stmt) {
                                 is JInvokeStmt -> stmt.invokeExpr.orElse(null)
@@ -2461,7 +2448,20 @@ class SootUpAdapter(
         } catch (e: Exception) {
             // Call graph construction may fail for incomplete classpaths
             // Continue without call graph
+        } finally {
+            // The algorithm resolves bodies through the methods the view holds, which memoize
+            // them; their conversion scratch state is released here, as the adapter's own
+            // detached copies release theirs after each method.
+            view.classes.forEach { sootClass ->
+                if (sootClass is JavaSootClass) bytecodeMethods(sootClass)?.forEach(::releaseConversionState)
+            }
         }
+    }
+
+    private fun bridgeBody(bridge: SootMethod): Body = try {
+        bridge.body
+    } finally {
+        releaseConversionState(bridge)
     }
 
     private fun buildCallGraph(): CallGraph {
@@ -2505,26 +2505,111 @@ class SootUpAdapter(
 
     private fun streamMethodsOrNull(sootClass: SootClass): Sequence<SootMethod>? {
         if (sootClass !is JavaSootClass) return null
-        val methodNodes = getAsmMethodNodes(sootClass) ?: return null
+        val methods = bytecodeMethods(sootClass) ?: return null
         return sequence {
-            for (methodNode in methodNodes) {
+            for (method in methods) {
                 try {
-                    createStreamingMethod(sootClass, methodNode)?.let { yield(it) }
+                    yield(detached(method))
                 } catch (oom: OutOfMemoryError) {
-                    log { "Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: OOM during streaming resolution" }
+                    log { "Skipping method ${method.signature}: OOM during streaming resolution" }
                     System.gc()
                 } catch (e: Exception) {
-                    log { "Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: ${e.message}" }
+                    log { "Skipping method ${method.signature}: ${e.message}" }
+                } finally {
+                    releaseConversionState(method.bodySource)
                 }
             }
         }
     }
 
-    private fun getAsmMethodNodes(sootClass: JavaSootClass): List<MethodNode>? {
-        val classNode = getAsmClassNode(sootClass) ?: return null
-        @Suppress("UNCHECKED_CAST")
-        return classNode.methods as? List<MethodNode>
+    /**
+     * Drop the per-instruction scratch maps SootUp 3's `AsmMethodSource` keeps after it resolved
+     * a body (`insnIndexCache`, one entry per bytecode instruction, and
+     * `localVarTypeAnnotationIndex`). The source stays reachable through the view's class for
+     * the whole build, and on the Android SDK those maps alone exceed the 4 GB test heap; both
+     * are rebuilt on demand, so a later resolution of the same body is unaffected. A source
+     * without the fields (another frontend, a future SootUp) is left alone.
+     */
+    private fun releaseConversionState(method: SootMethod) {
+        if (method is JavaSootMethod) releaseConversionState(method.bodySource)
     }
+
+    private fun releaseConversionState(bodySource: Any) {
+        for (field in conversionScratchFields(bodySource.javaClass)) {
+            try {
+                field.set(bodySource, null)
+            } catch (_: ReflectiveOperationException) {
+                // Not an AsmMethodSource of this SootUp: nothing to release.
+            }
+        }
+    }
+
+    /**
+     * The scratch fields of a body source class, looked up once: `getDeclaredField` per method
+     * and per field was a reflective lookup for every body of the corpus, twice over.
+     */
+    private val conversionScratchFieldsByClass = HashMap<Class<*>, List<java.lang.reflect.Field>>()
+
+    private fun conversionScratchFields(type: Class<*>): List<java.lang.reflect.Field> =
+        conversionScratchFieldsByClass.getOrPut(type) {
+            CONVERSION_SCRATCH_FIELDS.mapNotNull { name ->
+                try {
+                    type.getDeclaredField(name).apply { isAccessible = true }
+                } catch (_: ReflectiveOperationException) {
+                    null
+                }
+            }
+        }
+
+    /**
+     * The methods of [sootClass] as the bytecode frontend read them. SootUp 3 converts a class
+     * file into an `OverridingJavaClassSource` that already holds one [JavaSootMethod] per
+     * method, each with its ASM `MethodNode` as body source, and releases the `ClassNode`. The
+     * frontend collects them into a hash set keyed by identity, so they are sorted by signature
+     * here for a deterministic walk; `null` for a class that did not come from bytecode.
+     */
+    private fun bytecodeMethods(sootClass: JavaSootClass): List<JavaSootMethod>? =
+        bytecodeMethodsCache.getOrPut(sootClass) { resolveBytecodeMethods(sootClass) }
+
+    /**
+     * [bytecodeMethods] per class while the class is being processed: `resolveMethods()`
+     * converts every method's descriptor into a signature on each call, and a class is asked
+     * for its methods more than once in a pass (its graph, its declared sub-signatures). The
+     * entry is dropped once the class's pass is over, so the cache holds one class at a time.
+     */
+    private val bytecodeMethodsCache = IdentityHashMap<JavaSootClass, List<JavaSootMethod>?>()
+
+    private fun resolveBytecodeMethods(sootClass: JavaSootClass): List<JavaSootMethod>? {
+        if (!sootClass.classSource.isBytecodeClassSource()) return null
+        return try {
+            // The class's own, memoised methods: a source's `resolveMethods()` converts every
+            // descriptor again on each call. Sorted by the bytecode's own name and descriptor,
+            // which the method node already holds: rendering a signature per method was a fifth
+            // of this pass.
+            sootClass.methods.filterIsInstance<JavaSootMethod>()
+                .sortedWith(compareBy({ (it.bodySource as? MethodNode)?.name ?: it.name }, { (it.bodySource as? MethodNode)?.desc ?: it.signature.toString() }))
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /**
+     * A copy of [method] with a body cache of its own. SootUp 3 memoizes a method's body on the
+     * [JavaSootMethod] the view holds; resolving the graph through that object would keep every
+     * body of the corpus alive for the view's lifetime, which is what ran the Android SDK out
+     * of heap. The copy is dropped once its graph nodes exist.
+     */
+    private fun detached(method: JavaSootMethod): JavaSootMethod = JavaSootMethod(
+        method.bodySource,
+        method.signature,
+        method.modifiers,
+        method.exceptionSignatures,
+        method.annotations,
+        method.position
+    )
+
+    private fun getAsmMethodNodes(sootClass: JavaSootClass): List<MethodNode>? =
+        bytecodeMethods(sootClass)?.mapNotNull { it.bodySource as? MethodNode }
 
     private fun loadMethodNodesFromResource(sootClass: JavaSootClass): List<MethodNode>? {
         return try {
@@ -2538,42 +2623,6 @@ class SootUpAdapter(
         } catch (_: Exception) {
             null
         }
-    }
-
-    private fun getAsmClassNode(sootClass: JavaSootClass): ClassNode? {
-        val classSource = sootClass.classSource
-        if (classSource.javaClass.name != "sootup.java.bytecode.frontend.conversion.AsmClassSource") {
-            return null
-        }
-
-        return try {
-            val classNodeField = classSource.javaClass.getDeclaredField("classNode")
-            classNodeField.isAccessible = true
-            classNodeField.get(classSource) as? ClassNode
-        } catch (_: ReflectiveOperationException) {
-            null
-        }
-    }
-
-    private fun createStreamingMethod(sootClass: JavaSootClass, methodNode: MethodNode): JavaSootMethod? {
-        val bodySource = methodNode as? BodySource ?: return null
-        val asmMethodSource = methodNode as? AsmMethodSource ?: return null
-
-        SET_DECLARING_CLASS_METHOD.invoke(asmMethodSource, sootClass.type)
-
-        val annotations = buildList {
-            methodNode.visibleAnnotations?.let { addAll(AsmUtil.createAnnotationUsage(it).toList()) }
-            methodNode.invisibleAnnotations?.let { addAll(AsmUtil.createAnnotationUsage(it).toList()) }
-        }
-
-        return JavaSootMethod(
-            bodySource,
-            asmMethodSource.getSignature(),
-            Modifiers.getMethodModifiers(methodNode.access),
-            AsmUtil.asmIdToSignature(methodNode.exceptions ?: emptyList()),
-            annotations,
-            NoPositionInformation.getInstance()
-        )
     }
 
     private fun resolveMethodsOrEmpty(sootClass: SootClass): Set<SootMethod> = try {
@@ -2954,12 +3003,7 @@ class SootUpAdapter(
     private fun collectDeclaredMethodSubSignatures(className: String): Set<String> {
         val sootClass = resolveClassByName(className) ?: return emptySet()
         val asmSubSignatures = if (sootClass is JavaSootClass) {
-            val methodNodes = getAsmMethodNodes(sootClass)
-            methodNodes?.mapNotNullTo(HashSet(methodNodes.size)) { methodNode ->
-                    val asmMethodSource = methodNode as? AsmMethodSource ?: return@mapNotNullTo null
-                    SET_DECLARING_CLASS_METHOD.invoke(asmMethodSource, sootClass.type)
-                    asmMethodSource.getSignature().subSignature.toString()
-            }
+            bytecodeMethods(sootClass)?.mapTo(HashSet()) { it.signature.subSignature.toString() }
         } else {
             null
         }
@@ -3936,16 +3980,28 @@ class SootUpAdapter(
     private fun fieldGenericTypes(className: String): Map<String, TypeDescriptor> =
         fieldGenericTypesByClass.getOrPut(className) {
             val sootClass = resolveClassByName(className) as? JavaSootClass ?: return@getOrPut emptyMap()
-            val classNode = getAsmClassNode(sootClass) ?: loadClassNodeFromResource(className) ?: return@getOrPut emptyMap()
-            @Suppress("UNCHECKED_CAST")
-            val fields = classNode.fields as? List<AsmFieldNode> ?: return@getOrPut emptyMap()
-            val genericTypes = HashMap<String, TypeDescriptor>(fields.size)
-            for (field in fields) {
-                val type = GenericSignatureParser.parseFieldSignature(field.signature) ?: continue
-                genericTypes[field.name] = type
+            val signatures = fieldSignatures(sootClass, className) ?: return@getOrPut emptyMap()
+            val genericTypes = HashMap<String, TypeDescriptor>(signatures.size)
+            for ((field, signature) in signatures) {
+                val type = GenericSignatureParser.parseFieldSignature(signature) ?: continue
+                genericTypes[field] = type
             }
             genericTypes
         }
+
+    /**
+     * The generic signatures of the fields of [className]: kept by the location that parsed the
+     * class ([ParsedClassLocation]), else read again from the class file for a location that
+     * did not (an APK, a platform jar).
+     */
+    @Suppress("ReturnCount")
+    private fun fieldSignatures(sootClass: JavaSootClass, className: String): Map<String, String>? {
+        (sootClass.classSource.analysisInputLocation as? ParsedClassLocation)?.fieldSignatures(className)?.let { return it }
+        val classNode = loadClassNodeFromResource(className) ?: return null
+        @Suppress("UNCHECKED_CAST")
+        val fields = classNode.fields as? List<AsmFieldNode> ?: return null
+        return fields.filter { it.signature != null }.associate { it.name to it.signature }
+    }
 
     private fun loadClassNodeFromResource(className: String): ClassNode? =
         try {
