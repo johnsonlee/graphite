@@ -4150,3 +4150,204 @@ supplementary comparison is
 `/tmp/graphite-apk-recovery/verification/differences.json` (empty).
 
 Protocol clarification (recorded when Attempt 099 introduced a separate quiet harness): every ProductionPipeline full-default table in this attempt used the original verbose callback. Here "full-default" means full graph features (CHA, annotations and cross-method dispatch), not literally every LoaderConfig field or silent execution. Quiet full-feature results are recorded separately in Attempt 099 and cannot be mixed with these historical timings. The publishing-plugin workaround was identical in frozen snapshots; the five publishing-plugin declarations were later restored in the working tree.
+
+### 2026-10-07 — Attempt 096: Parse class sources on the calling thread
+
+**Status:** historically REJECTED; retained as an experiment record only. The later causal correction below remains part of this record. Retaining the distinct exact-input serial combination in 098 does not retroactively select this 096 artifact.
+
+**Question:** does the CPU still above the pre-upgrade baseline in Attempt 095
+come from parallel class parsing, and can it be recovered without changing
+SootUp features, dispatch, or process-wide worker settings?
+
+**Revisions and fixture:** the pre-upgrade and main snapshots are the same
+`6f498705009689551c92c6d1ca92f67252ef77c4` and
+`c84d7811b52bd11832f97686c15876bbd7f0c244` artifacts as Attempt 095.
+`streaming` is that attempt's immutable parallel-parsing candidate;
+`streaming-serial` is its one-line follow-up, on recorded checkout revision
+`7c56de32bbe3e69ea000960637af4b440861fcbb`. Full source states, fixture paths,
+checksums and runtime artifact hashes are in
+`/tmp/graphite-sootup-recovery.6wpE4s/{preupgrade,main,streaming,streaming-serial}.json`.
+The candidate's runtime SootUp adapter JAR SHA-256 is
+`3814dd402aa88e76644eaa3971b9da3d4be6590782f3d36a27d236272d70a76d`;
+its frozen JMH JAR SHA-256 is
+`6bec54199b585fafabd36de5d4cd04fa6b5bdcd93d699e447bf6d2e0a8768154`.
+
+The only production behavior change from Attempt 095 is
+`files.parallelStream()` → `files.stream()` in
+`ParsedClassLocation.getClassSources`. Parsing now runs on the calling thread;
+class encounter order, parser, lazy sources, method-wrapper streaming,
+interceptors, annotations, dispatch cap and graph functionality are unchanged.
+There were no feature or JVM-worker flag changes in this trial. The JAR
+class comparison found no added or removed classes and differences only in
+`ParsedClassLocation` and its companion; the comparison is saved at
+`/tmp/sootup-recovery-sources/streaming-serial-snapshot/artifact-diff.json`.
+
+The old KDoc's assertion that SootUp's provider reads the class file twice was
+checked and found incorrect. The working-tree comments now describe deferred
+member resolution rather than a double-read explanation. Measurements use the
+frozen serial snapshot from before this comment correction; this subsequent
+difference is documentation only, not another performance implementation.
+
+**Validation and environment:** `:sootup:test :sootup:detekt` passed, with
+459 tests and no failures/errors/skips. The validation log is
+`/tmp/sootup-recovery-sources/streaming-serial-test.log`. Environment remains
+Apple M3 Max, 16 CPUs, 64 GiB, macOS 14.3 arm64, Homebrew OpenJDK 17.0.20.1;
+this is a shared development host, with serialized measurement JVMs. The
+publishing-plugin workaround is identical across snapshots. All inputs below
+are the pinned real Tika app 2.9.2, Hive exec 4.0.0 and Kotlin compiler
+embeddable 2.0.21 JARs.
+
+```sh
+JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
+  ./gradlew :sootup:test :sootup:detekt --no-daemon
+bash /tmp/graphite-sootup-recovery.6wpE4s/run-pool-diagnostics.sh
+for label in preupgrade streaming-serial streaming; do
+  python3 /tmp/graphite-sootup-recovery.6wpE4s/harness.py gate "$label" \
+    --run serial1 --corpus kotlin
+done
+bash /tmp/graphite-sootup-recovery.6wpE4s/run-serial-expansion.sh
+```
+
+Every gate is a fresh `java -Xmx4g` with the fixture path properties,
+`-Dlarge.corpus.record=true`, and `JUnitCore` running the relevant
+`LargeCorpusPerformanceGateTest` subclass. Recording removes timing ceilings,
+not semantic checks. Call-graph construction, annotation extraction and
+cross-method functional dispatch are disabled for these reduced-configuration
+gates on all revisions. The complete-process CPU/RSS includes correctness
+checks and cleanup. These results must not be presented as full-default JAR
+results. All three pool diagnostics, three isolation runs and eleven expansion
+runs passed their graph/query/branch-definition correctness checks.
+
+**Global-pool diagnostics (Kotlin, all using Attempt 095):**
+
+| Common-pool setting | Build, ms | Save, ms | Pipeline, ms | Total CPU, s | Max RSS, bytes |
+|---------------------|----------:|---------:|-------------:|-------------:|---------------:|
+| Default | 12,104 | 4,164 | 17,507 | 75.87 | 5,158,273,024 |
+| `parallelism=3` | 12,292 | 4,294 | 17,760 | 75.48 | 4,976,672,768 |
+| `parallelism=1` | 12,489 | 7,989 | 21,729 | 78.11 | 4,996,972,544 |
+
+The diagnostic flags were
+`-Djava.util.concurrent.ForkJoinPool.common.parallelism=3` and `=1`.
+They did not recover pre-upgrade CPU in these observations, and limiting the
+global pool also changes consumers outside class parsing. Neither flag is part
+of this candidate; these runs are not evidence for globally limiting workers.
+
+**Isolation round (Kotlin, execution order old → serial → streaming):**
+
+| Snapshot | Build, ms | Save, ms | Pipeline, ms | Total CPU, s | Max RSS, bytes |
+|----------|----------:|---------:|-------------:|-------------:|---------------:|
+| Pre-upgrade | 12,585 | 7,887 | 21,667 | 71.28 | 5,065,113,600 |
+| Streaming serial | 12,429 | 4,180 | 17,796 | 71.06 | 5,154,324,480 |
+| Streaming parallel | 12,182 | 4,787 | 18,190 | 79.51 | 5,157,994,496 |
+
+The local serial change brought total CPU near the old observation, while
+build time was 247 ms slower than parallel streaming. The old 7,887 ms save is
+a long-tail observation in an unchanged stage; its large contribution to the
+pipeline difference must not be credited to serial class parsing.
+
+**Cross-corpus expansion (all observed runs, no best-run selection):**
+
+The execution order was Tika main/streaming/serial/old; Hive
+serial/old/streaming/main; Kotlin serial/main/old. There was no additional
+parallel-streaming Kotlin run in this round.
+
+| Corpus / snapshot | Build, ms | Save, ms | Pipeline, ms | Total CPU, s | Max RSS, bytes |
+|-------------------|----------:|---------:|-------------:|-------------:|---------------:|
+| Tika main | 12,774 | 4,629 | 18,800 | 77.91 | 5,029,396,480 |
+| Tika streaming | 12,648 | 4,604 | 18,621 | 82.04 | 5,192,761,344 |
+| Tika serial | 12,984 | 4,425 | 18,661 | 73.48 | 5,180,424,192 |
+| Tika pre-upgrade | 12,861 | 4,551 | 18,888 | 73.14 | 4,826,169,344 |
+| Hive serial | 23,516 | 6,136 | 31,399 | 110.65 | 5,440,962,560 |
+| Hive pre-upgrade | 23,059 | 6,243 | 30,926 | 109.56 | 5,229,166,592 |
+| Hive streaming | 23,006 | 6,088 | 30,840 | 126.48 | 5,166,137,344 |
+| Hive main | 23,430 | 6,801 | 31,929 | 128.25 | 5,272,223,744 |
+| Kotlin serial | 12,494 | 4,217 | 17,887 | 67.52 | 5,161,582,592 |
+| Kotlin main | 12,176 | 4,102 | 17,436 | 74.99 | 5,127,995,392 |
+| Kotlin pre-upgrade | 12,430 | 7,898 | 21,518 | 70.17 | 4,986,929,152 |
+
+The CPU recovery from local serial parsing repeats across these corpora.
+It is not a free improvement: against parallel streaming, serial build is
+336 ms slower on Tika and 510 ms slower on Hive (approximately 2–3%, consistent
+with the Kotlin isolation round). Serial pipeline is also slower than streaming
+on both Tika and Hive here, and slower than main on Kotlin. RSS is above the
+old observations for all three corpora; Hive serial RSS is also above main and
+streaming. None of these costs is hidden by averaging metrics or selecting a
+favorable round. Kotlin old again spent 7,898 ms saving; do not interpret its
+resulting 21.5 s pipeline as a parsing speedup attributable to this change.
+
+**Full-default Kotlin follow-up:** the serial trial was then tested with all
+three default features enabled and prepared-index saving, using the independent
+`ProductionPipeline` harness and `-Xmx8g --sdk -`. Unlike the reduced gates,
+the original unprofiled serial runs both took over 11 s to save. All observed
+unprofiled comparison rows are retained below; the earlier main row is the
+Attempt 095 observation, not an additional paired repetition.
+
+| Full-default run | Build, ms | Save, ms | Pipeline, ms | Total CPU, s | Max RSS, bytes |
+|------------------|----------:|---------:|-------------:|-------------:|---------------:|
+| Main `default-streaming1` | 31,165.716 | 6,475.568 | 38,216.017 | 120.11 | 9,623,306,240 |
+| Serial `default-serial1` | 31,012.424 | 11,209.702 | 42,752.248 | 116.02 | 9,621,831,680 |
+| Main `default-serial2` | 30,127.944 | 6,235.762 | 36,937.625 | 114.40 | 9,604,808,704 |
+| Serial `default-serial2` | 30,833.724 | 11,333.211 | 42,690.832 | 116.47 | 9,651,912,704 |
+
+Existing graph-shape verification between main and serial passed; see
+`/tmp/graphite-sootup-recovery.6wpE4s/kotlin-main-serial-differences.json`.
+The slower save/pipeline result cannot be dismissed on correctness grounds.
+
+Further paired diagnostics gave faster saves under some conditions, but did
+not establish why the two original serial observations were slow:
+
+| Diagnostic protocol | Main save, ms | Serial save, ms | Interpretation |
+|---------------------|--------------:|----------------:|----------------|
+| JFR + GC/safepoint log | 6,589.544 | 6,287.958 | Profiled runs; excluded from performance claims |
+| Repeated `jcmd Thread.print -l` | 26,945.480 | 25,778.092 | Heavy attachment interference; invalid performance comparison |
+| `Thread.print` without `-l` | 6,575.646 | 6,490.892 | Lighter attachment, still diagnostic and excluded |
+| Late-only `Thread.print`, after save exceeds 8 s | 6,495.320 | 6,619.720 | Both finished before threshold; zero attachments recorded |
+
+The heavy `-l` sampler substantially perturbed both runs. Removing `-l` made
+sampling lighter and both saves were fast, but attachment remains a confounder.
+The final late-only protocol independently records `attachmentCount=0` for both
+runs, so it did not cause their fast result by attaching. That does not erase
+the prior 11.2/11.3 s observations or prove the serial change is safe against
+save regressions. All protocols and all original samples are preserved; no
+fast diagnostic observation is substituted for an earlier slow unprofiled run.
+
+The full-default JVM commands are in
+`/tmp/graphite-apk-recovery/results/{main,streaming-serial}-kotlin-default-*/command.json`.
+Paired diagnostics are in the same results directory under
+`*-kotlin-save-diagnostic1`, `*-kotlin-save-thread-diagnostic1`,
+`*-kotlin-save-thread-diagnostic2` and
+`*-kotlin-save-thread-late-diagnostic1`. JFR, GC logs and summaries are under
+`/tmp/graphite-sootup-recovery.6wpE4s/profiles/`; each thread-sampling directory
+contains `samples.json`. The late-only protocol is preserved as
+`profiles/sample-save-threads-late-v1.py`.
+
+**Conclusion:** REJECTED. Local serial parsing reduced CPU in the reduced
+configuration, but slowed builds relative to Attempt 095, did not restore RSS
+uniformly, and the full-default observations included substantial unresolved
+long save/pipeline times. Later fast diagnostic runs do not establish the
+required recovery without regressions. At this decision, the serial production change was
+reverted and Attempt 095's parallel parsing remained; later Attempt 098 tests a distinct combination. Kotlin and Android JMH for
+this serial trial were not completed, and no scores are inferred. APK remains
+deprioritized. Subsequent input-stream parsing work is a separate Attempt 097,
+not part of this experiment's results.
+
+**Subsequent evidence (Attempt 097):** the unchanged main snapshot later also
+saved full-default Kotlin slowly: 11,467.024 ms wall and 23,220.831 ms process
+CPU, while exact-input saved in 6,390.335 ms. Thus the roughly 11 s save is not
+unique to serial parsing. The original two slow serial / fast main pairs did
+not establish that serial parsing caused the long save or must always regress
+it. This does not retroactively change the recorded observations or the
+rejection decision made with unresolved evidence; it corrects the causal
+interpretation. Both main and serial have now shown fast and slow states.
+See `trial097-exact-paired-results.json` under the harness root. A new serial
+experiment on the exact-input base is Attempt 098 and must be evaluated
+independently rather than overwriting this history.
+
+Raw commands, environment, fixture/runtime hashes and results are preserved in
+`/tmp/graphite-sootup-recovery.6wpE4s/results/*-pool*`, `*-serial1` and
+`*-serial2` (`command.json`, `stdout.log`, `stderr-time.log`). The unchanged
+JFR diagnosis motivating this attempt is in `profiles/` under the same root;
+profiled timing is not included in the tables. The source snapshot and build
+log are in `/tmp/sootup-recovery-sources/streaming-serial-snapshot`.
+
+Protocol clarification (recorded when Attempt 099 introduced a separate quiet harness): every ProductionPipeline full-default table in this attempt used the original verbose callback. Here "full-default" means full graph features (CHA, annotations and cross-method dispatch), not literally every LoaderConfig field or silent execution. Quiet full-feature results are recorded separately in Attempt 099 and cannot be mixed with these historical timings. The publishing-plugin workaround was identical in frozen snapshots; the five publishing-plugin declarations were later restored in the working tree.
