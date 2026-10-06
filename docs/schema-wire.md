@@ -21,6 +21,11 @@ large-corpus streaming, JVM IR emission, and legacy import remain later work. Th
 in-memory implementation has explicit budgets and makes no 100M-node performance
 claim. Its wire version is independent of the legacy graph version.
 
+Production graph readers must retain Graphite's existing mmap access convention.
+The full-Document decode API here does not satisfy that requirement, even when its
+input slice comes from an mmap. Production integration requires mapped, on-demand
+record access and its own acceptance evidence; it cannot adopt this decoder as-is.
+
 ## Logical document
 
 All local IDs are unsigned 32-bit integers; zero is a valid ID. IDs may be sparse.

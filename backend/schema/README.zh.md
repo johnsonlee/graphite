@@ -112,6 +112,8 @@ cargo doc -p graphite-schema --no-deps --open
 
 这是内存中的逻辑文档 codec，不是图数据库、语言解析器、类型求解器、Cypher 引擎或最终的 mmap／列式图存储格式。`GSCHEMA` wire version 1 与持久化图版本独立；它输出的字节不能交给现有图读取器。其他语言可以按相同契约实现，但目前尚未加入跨语言互操作测试。
 
+生产 reader 必须遵守 Graphite 既有的 mmap convention。本 crate 的全量 Document 解码器并非该生产 reader：将输入映射到内存并不能避免堆上物化。生产 reader 必须按需访问映射中的记录，包括未知 layout，而不解码整个文档。详见[存储硬约束](../../docs/graph-schema.zh.md#必须满足的-mmap-读取约束)。
+
 默认限制为 64 MiB 编码字节、1,000,000 个累计 item 和 64 层内联深度；深度硬上限为 256。允许引用环，不会递归展开。字节预算不意味着总 RSS 被限制为同样的数值。合成测试证明正确性，不能证明吞吐或 100M 节点容量。生产规模测量需要后续前端／索引器接入，并使用真实 corpus。
 
 精确的编码、校验和版本规则见[二进制契约](../../docs/schema-wire.zh.md)，整体架构见[通用 schema 方案](../../docs/graph-schema.zh.md)，后续前端及 corpus 工作见 [JVM 迁移计划](../../docs/jvm-generic-types.zh.md)。

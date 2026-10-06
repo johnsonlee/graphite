@@ -146,6 +146,12 @@ is independent of persisted graph versions; these bytes cannot be passed to the
 existing graph loader. Cross-language implementations can follow the same contract,
 but cross-language interoperability tests have not yet been added.
 
+Production readers must preserve Graphite's existing mmap convention. This crate's
+full-Document decoder is not that reader: mapping its input does not avoid heap
+materialization. A production reader must access mapped records on demand, including
+unknown layouts, without decoding the whole document. See the
+[required storage contract](../../docs/graph-schema.md#required-memory-mapped-access).
+
 Default limits are 64 MiB of encoded bytes, 1,000,000 aggregate items, and inline depth
 64; the hard maximum depth is 256. Reference cycles are allowed without recursive
 expansion. The byte budget does not bound total RSS to the same number. Synthetic

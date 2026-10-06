@@ -190,6 +190,14 @@ An old generic reader does not understand the semantics of region-qualified, but
 
 ## Persistence and Large-Graph Costs
 
+### Required Memory-Mapped Access
+
+Memory-mapped production reads are an existing Graphite convention and a hard requirement for this design. Both directory and `.graphite` input must keep bulk records, type data, strings, adjacency, and indexes mapped. Opening a graph or reading a selected record must not require constructing a whole-document heap representation.
+
+Persisted table/group/column directories and variable-length offset arrays must support direct, bounds-checked access. The reader may retain bounded schema metadata, caches, and decoding buffers; compressed adjacency and dictionary values may require decoding. Unknown layouts must use the same mapped access contract, rather than falling back to full Document deserialization. Byte order and field encodings are explicit; mapped bytes are not native Rust structs.
+
+Production storage acceptance requires correctness tests showing that selected-record access does not decode unrelated records, plus real-corpus load RSS and query measurements. The current GSCHEMA interchange codec does not meet this production-reader requirement and must not become the default persisted read path as-is. Its existing tests prove the logical interchange contract only.
+
 ### Table Directory and Layout-Driven Encoding
 
 The container manifest includes the wire format version, registry digest, language profiles, table directory, table schemas, data segment locations/sizes/checksums, and optional indexes. A new language creates new dictionary entries, record layouts, or table instances. The container continues to use the same directory and field-description mechanisms, without hardcoded language filenames.

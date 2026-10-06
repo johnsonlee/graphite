@@ -6,6 +6,14 @@
 - Use the `.zh.md` suffix for Chinese versions, with the same base filename as the English version.
 - Link between language versions and keep their technical decisions consistent.
 
+## Persisted Graph Storage
+
+- Memory-mapped access is an existing requirement for production graph readers, including new schema formats, for both directories and `.graphite` containers.
+- Opening a graph or reading a selected record must not require deserializing all records, types, edges, or strings into heap objects. Keep bulk data mapped, with bounded metadata, caches, and decoding workspaces.
+- Persist offsets, lengths, and the indexes needed for direct access. Validate ranges and encoding before use; do not interpret mapped bytes as native Rust struct layouts.
+- Unknown-schema access must preserve the same mapped, on-demand behavior as known-layout fast paths. An in-memory interchange codec is not evidence of production mmap support.
+- Verify access behavior with correctness tests and measure load RSS and query behavior on real persisted corpora. Compressed adjacency or dictionary decoding may use bounded buffers; mmap does not require every value to be zero-copy.
+
 ## Unit Tests
 
 - New or changed unit tests must verify the behavior that matters, not only that code executes.
