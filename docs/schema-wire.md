@@ -4,7 +4,7 @@ English | [简体中文](schema-wire.zh.md)
 
 Status: implemented foundation, wire version 1. This contract implements the value,
 registry, reference, and interchange portions of the [schema proposal](graph-schema.md).
-The implementation is the independent [`graphite-schema`](../backend/schema/src/lib.rs)
+The implementation is the independent [`graphite-schema`](../backend/schema/README.md)
 Rust crate. It does not change v1–v3 graph storage, allocate a graph v4, or connect the
 new records to the production indexer, Cypher engine, or JVM frontend.
 

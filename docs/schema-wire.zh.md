@@ -3,7 +3,7 @@
 [English](schema-wire.md) | 简体中文
 
 状态：基础部分已实现，wire version 为 1。本契约实现了 [schema 方案](graph-schema.zh.md)中的值、注册表、引用和交换格式部分。
-实现位于独立的 Rust crate [`graphite-schema`](../backend/schema/src/lib.rs)。
+实现位于独立的 Rust crate [`graphite-schema`](../backend/schema/README.zh.md)。
 它不改变 v1–v3 图存储，不分配 graph v4 版本，也尚未将新记录接入生产索引器、Cypher 引擎或 JVM 前端。
 
 ## 契约边界

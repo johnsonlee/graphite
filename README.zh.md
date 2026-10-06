@@ -414,6 +414,9 @@ graphite/
 └── docs/
 ```
 
+独立 schema 库的用途、API、示例和待完成的接入工作见
+[`graphite-schema` README](backend/schema/README.zh.md)。
+
 ### 存储格式
 
 图使用 [WebGraph](https://webgraph.di.unimi.it/) 生态进行持久化：

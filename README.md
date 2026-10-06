@@ -549,6 +549,9 @@ graphite/
 └── docs/
 ```
 
+The [`graphite-schema` README](backend/schema/README.md) explains the standalone
+schema library, its API, examples, and the integration work still pending.
+
 ### Storage Format
 
 Graphs are persisted using the [WebGraph](https://webgraph.di.unimi.it/) ecosystem:
