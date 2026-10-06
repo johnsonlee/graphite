@@ -1,5 +1,11 @@
 # Conventions
 
+## Documentation
+
+- Write documentation in English by default, using `.md` filenames.
+- Use the `.zh.md` suffix for Chinese versions, with the same base filename as the English version.
+- Link between language versions and keep their technical decisions consistent.
+
 ## Unit Tests
 
 - New or changed unit tests must verify the behavior that matters, not only that code executes.

@@ -1,5 +1,10 @@
 # WebGraph Storage Format
 
+The proposed extensible replacement is described in
+[Graphite Universal Graph Schema Proposal](graph-schema.md), with a separate
+[JVM migration profile](jvm-generic-types.md). Both are design drafts; the
+format documented below remains the current implementation.
+
 ## File Layout
 
 ```
