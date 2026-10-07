@@ -4,7 +4,6 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import java.nio.ByteBuffer
-import java.util.concurrent.CancellationException
 
 /** Reads only possible string references. The caller must evaluate the exact predicate on survivors. */
 internal class MappedPropertyTextCandidates(
@@ -26,8 +25,8 @@ internal class MappedPropertyTextCandidates(
         }.toTypedArray()
         var inspected = 0
         for (id in types.ids(type)) {
-            if ((inspected++ and CANCELLATION_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CancellationException("Property text scan interrupted")
+            if ((inspected++ and CANCELLATION_MASK) == 0) {
+                checkMappedThreadInterrupted("Property text scan interrupted")
             }
             work?.consume()
             val offset = offsets.offset(id).toInt()

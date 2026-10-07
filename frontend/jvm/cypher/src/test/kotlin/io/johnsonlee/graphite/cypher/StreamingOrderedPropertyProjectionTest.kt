@@ -270,7 +270,9 @@ class StreamingOrderedPropertyProjectionTest {
             if (index == 1) Thread.currentThread().interrupt()
         })
         try {
-            assertFailsWith<CancellationException> { QueryPipeline(projected).execute(query()) }
+            val failure = assertFailsWith<CypherQueryCancelledException> { QueryPipeline(projected).execute(query()) }
+            assertEquals(CypherQueryCancelledException::class.java, failure.javaClass)
+            assertEquals("String projection interrupted", failure.message)
             assertTrue(Thread.currentThread().isInterrupted)
             assertEquals(1, projected.emitted)
         } finally {
@@ -281,7 +283,11 @@ class StreamingOrderedPropertyProjectionTest {
         })
         val tracker = CypherWorkTracker(CypherExecutionBudget(5))
         try {
-            assertFailsWith<CancellationException> { QueryPipeline(tracked, true).execute(query(), tracker) }
+            val failure = assertFailsWith<CypherQueryCancelledException> {
+                QueryPipeline(tracked, true).execute(query(), tracker)
+            }
+            assertEquals(CypherQueryCancelledException::class.java, failure.javaClass)
+            assertEquals("String projection interrupted", failure.message)
             assertTrue(Thread.currentThread().isInterrupted)
             assertEquals(1, tracked.emitted)
             assertEquals(1L, tracker.diagnostics().workUnitsConsumed)

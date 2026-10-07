@@ -128,9 +128,46 @@ class MappedStringPropertyProjectionTest {
                 })
                 try {
                     Thread.currentThread().interrupt()
-                    assertFailsWith<CancellationException> {
+                    val failure = assertFailsWith<CancellationException> {
                         mapped.forEachStringPropertyProjection(CallSiteNode::class.java, properties, {}, {})
                     }
+                    assertEquals(CancellationException::class.java, failure.javaClass)
+                    assertEquals("Mapped CallSite projection interrupted", failure.message)
+                    assertTrue(Thread.currentThread().isInterrupted)
+                } finally {
+                    Thread.interrupted()
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `projection checks interruption after callback and preserves callback failure precedence`() {
+        withStored(emptyList()) { dir ->
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { mapped ->
+                var checks = 0
+                try {
+                    val failure = assertFailsWith<CancellationException> {
+                        mapped.forEachStringPropertyProjection(CallSiteNode::class.java, properties, {
+                            checks++
+                            Thread.currentThread().interrupt()
+                        }, { error("Interrupted empty scan must not emit") })
+                    }
+                    assertEquals(1, checks)
+                    assertEquals(CancellationException::class.java, failure.javaClass)
+                    assertEquals("Mapped CallSite projection interrupted", failure.message)
+                    assertTrue(Thread.currentThread().isInterrupted)
+                } finally {
+                    Thread.interrupted()
+                }
+                val original = IllegalStateException("callback failed after interruption")
+                try {
+                    assertSame(original, assertFailsWith<IllegalStateException> {
+                        mapped.forEachStringPropertyProjection(CallSiteNode::class.java, properties, {
+                            Thread.currentThread().interrupt()
+                            throw original
+                        }, { error("Failed callback must not emit") })
+                    })
                     assertTrue(Thread.currentThread().isInterrupted)
                 } finally {
                     Thread.interrupted()

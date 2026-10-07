@@ -2261,9 +2261,7 @@ internal fun callSiteStringPropertyIndex(property: String): Int = when (property
 }
 
 private fun checkCallSiteIndexInterrupted() {
-    if (Thread.currentThread().isInterrupted) {
-        throw CancellationException("Mapped CallSite string index work interrupted")
-    }
+    checkMappedThreadInterrupted("Mapped CallSite string index work interrupted")
 }
 
 internal fun sortCallSiteTrigramPostings(
@@ -2711,9 +2709,7 @@ internal const val CALL_SITE_STRING_INDEX_HEADER_BYTES =
 internal const val CALL_SITE_INDEX_PERSISTENCE_POLL_MASK = 1_023
 
 internal fun checkCallSiteIndexPersistenceInterrupted() {
-    if (Thread.currentThread().isInterrupted) {
-        throw CancellationException("Mapped CallSite index persistence interrupted")
-    }
+    checkMappedThreadInterrupted("Mapped CallSite index persistence interrupted")
 }
 private const val CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK = 1_023
 private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_SORT_SIZE = 1 shl 20

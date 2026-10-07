@@ -939,7 +939,7 @@ class QueryPipeline private constructor(
 
     private fun checkStreamingProjectionCancelled() {
         activeWorkTracker.get()?.checkCancelled()
-        if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException("String projection interrupted")
+        checkQueryThreadInterrupted("String projection interrupted")
     }
 
     private data class RankedProjectedRow(
@@ -1241,7 +1241,7 @@ class QueryPipeline private constructor(
             ExpressionEvaluator(
                 parameterResolver = parameters::get,
                 checkCancelled = {
-                    if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                    checkQueryThreadInterrupted()
                 }
             )
         } else {
@@ -1263,8 +1263,8 @@ class QueryPipeline private constructor(
                 val value = localEvaluator.evaluate(countedExpression, bindings) ?: continue
                 if (distinctValues == null || distinctValues.add(cypherValueKey(value))) count++
             }
-            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CypherQueryCancelledException()
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0) {
+                checkQueryThreadInterrupted()
             }
         }
         return FilteredStringCountPartial(source.id, count, distinctValues, matchedWhere)
@@ -1513,7 +1513,7 @@ class QueryPipeline private constructor(
                         parameterResolver = stringParameters::get,
                         checkCancelled = {
                             tracker?.checkCancelled()
-                            if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                            checkQueryThreadInterrupted()
                         }
                     )
                     val predicate: (Node) -> Boolean = { node ->
@@ -2872,8 +2872,8 @@ class QueryPipeline private constructor(
 
         private fun pollInterrupted() {
             inspected++
-            if ((inspected and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CypherQueryCancelledException()
+            if ((inspected and CANCELLATION_POLL_MASK) == 0) {
+                checkQueryThreadInterrupted()
             }
         }
     }
@@ -3015,8 +3015,8 @@ class QueryPipeline private constructor(
     private fun <T> interruptible(values: Sequence<T>): Sequence<T> = sequence {
         var inspected = 0
         for (value in values) {
-            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CypherQueryCancelledException()
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0) {
+                checkQueryThreadInterrupted()
             }
             yield(value)
         }
@@ -3696,7 +3696,7 @@ class QueryPipeline private constructor(
                     val localEvaluator = ExpressionEvaluator(
                         parameterResolver = parameters::get,
                         checkCancelled = {
-                            if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                            checkQueryThreadInterrupted()
                         }
                     )
                     val bindings = mutableMapOf<String, Any?>(variable to null)
