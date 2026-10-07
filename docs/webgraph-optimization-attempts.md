@@ -7592,3 +7592,58 @@ The two new core cases verify lazy factory invocation, exact exception identity/
 Exact invocation: `env -u MallocNanoZone python3 /tmp/sootup-recovery-sources/attempt128-build/build.py --execute --run attempt128-build1`. The recorded Gradle command runs full `test`, `detekt`, `koverLog`, `koverXmlReport` and `koverVerify` tasks for core, Cypher and webgraph. Evidence: `/tmp/sootup-recovery-sources/attempt128-build/attempt128-build1/build-proof.json` SHA256 `57ca5d422e49b37414ad070b807369f65dd6bda786d7125a5b5cfd871154bf24`; independent XML audit: adjacent `root-audit.json`. Authoritative execution exited 0.
 
 Decision: keep the verified refactor. Query p50/p95, construction/loading end-to-end time, CPU and RSS were not measured by this attempt; no performance recovery claim. This resolves the two cancellation-code review issues, not the separate method-wrapper, projection-allocation, DefaultGraph packed-save or preflight/accounting experiments. Required CI must run on the pushed candidate; the preceding `9aae8ff0` passed its full CI and benchmark-regression-gate.
+
+
+### 2026-10-07 — Attempt 124: skip unused fingerprint CRC; loading remains mixed
+
+Hypothesis: GraphRegistry fingerprints every graph file before registration. Skip the unused CRC calculation in that fingerprint pass while retaining full SHA-256, all reads, file sizes and manifest checks; container packing still calculates and verifies CRC. Isolated candidate `994b655db21da247373fde4e9df0da8152c40c85` builds on ordinal-reader candidate121 (`41b7b5ce`), not root. Its fixed false/true internal digest branch and two new tests passed all 32 storage tests, Rustfmt, strict storage Clippy and arm64 CLI export with Rust1.93 and two jobs. No JVM heap changes. The real core graph fixture and original pack/fingerprint/ordinal tests remain enabled. Independent root rehash/read of those logs passed.
+
+Frozen C binary SHA256 `9852df78c8fb93b9969d5dae6359574475228fcf8852a3489a51133898740701`; B is frozen121 `fb122db2ad71e7b21d9583b6ca866b45ee5dc353e097fbe86d13916bd3c9eee4`; A is preupgrade6f498 binary `2bf3cd50096fe3d39ad9227cc1aade64bb4ac8014486c10b0d4b57f48a57700b`. Full Kotlin/Tika own-version graphs are the same old cumulative341/current116 artifacts used in121's loading record; A uses old graphs, B/C use identical current graphs. This experiment cannot attribute121+124 results to root without121.
+
+Protocol: default native MAPPED/C4 settings, fixed Kotlin ABCCBA then Tika ABCCBA, two fresh server processes per arm/workload, no query requests. macOS/M3 Max, Rust1.93 arm64 release. The frozen invocation is `python3 /tmp/sootup-static-review/attempt124/loading-three-arm/run.py --plan /tmp/sootup-static-review/attempt124/loading-three-arm/plan.sealed.json --execute-root-released`; plan SHA256 `73565af2af865db75edaa2c9c6d1f9a6cc3bc3917dac0f7847711279770c4d83`. Authoritative session38827 exited0; all owned processes were reaped. Independent root audit re-read all12 complete metadata bodies, native process identity, timing, time-l CPU/RSS and recomputed every mean and fixed pair; `root-audit.json` SHA256 `fb029665c9ffc6e5f57879a4a252e7cb0d0cda7bb9ae218af094e1df084280ad`.
+
+All12 sessions passed strict readiness, unchanged graph stat inventories, runtime pins, and owned SIGTERM/-15 cleanup. No Cypher requests were issued. All values are retained; two processes per arm/workload, observed-cache/background diagnostic, no final acceptance. A uses its own old graph; B and C use identical full current116 graphs. C/B isolates the native binary change, while C/A includes old/current graph differences.
+
+| Session | Nodes | CallSites | Ready wall s | CPU at post-ready snapshot s | Whole CPU s | Whole RSS MB | Ready→reaped ms | Whole minus snapshot CPU s |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 00-kotlin-old | 4657648 | 2173010 | 1.819089166 | 1.77 | 1.76 | 362.397696 | 7.439 | -0.01 |
+| 01-kotlin-current | 4744132 | 2251811 | 1.979497083 | 1.94 | 1.93 | 364.871680 | 7.460 | -0.01 |
+| 02-kotlin-candidate | 4744132 | 2251811 | 2.287618125 | 1.99 | 1.98 | 362.561536 | 13.620 | -0.01 |
+| 03-kotlin-candidate | 4744132 | 2251811 | 1.881985792 | 1.92 | 1.91 | 364.969984 | 7.130 | -0.01 |
+| 04-kotlin-current | 4744132 | 2251811 | 1.896105792 | 1.92 | 1.91 | 365.117440 | 7.165 | -0.01 |
+| 05-kotlin-old | 4657648 | 2173010 | 1.746985042 | 1.76 | 1.76 | 364.888064 | 7.505 | +0.00 |
+| 06-tika-old | 4673289 | 1758353 | 1.479728959 | 1.45 | 1.44 | 250.200064 | 7.326 | -0.01 |
+| 07-tika-current | 4620490 | 1705428 | 1.476236500 | 1.50 | 1.49 | 261.210112 | 7.316 | -0.01 |
+| 08-tika-candidate | 4620490 | 1705428 | 1.475066917 | 1.49 | 1.48 | 263.569408 | 7.411 | -0.01 |
+| 09-tika-candidate | 4620490 | 1705428 | 1.475303167 | 1.50 | 1.49 | 264.404992 | 7.398 | -0.01 |
+| 10-tika-current | 4620490 | 1705428 | 1.480089417 | 1.51 | 1.49 | 262.520832 | 7.416 | -0.02 |
+| 11-tika-old | 4673289 | 1758353 | 1.449867083 | 1.46 | 1.45 | 250.167296 | 6.794 | -0.01 |
+
+| Workload | Metric | Comparison | Reference mean | C mean | Absolute delta | Mean delta | Pair1 | Pair2 |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| kotlin | loadToReadySeconds | C/B | 1.937801 | 2.084802 | +0.147001 | +7.5859% | +15.5656% | -0.7447% |
+| kotlin | loadToReadySeconds | C/A | 1.783037 | 2.084802 | +0.301765 | +16.9242% | +25.7562% | +7.7276% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | C/B | 1.930000 | 1.955000 | +0.025000 | +1.2953% | +2.5773% | +0.0000% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | C/A | 1.765000 | 1.955000 | +0.190000 | +10.7649% | +12.4294% | +9.0909% |
+| kotlin | wholeLifetimeCpuSeconds | C/B | 1.920000 | 1.945000 | +0.025000 | +1.3021% | +2.5907% | +0.0000% |
+| kotlin | wholeLifetimeCpuSeconds | C/A | 1.760000 | 1.945000 | +0.185000 | +10.5114% | +12.5000% | +8.5227% |
+| kotlin | wholeLifetimePeakRssMB | C/B | 364.994560 | 363.765760 | -1.228800 | -0.3367% | -0.6331% | -0.0404% |
+| kotlin | wholeLifetimePeakRssMB | C/A | 363.642880 | 363.765760 | +0.122880 | +0.0338% | +0.0452% | +0.0225% |
+| tika | loadToReadySeconds | C/B | 1.478163 | 1.475185 | -0.002978 | -0.2015% | -0.0792% | -0.3234% |
+| tika | loadToReadySeconds | C/A | 1.464798 | 1.475185 | +0.010387 | +0.7091% | -0.3151% | +1.7544% |
+| tika | nativeCpuAtReadySnapshotSeconds | C/B | 1.505000 | 1.495000 | -0.010000 | -0.6645% | -0.6667% | -0.6623% |
+| tika | nativeCpuAtReadySnapshotSeconds | C/A | 1.455000 | 1.495000 | +0.040000 | +2.7491% | +2.7586% | +2.7397% |
+| tika | wholeLifetimeCpuSeconds | C/B | 1.490000 | 1.485000 | -0.005000 | -0.3356% | -0.6711% | +0.0000% |
+| tika | wholeLifetimeCpuSeconds | C/A | 1.445000 | 1.485000 | +0.040000 | +2.7682% | +2.7778% | +2.7586% |
+| tika | wholeLifetimePeakRssMB | C/B | 261.865472 | 263.987200 | +2.121728 | +0.8102% | +0.9032% | +0.7177% |
+| tika | wholeLifetimePeakRssMB | C/A | 250.183680 | 263.987200 | +13.803520 | +5.5174% | +5.3435% | +5.6913% |
+
+Monitor: 33 snapshots; event counts {'EXTERNAL_CPU_TIME_INCREMENT': 5, 'EXTERNAL_POSITIVE_PERCENT_CPU': 3}; incomplete observations 0. All raw events remain. Absence of a particular observed event does not prove quiet or exclusive host activity.
+
+A=old, B=frozen121, C=frozen124. Tika C/B mean wall −0.2015% (both pairs lower), whole CPU −0.3356% (one lower, one equal), but RSS +0.8102% (both higher). Kotlin C/B wall +7.5859% with the slow first candidate2.287618125s retained (pairs +15.5656%/−0.7447%); whole CPU +1.3021%, RSS −0.3367%. Versus old, Kotlin whole CPU +10.5114%; Tika RSS +5.5174%, both RSS pairs above5%. These mixed small-n observed-background results do not prove CPU recovery or support direct attribution to a root combination without121. No sample is discarded. Inherited121 query regressions remain unresolved and are not assessed by this loading-only series.
+
+Boundary: ready wall ends at full first strictly valid /api/graphs body. CPU snapshot is sampled after validation at0.01s reporting resolution; whole native time-l CPU/RSS extends through immediate shutdown and includes sampling/validation overhead. Whole CPU can differ by0.01–0.02s from ps sampling due counter/reporting boundaries; signed discrepancies above remain, not clamped or subtracted. C4 completion and deferred first-use/query costs are outside this readiness-only boundary.
+
+Result SHA `5dca94733faea6a56d082ffc17de1e9f47da7d5c944f0ce130adfa17a3781bd2`; summary `96e4900aac30518ca69c795de72a2619d93aa6fef0b07dc95950ebee8f441337`; owner audit `5dd2db6a41096cc49111338c562707cfa49244f62afbbad4397f5bf83b731ef0`. All raw rows, medians/min/max, pairs and overhead intervals remain in summary/owner audit. No rerun, replacement, cache reset or graph content hash sweep during measurement.
+
+Decision: retain124 as an isolated mixed candidate. The small observed Tika time/CPU and Kotlin RSS improvements are not a substantial CPU recovery, and the adverse first Kotlin sample is retained. Tika old-relative RSS exceeds5% in both pairs; inherited121 query regressions remain. No query p50/p95, construction, final stability or preupgrade resource acceptance claim. Required SHA/CRC correctness checks were preserved throughout.
