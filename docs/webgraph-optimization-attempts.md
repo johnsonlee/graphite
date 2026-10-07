@@ -7231,3 +7231,24 @@ Root independently checked174 input pins and eight harness mocks before sealing.
 | Decision | Keep the isolated candidate active for measurement; no performance gain or cumulative acceptance claimed |
 
 All commands, source/binary pins, failures and observer evidence remain under `/tmp/sootup-static-review/attempt120/`. The failed series is immutable; source-only independent response/statistics audit preparation did not run against nonexistent performance data.
+
+### 2026-10-07 — Attempt 121: retain native ordinal bytes; complete core-fixture tests
+
+**Hypothesis:** native loading currently validates the mapped ordinal sidecar and then copies its entries into four vectors. Retaining the validated immutable source bytes may reduce loading allocations/RSS. This addresses the observed loading regressions without attributing their entire size to those copies. The isolated candidate `/tmp/graphite-attempt121` is based on `13163ddb2671417c9acdaf9ffe4ae29a3bb14874`; production changes are confined to storage `node.rs` and `graph.rs`. Patch SHA256 `f005763869e467b86f5d4578e8ed988afce32a094254de534c23f1a41549e8c3` includes the isolated experiment note and test formatting correction.
+
+The graph's consuming parser retains its existing `Bytes` owner. The public borrowed parser still takes an independent snapshot. Header/version, binding, checked size, exact length, index digest, every block digest and head validation remain eager; missing/invalid sidecars retain the same fallback. Binary search decodes big-endian IDs directly, preserving accepted duplicate/unsorted-input behavior. Ordinal/origin values, derived-site order and logical equality are preserved by behavior tests. Mapped backing files must remain immutable for graph/lease lifetime, as for the other mapped graph data. Lookup decoding could cost query latency, so loading savings alone cannot establish acceptance.
+
+**Verification history:** the first format failure was corrected with two whitespace-only test edits. Initial real Tika-shard tests passed CLI31 and Cypher101 but failed three unchanged Cypher fixture prerequisites: this shard was generated with annotations disabled and did not supply the required low/high-ID populations. The failures remain retained. Separate storage30 and explore114 tests passed, including all five new ordinal behavior tests. Strict Rust1.93 release Clippy hit the same unchanged `mcp.rs:802` failure as120. A separate CLI build succeeded, binary SHA256 `fb122db2ad71e7b21d9583b6ca866b45ee5dc353e097fbe86d13916bd3c9eee4`; this is not a lint-pass claim.
+
+The corrected fixture follows Rust CI's real non-slim core JAR recipe: native `graphite build <core.jar> -o <fixture-graph> --include io.johnsonlee.graphite`, default features/annotation extraction, pinned JDK17.0.20.1 with4GiB heap. It uses the frozen341 MAIN_query88 classpath through the supported executable frontend launcher, rather than claiming a rebuilt current shadowJar. The freshly built122 core JAR has210 class entries, byte-identical ZIP contents to the frozen341 core JAR. Generation produced25,635 nodes; the eight prerequisite queries returned annotation count1520, java low/high76/2099, Metadata low/high6/205, xi low/high6/204 and wrapped-get54. No predicate or test assertion was weakened.
+
+Command: `python3 /tmp/sootup-static-review/attempt121/core-fixture/run.py --execute-root-released`. It performs one fixture generation, eight prerequisite queries and one complete `cargo test --locked --release --target aarch64-apple-darwin --jobs 2 --no-fail-fast -p graphite-storage -p graphite-cypher -p graphite-explore -p graphite-cli -- --nocapture --test-threads=1`. All279 tests passed: CLI31, Cypher104, explore113, real footprint1 and storage30, zero failures/ignored/skips. Root independently reread and hashed all ten command logs and checked all279 named outcomes, including the three previously failing cases and five new ordinal tests. Runtime107 file pins, class-directory inventory, source/tool/binary identities and generated graph stats remained unchanged. Session42363 exited0; all owned processes ended.
+
+| Dimension | Result |
+|---|---|
+| Correctness | 279 complete core-fixture tests passed; full Kotlin/Tika ordinal/origin checks pending |
+| Lint | Existing strict local `mcp.rs:802` failure unresolved |
+| Query p50/p95, loading time, CPU/RSS | Candidate not measured; direct byte decoding has an unmeasured lookup tradeoff |
+| Decision | Retain isolated candidate for full-graph correctness and matched loading/query measurements; unintegrated |
+
+Core execution receipt SHA256 `6bbd7c452ca644a96eb49acb90f38df3a78697b270e0713e1d9aa93a8b3aaff0`; exact commands, preserved predecessor failures, source pins, raw stdout/stderr, eligibility bodies and root audit remain under `/tmp/sootup-static-review/attempt121/`. Tests prove the stated behavior scope, not preupgrade performance recovery.
