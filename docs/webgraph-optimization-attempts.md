@@ -6099,3 +6099,126 @@ Authoritative SHA-256 pins:
 The independent audit rehashed raw outputs and command/manifest pins, re-read all136 TSV rows against the oracle, recomputed every reported query/resource statistic from raw JSON/time logs, and checked archived XML hashes/timestamps/totals for all304 fresh tests. It compared all five recorded graph inventories to sealed extracted hashes; it did not repeat a10.43GB graph read while other work was queued. This is bounded evidence, not a new universal equivalence claim.
 
 **Decision: retain112 as an active isolated candidate for targeted request-level verification.** The local dense-DISTINCT mean benefit is positive and correctness passes; preserve that increment for evaluation rather than rejecting it because overall recovery remains incomplete. The mixed target pairs, targeted regression, internal CPU increase, allocation and adverse controls remain explicit. Do not integrate112 as an established fix or claim server/overall recovery from this pilot. Next evaluation must measure repeated real server requests with a fixed mix/concurrency and stated first-use/warm boundaries, full result/provenance checks, and matched old/current server runtimes. The user prioritizes server-request p50/p95, then end-to-end latency; independent operation CPU/RSS≤5% versus pre-upgrade, maximum8GiB Java heap, correctness and stability remain unchanged. APK remains deferred.
+
+
+### 2026-10-07 — Cumulative 341: repeated HTTP requests against pre-upgrade
+
+**Question:** test the user's primary server-request p50/p95 target directly, before further construction experiments. A is pre-upgrade `6f498705009689551c92c6d1ca92f67252ef77c4`; B is cumulative `34122563c3bd3cba3b529bdc9e5f20d454aaf779`, including retained110/111 and excluding isolated112. Test-only `f8e4105ea50d6546d0f456c07a4381252b59049a` has identical production sources. Both use frozen `MAIN_query` classpaths (84/88 entries), the same JDK17.0.20.1, M3 Max16-core/macOS14.3 host, real64 JAR-shard graphs and complete34-case HTTP workload described above. APK remains deferred. Every server explicitly uses `-Xmx8g`, mapped loading, max-concurrent-cypher4 and timeout60000ms; default work limits/features remain unchanged.
+
+**Fixed protocol and interruption:** concurrency1 ABBA, then concurrency4 ABBA, eight fresh servers. Each process receives one first-use cycle, two warm cycles and30 measured cycles of34 cases, rotating case order by cycle; bounded waves issue at most the declared concurrency. No Cypher readiness warmup. Every process receives1122 requests,1020 measured,30 measured samples per case. Request latency starts before HTTP send and ends after complete body read; JSON validation and disk reporting occur outside individual latency, between waves. Connections are new per request. These are empirical nearest-rank percentiles (n30 gives coarse tails), reported as arithmetic means of two process-level percentiles with both AB/BA pairs and raw ranges retained. They are not pooled production-population estimates.
+
+The first old process completed normally. The second process's bare socket preflight returned EADDRINUSE before any JVM or query started. Original failure and firstA were preserved. Later read-only checks found no listener or TCP entry; TIME_WAIT was plausible but not observed. A separately reviewed continuation ran exactly the remaining seven servers on predetermined ports18083–18089. No completed sample was reissued/replaced. The first AB pair therefore contains a pause; the combined series is explicitly interrupted. All eight actual servers completed and shut down using owned SIGTERM, with no forced kill.
+
+**Correctness:** all8976 complete HTTP responses match the independently reviewed109 oracle, including types, column and row order and nested `$metadata` graph provenance. The oracle itself was independently decoded and matched to all34 existing engine framed-value digests and byte counts, including metadata. Three parameterized engine cases use literal-equivalent HTTP text because the endpoint has no bound-parameter interface; this does not replace their separate engine parameter tests. All64 graph identities/readiness counts and all19 files per graph match frozen inventories before/after each session. Runtime artifacts and JDK/source pins were checked. Full sorted graph reads before each process condition OS pages equally; this is not cold-page evidence.
+
+**Resources:** measured-window CPU is server process user+system around the30 cycles, including gaps between requests; client CPU is separate. Whole-lifetime wall/CPU/peak RSS includes startup, all64 mapped loads, first-use, warmup, measured requests and teardown. These scopes cannot establish per-case query resource caps or separate loading recovery. RSS is decimal GB below, separate from heap maximum.
+
+| Run | Lifetime wall s | Lifetime CPU s | Peak RSS GB | Measured-window server CPU s |
+|---|---:|---:|---:|---:|
+| c1-0-A | 19.13 | 19.29 | 5.138874 | 6.19 |
+| c1-1-B | 19.51 | 19.30 | 5.884772 | 6.01 |
+| c1-2-B | 19.49 | 19.18 | 5.038146 | 6.07 |
+| c1-3-A | 20.03 | 20.53 | 5.859787 | 6.43 |
+| c4-0-A | 13.64 | 20.30 | 5.840437 | 6.75 |
+| c4-1-B | 13.42 | 20.11 | 5.039030 | 6.26 |
+| c4-2-B | 13.69 | 20.42 | 5.799723 | 6.35 |
+| c4-3-A | 13.65 | 20.46 | 5.080383 | 6.91 |
+
+Mean lifetime CPU/RSS changes are−3.365%/−0.689% at concurrency1 and−0.564%/−0.751% at concurrency4; measured-window server CPU changes are−4.279%/−7.687%. RSS paired changes are **+14.515%/−14.022%** and **−13.722%/+14.159%**, respectively. Means below the caps do not erase this variability or establish each operation's resource acceptance. No causal GC, JIT or scheduling diagnosis follows from these counters.
+
+**Request latency:** means of run-level fixed-mix request p50/p95 are1.071521/2.119688→1.064000/2.068063ms at concurrency1 (−0.702%/−2.435%) and1.879979/7.274083→1.876438/7.106584ms at concurrency4 (−0.188%/−2.303%). These distributions comprise1020 actual requests per process and are separately labeled; favorable mixed-workload percentiles cannot compensate for worse individual cases. All case means follow; raw process-level percentiles, sample arrays and both pair deltas remain in the audit report.
+
+Concurrency 1
+
+| Case | Old p50 ms |341 p50 ms | Δp50 | Old p95 ms |341 p95 ms | Δp95 |
+|---|---:|---:|---:|---:|---:|---:|
+|global-wide-four-properties-zero|0.933|0.925|-0.85%|1.354|1.400|+3.37%|
+|global-wide-four-properties-targeted|1.328|1.315|-1.01%|1.782|1.810|+1.58%|
+|global-wide-four-properties-dense|0.930|0.914|-1.70%|1.330|1.367|+2.84%|
+|global-wide-class-pair-zero|0.903|0.902|-0.15%|1.337|1.459|+9.11%|
+|global-wide-class-pair-targeted|1.303|1.288|-1.14%|1.738|1.691|-2.70%|
+|global-wide-class-pair-dense|0.827|0.795|-3.94%|1.322|1.226|-7.27%|
+|global-wide-name-pair-zero|0.902|0.889|-1.37%|1.351|1.429|+5.79%|
+|global-wide-name-pair-targeted|1.455|1.439|-1.07%|2.162|2.040|-5.62%|
+|global-wide-name-pair-dense|0.797|0.823|+3.20%|1.281|1.524|+18.97%|
+|global-wide-caller-class-zero|0.903|0.862|-4.48%|1.391|1.460|+4.99%|
+|global-wide-caller-class-targeted|1.181|1.171|-0.80%|1.709|1.747|+2.21%|
+|global-wide-caller-class-dense|0.779|0.764|-1.93%|1.320|1.230|-6.80%|
+|global-wide-callee-class-zero|0.900|0.847|-5.97%|1.338|1.451|+8.40%|
+|global-wide-callee-class-targeted|1.137|1.135|-0.23%|1.759|1.810|+2.90%|
+|global-wide-callee-class-dense|0.737|0.725|-1.62%|1.178|1.198|+1.70%|
+|global-wide-provenance-zero|0.867|0.842|-2.85%|1.462|1.386|-5.21%|
+|global-wide-provenance-targeted|1.400|1.352|-3.40%|2.034|1.979|-2.68%|
+|global-wide-provenance-dense|0.966|0.961|-0.46%|1.603|1.512|-5.70%|
+|global-wide-aliased-zero|0.924|0.878|-5.02%|1.340|1.302|-2.84%|
+|global-wide-aliased-targeted|1.546|1.503|-2.79%|2.178|2.119|-2.71%|
+|global-wide-aliased-dense|0.930|0.927|-0.23%|1.507|1.481|-1.67%|
+|global-wide-parameterized-zero|0.889|0.873|-1.77%|1.391|1.363|-2.01%|
+|global-wide-parameterized-targeted|1.247|1.237|-0.76%|1.653|1.608|-2.75%|
+|global-wide-parameterized-dense|0.907|0.926|+2.05%|1.537|1.489|-3.10%|
+|global-wide-wrapped-case-insensitive-zero|0.906|0.872|-3.77%|1.354|1.427|+5.41%|
+|global-wide-wrapped-case-insensitive-targeted|1.256|1.228|-2.20%|1.798|1.843|+2.50%|
+|global-wide-wrapped-case-insensitive-dense|0.922|0.919|-0.37%|1.641|1.661|+1.25%|
+|global-wide-wrapped-case-insensitive-distinct-zero|0.984|0.931|-5.37%|3.057|2.890|-5.49%|
+|global-wide-wrapped-case-insensitive-distinct-targeted|1.596|1.588|-0.50%|2.399|2.307|-3.86%|
+|global-wide-wrapped-case-insensitive-distinct-dense|6.893|6.925|+0.47%|8.175|8.306|+1.60%|
+|global-wide-distribution-broad-all-64|1.046|1.022|-2.36%|1.577|1.542|-2.25%|
+|global-wide-distribution-localized-early|0.989|0.952|-3.73%|1.424|1.390|-2.38%|
+|global-wide-distribution-localized-late|1.859|1.867|+0.45%|2.409|2.414|+0.24%|
+|global-wide-distribution-localized-middle|1.736|1.747|+0.61%|2.399|2.275|-5.20%|
+
+Concurrency 4
+
+| Case | Old p50 ms |341 p50 ms | Δp50 | Old p95 ms |341 p95 ms | Δp95 |
+|---|---:|---:|---:|---:|---:|---:|
+|global-wide-four-properties-zero|2.133|2.194|+2.87%|7.682|6.591|-14.20%|
+|global-wide-four-properties-targeted|2.302|2.255|-2.03%|7.278|6.349|-12.76%|
+|global-wide-four-properties-dense|1.456|1.388|-4.69%|2.058|2.205|+7.14%|
+|global-wide-class-pair-zero|1.770|1.698|-4.04%|3.708|5.088|+37.21%|
+|global-wide-class-pair-targeted|2.218|2.263|+2.01%|7.816|6.648|-14.95%|
+|global-wide-class-pair-dense|1.266|1.297|+2.40%|1.809|2.154|+19.06%|
+|global-wide-name-pair-zero|1.830|1.776|-2.96%|4.852|4.506|-7.14%|
+|global-wide-name-pair-targeted|2.412|2.510|+4.05%|5.737|5.627|-1.92%|
+|global-wide-name-pair-dense|1.283|1.220|-4.84%|2.087|2.045|-1.99%|
+|global-wide-caller-class-zero|1.658|1.839|+10.93%|4.763|6.782|+42.39%|
+|global-wide-caller-class-targeted|1.962|2.027|+3.31%|6.137|7.179|+16.99%|
+|global-wide-caller-class-dense|1.182|1.169|-1.05%|2.087|2.045|-2.01%|
+|global-wide-callee-class-zero|1.553|1.745|+12.33%|3.752|4.859|+29.50%|
+|global-wide-callee-class-targeted|2.113|1.986|-5.99%|5.669|4.963|-12.45%|
+|global-wide-callee-class-dense|1.137|1.110|-2.41%|2.133|2.012|-5.68%|
+|global-wide-provenance-zero|1.771|1.809|+2.14%|4.511|4.634|+2.74%|
+|global-wide-provenance-targeted|2.101|2.543|+21.02%|5.908|5.425|-8.17%|
+|global-wide-provenance-dense|1.456|1.569|+7.70%|3.146|3.181|+1.11%|
+|global-wide-aliased-zero|1.641|1.687|+2.80%|6.362|5.301|-16.68%|
+|global-wide-aliased-targeted|2.411|2.577|+6.90%|8.291|8.378|+1.05%|
+|global-wide-aliased-dense|1.435|1.444|+0.64%|2.321|2.446|+5.37%|
+|global-wide-parameterized-zero|1.604|1.781|+11.02%|5.503|6.760|+22.85%|
+|global-wide-parameterized-targeted|2.184|2.077|-4.89%|7.516|5.556|-26.08%|
+|global-wide-parameterized-dense|1.405|1.412|+0.50%|2.207|2.427|+10.00%|
+|global-wide-wrapped-case-insensitive-zero|1.909|1.769|-7.30%|5.251|4.987|-5.05%|
+|global-wide-wrapped-case-insensitive-targeted|2.070|2.191|+5.82%|7.290|9.088|+24.67%|
+|global-wide-wrapped-case-insensitive-dense|1.396|1.397|+0.09%|4.761|2.371|-50.19%|
+|global-wide-wrapped-case-insensitive-distinct-zero|1.743|1.857|+6.52%|6.433|6.039|-6.12%|
+|global-wide-wrapped-case-insensitive-distinct-targeted|3.314|3.466|+4.60%|7.725|8.525|+10.36%|
+|global-wide-wrapped-case-insensitive-distinct-dense|7.619|7.662|+0.56%|9.498|9.988|+5.16%|
+|global-wide-distribution-broad-all-64|1.502|1.434|-4.52%|2.660|2.773|+4.27%|
+|global-wide-distribution-localized-early|1.540|1.526|-0.93%|2.533|2.571|+1.50%|
+|global-wide-distribution-localized-late|3.612|3.592|-0.55%|9.721|9.727|+0.06%|
+|global-wide-distribution-localized-middle|4.095|4.360|+6.47%|9.663|10.079|+4.31%|
+
+
+Concurrency1 has16/34 adverse mean p95 cases; eight are adverse in both pairs. Dense name-pair p95 worsens12.201%/25.837% (mean18.968%). Concurrency4 has21/34 adverse mean p50 and19/34 adverse mean p95 cases, with11/7 adverse in both pairs respectively. Targeted provenance p50 worsens16.10%/26.32% (mean21.02%); dense class-pair p95 worsens20.57%/17.57% (mean19.06%). The largest mean p95 increase, zero-hit caller-class42.387%, has highly unequal pair changes1.695%/90.642%; zero-hit class-pair is−8.718%/+145.667%. Preserve both recurring and variable adverse results; neither proves a code-level cause. Dense wrapped DISTINCT p95 is+1.601%/+5.161% at concurrency1/4, with mixed paired directions.
+
+**Decision:** retain the cumulative improvements and keep112 active for targeted evaluation. Full HTTP correctness passes and mixed-request/resource means improve, but **per-query p50/p95 recovery is not established**, so the cumulative solution does not pass final acceptance. Do not discard positive increments because the overall goal remains unmet, and do not use the favorable mixed distribution to hide adverse cases. Next investigation prioritizes the recurring query tails and variability before another construction optimization. Separate construction/loading acceptance and the hard correctness/stability/8GiB constraints remain open as previously recorded.
+
+**Reproduction and evidence:** `/tmp/sootup-static-review/server-request-old-vs341/plan.sealed.json` fixes literal server/client argv, runtime/source/fixture/JDK hashes, all34 queries and sampling rules. It was invoked by `python3 run.py --plan /tmp/sootup-static-review/server-request-old-vs341/plan.sealed.json --execute-root-released`. After the pre-JVM failure, `python3 /tmp/sootup-static-review/server-request-old-vs341/resume-preparation/run_resume.py --execute-root-released-resume` used the separately sealed resume plan. Original and continuation outputs remain separate; `combined/` references each original sample exactly once. No CI dispatch, retry-until-good, benchmark replacement or additional server was used.
+
+- `plan.sealed.json` SHA-256 `bd52443faca5b8ed2f056f36417dec351be1886fbe1f75adbe36eb59148e6bb7`.
+- `execution/results.json` SHA-256 `f6513e968f6b1695679c536b638a361cf590d92c272300d8e6be6e5bb74c3836`.
+- `resume-preparation/plan.resume.json` SHA-256 `c9d3c0a464c4d4a5475ff5e06cb28b3ecbafdc1443bfa811ba96cd1069973bda`.
+- `resume-preparation/execution/results.json` SHA-256 `0e30ef66c5db2aa58f35d50822207c11e00a126a14ec736d1bc3ce71e89b2555`.
+- `resume-preparation/execution/combined-eight-summary.json` SHA-256 `1778f5894deeb4d1c2329168ead2b27abee90a7f24558935e8a146b72533f4bf`.
+- `independent-audit/audit.json` SHA-256 `22aaf84ef4caa77f912fe6fcc088e60c8fb0d8ac11341c63e9b0a564aa265638`.
+- `independent-audit/report.md` SHA-256 `fb315bd0f5af4e4a9a107b5c3df49377f44f2f444020539fe5ce0ed89cf04a6e`.
+
+The independent audit re-read all8976 raw bodies and request records, recomputed each empirical percentile and every resource/pair statistic, and checked protocol origins, heap argv, receipts and retained fixture inventories. It did not launch JVMs or repeat graph reads.
