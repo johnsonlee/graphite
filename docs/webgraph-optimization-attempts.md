@@ -6657,3 +6657,18 @@ A separately authorized streaming analysis of existing events could localize act
 Evidence: `/tmp/sootup-static-review/tika341-memory-next/{review.md,execution-packet,independent-audit}`.
 Terminal results SHA256 `995cd5485822c9153b5555b27b5251c4a917447f9f2b45ec0377e6fe45c02cfb`; phase-analysis SHA256 `e737b380b721a5e8e499eafd96f058a1ee6f9ebefb8c9bac0ab7b95847bd3c8d`.
 Independent audit SHA256 `a4f7aaebb1b0ed39afbd5b6c3007996970eb3946275fbcdd0eaa2379c42b1533`; report SHA256 `31c54e7543b84643f3c791094c9de97af67d90cadf87c716423f930a1beb90a8`.
+
+### 2026-10-07 — Attempt 117: reject ordinal-count growth before buffer mutation
+
+**Problem and scope:** PR review found that `CallSiteOrdinalPersistenceInput.add` writes fixed arrays before `encode` checks the first-pass count. A custom or lazy graph with more ordinal-bearing CallSites at write time therefore threw an incidental array-index exception. This correctness repair was prepared independently from `1ab8c912` while attempts115/116 were still being validated; it is not a new performance hypothesis.
+
+**Change:** check capacity immediately after excluding unknown ordinals, before changing sort state, arrays or size. Both extra and missing ordinals now report `Call-site ordinal count changed while saving`. The existing stable graph format, ordinal/origin fields and unknown-ordinal behavior are unchanged. This does not make graph-directory writes transactional: earlier writes can still exist when a consistency failure aborts saving.
+
+**Verification:** all264 fresh webgraph tests passed, including three new tests: zero/full capacity preserves captured bytes after a failed add; missing ordinals still fail at encode; and full GraphStore saving detects increased ordinals between count and write. Source review caught an intervening metadata node scan in the custom fixture before execution; the final test changes ordinals only on the third scan and asserts all three visits. The original source review artifact remains preserved. Existing shuffled/sparse/duplicate ordinal and persisted round-trip checks also pass. Detekt passed; actual Kover0.9.1 reports6401 covered/116 missed lines, **98.2200399%**, against the unchanged98% requirement. No new performance measurements or speedup claims are made for this guard.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-recovery-sources/attempt117-build/execute.py`. The wrapper runs `:webgraph:test :webgraph:detekt :webgraph:koverLog :webgraph:koverXmlReport :webgraph:koverHtmlReport` using JDK17.0.20.1 on M3 Max/macOS14.3, four-GiB Gradle/test heaps, in-process Kotlin compilation and no build cache. Full argv and environment are retained in the result. Source/tool hashes, fresh XML times and all three new testcase names were independently checked; temporary publishing-plugin changes were restored. Coverage thresholds and test filters were not weakened.
+
+**Decision: KEEP and integrate the explicit consistency guard.** The two integrated source files exactly match the independently tested candidate. This fixes the ordinal review defect, not the outstanding Tika RSS or query latency regressions; the required CI gate remains necessary on the combined PR head.
+
+Evidence: `/tmp/sootup-static-review/attempt117/{source-proof.json,root-build-audit.json,before-source-review}` and `/tmp/sootup-recovery-sources/attempt117-build/attempt117-build1`.
+Result SHA256 `4da133ef8a02e3c0a042556bd9024acfa62e3bfde3590ddbb5e9a8d3b82a195a`; production SHA256 `d61934e5aaf6c84677a4d01d04bd62d76eb17a8cdd7a7f26f7109d6c8ba645d3`; test SHA256 `f051690889e9c0ba24da25c7acfff853e52357df61852f888220979c510410a4`.

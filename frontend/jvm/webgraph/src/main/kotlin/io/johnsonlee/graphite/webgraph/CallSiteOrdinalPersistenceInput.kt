@@ -13,6 +13,7 @@ internal class CallSiteOrdinalPersistenceInput(ordinalCount: Int) {
 
     fun add(node: CallSiteNode) {
         val ordinal = node.ordinal ?: return
+        check(size < ids.size) { "Call-site ordinal count changed while saving" }
         val id = node.id.value
         if (size > 0 && ids[size - 1] > id) ordered = false
         ids[size] = id

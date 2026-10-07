@@ -14,6 +14,7 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
@@ -93,6 +94,56 @@ class CallSiteOrdinalPersistenceTest {
         val actual = checkNotNull(input.encode())
         assertContentEquals(reference.bytes, actual.bytes)
         assertContentEquals(reference.digest, actual.digest)
+    }
+
+    @Test
+    fun `extra ordinal fails before changing captured data including an empty input`() {
+        for (count in listOf(0, 1)) {
+            val input = CallSiteOrdinalPersistenceInput(count)
+            val accepted = call(9, -2, NodeId(7))
+            if (count == 1) input.add(accepted)
+            input.add(call(0, null))
+            val before = input.encode()
+            val failure = assertFailsWith<IllegalStateException> { input.add(call(2, 3)) }
+            assertEquals("Call-site ordinal count changed while saving", failure.message)
+            val after = input.encode()
+            if (before == null) {
+                assertNull(after)
+            } else {
+                assertContentEquals(before.bytes, checkNotNull(after).bytes)
+                assertContentEquals(before.digest, after.digest)
+            }
+        }
+    }
+
+    @Test
+    fun `fewer ordinals still fail when encoding`() {
+        val input = CallSiteOrdinalPersistenceInput(2)
+        input.add(call(1, 5))
+        input.add(call(2, null))
+        val failure = assertFailsWith<IllegalStateException> { input.encode() }
+        assertEquals("Call-site ordinal count changed while saving", failure.message)
+    }
+
+    @Test
+    fun `save reports ordinal count changes between node passes`() {
+        for (firstOrdinal in listOf<Int?>(null, 1)) {
+            val initial = listOf(call(0, firstOrdinal), call(1, null))
+            val changed = listOf(call(0, firstOrdinal), call(1, 2))
+            var nodePasses = 0
+            val graph = object : Graph by EncounterGraph(initial) {
+                override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
+                    // The empty hierarchy adds a metadata scan between counting and writing.
+                    val nodes = if (type == Node::class.java && ++nodePasses > 2) changed else initial
+                    return nodes.asSequence().filter(type::isInstance).map(type::cast)
+                }
+            }
+            withDirectory { dir ->
+                val failure = assertFailsWith<IllegalStateException> { GraphStore.save(graph, dir) }
+                assertEquals("Call-site ordinal count changed while saving", failure.message)
+                assertEquals(3, nodePasses)
+            }
+        }
     }
 
     private fun call(id: Int, ordinal: Int?, origin: NodeId? = null): CallSiteNode =
