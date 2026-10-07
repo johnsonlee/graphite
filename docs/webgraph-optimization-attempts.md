@@ -6222,3 +6222,41 @@ Concurrency1 has16/34 adverse mean p95 cases; eight are adverse in both pairs. D
 - `independent-audit/report.md` SHA-256 `fb315bd0f5af4e4a9a107b5c3df49377f44f2f444020539fe5ce0ed89cf04a6e`.
 
 The independent audit re-read all8976 raw bodies and request records, recomputed each empirical percentile and every resource/pair statistic, and checked protocol origins, heap argv, receipts and retained fixture inventories. It did not launch JVMs or repeat graph reads.
+
+### 2026-10-07 — Cumulative 341: full-feature construction against pre-upgrade
+
+**Question:** measure the complete retained solution, including110/111, against actual pre-upgrade construction after the HTTP request baseline. A is frozen `6f498705009689551c92c6d1ca92f67252ef77c4`, `TEST_webgraph`54; B is frozen `34122563c3bd3cba3b529bdc9e5f20d454aaf779`, `TEST_webgraph`57. Root c7 has the same production sources as341. Both use JDK17.0.20.1 on M3 Max16-core/macOS14.3, the same real Kotlin compiler2.0.21 and Tika2.9.2 JARs, default full features and explicit `-Xmx8g`. APK remains deferred.
+
+**Protocol:** fixed Kotlin ABBA followed by Tika ABBA, eight fresh construction processes, then24 strict verification processes. The unchanged compiled `CliConstruction` helper builds the graph, completely enumerates the CLI node count, saves a usable graph with prepared indexes and two compression threads, and explicitly closes the source. Continuous end-to-end wall includes all four phases; whole-command CPU is user+system and peak RSS includes JVM startup. No forced GC, profiling, feature reduction, retries, replacement samples or extra JVM options. Arithmetic means were declared primary, with all raw phases, median/min/max/range and both adjacent AB/BA changes retained. There are only two samples per arm/corpus; this is bounded evidence, not a population or stability guarantee.
+
+**Raw measurements:** wall/CPU seconds; RSS is decimal GB, separate from the8GiB maximum heap.
+
+|Run|Build s|Count s|Save s|E2E s|Outer CPU s|Peak RSS GB|
+|---|---:|---:|---:|---:|---:|---:|
+|kotlin-0-A|105.431552|0.349308|6.395754|112.176618|183.480|7.734903|
+|kotlin-1-B|29.877531|0.341010|11.718515|41.937060|106.840|8.096023|
+|kotlin-2-B|29.633110|0.413412|6.429801|36.476328|103.540|9.653109|
+|kotlin-3-A|106.014774|0.319169|6.751546|113.085493|204.940|9.381167|
+|tika-0-A|103.920091|0.334426|10.333406|114.587926|174.780|6.453215|
+|tika-1-B|22.114879|0.352135|5.478223|27.945241|82.950|8.572797|
+|tika-2-B|22.136642|0.356233|5.345504|27.838384|85.370|8.631763|
+|tika-3-A|105.346426|0.333338|5.420125|111.099893|171.750|7.294321|
+
+| Corpus / metric | Pre-upgrade mean | Cumulative341 mean | Change | AB / BA changes |
+|---|---:|---:|---:|---:|
+| Kotlin end-to-end s |112.631055|39.206694|−65.190%|−62.615% / −67.744%|
+| Kotlin whole CPU s |194.210|105.190|−45.837%|−41.770% / −49.478%|
+| Kotlin peak RSS GB |8.558035|8.874566|+3.699%|+4.669% / +2.899%|
+| Tika end-to-end s |112.843909|27.891812|−75.283%|−75.612% / −74.943%|
+| Tika whole CPU s |173.265|84.160|−51.427%|−52.540% / −50.294%|
+| Tika peak RSS GB |6.873768|8.602280|+25.146%|+32.845% / +18.335%|
+
+Kotlin build wall improves71.855%, but prepared-save wall increases38.038% (6.573650→9.074158s); the two save pairs are+83.223%/−4.765%, with both candidate samples11.718515/6.429801s preserved. Tika build improves78.854% and save31.293%. Complete-count wall rises12.857% for Kotlin and6.081% for Tika; these small phases remain included in end-to-end. No causal GC/JIT/allocation inference follows from these counters.
+
+**Correctness:** All eight builds and24 independent verification JVMs completed successfully. Root independently re-read every output/reference report and log, checked the declared8g commands and exact run order, and confirmed the recorded graph inventories are identical before/after verification. Old/current graph counts differ as already recorded for the SootUp upgrade: Kotlin4,657,648/2,173,010 versus4,744,132/2,251,811 nodes/CallSites; Tika4,673,289/1,758,353 versus4,620,490/1,705,428. Verification compares every output to its own runtime's established full-feature22-field shape,13-field metadata and five-query reference. This does not establish old/current graph isomorphism. Old graphs have18files and no ordinal sidecar; current graphs additionally require exact pinned main02 ordinal-sidecar bytes and the36-byte metadata binding. Quiet construction logs cannot prove absence of internally caught adapter OOM or GC; no such instrumentation was enabled.
+
+**Decision:** retain the substantial cumulative construction latency/CPU gains. Kotlin's observed RSS mean and both pairs are within the5% allowance, but n2 does not prove a stable bound. Tika RSS exceeds5% in the mean and both pairs, so construction does **not** pass final resource acceptance. The earlier110 parent-relative RSS reduction remains a useful retained increment; it does not establish old-relative compliance. Query p50/p95 remains the first priority, then end-to-end time; neither these construction gains nor lower CPU can offset the Tika RSS overrun or unresolved loading/query results. Keep the8GiB heap ceiling and continue reducing memory without discarding the speed gains.
+
+**Reproduction and evidence:** `/tmp/sootup-recovery-sources/cumulative341-old-construction-pilot/execute.py --execute-root-released` (run with Python3). `commands.json` SHA256 `6eeeb28063bd6ec20097102495d657276a550a503905d6658e8f6d502b266430`; runner `6278bce58c97a623ce7057592bfe16b7623e4064b5e441c01effcf5ca3df23c3`. All raw properties, time-l logs, inventories, reports and phase/resource statistics are preserved in that directory. Independent root recomputation checked all eight raw time/property files and every summary mean/pair against `execution/summary.json`, SHA256 `b1bb8d14e78010b181e0abb4c9ccef435b6b9166a11ef0d5ec5037d92e1e3818`; proof `/tmp/sootup-static-review/cumulative341-construction-review/phase-audit.json`.
+
+Final executor result SHA256 `6bff72a5f85f2ad7c3c69f0337866f45cc83c8f23236648a343f73d1de8735f6`; independent report audit `/tmp/sootup-static-review/cumulative341-construction-review/final-audit.json`, SHA256 `f96c5b7007ac4de6bf3524298fd486eaa26ec39c95e26204067215b63b10c7f9`. Both graph-inventory files have SHA256 `dc1311bca9ecbe492002352fcb422d34d5e463ee39f8d8d9f61db4bfac2c4008`. Root rechecked report bytes and recorded inventories; graph bytes were rehashed by the sole executor, avoiding duplicate scans during the next JVM workload.
