@@ -7647,3 +7647,113 @@ Boundary: ready wall ends at full first strictly valid /api/graphs body. CPU sna
 Result SHA `5dca94733faea6a56d082ffc17de1e9f47da7d5c944f0ce130adfa17a3781bd2`; summary `96e4900aac30518ca69c795de72a2619d93aa6fef0b07dc95950ebee8f441337`; owner audit `5dd2db6a41096cc49111338c562707cfa49244f62afbbad4397f5bf83b731ef0`. All raw rows, medians/min/max, pairs and overhead intervals remain in summary/owner audit. No rerun, replacement, cache reset or graph content hash sweep during measurement.
 
 Decision: retain124 as an isolated mixed candidate. The small observed Tika time/CPU and Kotlin RSS improvements are not a substantial CPU recovery, and the adverse first Kotlin sample is retained. Tika old-relative RSS exceeds5% in both pairs; inherited121 query regressions remain. No query p50/p95, construction, final stability or preupgrade resource acceptance claim. Required SHA/CRC correctness checks were preserved throughout.
+
+
+### 2026-10-07 — Attempt 123: request-local graph IDs retain mixed native query gains
+
+Hypothesis: avoid cross-request reference-count sharing for graph IDs while retaining120's direct source acquisition and avoiding repeated payload copies. Isolated candidate `27e90959e16f6fc1f852f43ee7dfd73aefa341a3` is not integrated. The candidate keeps String registry keys and creates one request-local shared graph ID per acquired source; within-request sharing, public lease behavior, sorted snapshot ordering and graph lifetime are preserved. Its actual commit is recorded below from the local object. Initial added correctness test without a ScanPlan-producing WHERE failed117/118 and is retained; the corrected route-exercising test and full explore suite passed118/118. CLI export passed. The unrelated existing strict Rust1.93 mcp.rs nonminimal_bool finding is retained, not claimed fixed.
+
+A is preupgrade6f498 binary2bf3cd50; B is isolated120 (`d60a548b`) binary69946d8a; C is123 binary75d3dc0e. The fixed64 real Android14/Tika/Hive/Kotlin graph shards and reviewed34-case full-response oracle are unchanged from120 (about10.43GB persisted artifacts). Pinned Rust1.93 arm64 release, macOS/M3 Max, native MAPPED server/default C4, no JVM. Prespecified c1 ABCCBA then c4 ABCCBA,12 fresh processes, one first-use cycle, two warmup cycles,60 measured cycles per case. All25,704 complete typed responses passed, of which24,480 are measured. Per-run p50/p95 use nearest ranks30/57; table values are means of the two per-run quantiles, never pooled requests/cases. The two fixed block pairs remain reported independently. No sample replacement, selective retry or quiet-window claim. Actual request-body/type/cardinality/provenance checking and raw quantile/resource audit independently passed; original server and audit sessions58051/49525 both exited0 and owned processes were reaped.
+
+Query table: A/B/C are absolute p50/p95 milliseconds. Each delta cell is mean percent (fixed pair1 / pair2), positive means worse. All34 cases at both concurrency levels are retained.
+
+| c | Case | A p50/p95 ms | B p50/p95 ms | C p50/p95 ms | C/B p50 Δ% (pairs) | C/B p95 Δ% (pairs) | C/A p50 Δ% (pairs) | C/A p95 Δ% (pairs) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | four-properties-zero | 0.409354/0.499250 | 0.419687/0.498792 | 0.393750/0.491042 | -6.180 (-1.638/-10.719) | -1.554 (+3.970/-7.142) | -3.812 (+3.361/-10.639) | -1.644 (+9.960/-12.147) |
+| 1 | four-properties-targeted | 0.659791/0.782542 | 0.659188/0.775021 | 0.658855/0.756791 | -0.051 (+2.502/-2.671) | -2.352 (+0.839/-5.666) | -0.142 (+5.247/-5.380) | -3.291 (+0.653/-7.321) |
+| 1 | four-properties-dense | 1.154542/1.380041 | 1.135229/1.345083 | 1.136105/1.302292 | +0.077 (+1.855/-1.684) | -3.181 (-4.636/-1.608) | -1.597 (+0.652/-3.804) | -5.634 (-8.732/-2.154) |
+| 1 | class-pair-zero | 0.415917/0.504229 | 0.431958/0.494125 | 0.408562/0.469292 | -5.416 (-0.802/-10.132) | -5.026 (-0.787/-9.324) | -1.768 (+5.587/-8.924) | -6.929 (+1.665/-14.909) |
+| 1 | class-pair-targeted | 0.825917/0.993042 | 0.826937/0.966333 | 0.816625/0.953834 | -1.247 (+0.675/-3.141) | -1.294 (-0.940/-1.641) | -1.125 (+2.507/-4.587) | -3.948 (-4.410/-3.488) |
+| 1 | class-pair-dense | 1.111605/1.303688 | 1.107625/1.277999 | 1.098334/1.255875 | -0.839 (+1.557/-3.167) | -1.731 (+1.589/-5.006) | -1.194 (+1.152/-3.475) | -3.667 (+2.903/-9.747) |
+| 1 | name-pair-zero | 0.408708/0.493771 | 0.425229/0.501729 | 0.408104/0.512709 | -4.027 (+0.039/-8.128) | +2.188 (+4.341/-0.051) | -0.148 (+6.802/-6.808) | +3.835 (+9.740/-1.895) |
+| 1 | name-pair-targeted | 0.834583/0.997333 | 0.829688/0.975313 | 0.828792/1.036021 | -0.108 (+3.344/-3.449) | +6.224 (+10.032/+2.552) | -0.694 (+2.006/-3.344) | +3.879 (+13.707/-4.651) |
+| 1 | name-pair-dense | 1.117042/1.287313 | 1.111083/1.216583 | 1.096979/1.244521 | -1.269 (-0.764/-1.782) | +2.296 (+1.294/+3.299) | -1.796 (+0.263/-3.820) | -3.324 (-5.185/-1.426) |
+| 1 | caller-class-zero | 0.407813/0.473604 | 0.427563/0.519749 | 0.411938/0.476208 | -3.654 (+1.643/-8.978) | -8.377 (-1.010/-15.401) | +1.012 (+9.212/-6.839) | +0.550 (+8.949/-7.412) |
+| 1 | caller-class-targeted | 0.749521/0.869355 | 0.740417/0.856958 | 0.736938/0.812167 | -0.470 (+1.443/-2.391) | -5.227 (-5.046/-5.414) | -1.679 (+2.317/-5.528) | -6.578 (-5.579/-7.593) |
+| 1 | caller-class-dense | 1.082270/1.258001 | 1.100813/1.286979 | 1.077249/1.199125 | -2.141 (-2.090/-2.192) | -6.826 (-2.361/-10.824) | -0.464 (+3.439/-4.136) | -4.680 (-2.930/-6.336) |
+| 1 | callee-class-zero | 0.404604/0.498167 | 0.411479/0.503146 | 0.399417/0.461937 | -2.932 (-0.794/-5.157) | -8.190 (-1.259/-14.851) | -1.282 (+7.415/-9.282) | -7.273 (-2.787/-11.807) |
+| 1 | callee-class-targeted | 0.643250/0.756771 | 0.656771/0.730146 | 0.634813/0.708251 | -3.343 (-3.300/-3.389) | -2.999 (-2.388/-3.634) | -1.312 (+1.997/-4.531) | -6.412 (-2.153/-10.519) |
+| 1 | callee-class-dense | 1.085375/1.263750 | 1.100125/1.278042 | 1.066042/1.271062 | -3.098 (-2.943/-3.255) | -0.546 (-4.365/+3.683) | -1.781 (+1.221/-4.655) | +0.579 (+4.212/-2.880) |
+| 1 | provenance-zero | 0.412812/0.501062 | 0.421376/0.478063 | 0.400729/0.459083 | -4.900 (-0.305/-9.553) | -3.970 (+2.017/-9.883) | -2.927 (+2.995/-8.782) | -8.378 (-0.768/-15.614) |
+| 1 | provenance-targeted | 0.748708/0.869000 | 0.764708/0.856479 | 0.747500/0.846249 | -2.250 (-1.901/-2.606) | -1.194 (-0.901/-1.497) | -0.161 (+2.361/-2.622) | -2.618 (-2.481/-2.760) |
+| 1 | provenance-dense | 1.152313/1.378313 | 1.155500/1.362750 | 1.130729/1.289000 | -2.144 (-1.472/-2.824) | -5.412 (-1.486/-9.227) | -1.873 (+0.482/-4.181) | -6.480 (-2.747/-10.118) |
+| 1 | aliased-zero | 0.420917/0.521708 | 0.425896/0.496688 | 0.403354/0.477042 | -5.293 (+1.500/-11.967) | -3.955 (+1.147/-9.081) | -4.173 (+5.825/-13.436) | -8.562 (-5.416/-11.839) |
+| 1 | aliased-targeted | 0.745229/0.860667 | 0.742271/0.859875 | 0.724770/0.823354 | -2.358 (-0.724/-3.995) | -4.247 (+1.154/-9.374) | -2.745 (-0.180/-5.266) | -4.335 (-1.967/-6.722) |
+| 1 | aliased-dense | 1.137875/1.280167 | 1.138458/1.295834 | 1.123916/1.308542 | -1.277 (+1.532/-4.053) | +0.981 (+4.337/-2.467) | -1.227 (+3.019/-5.307) | +2.216 (+8.171/-3.614) |
+| 1 | parameterized-zero | 0.415875/0.494500 | 0.431563/0.512625 | 0.408604/0.483480 | -5.320 (-0.210/-10.519) | -5.686 (-0.279/-10.992) | -1.748 (+7.241/-10.283) | -2.229 (+8.693/-11.956) |
+| 1 | parameterized-targeted | 0.699021/0.799292 | 0.709625/0.788354 | 0.696792/0.801854 | -1.808 (+0.707/-4.310) | +1.712 (+2.578/+0.839) | -0.319 (+2.352/-2.969) | +0.321 (+1.732/-1.089) |
+| 1 | parameterized-dense | 1.141647/1.293625 | 1.143126/1.322292 | 1.128750/1.349479 | -1.258 (+0.463/-2.975) | +2.056 (+7.738/-3.777) | -1.130 (+2.985/-5.049) | +4.318 (+14.531/-5.382) |
+| 1 | wrapped-case-insensitive-zero | 0.423750/0.492708 | 0.422812/0.502437 | 0.416187/0.490229 | -1.567 (+5.144/-8.304) | -2.430 (+0.639/-5.577) | -1.785 (+7.578/-10.728) | -0.503 (+4.882/-5.790) |
+| 1 | wrapped-case-insensitive-targeted | 0.651187/0.759396 | 0.656417/0.744771 | 0.647312/0.759854 | -1.387 (+0.076/-2.847) | +2.025 (+3.022/+0.988) | -0.595 (+2.439/-3.533) | +0.060 (+0.789/-0.702) |
+| 1 | wrapped-case-insensitive-dense | 1.297916/1.435604 | 1.303584/1.465000 | 1.281604/1.443167 | -1.686 (-1.926/-1.439) | -1.490 (+4.713/-7.553) | -1.257 (+1.108/-3.565) | +0.527 (+5.188/-4.174) |
+| 1 | wrapped-case-insensitive-distinct-zero | 0.457625/0.554895 | 0.472958/0.538354 | 0.450688/0.544208 | -4.709 (-1.323/-8.084) | +1.087 (-2.476/+4.790) | -1.516 (+3.825/-6.655) | -1.926 (-0.457/-3.306) |
+| 1 | wrapped-case-insensitive-distinct-targeted | 0.691063/0.817021 | 0.683334/0.770833 | 0.682583/0.747291 | -0.110 (+4.188/-4.286) | -3.054 (-1.503/-4.627) | -1.227 (+3.976/-6.193) | -8.535 (-4.347/-12.544) |
+| 1 | wrapped-case-insensitive-distinct-dense | 3.160916/3.450417 | 3.222229/3.429708 | 3.181459/3.369791 | -1.265 (-0.484/-2.047) | -1.747 (-0.030/-3.457) | +0.650 (+2.297/-0.970) | -2.337 (+1.805/-6.270) |
+| 1 | distribution-broad-all-64 | 1.313813/1.459333 | 1.313230/1.463812 | 1.305729/1.437105 | -0.571 (+1.155/-2.306) | -1.825 (-2.026/-1.623) | -0.615 (+3.307/-4.392) | -1.523 (-0.017/-2.979) |
+| 1 | distribution-localized-early | 0.567938/0.671000 | 0.574229/0.646354 | 0.542479/0.619313 | -5.529 (-2.001/-9.064) | -4.184 (-0.367/-8.020) | -4.483 (+2.635/-11.136) | -7.703 (-0.039/-14.814) |
+| 1 | distribution-localized-late | 0.759500/0.876229 | 0.746834/0.863521 | 0.731688/0.856499 | -2.028 (+0.676/-4.726) | -0.813 (+2.125/-3.732) | -3.662 (+2.455/-9.368) | -2.252 (+2.398/-6.716) |
+| 1 | distribution-localized-middle | 0.749812/0.849834 | 0.741896/0.841521 | 0.723458/0.807250 | -2.485 (+3.306/-8.224) | -4.073 (-0.443/-7.827) | -3.515 (+2.784/-9.689) | -5.011 (+2.800/-12.444) |
+| 4 | four-properties-zero | 0.593688/0.780729 | 0.641355/0.784333 | 0.614125/0.817833 | -4.246 (+2.323/-9.685) | +4.271 (+5.959/+2.887) | +3.442 (+8.197/-0.653) | +4.752 (+0.599/+8.539) |
+| 4 | four-properties-targeted | 0.936979/1.221354 | 0.922854/1.221270 | 0.920625/1.236854 | -0.242 (+2.544/-2.645) | +1.276 (+4.112/-1.282) | -1.745 (-3.220/-0.366) | +1.269 (+2.182/+0.416) |
+| 4 | four-properties-dense | 1.257812/1.561438 | 1.231979/1.529292 | 1.209834/1.509500 | -1.798 (+0.232/-3.630) | -1.294 (-2.316/-0.353) | -3.814 (-2.715/-4.824) | -3.326 (-6.925/+0.168) |
+| 4 | class-pair-zero | 0.625646/0.825249 | 0.622771/0.815229 | 0.603000/0.798458 | -3.175 (-3.024/-3.310) | -2.057 (-6.590/+2.025) | -3.620 (-3.487/-3.739) | -3.246 (-5.054/-1.704) |
+| 4 | class-pair-targeted | 1.154562/1.397833 | 1.120354/1.387438 | 1.145854/1.355354 | +2.276 (+3.318/+1.302) | -2.312 (-0.247/-4.173) | -0.754 (+0.581/-1.994) | -3.039 (-0.389/-5.399) |
+| 4 | class-pair-dense | 1.319208/1.605833 | 1.303208/1.571875 | 1.321959/1.544187 | +1.439 (+3.200/-0.191) | -1.761 (-1.999/-1.533) | +0.208 (+0.421/+0.006) | -3.839 (+2.140/-8.948) |
+| 4 | name-pair-zero | 0.602209/0.797708 | 0.637042/0.793687 | 0.579937/0.774855 | -8.964 (-7.703/-10.071) | -2.373 (-2.122/-2.599) | -3.698 (-2.520/-4.736) | -2.865 (-3.051/-2.696) |
+| 4 | name-pair-targeted | 1.150084/1.397563 | 1.208750/1.400021 | 1.170479/1.433812 | -3.166 (-1.919/-4.337) | +2.414 (-0.225/+4.943) | +1.773 (+5.401/-1.490) | +2.594 (+3.848/+1.477) |
+| 4 | name-pair-dense | 1.242917/1.480667 | 1.302104/1.476187 | 1.258250/1.473354 | -3.368 (-3.059/-3.657) | -0.192 (+0.113/-0.468) | +1.234 (+3.029/-0.400) | -0.494 (-1.678/+0.612) |
+| 4 | caller-class-zero | 0.583417/0.790104 | 0.605479/0.764916 | 0.595688/0.801687 | -1.617 (-1.694/-1.549) | +4.807 (+2.896/+6.542) | +2.103 (+3.315/+1.039) | +1.466 (+5.394/-1.744) |
+| 4 | caller-class-targeted | 1.094791/1.280541 | 1.097458/1.306062 | 1.065020/1.312188 | -2.956 (-3.977/-2.005) | +0.469 (+3.136/-1.910) | -2.719 (-2.682/-2.754) | +2.471 (+3.350/+1.661) |
+| 4 | caller-class-dense | 1.198916/1.457313 | 1.233626/1.469979 | 1.232938/1.462813 | -0.056 (+1.729/-1.644) | -0.488 (-1.412/+0.362) | +2.838 (+2.501/+3.150) | +0.377 (+1.607/-0.708) |
+| 4 | callee-class-zero | 0.600625/0.756167 | 0.604187/0.783895 | 0.567625/0.788917 | -6.052 (+0.483/-11.542) | +0.641 (+0.006/+1.195) | -5.494 (+2.615/-12.122) | +4.331 (+8.487/+0.989) |
+| 4 | callee-class-targeted | 0.946416/1.249437 | 0.987187/1.243459 | 0.963376/1.203083 | -2.412 (+4.512/-8.174) | -3.247 (-4.928/-1.739) | +1.792 (+9.990/-4.920) | -3.710 (-7.157/-0.502) |
+| 4 | callee-class-dense | 1.218187/1.472562 | 1.246438/1.483521 | 1.214771/1.492063 | -2.541 (-1.028/-3.915) | +0.576 (-1.223/+2.236) | -0.280 (+1.721/-2.084) | +1.324 (-1.669/+4.151) |
+| 4 | provenance-zero | 0.593521/0.790375 | 0.605521/0.777333 | 0.584833/0.791667 | -3.416 (-1.413/-5.175) | +1.844 (+2.398/+1.360) | -1.464 (+4.780/-6.545) | +0.163 (+2.440/-1.761) |
+| 4 | provenance-targeted | 1.080688/1.337230 | 1.103625/1.326479 | 1.069084/1.313646 | -3.130 (-5.182/-1.218) | -0.967 (-0.205/-1.638) | -1.074 (-1.612/-0.587) | -1.764 (-2.124/-1.440) |
+| 4 | provenance-dense | 1.261604/1.496166 | 1.296625/1.503979 | 1.268438/1.509771 | -2.174 (-1.227/-3.041) | +0.385 (-1.209/+1.877) | +0.542 (+1.390/-0.238) | +0.909 (+3.250/-1.124) |
+| 4 | aliased-zero | 0.596438/0.786229 | 0.608688/0.768833 | 0.584167/0.773438 | -4.029 (-5.304/-2.841) | +0.599 (-5.833/+6.348) | -2.057 (+4.122/-7.060) | -1.627 (-7.208/+3.289) |
+| 4 | aliased-targeted | 1.050334/1.317813 | 1.107084/1.338105 | 1.074583/1.374041 | -2.936 (-4.670/-1.306) | +2.686 (+3.348/+2.070) | +2.309 (+4.316/+0.554) | +4.267 (+1.569/+6.940) |
+| 4 | aliased-dense | 1.221021/1.439042 | 1.245542/1.516708 | 1.233291/1.486354 | -0.984 (+2.864/-4.494) | -2.001 (-1.943/-2.055) | +1.005 (+6.073/-3.525) | +3.288 (-0.351/+6.844) |
+| 4 | parameterized-zero | 0.584125/0.789875 | 0.610271/0.795647 | 0.601854/0.797562 | -1.379 (+0.839/-3.298) | +0.241 (+4.296/-3.207) | +3.035 (+6.425/+0.158) | +0.973 (+6.129/-3.329) |
+| 4 | parameterized-targeted | 1.010167/1.219812 | 1.048291/1.298771 | 1.020500/1.228229 | -2.651 (+0.467/-5.539) | -5.431 (-4.100/-6.652) | +1.023 (+5.959/-3.410) | +0.690 (+3.749/-2.029) |
+| 4 | parameterized-dense | 1.202854/1.508501 | 1.241375/1.551479 | 1.210875/1.461271 | -2.457 (-0.788/-4.018) | -5.814 (-5.011/-6.579) | +0.667 (+2.821/-1.332) | -3.131 (+1.530/-7.252) |
+| 4 | wrapped-case-insensitive-zero | 0.591417/0.752917 | 0.599750/0.752000 | 0.594771/0.790146 | -0.830 (+0.382/-1.919) | +5.073 (+0.433/+9.349) | +0.567 (+1.999/-0.714) | +4.945 (+2.857/+6.779) |
+| 4 | wrapped-case-insensitive-targeted | 0.933666/1.132521 | 0.943312/1.227542 | 0.942688/1.207313 | -0.066 (+2.870/-2.787) | -1.648 (-3.326/-0.037) | +0.966 (+4.321/-2.121) | +6.604 (+6.880/+6.349) |
+| 4 | wrapped-case-insensitive-dense | 1.442313/1.691312 | 1.423875/1.704438 | 1.420708/1.685708 | -0.222 (+0.545/-0.963) | -1.099 (+4.252/-5.844) | -1.498 (-0.278/-2.665) | -0.331 (+1.260/-1.847) |
+| 4 | wrapped-case-insensitive-distinct-zero | 0.640583/0.809416 | 0.652166/0.816041 | 0.643438/0.795438 | -1.338 (-1.318/-1.356) | -2.525 (-7.358/+2.066) | +0.446 (-0.377/+1.188) | -1.727 (-5.385/+1.661) |
+| 4 | wrapped-case-insensitive-distinct-targeted | 0.896458/1.130812 | 0.882916/1.117438 | 0.876146/1.098396 | -0.767 (+5.530/-6.168) | -1.704 (+3.198/-6.080) | -2.266 (+0.311/-4.629) | -2.867 (+1.371/-6.692) |
+| 4 | wrapped-case-insensitive-distinct-dense | 3.332355/3.618896 | 3.372104/3.584229 | 3.358687/3.623729 | -0.398 (-0.060/-0.725) | +1.102 (+2.480/-0.212) | +0.790 (+1.126/+0.464) | +0.134 (+1.704/-1.358) |
+| 4 | distribution-broad-all-64 | 1.476166/1.687604 | 1.504896/1.760542 | 1.458958/1.691853 | -3.053 (-2.892/-3.202) | -3.902 (+0.992/-8.391) | -1.166 (-2.203/-0.174) | +0.252 (+4.376/-3.601) |
+| 4 | distribution-localized-early | 0.735688/0.915875 | 0.788520/0.945396 | 0.735708/0.925063 | -6.698 (-5.298/-7.951) | -2.151 (+1.247/-5.080) | +0.003 (+2.432/-2.135) | +1.003 (+6.987/-3.937) |
+| 4 | distribution-localized-late | 1.029854/1.220646 | 0.999062/1.200292 | 1.012209/1.220438 | +1.316 (+4.934/-1.887) | +1.678 (+1.576/+1.775) | -1.713 (+1.247/-4.361) | -0.017 (+2.285/-2.094) |
+| 4 | distribution-localized-middle | 0.985125/1.223000 | 0.991375/1.227313 | 1.000584/1.257396 | +0.929 (+1.780/+0.142) | +2.451 (+3.593/+1.429) | +1.569 (+3.968/-0.586) | +2.812 (+1.894/+3.667) |
+
+Whole native process resources include startup, load, first-use/warmup, measured requests, drain and shutdown; measured-window CPU includes client gaps and is not per-case CPU. Raw resources for every process:
+
+| Run | Whole wall s | Whole CPU s | Peak RSS bytes | Measured-window native CPU s |
+|---|---:|---:|---:|---:|
+| c1-0-A | 57.76 | 41.80 | 6562725888 | 5.95 |
+| c1-1-B | 58.47 | 42.86 | 6614220800 | 6.04 |
+| c1-2-C | 58.64 | 42.92 | 6612336640 | 6.04 |
+| c1-3-C | 58.25 | 42.99 | 6614761472 | 6.00 |
+| c1-4-B | 58.42 | 43.04 | 6610993152 | 6.07 |
+| c1-5-A | 58.18 | 42.77 | 6569918464 | 6.08 |
+| c4-0-A | 45.14 | 40.61 | 6584025088 | 4.09 |
+| c4-1-B | 45.48 | 40.90 | 6633357312 | 4.10 |
+| c4-2-C | 45.43 | 40.83 | 6627508224 | 4.03 |
+| c4-3-C | 45.50 | 40.97 | 6628261888 | 4.14 |
+| c4-4-B | 45.48 | 41.03 | 6625116160 | 4.23 |
+| c4-5-A | 45.12 | 40.73 | 6589612032 | 4.15 |
+
+| c | Comparison | Whole CPU Δ% (pairs) | Peak RSS Δ% (pairs) | Window CPU Δ% (pairs) |
+|---|---|---:|---:|---:|
+| 1 | C_vs_B | +0.012 (+0.140/-0.116) | +0.014 (-0.028/+0.057) | -0.578 (+0.000/-1.153) |
+| 1 | C_vs_A | +1.584 (+2.679/+0.514) | +0.719 (+0.756/+0.683) | +0.083 (+1.513/-1.316) |
+| 4 | C_vs_B | -0.159 (-0.171/-0.146) | -0.020 (-0.088/+0.047) | -1.921 (-1.707/-2.128) |
+| 4 | C_vs_A | +0.566 (+0.542/+0.589) | +0.623 (+0.660/+0.587) | -0.850 (-1.467/-0.241) |
+
+Conclusion: versus120, c1 has33/34 lower mean p50 and26/34 lower mean p95; c4 has30/34 and18/34 respectively. This is a retained positive increment with mixed cases. Against preupgrade, c4 has only15/34 lower mean p50 and14/34 lower mean p95. The wrapped-case-insensitive-targeted c4 p95 rises6.604% versus old (both pairs+6.880/+6.349%); the c1 name-pair-targeted p95 rises6.224% versus120 (both pairs+10.032/+2.552%). These are not erased by improvements elsewhere. CPU/RSS lifetime means are below+5% in this finite diagnostic, but observed-background, small-n shared-fixture results do not certify final operation/workload limits. Construction and own-built loading were not measured here.
+
+The monitor retained609 snapshots,24 positive-CPU observations and48 CPU increments totaling0.77s, with0 incomplete external lifetimes. This is not an exclusive/quiet host. All first-use and warmup values, per-case extrema, fixed-mix descriptive values and raw HTTP bodies remain available; none substitutes for server per-case p50/p95 acceptance. Decision: retain123 isolated for continued composition; no full native-server recovery claim.
+
+Evidence directory: `/tmp/sootup-static-review/attempt123/server-request-packet/`. Frozen plan SHA256 `9b850a5183784e080ecd3ea0d65737bb7d19f2d92c51fb0fd430b1ae459cc11c`; result `b19c0f4f669d6dde4eabd0fca582887362b7eefde7f9d95bae586438d2750aef`; summary `5d6e84e42af1052594b95023d26d5ffec20f86a8528514a54b5aefa1ae9eeebb`; independent audit `2ae3fa6407257bcbe1c98f28f35f545bd903eccf307e2c28d997be38ac3c4b78`. The exact invocation and server argument lists are retained in the sealed plan and result. Client/lifecycle/monitor/summarizer were identical to120;25 pure checks and all200 source/runtime/fixture pins passed before execution. Root previously inspected the independent auditor, and has now rechecked its summary/result hashes before generating this complete table.
