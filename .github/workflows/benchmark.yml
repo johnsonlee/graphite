@@ -3056,6 +3056,50 @@ jobs:
         echo "harness=${HARNESS}" >> "${GITHUB_OUTPUT}"
         echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
 
+    # Keep actual executable identity: equal Rust sources need not yield equal ELF files.
+    # This evidence does not change the paired measurements or their gate decision.
+    - name: Archive Rust latency provenance
+      env:
+        HARNESS: ${{ steps.controls.outputs.harness }}
+        COMPARATOR: ${{ steps.controls.outputs.comparator }}
+      run: |
+        python3 - <<'PY'
+        import hashlib, json, os, pathlib, shutil, subprocess
+        out = pathlib.Path("benchmark-results/rust-provenance")
+        out.mkdir(parents=True, exist_ok=True)
+        def digest(path):
+            with path.open("rb") as stream:
+                return hashlib.file_digest(stream, "sha256").hexdigest()
+        flags = ("RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_BUILD_TARGET", "CARGO_INCREMENTAL",
+                 "RUSTC_WRAPPER", "CC", "CXX", "AR", "CFLAGS", "CXXFLAGS", "LDFLAGS",
+                 "GRAPHITE_VERSION", "GRAPHITE_COMMIT", "GRAPHITE_NO_FASTPATH",
+                 "RAYON_NUM_THREADS", "MALLOC_CONF", "_RJEM_MALLOC_CONF", "LD_PRELOAD", "LD_LIBRARY_PATH")
+        data = {"environment": {name: os.environ.get(name) for name in flags}, "files": {}, "commands": []}
+        paths = [pathlib.Path(os.environ["HARNESS"]), pathlib.Path(os.environ["COMPARATOR"]),
+                 pathlib.Path(os.environ["HARNESS"]).with_name("fixture64.py")]
+        paths += [pathlib.Path("shared-fixture64") / name for name in
+                  ("fixture64.complete.json", "fixture-reproducibility.json", "graphs/graphs.tsv", "graphs/fixture-provenance.tsv")]
+        for revision in ("base", "candidate"):
+            binary = pathlib.Path(revision) / "target/release/graphite"
+            archived = out / (revision + "-graphite")
+            shutil.copy2(binary, archived)
+            assert digest(binary) == digest(archived), "Binary changed during archive"
+            paths += [binary, archived, pathlib.Path(revision) / "Cargo.toml", pathlib.Path(revision) / "Cargo.lock"]
+        # Cargo config can contain credentials; archive only hashes, never contents.
+        dirs = [pathlib.Path.cwd(), *pathlib.Path.cwd().parents, pathlib.Path("base"), pathlib.Path("candidate")]
+        paths += [directory / ".cargo" / name for directory in dirs for name in ("config", "config.toml")]
+        paths += [pathlib.Path(os.environ.get("CARGO_HOME", str(pathlib.Path.home() / ".cargo"))) / name
+                  for name in ("config", "config.toml")]
+        data["files"] = {str(path): digest(path) if path.is_file() else None for path in paths}
+        commands = [["rustc", "--version", "--verbose"], ["cargo", "--version"]]
+        for revision in ("base", "candidate"):
+            commands += [["git", "-C", revision, "rev-parse", "HEAD", "HEAD:backend", "HEAD:cli"],
+                         ["readelf", "-h", "-n", "-S", "-W", revision + "/target/release/graphite"]]
+        for command in commands:
+            data["commands"].append({"command": command, "output": subprocess.check_output(command, text=True)})
+        (out / "provenance.json").write_text(json.dumps(data, indent=2) + "\n")
+        PY
+
     - name: Measure base then PR
       env:
         HARNESS: ${{ steps.controls.outputs.harness }}
